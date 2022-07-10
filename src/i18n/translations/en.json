@@ -1,0 +1,32 @@
+{
+    "color": "Color",
+    "panel": {
+        "tools": {
+            "header": "Tools"
+        },
+        "details": {
+            "header": "Details",
+            "id": "ID",
+            "type": "Type",
+            "stn": {
+                "pos": "Position",
+                "name0": "Name 0",
+                "name1": "Name 1"
+            },
+            "line": {
+                "diagonal": {
+                    "offsetFrom": "offsetFrom",
+                    "offsetTo": "offsetTo",
+                    "startFrom": "startFrom"
+                }
+            },
+            "footer": {
+                "remove": "Remove"
+            }
+        }
+    },
+    "about": {
+        "content1": "In memory of all the freedom and equality we once had.",
+        "content2": "thekingofcity, 06/01/2022 in Shanghai"
+    }
+}

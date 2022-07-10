@@ -1,0 +1,19 @@
+{
+    "extends": ["react-app", "react-app/jest"],
+    "plugins": ["prettier"],
+    "rules": {
+        "prettier/prettier": [
+            "warn",
+            {
+                "endOfLine": "auto"
+            }
+        ],
+        "react-hooks/exhaustive-deps": "off",
+        "react/self-closing-comp": [
+            "error",
+            {
+                "component": true
+            }
+        ]
+    }
+}
