@@ -7,6 +7,6 @@ describe('AppRoot', () => {
     it('Can render window header', () => {
         render(<AppRoot />);
 
-        expect(screen.getByRole('heading').textContent).toContain('Seed Project');
+        expect(screen.getByRole('heading').textContent).toContain('Rail Map Painter');
     });
 });

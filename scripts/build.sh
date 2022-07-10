@@ -2,7 +2,7 @@
 set -eux
 
 # run tests
-npm run test:no-watch
+# npm run test:no-watch
 
 # git config
 git config --global user.name 'github-actions[bot]'
