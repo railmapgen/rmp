@@ -1,35 +1,48 @@
 import React from 'react';
 import { nanoid } from 'nanoid';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { StnId, LineId } from '../constants/constants';
+import { MultiDirectedGraph } from 'graphology';
+import { StnId, LineId, NodeAttributes, EdgeAttributes, GraphAttributes, LineType } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/app/app-slice';
 import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
-import Station from './station/station';
-import SimpleLine from './line/simple-line';
-import DiagonalLine from './line/diagonal-line';
+import allStations from './station/stations';
+import allLines from './line/lines';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { Size, useWindowSize } from '../util/hooks';
+import { getMousePosition } from '../util/helpers';
 
-const getMousePosition = (e: React.MouseEvent) => {
-    const bbox = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - bbox.left;
-    const y = e.clientY - bbox.top;
-    return { x, y };
-};
+type stationElem = { node: StnId } & NodeAttributes;
+type lineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
+
+const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): stationElem[] =>
+    graph.mapNodes((node, attr) => ({
+        node: node as StnId,
+        x: attr.x,
+        y: attr.y,
+        type: attr.type,
+        names: attr.names,
+        [attr.type]: attr[attr.type],
+    }));
+const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): lineElem[] =>
+    graph.mapEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => ({
+        edge: edge as LineId,
+        x1: sourceAttr.x,
+        y1: sourceAttr.y,
+        x2: targetAttr.x,
+        y2: targetAttr.y,
+        attr,
+    }));
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
 
-    const refresh = useRootSelector(state => state.runtime.refresh);
+    const { refresh, mode, active } = useRootSelector(state => state.runtime);
     const hardRefresh = () => dispatch(setRefresh());
-    const mode = useRootSelector(state => state.runtime.mode);
 
     const graph = React.useRef(window.graph);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [newLinePosition, setNewLinePosition] = React.useState({ x: 0, y: 0 });
-    const active = useRootSelector(state => state.runtime.active);
 
     const handlePointerDown = (node: StnId, e: React.PointerEvent<SVGElement>) => {
         e.preventDefault();
@@ -59,27 +72,24 @@ const SvgCanvas = () => {
             }));
             hardRefresh();
             // console.log('move ', graph.current.getNodeAttributes(node));
-        } else if (mode === 'line') {
+        } else if (mode.startsWith('line')) {
             setNewLinePosition({ x: offset.x - x, y: offset.y - y });
         }
     };
     const handlePointerUp = (node: StnId, e: React.PointerEvent<SVGElement>) => {
         e.preventDefault();
 
-        if (mode === 'line') {
+        if (mode.startsWith('line')) {
             dispatch(setMode('free'));
 
             const elems = document.elementsFromPoint(e.clientX, e.clientY);
             const id = elems[0].attributes?.getNamedItem('id')?.value;
             if (id?.startsWith('stn_circle_')) {
+                const type = mode.slice(5) as LineType;
                 graph.current.addEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
                     color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
-                    type: 'diagonal',
-                    diagonal: {
-                        startFrom: 'from',
-                        offsetFrom: 0,
-                        offsetTo: 0,
-                    },
+                    type,
+                    [type]: allLines[type].defaultAttrs,
                 });
             }
         } else if (mode === 'free') {
@@ -95,101 +105,71 @@ const SvgCanvas = () => {
         hardRefresh();
         // console.log('up ', graph.current.getNodeAttributes(node));
     };
-    const handleEdgeClick = (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
-        dispatch(clearSelected());
-        dispatch(addSelected(edge));
-    };
+    const handleEdgeClick = React.useCallback(
+        (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+            dispatch(clearSelected());
+            dispatch(addSelected(edge));
+        },
+        [dispatch, clearSelected, addSelected]
+    );
 
-    const [svgViewBoxMin, setSvgViewBoxMin] = React.useState({ x: 0, y: 0 });
-    const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
-    const handleBackgroundDown = (e: React.PointerEvent<SVGSVGElement>) => {
-        // dispatch(clearSelected()); // some bug here if I want to deselect on empty place
-        const { x, y } = getMousePosition(e);
-        if (mode === 'station') {
-            dispatch(setMode('free'));
-            const rand = nanoid(10);
-            graph.current.addNode(`stn_${rand}`, {
-                x: x + svgViewBoxMin.x,
-                y: y + svgViewBoxMin.y,
-                names: [`车站${rand}`, `Stn ${rand}`],
-            });
-            // console.log(x, y, svgViewBoxMin);
-            hardRefresh();
-        } else if (mode === 'free') {
-            setOffset({ x, y });
-            setSvgViewBoxMinTmp(svgViewBoxMin);
-            dispatch(setActive('background'));
-            // console.log('down', active, offset);
-        }
-    };
-    const handleBackgroundMove = (e: React.PointerEvent<SVGSVGElement>) => {
-        if (active === 'background') {
-            const { x, y } = getMousePosition(e);
-            setSvgViewBoxMin({ x: svgViewBoxMinTmp.x + (offset.x - x), y: svgViewBoxMinTmp.y + (offset.y - y) });
-            // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
-        }
-    };
-    const handleBackgroundUp = (e: React.PointerEvent<SVGSVGElement>) => {
-        if (active === 'background') {
-            dispatch(setActive(undefined)); // svg mouse event only
-            // console.log('up', active);
-        }
-    };
+    const [stations, setStations] = React.useState(getStations(graph.current));
+    const [lines, setLines] = React.useState(getLines(graph.current));
+    React.useEffect(() => {
+        setStations(getStations(graph.current));
+        setLines(getLines(graph.current));
+    }, [refresh]);
 
-    const size: Size = useWindowSize();
-    const height = (size.height ?? 1280) - 32;
-    const width = (size.width ?? 720) - 350;
+    const DrawLineComponent = mode.startsWith('line')
+        ? allLines[mode.slice(5) as LineType].component
+        : (props: any) => <></>;
 
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            height={height}
-            width={width}
-            viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${height / 2} ${width / 2}`}
-            onMouseDown={handleBackgroundDown}
-            onMouseMove={handleBackgroundMove}
-            onMouseUp={handleBackgroundUp}
-        >
-            {mode === 'line' && active && (
-                <DiagonalLine
+        <>
+            {mode.startsWith('line') && active && (
+                <DrawLineComponent
                     // @ts-expect-error
                     id="create_in_progress___no_use"
                     x1={graph.current.getNodeAttribute(active, 'x')}
                     y1={graph.current.getNodeAttribute(active, 'y')}
                     x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
                     y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
-                    attrs={{ color: ['' as CityCode, '', MonoColour.black, MonoColour.white], type: 'diagonal' }}
+                    attrs={{ color: ['' as CityCode, '', MonoColour.black, MonoColour.white], type: LineType.Diagonal }}
                 />
             )}
-            {React.useMemo(() => {
-                return graph.current.mapEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => (
-                    <DiagonalLine
+            {lines.map(({ edge, x1, y1, x2, y2, attr }) => {
+                const LineComponent = allLines[attr.type].component;
+                return (
+                    <LineComponent
                         id={edge as LineId}
                         key={edge}
-                        x1={sourceAttr.x}
-                        y1={sourceAttr.y}
-                        x2={targetAttr.x}
-                        y2={targetAttr.y}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
                         attrs={attr}
-                        onClick={handleEdgeClick}
+                        handleClick={handleEdgeClick}
                     />
-                ));
-            }, [refresh])}
-            {React.useMemo(() => {
-                return graph.current.mapNodes((node, attr) => (
-                    <Station
-                        id={node as StnId}
+                );
+            })}
+            {stations.map(line => {
+                const { node, x, y, names, type } = line;
+                const StationComponent = allStations[type].component;
+                return (
+                    <StationComponent
+                        id={node}
                         key={node}
-                        x={attr.x}
-                        y={attr.y}
-                        names={attr.names}
+                        x={x}
+                        y={y}
+                        names={names}
+                        attrs={{ [type]: line[type] }}
                         handlePointerDown={handlePointerDown}
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
                     />
-                ));
-            }, [refresh])}
-        </svg>
+                );
+            })}
+        </>
     );
 };
 

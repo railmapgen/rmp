@@ -1,7 +1,7 @@
 import { Flex } from '@chakra-ui/react';
 import React from 'react';
 import WindowHeader from './window-header';
-import SvgCanvas from './svg-canvas-graph';
+import SvgWrapper from './svg-wrapper';
 import ToolsPanel from './panel/tools';
 import DetailsPanel from './panel/details';
 
@@ -11,7 +11,7 @@ export default function AppRoot() {
             <WindowHeader />
             <Flex direction="row" height="100%" overflow="hidden">
                 <ToolsPanel />
-                <SvgCanvas />
+                <SvgWrapper />
                 <DetailsPanel />
             </Flex>
         </Flex>

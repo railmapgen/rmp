@@ -10,8 +10,8 @@ const initGraph =
 
 const initialState: AppState = {
     counter: 0,
-    graph: initGraph,
-    ...JSON.parse(localStorage.getItem('AppState') ?? initGraph),
+    graph: '',
+    ...JSON.parse(localStorage.getItem('AppState') ?? '{}'),
 };
 
 const appSlice = createSlice({

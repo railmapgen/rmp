@@ -1,18 +1,15 @@
 import React from 'react';
-import { LineId, EdgeAttributes } from '../../constants/constants';
+import { LineAttributes, Line, LineComponentProps } from '../../constants/constants';
 
-const DiagonalLine = (props: {
-    id: LineId;
-    x1: number;
-    x2: number;
-    y1: number;
-    y2: number;
-    onClick?: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
-    attrs: EdgeAttributes;
-}) => {
-    const { id, attrs, onClick } = props;
-    const { color, diagonal } = attrs;
-    const { startFrom, offsetFrom, offsetTo } = diagonal ?? defaultDiagonalLineAttributes;
+const DiagonalLine = (props: LineComponentProps) => {
+    const { id, attrs, handleClick } = props;
+    const { color, diagonal = defaultDiagonalLineAttributes } = attrs;
+    // get type specific attrs with default value
+    const {
+        startFrom = defaultDiagonalLineAttributes.startFrom,
+        offsetFrom = defaultDiagonalLineAttributes.offsetFrom,
+        offsetTo = defaultDiagonalLineAttributes.offsetTo,
+    } = diagonal;
     const x1_ = startFrom === 'from' ? props.x1 : props.x2;
     const x2_ = startFrom === 'from' ? props.x2 : props.x1;
     const y1_ = startFrom === 'from' ? props.y1 : props.y2;
@@ -31,24 +28,30 @@ const DiagonalLine = (props: {
     const x = horizontalOrVertical === 'vertical' ? x2 + Math.abs(y2 - y1) * (x2 - x1 > 0 ? -1 : 1) : x1;
     const y = horizontalOrVertical === 'vertical' ? y1 : y2 + Math.abs(x2 - x1) * (y2 - y1 > 0 ? -1 : 1);
 
-    return (
-        <path
-            d={`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`}
-            fill="none"
-            stroke={color[2]}
-            strokeWidth={5}
-            strokeLinejoin="round"
-            onClick={onClick ? e => onClick(id, e) : undefined}
-        />
+    const onClick = React.useCallback(
+        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
+        [id, handleClick]
+    );
+
+    return React.useMemo(
+        () => (
+            <path
+                d={`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`}
+                fill="none"
+                stroke={color[2]}
+                strokeWidth={5}
+                strokeLinejoin="round"
+                onClick={onClick}
+            />
+        ),
+        [x1, y1, x, y, x2, y2, color[2], onClick]
     );
 };
-
-export default DiagonalLine;
 
 /**
  * <DiagonalLine /> specific props.
  */
-export type DiagonalLineAttributes = {
+export interface DiagonalLineAttributes extends LineAttributes {
     /**
      * Change the drawing direction of line.
      * e.g. from
@@ -63,11 +66,11 @@ export type DiagonalLineAttributes = {
     startFrom: 'from' | 'to';
     offsetFrom: number;
     offsetTo: number;
-};
+}
 
 const defaultDiagonalLineAttributes: DiagonalLineAttributes = { startFrom: 'from', offsetFrom: 0, offsetTo: 0 };
 
-export const diagonalLineFields = [
+const diagonalLineFields = [
     {
         type: 'input',
         label: 'panel.details.line.diagonal.offsetFrom',
@@ -113,3 +116,20 @@ export const diagonalLineFields = [
         },
     },
 ];
+
+const diagonalLineIcon = (
+    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+        <path d="M9,18V12L15,6" stroke="currentColor" fill="none" />
+    </svg>
+);
+
+const diagonalLine: Line<DiagonalLineAttributes> = {
+    component: DiagonalLine,
+    icon: diagonalLineIcon,
+    defaultAttrs: defaultDiagonalLineAttributes,
+    // TODO: fix this
+    // @ts-ignore-error
+    fields: diagonalLineFields,
+};
+
+export default diagonalLine;

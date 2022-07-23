@@ -72,5 +72,6 @@
         "moduleNameMapper": {
             "\\.(css|less)$": "identity-obj-proxy"
         }
-    }
+    },
+    "type": "module"
 }

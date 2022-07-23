@@ -14,7 +14,8 @@ import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
 import ThemeButton from './theme-button';
 import ColourModal from './colour-modal/colour-modal';
 import { Theme } from '../../constants/constants';
-import { diagonalLineFields } from '../line/diagonal-line';
+import stations from '../station/stations';
+import lines from '../line/lines';
 
 const DetailsPanel = () => {
     const { t } = useTranslation();
@@ -61,6 +62,32 @@ const DetailsPanel = () => {
                 },
             })) as RmgFieldsField[])
         );
+        const type = graph.current.getNodeAttribute(selected, 'type');
+        const attrs = graph.current.getNodeAttribute(selected, type);
+        fields.push(
+            ...stations[type].fields.map(
+                field =>
+                    ({
+                        type: field.type,
+                        label: t(field.label),
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        value: field.value(attrs),
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        options: field.options,
+                        onChange: (val: string | number) => {
+                            graph.current.mergeNodeAttributes(selected, {
+                                // TODO: fix this
+                                // @ts-ignore-error
+                                [type]: field.onChange(val, attrs),
+                            });
+                            dispatch(setRefresh());
+                            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                        },
+                    } as RmgFieldsField)
+            )
+        );
         fields.push({
             type: 'input',
             label: t('panel.details.stn.pos'),
@@ -90,26 +117,32 @@ const DetailsPanel = () => {
             ),
             minW: '40px',
         });
-        if (graph.current.getEdgeAttribute(selected, 'type') === 'diagonal') {
-            fields.push(
-                ...diagonalLineFields.map(
-                    field =>
-                        ({
-                            type: field.type,
-                            label: t(field.label),
-                            value: field.value(graph.current.getEdgeAttribute(selected, 'diagonal')),
-                            options: field.options,
-                            onChange: (val: string | number) => {
-                                graph.current.mergeEdgeAttributes(selected, {
-                                    diagonal: field.onChange(val, graph.current.getEdgeAttribute(selected, 'diagonal')),
-                                });
-                                dispatch(setRefresh());
-                                dispatch(saveGraph(JSON.stringify(graph.current.export())));
-                            },
-                        } as RmgFieldsField)
-                )
-            );
-        }
+        const type = graph.current.getEdgeAttribute(selected, 'type');
+        const attrs = graph.current.getEdgeAttribute(selected, type);
+        fields.push(
+            ...lines[type].fields.map(
+                field =>
+                    ({
+                        type: field.type,
+                        label: t(field.label),
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        value: field.value(attrs),
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        options: field.options,
+                        onChange: (val: string | number) => {
+                            graph.current.mergeEdgeAttributes(selected, {
+                                // TODO: fix this
+                                // @ts-ignore-error
+                                [type]: field.onChange(val, attrs),
+                            });
+                            dispatch(setRefresh());
+                            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                        },
+                    } as RmgFieldsField)
+            )
+        );
     }
 
     return (
