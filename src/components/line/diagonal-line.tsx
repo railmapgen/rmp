@@ -1,5 +1,6 @@
 import React from 'react';
 import { LineAttributes, Line, LineComponentProps } from '../../constants/constants';
+import { roundPathCorners } from '../../util/pathRounding';
 
 const DiagonalLine = (props: LineComponentProps) => {
     const { id, attrs, handleClick } = props;
@@ -36,7 +37,7 @@ const DiagonalLine = (props: LineComponentProps) => {
     return React.useMemo(
         () => (
             <path
-                d={`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`}
+                d={roundPathCorners(`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`, 7.5, false)}
                 fill="none"
                 stroke={color[2]}
                 strokeWidth={5}

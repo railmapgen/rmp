@@ -22,11 +22,41 @@ window.graph = graph.import(JSON.parse(JSON.parse(localStorage.getItem('AppState
 
 const init = () => {
     localStorage.clear();
-    window.graph.addNode('stn_1', { x: 250, y: 150, type: StationType.ShmetroInt, names: ['车站1', 'Stn 1'] });
-    window.graph.addNode('stn_2', { x: 250, y: 250, type: StationType.ShmetroInt, names: ['车站2', 'Stn 2'] });
-    window.graph.addNode('stn_3', { x: 250, y: 350, type: StationType.ShmetroInt, names: ['车站3', 'Stn 3'] });
-    window.graph.addNode('stn_4', { x: 150, y: 250, type: StationType.ShmetroInt, names: ['车站4', 'Stn 4'] });
-    window.graph.addNode('stn_5', { x: 350, y: 250, type: StationType.ShmetroInt, names: ['车站5', 'Stn 5'] });
+    window.graph.addNode('stn_1', {
+        x: 250,
+        y: 150,
+        type: StationType.ShmetroInt,
+        names: ['车站1', 'Stn 1'],
+        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+    });
+    window.graph.addNode('stn_2', {
+        x: 250,
+        y: 250,
+        type: StationType.ShmetroInt,
+        names: ['车站2', 'Stn 2'],
+        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+    });
+    window.graph.addNode('stn_3', {
+        x: 250,
+        y: 350,
+        type: StationType.ShmetroInt,
+        names: ['车站3', 'Stn 3'],
+        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+    });
+    window.graph.addNode('stn_4', {
+        x: 150,
+        y: 250,
+        type: StationType.ShmetroInt,
+        names: ['车站4', 'Stn 4'],
+        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+    });
+    window.graph.addNode('stn_5', {
+        x: 350,
+        y: 250,
+        type: StationType.ShmetroInt,
+        names: ['车站5', 'Stn 5'],
+        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+    });
     window.graph.addEdgeWithKey('line_1_1', 'stn_1', 'stn_2', {
         color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
         type: LineType.Diagonal,
