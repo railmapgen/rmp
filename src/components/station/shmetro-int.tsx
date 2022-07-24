@@ -1,11 +1,21 @@
 import React from 'react';
-import { Station, StationAttributes, StationComponentProps, StationType } from '../../constants/constants';
+import {
+    defaultStationAttributes,
+    Station,
+    StationAttributes,
+    StationComponentProps,
+    StationType,
+} from '../../constants/stations';
 
 const ShmetroIntStation = (props: StationComponentProps) => {
-    const { id, x, y, names, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
+        names = defaultStationAttributes.names,
         nameOffsetX = defaultShmetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultShmetroIntStationAttributes.nameOffsetY,
+        rotate = defaultShmetroIntStationAttributes.rotate,
+        width = defaultShmetroIntStationAttributes.width,
+        height = defaultShmetroIntStationAttributes.height,
     } = attrs[StationType.ShmetroInt] ?? defaultShmetroIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -29,16 +39,22 @@ const ShmetroIntStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={`stn_${id}`} transform={`translate(${x}, ${y})`}>
-                <circle
-                    id={`stn_circle_${id}`}
-                    r={10}
-                    stroke="black"
-                    fill="white"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+                <g transform={`rotate(${rotate})`}>
+                    <rect
+                        id={`stn_circle_${id}`}
+                        x={-width / 2}
+                        y={-height / 2}
+                        height={height}
+                        width={width}
+                        ry={height / 2}
+                        stroke="black"
+                        fill="white"
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={onPointerUp}
+                        style={{ cursor: 'move' }}
+                    />
+                </g>
                 <g transform={`translate(${textX}, ${textY})`}>
                     <text textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
                         {names[0]}
@@ -49,7 +65,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 </g>
             </g>
         ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, onPointerDown, onPointerMove, onPointerUp]
+        [id, x, y, ...names, nameOffsetX, nameOffsetY, rotate, width, height, onPointerDown, onPointerMove, onPointerUp]
     );
 };
 
@@ -59,11 +75,78 @@ const ShmetroIntStation = (props: StationComponentProps) => {
 export interface ShmetroIntStationAttributes extends StationAttributes {
     nameOffsetX: 'left' | 'middle' | 'right';
     nameOffsetY: 'up' | 'middle' | 'bottom';
+    /**
+     * 0 <= rotate < 180
+     */
+    rotate: number;
+    width: number;
+    height: number;
 }
 
-const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = { nameOffsetX: 'right', nameOffsetY: 'up' };
+const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
+    ...defaultStationAttributes,
+    nameOffsetX: 'right',
+    nameOffsetY: 'up',
+    rotate: 0,
+    height: 10,
+    width: 15,
+};
 
 const shmetroIntStationFields = [
+    {
+        type: 'input',
+        label: 'panel.details.station.shmetroInt.nameZh',
+        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).names[0],
+        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
+            // set value
+            attrs.names[0] = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.shmetroInt.nameEn',
+        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).names[1],
+        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
+            // set value
+            attrs.names[1] = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.shmetroInt.height',
+        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).height,
+        validator: (val: string) => Number.isInteger(val),
+        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
+            // set value
+            attrs.height = Number(val);
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.shmetroInt.width',
+        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).width,
+        validator: (val: string) => Number.isInteger(val),
+        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
+            // set value
+            attrs.width = Number(val);
+            // return modified attrs
+            return attrs;
+        },
+    },
     {
         type: 'select',
         label: 'panel.details.station.shmetroInt.nameOffsetX',

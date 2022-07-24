@@ -5,7 +5,8 @@ import { Flex, IconButton } from '@chakra-ui/react';
 import { RmgSidePanelBody } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setMode } from '../../redux/runtime/runtime-slice';
-import { StationType, LineType } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
+import { LineType } from '../../constants/lines';
 import stations from '../station/stations';
 import lines from '../line/lines';
 

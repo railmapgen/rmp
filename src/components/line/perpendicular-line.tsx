@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineAttributes, Line, LineComponentProps } from '../../constants/constants';
+import { LineAttributes, Line, LineComponentProps } from '../../constants/lines';
 
 const PerpendicularLine = (props: LineComponentProps) => {
     const { id, x1, x2, y1, y2, attrs, handleClick } = props;

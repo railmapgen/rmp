@@ -4,11 +4,14 @@ import { Provider } from 'react-redux';
 import { MultiDirectedGraph } from 'graphology';
 import { ChakraProvider } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { NodeAttributes, EdgeAttributes, GraphAttributes, StationType, LineType } from './constants/constants';
+import { NodeAttributes, EdgeAttributes, GraphAttributes } from './constants/constants';
+import { StationType } from './constants/stations';
+import { LineType } from './constants/lines';
 import AppRoot from './components/app-root';
 import chakraTheme from './theme/theme';
 import store from './redux';
 import './i18n/config';
+import stations from './components/station/stations';
 
 declare global {
     interface Window {
@@ -25,37 +28,47 @@ const init = () => {
     window.graph.addNode('stn_1', {
         x: 250,
         y: 150,
-        type: StationType.ShmetroInt,
-        names: ['车站1', 'Stn 1'],
-        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+        type: StationType.ShmetroBasic,
+        [StationType.ShmetroBasic]: {
+            ...stations[StationType.ShmetroBasic].defaultAttrs,
+            names: ['车站1', 'Stn 1'],
+        },
     });
     window.graph.addNode('stn_2', {
         x: 250,
         y: 250,
         type: StationType.ShmetroInt,
-        names: ['车站2', 'Stn 2'],
-        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+        [StationType.ShmetroInt]: {
+            ...stations[StationType.ShmetroInt].defaultAttrs,
+            names: ['车站2', 'Stn 2'],
+        },
     });
     window.graph.addNode('stn_3', {
         x: 250,
         y: 350,
-        type: StationType.ShmetroInt,
-        names: ['车站3', 'Stn 3'],
-        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+        type: StationType.ShmetroBasic,
+        [StationType.ShmetroBasic]: {
+            ...stations[StationType.ShmetroBasic].defaultAttrs,
+            names: ['车站3', 'Stn 3'],
+        },
     });
     window.graph.addNode('stn_4', {
         x: 150,
         y: 250,
-        type: StationType.ShmetroInt,
-        names: ['车站4', 'Stn 4'],
-        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+        type: StationType.ShmetroBasic,
+        [StationType.ShmetroBasic]: {
+            ...stations[StationType.ShmetroBasic].defaultAttrs,
+            names: ['车站4', 'Stn 4'],
+        },
     });
     window.graph.addNode('stn_5', {
         x: 350,
         y: 250,
-        type: StationType.ShmetroInt,
-        names: ['车站5', 'Stn 5'],
-        [StationType.ShmetroInt]: { nameOffsetX: 'right', nameOffsetY: 'up' },
+        type: StationType.ShmetroBasic,
+        [StationType.ShmetroBasic]: {
+            ...stations[StationType.ShmetroBasic].defaultAttrs,
+            names: ['车站5', 'Stn 5'],
+        },
     });
     window.graph.addEdgeWithKey('line_1_1', 'stn_1', 'stn_2', {
         color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],

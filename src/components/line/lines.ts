@@ -1,4 +1,4 @@
-import { LineType } from '../../constants/constants';
+import { LineType } from '../../constants/lines';
 import diagonalLine from './diagonal-line';
 import perpendicularLine from './perpendicular-line';
 

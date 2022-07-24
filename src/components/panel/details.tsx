@@ -42,26 +42,16 @@ const DetailsPanel = () => {
         {
             type: 'input',
             label: t('panel.details.type'),
-            value: selected ? (graph.current.hasNode(selected) ? 'node' : 'line') : 'undefined',
+            value: selected
+                ? graph.current.hasNode(selected)
+                    ? graph.current.getNodeAttribute(selected, 'type')
+                    : graph.current.getEdgeAttribute(selected, 'type')
+                : 'undefined',
             onChange: val => {},
         },
     ];
 
     if (graph.current.hasNode(selected)) {
-        fields.push(
-            ...(graph.current.getNodeAttribute(selected, 'names').map((name, i) => ({
-                type: 'input',
-                label: t('panel.details.stn.name') + i,
-                value: graph.current.getNodeAttribute(selected, 'names')[i],
-                onChange: val => {
-                    const names = graph.current.getNodeAttribute(selected, 'names');
-                    names[i] = val;
-                    graph.current.mergeNodeAttributes(selected, { names });
-                    dispatch(setRefresh());
-                    dispatch(saveGraph(JSON.stringify(graph.current.export())));
-                },
-            })) as RmgFieldsField[])
-        );
         const type = graph.current.getNodeAttribute(selected, 'type');
         const attrs = graph.current.getNodeAttribute(selected, type);
         fields.push(
@@ -76,6 +66,9 @@ const DetailsPanel = () => {
                         // TODO: fix this
                         // @ts-ignore-error
                         options: field.options,
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        validator: field.validator,
                         onChange: (val: string | number) => {
                             graph.current.mergeNodeAttributes(selected, {
                                 // TODO: fix this
@@ -131,6 +124,9 @@ const DetailsPanel = () => {
                         // TODO: fix this
                         // @ts-ignore-error
                         options: field.options,
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        validator: field.validator,
                         onChange: (val: string | number) => {
                             graph.current.mergeEdgeAttributes(selected, {
                                 // TODO: fix this

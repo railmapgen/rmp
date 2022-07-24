@@ -2,7 +2,8 @@ import React from 'react';
 import { nanoid } from 'nanoid';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { StnId, LineId, NodeAttributes, EdgeAttributes, GraphAttributes, LineType } from '../constants/constants';
+import { StnId, LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { LineType } from '../constants/lines';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/app/app-slice';
 import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
@@ -20,7 +21,6 @@ const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, G
         x: attr.x,
         y: attr.y,
         type: attr.type,
-        names: attr.names,
         [attr.type]: attr[attr.type],
     }));
 const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): lineElem[] =>
@@ -126,17 +126,6 @@ const SvgCanvas = () => {
 
     return (
         <>
-            {mode.startsWith('line') && active && (
-                <DrawLineComponent
-                    // @ts-expect-error
-                    id="create_in_progress___no_use"
-                    x1={graph.current.getNodeAttribute(active, 'x')}
-                    y1={graph.current.getNodeAttribute(active, 'y')}
-                    x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
-                    y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
-                    attrs={{ color: ['' as CityCode, '', MonoColour.black, MonoColour.white], type: LineType.Diagonal }}
-                />
-            )}
             {lines.map(({ edge, x1, y1, x2, y2, attr }) => {
                 const LineComponent = allLines[attr.type].component;
                 return (
@@ -153,7 +142,7 @@ const SvgCanvas = () => {
                 );
             })}
             {stations.map(line => {
-                const { node, x, y, names, type } = line;
+                const { node, x, y, type } = line;
                 const StationComponent = allStations[type].component;
                 return (
                     <StationComponent
@@ -161,7 +150,6 @@ const SvgCanvas = () => {
                         key={node}
                         x={x}
                         y={y}
-                        names={names}
                         attrs={{ [type]: line[type] }}
                         handlePointerDown={handlePointerDown}
                         handlePointerMove={handlePointerMove}
@@ -169,6 +157,17 @@ const SvgCanvas = () => {
                     />
                 );
             })}
+            {mode.startsWith('line') && active && (
+                <DrawLineComponent
+                    // @ts-expect-error
+                    id="create_in_progress___no_use"
+                    x1={graph.current.getNodeAttribute(active, 'x')}
+                    y1={graph.current.getNodeAttribute(active, 'y')}
+                    x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
+                    y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
+                    attrs={{ color: ['' as CityCode, '', MonoColour.black, MonoColour.white], type: LineType.Diagonal }}
+                />
+            )}
         </>
     );
 };

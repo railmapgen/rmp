@@ -5,7 +5,7 @@ import { Size, useWindowSize } from '../util/hooks';
 import { getMousePosition } from '../util/helpers';
 import { setActive, setMode, setRefresh } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
-import { StationType } from '../constants/constants';
+import { StationType } from '../constants/stations';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -27,7 +27,6 @@ const SvgWrapper = () => {
                 x: x + svgViewBoxMin.x,
                 y: y + svgViewBoxMin.y,
                 type: mode.slice(8) as StationType,
-                names: [`车站${rand}`, `Stn ${rand}`],
             });
             // console.log(x, y, svgViewBoxMin);
             hardRefresh();

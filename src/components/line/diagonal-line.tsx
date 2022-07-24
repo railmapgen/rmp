@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineAttributes, Line, LineComponentProps } from '../../constants/constants';
+import { LineAttributes, Line, LineComponentProps } from '../../constants/lines';
 import { roundPathCorners } from '../../util/pathRounding';
 
 const DiagonalLine = (props: LineComponentProps) => {
