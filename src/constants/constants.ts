@@ -32,15 +32,20 @@ export enum LanguageCode {
 
 export type Translation = { [l in LanguageCode]?: string };
 
+interface BaseAttributes {
+    visible: boolean;
+    zIndex: number;
+}
+
 export type NodeType = StationType | MiscNodeType;
-export type NodeAttributes = {
+export type NodeAttributes = BaseAttributes & {
     x: number;
     y: number;
     type: NodeType;
 } & Partial<ExternalStationAttributes> &
     Partial<MiscNodeAttributes>;
 
-export type EdgeAttributes = {
+export type EdgeAttributes = BaseAttributes & {
     color: Theme;
     type: LineType;
     /**

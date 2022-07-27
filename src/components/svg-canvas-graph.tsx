@@ -26,6 +26,8 @@ const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, G
         .map(node => [node, graph.getNodeAttributes(node)] as [StnId, NodeAttributes])
         .map(([node, attr]) => ({
             node: node as StnId,
+            visible: attr.visible,
+            zIndex: attr.zIndex,
             x: attr.x,
             y: attr.y,
             type: attr.type as StationType,
@@ -59,6 +61,8 @@ const getMiscNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         .map(node => [node, graph.getNodeAttributes(node)] as [MiscNodeId, NodeAttributes])
         .map(([node, attr]) => ({
             node,
+            visible: attr.visible,
+            zIndex: attr.zIndex,
             x: attr.x,
             y: attr.y,
             type: attr.type as MiscNodeType,
@@ -123,6 +127,8 @@ const SvgCanvas = () => {
             if (id?.startsWith('stn_circle_')) {
                 const type = mode.slice(5) as LineType;
                 graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
+                    visible: true,
+                    zIndex: 0,
                     color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
                     type,
                     [type]: allLines[type].defaultAttrs,
@@ -131,6 +137,8 @@ const SvgCanvas = () => {
             } else if (id?.startsWith('virtual_circle_')) {
                 const type = mode.slice(5) as LineType;
                 const edge = graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(15), {
+                    visible: true,
+                    zIndex: 0,
                     color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
                     type,
                     [type]: allLines[type].defaultAttrs,
@@ -277,6 +285,8 @@ const SvgCanvas = () => {
                     x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
                     y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
                     attrs={{
+                        visible: true,
+                        zIndex: 0,
                         color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
                         type: LineType.Diagonal,
                         reconcileId: '',

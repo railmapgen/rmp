@@ -29,6 +29,8 @@ const SvgWrapper = () => {
             const rand = nanoid(10);
             const type = mode.slice(8) as StationType;
             graph.current.addNode(`stn_${rand}`, {
+                visible: true,
+                zIndex: 0,
                 x: ((x + svgViewBoxMin.x) * svgViewBoxZoom) / 100 / 2,
                 y: ((y + svgViewBoxMin.y) * svgViewBoxZoom) / 100 / 2,
                 type,
@@ -41,6 +43,8 @@ const SvgWrapper = () => {
             const rand = nanoid(10);
             const type = mode.slice(10) as MiscNodeType;
             graph.current.addNode(`misc_node_${type}_${rand}`, {
+                visible: true,
+                zIndex: 0,
                 x: x + svgViewBoxMin.x,
                 y: y + svgViewBoxMin.y,
                 type,

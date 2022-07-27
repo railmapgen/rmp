@@ -26,6 +26,8 @@ window.graph = graph.import(JSON.parse(JSON.parse(localStorage.getItem('AppState
 const init = () => {
     localStorage.clear();
     window.graph.addNode('stn_1', {
+        visible: true,
+        zIndex: 0,
         x: 250,
         y: 150,
         type: StationType.ShmetroBasic,
@@ -35,6 +37,8 @@ const init = () => {
         },
     });
     window.graph.addNode('stn_2', {
+        visible: true,
+        zIndex: 0,
         x: 250,
         y: 250,
         type: StationType.ShmetroInt,
@@ -44,6 +48,8 @@ const init = () => {
         },
     });
     window.graph.addNode('stn_3', {
+        visible: true,
+        zIndex: 0,
         x: 250,
         y: 350,
         type: StationType.ShmetroBasic,
@@ -53,6 +59,8 @@ const init = () => {
         },
     });
     window.graph.addNode('stn_4', {
+        visible: true,
+        zIndex: 0,
         x: 150,
         y: 250,
         type: StationType.ShmetroBasic,
@@ -62,6 +70,8 @@ const init = () => {
         },
     });
     window.graph.addNode('stn_5', {
+        visible: true,
+        zIndex: 0,
         x: 350,
         y: 250,
         type: StationType.ShmetroBasic,
@@ -71,6 +81,8 @@ const init = () => {
         },
     });
     window.graph.addEdgeWithKey('line_1_1', 'stn_1', 'stn_2', {
+        visible: true,
+        zIndex: 0,
         color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
         type: LineType.Diagonal,
         reconcileId: '',
@@ -81,6 +93,8 @@ const init = () => {
         },
     });
     window.graph.addEdgeWithKey('line_1_2', 'stn_2', 'stn_3', {
+        visible: true,
+        zIndex: 0,
         color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
         type: LineType.Diagonal,
         reconcileId: '',
@@ -91,6 +105,8 @@ const init = () => {
         },
     });
     window.graph.addEdgeWithKey('line_2_1', 'stn_4', 'stn_2', {
+        visible: true,
+        zIndex: 0,
         color: [CityCode.Shanghai, 'sh2', '#97D700', MonoColour.black],
         type: LineType.Diagonal,
         reconcileId: '',
@@ -101,6 +117,8 @@ const init = () => {
         },
     });
     window.graph.addEdgeWithKey('line_2_2', 'stn_2', 'stn_5', {
+        visible: true,
+        zIndex: 0,
         color: [CityCode.Shanghai, 'sh2', '#97D700', MonoColour.black],
         type: LineType.Diagonal,
         reconcileId: '',
