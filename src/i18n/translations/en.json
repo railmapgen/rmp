@@ -6,12 +6,37 @@
         },
         "details": {
             "header": "Details",
-            "id": "ID",
-            "type": "Type",
-            "stn": {
+            "info": {
+                "title": "Basic information",
+                "id": "ID",
+                "type": "Type"
+            },
+            "node": {
+                "title": "Specific Attributes"
+            },
+            "station": {
                 "pos": "Position",
-                "name0": "Name 0",
-                "name1": "Name 1"
+                "interchange": {
+                    "title": "Interchanges",
+                    "within": "Within-station interchange",
+                    "outStation": "Out-of-station interchange",
+                    "outSystem": "Out-of-system interchange",
+                    "addGroup": "Add interchange group",
+                    "noInterchanges": "No interchanges",
+                    "nameZh": "Chinese name",
+                    "nameEn": "English name",
+                    "add": "Add interchange",
+                    "copy": "Copy interchange",
+                    "remove": "Remove interchange"
+                },
+                "shmetroInt": {
+                    "nameZh": "Name",
+                    "nameEn": "Name",
+                    "height": "Height",
+                    "width": "Width",
+                    "nameOffsetX": "Name Offset X",
+                    "nameOffsetY": "Name Offset Y"
+                }
             },
             "line": {
                 "reconcileId": "Reconcile ID",

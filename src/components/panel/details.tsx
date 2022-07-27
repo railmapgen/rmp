@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, HStack, Flex } from '@chakra-ui/react';
+import { Box, Button, Heading, HStack, Flex, Divider } from '@chakra-ui/react';
 import {
     RmgFields,
     RmgFieldsField,
@@ -17,6 +17,8 @@ import { Theme } from '../../constants/constants';
 import stations from '../station/stations';
 import miscNodes from '../misc/misc-nodes';
 import lines from '../line/lines';
+import InterchangeSection from './details-panels/interchange-section';
+import InfoSection from './details-panels/info-section';
 
 const nodes = { ...stations, ...miscNodes };
 
@@ -35,24 +37,7 @@ const DetailsPanel = () => {
         dispatch(saveGraph(JSON.stringify(graph.current.export())));
     };
 
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'input',
-            label: t('panel.details.id'),
-            value: selected ?? 'undefined',
-            onChange: val => {},
-        },
-        {
-            type: 'input',
-            label: t('panel.details.type'),
-            value: selected
-                ? graph.current.hasNode(selected)
-                    ? graph.current.getNodeAttribute(selected, 'type')
-                    : graph.current.getEdgeAttribute(selected, 'type')
-                : 'undefined',
-            onChange: val => {},
-        },
-    ];
+    const fields: RmgFieldsField[] = [];
 
     if (graph.current.hasNode(selected)) {
         const type = graph.current.getNodeAttribute(selected, 'type');
@@ -86,7 +71,7 @@ const DetailsPanel = () => {
         );
         fields.push({
             type: 'input',
-            label: t('panel.details.stn.pos'),
+            label: t('panel.details.station.pos'),
             // TODO: hardRefresh required, now debug only
             value: graph.current.getNodeAttribute(selected, 'x') + ' ' + graph.current.getNodeAttribute(selected, 'y'),
             onChange: val => {},
@@ -165,7 +150,21 @@ const DetailsPanel = () => {
         <Flex direction="column" height="100%" width={300} overflow="hidden">
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
-                <RmgFields fields={fields} minW={300} />
+                <InfoSection />
+
+                {/* <Divider />
+
+                {selected?.startsWith('stn') && graph.current.hasNode(selected) && <InterchangeSection />} */}
+
+                <Divider />
+
+                <Box p={1}>
+                    <Heading as="h5" size="sm">
+                        {t('panel.details.node.title')}
+                    </Heading>
+
+                    <RmgFields fields={fields} minW={300} />
+                </Box>
 
                 <ColourModal
                     isOpen={isModalOpen}

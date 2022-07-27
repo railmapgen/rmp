@@ -31,7 +31,7 @@ const getAllLinesNeedToReconcile = (graph: MultiDirectedGraph<NodeAttributes, Ed
  */
 const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     const lineGroupToReconcile = getAllLinesNeedToReconcile(graph);
-    console.log(lineGroupToReconcile);
+    // console.log(lineGroupToReconcile);
 
     const allReconciledLines: LineId[][] = [];
     const danglingLines: LineId[] = [];

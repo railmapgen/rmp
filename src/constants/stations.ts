@@ -1,5 +1,5 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { StnId } from './constants';
+import { StnId, Theme } from './constants';
 import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
 
@@ -13,7 +13,7 @@ export interface ExternalStationAttributes {
     [StationType.ShmetroBasic]?: ShmetroBasicStationAttributes;
 }
 
-export type InterchangeInfo = [number, ...string[]];
+export type InterchangeInfo = [...Theme, ...string[]];
 export interface StationAttributes {
     names: string[];
     transfer: InterchangeInfo[][];
