@@ -31,15 +31,15 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
-    const textY = nameOffsetY === 'up' ? -27 : nameOffsetY === 'bottom' ? 15 : 0;
+    const textDx = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
+    const textDy = nameOffsetY === 'up' ? -27 : nameOffsetY === 'bottom' ? 15 : 0;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     const dominantBaseline = nameOffsetY === 'up' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
 
     return React.useMemo(
         () => (
-            <g id={`stn_${id}`} transform={`translate(${x}, ${y})`}>
-                <g transform={`rotate(${rotate})`}>
+            <g id={`stn_${id}`}>
+                <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
                         id={`stn_circle_${id}`}
                         x={-width / 2}
@@ -55,7 +55,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                         style={{ cursor: 'move' }}
                     />
                 </g>
-                <g transform={`translate(${textX}, ${textY})`}>
+                <g transform={`translate(${x + textDx}, ${y + textDy})`}>
                     <text textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
                         {names[0]}
                     </text>

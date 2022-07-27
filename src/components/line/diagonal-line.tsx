@@ -1,20 +1,24 @@
 import React from 'react';
-import { LineAttributes, Line, LineComponentProps } from '../../constants/lines';
+import { LineAttributes, Line, LineComponentProps, generatePathFunction } from '../../constants/lines';
 import { roundPathCorners } from '../../util/pathRounding';
 
-const DiagonalLine = (props: LineComponentProps) => {
-    const { id, attrs, handleClick } = props;
-    const { color, diagonal = defaultDiagonalLineAttributes } = attrs;
-    // get type specific attrs with default value
+const generatePath: generatePathFunction<DiagonalLineAttributes> = (
+    propsx1: number,
+    propsx2: number,
+    propsy1: number,
+    propsy2: number,
+    attrs: DiagonalLineAttributes
+) => {
     const {
         startFrom = defaultDiagonalLineAttributes.startFrom,
         offsetFrom = defaultDiagonalLineAttributes.offsetFrom,
         offsetTo = defaultDiagonalLineAttributes.offsetTo,
-    } = diagonal;
-    const x1_ = startFrom === 'from' ? props.x1 : props.x2;
-    const x2_ = startFrom === 'from' ? props.x2 : props.x1;
-    const y1_ = startFrom === 'from' ? props.y1 : props.y2;
-    const y2_ = startFrom === 'from' ? props.y2 : props.y1;
+    } = attrs;
+
+    const x1_ = startFrom === 'from' ? propsx1 : propsx2;
+    const x2_ = startFrom === 'from' ? propsx2 : propsx1;
+    const y1_ = startFrom === 'from' ? propsy1 : propsy2;
+    const y2_ = startFrom === 'from' ? propsy2 : propsy1;
 
     const horizontalOrVertical = Math.abs(x2_ - x1_) > Math.abs(y2_ - y1_) ? 'vertical' : 'horizontal';
 
@@ -29,6 +33,15 @@ const DiagonalLine = (props: LineComponentProps) => {
     const x = horizontalOrVertical === 'vertical' ? x2 + Math.abs(y2 - y1) * (x2 - x1 > 0 ? -1 : 1) : x1;
     const y = horizontalOrVertical === 'vertical' ? y1 : y2 + Math.abs(x2 - x1) * (y2 - y1 > 0 ? -1 : 1);
 
+    return { type: 'straight', d: `M ${x1},${y1} L ${x},${y} L ${x2},${y2}` };
+};
+
+const DiagonalLine = (props: LineComponentProps) => {
+    const { id, attrs, handleClick } = props;
+    const { color, diagonal = defaultDiagonalLineAttributes } = attrs;
+
+    const path = generatePath(props.x1, props.x2, props.y1, props.y2, diagonal);
+
     const onClick = React.useCallback(
         (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
         [id, handleClick]
@@ -37,7 +50,7 @@ const DiagonalLine = (props: LineComponentProps) => {
     return React.useMemo(
         () => (
             <path
-                d={roundPathCorners(`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`, 7.5, false)}
+                d={roundPathCorners(path.d, 7.5, false)}
                 fill="none"
                 stroke={color[2]}
                 strokeWidth={5}
@@ -45,7 +58,7 @@ const DiagonalLine = (props: LineComponentProps) => {
                 onClick={onClick}
             />
         ),
-        [x1, y1, x, y, x2, y2, color[2], onClick]
+        [props.x1, props.y1, props.x2, props.y2, color[2], onClick]
     );
 };
 
@@ -131,6 +144,7 @@ const diagonalLine: Line<DiagonalLineAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: diagonalLineFields,
+    generatePath,
 };
 
 export default diagonalLine;

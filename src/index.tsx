@@ -73,6 +73,7 @@ const init = () => {
     window.graph.addEdgeWithKey('line_1_1', 'stn_1', 'stn_2', {
         color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
         type: LineType.Diagonal,
+        reconcileId: '',
         diagonal: {
             startFrom: 'from',
             offsetFrom: 0,
@@ -82,6 +83,7 @@ const init = () => {
     window.graph.addEdgeWithKey('line_1_2', 'stn_2', 'stn_3', {
         color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
         type: LineType.Diagonal,
+        reconcileId: '',
         diagonal: {
             startFrom: 'from',
             offsetFrom: 0,
@@ -91,6 +93,7 @@ const init = () => {
     window.graph.addEdgeWithKey('line_2_1', 'stn_4', 'stn_2', {
         color: [CityCode.Shanghai, 'sh2', '#97D700', MonoColour.black],
         type: LineType.Diagonal,
+        reconcileId: '',
         diagonal: {
             startFrom: 'from',
             offsetFrom: 0,
@@ -100,6 +103,7 @@ const init = () => {
     window.graph.addEdgeWithKey('line_2_2', 'stn_2', 'stn_5', {
         color: [CityCode.Shanghai, 'sh2', '#97D700', MonoColour.black],
         type: LineType.Diagonal,
+        reconcileId: '',
         diagonal: {
             startFrom: 'from',
             offsetFrom: 0,

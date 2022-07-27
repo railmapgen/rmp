@@ -1,5 +1,5 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { StnId, NodeAttributes } from './constants';
+import { StnId } from './constants';
 import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
 
@@ -20,7 +20,7 @@ export interface StationAttributes {
 }
 export interface StationComponentProps {
     id: StnId;
-    attrs: Omit<NodeAttributes, 'x' | 'y' | 'type' | 'names'>;
+    attrs: ExternalStationAttributes;
     x: number;
     y: number;
     handlePointerDown: (node: StnId, e: React.PointerEvent<SVGElement>) => void;

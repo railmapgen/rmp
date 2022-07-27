@@ -14,9 +14,13 @@
                 "name1": "Name 1"
             },
             "line": {
+                "reconcileId": "Reconcile ID",
                 "diagonal": {
                     "offsetFrom": "offsetFrom",
                     "offsetTo": "offsetTo",
+                    "startFrom": "startFrom"
+                },
+                "perpendicular": {
                     "startFrom": "startFrom"
                 }
             },

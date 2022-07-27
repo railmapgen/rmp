@@ -2,41 +2,73 @@ import React from 'react';
 import { nanoid } from 'nanoid';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { StnId, LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { StnId, LineId, MiscNodeId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { LineType } from '../constants/lines';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/app/app-slice';
 import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
+import { MiscNodeType } from '../constants/node';
 import allStations from './station/stations';
 import allLines from './line/lines';
+import miscNodes from './misc/misc-nodes';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { getMousePosition } from '../util/helpers';
+import { StationType } from '../constants/stations';
+import reconcileLines, { generateReconciledPath } from '../util/reconcile';
+import { roundPathCorners } from '../util/pathRounding';
 
-type stationElem = { node: StnId } & NodeAttributes;
-type lineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
+type StationElem = NodeAttributes & { node: StnId; type: StationType };
+type LineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
 
-const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): stationElem[] =>
-    graph.mapNodes((node, attr) => ({
-        node: node as StnId,
-        x: attr.x,
-        y: attr.y,
-        type: attr.type,
-        [attr.type]: attr[attr.type],
-    }));
-const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): lineElem[] =>
-    graph.mapEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => ({
-        edge: edge as LineId,
-        x1: sourceAttr.x,
-        y1: sourceAttr.y,
-        x2: targetAttr.x,
-        y2: targetAttr.y,
-        attr,
-    }));
+const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): StationElem[] =>
+    graph
+        .filterNodes((node, attr) => node.startsWith('stn'))
+        .map(node => [node, graph.getNodeAttributes(node)] as [StnId, NodeAttributes])
+        .map(([node, attr]) => ({
+            node: node as StnId,
+            x: attr.x,
+            y: attr.y,
+            type: attr.type as StationType,
+            [attr.type]: attr[attr.type],
+        }));
+const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): LineElem[] =>
+    graph
+        .filterDirectedEdges(
+            (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
+                // source.startsWith('stn') && target.startsWith('stn')
+                attr.reconcileId === ''
+        )
+        .map(edge => {
+            const [source, target] = graph.extremities(edge);
+            const sourceAttr = graph.getNodeAttributes(source);
+            const targetAttr = graph.getNodeAttributes(target);
+            return {
+                edge: edge as LineId,
+                x1: sourceAttr.x,
+                y1: sourceAttr.y,
+                x2: targetAttr.x,
+                y2: targetAttr.y,
+                attr: graph.getEdgeAttributes(edge),
+            };
+        });
+
+type MiscNodeElem = NodeAttributes & { node: MiscNodeId; type: MiscNodeType };
+const getMiscNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): MiscNodeElem[] =>
+    graph
+        .filterNodes((node, attr) => node.startsWith('misc_node'))
+        .map(node => [node, graph.getNodeAttributes(node)] as [MiscNodeId, NodeAttributes])
+        .map(([node, attr]) => ({
+            node,
+            x: attr.x,
+            y: attr.y,
+            type: attr.type as MiscNodeType,
+            [attr.type]: attr[attr.type],
+        }));
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
 
-    const { refresh, mode, active } = useRootSelector(state => state.runtime);
+    const { refresh, mode, active, svgViewBoxZoom } = useRootSelector(state => state.runtime);
     const hardRefresh = () => dispatch(setRefresh());
 
     const graph = React.useRef(window.graph);
@@ -44,7 +76,7 @@ const SvgCanvas = () => {
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [newLinePosition, setNewLinePosition] = React.useState({ x: 0, y: 0 });
 
-    const handlePointerDown = (node: StnId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerDown = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.preventDefault();
 
         const el = e.currentTarget;
@@ -59,7 +91,7 @@ const SvgCanvas = () => {
         hardRefresh();
         // console.log('down ', graph.current.getNodeAttributes(node));
     };
-    const handlePointerMove = (node: StnId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerMove = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.preventDefault();
 
         const { x, y } = getMousePosition(e);
@@ -73,10 +105,13 @@ const SvgCanvas = () => {
             hardRefresh();
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
-            setNewLinePosition({ x: offset.x - x, y: offset.y - y });
+            setNewLinePosition({
+                x: ((offset.x - x) * svgViewBoxZoom) / 100 / 2,
+                y: ((offset.y - y) * svgViewBoxZoom) / 100 / 2,
+            });
         }
     };
-    const handlePointerUp = (node: StnId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerUp = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.preventDefault();
 
         if (mode.startsWith('line')) {
@@ -84,13 +119,24 @@ const SvgCanvas = () => {
 
             const elems = document.elementsFromPoint(e.clientX, e.clientY);
             const id = elems[0].attributes?.getNamedItem('id')?.value;
+            console.log(elems, id);
             if (id?.startsWith('stn_circle_')) {
                 const type = mode.slice(5) as LineType;
-                graph.current.addEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
+                graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
                     color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
                     type,
                     [type]: allLines[type].defaultAttrs,
+                    reconcileId: '',
                 });
+            } else if (id?.startsWith('virtual_circle_')) {
+                const type = mode.slice(5) as LineType;
+                const edge = graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(15), {
+                    color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
+                    type,
+                    [type]: allLines[type].defaultAttrs,
+                    reconcileId: '',
+                });
+                console.log(edge);
             }
         } else if (mode === 'free') {
             // check the offset and if it's not 0, it must be a click not move
@@ -115,9 +161,22 @@ const SvgCanvas = () => {
 
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
+    const [virtual, setVirtual] = React.useState(getMiscNodes(graph.current));
+    const [allReconciledLines, setAllReconciledLines] = React.useState([] as LineId[][]);
+    const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
+    React.useEffect(() => {
+        const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
+        setAllReconciledLines(allReconciledLines);
+        setDanglingLines(danglingLines);
+    }, []);
     React.useEffect(() => {
         setStations(getStations(graph.current));
         setLines(getLines(graph.current));
+        setVirtual(getMiscNodes(graph.current));
+        const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
+        // console.log(allReconciledLines, danglingLines);
+        setAllReconciledLines(allReconciledLines);
+        setDanglingLines(danglingLines);
     }, [refresh]);
 
     const DrawLineComponent = mode.startsWith('line')
@@ -126,6 +185,58 @@ const SvgCanvas = () => {
 
     return (
         <>
+            {danglingLines.map(edge => {
+                const LineComponent = allLines[LineType.Simple].component;
+                const [source, target] = graph.current.extremities(edge);
+                const sourceAttr = graph.current.getNodeAttributes(source);
+                const targetAttr = graph.current.getNodeAttributes(target);
+                return (
+                    <LineComponent
+                        id={edge as LineId}
+                        key={edge}
+                        x1={sourceAttr.x}
+                        y1={sourceAttr.y}
+                        x2={targetAttr.x}
+                        y2={targetAttr.y}
+                        attrs={graph.current.getEdgeAttributes(edge)}
+                        handleClick={handleEdgeClick}
+                    />
+                );
+            })}
+            {allReconciledLines.map(reconciledLine => {
+                const path = generateReconciledPath(graph.current, reconciledLine);
+                if (path === '') return <></>;
+                const color = graph.current.getEdgeAttribute(reconciledLine[0], 'color');
+
+                // TODO: reconciled line could be clicked
+
+                return (
+                    <path
+                        key={reconciledLine.join(',')}
+                        d={path}
+                        fill="none"
+                        stroke={color[2]}
+                        strokeWidth={5}
+                        strokeLinejoin="round"
+                    />
+                );
+            })}
+            {virtual.map(v => {
+                const { node, x, y, type } = v;
+                const MiscNodeComponent = miscNodes[type].component;
+                return (
+                    <MiscNodeComponent
+                        id={node}
+                        key={node}
+                        x={x}
+                        y={y}
+                        attrs={{ [type]: v[type] }}
+                        handlePointerDown={handlePointerDown}
+                        handlePointerMove={handlePointerMove}
+                        handlePointerUp={handlePointerUp}
+                    />
+                );
+            })}
             {lines.map(({ edge, x1, y1, x2, y2, attr }) => {
                 const LineComponent = allLines[attr.type].component;
                 return (
@@ -141,8 +252,8 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {stations.map(line => {
-                const { node, x, y, type } = line;
+            {stations.map(station => {
+                const { node, x, y, type } = station;
                 const StationComponent = allStations[type].component;
                 return (
                     <StationComponent
@@ -150,7 +261,7 @@ const SvgCanvas = () => {
                         key={node}
                         x={x}
                         y={y}
-                        attrs={{ [type]: line[type] }}
+                        attrs={{ [type]: station[type] }}
                         handlePointerDown={handlePointerDown}
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
@@ -165,7 +276,11 @@ const SvgCanvas = () => {
                     y1={graph.current.getNodeAttribute(active, 'y')}
                     x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
                     y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
-                    attrs={{ color: ['' as CityCode, '', MonoColour.black, MonoColour.white], type: LineType.Diagonal }}
+                    attrs={{
+                        color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
+                        type: LineType.Diagonal,
+                        reconcileId: '',
+                    }}
                 />
             )}
         </>

@@ -15,7 +15,10 @@ import ThemeButton from './theme-button';
 import ColourModal from './colour-modal/colour-modal';
 import { Theme } from '../../constants/constants';
 import stations from '../station/stations';
+import miscNodes from '../misc/misc-nodes';
 import lines from '../line/lines';
+
+const nodes = { ...stations, ...miscNodes };
 
 const DetailsPanel = () => {
     const { t } = useTranslation();
@@ -55,7 +58,7 @@ const DetailsPanel = () => {
         const type = graph.current.getNodeAttribute(selected, 'type');
         const attrs = graph.current.getNodeAttribute(selected, type);
         fields.push(
-            ...stations[type].fields.map(
+            ...nodes[type].fields.map(
                 field =>
                     ({
                         type: field.type,
@@ -90,14 +93,11 @@ const DetailsPanel = () => {
         });
     }
 
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const handleChangeLineColor = (color: Theme) => {
-        if (selected && graph.current.hasEdge(selected)) {
-            graph.current.mergeEdgeAttributes(selected, { color });
-            dispatch(setRefresh());
-            dispatch(saveGraph(JSON.stringify(graph.current.export())));
-        }
-    };
+    const [reconcileId, setReconcileId] = React.useState('');
+    React.useEffect(() => {
+        if (graph.current.hasEdge(selected))
+            setReconcileId(graph.current.getEdgeAttribute(selected, 'reconcileId') ?? 'undefined');
+    }, [selected]);
     if (graph.current.hasEdge(selected)) {
         fields.push({
             type: 'custom',
@@ -109,6 +109,17 @@ const DetailsPanel = () => {
                 />
             ),
             minW: '40px',
+        });
+        fields.push({
+            type: 'input',
+            label: t('panel.details.line.reconcileId'),
+            value: reconcileId,
+            onChange: val => {
+                setReconcileId(val);
+                graph.current.mergeEdgeAttributes(selected, { reconcileId: val });
+                dispatch(setRefresh());
+                dispatch(saveGraph(JSON.stringify(graph.current.export())));
+            },
         });
         const type = graph.current.getEdgeAttribute(selected, 'type');
         const attrs = graph.current.getEdgeAttribute(selected, type);
@@ -140,6 +151,15 @@ const DetailsPanel = () => {
             )
         );
     }
+
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const handleChangeLineColor = (color: Theme) => {
+        if (selected && graph.current.hasEdge(selected)) {
+            graph.current.mergeEdgeAttributes(selected, { color });
+            dispatch(setRefresh());
+            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        }
+    };
 
     return (
         <Flex direction="column" height="100%" width={300} overflow="hidden">

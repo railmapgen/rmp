@@ -1,7 +1,7 @@
-import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationType, ExternalStationAttributes } from './stations';
 import { LineType, ExternalLineAttributes } from './lines';
+import { MiscNodeType, MiscNodeAttributes } from './node';
 
 export enum LanguageCode {
     Azerbaijani = 'az',
@@ -32,22 +32,28 @@ export enum LanguageCode {
 
 export type Translation = { [l in LanguageCode]?: string };
 
+export type NodeType = StationType | MiscNodeType;
 export type NodeAttributes = {
     x: number;
     y: number;
-    type: StationType;
-} & Partial<ExternalStationAttributes>;
+    type: NodeType;
+} & Partial<ExternalStationAttributes> &
+    Partial<MiscNodeAttributes>;
 
 export type EdgeAttributes = {
     color: Theme;
     type: LineType;
+    /**
+     * Unique ID to reconcile lines.
+     */
+    reconcileId: string;
 } & Partial<ExternalLineAttributes>;
 
 export type GraphAttributes = {
     name?: string;
 };
 
-export type RuntimeMode = 'free' | `line-${LineType}` | `station-${StationType}`;
+export type RuntimeMode = 'free' | `line-${LineType}` | `station-${StationType}` | `misc-node-${MiscNodeType}`;
 
 export type ColourHex = `#${string}`;
 
@@ -62,4 +68,6 @@ export type Theme = [CityCode, string, ColourHex, MonoColour];
 
 export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
-export type ActiveType = StnId | LineId | 'background';
+export type MiscNodeId = `misc_node_${string}`;
+export type MiscEdgeId = `misc_edge_${string}`;
+export type ActiveType = StnId | LineId | MiscNodeId | 'background';

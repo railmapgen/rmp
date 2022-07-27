@@ -4,15 +4,23 @@ import { ActiveType, RuntimeMode } from '../../constants/constants';
 interface RuntimeState {
     selected: string[];
     active: ActiveType | undefined;
-    refresh: {};
+    refresh: {
+        all: {};
+        reconcileLine: {};
+    };
     mode: RuntimeMode;
+    svgViewBoxZoom: number;
 }
 
 const initialState: RuntimeState = {
     selected: [],
     active: undefined,
-    refresh: {},
+    refresh: {
+        all: {},
+        reconcileLine: {},
+    },
     mode: 'free',
+    svgViewBoxZoom: 100,
 };
 
 const runtimeSlice = createSlice({
@@ -32,13 +40,28 @@ const runtimeSlice = createSlice({
             state.active = action.payload;
         },
         setRefresh: state => {
-            state.refresh = {};
+            state.refresh.all = {};
+        },
+        setRefreshReconcile: state => {
+            state.refresh.reconcileLine = {};
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             state.mode = action.payload;
         },
+        setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
+            state.svgViewBoxZoom = action.payload;
+        },
     },
 });
 
-export const { addSelected, removeSelected, clearSelected, setActive, setRefresh, setMode } = runtimeSlice.actions;
+export const {
+    addSelected,
+    removeSelected,
+    clearSelected,
+    setActive,
+    setRefresh,
+    setRefreshReconcile,
+    setMode,
+    setSvgViewBoxZoom,
+} = runtimeSlice.actions;
 export default runtimeSlice.reducer;
