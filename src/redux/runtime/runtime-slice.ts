@@ -1,5 +1,6 @@
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ActiveType, RuntimeMode } from '../../constants/constants';
+import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
 
 interface RuntimeState {
     selected: string[];
@@ -10,6 +11,7 @@ interface RuntimeState {
     };
     mode: RuntimeMode;
     svgViewBoxZoom: number;
+    theme: Theme;
 }
 
 const initialState: RuntimeState = {
@@ -21,6 +23,7 @@ const initialState: RuntimeState = {
     },
     mode: 'free',
     svgViewBoxZoom: 100,
+    theme: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
 const runtimeSlice = createSlice({
@@ -51,6 +54,9 @@ const runtimeSlice = createSlice({
         setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
             state.svgViewBoxZoom = action.payload;
         },
+        setTheme: (state, action: PayloadAction<Theme>) => {
+            state.theme = action.payload;
+        },
     },
 });
 
@@ -63,5 +69,6 @@ export const {
     setRefreshReconcile,
     setMode,
     setSvgViewBoxZoom,
+    setTheme,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

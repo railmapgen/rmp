@@ -168,6 +168,9 @@ const DetailsPanel = () => {
 
                 <ColourModal
                     isOpen={isModalOpen}
+                    defaultTheme={
+                        selected?.startsWith('line') ? graph.current.getEdgeAttribute(selected, 'color') : undefined
+                    }
                     onClose={() => setIsModalOpen(false)}
                     onUpdate={nextTheme => handleChangeLineColor(nextTheme)}
                 />

@@ -72,7 +72,7 @@ const getMiscNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
 
-    const { refresh, mode, active, svgViewBoxZoom } = useRootSelector(state => state.runtime);
+    const { refresh, mode, active, svgViewBoxZoom, theme } = useRootSelector(state => state.runtime);
     const hardRefresh = () => dispatch(setRefresh());
 
     const graph = React.useRef(window.graph);
@@ -129,7 +129,7 @@ const SvgCanvas = () => {
                 graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
                     visible: true,
                     zIndex: 0,
-                    color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
+                    color: theme,
                     type,
                     [type]: allLines[type].defaultAttrs,
                     reconcileId: '',
@@ -139,7 +139,7 @@ const SvgCanvas = () => {
                 const edge = graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(15), {
                     visible: true,
                     zIndex: 0,
-                    color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
+                    color: theme,
                     type,
                     [type]: allLines[type].defaultAttrs,
                     reconcileId: '',
@@ -287,7 +287,7 @@ const SvgCanvas = () => {
                     attrs={{
                         visible: true,
                         zIndex: 0,
-                        color: ['' as CityCode, '', MonoColour.black, MonoColour.white],
+                        color: theme,
                         type: LineType.Diagonal,
                         reconcileId: '',
                     }}
