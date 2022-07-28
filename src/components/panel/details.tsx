@@ -26,7 +26,18 @@ const DetailsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const selected = useRootSelector(state => state.runtime.selected).at(0);
+    const {
+        refresh: { all },
+    } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
+    const [pos, setPos] = React.useState({ x: 0, y: 0 });
+    React.useEffect(() => {
+        if (selected?.startsWith('stn')) {
+            const x = graph.current.getNodeAttribute(selected, 'x');
+            const y = graph.current.getNodeAttribute(selected, 'y');
+            setPos({ x, y });
+        }
+    }, [all, selected]);
 
     const handleClose = () => {};
     const handleRemove = (id: string | undefined, type: 'node' | 'line') => {
@@ -69,13 +80,32 @@ const DetailsPanel = () => {
                     } as RmgFieldsField)
             )
         );
-        fields.push({
-            type: 'input',
-            label: t('panel.details.station.pos'),
-            // TODO: hardRefresh required, now debug only
-            value: graph.current.getNodeAttribute(selected, 'x') + ' ' + graph.current.getNodeAttribute(selected, 'y'),
-            onChange: val => {},
-        });
+
+        // list pos { x, y }
+        fields.push(
+            {
+                type: 'input',
+                label: t('panel.details.station.pos.x'),
+                value: pos.x.toString(),
+                validator: val => !Number.isNaN(val),
+                onChange: val => {
+                    graph.current.mergeNodeAttributes(selected, { x: Number(val) });
+                    dispatch(setRefresh());
+                    dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                },
+            },
+            {
+                type: 'input',
+                label: t('panel.details.station.pos.y'),
+                value: pos.y.toString(),
+                validator: val => !Number.isNaN(val),
+                onChange: val => {
+                    graph.current.mergeNodeAttributes(selected, { x: Number(val) });
+                    dispatch(setRefresh());
+                    dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                },
+            }
+        );
     }
 
     const [reconcileId, setReconcileId] = React.useState('');

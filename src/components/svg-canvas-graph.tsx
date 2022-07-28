@@ -123,7 +123,7 @@ const SvgCanvas = () => {
 
             const elems = document.elementsFromPoint(e.clientX, e.clientY);
             const id = elems[0].attributes?.getNamedItem('id')?.value;
-            console.log(elems, id);
+            // console.log(elems, id);
             if (id?.startsWith('stn_circle_')) {
                 const type = mode.slice(5) as LineType;
                 graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
