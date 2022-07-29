@@ -28,15 +28,44 @@ export interface LineComponentProps {
     handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
     attrs: EdgeAttributes;
 }
+/**
+ * The default interface a customized Line should export.
+ */
 export interface Line<T extends LineAttributes> {
+    /**
+     * The core line component.
+     */
     component: (props: LineComponentProps) => JSX.Element;
+    /**
+     * The icon displayed in the tools panel.
+     */
     icon: JSX.Element;
+    /**
+     * Default attributes for this component.
+     */
     defaultAttrs: T;
+    /**
+     * Changeable actions in the details panel.
+     * In a slightly different RmgFieldsField format.
+     */
     fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
         value: (attrs?: T) => string;
         onChange: (val: string | number, attrs_: T | undefined) => T;
     })[];
+    /**
+     * If you export the internal path generation function, RMP
+     * will try to reconcile this line with other lines to form
+     * a single line/path as long as the user set Reconcile ID.
+     */
     generatePath?: generatePathFunction<T>;
+    /**
+     * Tags of this station. e.g. shmetro, interchange.
+     */
+    tags: string[];
+    /**
+     * The name displayed in the tools panel.
+     */
+    displayName: string;
 }
 export type generatePathFunction<T> = (
     x1: number,

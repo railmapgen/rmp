@@ -30,14 +30,38 @@ export interface StationComponentProps {
     handlePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
 }
+/**
+ * The default interface a customized Station should export.
+ */
 export interface Station<T extends StationAttributes> {
+    /**
+     * The core station component.
+     */
     component: (props: StationComponentProps) => JSX.Element;
+    /**
+     * The icon displayed in the tools panel.
+     */
     icon: JSX.Element;
+    /**
+     * Default attributes for this component.
+     */
     defaultAttrs: T;
+    /**
+     * Changeable actions in the details panel.
+     * In a slightly different RmgFieldsField format.
+     */
     fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
         value: (attrs?: T) => string;
         onChange: (val: string | number, attrs_: T | undefined) => T;
     })[];
+    /**
+     * Tags of this station. e.g. shmetro, interchange.
+     */
+    tags: string[];
+    /**
+     * The name displayed in the tools panel.
+     */
+    displayName: string;
 }
 
 export const defaultStationAttributes: StationAttributes = { names: ['车站', 'Stn'], transfer: [] };

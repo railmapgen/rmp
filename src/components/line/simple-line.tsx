@@ -43,6 +43,8 @@ const simpleLine: Line<SimpleLineAttributes> = {
     icon: simpleLineIcon,
     defaultAttrs: defaultSimpleLineAttributes,
     fields: [],
+    tags: ['line'],
+    displayName: 'panel.details.line.simple.displayName',
 };
 
 export default simpleLine;

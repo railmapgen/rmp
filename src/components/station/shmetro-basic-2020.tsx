@@ -205,6 +205,8 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: shmetroBasic2020StationFields,
+    tags: ['station', 'shmetro'],
+    displayName: 'panel.details.station.shmetroBasic2020.displayName',
 };
 
 export default shmetroBasic2020Station;

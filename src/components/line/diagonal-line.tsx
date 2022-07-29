@@ -155,6 +155,8 @@ const diagonalLine: Line<DiagonalLineAttributes> = {
     // @ts-ignore-error
     fields: diagonalLineFields,
     generatePath,
+    tags: ['line'],
+    displayName: 'panel.details.line.diagonal.displayName',
 };
 
 export default diagonalLine;

@@ -190,6 +190,8 @@ const shmetroIntStation: Station<ShmetroIntStationAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: shmetroIntStationFields,
+    tags: ['station', 'shmetro', 'interchange'],
+    displayName: 'panel.details.station.shmetroInt.displayName',
 };
 
 export default shmetroIntStation;

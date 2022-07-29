@@ -95,6 +95,8 @@ const perpendicularLine: Line<PerpendicularLineAttributes> = {
     // @ts-ignore-error
     fields: perpendicularFields,
     generatePath,
+    tags: ['line'],
+    displayName: 'panel.details.line.perpendicular.displayName',
 };
 
 export default perpendicularLine;
