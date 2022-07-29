@@ -41,7 +41,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
             <g id={`stn_${id}`}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
-                        id={`stn_circle_${id}`}
+                        id={`stn_core_${id}`}
                         x={-width / 2}
                         y={-height / 2}
                         height={height}

@@ -15,7 +15,10 @@
                 "title": "Specific Attributes"
             },
             "station": {
-                "pos": "Position",
+                "pos": {
+                    "x": "Coordinate X",
+                    "y": "Coordinate Y"
+                },
                 "interchange": {
                     "title": "Interchanges",
                     "within": "Within-station interchange",
@@ -29,9 +32,14 @@
                     "copy": "Copy interchange",
                     "remove": "Remove interchange"
                 },
+                "shmetroBasic2020": {
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "rotate": "Rotation"
+                },
                 "shmetroInt": {
-                    "nameZh": "Name",
-                    "nameEn": "Name",
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
                     "height": "Height",
                     "width": "Width",
                     "nameOffsetX": "Name Offset X",

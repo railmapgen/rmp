@@ -100,7 +100,7 @@ const DetailsPanel = () => {
                 value: pos.y.toString(),
                 validator: val => !Number.isNaN(val),
                 onChange: val => {
-                    graph.current.mergeNodeAttributes(selected, { x: Number(val) });
+                    graph.current.mergeNodeAttributes(selected, { y: Number(val) });
                     dispatch(setRefresh());
                     dispatch(saveGraph(JSON.stringify(graph.current.export())));
                 },
@@ -159,6 +159,7 @@ const DetailsPanel = () => {
                                 // @ts-ignore-error
                                 [type]: field.onChange(val, attrs),
                             });
+                            console.log(graph.current.getEdgeAttributes(selected))
                             dispatch(setRefresh());
                             dispatch(saveGraph(JSON.stringify(graph.current.export())));
                         },

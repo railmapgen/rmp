@@ -58,7 +58,7 @@ const DiagonalLine = (props: LineComponentProps) => {
                 onClick={onClick}
             />
         ),
-        [props.x1, props.y1, props.x2, props.y2, color[2], onClick]
+        [props.x1, props.y1, props.x2, props.y2, color[2], JSON.stringify(attrs), onClick]
     );
 };
 

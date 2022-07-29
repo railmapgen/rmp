@@ -37,7 +37,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
         () => (
             <g id={`stn_${id}`} transform={`translate(${x}, ${y})`}>
                 <circle
-                    id={`stn_circle_${id}`}
+                    id={`stn_core_${id}`}
                     r={5}
                     stroke="black"
                     fill="white"
@@ -77,7 +77,7 @@ const defaultShmetroBasicStationAttributes: ShmetroBasicStationAttributes = {
 const shmetroBasicStationFields = [
     {
         type: 'input',
-        label: 'panel.details.station.shmetroInt.nameZh',
+        label: 'panel.details.station.shmetroBasic.nameZh',
         value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).names[0],
         options: { left: 'left', middle: 'middle', right: 'right' },
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
@@ -91,7 +91,7 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.station.shmetroInt.nameEn',
+        label: 'panel.details.station.shmetroBasic.nameEn',
         value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).names[1],
         options: { left: 'left', middle: 'middle', right: 'right' },
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {

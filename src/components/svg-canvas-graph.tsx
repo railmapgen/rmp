@@ -1,6 +1,5 @@
 import React from 'react';
 import { nanoid } from 'nanoid';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { StnId, LineId, MiscNodeId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { LineType } from '../constants/lines';
@@ -11,8 +10,7 @@ import { MiscNodeType } from '../constants/node';
 import allStations from './station/stations';
 import allLines from './line/lines';
 import miscNodes from './misc/misc-nodes';
-import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { getMousePosition } from '../util/helpers';
+import {  getMousePosition } from '../util/helpers';
 import { StationType } from '../constants/stations';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 import { roundPathCorners } from '../util/pathRounding';
@@ -72,7 +70,13 @@ const getMiscNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
 
-    const { refresh, mode, active, svgViewBoxZoom, theme } = useRootSelector(state => state.runtime);
+    const {
+        refresh: { all: refreshAll },
+        mode,
+        active,
+        svgViewBoxZoom,
+        theme,
+    } = useRootSelector(state => state.runtime);
     const hardRefresh = () => dispatch(setRefresh());
 
     const graph = React.useRef(window.graph);
@@ -121,31 +125,22 @@ const SvgCanvas = () => {
         if (mode.startsWith('line')) {
             dispatch(setMode('free'));
 
-            const elems = document.elementsFromPoint(e.clientX, e.clientY);
-            const id = elems[0].attributes?.getNamedItem('id')?.value;
-            // console.log(elems, id);
-            if (id?.startsWith('stn_circle_')) {
-                const type = mode.slice(5) as LineType;
-                graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(11), {
-                    visible: true,
-                    zIndex: 0,
-                    color: theme,
-                    type,
-                    [type]: allLines[type].defaultAttrs,
-                    reconcileId: '',
-                });
-            } else if (id?.startsWith('virtual_circle_')) {
-                const type = mode.slice(5) as LineType;
-                const edge = graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(15), {
-                    visible: true,
-                    zIndex: 0,
-                    color: theme,
-                    type,
-                    [type]: allLines[type].defaultAttrs,
-                    reconcileId: '',
-                });
-                console.log(edge);
-            }
+            const prefixs = ['stn_core_', 'virtual_circle_'];
+            prefixs.forEach(prefix => {
+                const elems = document.elementsFromPoint(e.clientX, e.clientY);
+                const id = elems[0].attributes?.getNamedItem('id')?.value;
+                if (id) {
+                    const type = mode.slice(5) as LineType;
+                    graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(prefix.length), {
+                        visible: true,
+                        zIndex: 0,
+                        color: theme,
+                        type,
+                        [type]: allLines[type].defaultAttrs,
+                        reconcileId: '',
+                    });
+                }
+            });
         } else if (mode === 'free') {
             // check the offset and if it's not 0, it must be a click not move
             // then dispatch the current station/line to display the details
@@ -185,7 +180,7 @@ const SvgCanvas = () => {
         // console.log(allReconciledLines, danglingLines);
         setAllReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
-    }, [refresh]);
+    }, [refreshAll]);
 
     const DrawLineComponent = mode.startsWith('line')
         ? allLines[mode.slice(5) as LineType].component

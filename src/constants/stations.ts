@@ -2,15 +2,18 @@ import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { StnId, Theme } from './constants';
 import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
+import { ShmetroBasic2020StationAttributes } from '../components/station/shmetro-basic-2020';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
     ShmetroInt = 'shmetro-int',
+    ShmetroBasic2020 = 'shmetro-basic-2020',
 }
 
 export interface ExternalStationAttributes {
     [StationType.ShmetroInt]?: ShmetroIntStationAttributes;
     [StationType.ShmetroBasic]?: ShmetroBasicStationAttributes;
+    [StationType.ShmetroBasic2020]?: ShmetroBasic2020StationAttributes;
 }
 
 export type InterchangeInfo = [...Theme, ...string[]];
