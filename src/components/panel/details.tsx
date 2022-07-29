@@ -159,7 +159,7 @@ const DetailsPanel = () => {
                                 // @ts-ignore-error
                                 [type]: field.onChange(val, attrs),
                             });
-                            console.log(graph.current.getEdgeAttributes(selected))
+                            // console.log(graph.current.getEdgeAttributes(selected));
                             dispatch(setRefresh());
                             dispatch(saveGraph(JSON.stringify(graph.current.export())));
                         },

@@ -62,8 +62,18 @@
             }
         }
     },
-    "about": {
-        "content1": "In memory of all the freedom and equality we once had.",
-        "content2": "thekingofcity, 06/01/2022 in Shanghai"
+    "header": {
+        "open": {
+            "config": "Upload configuration file",
+            "configRMG": "Import RMG stations"
+        },
+        "download": {
+            "config": "Download configuration file"
+        },
+        "about": {
+            "title": "About",
+            "content1": "In memory of all the freedom and equality we once had.",
+            "content2": "thekingofcity, 06/01/2022 in Shanghai"
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { Flex } from '@chakra-ui/react';
 import React from 'react';
-import WindowHeader from './window-header';
+import WindowHeader from './page-header/window-header';
 import SvgWrapper from './svg-wrapper';
 import ToolsPanel from './panel/tools';
 import DetailsPanel from './panel/details';

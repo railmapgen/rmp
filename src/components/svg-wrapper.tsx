@@ -75,14 +75,14 @@ const SvgWrapper = () => {
     // const [svgViewBoxZoom, setSvgViewBoxZoom] = React.useState(100);
     const handleBackgroundWheel = React.useCallback(
         (e: React.WheelEvent<SVGSVGElement>) => {
-            if (e.deltaY > 0 && svgViewBoxZoom + 10 < 200) dispatch(setSvgViewBoxZoom(svgViewBoxZoom + 10));
+            if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) dispatch(setSvgViewBoxZoom(svgViewBoxZoom + 10));
             else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) dispatch(setSvgViewBoxZoom(svgViewBoxZoom - 10));
         },
         [svgViewBoxZoom, setSvgViewBoxZoom]
     );
 
     const size: Size = useWindowSize();
-    const height = (size.height ?? 1280) - 32;
+    const height = (size.height ?? 1280) - 40;
     const width = (size.width ?? 720) - 350;
 
     return (

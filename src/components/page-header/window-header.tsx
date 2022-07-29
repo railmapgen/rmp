@@ -13,9 +13,11 @@ import {
     Text,
 } from '@chakra-ui/react';
 import { MdHelp } from 'react-icons/md';
-import { getEnvironment, getVersion } from '../util/config';
+import { getEnvironment, getVersion } from '../../util/config';
 import { useTranslation } from 'react-i18next';
 import { RmgEnvBadge } from '@railmapgen/rmg-components';
+import OpenActions from './open-actions';
+import DownloadActions from './download-actions';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -32,6 +34,10 @@ export default function WindowHeader() {
             </Heading>
 
             <HStack ml="auto">
+                <OpenActions />
+
+                <DownloadActions />
+
                 <IconButton
                     size="sm"
                     variant="ghost"
@@ -54,12 +60,12 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('About')}</ModalHeader>
+                <ModalHeader>{t('header.about.title')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
-                    <Text mb={5}>{t('about.content1')}</Text>
-                    <Text align="right">{t('about.content2')}</Text>
+                    <Text mb={5}>{t('header.about.content1')}</Text>
+                    <Text align="right">{t('header.about.content2')}</Text>
                 </ModalBody>
             </ModalContent>
         </Modal>

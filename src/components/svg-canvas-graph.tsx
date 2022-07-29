@@ -10,10 +10,9 @@ import { MiscNodeType } from '../constants/node';
 import allStations from './station/stations';
 import allLines from './line/lines';
 import miscNodes from './misc/misc-nodes';
-import {  getMousePosition } from '../util/helpers';
+import { getMousePosition } from '../util/helpers';
 import { StationType } from '../constants/stations';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
-import { roundPathCorners } from '../util/pathRounding';
 
 type StationElem = NodeAttributes & { node: StnId; type: StationType };
 type LineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
@@ -129,7 +128,7 @@ const SvgCanvas = () => {
             prefixs.forEach(prefix => {
                 const elems = document.elementsFromPoint(e.clientX, e.clientY);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
-                if (id) {
+                if (id?.startsWith(prefix)) {
                     const type = mode.slice(5) as LineType;
                     graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(prefix.length), {
                         visible: true,
