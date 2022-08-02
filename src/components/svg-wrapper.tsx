@@ -3,18 +3,22 @@ import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { Size, useWindowSize } from '../util/hooks';
 import { getMousePosition } from '../util/helpers';
-import { setActive, setMode, setRefresh, setSvgViewBoxZoom } from '../redux/runtime/runtime-slice';
+import { clearSelected, setActive, setMode, setRefresh, setSvgViewBoxZoom } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/node';
 import stations from './station/stations';
 import miscNodes from './misc/misc-nodes';
+import { saveGraph } from '../redux/app/app-slice';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
-    const hardRefresh = () => dispatch(setRefresh());
+    const refreshAndSave = () => {
+        dispatch(setRefresh());
+        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+    };
 
-    const { mode, active, svgViewBoxZoom } = useRootSelector(state => state.runtime);
+    const { mode, active, selected, svgViewBoxZoom } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
@@ -37,7 +41,7 @@ const SvgWrapper = () => {
                 [type]: stations[type].defaultAttrs,
             });
             // console.log('down', active, offset);
-            hardRefresh();
+            refreshAndSave();
         } else if (mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
@@ -50,7 +54,7 @@ const SvgWrapper = () => {
                 type,
                 [type]: miscNodes[type].defaultAttrs,
             });
-            hardRefresh();
+            refreshAndSave();
         } else if (mode === 'free') {
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);
@@ -80,6 +84,25 @@ const SvgWrapper = () => {
         },
         [svgViewBoxZoom, setSvgViewBoxZoom]
     );
+    const handleKeyDown = React.useCallback(
+        (e: React.KeyboardEvent<SVGSVGElement>) => {
+            // tabIndex need to be on the element to make onKeyDown worked
+            // https://www.delftstack.com/howto/react/onkeydown-react/
+            if (e.key === 'Delete') {
+                // remove all the selected nodes and edges
+                if (selected.length > 0) {
+                    selected
+                        .filter(s => graph.current.hasNode(s) || graph.current.hasEdge(s))
+                        .forEach(s => {
+                            dispatch(clearSelected());
+                            graph.current.hasNode(s) ? graph.current.dropNode(s) : graph.current.dropEdge(s);
+                            refreshAndSave();
+                        });
+                }
+            }
+        },
+        [selected]
+    );
 
     const size: Size = useWindowSize();
     const height = (size.height ?? 1280) - 40;
@@ -88,6 +111,7 @@ const SvgWrapper = () => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
+            id="canvas"
             height={height}
             width={width}
             viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(height * svgViewBoxZoom) / 100 / 2} ${
@@ -97,6 +121,8 @@ const SvgWrapper = () => {
             onMouseMove={handleBackgroundMove}
             onMouseUp={handleBackgroundUp}
             onWheel={handleBackgroundWheel}
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
         >
             <SvgCanvas />
         </svg>
