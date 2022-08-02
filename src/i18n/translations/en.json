@@ -68,7 +68,8 @@
             "configRMG": "Import RMG stations"
         },
         "download": {
-            "config": "Download configuration file"
+            "config": "Download configuration file",
+            "png": "Download image"
         },
         "about": {
             "title": "About",
