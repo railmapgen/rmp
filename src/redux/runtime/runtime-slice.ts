@@ -31,7 +31,9 @@ const runtimeSlice = createSlice({
     initialState,
     reducers: {
         addSelected: (state, action: PayloadAction<string>) => {
-            state.selected.push(action.payload);
+            if (!state.selected.includes(action.payload))
+                // only push if it is not already in selected
+                state.selected.push(action.payload);
         },
         removeSelected: (state, action: PayloadAction<string>) => {
             state.selected.filter(_ => _ !== action.payload);

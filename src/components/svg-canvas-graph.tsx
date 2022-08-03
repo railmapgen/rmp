@@ -70,6 +70,7 @@ const SvgCanvas = () => {
     const dispatch = useRootDispatch();
 
     const {
+        selected,
         refresh: { all: refreshAll },
         mode,
         active,
@@ -93,9 +94,9 @@ const SvgCanvas = () => {
         setOffset({ x, y });
 
         dispatch(setActive(node)); // svg mouse event only
-        dispatch(clearSelected()); // details panel only
+        // details panel only, remove all if this is not a multiple selection
+        if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
         dispatch(addSelected(node)); // details panel only
-        hardRefresh();
         // console.log('down ', graph.current.getNodeAttributes(node));
     };
     const handlePointerMove = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -104,11 +105,13 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            graph.current.updateNodeAttributes(node, attr => ({
-                ...attr,
-                x: attr.x - (offset.x - x),
-                y: attr.y - (offset.y - y),
-            }));
+            selected.forEach(s => {
+                graph.current.updateNodeAttributes(s, attr => ({
+                    ...attr,
+                    x: attr.x - (offset.x - x),
+                    y: attr.y - (offset.y - y),
+                }));
+            });
             hardRefresh();
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
@@ -161,6 +164,8 @@ const SvgCanvas = () => {
         [dispatch, clearSelected, addSelected]
     );
 
+    // These are states that the svg draws from.
+    // They are updated by refresh trigger in runtime slice.
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
     const [virtual, setVirtual] = React.useState(getMiscNodes(graph.current));

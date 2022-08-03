@@ -6,24 +6,29 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 
 export default function InfoSection() {
     const { t } = useTranslation();
-    const selected = useRootSelector(state => state.runtime.selected).at(0);
+    const { selected } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.info.id'),
-            value: selected ?? 'undefined',
+            value: selected.length > 0 ? selected.join(', ') : 'undefined',
+            minW: 300,
             onChange: val => {},
         },
         {
             type: 'input',
             label: t('panel.details.info.type'),
-            value: selected
-                ? graph.current.hasNode(selected)
-                    ? graph.current.getNodeAttribute(selected, 'type')
-                    : graph.current.getEdgeAttribute(selected, 'type')
-                : 'undefined',
+            value:
+                selected.length === 1
+                    ? graph.current.hasNode(selected.at(0))
+                        ? graph.current.getNodeAttribute(selected.at(0), 'type')
+                        : graph.current.getEdgeAttribute(selected.at(0), 'type')
+                    : selected.length > 1
+                    ? 'multiple nodes'
+                    : 'undefined',
+            minW: 300,
             onChange: val => {},
         },
     ];

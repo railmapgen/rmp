@@ -59,6 +59,7 @@ const SvgWrapper = () => {
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);
             dispatch(setActive('background'));
+            dispatch(clearSelected());
             // console.log(x, y, svgViewBoxMin);
         }
     };

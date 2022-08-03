@@ -25,34 +25,41 @@ const nodes = { ...stations, ...miscNodes };
 const DetailsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const selected = useRootSelector(state => state.runtime.selected).at(0);
-    const {
-        refresh: { all },
-    } = useRootSelector(state => state.runtime);
-    const graph = React.useRef(window.graph);
-    const [pos, setPos] = React.useState({ x: 0, y: 0 });
-    React.useEffect(() => {
-        if (selected?.startsWith('stn')) {
-            const x = graph.current.getNodeAttribute(selected, 'x');
-            const y = graph.current.getNodeAttribute(selected, 'y');
-            setPos({ x, y });
-        }
-    }, [all, selected]);
-
-    const handleClose = () => {};
-    const handleRemove = (id: string | undefined, type: 'node' | 'line') => {
-        if (!id) return;
-        type === 'node' ? graph.current.dropNode(id) : graph.current.dropEdge(id);
-        dispatch(clearSelected());
+    const hardRefresh = React.useCallback(() => {
         dispatch(setRefresh());
         dispatch(saveGraph(JSON.stringify(graph.current.export())));
+    }, [dispatch, setRefresh, saveGraph]);
+    const {
+        selected,
+        refresh: { all },
+    } = useRootSelector(state => state.runtime);
+    const selectedFirst = selected.at(0);
+    const graph = React.useRef(window.graph);
+
+    const [pos, setPos] = React.useState({ x: 0, y: 0 });
+    React.useEffect(() => {
+        if (selectedFirst?.startsWith('stn') || selectedFirst?.startsWith('misc_node_')) {
+            const x = graph.current.getNodeAttribute(selectedFirst, 'x');
+            const y = graph.current.getNodeAttribute(selectedFirst, 'y');
+            setPos({ x, y });
+        }
+    }, [all, selectedFirst]);
+
+    const handleClose = () => {};
+    const handleRemove = (selected: string[]) => {
+        selected.forEach(s => {
+            if (graph.current.hasNode(s)) graph.current.dropNode(s);
+            else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+        });
+        dispatch(clearSelected());
+        hardRefresh();
     };
 
     const fields: RmgFieldsField[] = [];
 
-    if (graph.current.hasNode(selected)) {
-        const type = graph.current.getNodeAttribute(selected, 'type');
-        const attrs = graph.current.getNodeAttribute(selected, type);
+    if (selected.length === 1 && graph.current.hasNode(selectedFirst)) {
+        const type = graph.current.getNodeAttribute(selectedFirst, 'type');
+        const attrs = graph.current.getNodeAttribute(selectedFirst, type);
         fields.push(
             ...nodes[type].fields.map(
                 field =>
@@ -69,13 +76,12 @@ const DetailsPanel = () => {
                         // @ts-ignore-error
                         validator: field.validator,
                         onChange: (val: string | number) => {
-                            graph.current.mergeNodeAttributes(selected, {
+                            graph.current.mergeNodeAttributes(selectedFirst, {
                                 // TODO: fix this
                                 // @ts-ignore-error
                                 [type]: field.onChange(val, attrs),
                             });
-                            dispatch(setRefresh());
-                            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                            hardRefresh();
                         },
                     } as RmgFieldsField)
             )
@@ -89,9 +95,8 @@ const DetailsPanel = () => {
                 value: pos.x.toString(),
                 validator: val => !Number.isNaN(val),
                 onChange: val => {
-                    graph.current.mergeNodeAttributes(selected, { x: Number(val) });
-                    dispatch(setRefresh());
-                    dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                    graph.current.mergeNodeAttributes(selectedFirst, { x: Number(val) });
+                    hardRefresh();
                 },
             },
             {
@@ -100,9 +105,8 @@ const DetailsPanel = () => {
                 value: pos.y.toString(),
                 validator: val => !Number.isNaN(val),
                 onChange: val => {
-                    graph.current.mergeNodeAttributes(selected, { y: Number(val) });
-                    dispatch(setRefresh());
-                    dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                    graph.current.mergeNodeAttributes(selectedFirst, { y: Number(val) });
+                    hardRefresh();
                 },
             }
         );
@@ -110,16 +114,16 @@ const DetailsPanel = () => {
 
     const [reconcileId, setReconcileId] = React.useState('');
     React.useEffect(() => {
-        if (graph.current.hasEdge(selected))
-            setReconcileId(graph.current.getEdgeAttribute(selected, 'reconcileId') ?? 'undefined');
-    }, [selected]);
-    if (graph.current.hasEdge(selected)) {
+        if (graph.current.hasEdge(selectedFirst))
+            setReconcileId(graph.current.getEdgeAttribute(selectedFirst, 'reconcileId') ?? 'undefined');
+    }, [selectedFirst]);
+    if (selected.length === 1 && graph.current.hasEdge(selectedFirst)) {
         fields.push({
             type: 'custom',
             label: t('color'),
             component: (
                 <ThemeButton
-                    theme={graph.current.getEdgeAttribute(selected, 'color')}
+                    theme={graph.current.getEdgeAttribute(selectedFirst, 'color')}
                     onClick={() => setIsModalOpen(true)}
                 />
             ),
@@ -131,13 +135,12 @@ const DetailsPanel = () => {
             value: reconcileId,
             onChange: val => {
                 setReconcileId(val);
-                graph.current.mergeEdgeAttributes(selected, { reconcileId: val });
-                dispatch(setRefresh());
-                dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                graph.current.mergeEdgeAttributes(selectedFirst, { reconcileId: val });
+                hardRefresh();
             },
         });
-        const type = graph.current.getEdgeAttribute(selected, 'type');
-        const attrs = graph.current.getEdgeAttribute(selected, type);
+        const type = graph.current.getEdgeAttribute(selectedFirst, 'type');
+        const attrs = graph.current.getEdgeAttribute(selectedFirst, type);
         fields.push(
             ...lines[type].fields.map(
                 field =>
@@ -154,14 +157,13 @@ const DetailsPanel = () => {
                         // @ts-ignore-error
                         validator: field.validator,
                         onChange: (val: string | number) => {
-                            graph.current.mergeEdgeAttributes(selected, {
+                            graph.current.mergeEdgeAttributes(selectedFirst, {
                                 // TODO: fix this
                                 // @ts-ignore-error
                                 [type]: field.onChange(val, attrs),
                             });
-                            // console.log(graph.current.getEdgeAttributes(selected));
-                            dispatch(setRefresh());
-                            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                            // console.log(graph.current.getEdgeAttributes(selectedFirst));
+                            hardRefresh();
                         },
                     } as RmgFieldsField)
             )
@@ -170,10 +172,9 @@ const DetailsPanel = () => {
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const handleChangeLineColor = (color: Theme) => {
-        if (selected && graph.current.hasEdge(selected)) {
-            graph.current.mergeEdgeAttributes(selected, { color });
-            dispatch(setRefresh());
-            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        if (selectedFirst && graph.current.hasEdge(selectedFirst)) {
+            graph.current.mergeEdgeAttributes(selectedFirst, { color });
+            hardRefresh();
         }
     };
 
@@ -185,7 +186,7 @@ const DetailsPanel = () => {
 
                 {/* <Divider />
 
-                {selected?.startsWith('stn') && graph.current.hasNode(selected) && <InterchangeSection />} */}
+                {selectedFirst?.startsWith('stn') && graph.current.hasNode(selectedFirst) && <InterchangeSection />} */}
 
                 <Divider />
 
@@ -200,7 +201,9 @@ const DetailsPanel = () => {
                 <ColourModal
                     isOpen={isModalOpen}
                     defaultTheme={
-                        selected?.startsWith('line') ? graph.current.getEdgeAttribute(selected, 'color') : undefined
+                        selectedFirst?.startsWith('line')
+                            ? graph.current.getEdgeAttribute(selectedFirst, 'color')
+                            : undefined
                     }
                     onClose={() => setIsModalOpen(false)}
                     onUpdate={nextTheme => handleChangeLineColor(nextTheme)}
@@ -208,11 +211,7 @@ const DetailsPanel = () => {
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
                 <HStack>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRemove(selected, graph.current.hasNode(selected) ? 'node' : 'line')}
-                    >
+                    <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>
                 </HStack>
