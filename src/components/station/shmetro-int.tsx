@@ -1,4 +1,6 @@
 import React from 'react';
+import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { CanvasType } from '../../constants/constants';
 import {
     defaultStationAttributes,
     Station,
@@ -38,7 +40,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
 
     return React.useMemo(
         () => (
-            <g id={`stn_${id}`}>
+            <g id={id}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
                         id={`stn_core_${id}`}
@@ -190,8 +192,12 @@ const shmetroIntStation: Station<ShmetroIntStationAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: shmetroIntStationFields,
-    tags: ['station', 'shmetro', 'interchange'],
-    displayName: 'panel.details.station.shmetroInt.displayName',
+    metadata: {
+        displayName: 'panel.details.station.shmetroInt.displayName',
+        cities: [CityCode.Shanghai],
+        canvas: [CanvasType.RailMap],
+        tags: ['interchange'],
+    },
 };
 
 export default shmetroIntStation;

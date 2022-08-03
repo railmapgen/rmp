@@ -1,5 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { LineId, EdgeAttributes } from './constants';
+import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { CanvasType, LineId, EdgeAttributes } from './constants';
 import { DiagonalLineAttributes } from '../components/line/diagonal-line';
 import { PerpendicularLineAttributes } from '../components/line/perpendicular-line';
 import { SimpleLineAttributes } from '../components/line/simple-line';
@@ -59,13 +60,26 @@ export interface Line<T extends LineAttributes> {
      */
     generatePath?: generatePathFunction<T>;
     /**
-     * Tags of this station. e.g. shmetro, interchange.
+     * Metadata for this line.
      */
-    tags: string[];
-    /**
-     * The name displayed in the tools panel.
-     */
-    displayName: string;
+    metadata: {
+        /**
+         * The name displayed in the tools panel. In react-i18next index format.
+         */
+        displayName: string;
+        /**
+         * Cities that can use this line implementation.
+         */
+        cities: CityCode[];
+        /**
+         * This line is suitable to which canvas.
+         */
+        canvas: CanvasType[];
+        /**
+         * Tags of this line.
+         */
+        tags: string[];
+    };
 }
 export type generatePathFunction<T> = (
     x1: number,

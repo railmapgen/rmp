@@ -1,4 +1,6 @@
 import React from 'react';
+import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { CanvasType } from '../../constants/constants';
 import { LineAttributes, Line, LineComponentProps } from '../../constants/lines';
 
 const SimpleLine = (props: LineComponentProps) => {
@@ -43,8 +45,12 @@ const simpleLine: Line<SimpleLineAttributes> = {
     icon: simpleLineIcon,
     defaultAttrs: defaultSimpleLineAttributes,
     fields: [],
-    tags: ['line'],
-    displayName: 'panel.details.line.simple.displayName',
+    metadata: {
+        displayName: 'panel.details.line.simple.displayName',
+        cities: [CityCode.Shanghai],
+        canvas: [CanvasType.RailMap],
+        tags: [],
+    },
 };
 
 export default simpleLine;

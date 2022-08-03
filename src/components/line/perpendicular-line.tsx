@@ -1,4 +1,6 @@
 import React from 'react';
+import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { CanvasType } from '../../constants/constants';
 import { LineAttributes, Line, LineComponentProps, generatePathFunction } from '../../constants/lines';
 import { roundPathCorners } from '../../util/pathRounding';
 
@@ -95,8 +97,12 @@ const perpendicularLine: Line<PerpendicularLineAttributes> = {
     // @ts-ignore-error
     fields: perpendicularFields,
     generatePath,
-    tags: ['line'],
-    displayName: 'panel.details.line.perpendicular.displayName',
+    metadata: {
+        displayName: 'panel.details.line.perpendicular.displayName',
+        cities: [CityCode.Shanghai],
+        canvas: [CanvasType.RailMap],
+        tags: [],
+    },
 };
 
 export default perpendicularLine;

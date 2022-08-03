@@ -1,5 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { StnId, Theme } from './constants';
+import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { CanvasType, StnId, Theme } from './constants';
 import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/station/shmetro-basic-2020';
@@ -55,13 +56,26 @@ export interface Station<T extends StationAttributes> {
         onChange: (val: string | number, attrs_: T | undefined) => T;
     })[];
     /**
-     * Tags of this station. e.g. shmetro, interchange.
+     * Metadata for this station.
      */
-    tags: string[];
-    /**
-     * The name displayed in the tools panel.
-     */
-    displayName: string;
+    metadata: {
+        /**
+         * The name displayed in the tools panel. In react-i18next index format.
+         */
+        displayName: string;
+        /**
+         * Cities that can use this station implementation.
+         */
+        cities: CityCode[];
+        /**
+         * This station is suitable to which canvas.
+         */
+        canvas: CanvasType[];
+        /**
+         * Tags of this station.
+         */
+        tags: string[];
+    };
 }
 
 export const defaultStationAttributes: StationAttributes = { names: ['车站', 'Stn'], transfer: [] };

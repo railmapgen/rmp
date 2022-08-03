@@ -58,8 +58,6 @@ export type GraphAttributes = {
     name?: string;
 };
 
-export type RuntimeMode = 'free' | `line-${LineType}` | `station-${StationType}` | `misc-node-${MiscNodeType}`;
-
 export type ColourHex = `#${string}`;
 
 /**
@@ -75,4 +73,22 @@ export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
 export type MiscEdgeId = `misc_edge_${string}`;
+
+/**
+ * Indicate which station/line/node is currently in mouse control. (Runtime only)
+ */
 export type ActiveType = StnId | LineId | MiscNodeId | 'background';
+
+/**
+ * Indicate which element will be placed by next click. (Runtime only)
+ */
+export type RuntimeMode = 'free' | `line-${LineType}` | `station-${StationType}` | `misc-node-${MiscNodeType}`;
+
+/**
+ * Stations and lines may be in different displaying format.
+ * E.g. Station's icon of Rail map and platform are different in Shanghai metro.
+ */
+export enum CanvasType {
+    RailMap = 'railmap',
+    Platform = 'platform',
+}

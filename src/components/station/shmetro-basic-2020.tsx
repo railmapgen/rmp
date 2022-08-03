@@ -1,5 +1,6 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { CanvasType } from '../../constants/constants';
 import { Theme } from '../../constants/constants';
 import {
     defaultStationAttributes,
@@ -92,7 +93,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 
     return React.useMemo(
         () => (
-            <g id={`stn_${id}`}>
+            <g id={id}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
                         id={`stn_core_${id}`}
@@ -205,8 +206,12 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: shmetroBasic2020StationFields,
-    tags: ['station', 'shmetro'],
-    displayName: 'panel.details.station.shmetroBasic2020.displayName',
+    metadata: {
+        displayName: 'panel.details.station.shmetroBasic2020.displayName',
+        cities: [CityCode.Shanghai],
+        canvas: [CanvasType.RailMap],
+        tags: [],
+    },
 };
 
 export default shmetroBasic2020Station;

@@ -19,7 +19,7 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
 
     return React.useMemo(
         () => (
-            <g id={`virtual_${id}`} transform={`translate(${x}, ${y})rotate(45)`}>
+            <g id={id} transform={`translate(${x}, ${y})rotate(45)`}>
                 <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
                 <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />
                 <circle
