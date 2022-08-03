@@ -2,7 +2,7 @@ import React from 'react';
 import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { Size, useWindowSize } from '../util/hooks';
-import { getMousePosition } from '../util/helpers';
+import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { clearSelected, setActive, setMode, setRefresh, setSvgViewBoxZoom } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
@@ -35,8 +35,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: ((x + svgViewBoxMin.x) * svgViewBoxZoom) / 100 / 2,
-                y: ((y + svgViewBoxMin.y) * svgViewBoxZoom) / 100 / 2,
+                x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
+                y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
                 type,
                 [type]: stations[type].defaultAttrs,
             });
@@ -49,8 +49,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`misc_node_${type}_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: x + svgViewBoxMin.x,
-                y: y + svgViewBoxMin.y,
+                x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
+                y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
                 type,
                 [type]: miscNodes[type].defaultAttrs,
             });
@@ -115,9 +115,9 @@ const SvgWrapper = () => {
             id="canvas"
             height={height}
             width={width}
-            viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(height * svgViewBoxZoom) / 100 / 2} ${
-                (width * svgViewBoxZoom) / 100 / 2
-            }`}
+            viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
+                (height * svgViewBoxZoom) / 100
+            } `}
             onMouseDown={handleBackgroundDown}
             onMouseMove={handleBackgroundMove}
             onMouseUp={handleBackgroundUp}

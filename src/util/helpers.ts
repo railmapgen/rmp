@@ -9,6 +9,8 @@ export const getMousePosition = (e: React.MouseEvent) => {
     return { x, y };
 };
 
+export const roundToNearestN = (x: number, n: number) => Math.round(x / n) * n;
+
 export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     let [xMin, yMin, xMax, yMax] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
 

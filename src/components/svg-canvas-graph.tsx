@@ -10,13 +10,11 @@ import { MiscNodeType } from '../constants/node';
 import allStations from './station/stations';
 import allLines from './line/lines';
 import miscNodes from './misc/misc-nodes';
-import { getMousePosition } from '../util/helpers';
+import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { StationType } from '../constants/stations';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 
 type StationElem = NodeAttributes & { node: StnId; type: StationType };
-type LineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
-
 const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): StationElem[] =>
     graph
         .filterNodes((node, attr) => node.startsWith('stn'))
@@ -30,6 +28,8 @@ const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, G
             type: attr.type as StationType,
             [attr.type]: attr[attr.type],
         }));
+
+type LineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
 const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): LineElem[] =>
     graph
         .filterDirectedEdges(
@@ -108,16 +108,16 @@ const SvgCanvas = () => {
             selected.forEach(s => {
                 graph.current.updateNodeAttributes(s, attr => ({
                     ...attr,
-                    x: attr.x - (offset.x - x),
-                    y: attr.y - (offset.y - y),
+                    x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 10),
+                    y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 10),
                 }));
             });
             hardRefresh();
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
             setNewLinePosition({
-                x: ((offset.x - x) * svgViewBoxZoom) / 100 / 2,
-                y: ((offset.y - y) * svgViewBoxZoom) / 100 / 2,
+                x: ((offset.x - x) * svgViewBoxZoom) / 100,
+                y: ((offset.y - y) * svgViewBoxZoom) / 100,
             });
         }
     };

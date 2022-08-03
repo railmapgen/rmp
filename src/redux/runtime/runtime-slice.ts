@@ -10,6 +10,11 @@ interface RuntimeState {
         reconcileLine: {};
     };
     mode: RuntimeMode;
+    /**
+     * Controls the zoom of the svg.
+     * NOTE IT IS SUPER IMPORTANT TO TAKE THIS FACTOR INTO CONSIDERATION
+     * IF YOU WANT TO USE THE CORRECT MOUSE POSITION!
+     */
     svgViewBoxZoom: number;
     theme: Theme;
 }
