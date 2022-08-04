@@ -3,10 +3,12 @@ import { nanoid } from 'nanoid';
 import { IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { MultiDirectedGraph } from 'graphology';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setRefresh } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/app/app-slice';
-import { StationType } from '../../constants/stations';
+import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
+import { StationAttributes, StationType } from '../../constants/stations';
 import { LineType } from '../../constants/lines';
 import stations from '../station/stations';
 import lines from '../line/lines';
@@ -22,11 +24,11 @@ export default function OpenActions() {
 
     const handleUploadRMG = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        console.log('OpenActions.handleUpload():: received file', file);
+        console.log('OpenActions.handleUploadRMG():: received file', file);
 
         if (file?.type !== 'application/json') {
             // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
-            console.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
+            console.error('OpenActions.handleUploadRMG():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
                 const paramStr = await readFileAsText(file);
@@ -34,10 +36,38 @@ export default function OpenActions() {
                 const stnList = param.stn_list;
                 const theme = param.theme;
 
-                // import stations
+                // generate stn id
+                const stnIdMap = Object.fromEntries(
+                    Object.keys(stnList)
+                        .filter(id => !['linestart', 'lineend'].includes(id))
+                        .map(id => [id, `stn_${nanoid(10)}`])
+                );
+                // update stnIdMap if stations exist in the graph
                 Object.entries(stnList)
                     .filter(([id, _]) => !['linestart', 'lineend'].includes(id))
                     .forEach(([id, stnInfo]) => {
+                        const nodes = graph.current.filterNodes(
+                            (node, attr) =>
+                                // @ts-ignore-error
+                                Object.values(StationType).includes(attr.type) &&
+                                (attr[attr.type] as StationAttributes).names[0] === (stnInfo as any).name[0]
+                        );
+                        if (nodes.length !== 0) stnIdMap[id] = nodes[0];
+                    });
+
+                // only import stations that don't appear in the graph
+                Object.entries(stnList)
+                    .filter(([id, _]) => !['linestart', 'lineend'].includes(id))
+                    .filter(
+                        ([id, stnInfo]) =>
+                            graph.current.filterNodes(
+                                (node, attr) =>
+                                    // @ts-ignore-error
+                                    Object.values(StationType).includes(attr.type) &&
+                                    (attr[attr.type] as StationAttributes).names[0] === (stnInfo as any).name[0]
+                            ).length === 0
+                    )
+                    .forEach(([id, stnInfo], i) => {
                         const type =
                             (stnInfo as any).transfer.info.flat().length > 0
                                 ? StationType.ShmetroInt
@@ -45,11 +75,11 @@ export default function OpenActions() {
                         const attr = { ...stations[type].defaultAttrs, names: (stnInfo as any).name };
                         if (type === StationType.ShmetroBasic2020)
                             (attr as ShmetroBasic2020StationAttributes).color = theme;
-                        graph.current.addNode(`stn_${id}`, {
+                        graph.current.addNode(stnIdMap[id], {
                             visible: true,
                             zIndex: 0,
-                            x: 100,
-                            y: 100,
+                            x: 100 + i * 50,
+                            y: 1000,
                             type,
                             [type]: attr,
                         });
@@ -64,8 +94,8 @@ export default function OpenActions() {
                             .forEach((child: string) => {
                                 graph.current.addDirectedEdgeWithKey(
                                     `line_${nanoid(10)}`,
-                                    `stn_${id}`,
-                                    `stn_${child}`,
+                                    stnIdMap[id],
+                                    stnIdMap[child],
                                     {
                                         visible: true,
                                         zIndex: 0,
@@ -83,7 +113,7 @@ export default function OpenActions() {
             } catch (err) {
                 // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
                 console.error(
-                    'OpenActions.handleUpload():: Unknown error occurred while parsing the uploaded file',
+                    'OpenActions.handleUploadRMG():: Unknown error occurred while parsing the uploaded file',
                     err
                 );
             }
@@ -103,6 +133,11 @@ export default function OpenActions() {
         } else {
             try {
                 const paramStr = await readFileAsText(file);
+                graph.current = new MultiDirectedGraph() as MultiDirectedGraph<
+                    NodeAttributes,
+                    EdgeAttributes,
+                    GraphAttributes
+                >;
                 graph.current.import(JSON.parse(paramStr));
 
                 dispatch(setRefresh());
@@ -125,18 +160,6 @@ export default function OpenActions() {
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
             <MenuList>
                 <input
-                    ref={fileRMGInputRef}
-                    type="file"
-                    accept=".json"
-                    hidden={true}
-                    onChange={handleUploadRMG}
-                    data-testid="file-upload"
-                />
-                <MenuItem icon={<MdUpload />} onClick={() => fileInputRef?.current?.click()}>
-                    {t('header.open.config')}
-                </MenuItem>
-
-                <input
                     ref={fileInputRef}
                     type="file"
                     accept=".json"
@@ -145,6 +168,18 @@ export default function OpenActions() {
                     data-testid="file-upload"
                 />
                 <MenuItem icon={<MdUpload />} onClick={() => fileInputRef?.current?.click()}>
+                    {t('header.open.config')}
+                </MenuItem>
+
+                <input
+                    ref={fileRMGInputRef}
+                    type="file"
+                    accept=".json"
+                    hidden={true}
+                    onChange={handleUploadRMG}
+                    data-testid="file-upload"
+                />
+                <MenuItem icon={<MdUpload />} onClick={() => fileRMGInputRef?.current?.click()}>
                     {t('header.open.configRMG')}
                 </MenuItem>
             </MenuList>
