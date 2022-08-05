@@ -61,30 +61,38 @@ const DetailsPanel = () => {
         const type = graph.current.getNodeAttribute(selectedFirst, 'type');
         const attrs = graph.current.getNodeAttribute(selectedFirst, type);
         fields.push(
-            ...nodes[type].fields.map(
-                field =>
-                    ({
-                        type: field.type,
-                        label: t(field.label),
-                        // TODO: fix this
-                        // @ts-ignore-error
-                        value: field.value(attrs),
-                        // TODO: fix this
-                        // @ts-ignore-error
-                        options: field.options,
-                        // TODO: fix this
-                        // @ts-ignore-error
-                        validator: field.validator,
-                        onChange: (val: string | number) => {
-                            graph.current.mergeNodeAttributes(selectedFirst, {
-                                // TODO: fix this
-                                // @ts-ignore-error
-                                [type]: field.onChange(val, attrs),
-                            });
-                            hardRefresh();
-                        },
-                    } as RmgFieldsField)
-            )
+            ...nodes[type].fields
+                // TODO: filter will complain the type
+                // @ts-expect-error
+                .filter(field => field.type !== 'custom')
+                .map(
+                    // @ts-expect-error
+                    field =>
+                        ({
+                            type: field.type,
+                            label: t(field.label),
+                            // TODO: fix this
+                            // @ts-ignore-error
+                            value: field.value(attrs),
+                            // TODO: fix this
+                            // @ts-ignore-error
+                            options: field.options,
+                            // TODO: fix this
+                            // @ts-ignore-error
+                            validator: field.validator,
+                            onChange: (val: string | number) => {
+                                graph.current.mergeNodeAttributes(selectedFirst, {
+                                    // TODO: fix this
+                                    // @ts-ignore-error
+                                    [type]: field.onChange(val, attrs),
+                                });
+                                hardRefresh();
+                            },
+                        } as RmgFieldsField)
+                ),
+            // TODO: filter will complain the type
+            // @ts-expect-error
+            ...nodes[type].fields.filter(field => field.type === 'custom')
         );
 
         // list pos { x, y }

@@ -101,11 +101,12 @@ const diagonalLineFields = [
         type: 'input',
         label: 'panel.details.line.diagonal.offsetFrom',
         value: (attrs?: DiagonalLineAttributes) => (attrs ?? defaultDiagonalLineAttributes).offsetFrom.toString(),
+        validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: DiagonalLineAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultDiagonalLineAttributes;
             // return if invalid
-            if (!Number.isInteger(Number(val))) return attrs;
+            if (Number.isNaN(val)) return attrs;
             // set value
             attrs.offsetFrom = Number(val);
             // return modified attrs
@@ -116,11 +117,12 @@ const diagonalLineFields = [
         type: 'input',
         label: 'panel.details.line.diagonal.offsetTo',
         value: (attrs?: DiagonalLineAttributes) => (attrs ?? defaultDiagonalLineAttributes).offsetTo.toString(),
+        validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: DiagonalLineAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultDiagonalLineAttributes;
             // return if invalid
-            if (!Number.isInteger(Number(val))) return attrs;
+            if (Number.isNaN(val)) return attrs;
             // set value
             attrs.offsetTo = Number(val);
             // return modified attrs
