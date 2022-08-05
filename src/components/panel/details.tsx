@@ -179,7 +179,7 @@ const DetailsPanel = () => {
     };
 
     return (
-        <Flex direction="column" height="100%" width={300} overflow="hidden">
+        <Flex direction="column" height="100%" width={selected.length ? 300 : 0} overflow="hidden">
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />
