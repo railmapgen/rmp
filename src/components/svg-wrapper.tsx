@@ -118,9 +118,9 @@ const SvgWrapper = () => {
             viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
                 (height * svgViewBoxZoom) / 100
             } `}
-            onMouseDown={handleBackgroundDown}
-            onMouseMove={handleBackgroundMove}
-            onMouseUp={handleBackgroundUp}
+            onPointerDown={handleBackgroundDown}
+            onPointerMove={handleBackgroundMove}
+            onPointerUp={handleBackgroundUp}
             onWheel={handleBackgroundWheel}
             tabIndex={0}
             onKeyDown={handleKeyDown}
