@@ -10,7 +10,7 @@ const initGraph =
 
 const initialState: AppState = {
     counter: 0,
-    graph: '',
+    graph: '{}',
     ...JSON.parse(localStorage.getItem('AppState') ?? '{}'),
 };
 
