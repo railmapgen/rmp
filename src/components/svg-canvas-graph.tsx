@@ -88,7 +88,7 @@ const SvgCanvas = () => {
     const [newLinePosition, setNewLinePosition] = React.useState({ x: 0, y: 0 });
 
     const handlePointerDown = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.preventDefault();
+        e.stopPropagation();
 
         const el = e.currentTarget;
         const { x, y } = getMousePosition(e);
@@ -103,7 +103,7 @@ const SvgCanvas = () => {
         // console.log('down ', graph.current.getNodeAttributes(node));
     };
     const handlePointerMove = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.preventDefault();
+        e.stopPropagation();
 
         const { x, y } = getMousePosition(e);
 
@@ -125,7 +125,7 @@ const SvgCanvas = () => {
         }
     };
     const handlePointerUp = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.preventDefault();
+        e.stopPropagation();
 
         if (mode.startsWith('line')) {
             dispatch(setMode('free'));

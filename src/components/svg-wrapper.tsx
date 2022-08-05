@@ -26,7 +26,6 @@ const SvgWrapper = () => {
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
     // React.useEffect(() => console.log(svgViewBoxMin), [svgViewBoxMin]);
     const handleBackgroundDown = (e: React.PointerEvent<SVGSVGElement>) => {
-        // dispatch(clearSelected()); // some bug here if I want to deselect on empty place
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
