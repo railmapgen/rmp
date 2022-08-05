@@ -77,7 +77,10 @@ const SvgCanvas = () => {
         svgViewBoxZoom,
         theme,
     } = useRootSelector(state => state.runtime);
-    const hardRefresh = () => dispatch(setRefresh());
+    const refreshAndSave = () => {
+        dispatch(setRefresh());
+        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+    };
 
     const graph = React.useRef(window.graph);
 
@@ -112,7 +115,7 @@ const SvgCanvas = () => {
                     y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 10),
                 }));
             });
-            hardRefresh();
+            refreshAndSave();
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
             setNewLinePosition({
@@ -152,8 +155,7 @@ const SvgCanvas = () => {
             }
         }
         dispatch(setActive(undefined)); // svg mouse event only
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
-        hardRefresh();
+        refreshAndSave();
         // console.log('up ', graph.current.getNodeAttributes(node));
     };
     const handleEdgeClick = React.useCallback(

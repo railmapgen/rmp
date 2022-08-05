@@ -64,12 +64,12 @@
     },
     "header": {
         "open": {
-            "config": "Upload configuration file",
-            "configRMG": "Import RMG stations"
+            "config": "Import project",
+            "configRMG": "Import from RMG save"
         },
         "download": {
-            "config": "Download configuration file",
-            "png": "Download image"
+            "config": "Export project",
+            "png": "Export image"
         },
         "about": {
             "title": "About",

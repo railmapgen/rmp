@@ -22,6 +22,11 @@ export default function OpenActions() {
     const fileRMGInputRef = React.useRef<HTMLInputElement | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
+    const refreshAndSave = React.useCallback(() => {
+        dispatch(setRefresh());
+        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+    }, [dispatch, setRefresh, saveGraph, graph]);
+
     const handleUploadRMG = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         console.log('OpenActions.handleUploadRMG():: received file', file);
@@ -108,8 +113,7 @@ export default function OpenActions() {
                             });
                     });
 
-                dispatch(setRefresh());
-                dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                refreshAndSave();
             } catch (err) {
                 // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
                 console.error(
@@ -133,15 +137,11 @@ export default function OpenActions() {
         } else {
             try {
                 const paramStr = await readFileAsText(file);
-                graph.current = new MultiDirectedGraph() as MultiDirectedGraph<
-                    NodeAttributes,
-                    EdgeAttributes,
-                    GraphAttributes
-                >;
+
+                graph.current.clear();
                 graph.current.import(JSON.parse(paramStr));
 
-                dispatch(setRefresh());
-                dispatch(saveGraph(JSON.stringify(graph.current.export())));
+                refreshAndSave();
             } catch (err) {
                 // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
                 console.error(
