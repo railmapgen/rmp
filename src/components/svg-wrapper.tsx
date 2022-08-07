@@ -65,7 +65,10 @@ const SvgWrapper = () => {
     const handleBackgroundMove = (e: React.PointerEvent<SVGSVGElement>) => {
         if (active === 'background') {
             const { x, y } = getMousePosition(e);
-            setSvgViewBoxMin({ x: svgViewBoxMinTmp.x + (offset.x - x), y: svgViewBoxMinTmp.y + (offset.y - y) });
+            setSvgViewBoxMin({
+                x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
+                y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
+            });
             // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
         }
     };
