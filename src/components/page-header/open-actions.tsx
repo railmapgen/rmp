@@ -1,13 +1,11 @@
 import React from 'react';
 import { nanoid } from 'nanoid';
 import { IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdUpload } from 'react-icons/md';
+import { MdNoteAdd, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { MultiDirectedGraph } from 'graphology';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setRefresh } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/app/app-slice';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { LineType } from '../../constants/lines';
 import stations from '../station/stations';
@@ -26,6 +24,11 @@ export default function OpenActions() {
         dispatch(setRefresh());
         dispatch(saveGraph(JSON.stringify(graph.current.export())));
     }, [dispatch, setRefresh, saveGraph, graph]);
+
+    const handleNew = () => {
+        graph.current.clear();
+        refreshAndSave();
+    };
 
     const handleUploadRMG = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -159,6 +162,10 @@ export default function OpenActions() {
         <Menu>
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
             <MenuList>
+                <MenuItem icon={<MdNoteAdd />} onClick={handleNew}>
+                    {t('header.open.new')}
+                </MenuItem>
+
                 <input
                     ref={fileInputRef}
                     type="file"

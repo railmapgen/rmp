@@ -64,6 +64,7 @@
     },
     "header": {
         "open": {
+            "new": "New project",
             "config": "Import project",
             "configRMG": "Import from RMG save"
         },
