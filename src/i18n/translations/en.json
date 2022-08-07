@@ -49,12 +49,15 @@
             "line": {
                 "reconcileId": "Reconcile ID",
                 "diagonal": {
-                    "offsetFrom": "offsetFrom",
-                    "offsetTo": "offsetTo",
-                    "startFrom": "startFrom"
+                    "offsetFrom": "Offset From",
+                    "offsetTo": "Offset To",
+                    "startFrom": "Start From"
                 },
                 "perpendicular": {
-                    "startFrom": "startFrom"
+                    "offsetFrom": "Offset From",
+                    "offsetTo": "Offset To",
+                    "startFrom": "Start From",
+                    "roundCornerFactor": "Round Corner Factor"
                 }
             },
             "footer": {

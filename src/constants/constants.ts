@@ -45,9 +45,10 @@ export type NodeAttributes = BaseAttributes & {
 } & Partial<ExternalStationAttributes> &
     Partial<MiscNodeAttributes>;
 
+export type EdgeType = LineType;
 export type EdgeAttributes = BaseAttributes & {
     color: Theme;
-    type: LineType;
+    type: EdgeType;
     /**
      * Unique ID to reconcile lines.
      */

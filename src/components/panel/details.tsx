@@ -31,19 +31,19 @@ const DetailsPanel = () => {
     }, [dispatch, setRefresh, saveGraph]);
     const {
         selected,
-        refresh: { all },
+        refresh: { all: refreshAll },
     } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);
 
     const [pos, setPos] = React.useState({ x: 0, y: 0 });
     React.useEffect(() => {
+        const selectedFirst = selected.at(0);
         if (selectedFirst?.startsWith('stn') || selectedFirst?.startsWith('misc_node_')) {
             const x = graph.current.getNodeAttribute(selectedFirst, 'x');
             const y = graph.current.getNodeAttribute(selectedFirst, 'y');
             setPos({ x, y });
         }
-    }, [all, selectedFirst]);
+    }, [refreshAll, selected]);
 
     const handleClose = () => {};
     const handleRemove = (selected: string[]) => {
@@ -55,7 +55,16 @@ const DetailsPanel = () => {
         hardRefresh();
     };
 
+    // hide reconcile for now
+    const [reconcileId, setReconcileId] = React.useState('');
+    React.useEffect(() => {
+        const selectedFirst = selected.at(0);
+        if (graph.current.hasEdge(selectedFirst))
+            setReconcileId(graph.current.getEdgeAttribute(selectedFirst, 'reconcileId') ?? 'undefined');
+    }, [selected]);
+
     const fields: RmgFieldsField[] = [];
+    const selectedFirst = selected.at(0);
 
     if (selected.length === 1 && graph.current.hasNode(selectedFirst)) {
         const type = graph.current.getNodeAttribute(selectedFirst, 'type');
@@ -120,11 +129,6 @@ const DetailsPanel = () => {
         );
     }
 
-    const [reconcileId, setReconcileId] = React.useState('');
-    React.useEffect(() => {
-        if (graph.current.hasEdge(selectedFirst))
-            setReconcileId(graph.current.getEdgeAttribute(selectedFirst, 'reconcileId') ?? 'undefined');
-    }, [selectedFirst]);
     if (selected.length === 1 && graph.current.hasEdge(selectedFirst)) {
         fields.push({
             type: 'custom',
@@ -137,16 +141,16 @@ const DetailsPanel = () => {
             ),
             minW: '40px',
         });
-        fields.push({
-            type: 'input',
-            label: t('panel.details.line.reconcileId'),
-            value: reconcileId,
-            onChange: val => {
-                setReconcileId(val);
-                graph.current.mergeEdgeAttributes(selectedFirst, { reconcileId: val });
-                hardRefresh();
-            },
-        });
+        // f.push({
+        //     type: 'input',
+        //     label: t('panel.details.line.reconcileId'),
+        //     value: reconcileId,
+        //     onChange: val => {
+        //         setReconcileId(val);
+        //         graph.current.mergeEdgeAttributes(selectedFirst, { reconcileId: val });
+        //         hardRefresh();
+        //     },
+        // });
         const type = graph.current.getEdgeAttribute(selectedFirst, 'type');
         const attrs = graph.current.getEdgeAttribute(selectedFirst, type);
         fields.push(
@@ -180,8 +184,8 @@ const DetailsPanel = () => {
 
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const handleChangeLineColor = (color: Theme) => {
-        if (selectedFirst && graph.current.hasEdge(selectedFirst)) {
-            graph.current.mergeEdgeAttributes(selectedFirst, { color });
+        if (selected.at(0) && graph.current.hasEdge(selected.at(0))) {
+            graph.current.mergeEdgeAttributes(selected.at(0), { color });
             hardRefresh();
         }
     };
@@ -209,8 +213,8 @@ const DetailsPanel = () => {
                 <ColourModal
                     isOpen={isModalOpen}
                     defaultTheme={
-                        selectedFirst?.startsWith('line')
-                            ? graph.current.getEdgeAttribute(selectedFirst, 'color')
+                        selected.at(0)?.startsWith('line')
+                            ? graph.current.getEdgeAttribute(selected.at(0), 'color')
                             : undefined
                     }
                     onClose={() => setIsModalOpen(false)}

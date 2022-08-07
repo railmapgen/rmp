@@ -22,13 +22,17 @@ const generatePath: generatePathFunction<DiagonalLineAttributes> = (
     const y1_ = startFrom === 'from' ? propsy1 : propsy2;
     const y2_ = startFrom === 'from' ? propsy2 : propsy1;
 
+    // indicate the line angle start from x1, y1
     const horizontalOrVertical = Math.abs(x2_ - x1_) > Math.abs(y2_ - y1_) ? 'vertical' : 'horizontal';
 
     const [offset1, offset2] = startFrom === 'from' ? [offsetFrom, offsetTo] : [offsetTo, offsetFrom];
     const dx1 = horizontalOrVertical === 'vertical' ? 0 : offset1;
     const dy1 = horizontalOrVertical === 'vertical' ? offset1 : 0;
-    const dx2 = Math.sqrt(offset2);
-    const dy2 = ((x2_ - x1_ > 0 && y2_ - y1_ > 0) || (x2_ - x1_ < 0 && y2_ - y1_ < 0) ? -1 : 1) * Math.sqrt(offset2);
+    const dx2 = Math.sqrt(Math.abs(offset2)) * (offset2 >= 0 ? 1 : -1);
+    const dy2 =
+        ((x2_ - x1_ > 0 && y2_ - y1_ > 0) || (x2_ - x1_ < 0 && y2_ - y1_ < 0) ? -1 : 1) *
+        Math.sqrt(Math.abs(offset2)) *
+        (offset2 >= 0 ? 1 : -1);
 
     const [x1, y1, x2, y2] = [x1_ + dx1, y1_ + dy1, x2_ + dx2, y2_ + dy2];
 
@@ -52,6 +56,7 @@ const DiagonalLine = (props: LineComponentProps) => {
     return React.useMemo(
         () => (
             <path
+                id={id}
                 d={roundPathCorners(path.d, 7.5, false)}
                 fill="none"
                 stroke={color[2]}
@@ -98,9 +103,24 @@ const defaultDiagonalLineAttributes: DiagonalLineAttributes = { startFrom: 'from
 
 const diagonalLineFields = [
     {
+        type: 'select',
+        label: 'panel.details.line.diagonal.startFrom',
+        value: (attrs?: DiagonalLineAttributes) => attrs?.startFrom ?? defaultDiagonalLineAttributes.startFrom,
+        options: { from: 'from', to: 'to' },
+        onChange: (val: string | number, attrs_: DiagonalLineAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultDiagonalLineAttributes;
+            // set value
+            attrs.startFrom = val as 'from' | 'to';
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
         type: 'input',
         label: 'panel.details.line.diagonal.offsetFrom',
-        value: (attrs?: DiagonalLineAttributes) => (attrs ?? defaultDiagonalLineAttributes).offsetFrom.toString(),
+        value: (attrs?: DiagonalLineAttributes) =>
+            (attrs?.offsetFrom ?? defaultDiagonalLineAttributes.offsetFrom).toString(),
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: DiagonalLineAttributes | undefined) => {
             // set default value if switched from another type
@@ -116,7 +136,8 @@ const diagonalLineFields = [
     {
         type: 'input',
         label: 'panel.details.line.diagonal.offsetTo',
-        value: (attrs?: DiagonalLineAttributes) => (attrs ?? defaultDiagonalLineAttributes).offsetTo.toString(),
+        value: (attrs?: DiagonalLineAttributes) =>
+            (attrs?.offsetTo ?? defaultDiagonalLineAttributes.offsetTo).toString(),
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: DiagonalLineAttributes | undefined) => {
             // set default value if switched from another type
@@ -125,20 +146,6 @@ const diagonalLineFields = [
             if (Number.isNaN(val)) return attrs;
             // set value
             attrs.offsetTo = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.line.diagonal.startFrom',
-        value: (attrs?: DiagonalLineAttributes) => (attrs ?? defaultDiagonalLineAttributes).startFrom,
-        options: { from: 'from', to: 'to' },
-        onChange: (val: string | number, attrs_: DiagonalLineAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultDiagonalLineAttributes;
-            // set value
-            attrs.startFrom = val as 'from' | 'to';
             // return modified attrs
             return attrs;
         },
