@@ -1,6 +1,6 @@
 import React from 'react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { CanvasType } from '../../constants/constants';
+import { CanvasType, CategoriesType } from '../../constants/constants';
 import { LineAttributes, Line, LineComponentProps } from '../../constants/lines';
 
 const SimpleLine = (props: LineComponentProps) => {
@@ -49,6 +49,7 @@ const simpleLine: Line<SimpleLineAttributes> = {
         displayName: 'panel.details.line.simple.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
+        categories: [CategoriesType.Metro],
         tags: [],
     },
 };

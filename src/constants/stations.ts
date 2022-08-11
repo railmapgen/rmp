@@ -1,6 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { CanvasType, StnId, Theme } from './constants';
+import { CanvasType, StnId, Theme, CategoriesType } from './constants';
 import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/station/shmetro-basic-2020';
@@ -71,6 +71,10 @@ export interface Station<T extends StationAttributes> {
          * This station is suitable to which canvas.
          */
         canvas: CanvasType[];
+        /**
+         * The categories which this line suits for.
+         */
+        categories: CategoriesType[];
         /**
          * Tags of this station.
          */

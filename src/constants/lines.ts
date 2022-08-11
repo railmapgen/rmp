@@ -1,6 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { CanvasType, LineId, EdgeAttributes } from './constants';
+import { CanvasType, LineId, EdgeAttributes, CategoriesType } from './constants';
 import { DiagonalLineAttributes } from '../components/line/diagonal-line';
 import { PerpendicularLineAttributes } from '../components/line/perpendicular-line';
 import { SimpleLineAttributes } from '../components/line/simple-line';
@@ -75,6 +75,10 @@ export interface Line<T extends LineAttributes> {
          * This line is suitable to which canvas.
          */
         canvas: CanvasType[];
+        /**
+         * The categories which this line suits for.
+         */
+        categories: CategoriesType[];
         /**
          * Tags of this line.
          */

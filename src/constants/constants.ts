@@ -93,3 +93,13 @@ export enum CanvasType {
     RailMap = 'railmap',
     Platform = 'platform',
 }
+
+/**
+ * Categories of different railway class.
+ */
+export enum CategoriesType {
+    Metro = 'metro',
+    NationalRail = 'nationalrail',
+    LightRail = 'lightrail',
+    Footpath = 'footpath',
+}

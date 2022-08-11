@@ -1,6 +1,6 @@
 import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { CanvasType } from '../../constants/constants';
+import { CanvasType, CategoriesType } from '../../constants/constants';
 import { Theme } from '../../constants/constants';
 import {
     defaultStationAttributes,
@@ -270,6 +270,7 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
         displayName: 'panel.details.station.shmetroBasic2020.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
+        categories: [CategoriesType.Metro],
         tags: [],
     },
 };
