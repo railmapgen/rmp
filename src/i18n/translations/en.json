@@ -35,15 +35,16 @@
                 "shmetroBasic2020": {
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
-                    "rotate": "Rotation"
+                    "rotate": "Icon Rotation"
                 },
                 "shmetroInt": {
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
-                    "height": "Height",
-                    "width": "Width",
                     "nameOffsetX": "Name Offset X",
-                    "nameOffsetY": "Name Offset Y"
+                    "nameOffsetY": "Name Offset Y",
+                    "height": "Icon Height",
+                    "width": "Icon Width",
+                    "rotate": "Icon Rotation"
                 }
             },
             "line": {
