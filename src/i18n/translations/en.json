@@ -62,7 +62,8 @@
                 }
             },
             "footer": {
-                "remove": "Remove"
+                "remove": "Remove",
+                "removeEntireLine": "Remove all lines in this color"
             }
         }
     },

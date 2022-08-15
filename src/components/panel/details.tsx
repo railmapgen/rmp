@@ -47,11 +47,23 @@ const DetailsPanel = () => {
 
     const handleClose = () => {};
     const handleRemove = (selected: string[]) => {
+        dispatch(clearSelected());
         selected.forEach(s => {
             if (graph.current.hasNode(s)) graph.current.dropNode(s);
             else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
         });
+        hardRefresh();
+    };
+    // A helper method to remove all lines with the same color
+    const handleRemoveEntireLine = (selectedFirst: string) => {
         dispatch(clearSelected());
+        const theme = graph.current.getEdgeAttribute(selectedFirst, 'color');
+        const lines = graph.current.filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
+            attr.color.every((v, i) => v === theme[i])
+        );
+        lines.forEach(line => {
+            graph.current.dropEdge(line);
+        });
         hardRefresh();
     };
 
@@ -227,6 +239,11 @@ const DetailsPanel = () => {
                     <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>
+                    {selected.length === 1 && graph.current.hasEdge(selected.at(0)) && (
+                        <Button size="sm" variant="outline" onClick={() => handleRemoveEntireLine(selected.at(0)!)}>
+                            {t('panel.details.footer.removeEntireLine')}
+                        </Button>
+                    )}
                 </HStack>
             </RmgSidePanelFooter>
         </Flex>
