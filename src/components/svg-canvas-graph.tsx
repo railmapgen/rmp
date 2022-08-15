@@ -1,4 +1,5 @@
 import React from 'react';
+import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
 import { MultiDirectedGraph } from 'graphology';
 import { StnId, LineId, MiscNodeId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
@@ -71,7 +72,7 @@ const SvgCanvas = () => {
 
     const {
         selected,
-        refresh: { all: refreshAll },
+        refresh: { all: refreshAll, reconcileLine },
         mode,
         active,
         svgViewBoxZoom,
@@ -87,7 +88,7 @@ const SvgCanvas = () => {
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [newLinePosition, setNewLinePosition] = React.useState({ x: 0, y: 0 });
 
-    const handlePointerDown = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
         const el = e.currentTarget;
@@ -101,8 +102,8 @@ const SvgCanvas = () => {
         if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
         dispatch(addSelected(node)); // details panel only
         // console.log('down ', graph.current.getNodeAttributes(node));
-    };
-    const handlePointerMove = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    });
+    const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
         const { x, y } = getMousePosition(e);
@@ -123,8 +124,8 @@ const SvgCanvas = () => {
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
             });
         }
-    };
-    const handlePointerUp = (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    });
+    const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
         if (mode.startsWith('line')) {
@@ -157,14 +158,11 @@ const SvgCanvas = () => {
         dispatch(setActive(undefined)); // svg mouse event only
         refreshAndSave();
         // console.log('up ', graph.current.getNodeAttributes(node));
-    };
-    const handleEdgeClick = React.useCallback(
-        (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
-            dispatch(clearSelected());
-            dispatch(addSelected(edge));
-        },
-        [dispatch, clearSelected, addSelected]
-    );
+    });
+    const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+        dispatch(clearSelected());
+        dispatch(addSelected(edge));
+    });
 
     // These are states that the svg draws from.
     // They are updated by refresh trigger in runtime slice.
@@ -182,11 +180,13 @@ const SvgCanvas = () => {
         setStations(getStations(graph.current));
         setLines(getLines(graph.current));
         setVirtual(getMiscNodes(graph.current));
+    }, [refreshAll]);
+    React.useEffect(() => {
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
         // console.log(allReconciledLines, danglingLines);
         setAllReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
-    }, [refreshAll]);
+    }, [reconcileLine]);
 
     const DrawLineComponent = mode.startsWith('line')
         ? allLines[mode.slice(5) as LineType].component

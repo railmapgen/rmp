@@ -10,7 +10,7 @@ import {
 } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/app/app-slice';
-import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
+import { clearSelected, setRefresh, setRefreshReconcile } from '../../redux/runtime/runtime-slice';
 import ThemeButton from './theme-button';
 import ColourModal from './colour-modal/colour-modal';
 import { Theme } from '../../constants/constants';
@@ -141,14 +141,15 @@ const DetailsPanel = () => {
             ),
             minW: '40px',
         });
-        // f.push({
+        // fields.push({
         //     type: 'input',
         //     label: t('panel.details.line.reconcileId'),
         //     value: reconcileId,
         //     onChange: val => {
         //         setReconcileId(val);
         //         graph.current.mergeEdgeAttributes(selectedFirst, { reconcileId: val });
-        //         hardRefresh();
+        //         dispatch(setRefreshReconcile());
+        //         dispatch(saveGraph(JSON.stringify(graph.current.export())));
         //     },
         // });
         const type = graph.current.getEdgeAttribute(selectedFirst, 'type');

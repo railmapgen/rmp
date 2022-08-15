@@ -1,4 +1,5 @@
 import React from 'react';
+import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { Size, useWindowSize } from '../util/hooks';
@@ -25,7 +26,7 @@ const SvgWrapper = () => {
     const [svgViewBoxMin, setSvgViewBoxMin] = React.useState({ x: 0, y: 0 });
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
     // React.useEffect(() => console.log(svgViewBoxMin), [svgViewBoxMin]);
-    const handleBackgroundDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
@@ -61,8 +62,8 @@ const SvgWrapper = () => {
             dispatch(clearSelected());
             // console.log(x, y, svgViewBoxMin);
         }
-    };
-    const handleBackgroundMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    });
+    const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         if (active === 'background') {
             const { x, y } = getMousePosition(e);
             setSvgViewBoxMin({
@@ -71,41 +72,35 @@ const SvgWrapper = () => {
             });
             // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
         }
-    };
-    const handleBackgroundUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    });
+    const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         if (active === 'background') {
             dispatch(setActive(undefined)); // svg mouse event only
             // console.log('up', active);
         }
-    };
+    });
 
     // const [svgViewBoxZoom, setSvgViewBoxZoom] = React.useState(100);
-    const handleBackgroundWheel = React.useCallback(
-        (e: React.WheelEvent<SVGSVGElement>) => {
-            if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) dispatch(setSvgViewBoxZoom(svgViewBoxZoom + 10));
-            else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) dispatch(setSvgViewBoxZoom(svgViewBoxZoom - 10));
-        },
-        [svgViewBoxZoom, setSvgViewBoxZoom]
-    );
-    const handleKeyDown = React.useCallback(
-        (e: React.KeyboardEvent<SVGSVGElement>) => {
-            // tabIndex need to be on the element to make onKeyDown worked
-            // https://www.delftstack.com/howto/react/onkeydown-react/
-            if (e.key === 'Delete') {
-                // remove all the selected nodes and edges
-                if (selected.length > 0) {
-                    selected
-                        .filter(s => graph.current.hasNode(s) || graph.current.hasEdge(s))
-                        .forEach(s => {
-                            dispatch(clearSelected());
-                            graph.current.hasNode(s) ? graph.current.dropNode(s) : graph.current.dropEdge(s);
-                            refreshAndSave();
-                        });
-                }
+    const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
+        if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) dispatch(setSvgViewBoxZoom(svgViewBoxZoom + 10));
+        else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) dispatch(setSvgViewBoxZoom(svgViewBoxZoom - 10));
+    });
+    const handleKeyDown = useEvent((e: React.KeyboardEvent<SVGSVGElement>) => {
+        // tabIndex need to be on the element to make onKeyDown worked
+        // https://www.delftstack.com/howto/react/onkeydown-react/
+        if (e.key === 'Delete') {
+            // remove all the selected nodes and edges
+            if (selected.length > 0) {
+                selected
+                    .filter(s => graph.current.hasNode(s) || graph.current.hasEdge(s))
+                    .forEach(s => {
+                        dispatch(clearSelected());
+                        graph.current.hasNode(s) ? graph.current.dropNode(s) : graph.current.dropEdge(s);
+                        refreshAndSave();
+                    });
             }
-        },
-        [selected]
-    );
+        }
+    });
 
     const size: Size = useWindowSize();
     const height = (size.height ?? 1280) - 40;
