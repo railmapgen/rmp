@@ -3,6 +3,8 @@ import { IconButton, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/rea
 import { MdDownload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { calculateCanvasSize } from '../../util/helpers';
+import { stringifyParam } from '../../util/save';
+import store from '../../redux';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
@@ -10,7 +12,8 @@ export default function DownloadActions() {
     const graph = React.useRef(window.graph);
 
     const handleDownloadJson = () => {
-        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', JSON.stringify(graph.current.export()));
+        const param = stringifyParam(store.getState().app);
+        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', param);
     };
     // thanks to this article that includes every steps in converting svg to png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f

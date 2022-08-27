@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { stringifyParam } from '../util/save';
 import appReducer from './app/app-slice';
 import runtimeReducer from './runtime/runtime-slice';
 
@@ -11,7 +12,8 @@ const store = configureStore({
 });
 
 store.subscribe(() => {
-    localStorage.setItem('AppState', JSON.stringify(store.getState().app));
+    const param = stringifyParam(store.getState().app);
+    localStorage.setItem('rmpParam', param);
 });
 
 export type RootState = ReturnType<typeof store.getState>;

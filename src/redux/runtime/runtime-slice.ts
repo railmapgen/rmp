@@ -10,12 +10,6 @@ interface RuntimeState {
         reconcileLine: {};
     };
     mode: RuntimeMode;
-    /**
-     * Controls the zoom of the svg.
-     * NOTE IT IS SUPER IMPORTANT TO TAKE THIS FACTOR INTO CONSIDERATION
-     * IF YOU WANT TO USE THE CORRECT MOUSE POSITION!
-     */
-    svgViewBoxZoom: number;
     theme: Theme;
 }
 
@@ -27,7 +21,6 @@ const initialState: RuntimeState = {
         reconcileLine: {},
     },
     mode: 'free',
-    svgViewBoxZoom: 100,
     theme: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
@@ -58,9 +51,6 @@ const runtimeSlice = createSlice({
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             state.mode = action.payload;
         },
-        setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
-            state.svgViewBoxZoom = action.payload;
-        },
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
         },
@@ -75,7 +65,6 @@ export const {
     setRefresh,
     setRefreshReconcile,
     setMode,
-    setSvgViewBoxZoom,
     setTheme,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

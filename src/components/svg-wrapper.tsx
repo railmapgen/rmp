@@ -4,7 +4,8 @@ import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { Size, useWindowSize } from '../util/hooks';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
-import { clearSelected, setActive, setMode, setRefresh, setSvgViewBoxZoom } from '../redux/runtime/runtime-slice';
+import { clearSelected, setActive, setMode, setRefresh } from '../redux/runtime/runtime-slice';
+import { setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/app/app-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/node';
@@ -19,13 +20,12 @@ const SvgWrapper = () => {
         dispatch(saveGraph(JSON.stringify(graph.current.export())));
     };
 
-    const { mode, active, selected, svgViewBoxZoom } = useRootSelector(state => state.runtime);
+    const { mode, active, selected } = useRootSelector(state => state.runtime);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.app);
     const graph = React.useRef(window.graph);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
-    const [svgViewBoxMin, setSvgViewBoxMin] = React.useState({ x: 0, y: 0 });
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
-    // React.useEffect(() => console.log(svgViewBoxMin), [svgViewBoxMin]);
     const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station')) {
@@ -66,10 +66,12 @@ const SvgWrapper = () => {
     const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         if (active === 'background') {
             const { x, y } = getMousePosition(e);
-            setSvgViewBoxMin({
-                x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
-                y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
-            });
+            dispatch(
+                setSvgViewBoxMin({
+                    x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
+                    y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
+                })
+            );
             // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
         }
     });

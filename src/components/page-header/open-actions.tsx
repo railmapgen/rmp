@@ -3,9 +3,10 @@ import { nanoid } from 'nanoid';
 import { IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdNoteAdd, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { useRootDispatch, useRootSelector } from '../../redux';
+import { useRootDispatch } from '../../redux';
+import { AppState, saveGraph, setFullState } from '../../redux/app/app-slice';
 import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
-import { saveGraph } from '../../redux/app/app-slice';
+import { upgrade } from '../../util/save';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { LineType } from '../../constants/lines';
 import stations from '../station/stations';
@@ -140,11 +141,13 @@ export default function OpenActions() {
         } else {
             try {
                 const paramStr = await readFileAsText(file);
+                const { version, ...save } = JSON.parse(upgrade(paramStr));
 
                 // details panel will complain unknown nodes or edges if last state is not cleared
                 dispatch(clearSelected());
                 graph.current.clear();
-                graph.current.import(JSON.parse(paramStr));
+                graph.current.import(JSON.parse(save.graph));
+                dispatch(setFullState(save as AppState));
 
                 refreshAndSave();
             } catch (err) {

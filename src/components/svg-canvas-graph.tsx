@@ -75,9 +75,9 @@ const SvgCanvas = () => {
         refresh: { all: refreshAll, reconcileLine },
         mode,
         active,
-        svgViewBoxZoom,
         theme,
     } = useRootSelector(state => state.runtime);
+    const { svgViewBoxZoom } = useRootSelector(state => state.app);
     const refreshAndSave = () => {
         dispatch(setRefresh());
         dispatch(saveGraph(JSON.stringify(graph.current.export())));
