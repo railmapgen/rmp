@@ -59,6 +59,9 @@ const virtual: Node<VirtualAttributes> = {
     icon: virtualIcon,
     defaultAttrs: defaultVirtualAttributes,
     fields: [],
+    metadata: {
+        displayName: 'panel.details.node.virtual.displayName',
+    },
 };
 
 export default virtual;

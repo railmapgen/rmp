@@ -168,7 +168,7 @@ const SvgCanvas = () => {
     // They are updated by refresh trigger in runtime slice.
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
-    const [virtual, setVirtual] = React.useState(getMiscNodes(graph.current));
+    const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
     const [allReconciledLines, setAllReconciledLines] = React.useState([] as LineId[][]);
     const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
     React.useEffect(() => {
@@ -179,7 +179,7 @@ const SvgCanvas = () => {
     React.useEffect(() => {
         setStations(getStations(graph.current));
         setLines(getLines(graph.current));
-        setVirtual(getMiscNodes(graph.current));
+        setNodes(getMiscNodes(graph.current));
     }, [refreshAll]);
     React.useEffect(() => {
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
@@ -230,8 +230,8 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {virtual.map(v => {
-                const { node, x, y, type } = v;
+            {nodes.map(n => {
+                const { node, x, y, type } = n;
                 const MiscNodeComponent = miscNodes[type].component;
                 return (
                     <MiscNodeComponent
@@ -239,7 +239,8 @@ const SvgCanvas = () => {
                         key={node}
                         x={x}
                         y={y}
-                        attrs={{ [type]: v[type] }}
+                        // @ts-expect-error
+                        attrs={n[type]}
                         handlePointerDown={handlePointerDown}
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}

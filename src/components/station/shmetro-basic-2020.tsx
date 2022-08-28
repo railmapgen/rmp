@@ -255,7 +255,7 @@ const shmetroBasic2020StationFields = [
 
 const shmetroBasic2020StationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect x="6" y="9" width="12" height="6" stroke="currentColor" fill="none" />
+        <rect x="6" y="9" width="12" height="6" stroke="currentColor" fill="currentColor" />
     </svg>
 );
 

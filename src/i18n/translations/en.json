@@ -12,7 +12,10 @@
                 "type": "Type"
             },
             "node": {
-                "title": "Specific Attributes"
+                "title": "Specific Attributes",
+                "shmetroNumLineBadge": {
+                    "num": "Line Number"
+                }
             },
             "station": {
                 "pos": {
@@ -40,11 +43,11 @@
                 "shmetroInt": {
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
-                    "nameOffsetX": "Name Offset X",
-                    "nameOffsetY": "Name Offset Y",
-                    "height": "Icon Height",
-                    "width": "Icon Width",
-                    "rotate": "Icon Rotation"
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y",
+                    "height": "Icon height",
+                    "width": "Icon width",
+                    "rotate": "Icon rotation"
                 }
             },
             "line": {
