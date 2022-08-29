@@ -15,6 +15,10 @@
                 "title": "Specific Attributes",
                 "shmetroNumLineBadge": {
                     "num": "Line Number"
+                },
+                "shmetroTextLineBadge": {
+                    "nameZh": "Line name in Chinese",
+                    "nameEn": "Line name in English"
                 }
             },
             "station": {
