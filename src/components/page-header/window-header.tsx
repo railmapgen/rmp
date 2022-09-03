@@ -1,34 +1,41 @@
 import React from 'react';
-import { Flex, Heading, HStack, IconButton } from '@chakra-ui/react';
-import { MdHelp } from 'react-icons/md';
-import { getEnvironment, getVersion } from '../../util/config';
+import { Flex, Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { MdHelp, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge } from '@railmapgen/rmg-components';
+import { getEnvironment, getVersion } from '../../util/config';
+import { LanguageCode } from '../../constants/constants';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about';
 
 export default function WindowHeader() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
     const environment = getEnvironment();
 
+    const handleChangeLanguage = async (language: LanguageCode) => {
+        const t = await i18n.changeLanguage(language);
+        document.documentElement.lang = language;
+        document.title = t('header.about.rmp');
+    };
+
     return (
         <Flex pl={2} pr={2} pb={1} pt={1} align="center">
             <Heading as="h4" size="md" mr="auto">
-                {t('Rail Map Painter')}
+                {t('header.about.rmp')}
                 <RmgEnvBadge
                     environment={environment}
                     version={getVersion()}
                     popoverHeader={
-                        <Trans i18nKey="WindowHeader.popoverHeader" environment={environment}>
+                        <Trans i18nKey="header.popoverHeader" environment={environment}>
                             You're on {{ environment }} environment!
                         </Trans>
                     }
                     popoverBody={
-                        <Trans i18nKey="WindowHeader.popoverBody">
+                        <Trans i18nKey="header.popoverBody">
                             This is a testing environment where we test the latest beta RMP.
                         </Trans>
                     }
@@ -39,6 +46,15 @@ export default function WindowHeader() {
                 <OpenActions />
 
                 <DownloadActions />
+
+                <Menu>
+                    <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
+                    <MenuList>
+                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.English)}>English</MenuItem>
+                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.ChineseSimp)}>简体中文</MenuItem>
+                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.ChineseTrad)}>繁體中文</MenuItem>
+                    </MenuList>
+                </Menu>
 
                 <IconButton
                     size="sm"

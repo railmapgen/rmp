@@ -75,6 +75,8 @@
         }
     },
     "header": {
+        "popoverHeader": "You're on <1>{{environment}}</1> environment!",
+        "popoverBody": "This is a testing environment where we test the latest beta RMP.",
         "open": {
             "new": "New project",
             "config": "Import project",
@@ -83,7 +85,6 @@
         "download": {
             "config": "Export project",
             "png": "Export image",
-            "pngTitle": "Export image",
             "transparent": "Transparency",
             "scale": "Scale",
             "termsAndConditions": "Terms and Conditions",
@@ -93,6 +94,7 @@
         "about": {
             "title": "About",
             "rmp": "Rail Map Painter",
+            "railmapgen": "A railmapgen project",
             "desc": "Choose and drag metro stations from different cities and connect them with 45 degree rounded corner lines.",
             "content1": "In memory of all the freedom and equality we once had",
             "content2": "06/01/2022 in Shanghai",

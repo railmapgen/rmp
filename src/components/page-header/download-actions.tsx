@@ -115,7 +115,7 @@ export default function DownloadActions() {
             <Modal isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>{t('header.download.pngTitle')}</ModalHeader>
+                    <ModalHeader>{t('header.download.png')}</ModalHeader>
                     <ModalCloseButton />
 
                     <ModalBody>

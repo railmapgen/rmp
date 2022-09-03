@@ -38,11 +38,11 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             </Text>
                             <Text>{getVersion()}</Text>
                             <Text> </Text>
-                            <Text fontSize="md">A railmapgen project</Text>
+                            <Text fontSize="sm">{t('header.about.railmapgen')}</Text>
                         </Flex>
                     </Flex>
 
-                    <Box margin={10}>
+                    <Box margin={5}>
                         <Text fontSize="xl">{t('header.about.desc')}</Text>
                     </Box>
 
