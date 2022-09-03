@@ -1,16 +1,59 @@
 import React from 'react';
-import { IconButton, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
-import { MdDownload } from 'react-icons/md';
+import {
+    Button,
+    HStack,
+    Icon,
+    IconButton,
+    Menu,
+    MenuButton,
+    MenuList,
+    MenuItem,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+    Link,
+} from '@chakra-ui/react';
+import { MdDownload, MdOpenInNew } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import store from '../../redux';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import logoImg from './logo512.png';
+import TermsAndConditionsModal from './terms-and-conditions';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
 
     const graph = React.useRef(window.graph);
+
+    const [isTransparent, setIsTransparent] = React.useState(false);
+    const [scale, setScale] = React.useState(100);
+    const scaleOptions = Object.fromEntries(
+        [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500].map(v => [v, `${v}%`])
+    );
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'switch',
+            label: t('header.download.transparent'),
+            isChecked: isTransparent,
+            onChange: setIsTransparent,
+        },
+        {
+            type: 'select',
+            label: t('header.download.scale'),
+            value: scale,
+            options: scaleOptions,
+            onChange: value => setScale(value as number),
+        },
+    ];
+    const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
+    const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
 
     const handleDownloadJson = () => {
         const param = stringifyParam(store.getState().app);
@@ -18,7 +61,7 @@ export default function DownloadActions() {
     };
     // thanks to this article that includes every steps in converting svg to png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
-    const handleDownload = async () => {
+    const handleDownload = () => {
         // get the minimum and maximum of the graph
         const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
         const [width, height] = [xMax - xMin, yMax - yMin];
@@ -27,8 +70,7 @@ export default function DownloadActions() {
         // remove virtual nodes
         [...elem.children].filter(e => e.id.startsWith('virtual_misc_node_virtual')).forEach(e => elem.removeChild(e));
         // append rmp info
-        // document.getElementById('canvas')!.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
-        elem.appendChild(await generateRmpInfo(xMax - 600, yMax - 60));
+        elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
         // transform svg to contain all the nodes in the graph
         // otherwise the later drawImage won't be able to display them all
         elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -42,16 +84,19 @@ export default function DownloadActions() {
 
         // create canvas to be drawn on
         const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
+        const [canvasWidth, canvasHeight] = [(width * scale) / 100, (height * scale) / 100];
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
         // white background
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, 0, width, height);
+        if (!isTransparent) {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+        }
 
         const img = new Image();
         img.onload = () => {
-            ctx.drawImage(img, 0, 0, width, height);
+            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
             canvas.toBlob(blob => downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!), 'image/png');
         };
         img.src = blobURL;
@@ -64,8 +109,40 @@ export default function DownloadActions() {
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
                 <MenuItem onClick={handleDownloadJson}>{t('header.download.config')}</MenuItem>
-                <MenuItem onClick={handleDownload}>{t('header.download.png')}</MenuItem>
+                <MenuItem onClick={() => setIsDownloadModalOpen(true)}>{t('header.download.png')}</MenuItem>
             </MenuList>
+
+            <Modal isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.download.pngTitle')}</ModalHeader>
+                    <ModalCloseButton />
+
+                    <ModalBody>
+                        <RmgFields fields={fields} />
+                        <br />
+                        <Text>
+                            {t('header.download.termsAndConditionsInfo')}
+                            <Link color="teal.500" onClick={() => setIsTermsAndConditionsModalOpen(true)}>
+                                {t('header.download.termsAndConditions')} <Icon as={MdOpenInNew} />
+                            </Link>
+                        </Text>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <HStack>
+                            <Button colorScheme="teal" variant="outline" size="sm" onClick={handleDownload}>
+                                {t('header.download.confirm')}
+                            </Button>
+                        </HStack>
+                    </ModalFooter>
+
+                    <TermsAndConditionsModal
+                        isOpen={isTermsAndConditionsModalOpen}
+                        onClose={() => setIsTermsAndConditionsModalOpen(false)}
+                    />
+                </ModalContent>
+            </Modal>
         </Menu>
     );
 }

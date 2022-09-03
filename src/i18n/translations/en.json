@@ -82,12 +82,22 @@
         },
         "download": {
             "config": "Export project",
-            "png": "Export image"
+            "png": "Export image",
+            "pngTitle": "Export image",
+            "transparent": "Transparency",
+            "scale": "Scale",
+            "termsAndConditions": "Terms and Conditions",
+            "termsAndConditionsInfo": "By clicking download, you agree to ",
+            "confirm": "Download"
         },
         "about": {
             "title": "About",
-            "content1": "In memory of all the freedom and equality we once had.",
-            "content2": "thekingofcity, 06/01/2022 in Shanghai"
+            "rmp": "Rail Map Painter",
+            "desc": "Choose and drag metro stations from different cities and connect them with 45 degree rounded corner lines.",
+            "content1": "In memory of all the freedom and equality we once had",
+            "content2": "06/01/2022 in Shanghai",
+            "contributors": "Contributors",
+            "coreContributors": "Core Contributors"
         }
     }
 }
