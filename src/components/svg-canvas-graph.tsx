@@ -80,7 +80,7 @@ const SvgCanvas = () => {
     const { svgViewBoxZoom } = useRootSelector(state => state.app);
     const refreshAndSave = () => {
         dispatch(setRefresh());
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        dispatch(saveGraph(graph.current.export()));
     };
 
     const graph = React.useRef(window.graph);

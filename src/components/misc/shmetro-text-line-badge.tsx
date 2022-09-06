@@ -76,7 +76,7 @@ const Color = () => {
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefresh());
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefresh, saveGraph]);
     const { selected } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);

@@ -39,7 +39,7 @@ export default function InterchangeSection() {
         attr.transfer = newTransferInfo;
         graph.current.mergeNodeAttributes(selected, { [type]: attr });
         dispatch(setRefresh());
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        dispatch(saveGraph(graph.current.export()));
     };
 
     const handleDelete = (setIndex: number) => (interchangeIndex: number) => {
@@ -53,7 +53,7 @@ export default function InterchangeSection() {
             attr.transfer = newTransferInfo;
             graph.current.mergeNodeAttributes(selected, { [type]: attr });
             dispatch(setRefresh());
-            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+            dispatch(saveGraph(graph.current.export()));
         }
     };
 
@@ -76,7 +76,7 @@ export default function InterchangeSection() {
             attr.transfer = newTransferInfo;
             graph.current.mergeNodeAttributes(selected, { [type]: attr });
             dispatch(setRefresh());
-            dispatch(saveGraph(JSON.stringify(graph.current.export())));
+            dispatch(saveGraph(graph.current.export()));
         }
     };
 

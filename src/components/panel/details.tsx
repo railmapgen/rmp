@@ -27,7 +27,7 @@ const DetailsPanel = () => {
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefresh());
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefresh, saveGraph]);
     const {
         selected,
@@ -45,7 +45,7 @@ const DetailsPanel = () => {
         }
     }, [refreshAll, selected]);
 
-    const handleClose = () => {};
+    const handleClose = () => dispatch(clearSelected());
     const handleRemove = (selected: string[]) => {
         dispatch(clearSelected());
         selected.forEach(s => {
@@ -161,7 +161,7 @@ const DetailsPanel = () => {
         //         setReconcileId(val);
         //         graph.current.mergeEdgeAttributes(selectedFirst, { reconcileId: val });
         //         dispatch(setRefreshReconcile());
-        //         dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        //         dispatch(saveGraph(graph.current.export()));
         //     },
         // });
         const type = graph.current.getEdgeAttribute(selectedFirst, 'type');

@@ -23,7 +23,7 @@ export default function OpenActions() {
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(setRefresh());
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefresh, saveGraph, graph]);
 
     const handleNew = () => {
@@ -146,8 +146,9 @@ export default function OpenActions() {
                 // details panel will complain unknown nodes or edges if last state is not cleared
                 dispatch(clearSelected());
                 graph.current.clear();
-                graph.current.import(JSON.parse(save.graph));
-                dispatch(setFullState(save as AppState));
+                graph.current.import(save.graph);
+                const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
+                dispatch(setFullState(state));
 
                 refreshAndSave();
             } catch (err) {

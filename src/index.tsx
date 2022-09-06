@@ -8,7 +8,7 @@ import AppRoot from './components/app-root';
 import chakraTheme from './theme/theme';
 import store from './redux';
 import './i18n/config';
-import { upgrade } from './util/save';
+import { RMPSave, upgrade } from './util/save';
 import { AppState, setFullState } from './redux/app/app-slice';
 
 declare global {
@@ -18,9 +18,10 @@ declare global {
 }
 
 const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-const { version, ...save } = JSON.parse(upgrade(localStorage.getItem('rmpParam')));
-store.dispatch(setFullState(save as AppState));
-window.graph = graph.import(JSON.parse(save.graph));
+const { version, ...save } = JSON.parse(upgrade(localStorage.getItem('rmpParam'))) as RMPSave;
+window.graph = graph.import(save.graph as any);
+const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
+store.dispatch(setFullState(state));
 
 const renderApp = () => {
     const root = createRoot(document.getElementById('root') as HTMLDivElement);

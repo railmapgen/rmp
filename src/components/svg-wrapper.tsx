@@ -17,7 +17,7 @@ const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const refreshAndSave = () => {
         dispatch(setRefresh());
-        dispatch(saveGraph(JSON.stringify(graph.current.export())));
+        dispatch(saveGraph(graph.current.export()));
     };
 
     const { mode, active, selected } = useRootSelector(state => state.runtime);
