@@ -1,3 +1,4 @@
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useTranslation } from 'react-i18next';
 import {
     Avatar,
@@ -6,22 +7,21 @@ import {
     Heading,
     Image,
     Modal,
-    ModalOverlay,
+    ModalBody,
+    ModalCloseButton,
     ModalContent,
     ModalHeader,
-    ModalCloseButton,
-    ModalBody,
+    ModalOverlay,
     Tag,
     TagLabel,
     Text,
     VStack,
 } from '@chakra-ui/react';
-import { useAppVersion } from '@railmapgen/rmg-components';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
-    const appVersion = useAppVersion();
+    const appVersion = rmgRuntime.getAppVersion();
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
