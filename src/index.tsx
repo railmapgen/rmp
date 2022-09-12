@@ -1,15 +1,17 @@
-import React from 'react';
-import { createRoot, Root } from 'react-dom/client';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import React, { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { MultiDirectedGraph } from 'graphology';
 import { ChakraProvider } from '@chakra-ui/react';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from './constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
 import AppRoot from './components/app-root';
-import chakraTheme from './theme/theme';
 import store from './redux';
 import './i18n/config';
 import { RMPSave, upgrade } from './util/save';
 import { AppState, setFullState } from './redux/app/app-slice';
+import './index.css';
+import {rmgChakraTheme} from "@railmapgen/rmg-components";
 
 declare global {
     interface Window {
@@ -26,12 +28,16 @@ store.dispatch(setFullState(state));
 const renderApp = () => {
     const root = createRoot(document.getElementById('root') as HTMLDivElement);
     root.render(
-        <Provider store={store}>
-            <ChakraProvider theme={chakraTheme}>
-                <AppRoot />
-            </ChakraProvider>
-        </Provider>
+        <StrictMode>
+            <Provider store={store}>
+                <ChakraProvider theme={rmgChakraTheme}>
+                    <AppRoot />
+                </ChakraProvider>
+            </Provider>
+        </StrictMode>
     );
 };
 
-renderApp();
+rmgRuntime.ready().then(() => {
+    renderApp();
+});

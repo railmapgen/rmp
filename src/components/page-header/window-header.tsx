@@ -1,8 +1,8 @@
 import React from 'react';
-import { Flex, Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdHelp, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
-import { RmgEnvBadge, useAppVersion, useEnvironment } from '@railmapgen/rmg-components';
+import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import OpenActions from './open-actions';
@@ -14,8 +14,8 @@ export default function WindowHeader() {
 
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
-    const environment = useEnvironment();
-    const appVersion = useAppVersion();
+    const environment = rmgRuntime.getEnv();
+    const appVersion = rmgRuntime.getAppVersion();
 
     const handleChangeLanguage = async (language: LanguageCode) => {
         rmgRuntime.setLanguage(language);
@@ -25,24 +25,24 @@ export default function WindowHeader() {
     };
 
     return (
-        <Flex pl={2} pr={2} pb={1} pt={1} align="center">
-            <Heading as="h4" size="md" mr="auto">
+        <RmgWindowHeader>
+            <Heading as="h4" size="md">
                 {t('header.about.rmp')}
-                <RmgEnvBadge
-                    environment={environment}
-                    version={appVersion}
-                    popoverHeader={
-                        <Trans i18nKey="header.popoverHeader" environment={environment}>
-                            You're on {{ environment }} environment!
-                        </Trans>
-                    }
-                    popoverBody={
-                        <Trans i18nKey="header.popoverBody">
-                            This is a testing environment where we test the latest beta RMP.
-                        </Trans>
-                    }
-                />
             </Heading>
+            <RmgEnvBadge
+                environment={environment}
+                version={appVersion}
+                popoverHeader={
+                    <Trans i18nKey="header.popoverHeader" environment={environment}>
+                        You're on {{ environment }} environment!
+                    </Trans>
+                }
+                popoverBody={
+                    <Trans i18nKey="header.popoverBody">
+                        This is a testing environment where we test the latest beta RMP.
+                    </Trans>
+                }
+            />
 
             <HStack ml="auto">
                 <OpenActions />
@@ -68,6 +68,6 @@ export default function WindowHeader() {
             </HStack>
 
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
-        </Flex>
+        </RmgWindowHeader>
     );
 }
