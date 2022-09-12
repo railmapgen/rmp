@@ -16,11 +16,12 @@ import {
     Text,
     VStack,
 } from '@chakra-ui/react';
-import { getVersion } from '../../util/config';
+import { useAppVersion } from '@railmapgen/rmg-components';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
+    const appVersion = useAppVersion();
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
@@ -36,7 +37,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             <Text fontSize="xl" as="b">
                                 {t('header.about.rmp')}
                             </Text>
-                            <Text>{getVersion()}</Text>
+                            <Text>{appVersion}</Text>
                             <Text> </Text>
                             <Text fontSize="sm">{t('header.about.railmapgen')}</Text>
                         </Flex>

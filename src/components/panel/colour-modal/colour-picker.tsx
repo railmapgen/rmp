@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { ColourHex, LanguageCode } from '../../../constants/constants';
-import { RmgAutoComplete } from '@railmapgen/rmg-components';
+import { RmgAutoComplete, RmgLineBadge } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour, PaletteEntry } from '@railmapgen/rmg-palette-resources';
+import { LanguageCode } from '@railmapgen/rmg-translate';
+import { ColourHex } from '../../../constants/constants';
 import { useTranslation } from 'react-i18next';
-import { RmgLineBadge } from '@railmapgen/rmg-components';
 
 const usePalette = (cityCode?: CityCode) => {
     const [paletteList, setPaletteList] = useState<PaletteEntry[]>([]);

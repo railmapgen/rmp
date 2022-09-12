@@ -1,7 +1,7 @@
 import React from 'react';
 import { RmgAutoComplete } from '@railmapgen/rmg-components';
 import { CityCode, CityEntry, cityList, countryList } from '@railmapgen/rmg-palette-resources';
-import { LanguageCode } from '../../../constants/constants';
+import { LanguageCode } from '@railmapgen/rmg-translate';
 import { useTranslation } from 'react-i18next';
 import FlagSvgEmoji from './flag-svg-emoji';
 

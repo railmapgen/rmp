@@ -2,9 +2,9 @@ import React from 'react';
 import { Flex, Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdHelp, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
-import { RmgEnvBadge } from '@railmapgen/rmg-components';
-import { getEnvironment, getVersion } from '../../util/config';
-import { LanguageCode } from '../../constants/constants';
+import { RmgEnvBadge, useAppVersion, useEnvironment } from '@railmapgen/rmg-components';
+import { LanguageCode } from '@railmapgen/rmg-translate';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about';
@@ -14,9 +14,11 @@ export default function WindowHeader() {
 
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
-    const environment = getEnvironment();
+    const environment = useEnvironment();
+    const appVersion = useAppVersion();
 
     const handleChangeLanguage = async (language: LanguageCode) => {
+        rmgRuntime.setLanguage(language);
         const t = await i18n.changeLanguage(language);
         document.documentElement.lang = language;
         document.title = t('header.about.rmp');
@@ -28,7 +30,7 @@ export default function WindowHeader() {
                 {t('header.about.rmp')}
                 <RmgEnvBadge
                     environment={environment}
-                    version={getVersion()}
+                    version={appVersion}
                     popoverHeader={
                         <Trans i18nKey="header.popoverHeader" environment={environment}>
                             You're on {{ environment }} environment!

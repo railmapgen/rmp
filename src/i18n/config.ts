@@ -1,22 +1,16 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import { LanguageCode, Translation } from '../constants/constants';
+import RmgTranslate, { LanguageCode, Translation } from '@railmapgen/rmg-translate';
 import enTranslation from './translations/en.json';
 import zhHansTranslation from './translations/zh-Hans.json';
 import zhHantTranslation from './translations/zh-Hant.json';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-const resources = {
-    [LanguageCode.English]: {
-        translation: enTranslation,
-    },
-    [LanguageCode.ChineseSimp]: {
-        translation: zhHansTranslation,
-    },
-    [LanguageCode.ChineseTrad]: {
-        translation: zhHantTranslation,
-    },
-};
+const resources = new RmgTranslate.Builder()
+    .withResource('en', enTranslation)
+    .withResource('zh-Hans', zhHansTranslation)
+    .withResource('zh-Hant', zhHantTranslation)
+    .build();
 
 i18n.use(LanguageDetector)
     .use(initReactI18next)
