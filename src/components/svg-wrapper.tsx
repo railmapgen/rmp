@@ -38,7 +38,8 @@ const SvgWrapper = () => {
                 x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
                 y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
                 type,
-                [type]: stations[type].defaultAttrs,
+                // deep copy to prevent mutual reference
+                [type]: JSON.parse(JSON.stringify(stations[type].defaultAttrs)),
             });
             // console.log('down', active, offset);
             refreshAndSave();
@@ -52,7 +53,8 @@ const SvgWrapper = () => {
                 x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
                 y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
                 type,
-                [type]: miscNodes[type].defaultAttrs,
+                // deep copy to prevent mutual reference
+                [type]: JSON.parse(JSON.stringify(miscNodes[type].defaultAttrs)),
             });
             refreshAndSave();
         } else if (mode === 'free') {

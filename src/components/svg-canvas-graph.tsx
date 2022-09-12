@@ -142,7 +142,8 @@ const SvgCanvas = () => {
                         zIndex: 0,
                         color: theme,
                         type,
-                        [type]: allLines[type].defaultAttrs,
+                        // deep copy to prevent mutual reference
+                        [type]: JSON.parse(JSON.stringify(allLines[type].defaultAttrs)),
                         reconcileId: '',
                     });
                 }

@@ -27,7 +27,10 @@ export default function OpenActions() {
     }, [dispatch, setRefresh, saveGraph, graph]);
 
     const handleNew = () => {
+        dispatch(clearSelected());
         graph.current.clear();
+        const state: AppState = { graph: '{}', svgViewBoxZoom: 100, svgViewBoxMin: { x: 0, y: 0 } };
+        dispatch(setFullState(state));
         refreshAndSave();
     };
 
