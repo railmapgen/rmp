@@ -11,7 +11,7 @@ import './i18n/config';
 import { RMPSave, upgrade } from './util/save';
 import { AppState, setFullState } from './redux/app/app-slice';
 import './index.css';
-import {rmgChakraTheme} from "@railmapgen/rmg-components";
+import { rmgChakraTheme } from '@railmapgen/rmg-components';
 
 declare global {
     interface Window {

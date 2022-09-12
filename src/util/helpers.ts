@@ -28,4 +28,3 @@ export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, Ed
 
     return { xMin, yMin, xMax, yMax };
 };
-
