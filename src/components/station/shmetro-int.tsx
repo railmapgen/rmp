@@ -195,7 +195,7 @@ const shmetroIntStationFields = [
 
 const shmetroIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" />
+        <rect x="4.5" y="7" height="10" width="15" ry="5" stroke="currentColor" fill="none" />
     </svg>
 );
 
