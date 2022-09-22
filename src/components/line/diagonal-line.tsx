@@ -62,6 +62,7 @@ const DiagonalLine = (props: LineComponentProps) => {
                 stroke={color[2]}
                 strokeWidth={5}
                 strokeLinejoin="round"
+                strokeLinecap="round"
                 onClick={onClick}
             />
         ),

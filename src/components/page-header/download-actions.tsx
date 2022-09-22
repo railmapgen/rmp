@@ -62,13 +62,15 @@ export default function DownloadActions() {
     // thanks to this article that includes every steps in converting svg to png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = () => {
+        setIsDownloadModalOpen(false);
+
         // get the minimum and maximum of the graph
         const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
         const [width, height] = [xMax - xMin, yMax - yMin];
 
         const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
         // remove virtual nodes
-        [...elem.children].filter(e => e.id.startsWith('virtual_misc_node_virtual')).forEach(e => elem.removeChild(e));
+        [...elem.children].filter(e => e.id.startsWith('misc_node_virtual')).forEach(e => elem.removeChild(e));
         // append rmp info
         elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
         // transform svg to contain all the nodes in the graph
