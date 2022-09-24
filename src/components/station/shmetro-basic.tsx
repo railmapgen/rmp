@@ -34,6 +34,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
     const textY = nameOffsetY === 'up' ? -27 : nameOffsetY === 'bottom' ? 15 : 0;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     const dominantBaseline = nameOffsetY === 'up' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
+    const enDy = dominantBaseline === 'hanging' ? 15 : 12;
 
     return React.useMemo(
         () => (
@@ -52,7 +53,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                     <text textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
                         {names[0]}
                     </text>
-                    <text fontSize={10} dy={12} textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
+                    <text fontSize={10} dy={enDy} textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
                         {names[1]}
                     </text>
                 </g>

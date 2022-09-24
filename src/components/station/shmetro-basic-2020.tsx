@@ -23,6 +23,7 @@ const ROTATE_CONST: {
         textDy: number;
         textAnchor: 'start' | 'middle' | 'end';
         dominantBaseline: 'auto' | 'middle' | 'hanging';
+        enDy: number;
     };
 } = {
     0: {
@@ -30,48 +31,56 @@ const ROTATE_CONST: {
         textDy: -27,
         textAnchor: 'middle',
         dominantBaseline: 'auto',
+        enDy: 12,
     },
     45: {
         textDx: 12,
         textDy: -27,
         textAnchor: 'start',
         dominantBaseline: 'auto',
+        enDy: 12,
     },
     90: {
         textDx: 12,
         textDy: 0,
         textAnchor: 'start',
         dominantBaseline: 'middle',
+        enDy: 12,
     },
     135: {
         textDx: 12,
         textDy: 15,
         textAnchor: 'start',
         dominantBaseline: 'hanging',
+        enDy: 15,
     },
     180: {
         textDx: 0,
         textDy: 15,
         textAnchor: 'middle',
         dominantBaseline: 'hanging',
+        enDy: 15,
     },
     225: {
         textDx: -12,
         textDy: 15,
         textAnchor: 'end',
         dominantBaseline: 'hanging',
+        enDy: 15,
     },
     270: {
         textDx: -12,
         textDy: 0,
         textAnchor: 'end',
         dominantBaseline: 'middle',
+        enDy: 12,
     },
     315: {
         textDx: -12,
         textDy: -27,
         textAnchor: 'end',
         dominantBaseline: 'auto',
+        enDy: 12,
     },
 };
 
@@ -123,7 +132,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                     </text>
                     <text
                         fontSize={10}
-                        dy={12}
+                        dy={ROTATE_CONST[rotate].enDy}
                         textAnchor={ROTATE_CONST[rotate].textAnchor}
                         dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
                     >
