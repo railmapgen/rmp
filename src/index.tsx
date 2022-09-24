@@ -20,7 +20,7 @@ declare global {
 }
 
 const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-const { version, ...save } = JSON.parse(upgrade(localStorage.getItem('rmpParam'))) as RMPSave;
+const { version, ...save } = JSON.parse(upgrade(localStorage.getItem('rmp__param'))) as RMPSave;
 window.graph = graph.import(save.graph as any);
 const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
 store.dispatch(setFullState(state));

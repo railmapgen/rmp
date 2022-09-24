@@ -13,7 +13,7 @@ const store = configureStore({
 
 store.subscribe(() => {
     const param = stringifyParam(store.getState().app);
-    localStorage.setItem('rmpParam', param);
+    localStorage.setItem('rmp__param', param);
 });
 
 export type RootState = ReturnType<typeof store.getState>;
