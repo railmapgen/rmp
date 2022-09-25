@@ -33,6 +33,7 @@ const ToolsPanel = () => {
                         aria-label="Station"
                         icon={stations[type].icon}
                         onClick={() => handleStation(type)}
+                        variant={mode === `station-${type}` ? 'solid' : 'outline'}
                     />
                 ))}
                 {Object.values(MiscNodeType).map(type => (
@@ -41,6 +42,7 @@ const ToolsPanel = () => {
                         aria-label="Misc Node"
                         icon={miscNodes[type].icon}
                         onClick={() => handleMiscNode(type)}
+                        variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
                     />
                 ))}
                 {Object.values(LineType).map(type => (
@@ -49,6 +51,7 @@ const ToolsPanel = () => {
                         aria-label={mode.startsWith('line') ? t('panel.tools.inline') : t('panel.tools.line')}
                         icon={lines[type].icon}
                         onClick={() => handleLine(type)}
+                        variant={mode === `line-${type}` ? 'solid' : 'outline'}
                     />
                 ))}
                 <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />

@@ -84,7 +84,11 @@ export default function OpenActions() {
                             (stnInfo as any).transfer.info.flat().length > 0
                                 ? StationType.ShmetroInt
                                 : StationType.ShmetroBasic2020;
-                        const attr = { ...stations[type].defaultAttrs, names: (stnInfo as any).name };
+                        const attr = {
+                            // deep copy to prevent mutual reference
+                            ...JSON.parse(JSON.stringify(stations[type].defaultAttrs)),
+                            names: (stnInfo as any).name,
+                        };
                         if (type === StationType.ShmetroBasic2020)
                             (attr as ShmetroBasic2020StationAttributes).color = theme;
                         graph.current.addNode(stnIdMap[id], {
@@ -113,7 +117,10 @@ export default function OpenActions() {
                                         zIndex: 0,
                                         color: theme,
                                         type: LineType.Diagonal,
-                                        [LineType.Diagonal]: lines[LineType.Diagonal].defaultAttrs,
+                                        // deep copy to prevent mutual reference
+                                        [LineType.Diagonal]: JSON.parse(
+                                            JSON.stringify(lines[LineType.Diagonal].defaultAttrs)
+                                        ),
                                         reconcileId: '',
                                     }
                                 );

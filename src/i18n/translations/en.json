@@ -76,7 +76,7 @@
     },
     "header": {
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
-        "popoverBody": "This is a testing environment where we test the latest beta RMP.",
+        "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "open": {
             "new": "New project",
             "config": "Import project",

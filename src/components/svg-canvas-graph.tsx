@@ -20,6 +20,7 @@ const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, G
     graph
         .filterNodes((node, attr) => node.startsWith('stn'))
         .map(node => [node, graph.getNodeAttributes(node)] as [StnId, NodeAttributes])
+        .filter(([node, attr]) => attr.visible)
         .map(([node, attr]) => ({
             node: node as StnId,
             visible: attr.visible,
@@ -38,6 +39,7 @@ const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Grap
                 // source.startsWith('stn') && target.startsWith('stn')
                 attr.reconcileId === ''
         )
+        .filter(edge => graph.getEdgeAttributes(edge).visible)
         .map(edge => {
             const [source, target] = graph.extremities(edge);
             const sourceAttr = graph.getNodeAttributes(source);
@@ -57,6 +59,7 @@ const getMiscNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     graph
         .filterNodes((node, attr) => node.startsWith('misc_node'))
         .map(node => [node, graph.getNodeAttributes(node)] as [MiscNodeId, NodeAttributes])
+        .filter(([node, attr]) => attr.visible)
         .map(([node, attr]) => ({
             node,
             visible: attr.visible,

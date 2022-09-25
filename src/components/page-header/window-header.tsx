@@ -4,7 +4,7 @@ import { MdHelp, MdTranslate, MdZoomOut, MdZoomIn } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgFields, RmgFieldsField, RmgWindowHeader } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { useRootSelector, useRootDispatch } from '../../redux/index';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
@@ -32,12 +32,12 @@ export default function WindowHeader() {
     const fields: RmgFieldsField[] = [
         {
             type: 'slider',
-            label: t('Canvas scale'),
-            value: svgViewBoxZoom,
+            label: '',
+            value: 400 - svgViewBoxZoom,
             min: 10,
             max: 390,
             step: 10,
-            onChange: value => dispatch(setSvgViewBoxZoom(value)),
+            onChange: value => dispatch(setSvgViewBoxZoom(400 - value)),
             leftIcon: <MdZoomOut />,
             rightIcon: <MdZoomIn />,
             minW: 160,
@@ -53,14 +53,18 @@ export default function WindowHeader() {
                 environment={environment}
                 version={appVersion}
                 popoverHeader={
-                    <Trans i18nKey="header.popoverHeader" environment={environment}>
-                        You're on {{ environment }} environment!
-                    </Trans>
+                    environment === RmgEnv.PRD ? undefined : (
+                        <Trans i18nKey="header.popoverHeader" environment={environment}>
+                            You're on {{ environment }} environment!
+                        </Trans>
+                    )
                 }
                 popoverBody={
-                    <Trans i18nKey="header.popoverBody">
-                        This is a testing environment where we test the latest beta RMP.
-                    </Trans>
+                    environment === RmgEnv.PRD ? undefined : (
+                        <Trans i18nKey="header.popoverBody">
+                            This is a testing environment where we test the latest beta RMP.
+                        </Trans>
+                    )
                 }
             />
 

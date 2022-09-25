@@ -57,11 +57,18 @@ const SvgWrapper = () => {
                 [type]: JSON.parse(JSON.stringify(miscNodes[type].defaultAttrs)),
             });
             refreshAndSave();
-        } else if (mode === 'free') {
+        } else if (mode === 'free' || mode.startsWith('line')) {
+            // deselect line tool if user clicks on the background
+            if (mode.startsWith('line')) dispatch(setMode('free'));
+
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);
-            dispatch(setActive('background'));
-            dispatch(clearSelected());
+            if (!e.shiftKey) {
+                // when user holding the shift key and mis-click the background
+                // preserve the current selection
+                dispatch(setActive('background'));
+                dispatch(clearSelected());
+            }
             // console.log(x, y, svgViewBoxMin);
         }
     });
@@ -78,7 +85,9 @@ const SvgWrapper = () => {
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
-        if (active === 'background') {
+        // when user holding the shift key and mis-click the background
+        // preserve the current selection
+        if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
             // console.log('up', active);
         }
@@ -103,6 +112,16 @@ const SvgWrapper = () => {
                         refreshAndSave();
                     });
             }
+        } else if (e.key.startsWith('Arrow')) {
+            const d = 100;
+            const x_factor = e.key.endsWith('Left') ? -1 : e.key.endsWith('Right') ? 1 : 0;
+            const y_factor = e.key.endsWith('Up') ? -1 : e.key.endsWith('Down') ? 1 : 0;
+            dispatch(
+                setSvgViewBoxMin({
+                    x: svgViewBoxMin.x + ((d * svgViewBoxZoom) / 100) * x_factor,
+                    y: svgViewBoxMin.y + ((d * svgViewBoxZoom) / 100) * y_factor,
+                })
+            );
         }
     });
 
