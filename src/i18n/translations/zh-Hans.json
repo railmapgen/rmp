@@ -88,8 +88,11 @@
             "png": "导出图片",
             "transparent": "透明背景",
             "scale": "缩放",
+            "shareInfo1": "当我分享此图片时我会附上",
+            "shareInfo2": "和它的链接。",
             "termsAndConditions": "条款及细则",
-            "termsAndConditionsInfo": "点击下载按钮表示你同意",
+            "termsAndConditionsInfo": "我同意",
+            "period": "。",
             "confirm": "下载"
         },
         "about": {

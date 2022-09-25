@@ -88,8 +88,11 @@
             "png": "Export image",
             "transparent": "Transparency",
             "scale": "Scale",
+            "shareInfo1": "I will attach ",
+            "shareInfo2": " and its link when I share this image.",
             "termsAndConditions": "Terms and Conditions",
-            "termsAndConditionsInfo": "By clicking download, you agree to ",
+            "termsAndConditionsInfo": "I agree to ",
+            "period": ".",
             "confirm": "Download"
         },
         "about": {

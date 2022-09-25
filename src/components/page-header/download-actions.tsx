@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     Button,
+    Checkbox,
     HStack,
     Icon,
     IconButton,
@@ -54,6 +55,8 @@ export default function DownloadActions() {
     ];
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
+    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
+    const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
 
     const handleDownloadJson = () => {
         const param = stringifyParam(store.getState().app);
@@ -71,8 +74,8 @@ export default function DownloadActions() {
         const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
         // remove virtual nodes
         [...elem.children].filter(e => e.id.startsWith('misc_node_virtual')).forEach(e => elem.removeChild(e));
-        // append rmp info
-        elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
+        // append rmp info if user does not want to share rmp info
+        if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
         // transform svg to contain all the nodes in the graph
         // otherwise the later drawImage won't be able to display them all
         elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -114,7 +117,7 @@ export default function DownloadActions() {
                 <MenuItem onClick={() => setIsDownloadModalOpen(true)}>{t('header.download.png')}</MenuItem>
             </MenuList>
 
-            <Modal isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
+            <Modal size="xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>{t('header.download.png')}</ModalHeader>
@@ -123,17 +126,41 @@ export default function DownloadActions() {
                     <ModalBody>
                         <RmgFields fields={fields} />
                         <br />
-                        <Text>
-                            {t('header.download.termsAndConditionsInfo')}
-                            <Link color="teal.500" onClick={() => setIsTermsAndConditionsModalOpen(true)}>
-                                {t('header.download.termsAndConditions')} <Icon as={MdOpenInNew} />
-                            </Link>
-                        </Text>
+                        <Checkbox isChecked={isAttachSelected} onChange={e => setIsAttachSelected(e.target.checked)}>
+                            <Text>
+                                {t('header.download.shareInfo1')}
+                                <Link
+                                    color="teal.500"
+                                    onClick={() => window.open('https://railmapgen.github.io/rmp', '_blank')}
+                                >
+                                    {t('header.about.rmp')} <Icon as={MdOpenInNew} />
+                                </Link>
+                                {t('header.download.shareInfo2')}
+                            </Text>
+                        </Checkbox>
+                        <Checkbox
+                            isChecked={isTermsAndConditionsSelected}
+                            onChange={e => setIsTermsAndConditionsSelected(e.target.checked)}
+                        >
+                            <Text>
+                                {t('header.download.termsAndConditionsInfo')}
+                                <Link color="teal.500" onClick={() => setIsTermsAndConditionsModalOpen(true)}>
+                                    {t('header.download.termsAndConditions')} <Icon as={MdOpenInNew} />
+                                </Link>
+                                {t('header.download.period')}
+                            </Text>
+                        </Checkbox>
                     </ModalBody>
 
                     <ModalFooter>
                         <HStack>
-                            <Button colorScheme="teal" variant="outline" size="sm" onClick={handleDownload}>
+                            <Button
+                                colorScheme="teal"
+                                variant="outline"
+                                size="sm"
+                                disabled={!isTermsAndConditionsSelected}
+                                onClick={handleDownload}
+                            >
                                 {t('header.download.confirm')}
                             </Button>
                         </HStack>
