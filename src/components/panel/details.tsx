@@ -4,6 +4,7 @@ import { Box, Button, Heading, HStack, Flex, Divider } from '@chakra-ui/react';
 import {
     RmgFields,
     RmgFieldsField,
+    RmgSidePanel,
     RmgSidePanelHeader,
     RmgSidePanelBody,
     RmgSidePanelFooter,
@@ -204,23 +205,19 @@ const DetailsPanel = () => {
     };
 
     return (
-        <Flex direction="column" height="100%" width={selected.length ? 300 : 0} overflow="hidden">
+        <RmgSidePanel isOpen={selected.length > 0} width={300} header="Dummy header">
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />
 
-                {/* <Divider />
-
-                {selectedFirst?.startsWith('stn') && graph.current.hasNode(selectedFirst) && <InterchangeSection />} */}
-
-                <Divider />
+                {/* {selectedFirst?.startsWith('stn') && graph.current.hasNode(selectedFirst) && <InterchangeSection />} */}
 
                 <Box p={1}>
                     <Heading as="h5" size="sm">
                         {t('panel.details.node.title')}
                     </Heading>
 
-                    <RmgFields fields={fields} minW={300} />
+                    <RmgFields fields={fields} minW={276} />
                 </Box>
 
                 <ColourModal
@@ -246,7 +243,7 @@ const DetailsPanel = () => {
                     )}
                 </HStack>
             </RmgSidePanelFooter>
-        </Flex>
+        </RmgSidePanel>
     );
 };
 

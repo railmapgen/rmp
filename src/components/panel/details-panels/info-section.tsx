@@ -14,7 +14,7 @@ export default function InfoSection() {
             type: 'input',
             label: t('panel.details.info.id'),
             value: selected.length > 0 ? selected.join(', ') : 'undefined',
-            minW: 300,
+            minW: 276,
             onChange: val => {},
         },
         {
@@ -28,7 +28,7 @@ export default function InfoSection() {
                     : selected.length > 1
                     ? 'multiple nodes'
                     : 'undefined',
-            minW: 300,
+            minW: 276,
             onChange: val => {},
         },
     ];

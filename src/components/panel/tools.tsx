@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flex, IconButton } from '@chakra-ui/react';
-import { RmgSidePanelBody } from '@railmapgen/rmg-components';
+import { RmgSidePanel, RmgSidePanelBody } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setMode, setTheme } from '../../redux/runtime/runtime-slice';
 import { StationType } from '../../constants/stations';
@@ -25,7 +25,7 @@ const ToolsPanel = () => {
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
     return (
-        <Flex direction="column" height="100%" width={50} overflow="hidden">
+        <RmgSidePanel isOpen width={50} header="Dummy header">
             <RmgSidePanelBody>
                 {Object.values(StationType).map(type => (
                     <IconButton
@@ -62,7 +62,7 @@ const ToolsPanel = () => {
                     onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
                 />
             </RmgSidePanelBody>
-        </Flex>
+        </RmgSidePanel>
     );
 };
 
