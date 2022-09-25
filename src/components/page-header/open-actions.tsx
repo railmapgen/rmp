@@ -1,7 +1,7 @@
 import React from 'react';
 import { nanoid } from 'nanoid';
 import { IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdNoteAdd, MdUpload } from 'react-icons/md';
+import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { useRootDispatch } from '../../redux';
 import { AppState, saveGraph, setFullState } from '../../redux/app/app-slice';
@@ -12,6 +12,8 @@ import { LineType } from '../../constants/lines';
 import stations from '../station/stations';
 import lines from '../line/lines';
 import { ShmetroBasic2020StationAttributes } from '../station/shmetro-basic-2020';
+import RMP_Shanghai from '../../util/RMP_Shanghai.json';
+import { RMPSave } from '../../util/save';
 
 export default function OpenActions() {
     const { t } = useTranslation();
@@ -174,6 +176,19 @@ export default function OpenActions() {
         event.target.value = '';
     };
 
+    const handleOpenTemplates = async () => {
+        const { version, ...save } = RMP_Shanghai as RMPSave;
+
+        // details panel will complain unknown nodes or edges if last state is not cleared
+        dispatch(clearSelected());
+        graph.current.clear();
+        graph.current.import(save.graph);
+        const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
+        dispatch(setFullState(state));
+
+        refreshAndSave();
+    };
+
     return (
         <Menu>
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
@@ -204,6 +219,10 @@ export default function OpenActions() {
                 />
                 <MenuItem icon={<MdUpload />} onClick={() => fileRMGInputRef?.current?.click()}>
                     {t('header.open.configRMG')}
+                </MenuItem>
+
+                <MenuItem icon={<MdInsertDriveFile />} onClick={handleOpenTemplates}>
+                    {t('header.open.templates')}
                 </MenuItem>
             </MenuList>
         </Menu>

@@ -1,7 +1,7 @@
-import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { AppState } from '../redux/app/app-slice';
+import RMP_Shanghai from './RMP_Shanghai.json';
 
 export interface RMPSave {
     version: number;
@@ -31,13 +31,7 @@ const upgrades: { [version: number]: (param: string) => string } = {
         }),
 };
 
-const G = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-const INITIAL_PARAM = JSON.stringify({
-    graph: G.export(),
-    svgViewBoxZoom: 100,
-    svgViewBoxMin: { x: -100, y: -100 },
-    version: CURRENT_VERSION,
-} as RMPSave);
+const INITIAL_PARAM = JSON.stringify(RMP_Shanghai as RMPSave);
 
 /**
  * Upgrade the passed param to the latest format.

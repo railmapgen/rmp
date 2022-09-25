@@ -80,7 +80,8 @@
         "open": {
             "new": "新項目",
             "config": "導入項目",
-            "configRMG": "從RMG存檔中導入"
+            "configRMG": "從RMG存檔中導入",
+            "templates": "導入上海地鐵範本"
         },
         "download": {
             "config": "導出項目",
