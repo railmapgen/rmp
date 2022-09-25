@@ -4,7 +4,7 @@ import { CanvasType, CategoriesType } from '../../constants/constants';
 import { LineAttributes, Line, LineComponentProps } from '../../constants/lines';
 
 const SimpleLine = (props: LineComponentProps) => {
-    const { id, attrs, handleClick } = props;
+    const { id, attrs, newLine, handleClick } = props;
     const { color } = attrs;
 
     const onClick = React.useCallback(
@@ -22,9 +22,10 @@ const SimpleLine = (props: LineComponentProps) => {
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 onClick={onClick}
+                pointerEvents={newLine ? 'none' : undefined}
             />
         ),
-        [props.x1, props.y1, props.x2, props.y2, color[2], onClick]
+        [props.x1, props.y1, props.x2, props.y2, color[2], newLine, onClick]
     );
 };
 

@@ -208,6 +208,7 @@ const SvgCanvas = () => {
                         y1={sourceAttr.y}
                         x2={targetAttr.x}
                         y2={targetAttr.y}
+                        newLine={false}
                         attrs={graph.current.getEdgeAttributes(edge)}
                         handleClick={handleEdgeClick}
                     />
@@ -258,6 +259,7 @@ const SvgCanvas = () => {
                         y1={y1}
                         x2={x2}
                         y2={y2}
+                        newLine={false}
                         attrs={attr}
                         handleClick={handleEdgeClick}
                     />
@@ -287,6 +289,7 @@ const SvgCanvas = () => {
                     y1={graph.current.getNodeAttribute(active, 'y')}
                     x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
                     y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
+                    newLine={true}
                     attrs={{
                         visible: true,
                         zIndex: 0,

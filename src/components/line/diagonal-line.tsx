@@ -43,7 +43,7 @@ const generatePath: generatePathFunction<DiagonalLineAttributes> = (
 };
 
 const DiagonalLine = (props: LineComponentProps) => {
-    const { id, attrs, handleClick } = props;
+    const { id, attrs, newLine, handleClick } = props;
     const { color, diagonal = defaultDiagonalLineAttributes } = attrs;
 
     const path = generatePath(props.x1, props.x2, props.y1, props.y2, diagonal);
@@ -64,6 +64,7 @@ const DiagonalLine = (props: LineComponentProps) => {
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 onClick={onClick}
+                pointerEvents={newLine ? 'none' : undefined}
             />
         ),
         [
@@ -75,6 +76,7 @@ const DiagonalLine = (props: LineComponentProps) => {
             diagonal.startFrom,
             diagonal.offsetFrom,
             diagonal.offsetTo,
+            newLine,
             onClick,
         ]
     );

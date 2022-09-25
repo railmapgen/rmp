@@ -26,6 +26,13 @@ export interface LineComponentProps {
     x2: number;
     y1: number;
     y2: number;
+    /**
+     * Indicate whether or not this line is created in progress.
+     * If yes, we need to set pointer-events to none
+     * so elementsFromPoint will return the underlying station instead of this line.
+     * https://stackoverflow.com/a/49174322
+     */
+    newLine: boolean;
     handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
     attrs: EdgeAttributes;
 }
@@ -56,7 +63,7 @@ export interface Line<T extends LineAttributes> {
     /**
      * If you export the internal path generation function, RMP
      * will try to reconcile this line with other lines to form
-     * a single line/path as long as the user set Reconcile ID.
+     * a single line/path as long as the user set the same Reconcile ID.
      */
     generatePath?: generatePathFunction<T>;
     /**

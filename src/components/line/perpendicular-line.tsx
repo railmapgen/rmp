@@ -28,7 +28,7 @@ const generatePath: generatePathFunction<PerpendicularLineAttributes> = (
 };
 
 const PerpendicularLine = (props: LineComponentProps) => {
-    const { id, x1, x2, y1, y2, attrs, handleClick } = props;
+    const { id, x1, x2, y1, y2, attrs, newLine, handleClick } = props;
     const { color, perpendicular = defaultPerpendicularLineAttributes } = attrs;
     const { roundCornerFactor = defaultPerpendicularLineAttributes.roundCornerFactor } = perpendicular;
 
@@ -54,9 +54,10 @@ const PerpendicularLine = (props: LineComponentProps) => {
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 onClick={onClick}
+                pointerEvents={newLine ? 'none' : undefined}
             />
         ),
-        [path.d, roundCornerFactor, color[2], onClick]
+        [path.d, roundCornerFactor, color[2], newLine, onClick]
     );
 };
 
