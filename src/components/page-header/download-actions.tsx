@@ -25,7 +25,6 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import store from '../../redux';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
-import logoImg from './logo512.png';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 export default function DownloadActions() {
@@ -201,7 +200,7 @@ const generateRmpInfo = (x: number, y: number) => {
     const logo = document.createElementNS('http://www.w3.org/2000/svg', 'image');
     // FIXME: return after image is loaded
     // logo.setAttribute('href', 'https://uat-railmapgen.github.io/rmp/logo192.png');
-    logo.setAttribute('href', logoImg);
+    // logo.setAttribute('href', logoImg);
     logo.setAttribute('width', '40');
     logo.setAttribute('height', '40');
     logo.setAttribute('x', '-50');
