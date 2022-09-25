@@ -80,9 +80,8 @@ export default function DownloadActions() {
         elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
         // append to document to render the svg
         document.body.appendChild(elem);
-        // convert it to blob and url for drawing to canvas
-        const blob = new Blob([elem.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
-        const blobURL = window.URL.createObjectURL(blob);
+        // convert it to blob
+        const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(elem.outerHTML)));
         // release after use
         document.body.removeChild(elem);
 
@@ -103,9 +102,7 @@ export default function DownloadActions() {
             ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
             canvas.toBlob(blob => downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!), 'image/png');
         };
-        img.src = blobURL;
-
-        window.URL.revokeObjectURL(blobURL);
+        img.src = src; // draw src on canvas
     };
 
     return (
