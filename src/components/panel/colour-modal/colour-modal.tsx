@@ -56,7 +56,7 @@ export default function ColourModal(props: ColourModalProps) {
     const paletteFields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: t('ColourModal.city'),
+            label: t('colorModal.city'),
             component: (
                 <CityPicker
                     defaultValueId={cityCode}
@@ -71,7 +71,7 @@ export default function ColourModal(props: ColourModalProps) {
         },
         {
             type: 'custom',
-            label: t('ColourModal.line'),
+            label: t('colorModal.line'),
             component: (
                 <ColourPicker
                     city={cityCode}
@@ -89,7 +89,7 @@ export default function ColourModal(props: ColourModalProps) {
     const customFields: RmgFieldsField[] = [
         {
             type: 'input',
-            label: t('ColourModal.bg'),
+            label: t('colorModal.bg'),
             variant: 'color',
             value: bgColour,
             placeholder: '#F3D03E',
@@ -101,11 +101,11 @@ export default function ColourModal(props: ColourModalProps) {
         },
         {
             type: 'select',
-            label: t('ColourModal.fg'),
+            label: t('colorModal.fg'),
             value: fgColour,
             options: {
-                [MonoColour.white]: t('ColourModal.white'),
-                [MonoColour.black]: t('ColourModal.black'),
+                [MonoColour.white]: t('colorModal.white'),
+                [MonoColour.black]: t('colorModal.black'),
             },
             onChange: value => {
                 setCityCode(CityCode.Other);
@@ -136,17 +136,17 @@ export default function ColourModal(props: ColourModalProps) {
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('ColourModal.title')}</ModalHeader>
+                <ModalHeader>{t('colorModal.title')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
                     <VStack>
-                        <RmgLineBadge name={t('ColourModal.example')} fg={fgColour} bg={bgColour} />
+                        <RmgLineBadge name={t('colorModal.example')} fg={fgColour} bg={bgColour} />
 
                         <Tabs isFitted colorScheme="teal" w="100%" defaultIndex={cityCode === CityCode.Other ? 1 : 0}>
                             <TabList>
-                                <Tab>{t('ColourModal.palette')}</Tab>
-                                <Tab>{t('ColourModal.custom')}</Tab>
+                                <Tab>{t('colorModal.palette')}</Tab>
+                                <Tab>{t('colorModal.custom')}</Tab>
                             </TabList>
 
                             <TabPanels>
@@ -163,14 +163,14 @@ export default function ColourModal(props: ColourModalProps) {
 
                 <ModalFooter>
                     <Text fontSize="sm" marginRight={2}>
-                        {t('ColourModal.seeAll')}
+                        {t('colorModal.seeAll')}
                         <Link color="teal.500" onClick={handleOpenPalette}>
                             {t('Palette')} <Icon as={MdOpenInNew} />
                         </Link>
                     </Text>
 
                     <Button colorScheme="teal" onClick={handleSubmit} disabled={!isSubmitEnabled}>
-                        {t('ColourModal.submit')}
+                        {t('colorModal.submit')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

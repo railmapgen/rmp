@@ -1,5 +1,21 @@
 {
     "color": "Color",
+
+    "colorModal": {
+        "title": "Select a color",
+        "example": "Example",
+        "palette": "From palette",
+        "custom": "Customize",
+        "city": "City theme",
+        "line": "Line theme",
+        "bg": "Background color",
+        "fg": "Foreground color",
+        "white":"White",
+        "black": "Black",
+        "seeAll": "See full library in ",
+        "submit": "Submit"
+    },
+
     "panel": {
         "tools": {
             "header": "Tools"
