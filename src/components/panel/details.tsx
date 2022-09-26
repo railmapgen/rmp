@@ -205,7 +205,7 @@ const DetailsPanel = () => {
     };
 
     return (
-        <RmgSidePanel isOpen={selected.length > 0} width={300} header="Dummy header">
+        <RmgSidePanel isOpen={selected.length > 0} width={300} header="Dummy header" alwaysOverlay>
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />

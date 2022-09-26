@@ -25,44 +25,45 @@ const ToolsPanel = () => {
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
     return (
-        <RmgSidePanel isOpen width={50} header="Dummy header">
-            <RmgSidePanelBody>
-                {Object.values(StationType).map(type => (
-                    <IconButton
-                        key={type}
-                        aria-label="Station"
-                        icon={stations[type].icon}
-                        onClick={() => handleStation(type)}
-                        variant={mode === `station-${type}` ? 'solid' : 'outline'}
-                    />
-                ))}
-                {Object.values(MiscNodeType).map(type => (
-                    <IconButton
-                        key={type}
-                        aria-label="Misc Node"
-                        icon={miscNodes[type].icon}
-                        onClick={() => handleMiscNode(type)}
-                        variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
-                    />
-                ))}
-                {Object.values(LineType).map(type => (
-                    <IconButton
-                        key={type}
-                        aria-label={mode.startsWith('line') ? t('panel.tools.inline') : t('panel.tools.line')}
-                        icon={lines[type].icon}
-                        onClick={() => handleLine(type)}
-                        variant={mode === `line-${type}` ? 'solid' : 'outline'}
-                    />
-                ))}
-                <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />
-                <ColourModal
-                    isOpen={isModalOpen}
-                    defaultTheme={theme}
-                    onClose={() => setIsModalOpen(false)}
-                    onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
+        <Flex width={50} direction="column" overflow="auto">
+            {Object.values(StationType).map(type => (
+                <IconButton
+                    key={type}
+                    aria-label={type}
+                    size="lg"
+                    icon={stations[type].icon}
+                    onClick={() => handleStation(type)}
+                    variant={mode === `station-${type}` ? 'solid' : 'outline'}
                 />
-            </RmgSidePanelBody>
-        </RmgSidePanel>
+            ))}
+            {Object.values(MiscNodeType).map(type => (
+                <IconButton
+                    key={type}
+                    aria-label={type}
+                    size="lg"
+                    icon={miscNodes[type].icon}
+                    onClick={() => handleMiscNode(type)}
+                    variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
+                />
+            ))}
+            {Object.values(LineType).map(type => (
+                <IconButton
+                    key={type}
+                    aria-label={type}
+                    size="lg"
+                    icon={lines[type].icon}
+                    onClick={() => handleLine(type)}
+                    variant={mode === `line-${type}` ? 'solid' : 'outline'}
+                />
+            ))}
+            <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />
+            <ColourModal
+                isOpen={isModalOpen}
+                defaultTheme={theme}
+                onClose={() => setIsModalOpen(false)}
+                onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
+            />
+        </Flex>
     );
 };
 

@@ -17,11 +17,10 @@ export default function ThemeButton(props: ThemeButtonProps) {
 
     return (
         <IconButton
-            size="xs"
             aria-label={t('Color')}
-            mt="0.45px"
             color={theme[3]}
             bg={theme[2]}
+            size="lg"
             _hover={{ bg: ColourUtil.fade(theme[2], 0.7) }}
             icon={<MdCircle />}
             onClick={onClick}

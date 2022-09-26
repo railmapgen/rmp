@@ -127,7 +127,7 @@ const SvgWrapper = () => {
 
     const size: Size = useWindowSize();
     const height = (size.height ?? 1280) - 40;
-    const width = (size.width ?? 720) - 50 - (selected.length ? 300 : 0);
+    const width = size.width ?? 720 - 50;
 
     return (
         <svg
