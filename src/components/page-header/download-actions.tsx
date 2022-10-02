@@ -78,6 +78,9 @@ export default function DownloadActions() {
         // transform svg to contain all the nodes in the graph
         // otherwise the later drawImage won't be able to display them all
         elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
+        // Chrome will stretch the image if the following width and height are not set
+        elem.setAttribute('width', width.toString());
+        elem.setAttribute('height', height.toString());
         // append to document to render the svg
         document.body.appendChild(elem);
         // convert it to blob
@@ -96,6 +99,7 @@ export default function DownloadActions() {
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
+        console.log(width, height, canvasWidth, canvasHeight)
 
         const img = new Image();
         img.onload = () => {

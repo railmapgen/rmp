@@ -1,7 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Flex, IconButton } from '@chakra-ui/react';
-import { RmgSidePanel, RmgSidePanelBody } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setMode, setTheme } from '../../redux/runtime/runtime-slice';
 import { StationType } from '../../constants/stations';
@@ -14,7 +12,6 @@ import ColourModal from './colour-modal/colour-modal';
 import ThemeButton from './theme-button';
 
 const ToolsPanel = () => {
-    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { mode, theme } = useRootSelector(state => state.runtime);
 
