@@ -1,7 +1,7 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { StationType, ExternalStationAttributes } from './stations';
-import { LineType, ExternalLineAttributes } from './lines';
-import { MiscNodeType, MiscNodeAttributes } from './node';
+import { ExternalStationAttributes, StationType } from './stations';
+import { ExternalLineAttributes, LineType } from './lines';
+import { MiscNodeAttributes, MiscNodeType } from './node';
 
 interface BaseAttributes {
     visible: boolean;
@@ -73,4 +73,8 @@ export enum CategoriesType {
     NationalRail = 'nationalrail',
     LightRail = 'lightrail',
     Footpath = 'footpath',
+}
+
+export enum Events {
+    APP_LOAD = 'APP_LOAD',
 }
