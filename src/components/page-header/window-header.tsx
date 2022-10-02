@@ -1,15 +1,14 @@
 import React from 'react';
 import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdHelp, MdTranslate, MdZoomOut, MdZoomIn } from 'react-icons/md';
+import { MdHelp, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
-import { RmgEnvBadge, RmgFields, RmgFieldsField, RmgWindowHeader } from '@railmapgen/rmg-components';
+import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
-import { useRootSelector, useRootDispatch } from '../../redux/index';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about';
-import { setSvgViewBoxZoom } from '../../redux/app/app-slice';
+import { ZoomPopover } from './zoom-popover';
 
 export default function WindowHeader() {
     const { t, i18n } = useTranslation();
@@ -26,27 +25,9 @@ export default function WindowHeader() {
         document.title = t('header.about.rmp');
     };
 
-    const { svgViewBoxZoom } = useRootSelector(state => state.app);
-    const dispatch = useRootDispatch();
-
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'slider',
-            label: '',
-            value: 400 - svgViewBoxZoom,
-            min: 10,
-            max: 390,
-            step: 10,
-            onChange: value => dispatch(setSvgViewBoxZoom(400 - value)),
-            leftIcon: <MdZoomOut />,
-            rightIcon: <MdZoomIn />,
-            minW: 160,
-        },
-    ];
-
     return (
         <RmgWindowHeader>
-            <Heading as="h4" size="md">
+            <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
                 {t('header.about.rmp')}
             </Heading>
             <RmgEnvBadge
@@ -69,7 +50,7 @@ export default function WindowHeader() {
             />
 
             <HStack ml="auto">
-                <RmgFields fields={fields} noLabel />
+                <ZoomPopover />
 
                 <OpenActions />
 
