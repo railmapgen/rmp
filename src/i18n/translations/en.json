@@ -97,7 +97,9 @@
             "new": "New project",
             "config": "Import project",
             "configRMG": "Import from RMG save",
-            "templates": "Import Shanghai Metro template"
+            "gallery": "Import from gallery",
+            "shanghai": "Shanghai",
+            "beijing": "Beijing"
         },
         "download": {
             "config": "Export project",

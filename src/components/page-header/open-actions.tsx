@@ -14,6 +14,7 @@ import lines from '../line/lines';
 import { ShmetroBasic2020StationAttributes } from '../station/shmetro-basic-2020';
 import RMP_Shanghai from '../../util/RMP_Shanghai.json';
 import { RMPSave } from '../../util/save';
+import { GalleryModal } from './gallery-modal';
 
 export default function OpenActions() {
     const { t } = useTranslation();
@@ -22,6 +23,8 @@ export default function OpenActions() {
     const graph = React.useRef(window.graph);
     const fileRMGInputRef = React.useRef<HTMLInputElement | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+    const [isGalleryModalOpen, setIsGalleryModalOpen] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(setRefresh());
@@ -176,8 +179,8 @@ export default function OpenActions() {
         event.target.value = '';
     };
 
-    const handleOpenTemplates = async () => {
-        const { version, ...save } = RMP_Shanghai as RMPSave;
+    const handleOpenTemplates = async (rmpSave: RMPSave) => {
+        const { version, ...save } = rmpSave;
 
         // details panel will complain unknown nodes or edges if last state is not cleared
         dispatch(clearSelected());
@@ -221,9 +224,14 @@ export default function OpenActions() {
                     {t('header.open.configRMG')}
                 </MenuItem>
 
-                <MenuItem icon={<MdInsertDriveFile />} onClick={handleOpenTemplates}>
-                    {t('header.open.templates')}
+                <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsGalleryModalOpen(true)}>
+                    {t('header.open.gallery')}
                 </MenuItem>
+                <GalleryModal
+                    isOpen={isGalleryModalOpen}
+                    handleOpenTemplates={handleOpenTemplates}
+                    onClose={() => setIsGalleryModalOpen(false)}
+                />
             </MenuList>
         </Menu>
     );
