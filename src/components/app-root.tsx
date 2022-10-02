@@ -10,7 +10,9 @@ export default function AppRoot() {
     return (
         <RmgWindow>
             <WindowHeader />
-            <Flex direction="row" height="100%" overflow="hidden">
+            <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
+                {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
+                    have the right parent container for its `position: 'absolute'` calculation. */}
                 <ToolsPanel />
                 <SvgWrapper />
                 <DetailsPanel />
