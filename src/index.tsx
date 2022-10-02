@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { MultiDirectedGraph } from 'graphology';
 import { ChakraProvider } from '@chakra-ui/react';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
+import { EdgeAttributes, Events, GraphAttributes, NodeAttributes } from './constants/constants';
 import AppRoot from './components/app-root';
 import store from './redux';
 import './i18n/config';
@@ -40,4 +40,5 @@ const renderApp = () => {
 
 rmgRuntime.ready().then(() => {
     renderApp();
+    rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow });
 });
