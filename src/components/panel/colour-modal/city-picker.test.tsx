@@ -5,6 +5,7 @@ import { fireEvent, screen } from '@testing-library/react';
 import i18n from '../../../i18n/config';
 
 jest.mock('@railmapgen/rmg-palette-resources', () => ({
+    ...jest.requireActual('@railmapgen/rmg-palette-resources'),
     __esModule: true,
     cityList: [
         {

@@ -70,7 +70,7 @@
     "version": "0.1.28",
     "jest": {
         "transformIgnorePatterns": [
-            "/node_modules/(?!(@railmapgen/.*))"
+            "/node_modules/(?!(@railmapgen/.*)|(nanoid))"
         ],
         "moduleNameMapper": {
             "\\.(css|less)$": "identity-obj-proxy"

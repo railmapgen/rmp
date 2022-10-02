@@ -99,7 +99,7 @@ export default function DownloadActions() {
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
-        console.log(width, height, canvasWidth, canvasHeight)
+        console.log(width, height, canvasWidth, canvasHeight);
 
         const img = new Image();
         img.onload = () => {

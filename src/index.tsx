@@ -40,5 +40,5 @@ const renderApp = () => {
 
 rmgRuntime.ready().then(() => {
     renderApp();
-    rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow });
+    rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
 });
