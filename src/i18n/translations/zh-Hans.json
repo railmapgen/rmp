@@ -99,7 +99,8 @@
             "configRMG": "从RMG存档中导入",
             "gallery": "从画廊中导入",
             "shanghai": "上海",
-            "beijing": "北京"
+            "beijing": "北京",
+            "santiago": "圣地亚哥"
         },
         "download": {
             "config": "导出项目",

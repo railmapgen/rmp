@@ -99,7 +99,8 @@
             "configRMG": "Import from RMG save",
             "gallery": "Import from gallery",
             "shanghai": "Shanghai",
-            "beijing": "Beijing"
+            "beijing": "Beijing",
+            "santiago": "Santiago"
         },
         "download": {
             "config": "Export project",

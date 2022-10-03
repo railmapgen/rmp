@@ -99,7 +99,8 @@
             "configRMG": "從RMG存檔中導入",
             "gallery": "從畫廊中導入",
             "shanghai": "上海",
-            "beijing": "北京"
+            "beijing": "北京",
+            "santiago": "聖地亞哥"
         },
         "download": {
             "config": "導出項目",

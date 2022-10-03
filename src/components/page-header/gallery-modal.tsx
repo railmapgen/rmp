@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { RMPSave } from '../../util/save';
 import RMP_Shanghai from '../../util/RMP_Shanghai.json';
 import RMP_Beijing from '../../util/RMP_Beijing.json';
+import RMP_Santiago from '../../util/RMP_Santiago.json';
 
 export const GalleryModal = (props: {
     isOpen: boolean;
@@ -48,6 +49,15 @@ export const GalleryModal = (props: {
                             }}
                         >
                             {t('header.open.beijing')}
+                        </Button>
+                        <Button
+                            minWidth={200}
+                            onClick={() => {
+                                handleOpenTemplates(RMP_Santiago as RMPSave);
+                                onClose();
+                            }}
+                        >
+                            {t('header.open.santiago')}
                         </Button>
                     </VStack>
                 </ModalBody>
