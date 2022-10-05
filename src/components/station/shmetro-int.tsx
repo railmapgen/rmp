@@ -58,11 +58,17 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                         style={{ cursor: 'move' }}
                     />
                 </g>
-                <g transform={`translate(${x + textDx}, ${y + textDy})`}>
-                    <text textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
+                <g transform={`translate(${x + textDx}, ${y + textDy})`} className="rmp-name-station">
+                    <text textAnchor={textAnchor} dominantBaseline={dominantBaseline} className="rmp-name__zh">
                         {names[0]}
                     </text>
-                    <text fontSize={10} dy={enDy} textAnchor={textAnchor} dominantBaseline={dominantBaseline}>
+                    <text
+                        fontSize={10}
+                        dy={enDy}
+                        textAnchor={textAnchor}
+                        dominantBaseline={dominantBaseline}
+                        className="rmp-name__en"
+                    >
                         {names[1]}
                     </text>
                 </g>

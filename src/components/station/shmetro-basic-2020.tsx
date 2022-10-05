@@ -123,10 +123,14 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                         style={{ cursor: 'move' }}
                     />
                 </g>
-                <g transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + ROTATE_CONST[rotate].textDy})`}>
+                <g
+                    transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + ROTATE_CONST[rotate].textDy})`}
+                    className="rmp-name-station"
+                >
                     <text
                         textAnchor={ROTATE_CONST[rotate].textAnchor}
                         dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
+                        className="rmp-name__zh"
                     >
                         {names[0]}
                     </text>
@@ -135,6 +139,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                         dy={ROTATE_CONST[rotate].enDy}
                         textAnchor={ROTATE_CONST[rotate].textAnchor}
                         dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
+                        className="rmp-name__en"
                     >
                         {names[1]}
                     </text>
