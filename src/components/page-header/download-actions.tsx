@@ -32,24 +32,38 @@ export default function DownloadActions() {
 
     const graph = React.useRef(window.graph);
 
-    const [isTransparent, setIsTransparent] = React.useState(false);
+    const [format, setFormat] = React.useState('png' as 'png' | 'svg');
+    const formatOptions = {
+        png: t('header.download.png'),
+        svg: t('header.download.svg'),
+    };
     const [scale, setScale] = React.useState(100);
     const scaleOptions = Object.fromEntries(
         [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500].map(v => [v, `${v}%`])
     );
+    const [isTransparent, setIsTransparent] = React.useState(false);
     const fields: RmgFieldsField[] = [
         {
-            type: 'switch',
-            label: t('header.download.transparent'),
-            isChecked: isTransparent,
-            onChange: setIsTransparent,
+            type: 'select',
+            label: t('header.download.format'),
+            value: format,
+            options: formatOptions,
+            onChange: value => setFormat(value === 'png' ? 'png' : 'svg'),
         },
+    ];
+    const pngFields: RmgFieldsField[] = [
         {
             type: 'select',
             label: t('header.download.scale'),
             value: scale,
             options: scaleOptions,
             onChange: value => setScale(value as number),
+        },
+        {
+            type: 'switch',
+            label: t('header.download.transparent'),
+            isChecked: isTransparent,
+            onChange: setIsTransparent,
         },
     ];
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
@@ -81,6 +95,27 @@ export default function DownloadActions() {
         // Chrome will stretch the image if the following width and height are not set
         elem.setAttribute('width', width.toString());
         elem.setAttribute('height', height.toString());
+        // copy attributes from css to each elem in the new cloned svg
+        Object.entries({
+            '.rmp-name__zh': ['font-family'],
+            '.rmp-name__en': ['font-family'],
+            '.rmp-name-station': ['paint-order', 'stroke', 'stroke-width'],
+        }).forEach(([className, styleSet]) => {
+            const e = document.querySelector(className);
+            const style = window.getComputedStyle(e!);
+            elem.querySelectorAll(className).forEach(el => {
+                styleSet.forEach(styleName => {
+                    el.setAttribute(styleName, style.getPropertyValue(styleName));
+                });
+                el.removeAttribute('class');
+            });
+        });
+
+        if (format === 'svg') {
+            downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);
+            return;
+        }
+
         // append to document to render the svg
         document.body.appendChild(elem);
         // convert it to blob
@@ -99,7 +134,6 @@ export default function DownloadActions() {
             ctx.fillStyle = '#fff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
-        console.log(width, height, canvasWidth, canvasHeight);
 
         const img = new Image();
         img.onload = () => {
@@ -114,17 +148,18 @@ export default function DownloadActions() {
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
                 <MenuItem onClick={handleDownloadJson}>{t('header.download.config')}</MenuItem>
-                <MenuItem onClick={() => setIsDownloadModalOpen(true)}>{t('header.download.png')}</MenuItem>
+                <MenuItem onClick={() => setIsDownloadModalOpen(true)}>{t('header.download.image')}</MenuItem>
             </MenuList>
 
             <Modal size="xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
                 <ModalOverlay />
                 <ModalContent>
-                    <ModalHeader>{t('header.download.png')}</ModalHeader>
+                    <ModalHeader>{t('header.download.image')}</ModalHeader>
                     <ModalCloseButton />
 
                     <ModalBody>
                         <RmgFields fields={fields} />
+                        {format === 'png' && <RmgFields fields={pngFields} />}
                         <br />
                         <Checkbox isChecked={isAttachSelected} onChange={e => setIsAttachSelected(e.target.checked)}>
                             <Text>

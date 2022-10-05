@@ -104,7 +104,10 @@
         },
         "download": {
             "config": "Export project",
-            "png": "Export image",
+            "image": "Export image",
+            "format": "Format",
+            "png": "PNG",
+            "svg": "SVG (Web use)",
             "transparent": "Transparency",
             "scale": "Scale",
             "shareInfo1": "I will attach ",

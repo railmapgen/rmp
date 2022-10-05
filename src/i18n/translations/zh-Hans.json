@@ -104,7 +104,10 @@
         },
         "download": {
             "config": "导出项目",
-            "png": "导出图片",
+            "image": "导出图片",
+            "format": "文件种类",
+            "png": "PNG图像",
+            "svg": "SVG图像（网页用）",
             "transparent": "透明背景",
             "scale": "缩放",
             "shareInfo1": "当我分享此图片时我会附上",
