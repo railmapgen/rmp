@@ -9,11 +9,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/app/app-slice';
-import { setRefresh } from '../../redux/runtime/runtime-slice';
-import ThemeButton from '../panel/theme-button';
-import ColourModal from '../panel/colour-modal/colour-modal';
+import { ColorField } from './color-field';
 
 type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 
@@ -164,57 +160,6 @@ const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttribute
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
-/**
- * Custom color component used in details panel.
- * TODO: In fact, it may be generic, but specific props including type, defaultAttrs,
- * handleChange, defaultTheme need to be passed.
- * See https://medium.com/edonec/creating-a-generic-component-with-react-typescript-2c17f8c4386e
- */
-const Color = () => {
-    const dispatch = useRootDispatch();
-    const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
-        dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
-    const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
-    const graph = React.useRef(window.graph);
-
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const handleChangeColor = (color: Theme) => {
-        if (selectedFirst && graph.current.hasNode(selectedFirst)) {
-            const attrs =
-                graph.current.getNodeAttribute(selectedFirst, StationType.ShmetroBasic2020) ??
-                defaultShmetroBasic2020StationAttributes;
-            attrs.color = color;
-            graph.current.mergeNodeAttributes(selectedFirst, { [StationType.ShmetroBasic2020]: attrs });
-            hardRefresh();
-        }
-    };
-
-    const theme =
-        selectedFirst &&
-        graph.current.hasNode(selectedFirst) &&
-        graph.current.getNodeAttribute(selectedFirst, 'type') === StationType.ShmetroBasic2020
-            ? (
-                  graph.current.getNodeAttribute(selectedFirst, StationType.ShmetroBasic2020) ??
-                  defaultShmetroBasic2020StationAttributes
-              ).color
-            : defaultShmetroBasic2020StationAttributes.color;
-
-    return (
-        <>
-            <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />
-            <ColourModal
-                isOpen={isModalOpen}
-                defaultTheme={theme}
-                onClose={() => setIsModalOpen(false)}
-                onUpdate={nextTheme => handleChangeColor(nextTheme)}
-            />
-        </>
-    );
-};
-
 const shmetroBasic2020StationFields = [
     {
         type: 'input',
@@ -263,7 +208,12 @@ const shmetroBasic2020StationFields = [
     },
     {
         type: 'custom',
-        component: <Color />,
+        component: (
+            <ColorField
+                stationType={StationType.ShmetroBasic2020}
+                defaultAttrs={defaultShmetroBasic2020StationAttributes}
+            />
+        ),
     },
 ];
 
