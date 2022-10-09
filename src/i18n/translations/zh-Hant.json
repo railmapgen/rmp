@@ -68,6 +68,14 @@
                     "height": "車站高度",
                     "width": "車站寬度",
                     "rotate": "車站旋轉角度"
+                },
+                "gzmtrBasic": {
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移",
+                    "lineCode": "路綫編碼",
+                    "stationCode": "車站編碼"
                 }
             },
             "line": {

@@ -17,7 +17,7 @@ export interface ExternalLineAttributes {
     [LineType.Simple]?: SimpleLineAttributes;
 }
 
-/* ----- Below are core types for all the lines, DO NOT TOUCH. ----- */
+/* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
 export interface LineAttributes {}
 export interface LineComponentProps {

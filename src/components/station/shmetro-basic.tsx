@@ -88,7 +88,6 @@ const shmetroBasicStationFields = [
         type: 'input',
         label: 'panel.details.station.shmetroBasic.nameZh',
         value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).names[0],
-        options: { left: 'left', middle: 'middle', right: 'right' },
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
@@ -102,7 +101,6 @@ const shmetroBasicStationFields = [
         type: 'input',
         label: 'panel.details.station.shmetroBasic.nameEn',
         value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).names[1],
-        options: { left: 'left', middle: 'middle', right: 'right' },
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
