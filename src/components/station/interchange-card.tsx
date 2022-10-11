@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, HStack, IconButton, Text } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Theme } from '../../../constants/constants';
-import { InterchangeInfo } from '../../../constants/stations';
+import { Theme } from '../../constants/constants';
+import { InterchangeInfo } from './interchange-field';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import ColourModal from '../colour-modal/colour-modal';
-import { useTranslation } from 'react-i18next';
-import ThemeButton from '../theme-button';
+import ColourModal from '../panel/colour-modal/colour-modal';
+import ThemeButton from '../panel/theme-button';
 
 interface InterchangeCardProps {
     interchangeList: InterchangeInfo[];
@@ -27,14 +27,14 @@ export default function InterchangeCard(props: InterchangeCardProps) {
     const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
         {
             type: 'input',
-            label: t('panel.details.station.interchange.nameZh'),
+            label: t('panel.details.station.gzmtrInt.lineCode'),
             value: it[4],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5]]),
         },
         {
             type: 'input',
-            label: t('panel.details.station.interchange.nameEn'),
+            label: t('panel.details.station.gzmtrInt.stationCode'),
             value: it[5],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val]),
@@ -61,7 +61,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
 
             {interchangeList.map((it, i) => (
                 <HStack key={i} spacing={0.5} data-testid={`interchange-card-stack-${i}`}>
-                    <RmgLabel label={t('Colour')} minW="40px" noLabel={i !== 0}>
+                    <RmgLabel label={t('color')} minW="40px" noLabel={i !== 0}>
                         <ThemeButton
                             theme={[it[0], it[1], it[2], it[3]]}
                             onClick={() => {
@@ -73,7 +73,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
 
                     <RmgFields fields={interchangeFields[i]} noLabel={i !== 0} />
 
-                    {onAdd && i === interchangeFields.length - 1 ? (
+                    {onAdd && i === interchangeFields.length - 1 && interchangeFields.length < 3 ? (
                         <IconButton
                             size="sm"
                             variant="ghost"

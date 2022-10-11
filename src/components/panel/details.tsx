@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Heading, HStack, Flex, Divider } from '@chakra-ui/react';
+import { Box, Button, Heading, HStack } from '@chakra-ui/react';
+import { nanoid } from 'nanoid';
 import {
     RmgFields,
     RmgFieldsField,
@@ -14,12 +15,11 @@ import { saveGraph } from '../../redux/app/app-slice';
 import { clearSelected, setRefresh, setRefreshReconcile } from '../../redux/runtime/runtime-slice';
 import ThemeButton from './theme-button';
 import ColourModal from './colour-modal/colour-modal';
-import { Theme } from '../../constants/constants';
+import { NodeAttributes, Theme } from '../../constants/constants';
 import stations from '../station/stations';
 import miscNodes from '../misc/misc-nodes';
 import lines from '../line/lines';
-import InterchangeSection from './details-panels/interchange-section';
-import InfoSection from './details-panels/info-section';
+import InfoSection from './info-section';
 
 const nodes = { ...stations, ...miscNodes };
 
@@ -47,6 +47,14 @@ const DetailsPanel = () => {
     }, [refreshAll, selected]);
 
     const handleClose = () => dispatch(clearSelected());
+    const handleDuplicate = (selectedFirst: string) => {
+        const allAttr = JSON.parse(JSON.stringify(graph.current.getNodeAttributes(selectedFirst))) as NodeAttributes;
+        allAttr.x += 50;
+        allAttr.y += 50;
+        const rand = nanoid(10);
+        graph.current.addNode(`stn_${rand}`, allAttr);
+        hardRefresh();
+    };
     const handleRemove = (selected: string[]) => {
         dispatch(clearSelected());
         selected.forEach(s => {
@@ -210,8 +218,6 @@ const DetailsPanel = () => {
             <RmgSidePanelBody>
                 <InfoSection />
 
-                {/* {selectedFirst?.startsWith('stn') && graph.current.hasNode(selectedFirst) && <InterchangeSection />} */}
-
                 <Box p={1}>
                     <Heading as="h5" size="sm">
                         {t('panel.details.node.title')}
@@ -233,6 +239,11 @@ const DetailsPanel = () => {
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
                 <HStack>
+                    {selected.length === 1 && graph.current.hasNode(selected.at(0)) && (
+                        <Button size="sm" variant="outline" onClick={() => handleDuplicate(selected.at(0)!)}>
+                            {t('panel.details.footer.duplicate')}
+                        </Button>
+                    )}
                     <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>

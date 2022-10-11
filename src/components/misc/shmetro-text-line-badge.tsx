@@ -42,6 +42,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                         {names[1]}
                     </text>
                 </g>
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
                     fill="white"
                     fillOpacity="0"

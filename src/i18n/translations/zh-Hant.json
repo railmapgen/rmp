@@ -93,6 +93,7 @@
                 }
             },
             "footer": {
+                "duplicate": "複製",
                 "remove": "移除",
                 "removeEntireLine": "移除所有當前顏色的線段"
             }

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useRootDispatch, useRootSelector } from '../../../redux';
+import { useRootSelector } from '../../redux';
 
 export default function InfoSection() {
     const { t } = useTranslation();

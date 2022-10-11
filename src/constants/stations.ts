@@ -1,31 +1,32 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { CanvasType, StnId, Theme, CategoriesType } from './constants';
+import { CanvasType, StnId, CategoriesType } from './constants';
 import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/station/shmetro-basic-2020';
-import { GzmtrStationAttributes } from '../components/station/gzmtr-basic';
+import { GzmtrBasicStationAttributes } from '../components/station/gzmtr-basic';
+import { GzmtrIntStationAttributes } from '../components/station/gzmtr-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
     ShmetroInt = 'shmetro-int',
     ShmetroBasic2020 = 'shmetro-basic-2020',
     GzmtrBasic = 'gzmtr-basic',
+    GzmtrInt = 'gzmtr-int',
 }
 
 export interface ExternalStationAttributes {
     [StationType.ShmetroInt]?: ShmetroIntStationAttributes;
     [StationType.ShmetroBasic]?: ShmetroBasicStationAttributes;
     [StationType.ShmetroBasic2020]?: ShmetroBasic2020StationAttributes;
-    [StationType.GzmtrBasic]?: GzmtrStationAttributes;
+    [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
+    [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 
-export type InterchangeInfo = [...Theme, ...string[]];
 export interface StationAttributes {
     names: string[];
-    transfer: InterchangeInfo[][];
 }
 export interface StationComponentProps {
     id: StnId;
@@ -87,4 +88,4 @@ export interface Station<T extends StationAttributes> {
     };
 }
 
-export const defaultStationAttributes: StationAttributes = { names: ['车站', 'Stn'], transfer: [] };
+export const defaultStationAttributes: StationAttributes = { names: ['车站', 'Stn'] };

@@ -9,17 +9,17 @@ import {
     StationType,
 } from '../../constants/stations';
 
-const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
+export const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
 
 const GzmtrBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultGzmtrStationAttributes.nameOffsetX,
-        nameOffsetY = defaultGzmtrStationAttributes.nameOffsetY,
-        lineCode = defaultGzmtrStationAttributes.lineCode,
-        stationCode = defaultGzmtrStationAttributes.stationCode,
-    } = attrs[StationType.GzmtrBasic] ?? defaultGzmtrStationAttributes;
+        nameOffsetX = defaultGzmtrBasicStationAttributes.nameOffsetX,
+        nameOffsetY = defaultGzmtrBasicStationAttributes.nameOffsetY,
+        lineCode = defaultGzmtrBasicStationAttributes.lineCode,
+        stationCode = defaultGzmtrBasicStationAttributes.stationCode,
+    } = attrs[StationType.GzmtrBasic] ?? defaultGzmtrBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -52,7 +52,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         {stationCode}
                     </text>
                 </g>
-                {/* Below is a overlay element that has all event hooks but can not be seen. */}
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <path
                     id={`stn_core_${id}`}
                     d={PATH}
@@ -87,14 +87,14 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 /**
  * <GzmtrStation /> specific props.
  */
-export interface GzmtrStationAttributes extends StationAttributes {
+export interface GzmtrBasicStationAttributes extends StationAttributes {
     nameOffsetX: 'left' | 'middle' | 'right';
     nameOffsetY: 'up' | 'middle' | 'bottom';
     lineCode: string;
     stationCode: string;
 }
 
-const defaultGzmtrStationAttributes: GzmtrStationAttributes = {
+const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'up',
@@ -106,10 +106,10 @@ const gzmtrBasicStationFields = [
     {
         type: 'input',
         label: 'panel.details.station.gzmtrBasic.nameZh',
-        value: (attrs?: GzmtrStationAttributes) => (attrs ?? defaultGzmtrStationAttributes).names[0],
-        onChange: (val: string | number, attrs_: GzmtrStationAttributes | undefined) => {
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).names[0],
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrStationAttributes;
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.names[0] = val.toString();
             // return modified attrs
@@ -119,10 +119,10 @@ const gzmtrBasicStationFields = [
     {
         type: 'input',
         label: 'panel.details.station.gzmtrBasic.nameEn',
-        value: (attrs?: GzmtrStationAttributes) => (attrs ?? defaultGzmtrStationAttributes).names[1],
-        onChange: (val: string | number, attrs_: GzmtrStationAttributes | undefined) => {
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).names[1],
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrStationAttributes;
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.names[1] = val.toString();
             // return modified attrs
@@ -132,11 +132,11 @@ const gzmtrBasicStationFields = [
     {
         type: 'select',
         label: 'panel.details.station.gzmtrBasic.nameOffsetX',
-        value: (attrs?: GzmtrStationAttributes) => (attrs ?? defaultGzmtrStationAttributes).nameOffsetX,
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
-        onChange: (val: string | number, attrs_: GzmtrStationAttributes | undefined) => {
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrStationAttributes;
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.nameOffsetX = val as 'left' | 'middle' | 'right';
             // return modified attrs
@@ -146,11 +146,11 @@ const gzmtrBasicStationFields = [
     {
         type: 'select',
         label: 'panel.details.station.gzmtrBasic.nameOffsetY',
-        value: (attrs?: GzmtrStationAttributes) => (attrs ?? defaultGzmtrStationAttributes).nameOffsetY,
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetY,
         options: { up: 'up', middle: 'middle', bottom: 'bottom' },
-        onChange: (val: string | number, attrs_: GzmtrStationAttributes | undefined) => {
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrStationAttributes;
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.nameOffsetY = val as 'up' | 'middle' | 'bottom';
             // return modified attrs
@@ -160,10 +160,10 @@ const gzmtrBasicStationFields = [
     {
         type: 'input',
         label: 'panel.details.station.gzmtrBasic.lineCode',
-        value: (attrs?: GzmtrStationAttributes) => (attrs ?? defaultGzmtrStationAttributes).lineCode,
-        onChange: (val: string | number, attrs_: GzmtrStationAttributes | undefined) => {
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).lineCode,
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrStationAttributes;
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.lineCode = val.toString();
             // return modified attrs
@@ -173,10 +173,10 @@ const gzmtrBasicStationFields = [
     {
         type: 'input',
         label: 'panel.details.station.gzmtrBasic.stationCode',
-        value: (attrs?: GzmtrStationAttributes) => (attrs ?? defaultGzmtrStationAttributes).stationCode,
-        onChange: (val: string | number, attrs_: GzmtrStationAttributes | undefined) => {
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).stationCode,
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrStationAttributes;
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.stationCode = val.toString();
             // return modified attrs
@@ -197,10 +197,10 @@ const gzmtrBasicStationIcon = (
     </svg>
 );
 
-const gzmtrBasicStation: Station<GzmtrStationAttributes> = {
+const gzmtrBasicStation: Station<GzmtrBasicStationAttributes> = {
     component: GzmtrBasicStation,
     icon: gzmtrBasicStationIcon,
-    defaultAttrs: defaultGzmtrStationAttributes,
+    defaultAttrs: defaultGzmtrBasicStationAttributes,
     // TODO: fix this
     // @ts-ignore-error
     fields: gzmtrBasicStationFields,

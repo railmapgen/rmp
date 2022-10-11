@@ -76,6 +76,14 @@
                     "nameOffsetY": "Name offset Y",
                     "lineCode": "Line code",
                     "stationCode": "Station code"
+                },
+                "gzmtrInt": {
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y",
+                    "lineCode": "Line code",
+                    "stationCode": "Station code"
                 }
             },
             "line": {
@@ -93,6 +101,7 @@
                 }
             },
             "footer": {
+                "duplicate": "Duplicate",
                 "remove": "Remove",
                 "removeEntireLine": "Remove all lines in this color"
             }
