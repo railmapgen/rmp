@@ -27,6 +27,13 @@
                 "id": "ID",
                 "type": "Type"
             },
+            "stationPosition": {
+                "title": "Station Position",
+                "pos": {
+                    "x": "Coordinate X",
+                    "y": "Coordinate Y"
+                }
+            },
             "node": {
                 "title": "Specific Attributes",
                 "shmetroNumLineBadge": {
@@ -38,10 +45,6 @@
                 }
             },
             "station": {
-                "pos": {
-                    "x": "Coordinate X",
-                    "y": "Coordinate Y"
-                },
                 "interchange": {
                     "title": "Interchanges",
                     "within": "Within-station interchange",

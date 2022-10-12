@@ -27,6 +27,13 @@
                 "id": "唯一识别符",
                 "type": "种类"
             },
+            "stationPosition": {
+                "title": "车站位置",
+                "pos": {
+                    "x": "横坐标",
+                    "y": "纵坐标"
+                }
+            },
             "node": {
                 "title": "独特属性",
                 "shmetroNumLineBadge": {
@@ -38,10 +45,6 @@
                 }
             },
             "station": {
-                "pos": {
-                    "x": "横坐标",
-                    "y": "纵坐标"
-                },
                 "interchange": {
                     "title": "换乘",
                     "within": "同站换乘",

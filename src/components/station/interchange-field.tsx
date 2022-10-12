@@ -1,8 +1,7 @@
 import React, { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd } from 'react-icons/md';
-import { Button, VStack } from '@chakra-ui/react';
-import { RmgLabel } from '@railmapgen/rmg-components';
+import { Button, FormLabel, VStack } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Theme } from '../../constants/constants';
 import { StationAttributes, StationType } from '../../constants/stations';
@@ -59,7 +58,7 @@ export const InterchangeField = (props: {
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
         const newTransferInfo: InterchangeInfo[][] = JSON.parse(JSON.stringify(transfer));
         if (newTransferInfo.length <= setIndex) {
-            for (let i = newTransferInfo.length; i < setIndex; i++) {
+            for (let i = newTransferInfo.length; i <= setIndex; i++) {
                 newTransferInfo[i] = [];
             }
         }
@@ -107,20 +106,26 @@ export const InterchangeField = (props: {
 
     return (
         <VStack align="flex-start">
-            <RmgLabel className={'mw-full'} label={t('panel.details.station.interchange.title')}>
-                {attr.transfer.map((infoList, i) => (
-                    <Fragment key={i}>
-                        <InterchangeCard
-                            interchangeList={infoList}
-                            onAdd={handleAdd(i)}
-                            onDelete={handleDelete(i)}
-                            onUpdate={handleUpdate(i)}
-                        />
-                    </Fragment>
-                ))}
-            </RmgLabel>
+            {attr.transfer.map((infoList, i) => (
+                <Fragment key={i}>
+                    <FormLabel size="xs">
+                        {i === 0
+                            ? t('panel.details.station.interchange.within')
+                            : i === 1
+                            ? t('panel.details.station.interchange.outStation')
+                            : t('panel.details.station.interchange.outSystem')}
+                    </FormLabel>
 
-            {attr.transfer.length < 1 && (
+                    <InterchangeCard
+                        interchangeList={infoList}
+                        onAdd={handleAdd(i)}
+                        onDelete={handleDelete(i)}
+                        onUpdate={handleUpdate(i)}
+                    />
+                </Fragment>
+            ))}
+
+            {attr.transfer.length < 2 && (
                 <Button
                     size="xs"
                     variant="ghost"

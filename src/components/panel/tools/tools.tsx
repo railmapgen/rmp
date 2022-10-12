@@ -1,15 +1,15 @@
 import React from 'react';
 import { Flex, IconButton } from '@chakra-ui/react';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { setMode, setTheme } from '../../redux/runtime/runtime-slice';
-import { StationType } from '../../constants/stations';
-import { MiscNodeType } from '../../constants/node';
-import { LineType } from '../../constants/lines';
-import stations from '../station/stations';
-import miscNodes from '../misc/misc-nodes';
-import lines from '../line/lines';
-import ColourModal from './colour-modal/colour-modal';
-import ThemeButton from './theme-button';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { StationType } from '../../../constants/stations';
+import { MiscNodeType } from '../../../constants/node';
+import { LineType } from '../../../constants/lines';
+import stations from '../../station/stations';
+import miscNodes from '../../misc/misc-nodes';
+import lines from '../../line/lines';
+import ColourModal from '../colour-modal/colour-modal';
+import ThemeButton from '../theme-button';
 
 const ToolsPanel = () => {
     const dispatch = useRootDispatch();

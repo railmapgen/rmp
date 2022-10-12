@@ -1,8 +1,8 @@
 import React from 'react';
 import WindowHeader from './page-header/window-header';
 import SvgWrapper from './svg-wrapper';
-import ToolsPanel from './panel/tools';
-import DetailsPanel from './panel/details';
+import ToolsPanel from './panel/tools/tools';
+import DetailsPanel from './panel/details/details';
 import { RmgWindow } from '@railmapgen/rmg-components';
 import { Flex } from '@chakra-ui/react';
 

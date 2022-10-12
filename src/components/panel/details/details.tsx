@@ -10,16 +10,17 @@ import {
     RmgSidePanelBody,
     RmgSidePanelFooter,
 } from '@railmapgen/rmg-components';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/app/app-slice';
-import { clearSelected, setRefresh, setRefreshReconcile } from '../../redux/runtime/runtime-slice';
-import ThemeButton from './theme-button';
-import ColourModal from './colour-modal/colour-modal';
-import { NodeAttributes, Theme } from '../../constants/constants';
-import stations from '../station/stations';
-import miscNodes from '../misc/misc-nodes';
-import lines from '../line/lines';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/app/app-slice';
+import { clearSelected, setRefresh, setRefreshReconcile } from '../../../redux/runtime/runtime-slice';
+import ThemeButton from '../theme-button';
+import ColourModal from '../colour-modal/colour-modal';
+import { NodeAttributes, Theme } from '../../../constants/constants';
+import stations from '../../station/stations';
+import miscNodes from '../../misc/misc-nodes';
+import lines from '../../line/lines';
 import InfoSection from './info-section';
+import StationPositionSection from './station-position-section';
 
 const nodes = { ...stations, ...miscNodes };
 
@@ -30,21 +31,8 @@ const DetailsPanel = () => {
         dispatch(setRefresh());
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefresh, saveGraph]);
-    const {
-        selected,
-        refresh: { all: refreshAll },
-    } = useRootSelector(state => state.runtime);
+    const { selected } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
-
-    const [pos, setPos] = React.useState({ x: 0, y: 0 });
-    React.useEffect(() => {
-        const selectedFirst = selected.at(0);
-        if (selectedFirst?.startsWith('stn') || selectedFirst?.startsWith('misc_node_')) {
-            const x = graph.current.getNodeAttribute(selectedFirst, 'x');
-            const y = graph.current.getNodeAttribute(selectedFirst, 'y');
-            setPos({ x, y });
-        }
-    }, [refreshAll, selected]);
 
     const handleClose = () => dispatch(clearSelected());
     const handleDuplicate = (selectedFirst: string) => {
@@ -124,30 +112,6 @@ const DetailsPanel = () => {
             // @ts-expect-error
             ...nodes[type].fields.filter(field => field.type === 'custom')
         );
-
-        // list pos { x, y }
-        fields.push(
-            {
-                type: 'input',
-                label: t('panel.details.station.pos.x'),
-                value: pos.x.toString(),
-                validator: val => !Number.isNaN(val),
-                onChange: val => {
-                    graph.current.mergeNodeAttributes(selectedFirst, { x: Number(val) });
-                    hardRefresh();
-                },
-            },
-            {
-                type: 'input',
-                label: t('panel.details.station.pos.y'),
-                value: pos.y.toString(),
-                validator: val => !Number.isNaN(val),
-                onChange: val => {
-                    graph.current.mergeNodeAttributes(selectedFirst, { y: Number(val) });
-                    hardRefresh();
-                },
-            }
-        );
     }
 
     if (selected.length === 1 && graph.current.hasEdge(selectedFirst)) {
@@ -217,6 +181,10 @@ const DetailsPanel = () => {
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />
+
+                {selected.length === 1 && graph.current.hasNode(selectedFirst) && selectedFirst!.startsWith('stn_') && (
+                    <StationPositionSection />
+                )}
 
                 <Box p={1}>
                     <Heading as="h5" size="sm">
