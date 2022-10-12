@@ -19,7 +19,7 @@ export type InterchangeInfo = [...Theme, ...string[]];
  * A StationAttributes that have a transfer field.
  * Extend this interface if you want to use <InterchangeField>.
  */
-interface StationAttributesWithInterchange extends StationAttributes {
+export interface StationAttributesWithInterchange extends StationAttributes {
     transfer: InterchangeInfo[][];
 }
 

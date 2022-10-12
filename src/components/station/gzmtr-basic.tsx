@@ -1,5 +1,5 @@
 import React from 'react';
-import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../constants/constants';
 import {
     defaultStationAttributes,
@@ -8,6 +8,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../constants/stations';
+import { StationAttributesWithColor, ColorField } from './color-field';
 
 export const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
 
@@ -17,6 +18,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultGzmtrBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultGzmtrBasicStationAttributes.nameOffsetY,
+        color = defaultGzmtrBasicStationAttributes.color,
         lineCode = defaultGzmtrBasicStationAttributes.lineCode,
         stationCode = defaultGzmtrBasicStationAttributes.stationCode,
     } = attrs[StationType.GzmtrBasic] ?? defaultGzmtrBasicStationAttributes;
@@ -43,7 +45,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
-                <path d={PATH} stroke="black" fill="white" transform="scale(0.75)" />
+                <path d={PATH} stroke={color[2]} fill="white" transform="scale(0.75)" />
                 <g>
                     <text dx="-6" textAnchor="middle" dominantBaseline="middle" fontSize="8" className="rmp-name__en">
                         {lineCode}
@@ -80,14 +82,27 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                 </g>
             </g>
         ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, lineCode, stationCode, onPointerDown, onPointerMove, onPointerUp]
+        [
+            id,
+            x,
+            y,
+            ...names,
+            nameOffsetX,
+            nameOffsetY,
+            color,
+            lineCode,
+            stationCode,
+            onPointerDown,
+            onPointerMove,
+            onPointerUp,
+        ]
     );
 };
 
 /**
  * <GzmtrStation /> specific props.
  */
-export interface GzmtrBasicStationAttributes extends StationAttributes {
+export interface GzmtrBasicStationAttributes extends StationAttributes, StationAttributesWithColor {
     nameOffsetX: 'left' | 'middle' | 'right';
     nameOffsetY: 'up' | 'middle' | 'bottom';
     lineCode: string;
@@ -98,6 +113,7 @@ const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'up',
+    color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
     lineCode: '1',
     stationCode: '01',
 };
@@ -156,6 +172,12 @@ const gzmtrBasicStationFields = [
             // return modified attrs
             return attrs;
         },
+    },
+    {
+        type: 'custom',
+        component: (
+            <ColorField stationType={StationType.GzmtrBasic} defaultAttrs={defaultGzmtrBasicStationAttributes} />
+        ),
     },
     {
         type: 'input',

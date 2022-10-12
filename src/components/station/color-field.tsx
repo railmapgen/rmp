@@ -11,7 +11,7 @@ import ColourModal from '../panel/colour-modal/colour-modal';
  * A StationAttributes that have a color field.
  * Extend this interface if you want to use <ColorField>.
  */
-interface StationAttributesWithColor extends StationAttributes {
+export interface StationAttributesWithColor extends StationAttributes {
     color: Theme;
 }
 

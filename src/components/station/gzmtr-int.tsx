@@ -9,7 +9,7 @@ import {
     StationType,
 } from '../../constants/stations';
 import { PATH } from './gzmtr-basic';
-import { InterchangeField, InterchangeInfo } from './interchange-field';
+import { InterchangeField, StationAttributesWithInterchange } from './interchange-field';
 
 const CODE_POS = [
     [[0, 0]],
@@ -214,10 +214,9 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 /**
  * <GzmtrStation /> specific props.
  */
-export interface GzmtrIntStationAttributes extends StationAttributes {
+export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: 'left' | 'middle' | 'right';
     nameOffsetY: 'up' | 'middle' | 'bottom';
-    transfer: InterchangeInfo[][];
 }
 
 const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../constants/constants';
-import { Theme } from '../../constants/constants';
 import {
     defaultStationAttributes,
     Station,
@@ -9,7 +8,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../constants/stations';
-import { ColorField } from './color-field';
+import { ColorField, StationAttributesWithColor } from './color-field';
 
 type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 
@@ -149,9 +148,8 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 /**
  * <ShmetroBasic2020Station /> specific props.
  */
-export interface ShmetroBasic2020StationAttributes extends StationAttributes {
+export interface ShmetroBasic2020StationAttributes extends StationAttributes, StationAttributesWithColor {
     rotate: ROTATE;
-    color: Theme;
 }
 
 const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttributes = {

@@ -12,9 +12,11 @@ import { LineType } from '../../constants/lines';
 import stations from '../station/stations';
 import lines from '../line/lines';
 import { ShmetroBasic2020StationAttributes } from '../station/shmetro-basic-2020';
-import RMP_Shanghai from '../../util/RMP_Shanghai.json';
 import { RMPSave } from '../../util/save';
 import { GalleryModal } from './gallery-modal';
+import { GzmtrBasicStationAttributes } from '../station/gzmtr-basic';
+import { InterchangeInfo } from '../station/interchange-field';
+import { GzmtrIntStationAttributes } from '../station/gzmtr-int';
 
 export default function OpenActions() {
     const { t } = useTranslation();
@@ -85,17 +87,50 @@ export default function OpenActions() {
                             ).length === 0
                     )
                     .forEach(([id, stnInfo], i) => {
-                        const type =
-                            (stnInfo as any).transfer.info.flat().length > 0
-                                ? StationType.ShmetroInt
-                                : StationType.ShmetroBasic2020;
+                        // determine station type
+                        let type: StationType = StationType.ShmetroBasic;
+                        if (param.style === 'shmetro') {
+                            if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.ShmetroInt;
+                            else type = StationType.ShmetroBasic2020;
+                        } else if (param.style === 'gzmtr' || param.style === 'mtr') {
+                            if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.GzmtrInt;
+                            else type = StationType.GzmtrBasic;
+                        }
+
+                        // read default attrs
                         const attr = {
                             // deep copy to prevent mutual reference
                             ...JSON.parse(JSON.stringify(stations[type].defaultAttrs)),
                             names: (stnInfo as any).name,
                         };
+
+                        // add style specific attrs from RMG save
                         if (type === StationType.ShmetroBasic2020)
                             (attr as ShmetroBasic2020StationAttributes).color = theme;
+                        else if (type === StationType.GzmtrBasic) {
+                            (attr as GzmtrBasicStationAttributes).color = param.theme;
+                            (attr as GzmtrBasicStationAttributes).lineCode = param.line_num;
+                            (attr as GzmtrBasicStationAttributes).stationCode = (stnInfo as any).num;
+                        } else if (type === StationType.GzmtrInt) {
+                            const transfer = JSON.parse(
+                                JSON.stringify((stnInfo as any).transfer.info)
+                            ) as InterchangeInfo[][];
+                            // override line code and station code to default as they are not provided in RMG save
+                            transfer.forEach(lv1 =>
+                                lv1.forEach(transferInfo => {
+                                    transferInfo[4] = '1';
+                                    transferInfo[5] = '01';
+                                })
+                            );
+                            // add current line and station code to transfer[0][0]
+                            transfer[0].unshift([
+                                ...param.theme,
+                                param.line_num,
+                                (stnInfo as any).num,
+                            ] as unknown as InterchangeInfo);
+                            (attr as GzmtrIntStationAttributes).transfer = transfer;
+                        }
+
                         graph.current.addNode(stnIdMap[id], {
                             visible: true,
                             zIndex: 0,
