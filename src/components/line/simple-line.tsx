@@ -19,9 +19,8 @@ const SimpleLine = (props: LineComponentProps) => {
                 fill="none"
                 stroke={color[2]}
                 strokeWidth={5}
-                strokeLinejoin="round"
                 strokeLinecap="round"
-                onClick={onClick}
+                onClick={newLine ? undefined : onClick}
                 pointerEvents={newLine ? 'none' : undefined}
             />
         ),

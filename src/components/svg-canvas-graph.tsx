@@ -1,74 +1,21 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
-import { MultiDirectedGraph } from 'graphology';
-import { StnId, LineId, MiscNodeId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { StnId, LineId, MiscNodeId, MiscEdgeId } from '../constants/constants';
 import { LineType } from '../constants/lines';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/app/app-slice';
 import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
-import { MiscNodeType } from '../constants/node';
+import { MiscEdgeType } from '../constants/edges';
 import allStations from './station/stations';
 import allLines from './line/lines';
-import miscNodes from './misc/misc-nodes';
+import miscNodes from './nodes/misc-nodes';
+import miscEdges from './edges/misc-edges';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
-import { StationType } from '../constants/stations';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
+import { getStations, getMiscNodes, getLines, getMiscEdges } from '../util/processElements';
 
-type StationElem = NodeAttributes & { node: StnId; type: StationType };
-const getStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): StationElem[] =>
-    graph
-        .filterNodes((node, attr) => node.startsWith('stn'))
-        .map(node => [node, graph.getNodeAttributes(node)] as [StnId, NodeAttributes])
-        .filter(([node, attr]) => attr.visible)
-        .map(([node, attr]) => ({
-            node: node as StnId,
-            visible: attr.visible,
-            zIndex: attr.zIndex,
-            x: attr.x,
-            y: attr.y,
-            type: attr.type as StationType,
-            [attr.type]: attr[attr.type],
-        }));
-
-type LineElem = { edge: LineId; x1: number; x2: number; y1: number; y2: number; attr: EdgeAttributes };
-const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): LineElem[] =>
-    graph
-        .filterDirectedEdges(
-            (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-                // source.startsWith('stn') && target.startsWith('stn')
-                attr.reconcileId === ''
-        )
-        .filter(edge => graph.getEdgeAttributes(edge).visible)
-        .map(edge => {
-            const [source, target] = graph.extremities(edge);
-            const sourceAttr = graph.getNodeAttributes(source);
-            const targetAttr = graph.getNodeAttributes(target);
-            return {
-                edge: edge as LineId,
-                x1: sourceAttr.x,
-                y1: sourceAttr.y,
-                x2: targetAttr.x,
-                y2: targetAttr.y,
-                attr: graph.getEdgeAttributes(edge),
-            };
-        });
-
-type MiscNodeElem = NodeAttributes & { node: MiscNodeId; type: MiscNodeType };
-const getMiscNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): MiscNodeElem[] =>
-    graph
-        .filterNodes((node, attr) => node.startsWith('misc_node'))
-        .map(node => [node, graph.getNodeAttributes(node)] as [MiscNodeId, NodeAttributes])
-        .filter(([node, attr]) => attr.visible)
-        .map(([node, attr]) => ({
-            node,
-            visible: attr.visible,
-            zIndex: attr.zIndex,
-            x: attr.x,
-            y: attr.y,
-            type: attr.type as MiscNodeType,
-            [attr.type]: attr[attr.type],
-        }));
+const EDGES = { ...allLines, ...miscEdges };
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -115,13 +62,13 @@ const SvgCanvas = () => {
             selected.forEach(s => {
                 graph.current.updateNodeAttributes(s, attr => ({
                     ...attr,
-                    x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 10),
-                    y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 10),
+                    x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                    y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                 }));
             });
             refreshAndSave();
             // console.log('move ', graph.current.getNodeAttributes(node));
-        } else if (mode.startsWith('line')) {
+        } else if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
             setNewLinePosition({
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
@@ -131,7 +78,7 @@ const SvgCanvas = () => {
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
-        if (mode.startsWith('line')) {
+        if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
             dispatch(setMode('free'));
 
             const prefixs = ['stn_core_', 'virtual_circle_'];
@@ -139,14 +86,17 @@ const SvgCanvas = () => {
                 const elems = document.elementsFromPoint(e.clientX, e.clientY);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
                 if (id?.startsWith(prefix)) {
-                    const type = mode.slice(5) as LineType;
-                    graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, active, id.slice(prefix.length), {
+                    const type = mode.startsWith('line')
+                        ? (mode.slice(5) as LineType)
+                        : (mode.slice(10) as MiscEdgeType);
+                    const newLineId = `${mode.startsWith('line') ? 'line' : 'misc_edge'}_${nanoid(10)}`;
+                    graph.current.addDirectedEdgeWithKey(newLineId, active, id.slice(prefix.length), {
                         visible: true,
                         zIndex: 0,
                         color: theme,
                         type,
                         // deep copy to prevent mutual reference
-                        [type]: JSON.parse(JSON.stringify(allLines[type].defaultAttrs)),
+                        [type]: JSON.parse(JSON.stringify(EDGES[type].defaultAttrs)),
                         reconcileId: '',
                     });
                 }
@@ -163,7 +113,7 @@ const SvgCanvas = () => {
         refreshAndSave();
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
-    const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+    const handleEdgeClick = useEvent((edge: LineId | MiscEdgeId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
         dispatch(clearSelected());
         dispatch(addSelected(edge));
     });
@@ -173,18 +123,20 @@ const SvgCanvas = () => {
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
     const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
+    const [edges, setEdges] = React.useState(getMiscEdges(graph.current));
     const [allReconciledLines, setAllReconciledLines] = React.useState([] as LineId[][]);
     const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
+    React.useEffect(() => {
+        setStations(getStations(graph.current));
+        setLines(getLines(graph.current));
+        setNodes(getMiscNodes(graph.current));
+        setEdges(getMiscEdges(graph.current));
+    }, [refreshAll]);
     React.useEffect(() => {
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
         setAllReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
     }, []);
-    React.useEffect(() => {
-        setStations(getStations(graph.current));
-        setLines(getLines(graph.current));
-        setNodes(getMiscNodes(graph.current));
-    }, [refreshAll]);
     React.useEffect(() => {
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
         // console.log(allReconciledLines, danglingLines);
@@ -192,9 +144,10 @@ const SvgCanvas = () => {
         setDanglingLines(danglingLines);
     }, [reconcileLine]);
 
-    const DrawLineComponent = mode.startsWith('line')
-        ? allLines[mode.slice(5) as LineType].component
-        : (props: any) => <></>;
+    const DrawLineComponent =
+        mode.startsWith('line') || mode.startsWith('misc-edge')
+            ? EDGES[mode.startsWith('line') ? (mode.slice(5) as LineType) : (mode.slice(10) as MiscEdgeType)].component
+            : (props: any) => <></>;
 
     return (
         <>
@@ -252,11 +205,27 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {lines.map(({ edge, x1, y1, x2, y2, attr }) => {
-                const LineComponent = allLines[attr.type].component;
+            {lines.map(({ edge, x1, y1, x2, y2, attr, type }) => {
+                const LineComponent = allLines[type].component;
                 return (
                     <LineComponent
                         id={edge as LineId}
+                        key={edge}
+                        x1={x1}
+                        y1={y1}
+                        x2={x2}
+                        y2={y2}
+                        newLine={false}
+                        attrs={attr}
+                        handleClick={handleEdgeClick}
+                    />
+                );
+            })}
+            {edges.map(({ edge, x1, y1, x2, y2, attr, type }) => {
+                const EdgeComponent = miscEdges[type].component;
+                return (
+                    <EdgeComponent
+                        id={edge as MiscEdgeId}
                         key={edge}
                         x1={x1}
                         y1={y1}
@@ -284,7 +253,7 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {mode.startsWith('line') && active && (
+            {(mode.startsWith('line') || mode.startsWith('misc-edge')) && active && (
                 <DrawLineComponent
                     // @ts-expect-error
                     id="create_in_progress___no_use"

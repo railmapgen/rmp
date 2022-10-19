@@ -1,7 +1,8 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalStationAttributes, StationType } from './stations';
 import { ExternalLineAttributes, LineType } from './lines';
-import { MiscNodeAttributes, MiscNodeType } from './node';
+import { MiscNodeAttributes, MiscNodeType } from './nodes';
+import { MiscEdgeAttributes, MiscEdgeType } from './edges';
 
 interface BaseAttributes {
     visible: boolean;
@@ -16,15 +17,17 @@ export type NodeAttributes = BaseAttributes & {
 } & Partial<ExternalStationAttributes> &
     Partial<MiscNodeAttributes>;
 
-export type EdgeType = LineType;
+export type EdgeType = LineType | MiscEdgeType;
 export type EdgeAttributes = BaseAttributes & {
+    // TODO: split to path generation type and style type.
     color: Theme;
     type: EdgeType;
     /**
      * Unique ID to reconcile lines.
      */
     reconcileId: string;
-} & Partial<ExternalLineAttributes>;
+} & Partial<ExternalLineAttributes> &
+    Partial<MiscEdgeAttributes>;
 
 export type GraphAttributes = {
     name?: string;
@@ -47,14 +50,19 @@ export type MiscNodeId = `misc_node_${string}`;
 export type MiscEdgeId = `misc_edge_${string}`;
 
 /**
- * Indicate which station/line/node is currently in mouse control. (Runtime only)
+ * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)
  */
-export type ActiveType = StnId | LineId | MiscNodeId | 'background';
+export type ActiveType = StnId | LineId | MiscNodeId | MiscEdgeId | 'background';
 
 /**
  * Indicate which element will be placed by next click. (Runtime only)
  */
-export type RuntimeMode = 'free' | `line-${LineType}` | `station-${StationType}` | `misc-node-${MiscNodeType}`;
+export type RuntimeMode =
+    | 'free'
+    | `line-${LineType}`
+    | `station-${StationType}`
+    | `misc-node-${MiscNodeType}`
+    | `misc-edge-${MiscEdgeType}`;
 
 /**
  * Stations and lines may be in different displaying format.

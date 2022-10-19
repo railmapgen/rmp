@@ -1,7 +1,10 @@
 import { MultiDirectedGraph } from 'graphology';
 import lines from '../components/line/lines';
-import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes, StnId } from '../constants/constants';
+import miscEdges from '../components/edges/misc-edges';
+import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { roundPathCorners } from './pathRounding';
+
+const edges = { ...lines, ...miscEdges };
 
 /**
  * Only lines have a reconcileId will be considered.
@@ -43,7 +46,7 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
         }
 
         // every type of line in linesNeedToReconcile should implement generatePath function
-        if (!linesNeedToReconcile.every(line => lines[graph.getEdgeAttribute(line, 'type')].generatePath)) {
+        if (!linesNeedToReconcile.every(line => edges[graph.getEdgeAttribute(line, 'type')].generatePath)) {
             danglingLines.push(...linesNeedToReconcile);
             return;
         }
@@ -121,7 +124,7 @@ export const generateReconciledPath = (
         const sourceAttr = graph.getNodeAttributes(source);
         const targetAttr = graph.getNodeAttributes(target);
         const type = graph.getEdgeAttribute(line, 'type');
-        const attr = graph.getEdgeAttribute(line, type) ?? lines[type].defaultAttrs;
+        const attr = graph.getEdgeAttribute(line, type) ?? edges[type].defaultAttrs;
         // @ts-ignore-error
         return lines[type].generatePath!(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr);
     });

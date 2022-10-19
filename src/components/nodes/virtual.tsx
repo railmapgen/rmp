@@ -1,5 +1,5 @@
 import React from 'react';
-import { Node, NodeComponentProps } from '../../constants/node';
+import { Node, NodeComponentProps } from '../../constants/nodes';
 
 const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
     const { id, x, y, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -61,6 +61,7 @@ const virtual: Node<VirtualAttributes> = {
     fields: [],
     metadata: {
         displayName: 'panel.details.node.virtual.displayName',
+        tags: [],
     },
 };
 

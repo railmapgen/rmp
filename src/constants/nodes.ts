@@ -1,7 +1,7 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { ShmetroNumLineBadgeAttributes } from '../components/misc/shmetro-num-line-badge';
-import { ShmetroTextLineBadgeAttributes } from '../components/misc/shmetro-text-line-badge';
-import { VirtualAttributes } from '../components/misc/virtual';
+import { ShmetroNumLineBadgeAttributes } from '../components/nodes/shmetro-num-line-badge';
+import { ShmetroTextLineBadgeAttributes } from '../components/nodes/shmetro-text-line-badge';
+import { VirtualAttributes } from '../components/nodes/virtual';
 import { MiscNodeId } from './constants';
 
 export interface NodeComponentProps<T> {
@@ -42,6 +42,10 @@ export interface Node<T> {
          * The name displayed in the tools panel. In react-i18next index format.
          */
         displayName: string;
+        /**
+         * Tags of this station.
+         */
+        tags: string[];
     };
 }
 

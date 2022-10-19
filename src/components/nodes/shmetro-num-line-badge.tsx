@@ -1,7 +1,7 @@
 import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Theme } from '../../constants/constants';
-import { MiscNodeType, Node, NodeComponentProps } from '../../constants/node';
+import { MiscNodeType, Node, NodeComponentProps } from '../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/app/app-slice';
 import { setRefresh } from '../../redux/runtime/runtime-slice';
@@ -167,6 +167,7 @@ const shmetroNumLineBadge: Node<ShmetroNumLineBadgeAttributes> = {
     fields: ShmetroNumLineBadgeFields,
     metadata: {
         displayName: 'panel.details.node.shmetroNumLineBadge.displayName',
+        tags: [],
     },
 };
 

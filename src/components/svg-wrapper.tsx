@@ -8,9 +8,9 @@ import { clearSelected, setActive, setMode, setRefresh } from '../redux/runtime/
 import { setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/app/app-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
-import { MiscNodeType } from '../constants/node';
+import { MiscNodeType } from '../constants/nodes';
 import stations from './station/stations';
-import miscNodes from './misc/misc-nodes';
+import miscNodes from './nodes/misc-nodes';
 import { saveGraph } from '../redux/app/app-slice';
 
 const SvgWrapper = () => {
@@ -57,9 +57,9 @@ const SvgWrapper = () => {
                 [type]: JSON.parse(JSON.stringify(miscNodes[type].defaultAttrs)),
             });
             refreshAndSave();
-        } else if (mode === 'free' || mode.startsWith('line')) {
+        } else if (mode === 'free' || mode.startsWith('line') || mode.startsWith('misc-edge')) {
             // deselect line tool if user clicks on the background
-            if (mode.startsWith('line')) dispatch(setMode('free'));
+            if (mode.startsWith('line') || mode.startsWith('misc-edge')) dispatch(setMode('free'));
 
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);

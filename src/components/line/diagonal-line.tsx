@@ -1,10 +1,10 @@
 import React from 'react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../constants/constants';
-import { LineAttributes, Line, LineComponentProps, generatePathFunction } from '../../constants/lines';
+import { LineAttributes, Line, LineComponentProps, GeneratePathFunction } from '../../constants/lines';
 import { roundPathCorners } from '../../util/pathRounding';
 
-const generatePath: generatePathFunction<DiagonalLineAttributes> = (
+const generatePath: GeneratePathFunction<DiagonalLineAttributes> = (
     propsx1: number,
     propsx2: number,
     propsy1: number,
@@ -63,7 +63,7 @@ const DiagonalLine = (props: LineComponentProps) => {
                 strokeWidth={5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                onClick={onClick}
+                onClick={newLine ? undefined : onClick}
                 pointerEvents={newLine ? 'none' : undefined}
             />
         ),

@@ -3,11 +3,13 @@ import { Flex, IconButton } from '@chakra-ui/react';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { StationType } from '../../../constants/stations';
-import { MiscNodeType } from '../../../constants/node';
+import { MiscNodeType } from '../../../constants/nodes';
 import { LineType } from '../../../constants/lines';
+import { MiscEdgeType } from '../../../constants/edges';
 import stations from '../../station/stations';
-import miscNodes from '../../misc/misc-nodes';
+import miscNodes from '../../nodes/misc-nodes';
 import lines from '../../line/lines';
+import miscEdges from '../../edges/misc-edges';
 import ColourModal from '../colour-modal/colour-modal';
 import ThemeButton from '../theme-button';
 
@@ -20,6 +22,7 @@ const ToolsPanel = () => {
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LineType) => dispatch(setMode(`line-${type}`));
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
+    const handleMiscEdge = (type: MiscEdgeType) => dispatch(setMode(`misc-edge-${type}`));
 
     return (
         <Flex width={50} direction="column" overflow="auto">
@@ -51,6 +54,16 @@ const ToolsPanel = () => {
                     icon={lines[type].icon}
                     onClick={() => handleLine(type)}
                     variant={mode === `line-${type}` ? 'solid' : 'outline'}
+                />
+            ))}
+            {Object.values(MiscEdgeType).map(type => (
+                <IconButton
+                    key={type}
+                    aria-label={type}
+                    size="lg"
+                    icon={miscEdges[type].icon}
+                    onClick={() => handleMiscEdge(type)}
+                    variant={mode === `misc-edge-${type}` ? 'solid' : 'outline'}
                 />
             ))}
             <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />

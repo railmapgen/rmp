@@ -17,12 +17,14 @@ import ThemeButton from '../theme-button';
 import ColourModal from '../colour-modal/colour-modal';
 import { NodeAttributes, Theme } from '../../../constants/constants';
 import stations from '../../station/stations';
-import miscNodes from '../../misc/misc-nodes';
+import miscNodes from '../../nodes/misc-nodes';
 import lines from '../../line/lines';
+import miscEdges from '../../edges/misc-edges';
 import InfoSection from './info-section';
 import StationPositionSection from './station-position-section';
 
 const nodes = { ...stations, ...miscNodes };
+const edges = { ...lines, ...miscEdges };
 
 const DetailsPanel = () => {
     const { t } = useTranslation();
@@ -140,7 +142,7 @@ const DetailsPanel = () => {
         const type = graph.current.getEdgeAttribute(selectedFirst, 'type');
         const attrs = graph.current.getEdgeAttribute(selectedFirst, type);
         fields.push(
-            ...lines[type].fields.map(
+            ...edges[type].fields.map(
                 field =>
                     ({
                         type: field.type,
@@ -215,7 +217,7 @@ const DetailsPanel = () => {
                     <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>
-                    {selected.length === 1 && graph.current.hasEdge(selected.at(0)) && (
+                    {selected.length === 1 && selectedFirst?.startsWith('line-') && (
                         <Button size="sm" variant="outline" onClick={() => handleRemoveEntireLine(selected.at(0)!)}>
                             {t('panel.details.footer.removeEntireLine')}
                         </Button>

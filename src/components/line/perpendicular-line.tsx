@@ -1,10 +1,10 @@
 import React from 'react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../constants/constants';
-import { LineAttributes, Line, LineComponentProps, generatePathFunction } from '../../constants/lines';
+import { LineAttributes, Line, LineComponentProps, GeneratePathFunction } from '../../constants/lines';
 import { roundPathCorners } from '../../util/pathRounding';
 
-const generatePath: generatePathFunction<PerpendicularLineAttributes> = (
+const generatePath: GeneratePathFunction<PerpendicularLineAttributes> = (
     x1: number,
     x2: number,
     y1: number,
@@ -53,7 +53,7 @@ const PerpendicularLine = (props: LineComponentProps) => {
                 strokeWidth={5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                onClick={onClick}
+                onClick={newLine ? undefined : onClick}
                 pointerEvents={newLine ? 'none' : undefined}
             />
         ),
