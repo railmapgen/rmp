@@ -11,7 +11,7 @@
         "@emotion/react": "^11.9.3",
         "@emotion/styled": "^11.9.3",
         "@railmapgen/rmg-components": "^4.3.0",
-        "@railmapgen/rmg-palette-resources": "^0.3.31",
+        "@railmapgen/rmg-palette-resources": "^0.3.32",
         "@railmapgen/rmg-runtime": "^2.0.4",
         "@railmapgen/rmg-translate": "^0.3.0",
         "@reduxjs/toolkit": "^1.8.2",
@@ -67,7 +67,7 @@
             "last 1 safari version"
         ]
     },
-    "version": "0.1.35",
+    "version": "0.1.36",
     "jest": {
         "transformIgnorePatterns": [
             "/node_modules/(?!(@railmapgen/.*)|(nanoid))"
