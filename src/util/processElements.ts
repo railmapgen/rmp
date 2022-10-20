@@ -50,9 +50,8 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     graph
         .filterDirectedEdges(
             (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-                edge.startsWith('line') && attr.reconcileId === ''
+                edge.startsWith('line') && attr.visible && attr.reconcileId === ''
         )
-        .filter(edge => graph.getEdgeAttributes(edge).visible)
         .map(edge => {
             const [source, target] = graph.extremities(edge);
             const attr = graph.getEdgeAttributes(edge);
@@ -102,9 +101,8 @@ export const getMiscEdges = (
     graph
         .filterDirectedEdges(
             (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-                edge.startsWith('misc_edge') && attr.reconcileId === ''
+                edge.startsWith('misc_edge') && attr.visible && attr.reconcileId === ''
         )
-        .filter(edge => graph.getEdgeAttributes(edge).visible)
         .map(edge => {
             const [source, target] = graph.extremities(edge);
             const attr = graph.getEdgeAttributes(edge);

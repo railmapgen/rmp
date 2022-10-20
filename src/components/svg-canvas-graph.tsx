@@ -139,7 +139,6 @@ const SvgCanvas = () => {
     }, []);
     React.useEffect(() => {
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
-        // console.log(allReconciledLines, danglingLines);
         setAllReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
     }, [reconcileLine]);
@@ -205,27 +204,12 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {lines.map(({ edge, x1, y1, x2, y2, attr, type }) => {
-                const LineComponent = allLines[type].component;
-                return (
-                    <LineComponent
-                        id={edge as LineId}
-                        key={edge}
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        newLine={false}
-                        attrs={attr}
-                        handleClick={handleEdgeClick}
-                    />
-                );
-            })}
-            {edges.map(({ edge, x1, y1, x2, y2, attr, type }) => {
-                const EdgeComponent = miscEdges[type].component;
+            {[...lines, ...edges].map(({ edge, x1, y1, x2, y2, attr, type }) => {
+                const EdgeComponent = EDGES[type].component;
                 return (
                     <EdgeComponent
-                        id={edge as MiscEdgeId}
+                        // @ts-expect-error
+                        id={edge as LineId | MiscEdgeId}
                         key={edge}
                         x1={x1}
                         y1={y1}
