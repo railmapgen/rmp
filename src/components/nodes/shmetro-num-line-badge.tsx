@@ -13,9 +13,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     const { num = defaultShmetroNumLineBadgeAttributes.num, color = defaultShmetroNumLineBadgeAttributes.color } =
         attrs ?? defaultShmetroNumLineBadgeAttributes;
 
-    const numLineEl = React.useRef<SVGGElement | null>(null);
-    const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
-    React.useEffect(() => setBBox(numLineEl.current!.getBBox()), [num, setBBox, numLineEl]);
+    const width = num >= 10 ? 17.5 : 14.5;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -33,23 +31,21 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x={0} width={bBox.width + 3} height="16" />
-                <g ref={numLineEl}>
-                    <text textAnchor="middle" x={(bBox.width + 3) / 2} y="14" fill={color[3]}>
-                        {num}
-                    </text>
-                </g>
-                <text x={bBox.width + 5} y="9" fontSize="10">
+                <rect fill={color[2]} x={0} width={width} height="16" />
+                <text textAnchor="middle" x={width / 2} y="14" fill={color[3]}>
+                    {num}
+                </text>
+                <text x={width + 2} y="9" fontSize="10">
                     号线
                 </text>
-                <text x={bBox.width + 5} y="16" fontSize="6">
+                <text x={width + 2} y="16" fontSize="6">
                     Line {num}
                 </text>
                 <rect
                     fill="white"
                     fillOpacity="0"
                     x={0}
-                    width={bBox.width + 3}
+                    width={width}
                     height={10}
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
@@ -58,7 +54,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
                 />
             </g>
         ),
-        [id, x, y, num, bBox, ...color, onPointerDown, onPointerMove, onPointerUp]
+        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
     );
 };
 
