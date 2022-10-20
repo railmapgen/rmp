@@ -21,7 +21,7 @@ import miscNodes from '../../nodes/misc-nodes';
 import lines from '../../line/lines';
 import miscEdges from '../../edges/misc-edges';
 import InfoSection from './info-section';
-import StationPositionSection from './station-position-section';
+import NodePositionSection from './node-position-section';
 
 const nodes = { ...stations, ...miscNodes };
 const edges = { ...lines, ...miscEdges };
@@ -184,9 +184,7 @@ const DetailsPanel = () => {
             <RmgSidePanelBody>
                 <InfoSection />
 
-                {selected.length === 1 && graph.current.hasNode(selectedFirst) && selectedFirst!.startsWith('stn_') && (
-                    <StationPositionSection />
-                )}
+                {selected.length === 1 && graph.current.hasNode(selectedFirst) && <NodePositionSection />}
 
                 <Box p={1}>
                     <Heading as="h5" size="sm">

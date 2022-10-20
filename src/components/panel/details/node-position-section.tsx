@@ -6,7 +6,7 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/app/app-slice';
 import { setRefresh } from '../../../redux/runtime/runtime-slice';
 
-export default function StationPositionSection() {
+export default function NodePositionSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
