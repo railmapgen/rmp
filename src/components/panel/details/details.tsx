@@ -41,8 +41,8 @@ const DetailsPanel = () => {
         const allAttr = JSON.parse(JSON.stringify(graph.current.getNodeAttributes(selectedFirst))) as NodeAttributes;
         allAttr.x += 50;
         allAttr.y += 50;
-        const rand = nanoid(10);
-        graph.current.addNode(`stn_${rand}`, allAttr);
+        const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;
+        graph.current.addNode(id, allAttr);
         hardRefresh();
     };
     const handleRemove = (selected: string[]) => {

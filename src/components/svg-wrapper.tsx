@@ -47,7 +47,7 @@ const SvgWrapper = () => {
             dispatch(setMode('free'));
             const rand = nanoid(10);
             const type = mode.slice(10) as MiscNodeType;
-            graph.current.addNode(`misc_node_${type}_${rand}`, {
+            graph.current.addNode(`misc_node_${rand}`, {
                 visible: true,
                 zIndex: 0,
                 x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
