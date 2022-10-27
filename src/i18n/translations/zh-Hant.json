@@ -79,6 +79,12 @@
                     "nameOffsetY": "名稱縱向偏移",
                     "lineCode": "路綫編碼",
                     "stationCode": "車站編碼"
+                },
+                "bjsubwayInt": {
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移"
                 }
             },
             "line": {

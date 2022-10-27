@@ -87,6 +87,12 @@
                     "nameOffsetY": "Name offset Y",
                     "lineCode": "Line code",
                     "stationCode": "Station code"
+                },
+                "bjsubwayInt": {
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y"
                 }
             },
             "line": {
