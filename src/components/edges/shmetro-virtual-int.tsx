@@ -32,6 +32,7 @@ const ShmetroVirtualInt = (props: EdgeComponentProps<ShmetroVirtualIntAttributes
                     strokeLinecap="round"
                     pointerEvents={newLine ? 'none' : undefined}
                 />
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <line
                     x1={x1}
                     y1={y1}

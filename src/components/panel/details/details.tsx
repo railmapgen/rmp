@@ -188,7 +188,7 @@ const DetailsPanel = () => {
 
                 <Box p={1}>
                     <Heading as="h5" size="sm">
-                        {t('panel.details.node.title')}
+                        {t('panel.details.specificAttrsTitle')}
                     </Heading>
 
                     <RmgFields fields={fields} minW={276} />

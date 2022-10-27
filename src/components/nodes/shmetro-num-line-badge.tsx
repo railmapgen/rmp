@@ -41,6 +41,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
                 <text x={width + 2} y="16" fontSize="6">
                     Line {num}
                 </text>
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
                     fill="white"
                     fillOpacity="0"

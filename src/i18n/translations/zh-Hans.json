@@ -27,15 +27,15 @@
                 "id": "唯一识别符",
                 "type": "种类"
             },
-            "stationPosition": {
+            "nodePosition": {
                 "title": "车站位置",
                 "pos": {
                     "x": "横坐标",
                     "y": "纵坐标"
                 }
             },
+            "specificAttrsTitle": "独特属性",
             "node": {
-                "title": "独特属性",
                 "shmetroNumLineBadge": {
                     "num": "线路号"
                 },

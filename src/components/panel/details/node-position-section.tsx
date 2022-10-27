@@ -33,7 +33,7 @@ export default function NodePositionSection() {
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
-            label: t('panel.details.stationPosition.pos.x'),
+            label: t('panel.details.nodePosition.pos.x'),
             value: pos.x.toString(),
             validator: val => !Number.isNaN(val),
             onChange: val => {
@@ -43,20 +43,20 @@ export default function NodePositionSection() {
         },
         {
             type: 'input',
-            label: t('panel.details.stationPosition.pos.y'),
+            label: t('panel.details.nodePosition.pos.y'),
             value: pos.y.toString(),
             validator: val => !Number.isNaN(val),
             onChange: val => {
                 graph.current.mergeNodeAttributes(selectedFirst, { y: Number(val) });
                 hardRefresh();
             },
-        }
+        },
     ];
 
     return (
         <Box p={1}>
             <Heading as="h5" size="sm">
-                {t('panel.details.stationPosition.title')}
+                {t('panel.details.nodePosition.title')}
             </Heading>
 
             <RmgFields fields={fields} minW={130} />

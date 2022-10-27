@@ -27,15 +27,15 @@
                 "id": "ID",
                 "type": "Type"
             },
-            "stationPosition": {
-                "title": "Station Position",
+            "nodePosition": {
+                "title": "Node Position",
                 "pos": {
                     "x": "Coordinate X",
                     "y": "Coordinate Y"
                 }
             },
+            "specificAttrsTitle": "Specific Attributes",
             "node": {
-                "title": "Specific Attributes",
                 "shmetroNumLineBadge": {
                     "num": "Line Number"
                 },
