@@ -1,4 +1,4 @@
-import { ColourHex } from '../../constants/constants';
+import { ColourHex } from '@railmapgen/rmg-palette-resources';
 import { rmgChakraTheme } from '@railmapgen/rmg-components';
 
 export default class ColourUtil {

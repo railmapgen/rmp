@@ -1,4 +1,4 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalStationAttributes, StationType } from './stations';
 import { ExternalLineAttributes, LineType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
@@ -32,8 +32,6 @@ export type EdgeAttributes = BaseAttributes & {
 export type GraphAttributes = {
     name?: string;
 };
-
-export type ColourHex = `#${string}`;
 
 /**
  * Colour theme of line, derived from `LineEntry`.

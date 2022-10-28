@@ -20,8 +20,8 @@ import {
 import React, { useEffect, useState } from 'react';
 import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { ColourHex, Theme } from '../../../constants/constants';
+import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { Theme } from '../../../constants/constants';
 import CityPicker from './city-picker';
 import ColourPicker from './colour-picker';
 import { useTranslation } from 'react-i18next';
