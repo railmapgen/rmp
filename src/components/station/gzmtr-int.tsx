@@ -8,7 +8,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../constants/stations';
-import { PATH } from './gzmtr-basic';
+import { StationNumber } from './gzmtr-basic';
 import { InterchangeField, StationAttributesWithInterchange } from './interchange-field';
 
 const CODE_POS = [
@@ -147,25 +147,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                         key={`gzmtr_int_${id}_stn_${i}`}
                         transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})`}
                     >
-                        <path d={PATH} stroke={info[2]} fill="white" transform="scale(0.75)" />
-                        <text
-                            dx="-6"
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            fontSize="8"
-                            className="rmp-name__en"
-                        >
-                            {info[4]}
-                        </text>
-                        <text
-                            dx="6"
-                            textAnchor="middle"
-                            dominantBaseline="middle"
-                            fontSize="8"
-                            className="rmp-name__en"
-                        >
-                            {info[5]}
-                        </text>
+                        <StationNumber strokeColor={info[2]} lineCode={info[4]} stationCode={info[5]} />
                     </g>
                 ))}
 
@@ -291,25 +273,17 @@ const gzmtrIntStationFields = [
 
 const gzmtrIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <path d={PATH} fill="none" stroke="currentColor" strokeWidth="2" transform="translate(6,12)scale(0.25)" />
-        <path d={PATH} fill="none" stroke="currentColor" strokeWidth="2" transform="translate(18,12)scale(0.25)" />
+        <g transform="translate(6,12)scale(0.4)">
+            <StationNumber strokeColor="#000" lineCode="1" stationCode="09" />
+        </g>
+        <g transform="translate(18,12)scale(0.4)">
+            <StationNumber strokeColor="#000" lineCode="2" stationCode="13" />
+        </g>
         <marker id="arrow" markerWidth="5" markerHeight="5" refX="1" refY="1.25" orient="auto">
             <polygon points="0,0 0,3 2,1.5" />
         </marker>
         <path d="M 6,6 A 8 8 0 0 1 18,6" fill="none" stroke="currentColor" strokeWidth="2" markerEnd="url(#arrow)" />
         <path d="M 18,18 A 8 8 0 0 1 6,18" fill="none" stroke="currentColor" strokeWidth="2" markerEnd="url(#arrow)" />
-        <text x="4" y="12.5" fontSize="3" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-            1
-        </text>
-        <text x="8" y="12.5" fontSize="3" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-            09
-        </text>
-        <text x="16" y="12.5" fontSize="3" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-            2
-        </text>
-        <text x="20" y="12.5" fontSize="3" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-            13
-        </text>
     </svg>
 );
 

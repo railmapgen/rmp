@@ -1,5 +1,5 @@
 import React from 'react';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../constants/constants';
 import {
     defaultStationAttributes,
@@ -10,7 +10,51 @@ import {
 } from '../../constants/stations';
 import { StationAttributesWithColor, ColorField } from './color-field';
 
-export const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
+const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
+const TEXT_MAX_WIDTH = 12.5;
+
+/**
+ * A StationNumber sub component for both gzmtr-basic and gzmtr-int station.
+ * It draws the code of the line and the station with a capsule icon outside it.
+ */
+export const StationNumber = (props: { strokeColor: ColourHex; lineCode: string; stationCode: string }) => {
+    const { strokeColor, lineCode, stationCode } = props;
+
+    const lineCodeEl = React.useRef<SVGTextElement | null>(null);
+    const stnCodeEl = React.useRef<SVGTextElement | null>(null);
+
+    const [lineCodeBBox, setlineCodeBBox] = React.useState({ width: 0 } as DOMRect);
+    const [stnCodeBBox, setstnCodeBBox] = React.useState({ width: 0 } as DOMRect);
+
+    React.useEffect(() => {
+        setlineCodeBBox(lineCodeEl.current!.getBBox());
+        setstnCodeBBox(stnCodeEl.current!.getBBox());
+    }, [lineCode, stationCode]);
+
+    const lineCodeScale = TEXT_MAX_WIDTH / Math.max(TEXT_MAX_WIDTH, lineCodeBBox.width);
+    const stnCodeScale =
+        lineCode.length === 2 && stationCode.length === 2
+            ? lineCodeScale
+            : TEXT_MAX_WIDTH / Math.max(TEXT_MAX_WIDTH, stnCodeBBox.width);
+
+    return (
+        <g>
+            <path d={PATH} strokeWidth="2" stroke={strokeColor} fill="white" transform="scale(0.75)" />
+            <g textAnchor="middle" dominantBaseline="middle" fontSize="8">
+                <g transform={`translate(-6,0)scale(${lineCodeScale})`}>
+                    <text ref={lineCodeEl} className="rmg-name__zh">
+                        {lineCode}
+                    </text>
+                </g>
+                <g transform={`translate(6,0)scale(${stnCodeScale})`}>
+                    <text ref={stnCodeEl} className="rmg-name__zh">
+                        {stationCode}
+                    </text>
+                </g>
+            </g>
+        </g>
+    );
+};
 
 const GzmtrBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -45,15 +89,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
-                <path d={PATH} stroke={color[2]} fill="white" transform="scale(0.75)" />
-                <g>
-                    <text dx="-6" textAnchor="middle" dominantBaseline="middle" fontSize="8" className="rmp-name__en">
-                        {lineCode}
-                    </text>
-                    <text dx="6" textAnchor="middle" dominantBaseline="middle" fontSize="8" className="rmp-name__en">
-                        {stationCode}
-                    </text>
-                </g>
+                <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <path
                     id={`stn_core_${id}`}
@@ -209,13 +245,9 @@ const gzmtrBasicStationFields = [
 
 const gzmtrBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <path d={PATH} fill="none" stroke="currentColor" strokeWidth="2" transform="translate(12,12)scale(0.5)" />
-        <text x="8" y="12.5" fontSize="6" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-            1
-        </text>
-        <text x="16" y="12.5" fontSize="6" fontWeight="bold" textAnchor="middle" dominantBaseline="middle">
-            01
-        </text>
+        <g transform="translate(12,12)scale(0.6)">
+            <StationNumber strokeColor="#000" lineCode="1" stationCode="01" />
+        </g>
     </svg>
 );
 
