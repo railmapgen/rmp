@@ -15,7 +15,7 @@ import { ShmetroBasic2020StationAttributes } from '../station/shmetro-basic-2020
 import { RMPSave } from '../../util/save';
 import { GalleryModal } from './gallery-modal';
 import { GzmtrBasicStationAttributes } from '../station/gzmtr-basic';
-import { InterchangeInfo } from '../station/interchange-field';
+import { InterchangeInfo } from '../panel/details/interchange-field';
 import { GzmtrIntStationAttributes } from '../station/gzmtr-int';
 
 export default function OpenActions() {

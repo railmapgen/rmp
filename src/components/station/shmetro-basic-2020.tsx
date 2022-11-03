@@ -8,7 +8,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../constants/stations';
-import { ColorField, StationAttributesWithColor } from './color-field';
+import { ColorField, AttributesWithColor } from '../panel/details/color-field';
 
 type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 
@@ -148,7 +148,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 /**
  * <ShmetroBasic2020Station /> specific props.
  */
-export interface ShmetroBasic2020StationAttributes extends StationAttributes, StationAttributesWithColor {
+export interface ShmetroBasic2020StationAttributes extends StationAttributes, AttributesWithColor {
     rotate: ROTATE;
 }
 
@@ -207,10 +207,7 @@ const shmetroBasic2020StationFields = [
     {
         type: 'custom',
         component: (
-            <ColorField
-                stationType={StationType.ShmetroBasic2020}
-                defaultAttrs={defaultShmetroBasic2020StationAttributes}
-            />
+            <ColorField type={StationType.ShmetroBasic2020} defaultAttrs={defaultShmetroBasic2020StationAttributes} />
         ),
     },
 ];

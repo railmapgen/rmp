@@ -9,7 +9,7 @@ import {
     StationType,
 } from '../../constants/stations';
 import { StationNumber } from './gzmtr-basic';
-import { InterchangeField, StationAttributesWithInterchange } from './interchange-field';
+import { InterchangeField, StationAttributesWithInterchange } from '../panel/details/interchange-field';
 
 const CODE_POS = [
     [[0, 0]],

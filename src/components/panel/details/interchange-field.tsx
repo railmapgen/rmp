@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { MdAdd } from 'react-icons/md';
 import { Button, FormLabel, VStack } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Theme } from '../../constants/constants';
-import { StationAttributes, StationType } from '../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/app/app-slice';
-import { setRefresh } from '../../redux/runtime/runtime-slice';
+import { Theme } from '../../../constants/constants';
+import { StationAttributes, StationType } from '../../../constants/stations';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/app/app-slice';
+import { setRefresh } from '../../../redux/runtime/runtime-slice';
 import InterchangeCard from './interchange-card';
 
 /**
@@ -17,7 +17,7 @@ export type InterchangeInfo = [...Theme, ...string[]];
 
 /**
  * A StationAttributes that have a transfer field.
- * Extend this interface if you want to use <InterchangeField>.
+ * Extend this interface if you want to use <InterchangeField />.
  */
 export interface StationAttributesWithInterchange extends StationAttributes {
     transfer: InterchangeInfo[][];

@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { Box, HStack, IconButton, Text } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Theme } from '../../constants/constants';
+import { Theme } from '../../../constants/constants';
 import { InterchangeInfo } from './interchange-field';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import ColourModal from '../panel/colour-modal/colour-modal';
-import ThemeButton from '../panel/theme-button';
+import ColourModal from '../colour-modal/colour-modal';
+import ThemeButton from '../theme-button';
 
 interface InterchangeCardProps {
     interchangeList: InterchangeInfo[];

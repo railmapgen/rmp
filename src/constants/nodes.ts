@@ -1,5 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { FacilitiesAttributes } from '../components/nodes/facilities';
+import { GzmtrLineBadgeAttributes } from '../components/nodes/gzmtr-line-badge/gzmtr-line-badge';
 import { ShmetroNumLineBadgeAttributes } from '../components/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/nodes/shmetro-text-line-badge';
 import { VirtualAttributes } from '../components/nodes/virtual';
@@ -55,10 +56,12 @@ export enum MiscNodeType {
     ShmetroNumLineBadge = 'shmetro-num-line-badge',
     ShmetroTextLineBadge = 'shmetro-text-line-badge',
     Facilities = 'facilities',
+    GzmtrLineBadge = 'gzmtr-line-badge',
 }
 export interface MiscNodeAttributes {
     [MiscNodeType.Virtual]?: VirtualAttributes;
     [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
     [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
+    [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
 }

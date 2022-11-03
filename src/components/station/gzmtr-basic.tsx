@@ -8,7 +8,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../constants/stations';
-import { StationAttributesWithColor, ColorField } from './color-field';
+import { AttributesWithColor, ColorField } from '../panel/details/color-field';
 
 const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
 const TEXT_MAX_WIDTH = 12.5;
@@ -42,12 +42,12 @@ export const StationNumber = (props: { strokeColor: ColourHex; lineCode: string;
             <path d={PATH} strokeWidth="2" stroke={strokeColor} fill="white" transform="scale(0.75)" />
             <g textAnchor="middle" dominantBaseline="middle" fontSize="8">
                 <g transform={`translate(-6,0)scale(${lineCodeScale})`}>
-                    <text ref={lineCodeEl} className="rmg-name__zh">
+                    <text ref={lineCodeEl} className="rmp-name__zh">
                         {lineCode}
                     </text>
                 </g>
                 <g transform={`translate(6,0)scale(${stnCodeScale})`}>
-                    <text ref={stnCodeEl} className="rmg-name__zh">
+                    <text ref={stnCodeEl} className="rmp-name__zh">
                         {stationCode}
                     </text>
                 </g>
@@ -138,7 +138,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 /**
  * <GzmtrStation /> specific props.
  */
-export interface GzmtrBasicStationAttributes extends StationAttributes, StationAttributesWithColor {
+export interface GzmtrBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: 'left' | 'middle' | 'right';
     nameOffsetY: 'up' | 'middle' | 'bottom';
     lineCode: string;
@@ -211,9 +211,7 @@ const gzmtrBasicStationFields = [
     },
     {
         type: 'custom',
-        component: (
-            <ColorField stationType={StationType.GzmtrBasic} defaultAttrs={defaultGzmtrBasicStationAttributes} />
-        ),
+        component: <ColorField type={StationType.GzmtrBasic} defaultAttrs={defaultGzmtrBasicStationAttributes} />,
     },
     {
         type: 'input',
