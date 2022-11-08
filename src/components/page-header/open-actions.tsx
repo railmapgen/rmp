@@ -91,7 +91,8 @@ export default function OpenActions() {
                         let type: StationType = StationType.ShmetroBasic;
                         if (param.style === 'shmetro') {
                             if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.ShmetroInt;
-                            else type = StationType.ShmetroBasic2020;
+                            else if (param.info_panel_type === 'sh2020') type = StationType.ShmetroBasic2020;
+                            else type = StationType.ShmetroBasic;
                         } else if (param.style === 'gzmtr' || param.style === 'mtr') {
                             if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.GzmtrInt;
                             else type = StationType.GzmtrBasic;
