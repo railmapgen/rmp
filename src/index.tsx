@@ -38,7 +38,8 @@ const renderApp = () => {
     );
 };
 
-rmgRuntime.ready().then(() => {
-    renderApp();
-    rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
-});
+rmgRuntime
+    .ready()
+    .then(() => rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() }));
+
+renderApp();

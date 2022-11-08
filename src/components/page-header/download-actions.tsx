@@ -19,7 +19,7 @@ import {
     Text,
     Link,
 } from '@chakra-ui/react';
-import { MdDownload, MdOpenInNew } from 'react-icons/md';
+import { MdDownload, MdImage, MdOpenInNew, MdSave } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import store from '../../redux';
@@ -147,8 +147,12 @@ export default function DownloadActions() {
         <Menu>
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
-                <MenuItem onClick={handleDownloadJson}>{t('header.download.config')}</MenuItem>
-                <MenuItem onClick={() => setIsDownloadModalOpen(true)}>{t('header.download.image')}</MenuItem>
+                <MenuItem icon={<MdSave />} onClick={handleDownloadJson}>
+                    {t('header.download.config')}
+                </MenuItem>
+                <MenuItem icon={<MdImage />} onClick={() => setIsDownloadModalOpen(true)}>
+                    {t('header.download.image')}
+                </MenuItem>
             </MenuList>
 
             <Modal size="xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>

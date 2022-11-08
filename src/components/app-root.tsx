@@ -13,7 +13,7 @@ export default function AppRoot() {
             <Suspense
                 fallback={
                     <p style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                        Initializing Rail Map Painter Core...
+                        Initializing Rail Map Painter core...
                     </p>
                 }
             >
