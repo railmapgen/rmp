@@ -55,7 +55,7 @@ export interface GzmtrLineBadgeAttributes {
 }
 
 const defaultGzmtrLineBadgeAttributes: GzmtrLineBadgeAttributes = {
-    names: ['佛山2号线', 'Foshan Line 2'],
+    names: ['1号线', 'Line 1'],
     color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
 };
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { nanoid } from 'nanoid';
-import { IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { useRootDispatch } from '../../redux';
@@ -262,6 +262,9 @@ export default function OpenActions() {
 
                 <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsGalleryModalOpen(true)}>
                     {t('header.open.gallery')}
+                    <Badge ml="1" colorScheme="green">
+                        New
+                    </Badge>
                 </MenuItem>
                 <GalleryModal
                     isOpen={isGalleryModalOpen}

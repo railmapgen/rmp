@@ -42,6 +42,10 @@
                 "shmetroTextLineBadge": {
                     "nameZh": "中文线路名称",
                     "nameEn": "英文线路名称"
+                },
+                "gzmtrLineBadge": {
+                    "nameZh": "中文线路名称",
+                    "nameEn": "英文线路名称"
                 }
             },
             "station": {
@@ -125,6 +129,7 @@
             "configRMG": "从RMG存档中导入",
             "gallery": "从画廊中导入",
             "shanghai": "上海",
+            "guangzhou": "广州",
             "beijing": "北京",
             "santiago": "圣地亚哥"
         },

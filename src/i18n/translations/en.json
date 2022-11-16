@@ -42,6 +42,10 @@
                 "shmetroTextLineBadge": {
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
+                },
+                "gzmtrLineBadge": {
+                    "nameZh": "Line name in Chinese",
+                    "nameEn": "Line name in English"
                 }
             },
             "station": {
@@ -125,6 +129,7 @@
             "configRMG": "Import from RMG save",
             "gallery": "Import from gallery",
             "shanghai": "Shanghai",
+            "guangzhou": "Guangzhou",
             "beijing": "Beijing",
             "santiago": "Santiago"
         },

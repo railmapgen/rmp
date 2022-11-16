@@ -17,6 +17,7 @@
         "@reduxjs/toolkit": "^1.8.6",
         "framer-motion": "^7.6.1",
         "graphology": "^0.24.1",
+        "graphology-types": "^0.24.5",
         "i18next": "^21.8.10",
         "i18next-browser-languagedetector": "^6.1.4",
         "i18next-http-backend": "^1.4.1",

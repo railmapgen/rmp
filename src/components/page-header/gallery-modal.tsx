@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Badge,
     Button,
     Modal,
     ModalBody,
@@ -14,6 +15,7 @@ import { RMPSave } from '../../util/save';
 import RMP_Shanghai from '../../util/RMP_Shanghai.json';
 import RMP_Beijing from '../../util/RMP_Beijing.json';
 import RMP_Santiago from '../../util/RMP_Santiago.json';
+import RMP_Guangzhou from '../../util/RMP_Guangzhou.json';
 
 export const GalleryModal = (props: {
     isOpen: boolean;
@@ -40,6 +42,18 @@ export const GalleryModal = (props: {
                             }}
                         >
                             {t('header.open.shanghai')}
+                        </Button>
+                        <Button
+                            minWidth={200}
+                            onClick={() => {
+                                handleOpenTemplates(RMP_Guangzhou as RMPSave);
+                                onClose();
+                            }}
+                        >
+                            {t('header.open.guangzhou')}
+                            <Badge ml="1" colorScheme="green">
+                                New
+                            </Badge>
                         </Button>
                         <Button
                             minWidth={200}

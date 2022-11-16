@@ -1,12 +1,6 @@
 import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Theme } from '../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../constants/nodes';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/app/app-slice';
-import { setRefresh } from '../../redux/runtime/runtime-slice';
-import ThemeButton from '../panel/theme-button';
-import ColourModal from '../panel/colour-modal/colour-modal';
 import { AttributesWithColor, ColorField } from '../panel/details/color-field';
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
