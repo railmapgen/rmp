@@ -20,7 +20,7 @@ const SvgWrapper = () => {
         dispatch(saveGraph(graph.current.export()));
     };
 
-    const { mode, active, selected } = useRootSelector(state => state.runtime);
+    const { mode, active, selected, theme } = useRootSelector(state => state.runtime);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.app);
     const graph = React.useRef(window.graph);
 
@@ -32,14 +32,19 @@ const SvgWrapper = () => {
             dispatch(setMode('free'));
             const rand = nanoid(10);
             const type = mode.slice(8) as StationType;
+
+            // deep copy to prevent mutual reference
+            const attr = JSON.parse(JSON.stringify(stations[type].defaultAttrs));
+            // special tweaks for AttributesWithColor
+            if ('color' in attr) attr.color = theme;
+
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
                 x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
                 y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
                 type,
-                // deep copy to prevent mutual reference
-                [type]: JSON.parse(JSON.stringify(stations[type].defaultAttrs)),
+                [type]: attr,
             });
             // console.log('down', active, offset);
             refreshAndSave();
