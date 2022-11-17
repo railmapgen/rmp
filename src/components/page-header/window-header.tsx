@@ -5,6 +5,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
+import { Events } from '../../constants/constants';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about';
@@ -15,8 +16,22 @@ export default function WindowHeader() {
 
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
-    const environment = rmgRuntime.getEnv();
-    const appVersion = rmgRuntime.getAppVersion();
+    const [environment, setEnvironment] = React.useState(RmgEnv.DEV);
+    const [appVersion, setAppVersion] = React.useState('unknown');
+
+    // load rmgRuntime asynchronously
+    React.useEffect(() => {
+        async function waitRmgRuntime() {
+            await rmgRuntime.ready();
+
+            rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() })
+
+            setEnvironment(rmgRuntime.getEnv());
+            setAppVersion(rmgRuntime.getAppVersion());
+        }
+
+        waitRmgRuntime();
+    }, [setEnvironment, setAppVersion]);
 
     const handleChangeLanguage = async (language: LanguageCode) => {
         rmgRuntime.setLanguage(language);

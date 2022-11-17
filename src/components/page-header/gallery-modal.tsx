@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    Badge,
     Button,
     Modal,
     ModalBody,
@@ -12,10 +11,6 @@ import {
 } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import { RMPSave } from '../../util/save';
-import RMP_Shanghai from '../../util/RMP_Shanghai.json';
-import RMP_Beijing from '../../util/RMP_Beijing.json';
-import RMP_Santiago from '../../util/RMP_Santiago.json';
-import RMP_Guangzhou from '../../util/RMP_Guangzhou.json';
 
 export const GalleryModal = (props: {
     isOpen: boolean;
@@ -24,6 +19,12 @@ export const GalleryModal = (props: {
 }) => {
     const { isOpen, handleOpenTemplates, onClose } = props;
     const { t } = useTranslation();
+
+    const handleSelect = async (name: string) => {
+        const module = await import(/* webpackChunkName: "template" */ `../../saves/${name}.json`);
+        handleOpenTemplates(module.default as RMPSave);
+        onClose();
+    };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
@@ -34,45 +35,11 @@ export const GalleryModal = (props: {
 
                 <ModalBody>
                     <VStack>
-                        <Button
-                            minWidth={200}
-                            onClick={() => {
-                                handleOpenTemplates(RMP_Shanghai as RMPSave);
-                                onClose();
-                            }}
-                        >
-                            {t('header.open.shanghai')}
-                        </Button>
-                        <Button
-                            minWidth={200}
-                            onClick={() => {
-                                handleOpenTemplates(RMP_Guangzhou as RMPSave);
-                                onClose();
-                            }}
-                        >
-                            {t('header.open.guangzhou')}
-                            <Badge ml="1" colorScheme="green">
-                                New
-                            </Badge>
-                        </Button>
-                        <Button
-                            minWidth={200}
-                            onClick={() => {
-                                handleOpenTemplates(RMP_Beijing as RMPSave);
-                                onClose();
-                            }}
-                        >
-                            {t('header.open.beijing')}
-                        </Button>
-                        <Button
-                            minWidth={200}
-                            onClick={() => {
-                                handleOpenTemplates(RMP_Santiago as RMPSave);
-                                onClose();
-                            }}
-                        >
-                            {t('header.open.santiago')}
-                        </Button>
+                        {['shanghai', 'guangzhou', 'beijing', 'santiago'].map(city => (
+                            <Button key={city} minWidth={200} onClick={() => handleSelect(city)}>
+                                {t(`header.open.${city}`)}
+                            </Button>
+                        ))}
                     </VStack>
                 </ModalBody>
             </ModalContent>

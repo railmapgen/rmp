@@ -192,7 +192,7 @@ export default function OpenActions() {
         } else {
             try {
                 const paramStr = await readFileAsText(file);
-                const { version, ...save } = JSON.parse(upgrade(paramStr));
+                const { version, ...save } = JSON.parse(await upgrade(paramStr));
 
                 // details panel will complain unknown nodes or edges if last state is not cleared
                 dispatch(clearSelected());

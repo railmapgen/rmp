@@ -1,7 +1,6 @@
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { AppState } from '../redux/app/app-slice';
-import RMP_Shanghai from './RMP_Shanghai.json';
 
 export interface RMPSave {
     version: number;
@@ -31,16 +30,18 @@ const upgrades: { [version: number]: (param: string) => string } = {
         }),
 };
 
-const INITIAL_PARAM = JSON.stringify(RMP_Shanghai as RMPSave);
+// Load shanghai template only if param is missing or invalid.
+const getInitialParam = async () =>
+    JSON.stringify((await import(/* webpackChunkName: "template" */ '../saves/shanghai.json')).default);
 
 /**
  * Upgrade the passed param to the latest format.
  */
-export const upgrade: (originalParam: string | null) => string = originalParam => {
-    if (!originalParam) return INITIAL_PARAM;
+export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
+    if (!originalParam) return await getInitialParam();
 
     const originalSave = JSON.parse(originalParam);
-    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) return INITIAL_PARAM;
+    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) return await getInitialParam();
 
     let version = Number(originalSave.version);
     let save = JSON.stringify(originalSave);
