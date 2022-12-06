@@ -1,9 +1,9 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, LineId, EdgeAttributes, CategoriesType } from './constants';
-import { DiagonalLineAttributes } from '../components/line/diagonal-line';
-import { PerpendicularLineAttributes } from '../components/line/perpendicular-line';
-import { SimpleLineAttributes } from '../components/line/simple-line';
+import { DiagonalLineAttributes } from '../components/svgs/lines/diagonal-line';
+import { PerpendicularLineAttributes } from '../components/svgs/lines/perpendicular-line';
+import { SimpleLineAttributes } from '../components/svgs/lines/simple-line';
 
 export enum LineType {
     Diagonal = 'diagonal',

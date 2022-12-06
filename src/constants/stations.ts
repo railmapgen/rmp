@@ -1,12 +1,12 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, StnId, CategoriesType } from './constants';
-import { ShmetroIntStationAttributes } from '../components/station/shmetro-int';
-import { ShmetroBasicStationAttributes } from '../components/station/shmetro-basic';
-import { ShmetroBasic2020StationAttributes } from '../components/station/shmetro-basic-2020';
-import { GzmtrBasicStationAttributes } from '../components/station/gzmtr-basic';
-import { GzmtrIntStationAttributes } from '../components/station/gzmtr-int';
-import { BjsubwayIntStationAttributes } from '../components/station/bjsubway-int';
+import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
+import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
+import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
+import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
+import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',

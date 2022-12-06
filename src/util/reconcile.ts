@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
-import lines from '../components/line/lines';
-import miscEdges from '../components/edges/misc-edges';
+import lines from '../components/svgs/lines/lines';
+import miscEdges from '../components/svgs/edges/misc-edges';
 import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { roundPathCorners } from './pathRounding';
 

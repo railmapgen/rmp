@@ -9,14 +9,14 @@ import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
 import { upgrade } from '../../util/save';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { LineType } from '../../constants/lines';
-import stations from '../station/stations';
-import lines from '../line/lines';
-import { ShmetroBasic2020StationAttributes } from '../station/shmetro-basic-2020';
+import stations from '../svgs/stations/stations';
+import lines from '../svgs/lines/lines';
+import { ShmetroBasic2020StationAttributes } from '../svgs/stations/shmetro-basic-2020';
 import { RMPSave } from '../../util/save';
 import { GalleryModal } from './gallery-modal';
-import { GzmtrBasicStationAttributes } from '../station/gzmtr-basic';
-import { InterchangeInfo } from '../panel/details/interchange-field';
-import { GzmtrIntStationAttributes } from '../station/gzmtr-int';
+import { GzmtrBasicStationAttributes } from '../svgs/stations/gzmtr-basic';
+import { InterchangeInfo } from '../panels/details/interchange-field';
+import { GzmtrIntStationAttributes } from '../svgs/stations/gzmtr-int';
 
 export default function OpenActions() {
     const { t } = useTranslation();

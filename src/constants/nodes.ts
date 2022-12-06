@@ -1,9 +1,9 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { FacilitiesAttributes } from '../components/nodes/facilities';
-import { GzmtrLineBadgeAttributes } from '../components/nodes/gzmtr-line-badge/gzmtr-line-badge';
-import { ShmetroNumLineBadgeAttributes } from '../components/nodes/shmetro-num-line-badge';
-import { ShmetroTextLineBadgeAttributes } from '../components/nodes/shmetro-text-line-badge';
-import { VirtualAttributes } from '../components/nodes/virtual';
+import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
+import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge/gzmtr-line-badge';
+import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
+import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
+import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { MiscNodeId } from './constants';
 
 export interface NodeComponentProps<T> {

@@ -1,8 +1,8 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { MiscEdgeId } from './constants';
 import { GeneratePathFunction } from './lines';
-import { ShmetroVirtualIntAttributes } from '../components/edges/shmetro-virtual-int';
-import { GzmtrVirtualIntAttributes } from '../components/edges/gzmtr-virtual-int';
+import { ShmetroVirtualIntAttributes } from '../components/svgs/edges/shmetro-virtual-int';
+import { GzmtrVirtualIntAttributes } from '../components/svgs/edges/gzmtr-virtual-int';
 
 export interface EdgeComponentProps<T> {
     id: MiscEdgeId;

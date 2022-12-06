@@ -9,8 +9,8 @@ import { setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/app/app-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
-import stations from './station/stations';
-import miscNodes from './nodes/misc-nodes';
+import stations from './svgs/stations/stations';
+import miscNodes from './svgs/nodes/misc-nodes';
 import { saveGraph } from '../redux/app/app-slice';
 
 const SvgWrapper = () => {
