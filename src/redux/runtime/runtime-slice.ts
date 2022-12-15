@@ -6,8 +6,8 @@ interface RuntimeState {
     selected: string[];
     active: ActiveType | undefined;
     refresh: {
-        all: {};
-        reconcileLine: {};
+        all: Record<string, never>;
+        reconcileLine: Record<string, never>;
     };
     mode: RuntimeMode;
     theme: Theme;

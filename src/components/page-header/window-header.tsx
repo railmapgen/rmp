@@ -24,7 +24,7 @@ export default function WindowHeader() {
         async function waitRmgRuntime() {
             await rmgRuntime.ready();
 
-            rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() })
+            rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
 
             setEnvironment(rmgRuntime.getEnv());
             setAppVersion(rmgRuntime.getAppVersion());
@@ -51,7 +51,7 @@ export default function WindowHeader() {
                 popoverHeader={
                     environment === RmgEnv.PRD ? undefined : (
                         <Trans i18nKey="header.popoverHeader" environment={environment}>
-                            You're on {{ environment }} environment!
+                            You&apos;re on {{ environment }} environment!
                         </Trans>
                     )
                 }
