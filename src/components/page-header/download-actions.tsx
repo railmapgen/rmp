@@ -26,6 +26,7 @@ import store from '../../redux';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import TermsAndConditionsModal from './terms-and-conditions';
+import { MiscNodeType } from '../../constants/nodes';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
@@ -86,7 +87,12 @@ export default function DownloadActions() {
 
         const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
         // remove virtual nodes
-        [...elem.children].filter(e => e.id.startsWith('misc_node_virtual')).forEach(e => elem.removeChild(e));
+        [...elem.children]
+            .filter(
+                e =>
+                    graph.current.hasNode(e.id) && graph.current.getNodeAttribute(e.id, 'type') === MiscNodeType.Virtual
+            )
+            .forEach(e => elem.removeChild(e));
         // append rmp info if user does not want to share rmp info
         if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
         // transform svg to contain all the nodes in the graph
