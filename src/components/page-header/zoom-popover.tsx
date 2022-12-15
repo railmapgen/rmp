@@ -22,7 +22,7 @@ export const ZoomPopover = () => {
             value: 400 - svgViewBoxZoom,
             min: 10,
             max: 390,
-            step: 10,
+            step: 1,
             onChange: value => dispatch(setSvgViewBoxZoom(400 - value)),
             leftIcon: <MdZoomOut />,
             rightIcon: <MdZoomIn />,
