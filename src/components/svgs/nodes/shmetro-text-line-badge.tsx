@@ -30,10 +30,24 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
                 <rect fill={color[2]} x={0} width={bBox.width + 3} height="16" />
                 <g ref={textLineEl}>
-                    <text textAnchor="middle" x={(bBox.width + 3) / 2} y="8" fontSize="8" fill={color[3]}>
+                    <text
+                        className="rmp-name__zh"
+                        textAnchor="middle"
+                        x={(bBox.width + 3) / 2}
+                        y="8"
+                        fontSize="8"
+                        fill={color[3]}
+                    >
                         {names[0]}
                     </text>
-                    <text textAnchor="middle" x={(bBox.width + 3) / 2} y="14" fontSize="6" fill={color[3]}>
+                    <text
+                        className="rmp-name__en"
+                        textAnchor="middle"
+                        x={(bBox.width + 3) / 2}
+                        y="14"
+                        fontSize="6"
+                        fill={color[3]}
+                    >
                         {names[1]}
                     </text>
                 </g>

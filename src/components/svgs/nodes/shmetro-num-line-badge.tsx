@@ -27,13 +27,13 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
                 <rect fill={color[2]} x={0} width={width} height="16" />
-                <text textAnchor="middle" x={width / 2} y="14" fill={color[3]}>
+                <text className="rmp-name__zh" textAnchor="middle" x={width / 2} y="14" fill={color[3]}>
                     {num}
                 </text>
-                <text x={width + 2} y="9" fontSize="10">
+                <text className="rmp-name__zh" x={width + 2} y="9" fontSize="10">
                     号线
                 </text>
-                <text x={width + 2} y="16" fontSize="6">
+                <text className="rmp-name__en" x={width + 2} y="16" fontSize="6">
                     Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}

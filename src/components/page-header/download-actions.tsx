@@ -95,8 +95,8 @@ export default function DownloadActions() {
             .forEach(e => elem.removeChild(e));
         // append rmp info if user does not want to share rmp info
         if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
-        // transform svg to contain all the nodes in the graph
-        // otherwise the later drawImage won't be able to display them all
+        // reset svg viewBox to display all the nodes in the graph
+        // otherwise the later drawImage won't be able to show all of them
         elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
         // Chrome will stretch the image if the following width and height are not set
         elem.setAttribute('width', width.toString());
