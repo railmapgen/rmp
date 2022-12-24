@@ -10,6 +10,7 @@ import {
 } from '../../../constants/stations';
 import { StationNumber } from './gzmtr-basic';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const CODE_POS = [
     [[0, 0]],
@@ -48,10 +49,12 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     );
 
     const textX = nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0;
-    const textY = nameOffsetY === 'up' ? -30 : nameOffsetY === 'bottom' ? 18 : -3;
+    const textDy =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
+        NAME_DY[nameOffsetY].lineHeight *
+        NAME_DY[nameOffsetY].polarity;
+    const textY = textDy + (nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
-    const dominantBaseline = nameOffsetY === 'up' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
-    const enDy = dominantBaseline === 'hanging' ? 15 : 12;
 
     const transferAll = transfer.flat().slice(0, 3); // slice to make sure at most 3 transfers
     const arrowColor = [
@@ -162,19 +165,21 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
                 />
-                <g transform={`translate(${textX}, ${textY})`} className="rmp-name-station">
-                    <text textAnchor={textAnchor} dominantBaseline={dominantBaseline} className="rmp-name__zh">
-                        {names[0]}
-                    </text>
-                    <text
+                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
+                    <MultilineText
+                        text={names[0].split('\\')}
+                        fontSize={16}
+                        lineHeight={16}
+                        grow="up"
+                        className="rmp-name__zh"
+                    />
+                    <MultilineText
+                        text={names[1].split('\\')}
                         fontSize={10}
-                        dy={enDy}
-                        textAnchor={textAnchor}
-                        dominantBaseline={dominantBaseline}
+                        lineHeight={10}
+                        grow="bottom"
                         className="rmp-name__en"
-                    >
-                        {names[1]}
-                    </text>
+                    />
                 </g>
             </g>
         ),
@@ -182,7 +187,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
             id,
             x,
             y,
-            ...names,
+            JSON.stringify(names),
             nameOffsetX,
             nameOffsetY,
             JSON.stringify(transferAll),

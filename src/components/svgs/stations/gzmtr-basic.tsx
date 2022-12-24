@@ -9,6 +9,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
 const TEXT_MAX_WIDTH = 12.5;
@@ -80,11 +81,13 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -15 : nameOffsetX === 'right' ? 15 : 0;
-    const textY = nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 12 : -3;
+    const textX = nameOffsetX === 'left' ? -18 : nameOffsetX === 'right' ? 18 : 0;
+    const textDy =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
+        NAME_DY[nameOffsetY].lineHeight *
+        NAME_DY[nameOffsetY].polarity;
+    const textY = textDy + (nameOffsetY === 'up' ? -21 : nameOffsetY === 'bottom' ? 27 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
-    const dominantBaseline = nameOffsetY === 'up' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
-    const enDy = dominantBaseline === 'hanging' ? 15 : 12;
 
     return React.useMemo(
         () => (
@@ -102,19 +105,21 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                     transform="scale(0.75)"
                 />
-                <g transform={`translate(${textX}, ${textY})`} className="rmp-name-station">
-                    <text textAnchor={textAnchor} dominantBaseline={dominantBaseline} className="rmp-name__zh">
-                        {names[0]}
-                    </text>
-                    <text
+                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
+                    <MultilineText
+                        text={names[0].split('\\')}
+                        fontSize={16}
+                        lineHeight={16}
+                        grow="up"
+                        className="rmp-name__zh"
+                    />
+                    <MultilineText
+                        text={names[1].split('\\')}
                         fontSize={10}
-                        dy={enDy}
-                        textAnchor={textAnchor}
-                        dominantBaseline={dominantBaseline}
+                        lineHeight={10}
+                        grow="bottom"
                         className="rmp-name__en"
-                    >
-                        {names[1]}
-                    </text>
+                    />
                 </g>
             </g>
         ),

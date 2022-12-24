@@ -9,6 +9,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { ColorField, AttributesWithColor } from '../../panels/details/color-field';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 
@@ -17,65 +18,74 @@ const ROTATE_CONST: {
         textDx: number;
         textDy: number;
         textAnchor: 'start' | 'middle' | 'end';
-        dominantBaseline: 'auto' | 'middle' | 'hanging';
-        enDy: number;
+        namesPos: 0 | 1;
+        lineHeight: 0 | 10 | 16;
+        polarity: -1 | 0 | 1;
     };
 } = {
     0: {
         textDx: 0,
         textDy: -27,
         textAnchor: 'middle',
-        dominantBaseline: 'auto',
-        enDy: 12,
+        namesPos: 1,
+        lineHeight: 10,
+        polarity: -1,
     },
     45: {
         textDx: 12,
-        textDy: -27,
+        textDy: -15,
         textAnchor: 'start',
-        dominantBaseline: 'auto',
-        enDy: 12,
+        namesPos: 1,
+        lineHeight: 10,
+        polarity: -1,
     },
     90: {
         textDx: 12,
         textDy: 0,
         textAnchor: 'start',
-        dominantBaseline: 'middle',
-        enDy: 12,
+        namesPos: 0,
+        lineHeight: 0,
+        polarity: 0,
     },
     135: {
         textDx: 12,
         textDy: 15,
         textAnchor: 'start',
-        dominantBaseline: 'hanging',
-        enDy: 15,
+        namesPos: 0,
+        lineHeight: 16,
+        polarity: 1,
     },
     180: {
         textDx: 0,
-        textDy: 15,
+        textDy: 27,
         textAnchor: 'middle',
-        dominantBaseline: 'hanging',
-        enDy: 15,
+        namesPos: 0,
+        lineHeight: 16,
+        polarity: 1,
     },
     225: {
         textDx: -12,
         textDy: 15,
         textAnchor: 'end',
-        dominantBaseline: 'hanging',
-        enDy: 15,
+        namesPos: 0,
+        lineHeight: 16,
+        polarity: 1,
     },
     270: {
         textDx: -12,
         textDy: 0,
         textAnchor: 'end',
-        dominantBaseline: 'middle',
-        enDy: 12,
+        namesPos: 0,
+        lineHeight: 0,
+        polarity: 0,
     },
     315: {
         textDx: -12,
-        textDy: -27,
+        textDy: -15,
         textAnchor: 'end',
-        dominantBaseline: 'auto',
-        enDy: 12,
+        namesPos: 1,
+        lineHeight: 10,
+        polarity: -1,
     },
 };
 
@@ -86,6 +96,12 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
         color = defaultShmetroBasic2020StationAttributes.color,
         rotate = defaultShmetroBasic2020StationAttributes.rotate,
     } = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
+
+    const textDy =
+        ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
+        (names[ROTATE_CONST[rotate].namesPos].split('\\').length - 1) *
+            ROTATE_CONST[rotate].lineHeight *
+            ROTATE_CONST[rotate].polarity; // dynamic dy of n lines (either zh or en)
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -119,25 +135,24 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                     />
                 </g>
                 <g
-                    transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + ROTATE_CONST[rotate].textDy})`}
+                    transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
+                    textAnchor={ROTATE_CONST[rotate].textAnchor}
                     className="rmp-name-station"
                 >
-                    <text
-                        textAnchor={ROTATE_CONST[rotate].textAnchor}
-                        dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
+                    <MultilineText
+                        text={names[0].split('\\')}
+                        fontSize={16}
+                        lineHeight={16}
+                        grow="up"
                         className="rmp-name__zh"
-                    >
-                        {names[0]}
-                    </text>
-                    <text
+                    />
+                    <MultilineText
+                        text={names[1].split('\\')}
                         fontSize={10}
-                        dy={ROTATE_CONST[rotate].enDy}
-                        textAnchor={ROTATE_CONST[rotate].textAnchor}
-                        dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
+                        lineHeight={10}
+                        grow="bottom"
                         className="rmp-name__en"
-                    >
-                        {names[1]}
-                    </text>
+                    />
                 </g>
             </g>
         ),
