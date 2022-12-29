@@ -19,9 +19,9 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
 
     return React.useMemo(
         () => (
-            <g ref={ref} dominantBaseline={dominantBaseline} {...otherSvgTextProps}>
+            <g ref={ref} dominantBaseline={dominantBaseline}>
                 {(grow === 'up' ? [...text].reverse() : text).map((t, i) => (
-                    <text key={t} dy={i * (lineHeight ?? 16) * (grow === 'up' ? -1 : 1) + (grow === 'up' ? -2 : 2)}>
+                    <text key={t} dy={(i * lineHeight + 2) * (grow === 'up' ? -1 : 1)} {...otherSvgTextProps}>
                         {t}
                     </text>
                 ))}
