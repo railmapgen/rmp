@@ -132,6 +132,8 @@ export default function ColourModal(props: ColourModalProps) {
         }
     };
 
+    const name = t('colorModal.example');
+
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
@@ -141,7 +143,7 @@ export default function ColourModal(props: ColourModalProps) {
 
                 <ModalBody>
                     <VStack>
-                        <RmgLineBadge name={t('colorModal.example')} fg={fgColour} bg={bgColour} />
+                        <RmgLineBadge name={name} fg={fgColour} bg={bgColour} />
 
                         <Tabs isFitted colorScheme="teal" w="100%" defaultIndex={cityCode === CityCode.Other ? 1 : 0}>
                             <TabList>
