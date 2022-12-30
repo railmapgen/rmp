@@ -15,6 +15,7 @@
         "@railmapgen/rmg-runtime": "^2.2.1",
         "@railmapgen/rmg-translate": "^0.4.1",
         "@reduxjs/toolkit": "^1.9.1",
+        "electron-is-dev": "^2.0.0",
         "framer-motion": "^7.6.19",
         "graphology": "^0.25.1",
         "graphology-types": "^0.24.5",
@@ -42,6 +43,8 @@
         "@typescript-eslint/eslint-plugin": "^5.47.1",
         "@typescript-eslint/parser": "^5.47.1",
         "cross-env": "^7.0.3",
+        "electron": "^22.0.0",
+        "electron-builder": "^23.6.0",
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-react": "^7.31.11",
         "prettier": "^2.8.1",
@@ -57,7 +60,9 @@
         "lint": "eslint ./src",
         "lint:dev": "eslint -c ./.eslintrc.dev.json ./src",
         "lint:fix": "eslint ./src --fix",
-        "eject": "react-scripts eject"
+        "eject": "react-scripts eject",
+        "electron-dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
+        "electron-package": "npx electron-builder build -c.extraMetadata.main=build/electron.js"
     },
     "browserslist": {
         "production": [
@@ -71,7 +76,19 @@
             "last 1 safari version"
         ]
     },
-    "version": "0.1.49",
+    "version": "0.1.51",
+    "main": "public/electron.js",
+    "build": {
+        "publish": [
+            {
+                "provider": "github",
+                "vPrefixedTagName": false
+            }
+        ],
+        "snap": {
+            "publish": "github"
+        }
+    },
     "jest": {
         "transformIgnorePatterns": [
             "/node_modules/(?!(@railmapgen/.*)|(nanoid))"
