@@ -25,7 +25,7 @@ const ToolsPanel = () => {
     const handleMiscEdge = (type: MiscEdgeType) => dispatch(setMode(`misc-edge-${type}`));
 
     return (
-        <Flex width={50} direction="column" overflow="auto">
+        <Flex className="tools" width={50} direction="column" overflow="auto">
             {Object.values(StationType).map(type => (
                 <IconButton
                     key={type}

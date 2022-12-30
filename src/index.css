@@ -30,6 +30,16 @@ div#root {
     box-sizing: border-box;
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.tools::-webkit-scrollbar {
+    display: none;
+}
+/* Hide scrollbar for IE, Edge and Firefox */
+.tools {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 .rmp-name__zh {
     font-family: Arial, SimHei, STHeitiSC-Medium, PingFangSC-Regular, sans-serif;
 }

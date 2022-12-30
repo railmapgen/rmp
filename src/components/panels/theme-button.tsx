@@ -21,6 +21,7 @@ export default function ThemeButton(props: ThemeButtonProps) {
             color={theme[3]}
             bg={theme[2]}
             size="lg"
+            style={{ minHeight: 50, minWidth: 50 }}
             _hover={{ bg: ColourUtil.fade(theme[2], 0.7) }}
             icon={<MdCircle />}
             onClick={onClick}
