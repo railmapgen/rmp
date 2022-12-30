@@ -90,27 +90,29 @@ const defaultShmetroBasicStationAttributes: ShmetroBasicStationAttributes = {
 
 const shmetroBasicStationFields = [
     {
-        type: 'input',
+        type: 'textarea',
         label: 'panel.details.station.shmetroBasic.nameZh',
-        value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).names[0],
+        value: (attrs?: ShmetroBasicStationAttributes) =>
+            (attrs ?? defaultShmetroBasicStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
             // set value
-            attrs.names[0] = val.toString();
+            attrs.names[0] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
             return attrs;
         },
     },
     {
-        type: 'input',
+        type: 'textarea',
         label: 'panel.details.station.shmetroBasic.nameEn',
-        value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).names[1],
+        value: (attrs?: ShmetroBasicStationAttributes) =>
+            (attrs ?? defaultShmetroBasicStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
             // set value
-            attrs.names[1] = val.toString();
+            attrs.names[1] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
             return attrs;
         },

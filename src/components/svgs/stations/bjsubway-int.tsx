@@ -96,27 +96,29 @@ const defaultBjsubwayIntStationAttributes: BjsubwayIntStationAttributes = {
 
 const bjsubwayIntStationFields = [
     {
-        type: 'input',
+        type: 'textarea',
         label: 'panel.details.station.bjsubwayInt.nameZh',
-        value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).names[0],
+        value: (attrs?: BjsubwayIntStationAttributes) =>
+            (attrs ?? defaultBjsubwayIntStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
             // set value
-            attrs.names[0] = val.toString();
+            attrs.names[0] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
             return attrs;
         },
     },
     {
-        type: 'input',
+        type: 'textarea',
         label: 'panel.details.station.bjsubwayInt.nameEn',
-        value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).names[1],
+        value: (attrs?: BjsubwayIntStationAttributes) =>
+            (attrs ?? defaultBjsubwayIntStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
             // set value
-            attrs.names[1] = val.toString();
+            attrs.names[1] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
             return attrs;
         },

@@ -215,27 +215,29 @@ const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
 
 const gzmtrIntStationFields = [
     {
-        type: 'input',
+        type: 'textarea',
         label: 'panel.details.station.gzmtrInt.nameZh',
-        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).names[0],
+        value: (attrs?: GzmtrIntStationAttributes) =>
+            (attrs ?? defaultGzmtrIntStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
             // set value
-            attrs.names[0] = val.toString();
+            attrs.names[0] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
             return attrs;
         },
     },
     {
-        type: 'input',
+        type: 'textarea',
         label: 'panel.details.station.gzmtrInt.nameEn',
-        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).names[1],
+        value: (attrs?: GzmtrIntStationAttributes) =>
+            (attrs ?? defaultGzmtrIntStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
             // set value
-            attrs.names[1] = val.toString();
+            attrs.names[1] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
             return attrs;
         },
