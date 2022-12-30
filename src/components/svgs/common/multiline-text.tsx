@@ -7,21 +7,25 @@ interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
 }
 
 export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: React.Ref<SVGGElement>) => {
-    const { text, lineHeight, grow, ...otherSvgTextProps } = props;
-
-    // if dominantBaseline is defined, use it, or we calculate the dominantBaseline for you
-    const dominantBaseline =
-        'dominantBaseline' in otherSvgTextProps
-            ? otherSvgTextProps.dominantBaseline
-            : grow === 'up'
-            ? 'auto'
-            : 'hanging';
+    const {
+        text,
+        lineHeight,
+        grow,
+        // if dominantBaseline is defined, use it, or we calculate the dominantBaseline for you
+        dominantBaseline = grow === 'up' ? 'auto' : 'hanging',
+        ...otherSvgTextProps
+    } = props;
 
     return React.useMemo(
         () => (
-            <g ref={ref} dominantBaseline={dominantBaseline}>
+            <g ref={ref}>
                 {(grow === 'up' ? [...text].reverse() : text).map((t, i) => (
-                    <text key={t} dy={(i * lineHeight + 2) * (grow === 'up' ? -1 : 1)} {...otherSvgTextProps}>
+                    <text
+                        key={t}
+                        dy={(i * lineHeight + 2) * (grow === 'up' ? -1 : 1)}
+                        dominantBaseline={dominantBaseline}
+                        {...otherSvgTextProps}
+                    >
                         {t}
                     </text>
                 ))}
