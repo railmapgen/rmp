@@ -7,8 +7,12 @@ type DispatchExts = ThunkDispatch<RootState, void, any>;
 export const createMockRootStore = createMockStore<RootState, DispatchExts>(getDefaultMiddleware());
 
 class BroadcastChannel {
-    postMessage() {}
-    onmessage() {}
+    postMessage() {
+        // mocked
+    }
+    onmessage() {
+        // mocked
+    }
 }
 
 global.BroadcastChannel = BroadcastChannel as any;
