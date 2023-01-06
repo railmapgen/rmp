@@ -123,17 +123,20 @@ const DetailsPanel = () => {
     }
 
     if (selected.length === 1 && graph.current.hasEdge(selectedFirst)) {
-        fields.push({
-            type: 'custom',
-            label: t('color'),
-            component: (
-                <ThemeButton
-                    theme={graph.current.getEdgeAttribute(selectedFirst, 'color')}
-                    onClick={() => setIsModalOpen(true)}
-                />
-            ),
-            minW: '40px',
-        });
+        // TODO: remove this after #84
+        if (selectedFirst!.startsWith('line')) {
+            fields.push({
+                type: 'custom',
+                label: t('color'),
+                component: (
+                    <ThemeButton
+                        theme={graph.current.getEdgeAttribute(selectedFirst, 'color')}
+                        onClick={() => setIsModalOpen(true)}
+                    />
+                ),
+                minW: '40px',
+            });
+        }
         // fields.push({
         //     type: 'input',
         //     label: t('panel.details.line.reconcileId'),
