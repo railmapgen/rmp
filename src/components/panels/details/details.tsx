@@ -12,7 +12,7 @@ import {
 } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/app/app-slice';
-import { clearSelected, setRefresh, setRefreshReconcile } from '../../../redux/runtime/runtime-slice';
+import { clearSelected, setGlobalAlert, setRefresh, setRefreshReconcile } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import ColourModal from '../colour-modal/colour-modal';
 import { NodeAttributes, Theme } from '../../../constants/constants';
@@ -101,10 +101,21 @@ const DetailsPanel = () => {
                             // @ts-ignore-error
                             validator: field.validator,
                             onChange: (val: string | number) => {
+                                let updatedAttrs: NodeAttributes;
+                                try {
+                                    updatedAttrs = field.onChange(val, attrs);
+                                } catch (error) {
+                                    dispatch(
+                                        setGlobalAlert({
+                                            status: 'error',
+                                            message: t(`err-code.${error as string}`),
+                                        })
+                                    );
+                                    return;
+                                }
+
                                 graph.current.mergeNodeAttributes(selectedFirst, {
-                                    // TODO: fix this
-                                    // @ts-ignore-error
-                                    [type]: field.onChange(val, attrs),
+                                    [type]: updatedAttrs,
                                 });
                                 hardRefresh();
                             },

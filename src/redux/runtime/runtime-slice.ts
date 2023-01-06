@@ -1,5 +1,6 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { AlertStatus } from '@chakra-ui/react';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
 
 interface RuntimeState {
@@ -11,6 +12,7 @@ interface RuntimeState {
     };
     mode: RuntimeMode;
     theme: Theme;
+    globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
 
 const initialState: RuntimeState = {
@@ -22,6 +24,7 @@ const initialState: RuntimeState = {
     },
     mode: 'free',
     theme: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+    globalAlerts: {},
 };
 
 const runtimeSlice = createSlice({
@@ -54,6 +57,21 @@ const runtimeSlice = createSlice({
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
         },
+        /**
+         * If linkedApp is true, alert will try to open link in the current domain.
+         * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
+         * If you want to open a url outside the domain, DO NOT set or pass FALSE to linkedApp.
+         */
+        setGlobalAlert: (
+            state,
+            action: PayloadAction<{ status: AlertStatus; message: string; url?: string; linkedApp?: string }>
+        ) => {
+            const { status, message, url, linkedApp } = action.payload;
+            state.globalAlerts[status] = { message, url, linkedApp };
+        },
+        closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
+            delete state.globalAlerts[action.payload];
+        },
     },
 });
 
@@ -66,5 +84,7 @@ export const {
     setRefreshReconcile,
     setMode,
     setTheme,
+    setGlobalAlert,
+    closeGlobalAlert,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;
