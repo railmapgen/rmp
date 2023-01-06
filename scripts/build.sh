@@ -7,7 +7,7 @@ ncu -f '/@railmapgen\/rmg-.*-resources/' -t patch -u
 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install
 
 # run tests
-# npm run test:no-watch
+npm run test:no-watch
 
 # git config
 git config --global user.name 'github-actions[bot]'

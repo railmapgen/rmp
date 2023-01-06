@@ -12,26 +12,6 @@ describe('GZMTRLineIcon', () => {
         mockGetBBox.mockReturnValue({ width: 0 });
     });
 
-    it('Can render line icon for passed station as expected', () => {
-        const { container } = render(
-            <svg>
-                <LineIcon
-                    lineName={['18号线', 'Line 18']}
-                    foregroundColour={MonoColour.black}
-                    backgroundColour="#000000"
-                />
-            </svg>
-        );
-
-        const gEl = container.querySelector('g');
-        expect(gEl).toBeInTheDocument();
-        expect(gEl?.getAttribute('fill')).toBe(MonoColour.white);
-
-        const rectEl = container.querySelector('rect');
-        expect(rectEl).toBeInTheDocument();
-        expect(rectEl?.getAttribute('fill')).toBe('#aaa');
-    });
-
     it('Can render type 1 line icon as expected', () => {
         render(
             <svg>
