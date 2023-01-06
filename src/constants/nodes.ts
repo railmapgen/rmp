@@ -30,11 +30,13 @@ export interface Node<T> {
     defaultAttrs: T;
     /**
      * Changeable actions in the details panel.
-     * In a slightly different RmgFieldsField format.
+     * In a slightly different RmgFieldsField format that hides some internal implementation.
+     * Attrs should be obtained via this wrapper instead of window.graph or redux.
      */
     fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
         value: (attrs?: T) => string;
-        onChange: (val: string | number, attrs_: T | undefined) => T;
+        disabledOptions: (attrs?: T) => (string | number)[];
+        onChange: (val: string | number, attrs_?: T) => T;
     })[];
     /**
      * Metadata for this node.

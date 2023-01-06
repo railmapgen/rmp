@@ -93,18 +93,6 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <path
-                    id={`stn_core_${id}`}
-                    d={PATH}
-                    fill="white"
-                    fillOpacity="0"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                    transform="scale(0.75)"
-                />
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
                     <MultilineText
                         text={names[0].split('\\')}
@@ -121,6 +109,18 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         className="rmp-name__en"
                     />
                 </g>
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
+                <path
+                    id={`stn_core_${id}`}
+                    d={PATH}
+                    fill="white"
+                    fillOpacity="0"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                    transform="scale(0.75)"
+                />
             </g>
         ),
         [

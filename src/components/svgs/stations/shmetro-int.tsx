@@ -144,6 +144,7 @@ const shmetroIntStationFields = [
         label: 'panel.details.station.shmetroInt.nameOffsetX',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
+        disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
@@ -158,6 +159,7 @@ const shmetroIntStationFields = [
         label: 'panel.details.station.shmetroInt.nameOffsetY',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetY,
         options: { up: 'up', middle: 'middle', bottom: 'bottom' },
+        disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroIntStationAttributes;

@@ -91,14 +91,9 @@ const DetailsPanel = () => {
                         ({
                             type: field.type,
                             label: t(field.label),
-                            // TODO: fix this
-                            // @ts-ignore-error
                             value: field.value(attrs),
-                            // TODO: fix this
-                            // @ts-ignore-error
                             options: field.options,
-                            // TODO: fix this
-                            // @ts-ignore-error
+                            disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
                             validator: field.validator,
                             onChange: (val: string | number) => {
                                 let updatedAttrs: NodeAttributes;
@@ -164,6 +159,9 @@ const DetailsPanel = () => {
                         // TODO: fix this
                         // @ts-ignore-error
                         options: field.options,
+                        // TODO: fix this
+                        // @ts-ignore-error
+                        disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
                         // TODO: fix this
                         // @ts-ignore-error
                         validator: field.validator,
