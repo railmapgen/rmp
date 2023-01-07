@@ -86,6 +86,8 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     ))}
                 {transferAll.length <= 2 && (
                     <g>
+                        {/* A simple white mask to hide all underlying lines. */}
+                        <path d="M -18,-12 A 24 24 0 0 1 18,-12 L 18,12 A 24 24 0 0 1 -18,12 Z" fill="white" />
                         <path
                             d="M -18,-12 A 24 24 0 0 1 18,-12"
                             fill="none"
@@ -125,7 +127,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                             strokeWidth="5"
                             markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][2]})`}
                         />
-                        {/* Add another 2 transparent arrows with markers cover bottom arrows */}
+                        {/* Add another 2 transparent arrows with marker to cover bottom arrows */}
                         <path
                             d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
                             fill="none"
@@ -155,7 +157,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                 ))}
 
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <circle
+                <path
                     id={`stn_core_${id}`}
                     r={transferAll.length === 3 ? 22.395 : 18}
                     fill="white"
