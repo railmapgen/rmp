@@ -6,6 +6,7 @@ import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
+import { useRootSelector } from '../../redux/index';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about-modal';
@@ -14,6 +15,9 @@ import SettingsModal from './settings-modal';
 
 export default function WindowHeader() {
     const { t, i18n } = useTranslation();
+    const {
+        telemetry: { app: isAllowAppTelemetry },
+    } = useRootSelector(state => state.app);
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -26,7 +30,8 @@ export default function WindowHeader() {
         async function waitRmgRuntime() {
             await rmgRuntime.ready();
 
-            rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
+            if (isAllowAppTelemetry)
+                rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
 
             setEnvironment(rmgRuntime.getEnv());
             setAppVersion(rmgRuntime.getAppVersion());
