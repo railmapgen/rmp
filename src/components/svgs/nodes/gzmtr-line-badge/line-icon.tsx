@@ -31,7 +31,7 @@ export const LineIcon = (props: LineIconProps) => {
     const nameEnScale = MAX_WIDTH / Math.max(MAX_WIDTH, nameEnBBox.width);
 
     return (
-        <g textAnchor="middle" dominantBaseline="middle" fill={foregroundColour}>
+        <g textAnchor="middle" fill={foregroundColour}>
             <InterchangeBox fill={backgroundColour} />
             {type === 2 ? (
                 <LineIconType2 lineName={lineName} commonPart={commonPart} />
@@ -41,15 +41,16 @@ export const LineIcon = (props: LineIconProps) => {
                         ref={nameZhEl}
                         y={getYByType(type, 'zh', nameZhScale)}
                         className="rmp-name__zh"
+                        dominantBaseline="middle"
                         fontSize={12}
                         transform={`scale(${nameZhScale})`}
                     >
                         {type === 1 ? (
                             <>
-                                <tspan fontSize={16} dy={0.7} className="rmp-name__zh">
+                                <tspan fontSize={16} dy={0.7} dominantBaseline="middle" className="rmp-name__zh">
                                     {commonPart}
                                 </tspan>
-                                <tspan dy={-0.7} className="rmp-name__zh">
+                                <tspan dy={-0.7} dominantBaseline="middle" className="rmp-name__zh">
                                     {lineName[0].slice(commonPart.length)}
                                 </tspan>
                             </>
@@ -61,6 +62,7 @@ export const LineIcon = (props: LineIconProps) => {
                         ref={nameEnEl}
                         y={getYByType(type, 'en', nameEnScale)}
                         className="rmg-name__en"
+                        dominantBaseline="middle"
                         fontSize={8}
                         transform={`scale(${nameEnScale})`}
                     >
