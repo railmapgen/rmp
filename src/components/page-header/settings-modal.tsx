@@ -65,7 +65,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Link>
                             </Box>
                             <Box mb="3">
-                                <Box display="flex">
+                                <Box display="flex" mb="1">
                                     <Text flex="1">{t('header.settings.telemetry.additional')}</Text>
                                     <Switch
                                         isChecked={isAllowAppTelemetry}
