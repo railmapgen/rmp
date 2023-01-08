@@ -1,7 +1,7 @@
 import React from 'react';
 import { NodeType, Theme } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/app/app-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefresh } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import ColourModal from '../colour-modal/colour-modal';

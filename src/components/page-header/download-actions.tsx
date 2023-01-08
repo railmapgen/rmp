@@ -73,7 +73,7 @@ export default function DownloadActions() {
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
 
     const handleDownloadJson = () => {
-        const param = stringifyParam(store.getState().app);
+        const param = stringifyParam(store.getState().param);
         downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', param);
     };
     // thanks to this article that includes every steps in converting svg to png

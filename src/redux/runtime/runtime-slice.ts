@@ -3,6 +3,10 @@ import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
 
+/**
+ * RuntimeState contains all the data that do not require any persistence.
+ * All of them can be initiated with default value.
+ */
 interface RuntimeState {
     selected: string[];
     active: ActiveType | undefined;
@@ -28,7 +32,7 @@ const initialState: RuntimeState = {
 };
 
 const runtimeSlice = createSlice({
-    name: 'app',
+    name: 'runtime',
     initialState,
     reducers: {
         addSelected: (state, action: PayloadAction<string>) => {

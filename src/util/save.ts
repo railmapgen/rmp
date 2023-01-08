@@ -1,6 +1,6 @@
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
-import { AppState } from '../redux/app/app-slice';
+import { ParamState } from '../redux/param/param-slice';
 
 export interface RMPSave {
     version: number;
@@ -55,9 +55,9 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 };
 
 /**
- * Return a valid save string from AppState.
+ * Return a valid save string from ParamState.
  */
-export const stringifyParam = (appState: AppState) => {
-    const save: RMPSave = { ...appState, graph: JSON.parse(appState.graph), version: CURRENT_VERSION };
+export const stringifyParam = (paramState: ParamState) => {
+    const save: RMPSave = { ...paramState, graph: JSON.parse(paramState.graph), version: CURRENT_VERSION };
     return JSON.stringify(save);
 };

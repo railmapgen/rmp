@@ -5,13 +5,13 @@ import { useRootDispatch, useRootSelector } from '../redux';
 import { Size, useWindowSize } from '../util/hooks';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { clearSelected, setActive, setMode, setRefresh } from '../redux/runtime/runtime-slice';
-import { setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/app/app-slice';
+import { setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { saveGraph } from '../redux/app/app-slice';
+import { saveGraph } from '../redux/param/param-slice';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -21,7 +21,7 @@ const SvgWrapper = () => {
     };
 
     const { mode, active, selected, theme } = useRootSelector(state => state.runtime);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.app);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const graph = React.useRef(window.graph);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });

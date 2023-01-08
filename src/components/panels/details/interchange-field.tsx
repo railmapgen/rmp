@@ -6,7 +6,7 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Theme } from '../../../constants/constants';
 import { StationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/app/app-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefresh } from '../../../redux/runtime/runtime-slice';
 import InterchangeCard from './interchange-card';
 

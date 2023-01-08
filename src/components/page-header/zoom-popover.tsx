@@ -3,7 +3,7 @@ import { IconButton, Popover, PopoverBody, PopoverContent, PopoverTrigger } from
 import { MdZoomOut, MdZoomIn } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useRootSelector, useRootDispatch } from '../../redux/index';
-import { setSvgViewBoxZoom } from '../../redux/app/app-slice';
+import { setSvgViewBoxZoom } from '../../redux/param/param-slice';
 
 /**
  * A zoom control displayed in popover component.
@@ -12,7 +12,7 @@ import { setSvgViewBoxZoom } from '../../redux/app/app-slice';
 export const ZoomPopover = () => {
     const [isOpen, setIsOpen] = React.useState(false);
 
-    const { svgViewBoxZoom } = useRootSelector(state => state.app);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const dispatch = useRootDispatch();
 
     const fields: RmgFieldsField[] = [

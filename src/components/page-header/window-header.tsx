@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdHelp, MdTranslate } from 'react-icons/md';
+import { MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
@@ -8,12 +8,14 @@ import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
-import AboutModal from './about';
+import AboutModal from './about-modal';
 import { ZoomPopover } from './zoom-popover';
+import SettingsModal from './settings-modal';
 
 export default function WindowHeader() {
     const { t, i18n } = useTranslation();
 
+    const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
     const [environment, setEnvironment] = React.useState(RmgEnv.DEV);
@@ -83,12 +85,21 @@ export default function WindowHeader() {
                 <IconButton
                     size="sm"
                     variant="ghost"
+                    aria-label="Settings"
+                    icon={<MdSettings />}
+                    onClick={() => setIsSettingsModalOpen(true)}
+                />
+
+                <IconButton
+                    size="sm"
+                    variant="ghost"
                     aria-label="Help"
                     icon={<MdHelp />}
                     onClick={() => setIsAboutModalOpen(true)}
                 />
             </HStack>
 
+            <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
         </RmgWindowHeader>
     );

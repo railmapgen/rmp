@@ -141,6 +141,17 @@
             "period": "。",
             "confirm": "下載"
         },
+        "settings": {
+            "title": "設置",
+            "telemetry": {
+                "title": "遙測",
+                "essential": "基本",
+                "essentialInfo": "地鐵線路圖繪製器使用 Google Analytics 收集數據，幫助貢獻者了解我們的用戶如何以及何時訪問該項目。 請放心，所有傳輸的數據都不會包含您項目中的任何個人身份信息和數據。",
+                "essentialLink": "單擊此鏈接可查看 Google Analytics 可能收集的詳細字段。",
+                "additional": "額外",
+                "additionalInfo": "當您使用鼠標或鍵盤進行交互（例如項目創建或站點添加）時，地鐵線路圖繪製器還會發送其他事件。 一如既往，它們不包含任何個人身份信息，且僅用於統計目的。"
+            }
+        },
         "about": {
             "title": "關於",
             "rmp": "地鐵線路圖繪製器",

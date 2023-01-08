@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/app/app-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefresh } from '../../../redux/runtime/runtime-slice';
 
 export default function NodePositionSection() {

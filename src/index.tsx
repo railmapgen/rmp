@@ -8,9 +8,10 @@ import './i18n/config';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
 import AppRoot from './components/app-root';
 import store from './redux';
-import { AppState, setFullState } from './redux/app/app-slice';
+import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
 import './index.css';
+import { setTelemetryApp } from './redux/app/app-slice';
 
 declare global {
     interface Window {
@@ -33,11 +34,24 @@ const renderApp = () => {
     );
 };
 
+// Load localstorage first or they will be overwritten after first store.dispatch.
+// A change in redux store will trigger the store.subscribe and will write state.
+const app = JSON.parse(localStorage.getItem('rmp__app') ?? '{}');
+const param = localStorage.getItem('rmp__param');
+
+// Load AppState.
+(() => {
+    if ('telemetry' in app) {
+        if ('app' in app.telemetry) store.dispatch(setTelemetryApp(app.telemetry.app));
+    }
+})();
+
+// Upgrade param and inject to ParamState.
 // top-level await is not possible here
-upgrade(localStorage.getItem('rmp__param')).then(param => {
+upgrade(param).then(param => {
     const { version, ...save } = JSON.parse(param) as RMPSave;
     window.graph = graph.import(save.graph as any);
-    const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
+    const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
     store.dispatch(setFullState(state));
 
     renderApp();

@@ -11,7 +11,7 @@ import {
     RmgSidePanelFooter,
 } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/app/app-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
 import { clearSelected, setGlobalAlert, setRefresh, setRefreshReconcile } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import ColourModal from '../colour-modal/colour-modal';

@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid';
 import { StnId, LineId, MiscNodeId, MiscEdgeId } from '../constants/constants';
 import { LineType } from '../constants/lines';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { saveGraph } from '../redux/app/app-slice';
+import { saveGraph } from '../redux/param/param-slice';
 import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
 import { MiscEdgeType } from '../constants/edges';
 import allStations from './svgs/stations/stations';
@@ -27,7 +27,7 @@ const SvgCanvas = () => {
         active,
         theme,
     } = useRootSelector(state => state.runtime);
-    const { svgViewBoxZoom } = useRootSelector(state => state.app);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const refreshAndSave = () => {
         dispatch(setRefresh());
         dispatch(saveGraph(graph.current.export()));

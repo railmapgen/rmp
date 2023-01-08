@@ -4,7 +4,7 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra
 import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { useRootDispatch } from '../../redux';
-import { AppState, saveGraph, setFullState } from '../../redux/app/app-slice';
+import { ParamState, saveGraph, setFullState } from '../../redux/param/param-slice';
 import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
 import { upgrade } from '../../util/save';
 import { StationAttributes, StationType } from '../../constants/stations';
@@ -36,7 +36,7 @@ export default function OpenActions() {
     const handleNew = () => {
         dispatch(clearSelected());
         graph.current.clear();
-        const state: AppState = { graph: '{}', svgViewBoxZoom: 100, svgViewBoxMin: { x: 0, y: 0 } };
+        const state: ParamState = { graph: '{}', svgViewBoxZoom: 100, svgViewBoxMin: { x: 0, y: 0 } };
         dispatch(setFullState(state));
         refreshAndSave();
     };
@@ -198,7 +198,7 @@ export default function OpenActions() {
                 dispatch(clearSelected());
                 graph.current.clear();
                 graph.current.import(save.graph);
-                const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
+                const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
                 dispatch(setFullState(state));
 
                 refreshAndSave();
@@ -222,7 +222,7 @@ export default function OpenActions() {
         dispatch(clearSelected());
         graph.current.clear();
         graph.current.import(save.graph);
-        const state: AppState = { ...save, graph: JSON.stringify(save.graph) };
+        const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
         dispatch(setFullState(state));
 
         refreshAndSave();

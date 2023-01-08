@@ -149,6 +149,17 @@
             "period": ".",
             "confirm": "Download"
         },
+        "settings": {
+            "title": "Settings",
+            "telemetry": {
+                "title": "Telemetry",
+                "essential": "Basic",
+                "essentialInfo": "Rail Map Painter uses Google Analytics to collect data that helps the contributors know how and when our users visit this project. Be assured that all the data transferred will not contain any personal identifiable information and data from your project.",
+                "essentialLink": "Click this link to see detailed fields that Google Analytics may collect.",
+                "additional": "Additional",
+                "additionalInfo": "Rail Map Painter also sends additional events when you interact with your mouse or keyboard such as project creation or station addition. As always, they do not contain any personal identifiable information and are only used for statistics purpose."
+            }
+        },
         "about": {
             "title": "About",
             "rmp": "Rail Map Painter",

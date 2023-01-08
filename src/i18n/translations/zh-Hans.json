@@ -149,6 +149,17 @@
             "period": "。",
             "confirm": "下载"
         },
+        "settings": {
+            "title": "设置",
+            "telemetry": {
+                "title": "遥测",
+                "essential": "基本",
+                "essentialInfo": "地铁线路图绘制器使用 Google Analytics 收集数据，帮助贡献者了解我们的用户如何以及何时访问该项目。 请放心，所有传输的数据都不会包含您项目中的任何个人身份信息和数据。",
+                "essentialLink": "单击此链接可查看 Google Analytics 可能收集的详细字段。",
+                "additional": "额外",
+                "additionalInfo": "当您使用鼠标或键盘进行交互（例如项目创建或站点添加）时，地铁线路图绘制器还会发送其他事件。 一如既往，它们不包含任何个人身份信息，且仅用于统计目的。"
+            }
+        },
         "about": {
             "title": "关于",
             "rmp": "地铁线路图绘制器",
