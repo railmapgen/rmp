@@ -157,7 +157,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                 ))}
 
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <path
+                <circle
                     id={`stn_core_${id}`}
                     r={transferAll.length === 3 ? 22.395 : 18}
                     fill="white"
