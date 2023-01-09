@@ -8,6 +8,7 @@ import {
     StationComponentProps,
     StationType,
 } from '../../../constants/stations';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const PATH_CIRCLE =
     'M 11.28125 1.140625 L 13.640625 2.890625 L 15.140625 5.34375 L 15.59375 8.015625 L 14.84375 11.296875 L 13.09375 13.640625 L 10.640625 15.140625 L 8 15.59375 L 5.34375 15.140625 L 2.890625 13.640625 L 1.140625 11.28125 L 0.390625 8 L 1.140625 4.703125 L 2.890625 2.34375 L 5.34375 0.84375 L 8.015625 0.390625 Z';
@@ -35,16 +36,18 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textDx = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
-    const textDy = nameOffsetY === 'up' ? -27 : nameOffsetY === 'bottom' ? 15 : 0;
+    const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
+    const textDy =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
+        NAME_DY[nameOffsetY].lineHeight *
+        NAME_DY[nameOffsetY].polarity;
+    const textY = textDy + (nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
-    const dominantBaseline = nameOffsetY === 'up' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
-    const enDy = dominantBaseline === 'hanging' ? 15 : 12;
 
     return React.useMemo(
         () => (
             <g id={id}>
-                <g transform={`translate(${x - 8}, ${y - 8})`}>
+                <g transform={`translate(${x - 8}, ${y - 10})`}>
                     <path d={PATH_CIRCLE} fill="#fff" stroke="#000" strokeWidth="0.778" />
                     <path d={PATH_ARROW} stroke="#000" strokeWidth="0.778" />
                     <path
@@ -60,19 +63,25 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                         style={{ cursor: 'move' }}
                     />
                 </g>
-                <g transform={`translate(${x + textDx}, ${y + textDy})`} className="rmp-name-station">
-                    <text textAnchor={textAnchor} dominantBaseline={dominantBaseline} className="rmp-name__zh">
-                        {names[0]}
-                    </text>
-                    <text
+                <g
+                    transform={`translate(${x + textX}, ${y + textY})`}
+                    textAnchor={textAnchor}
+                    className="rmp-name-station"
+                >
+                    <MultilineText
+                        text={names[0].split('\\')}
+                        fontSize={16}
+                        lineHeight={16}
+                        grow="up"
+                        className="rmp-name__zh"
+                    />
+                    <MultilineText
+                        text={names[1].split('\\')}
                         fontSize={10}
-                        dy={enDy}
-                        textAnchor={textAnchor}
-                        dominantBaseline={dominantBaseline}
+                        lineHeight={10}
+                        grow="down"
                         className="rmp-name__en"
-                    >
-                        {names[1]}
-                    </text>
+                    />
                 </g>
             </g>
         ),
@@ -84,8 +93,8 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
  * <BjsubwayIntStation /> specific props.
  */
 export interface BjsubwayIntStationAttributes extends StationAttributes {
-    nameOffsetX: 'left' | 'right';
-    nameOffsetY: 'up' | 'bottom';
+    nameOffsetX: 'left' | 'middle' | 'right';
+    nameOffsetY: 'up' | 'middle' | 'bottom';
 }
 
 const defaultBjsubwayIntStationAttributes: BjsubwayIntStationAttributes = {
@@ -127,7 +136,8 @@ const bjsubwayIntStationFields = [
         type: 'select',
         label: 'panel.details.station.bjsubwayInt.nameOffsetX',
         value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).nameOffsetX,
-        options: { left: 'left', right: 'right' },
+        options: { left: 'left', middle: 'middle', right: 'right' },
+        disabledOptions: (attrs?: BjsubwayIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
@@ -141,7 +151,8 @@ const bjsubwayIntStationFields = [
         type: 'select',
         label: 'panel.details.station.bjsubwayInt.nameOffsetY',
         value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).nameOffsetY,
-        options: { up: 'up', bottom: 'bottom' },
+        options: { up: 'up', middle: 'middle', bottom: 'bottom' },
+        disabledOptions: (attrs?: BjsubwayIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;

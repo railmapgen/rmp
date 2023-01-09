@@ -3,7 +3,7 @@ import React from 'react';
 interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
     text: string[];
     lineHeight: number;
-    grow: 'up' | 'bottom';
+    grow: 'up' | 'down';
 }
 
 export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: React.Ref<SVGGElement>) => {

@@ -105,7 +105,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         text={names[1].split('\\')}
                         fontSize={10}
                         lineHeight={10}
-                        grow="bottom"
+                        grow="down"
                         className="rmp-name__en"
                     />
                 </g>
