@@ -11,7 +11,7 @@
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
         "@railmapgen/rmg-components": "^5.0.0",
-        "@railmapgen/rmg-palette-resources": "^0.6.17",
+        "@railmapgen/rmg-palette-resources": "^0.6.18",
         "@railmapgen/rmg-runtime": "^3.0.2",
         "@railmapgen/rmg-translate": "^0.4.1",
         "@reduxjs/toolkit": "^1.9.1",
@@ -76,7 +76,7 @@
             "last 1 safari version"
         ]
     },
-    "version": "1.0.6",
+    "version": "1.0.7",
     "main": "public/electron.js",
     "build": {
         "publish": [
