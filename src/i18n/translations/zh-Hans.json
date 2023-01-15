@@ -1,5 +1,7 @@
 {
     "color": "颜色",
+    "warning": "警告",
+    "cancel": "取消",
     
     "colorModal": {
         "title": "选择颜色",
@@ -35,15 +37,21 @@
                 }
             },
             "specificAttrsTitle": "独特属性",
+            "multipleSelection": "多重选取",
+            "changeStationTypeContent": "修改车站类型会移除所有独特属性除了名称。",
+            "changeStationType": "更改类型",
             "node": {
                 "shmetroNumLineBadge": {
+                    "displayName": "上海地铁数字线路标识",
                     "num": "线路号"
                 },
                 "shmetroTextLineBadge": {
+                    "displayName": "上海地铁文字线路标识",
                     "nameZh": "中文线路名称",
                     "nameEn": "英文线路名称"
                 },
                 "gzmtrLineBadge": {
+                    "displayName": "广州地铁线路标识",
                     "nameZh": "中文线路名称",
                     "nameEn": "英文线路名称"
                 }
@@ -62,12 +70,21 @@
                     "copy": "复制换乘",
                     "remove": "删除换乘"
                 },
+                "shmetroBasic": {
+                    "displayName": "上海地铁基本车站",
+                    "nameZh": "中文名称",
+                    "nameEn": "英文名称",
+                    "nameOffsetX": "名称横向偏移",
+                    "nameOffsetY": "名称纵向偏移"
+                },
                 "shmetroBasic2020": {
+                    "displayName": "上海地铁基本车站(2020)",
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "rotate": "车站旋转角度"
                 },
                 "shmetroInt": {
+                    "displayName": "上海地铁换乘车站",
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "nameOffsetX": "名称横向偏移",
@@ -77,6 +94,7 @@
                     "rotate": "车站旋转角度"
                 },
                 "gzmtrBasic": {
+                    "displayName": "广州地铁基本车站",
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "nameOffsetX": "名称横向偏移",
@@ -85,6 +103,7 @@
                     "stationCode": "车站编号"
                 },
                 "gzmtrInt": {
+                    "displayName": "广州地铁换乘车站",
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "nameOffsetX": "名称横向偏移",
@@ -93,6 +112,7 @@
                     "stationCode": "车站编号"
                 },
                 "bjsubwayInt": {
+                    "displayName": "北京地铁换乘车站",
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "nameOffsetX": "名称横向偏移",
@@ -101,16 +121,29 @@
             },
             "line": {
                 "reconcileId": "合并线段唯一标识符",
+                "simple": {
+                    "displayName": "基本线段"
+                },
                 "diagonal": {
+                    "displayName": "135°折线线段",
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
                     "startFrom": "样式"
                 },
                 "perpendicular": {
+                    "displayName": "90°垂直线段",
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
                     "startFrom": "样式",
                     "roundCornerFactor": "转折圆角因子"
+                }
+            },
+            "edge": {
+                "shmetroVirtualInt": {
+                    "displayName": "上海地铁出站换乘线段"
+                },
+                "gzmtrVirtualInt": {
+                    "displayName": "广州地铁出站换乘线段"
                 }
             },
             "footer": {
@@ -151,6 +184,12 @@
         },
         "settings": {
             "title": "设置",
+            "changeType": {
+                "title": "批量修改车站种类",
+                "changeFrom": "将此类型的所有车站：",
+                "changeTo": "转换为这个类型的车站：",
+                "info": "修改车站类型会移除所有独特属性除了名称。保存再操作！"
+            },
             "telemetry": {
                 "title": "遥测",
                 "essential": "基本",

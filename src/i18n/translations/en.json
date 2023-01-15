@@ -1,5 +1,7 @@
 {
     "color": "Color",
+    "warning": "Warning",
+    "cancel": "Cancel",
 
     "colorModal": {
         "title": "Select a color",
@@ -27,6 +29,9 @@
                 "id": "ID",
                 "type": "Type"
             },
+            "multipleSelection": "Multiple Selection",
+            "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its position and names.",
+            "changeStationType": "Change Type",
             "nodePosition": {
                 "title": "Node Position",
                 "pos": {
@@ -37,13 +42,16 @@
             "specificAttrsTitle": "Specific Attributes",
             "node": {
                 "shmetroNumLineBadge": {
+                    "displayName": "Shanghai Metro num line badge",
                     "num": "Line Number"
                 },
                 "shmetroTextLineBadge": {
+                    "displayName": "Shanghai Metro text line badge",
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
                 },
                 "gzmtrLineBadge": {
+                    "displayName": "Guangzhou Metro line badge",
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
                 }
@@ -62,12 +70,21 @@
                     "copy": "Copy interchange",
                     "remove": "Remove interchange"
                 },
+                "shmetroBasic": {
+                    "displayName": "Shanghai Metro basic station",
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y"
+                },
                 "shmetroBasic2020": {
+                    "displayName": "Shanghai Metro basic station (2020)",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "rotate": "Icon Rotation"
                 },
                 "shmetroInt": {
+                    "displayName": "Shanghai Metro interchange station",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
@@ -77,6 +94,7 @@
                     "rotate": "Icon rotation"
                 },
                 "gzmtrBasic": {
+                    "displayName": "Guangzhou Metro basic station",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
@@ -85,6 +103,7 @@
                     "stationCode": "Station code"
                 },
                 "gzmtrInt": {
+                    "displayName": "Guangzhou Metro interchange station",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
@@ -93,6 +112,7 @@
                     "stationCode": "Station code"
                 },
                 "bjsubwayInt": {
+                    "displayName": "Beijing Subway interchange station",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
@@ -101,16 +121,29 @@
             },
             "line": {
                 "reconcileId": "Reconcile ID",
+                "simple": {
+                    "displayName": "Simple line"
+                },
                 "diagonal": {
+                    "displayName": "135° diagonal line",
                     "offsetFrom": "Offset From",
                     "offsetTo": "Offset To",
                     "startFrom": "Start From"
                 },
                 "perpendicular": {
+                    "displayName": "90° perpendicular line",
                     "offsetFrom": "Offset From",
                     "offsetTo": "Offset To",
                     "startFrom": "Start From",
                     "roundCornerFactor": "Round Corner Factor"
+                }
+            },
+            "edge": {
+                "shmetroVirtualInt": {
+                    "displayName": "Shanghai Metro out-of-station interchange line"
+                },
+                "gzmtrVirtualInt": {
+                    "displayName": "Guangzhou Metro out-of-station interchange line"
                 }
             },
             "footer": {
@@ -151,6 +184,12 @@
         },
         "settings": {
             "title": "Settings",
+            "changeType": {
+                "title": "Change stations type in batch",
+                "changeFrom": "Change all stations from this type:",
+                "changeTo": "To this type:",
+                "info": "Changing stations' type will remove all specific attributes from stations except their position and names. SAVE BEFORE CHANGE!"
+            },
             "telemetry": {
                 "title": "Telemetry",
                 "essential": "Basic",

@@ -8,10 +8,10 @@ import './i18n/config';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
 import AppRoot from './components/app-root';
 import store from './redux';
+import { setTelemetryApp } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
 import './index.css';
-import { setTelemetryApp } from './redux/app/app-slice';
 
 declare global {
     interface Window {

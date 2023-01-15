@@ -13,7 +13,7 @@ import miscNodes from './svgs/nodes/misc-nodes';
 import miscEdges from './svgs/edges/misc-edges';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
-import { getStations, getMiscNodes, getLines, getMiscEdges } from '../util/processElements';
+import { getStations, getMiscNodes, getLines, getMiscEdges } from '../util/process-elements';
 
 const EDGES = { ...allLines, ...miscEdges };
 

@@ -1,5 +1,7 @@
 {
     "color": "顏色",
+    "warning": "警告",
+    "cancel": "取消",
 
     "colorModal": {
         "title": "選擇顏色",
@@ -35,15 +37,21 @@
                 }
             },
             "specificAttrsTitle": "獨特屬性",
+            "multipleSelection": "多重选取",
+            "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了位置和名稱。",
+            "changeStationType": "更改類型",
             "node": {
                 "shmetroNumLineBadge": {
+                    "displayName": "上海地鐵數字線路標識",
                     "num": "線路號"
                 },
                 "shmetroTextLineBadge": {
+                    "displayName": "上海地鐵文字線路標識",
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱"
                 },
                 "gzmtrLineBadge": {
+                    "displayName": "廣州地鐵線路標識",
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱"
                 }
@@ -62,12 +70,21 @@
                     "copy": "復製換乘",
                     "remove": "刪除換乘"
                 },
+                "shmetroBasic": {
+                    "displayName": "上海地鐵基本車站",
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移"
+                },
                 "shmetroBasic2020": {
+                    "displayName": "上海地鐵基本車站(2020)",
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "rotate": "車站旋轉角度"
                 },
                 "shmetroInt": {
+                    "displayName": "上海地鐵換乘車站",
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",
@@ -77,6 +94,7 @@
                     "rotate": "車站旋轉角度"
                 },
                 "gzmtrBasic": {
+                    "displayName": "廣州地鐵基本車站",
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",
@@ -85,6 +103,7 @@
                     "stationCode": "車站編碼"
                 },
                 "bjsubwayInt": {
+                    "displayName": "廣州地鐵換乘車站",
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",
@@ -93,16 +112,29 @@
             },
             "line": {
                 "reconcileId": "合並線段唯一標識符",
+                "simple": {
+                    "displayName": "基本線段"
+                },
                 "diagonal": {
+                    "displayName": "135°折線線段",
                     "offsetFrom": "起始點偏移",
                     "offsetTo": "結束點偏移",
                     "startFrom": "樣式"
                 },
                 "perpendicular": {
+                    "displayName": "90°垂直線段",
                     "offsetFrom": "起始點偏移",
                     "offsetTo": "結束點偏移",
                     "startFrom": "樣式",
                     "roundCornerFactor": "轉折圓角因子"
+                }
+            },
+            "edge": {
+                "shmetroVirtualInt": {
+                    "displayName": "上海地鐵出站換乘線段"
+                },
+                "gzmtrVirtualInt": {
+                    "displayName": "廣州地鐵出站換乘線段"
                 }
             },
             "footer": {
@@ -143,6 +175,12 @@
         },
         "settings": {
             "title": "設置",
+            "changeType": {
+                "title": "批量修改車站種類",
+                "changeFrom": "將此類型的所有車站：",
+                "changeTo": "轉換為這個類型的車站：",
+                "info": "修改車站類型會移除所有獨特屬性除了名稱。保存再操作！"
+            },
             "telemetry": {
                 "title": "遙測",
                 "essential": "基本",

@@ -2,7 +2,7 @@ import React from 'react';
 import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
-import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
+import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';

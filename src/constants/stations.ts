@@ -29,6 +29,11 @@ export interface ExternalStationAttributes {
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 
 export interface StationAttributes {
+    /**
+     * The names (in different languages) of this station.
+     * If you need to break the line, use `\\` and <MultilineText /> instead.
+     * NEVER ASSUME ANY INDEX WOULD HAVE A VALUE. EVERY INDEX COULD BE UNDEFINED.
+     */
     names: string[];
 }
 export interface StationComponentProps {

@@ -1,3 +1,4 @@
+import React from 'react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,16 +16,40 @@ import {
     Text,
     VStack,
     useColorModeValue,
+    Badge,
 } from '@chakra-ui/react';
 import { MdOpenInNew } from 'react-icons/md';
+import { RmgSelect } from '@railmapgen/rmg-components';
+import { StationType } from '../../constants/stations';
 import { useRootSelector, useRootDispatch } from '../../redux';
 import { setTelemetryApp } from '../../redux/app/app-slice';
+import { setRefresh } from '../../redux/runtime/runtime-slice';
+import { saveGraph } from '../../redux/param/param-slice';
+import stations from '../svgs/stations/stations';
+import { changeStationsTypeInBatch } from '../../util/change-types';
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
+    const hardRefresh = React.useCallback(() => {
+        dispatch(setRefresh());
+        dispatch(saveGraph(graph.current.export()));
+    }, [dispatch, setRefresh, saveGraph]);
+    const graph = React.useRef(window.graph);
     const linkColour = useColorModeValue('primary.500', 'primary.300');
+
+    const availableStationOptions = Object.fromEntries(
+        Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+    ) as { [k in StationType]: string };
+    const [oldStnType, setOldStnType] = React.useState(Object.keys(stations).at(0)! as StationType);
+    const [newStnType, setNewStnType] = React.useState(undefined as StationType | undefined);
+    React.useEffect(() => {
+        if (newStnType) {
+            changeStationsTypeInBatch(graph.current, oldStnType, newStnType);
+            hardRefresh();
+        }
+    }, [newStnType]);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
 
@@ -42,7 +67,38 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalBody>
                     <VStack divider={<StackDivider borderColor="gray.200" />}>
-                        <Box width="100%">
+                        <Box width="100%" mb="3">
+                            <Text as="b" fontSize="xl">
+                                {t('header.settings.changeType.title')}
+                                <Badge
+                                    ml="1"
+                                    // bgGradient="linear(circle, #3f5efb, #fc466b)"
+                                    color="gray.50"
+                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                >
+                                    PRO
+                                </Badge>
+                            </Text>
+                            <Box mt="3">
+                                <Text>{t('header.settings.changeType.changeFrom')}</Text>
+                                <RmgSelect
+                                    options={availableStationOptions}
+                                    defaultValue={oldStnType}
+                                    onChange={({ target: { value } }) => setOldStnType(value as StationType)}
+                                />
+                                <Text>{t('header.settings.changeType.changeTo')}</Text>
+                                <RmgSelect
+                                    options={availableStationOptions}
+                                    disabledOptions={[oldStnType]}
+                                    value={newStnType}
+                                    onChange={({ target: { value } }) => setNewStnType(value as StationType)}
+                                />
+                                <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
+                                    {t('header.settings.changeType.info')}
+                                </Text>
+                            </Box>
+                        </Box>
+                        <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">
                                 {t('header.settings.telemetry.title')}
                             </Text>

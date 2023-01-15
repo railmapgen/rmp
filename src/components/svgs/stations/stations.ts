@@ -7,9 +7,9 @@ import gzmtrIntStation from './gzmtr-int';
 import bjsubwayIntStation from './bjsubway-int';
 
 const stations = {
-    [StationType.ShmetroInt]: shmetroIntStation,
     [StationType.ShmetroBasic]: shmetroBasicStation,
     [StationType.ShmetroBasic2020]: shmetroBasic2020Station,
+    [StationType.ShmetroInt]: shmetroIntStation,
     [StationType.GzmtrBasic]: gzmtrBasicStation,
     [StationType.GzmtrInt]: gzmtrIntStation,
     [StationType.BjsubwayInt]: bjsubwayIntStation,
