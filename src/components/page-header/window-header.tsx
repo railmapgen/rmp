@@ -2,7 +2,7 @@ import React from 'react';
 import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
-import { RmgEnvBadge, RmgWindowHeader } from '@railmapgen/rmg-components';
+import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
@@ -22,23 +22,14 @@ export default function WindowHeader() {
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
-    const [environment, setEnvironment] = React.useState(RmgEnv.DEV);
-    const [appVersion, setAppVersion] = React.useState('unknown');
+    const environment = useReadyConfig(rmgRuntime.getEnv);
+    const appVersion = useReadyConfig(rmgRuntime.getAppVersion);
 
-    // load rmgRuntime asynchronously
     React.useEffect(() => {
-        async function waitRmgRuntime() {
-            await rmgRuntime.ready();
-
-            if (isAllowAppTelemetry)
-                rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
-
-            setEnvironment(rmgRuntime.getEnv());
-            setAppVersion(rmgRuntime.getAppVersion());
-        }
-
-        waitRmgRuntime();
-    }, [setEnvironment, setAppVersion]);
+        // environment !== RmgEnv.DEV -> wait after rmgRuntime.ready() in useReadyConfig
+        if (isAllowAppTelemetry && environment !== RmgEnv.DEV)
+            rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
+    }, [environment]);
 
     const handleChangeLanguage = async (language: LanguageCode) => {
         rmgRuntime.setLanguage(language);
