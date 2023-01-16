@@ -184,6 +184,7 @@
         },
         "settings": {
             "title": "Settings",
+            "pro": "This is PRO feature and is free for a limited time!",
             "changeType": {
                 "title": "Change stations type in batch",
                 "changeFrom": "Change all stations from this type:",

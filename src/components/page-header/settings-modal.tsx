@@ -17,6 +17,7 @@ import {
     VStack,
     useColorModeValue,
     Badge,
+    Tooltip,
 } from '@chakra-ui/react';
 import { MdOpenInNew } from 'react-icons/md';
 import { RmgSelect } from '@railmapgen/rmg-components';
@@ -68,17 +69,20 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                 <ModalBody>
                     <VStack divider={<StackDivider borderColor="gray.200" />}>
                         <Box width="100%" mb="3">
-                            <Text as="b" fontSize="xl">
-                                {t('header.settings.changeType.title')}
-                                <Badge
-                                    ml="1"
-                                    // bgGradient="linear(circle, #3f5efb, #fc466b)"
-                                    color="gray.50"
-                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                >
-                                    PRO
-                                </Badge>
-                            </Text>
+                            <Box display="flex" alignItems="center">
+                                <Text as="b" fontSize="xl">
+                                    {t('header.settings.changeType.title')}
+                                </Text>
+                                <Tooltip label={t('header.settings.pro')}>
+                                    <Badge
+                                        ml="1"
+                                        color="gray.50"
+                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                    >
+                                        PRO
+                                    </Badge>
+                                </Tooltip>
+                            </Box>
                             <Box mt="3">
                                 <Text>{t('header.settings.changeType.changeFrom')}</Text>
                                 <RmgSelect

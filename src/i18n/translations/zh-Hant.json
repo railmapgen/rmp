@@ -175,6 +175,7 @@
         },
         "settings": {
             "title": "設置",
+            "pro": "這是一個暫時免費的 PRO 功能！",
             "changeType": {
                 "title": "批量修改車站種類",
                 "changeFrom": "將此類型的所有車站：",
