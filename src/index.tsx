@@ -35,7 +35,7 @@ const renderApp = () => {
 };
 
 // Load localstorage first or they will be overwritten after first store.dispatch.
-// A change in redux store will trigger the store.subscribe and will write state.
+// A change in redux store will trigger the store.subscribe and will write states.
 const app = JSON.parse(localStorage.getItem('rmp__app') ?? '{}');
 const param = localStorage.getItem('rmp__param');
 

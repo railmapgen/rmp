@@ -1,3 +1,4 @@
+import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { ParamState } from '../redux/param/param-slice';
@@ -14,20 +15,40 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 1;
+export const CURRENT_VERSION = 2;
 
 /**
  * Contains all version upgrade functions.
  * Starting from 0, it should be possible to upgrade the save to CURRENT_VERSION.
  */
-const upgrades: { [version: number]: (param: string) => string } = {
+export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string } = {
     0: param =>
+        // Add svgViewBoxZoom and svgViewBoxMin to the save.
         JSON.stringify({
             version: 1,
             graph: JSON.parse(param)?.graph,
             svgViewBoxZoom: 100,
             svgViewBoxMin: { x: 0, y: 0 },
         }),
+    1: param => {
+        // Remove `transfer` field in `StationAttributes`.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn'))
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (attr && 'transfer' in attr) delete attr.transfer;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({
+            ...p,
+            version: 2,
+            graph: graph.export(),
+        });
+    },
 };
 
 // Load shanghai template only if param is missing or invalid.
@@ -45,8 +66,8 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 
     let version = Number(originalSave.version);
     let save = JSON.stringify(originalSave);
-    while (version in upgrades) {
-        save = upgrades[version](save);
+    while (version in UPGRADE_COLLECTION) {
+        save = UPGRADE_COLLECTION[version](save);
         version = Number(JSON.parse(save).version);
     }
 
