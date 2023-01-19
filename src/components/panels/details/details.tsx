@@ -91,11 +91,14 @@ const DetailsPanel = () => {
                         ({
                             type: field.type,
                             label: t(field.label),
-                            value: field.value(attrs),
+                            value: field.value?.(attrs),
+                            isChecked: field.isChecked?.(attrs),
                             options: field.options,
                             disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
                             validator: field.validator,
-                            onChange: (val: string | number) => {
+                            oneLine: field.oneLine,
+                            // TODO: val could be string | number | boolean or others in different types.
+                            onChange: (val: any) => {
                                 let updatedAttrs: NodeAttributes;
                                 try {
                                     updatedAttrs = field.onChange(val, attrs);

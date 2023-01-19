@@ -6,6 +6,7 @@ import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmet
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
+import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 
 export enum StationType {
@@ -14,6 +15,7 @@ export enum StationType {
     ShmetroBasic2020 = 'shmetro-basic-2020',
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
+    BjsubwayBasic = 'bjsubway-basic',
     BjsubwayInt = 'bjsubway-int',
 }
 
@@ -23,6 +25,7 @@ export interface ExternalStationAttributes {
     [StationType.ShmetroBasic2020]?: ShmetroBasic2020StationAttributes;
     [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
+    [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;
     [StationType.BjsubwayInt]?: BjsubwayIntStationAttributes;
 }
 

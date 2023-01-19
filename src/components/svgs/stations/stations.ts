@@ -4,6 +4,7 @@ import shmetroBasicStation from './shmetro-basic';
 import shmetroBasic2020Station from './shmetro-basic-2020';
 import gzmtrBasicStation from './gzmtr-basic';
 import gzmtrIntStation from './gzmtr-int';
+import bjsubwayBasicStation from './bjsubway-basic';
 import bjsubwayIntStation from './bjsubway-int';
 
 const stations = {
@@ -12,6 +13,7 @@ const stations = {
     [StationType.ShmetroInt]: shmetroIntStation,
     [StationType.GzmtrBasic]: gzmtrBasicStation,
     [StationType.GzmtrInt]: gzmtrIntStation,
+    [StationType.BjsubwayBasic]: bjsubwayBasicStation,
     [StationType.BjsubwayInt]: bjsubwayIntStation,
 };
 

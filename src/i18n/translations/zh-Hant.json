@@ -102,8 +102,16 @@
                     "lineCode": "路綫編碼",
                     "stationCode": "車站編碼"
                 },
+                "bjsubwayBasic": {
+                    "displayName": "北京地鐵基本車站",
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移",
+                    "open": "是否開通"
+                },
                 "bjsubwayInt": {
-                    "displayName": "廣州地鐵換乘車站",
+                    "displayName": "北京地鐵換乘車站",
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",

@@ -111,6 +111,14 @@
                     "lineCode": "Line code",
                     "stationCode": "Station code"
                 },
+                "bjsubwayBasic": {
+                    "displayName": "Beijing Subway basic station",
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y",
+                    "open": "Is opened"
+                },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",
                     "nameZh": "Name in Chinese",

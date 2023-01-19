@@ -1,4 +1,5 @@
 import React from 'react';
+import { LanguageCode } from '@railmapgen/rmg-translate';
 
 interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
     text: string[];
@@ -39,8 +40,18 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
 // Required by eslint react/display-name.
 MultilineText.displayName = 'MultilineText';
 
-// This is the default const for name dy calculation.
-// It is suitable for names that has 2 elements with 16px/10px font size.
+/**
+ * This is the default const of name height in different languages..
+ */
+export const LINE_HEIGHT = {
+    [LanguageCode.Chinese]: 16,
+    [LanguageCode.English]: 10,
+};
+
+/**
+ * This is the default const of name dy calculation.
+ * It is suitable for names that has 2 elements with 16px/10px font size.
+ */
 export const NAME_DY: {
     [key in 'up' | 'middle' | 'bottom']: {
         namesPos: number; // index of the names we need to calculate dy
@@ -50,7 +61,7 @@ export const NAME_DY: {
 } = {
     up: {
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: LINE_HEIGHT[LanguageCode.Chinese],
         polarity: -1,
     },
     middle: {
@@ -60,7 +71,7 @@ export const NAME_DY: {
     },
     bottom: {
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: LINE_HEIGHT[LanguageCode.English],
         polarity: 1,
     },
 };
