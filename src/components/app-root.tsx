@@ -11,7 +11,7 @@ const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ 
 const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
 
 export default function AppRoot() {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const dispatch = useRootDispatch();
 
     React.useEffect(() => {

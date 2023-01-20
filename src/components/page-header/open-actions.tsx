@@ -216,7 +216,8 @@ export default function OpenActions() {
     };
 
     const handleOpenTemplates = async (rmpSave: RMPSave) => {
-        const { version, ...save } = rmpSave;
+        // templates may be obsolete and require upgrades
+        const { version, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave)));
 
         // details panel will complain unknown nodes or edges if last state is not cleared
         dispatch(clearSelected());
