@@ -1,6 +1,9 @@
-import React, { Suspense } from 'react';
-import { RmgErrorBoundary, RmgWindow } from '@railmapgen/rmg-components';
+import React from 'react';
 import { Flex } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
+import { RmgErrorBoundary, RmgWindow } from '@railmapgen/rmg-components';
+import { useRootDispatch } from '../redux';
+import { setGlobalAlert } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
 const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
@@ -8,9 +11,26 @@ const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ 
 const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
 
 export default function AppRoot() {
+    const {t} = useTranslation();
+    const dispatch = useRootDispatch();
+
+    React.useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            dispatch(
+                setGlobalAlert({
+                    status: 'info',
+                    message: t('happynewyear'),
+                    url: 'https://en.wikipedia.org/wiki/Chinese_New_Year',
+                })
+            );
+        }, 1000);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
+
     return (
         <RmgWindow>
-            <Suspense
+            <React.Suspense
                 fallback={
                     <p style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
                         Initializing Rail Map Painter core...
@@ -27,7 +47,7 @@ export default function AppRoot() {
                         <DetailsPanel />
                     </Flex>
                 </RmgErrorBoundary>
-            </Suspense>
+            </React.Suspense>
         </RmgWindow>
     );
 }
