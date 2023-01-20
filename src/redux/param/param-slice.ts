@@ -19,7 +19,7 @@ export interface ParamState {
      */
     svgViewBoxZoom: number;
     /**
-     * The left and up most coordinate.
+     * The left and top most coordinate.
      */
     svgViewBoxMin: { x: number; y: number };
 }

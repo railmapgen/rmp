@@ -3,6 +3,8 @@ import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
+    NameOffsetX,
+    NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -41,7 +43,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
         NAME_DY[nameOffsetY].lineHeight *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
+    const textY = textDy + (nameOffsetY === 'top' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -93,14 +95,14 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
  * <BjsubwayIntStation /> specific props.
  */
 export interface BjsubwayIntStationAttributes extends StationAttributes {
-    nameOffsetX: 'left' | 'middle' | 'right';
-    nameOffsetY: 'up' | 'middle' | 'bottom';
+    nameOffsetX: NameOffsetX;
+    nameOffsetY: NameOffsetY;
 }
 
 const defaultBjsubwayIntStationAttributes: BjsubwayIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
-    nameOffsetY: 'up',
+    nameOffsetY: 'top',
 };
 
 const bjsubwayIntStationFields = [
@@ -142,7 +144,7 @@ const bjsubwayIntStationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
             // set value
-            attrs.nameOffsetX = val as 'left' | 'right';
+            attrs.nameOffsetX = val as NameOffsetX;
             // return modified attrs
             return attrs;
         },
@@ -151,13 +153,13 @@ const bjsubwayIntStationFields = [
         type: 'select',
         label: 'panel.details.station.bjsubwayInt.nameOffsetY',
         value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).nameOffsetY,
-        options: { up: 'up', middle: 'middle', bottom: 'bottom' },
+        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: BjsubwayIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
             // set value
-            attrs.nameOffsetY = val as 'up' | 'bottom';
+            attrs.nameOffsetY = val as NameOffsetY;
             // return modified attrs
             return attrs;
         },

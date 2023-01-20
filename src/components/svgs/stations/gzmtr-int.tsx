@@ -3,6 +3,8 @@ import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
+    NameOffsetX,
+    NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -53,7 +55,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
         NAME_DY[nameOffsetY].lineHeight *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
+    const textY = textDy + (nameOffsetY === 'top' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     const transferAll = transfer.flat().slice(0, 3); // slice to make sure at most 3 transfers
@@ -204,14 +206,14 @@ const GzmtrIntStation = (props: StationComponentProps) => {
  * <GzmtrStation /> specific props.
  */
 export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
-    nameOffsetX: 'left' | 'middle' | 'right';
-    nameOffsetY: 'up' | 'middle' | 'bottom';
+    nameOffsetX: Exclude<NameOffsetX, 'middle'>;
+    nameOffsetY: Exclude<NameOffsetY, 'middle'>;
 }
 
 const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
-    nameOffsetY: 'up',
+    nameOffsetY: 'top',
     transfer: [[], []],
 };
 
@@ -253,7 +255,7 @@ const gzmtrIntStationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
             // set value
-            attrs.nameOffsetX = val as 'left' | 'middle' | 'right';
+            attrs.nameOffsetX = val as Exclude<NameOffsetX, 'middle'>;
             // return modified attrs
             return attrs;
         },
@@ -262,12 +264,12 @@ const gzmtrIntStationFields = [
         type: 'select',
         label: 'panel.details.station.gzmtrInt.nameOffsetY',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetY,
-        options: { up: 'up', bottom: 'bottom' },
+        options: { top: 'top', bottom: 'bottom' },
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
             // set value
-            attrs.nameOffsetY = val as 'up' | 'middle' | 'bottom';
+            attrs.nameOffsetY = val as Exclude<NameOffsetY, 'middle'>;
             // return modified attrs
             return attrs;
         },

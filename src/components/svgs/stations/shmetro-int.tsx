@@ -3,6 +3,8 @@ import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
+    NameOffsetX,
+    NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -39,7 +41,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
         NAME_DY[nameOffsetY].lineHeight *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
+    const textY = textDy + (nameOffsetY === 'top' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -91,8 +93,8 @@ const ShmetroIntStation = (props: StationComponentProps) => {
  * <ShmetroIntStation /> specific props.
  */
 export interface ShmetroIntStationAttributes extends StationAttributes {
-    nameOffsetX: 'left' | 'middle' | 'right';
-    nameOffsetY: 'up' | 'middle' | 'bottom';
+    nameOffsetX: NameOffsetX;
+    nameOffsetY: NameOffsetY;
     /**
      * 0 <= rotate < 180
      */
@@ -104,7 +106,7 @@ export interface ShmetroIntStationAttributes extends StationAttributes {
 const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
-    nameOffsetY: 'up',
+    nameOffsetY: 'top',
     rotate: 0,
     height: 10,
     width: 15,
@@ -149,7 +151,7 @@ const shmetroIntStationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
             // set value
-            attrs.nameOffsetX = val as 'left' | 'middle' | 'right';
+            attrs.nameOffsetX = val as NameOffsetX;
             // return modified attrs
             return attrs;
         },
@@ -158,13 +160,13 @@ const shmetroIntStationFields = [
         type: 'select',
         label: 'panel.details.station.shmetroInt.nameOffsetY',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetY,
-        options: { up: 'up', middle: 'middle', bottom: 'bottom' },
+        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
             // set value
-            attrs.nameOffsetY = val as 'up' | 'middle' | 'bottom';
+            attrs.nameOffsetY = val as NameOffsetY;
             // return modified attrs
             return attrs;
         },

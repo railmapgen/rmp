@@ -6,6 +6,22 @@ import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { MiscNodeId } from './constants';
 
+export enum MiscNodeType {
+    Virtual = 'virtual',
+    ShmetroNumLineBadge = 'shmetro-num-line-badge',
+    ShmetroTextLineBadge = 'shmetro-text-line-badge',
+    Facilities = 'facilities',
+    GzmtrLineBadge = 'gzmtr-line-badge',
+}
+
+export interface MiscNodeAttributes {
+    [MiscNodeType.Virtual]?: VirtualAttributes;
+    [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
+    [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
+    [MiscNodeType.Facilities]?: FacilitiesAttributes;
+    [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
+}
+
 export interface NodeComponentProps<T> {
     id: MiscNodeId;
     attrs: T;
@@ -51,19 +67,4 @@ export interface Node<T> {
          */
         tags: string[];
     };
-}
-
-export enum MiscNodeType {
-    Virtual = 'virtual',
-    ShmetroNumLineBadge = 'shmetro-num-line-badge',
-    ShmetroTextLineBadge = 'shmetro-text-line-badge',
-    Facilities = 'facilities',
-    GzmtrLineBadge = 'gzmtr-line-badge',
-}
-export interface MiscNodeAttributes {
-    [MiscNodeType.Virtual]?: VirtualAttributes;
-    [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
-    [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
-    [MiscNodeType.Facilities]?: FacilitiesAttributes;
-    [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
 }

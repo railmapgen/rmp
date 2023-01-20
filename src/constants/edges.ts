@@ -4,6 +4,16 @@ import { GeneratePathFunction } from './lines';
 import { ShmetroVirtualIntAttributes } from '../components/svgs/edges/shmetro-virtual-int';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/edges/gzmtr-virtual-int';
 
+export enum MiscEdgeType {
+    ShmetroVirtualInt = 'shmetro-virtual-int',
+    GzmtrVirtualInt = 'gzmtr-virtual-int',
+}
+
+export interface MiscEdgeAttributes {
+    [MiscEdgeType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
+    [MiscEdgeType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
+}
+
 export interface EdgeComponentProps<T> {
     id: MiscEdgeId;
     attrs: T;
@@ -63,13 +73,4 @@ export interface Edge<T> {
          */
         tags: string[];
     };
-}
-
-export enum MiscEdgeType {
-    ShmetroVirtualInt = 'shmetro-virtual-int',
-    GzmtrVirtualInt = 'gzmtr-virtual-int',
-}
-export interface MiscEdgeAttributes {
-    [MiscEdgeType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
-    [MiscEdgeType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
 }

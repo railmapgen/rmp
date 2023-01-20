@@ -1,5 +1,6 @@
 import React from 'react';
 import { LanguageCode } from '@railmapgen/rmg-translate';
+import { NameOffsetY } from '../../../constants/stations';
 
 interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
     text: string[];
@@ -53,13 +54,13 @@ export const LINE_HEIGHT = {
  * It is suitable for names that has 2 elements with 16px/10px font size.
  */
 export const NAME_DY: {
-    [key in 'up' | 'middle' | 'bottom']: {
+    [key in NameOffsetY]: {
         namesPos: number; // index of the names we need to calculate dy
         lineHeight: number;
         polarity: -1 | 0 | 1; // in which direction
     };
 } = {
-    up: {
+    top: {
         namesPos: 1,
         lineHeight: LINE_HEIGHT[LanguageCode.Chinese],
         polarity: -1,

@@ -3,6 +3,8 @@ import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resourc
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
+    NameOffsetX,
+    NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -86,7 +88,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
         NAME_DY[nameOffsetY].lineHeight *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'up' ? -21 : nameOffsetY === 'bottom' ? 27 : 0);
+    const textY = textDy + (nameOffsetY === 'top' ? -21 : nameOffsetY === 'bottom' ? 27 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -144,8 +146,8 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
  * <GzmtrStation /> specific props.
  */
 export interface GzmtrBasicStationAttributes extends StationAttributes, AttributesWithColor {
-    nameOffsetX: 'left' | 'middle' | 'right';
-    nameOffsetY: 'up' | 'middle' | 'bottom';
+    nameOffsetX: NameOffsetX;
+    nameOffsetY: NameOffsetY;
     lineCode: string;
     stationCode: string;
 }
@@ -153,7 +155,7 @@ export interface GzmtrBasicStationAttributes extends StationAttributes, Attribut
 const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
-    nameOffsetY: 'up',
+    nameOffsetY: 'top',
     color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
     lineCode: '1',
     stationCode: '01',
@@ -197,7 +199,7 @@ const gzmtrBasicStationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
-            attrs.nameOffsetX = val as 'left' | 'middle' | 'right';
+            attrs.nameOffsetX = val as NameOffsetX;
             // return modified attrs
             return attrs;
         },
@@ -206,12 +208,12 @@ const gzmtrBasicStationFields = [
         type: 'select',
         label: 'panel.details.station.gzmtrBasic.nameOffsetY',
         value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetY,
-        options: { up: 'up', middle: 'middle', bottom: 'bottom' },
+        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
-            attrs.nameOffsetY = val as 'up' | 'middle' | 'bottom';
+            attrs.nameOffsetY = val as NameOffsetY;
             // return modified attrs
             return attrs;
         },

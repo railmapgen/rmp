@@ -3,6 +3,8 @@ import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
+    NameOffsetX,
+    NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -34,10 +36,10 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
     const textDy =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1 + (nameOffsetY === 'up' && !open ? 1 : 0)) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1 + (nameOffsetY === 'top' && !open ? 1 : 0)) *
         NAME_DY[nameOffsetY].lineHeight *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'up' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
+    const textY = textDy + (nameOffsetY === 'top' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -90,8 +92,8 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
  * <BjsubwayBasicStation /> specific props.
  */
 export interface BjsubwayBasicStationAttributes extends StationAttributes {
-    nameOffsetX: 'left' | 'middle' | 'right';
-    nameOffsetY: 'up' | 'middle' | 'bottom';
+    nameOffsetX: NameOffsetX;
+    nameOffsetY: NameOffsetY;
     /**
      * Whether to show a (暂缓开通) hint.
      */
@@ -101,7 +103,7 @@ export interface BjsubwayBasicStationAttributes extends StationAttributes {
 const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
-    nameOffsetY: 'up',
+    nameOffsetY: 'top',
     open: true,
 };
 
@@ -145,7 +147,7 @@ const bjsubwayBasicStationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
             // set value
-            attrs.nameOffsetX = val as 'left' | 'middle' | 'right';
+            attrs.nameOffsetX = val as NameOffsetX;
             // return modified attrs
             return attrs;
         },
@@ -154,14 +156,14 @@ const bjsubwayBasicStationFields = [
         type: 'select',
         label: 'panel.details.station.bjsubwayBasic.nameOffsetY',
         value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).nameOffsetY,
-        options: { up: 'up', middle: 'middle', bottom: 'bottom' },
+        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: BjsubwayBasicStationAttributes) =>
             attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
         onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
             // set value
-            attrs.nameOffsetY = val as 'up' | 'middle' | 'bottom';
+            attrs.nameOffsetY = val as NameOffsetY;
             // return modified attrs
             return attrs;
         },

@@ -15,7 +15,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 2;
+export const CURRENT_VERSION = 3;
 
 /**
  * Contains all version upgrade functions.
@@ -31,7 +31,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             svgViewBoxMin: { x: 0, y: 0 },
         }),
     1: param => {
-        // Remove `transfer` field in `StationAttributes`.
+        // Remove `transfer` field in `StationAttributes`. #125
         const p = JSON.parse(param);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         graph.import(p?.graph);
@@ -43,11 +43,27 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 if (attr && 'transfer' in attr) delete attr.transfer;
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
-        return JSON.stringify({
-            ...p,
-            version: 2,
-            graph: graph.export(),
-        });
+        return JSON.stringify({ ...p, version: 2, graph: graph.export() });
+    },
+    2: param => {
+        // Reset nameOffsetX and nameOffsetY if both of them are 'middle'. #111
+        // Rename 'up' in nameOffsetY to be 'top'. #149
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn'))
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (attr?.nameOffsetX === 'middle' && attr?.nameOffsetY === 'middle') {
+                    attr.nameOffsetX = 'right';
+                    attr.nameOffsetY = 'top';
+                }
+                if (attr?.nameOffsetY === 'up') attr.nameOffsetY = 'top';
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 3, graph: graph.export() });
     },
 };
 
@@ -59,19 +75,21 @@ const getInitialParam = async () =>
  * Upgrade the passed param to the latest format.
  */
 export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
-    if (!originalParam) return await getInitialParam();
+    if (!originalParam) originalParam = await getInitialParam();
 
-    const originalSave = JSON.parse(originalParam);
-    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) return await getInitialParam();
+    let originalSave = JSON.parse(originalParam);
+    if (!('version' in originalSave) || !Number.isInteger(originalSave.version))
+        originalSave = JSON.parse(await getInitialParam());
 
     let version = Number(originalSave.version);
     let save = JSON.stringify(originalSave);
     while (version in UPGRADE_COLLECTION) {
         save = UPGRADE_COLLECTION[version](save);
         version = Number(JSON.parse(save).version);
+        console.warn(`Upgrade save to version: ${version}`);
     }
 
-    // version should be CURRENT_VERSION now
+    // Version should be CURRENT_VERSION now.
     return save;
 };
 

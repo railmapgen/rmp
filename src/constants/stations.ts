@@ -31,14 +31,6 @@ export interface ExternalStationAttributes {
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 
-export interface StationAttributes {
-    /**
-     * The names (in different languages) of this station.
-     * If you need to break the line, use `\\` and <MultilineText /> instead.
-     * NEVER ASSUME ANY INDEX WOULD HAVE A VALUE. EVERY INDEX COULD BE UNDEFINED.
-     */
-    names: string[];
-}
 export interface StationComponentProps {
     id: StnId;
     attrs: ExternalStationAttributes;
@@ -48,8 +40,20 @@ export interface StationComponentProps {
     handlePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
 }
+
+export interface StationAttributes {
+    /**
+     * The names (in different languages) of this station.
+     * If you need to break the line, use `\\` and <MultilineText /> instead.
+     * NEVER ASSUME ANY INDEX WOULD HAVE A VALUE. EVERY INDEX COULD BE UNDEFINED.
+     */
+    names: string[];
+}
+// handy types for nameOffset
+export type NameOffsetX = 'left' | 'middle' | 'right';
+export type NameOffsetY = 'top' | 'middle' | 'bottom';
 /**
- * The default interface a customized Station should export.
+ * The interface a customized Station should export.
  */
 export interface Station<T extends StationAttributes> {
     /**

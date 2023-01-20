@@ -19,7 +19,6 @@ export interface ExternalLineAttributes {
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
-export interface LineAttributes {}
 export interface LineComponentProps {
     id: LineId;
     x1: number;
@@ -36,6 +35,8 @@ export interface LineComponentProps {
     handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
     attrs: EdgeAttributes;
 }
+
+export interface LineAttributes {}
 /**
  * The default interface a customized Line should export.
  */
