@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/rmp/static/css/main.03f5944c.css",
-    "main.js": "/rmp/static/js/main.557f17f1.js",
-    "WindowHeader.js": "/rmp/static/js/WindowHeader.9cdcb5e0.chunk.js",
+    "main.js": "/rmp/static/js/main.4825c572.js",
+    "WindowHeader.js": "/rmp/static/js/WindowHeader.0e892072.chunk.js",
     "ToolsPanel.js": "/rmp/static/js/ToolsPanel.235e17e7.chunk.js",
     "SvgWrapper.js": "/rmp/static/js/SvgWrapper.87d98975.chunk.js",
     "DetailsPanel.js": "/rmp/static/js/DetailsPanel.ac4ff1bd.chunk.js",
@@ -211,8 +211,8 @@
     "static/media/1F1F5-1F1F1.svg": "/rmp/static/media/1F1F5-1F1F1.0f2053ce10733fcf148d.svg",
     "static/media/1F1EF-1F1F5.svg": "/rmp/static/media/1F1EF-1F1F5.5bd4e29b292e65a558dd.svg",
     "main.03f5944c.css.map": "/rmp/static/css/main.03f5944c.css.map",
-    "main.557f17f1.js.map": "/rmp/static/js/main.557f17f1.js.map",
-    "WindowHeader.9cdcb5e0.chunk.js.map": "/rmp/static/js/WindowHeader.9cdcb5e0.chunk.js.map",
+    "main.4825c572.js.map": "/rmp/static/js/main.4825c572.js.map",
+    "WindowHeader.0e892072.chunk.js.map": "/rmp/static/js/WindowHeader.0e892072.chunk.js.map",
     "ToolsPanel.235e17e7.chunk.js.map": "/rmp/static/js/ToolsPanel.235e17e7.chunk.js.map",
     "SvgWrapper.87d98975.chunk.js.map": "/rmp/static/js/SvgWrapper.87d98975.chunk.js.map",
     "DetailsPanel.ac4ff1bd.chunk.js.map": "/rmp/static/js/DetailsPanel.ac4ff1bd.chunk.js.map",
@@ -330,6 +330,6 @@
   },
   "entrypoints": [
     "static/css/main.03f5944c.css",
-    "static/js/main.557f17f1.js"
+    "static/js/main.4825c572.js"
   ]
 }
