@@ -49,7 +49,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={id}>
-                <g transform={`translate(${x - 8}, ${y - 10})`}>
+                <g transform={`translate(${x - 8}, ${y - 8})`}>
                     <path d={PATH_CIRCLE} fill="#fff" stroke="#000" strokeWidth="0.778" />
                     <path d={PATH_ARROW} stroke="#000" strokeWidth="0.778" />
                     <path
