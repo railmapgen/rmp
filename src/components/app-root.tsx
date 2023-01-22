@@ -28,6 +28,20 @@ export default function AppRoot() {
         return () => clearTimeout(timeoutId);
     }, []);
 
+    React.useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            dispatch(
+                setGlobalAlert({
+                    status: 'warning',
+                    message: t('gzmtrinttransferloss'),
+                    url: 'https://github.com/railmapgen/rmp/issues/153',
+                })
+            );
+        }, 2000);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
+
     return (
         <RmgWindow>
             <React.Suspense
