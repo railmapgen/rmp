@@ -28,6 +28,14 @@ describe('Unit tests for param upgrade function', () => {
         expect(param.version).toEqual(CURRENT_VERSION);
     });
 
+    it('Can save a backup before upgrade', async () => {
+        localStorage.clear();
+        const save =
+            '{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]}';
+        await upgrade(save);
+        expect(localStorage.getItem('rmp__param__backup')).toEqual(save);
+    });
+
     it('UPGRADE_COLLECTION contains all the upgrade functions to CURRENT_VERSION', () => {
         const allKeys = Object.keys(UPGRADE_COLLECTION).map(k => Number(k));
         // UPGRADE_COLLECTION contains key from 0...CURRENT_VERSION - 1.

@@ -76,18 +76,31 @@ const getInitialParam = async () =>
  * Upgrade the passed param to the latest format.
  */
 export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
-    if (!originalParam) originalParam = await getInitialParam();
+    let changed = false;
+
+    if (!originalParam) {
+        originalParam = await getInitialParam();
+        changed = true;
+    }
 
     let originalSave = JSON.parse(originalParam);
-    if (!('version' in originalSave) || !Number.isInteger(originalSave.version))
+    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) {
         originalSave = JSON.parse(await getInitialParam());
+        changed = true;
+    }
 
     let version = Number(originalSave.version);
     let save = JSON.stringify(originalSave);
     while (version in UPGRADE_COLLECTION) {
         save = UPGRADE_COLLECTION[version](save);
         version = Number(JSON.parse(save).version);
+        changed = true;
+    }
+
+    if (changed) {
         console.warn(`Upgrade save to version: ${version}`);
+        // Backup original param in case of bugs in the upgrades.
+        localStorage.setItem('rmp__param__backup', originalParam);
     }
 
     // Version should be CURRENT_VERSION now.
