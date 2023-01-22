@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { StationType } from '../constants/stations';
 import { ParamState } from '../redux/param/param-slice';
 
 export interface RMPSave {
@@ -36,7 +37,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         graph.import(p?.graph);
         graph
-            .filterNodes((node, attr) => node.startsWith('stn'))
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type !== StationType.GzmtrInt)
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
                 const attr = graph.getNodeAttribute(node, type) as any;
