@@ -13,18 +13,15 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { clearSelected, setGlobalAlert, setRefresh, setRefreshReconcile } from '../../../redux/runtime/runtime-slice';
-import ThemeButton from '../theme-button';
-import ColourModal from '../colour-modal/colour-modal';
-import { NodeAttributes, Theme } from '../../../constants/constants';
+import { NodeAttributes } from '../../../constants/constants';
 import stations from '../../svgs/stations/stations';
 import miscNodes from '../../svgs/nodes/misc-nodes';
-import lines from '../../svgs/lines/lines';
-import miscEdges from '../../svgs/edges/misc-edges';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import InfoSection from './info-section';
 import NodePositionSection from './node-position-section';
+import LineExtremitiesSection from './line-extremities-section';
 
 const nodes = { ...stations, ...miscNodes };
-const edges = { ...lines, ...miscEdges };
 
 const DetailsPanel = () => {
     const { t } = useTranslation();
@@ -54,17 +51,17 @@ const DetailsPanel = () => {
         hardRefresh();
     };
     // A helper method to remove all lines with the same color
-    const handleRemoveEntireLine = (selectedFirst: string) => {
-        dispatch(clearSelected());
-        const theme = graph.current.getEdgeAttribute(selectedFirst, 'color');
-        const lines = graph.current.filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-            attr.color.every((v, i) => v === theme[i])
-        );
-        lines.forEach(line => {
-            graph.current.dropEdge(line);
-        });
-        hardRefresh();
-    };
+    // const handleRemoveEntireLine = (selectedFirst: string) => {
+    //     dispatch(clearSelected());
+    //     const theme = graph.current.getEdgeAttribute(selectedFirst, 'color');
+    //     const lines = graph.current.filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
+    //         attr.color.every((v, i) => v === theme[i])
+    //     );
+    //     lines.forEach(line => {
+    //         graph.current.dropEdge(line);
+    //     });
+    //     hardRefresh();
+    // };
 
     // hide reconcile for now
     const [reconcileId, setReconcileId] = React.useState('');
@@ -126,20 +123,6 @@ const DetailsPanel = () => {
     }
 
     if (selected.length === 1 && graph.current.hasEdge(selectedFirst)) {
-        // TODO: remove this after #84
-        if (selectedFirst!.startsWith('line')) {
-            fields.push({
-                type: 'custom',
-                label: t('color'),
-                component: (
-                    <ThemeButton
-                        theme={graph.current.getEdgeAttribute(selectedFirst, 'color')}
-                        onClick={() => setIsModalOpen(true)}
-                    />
-                ),
-                minW: '40px',
-            });
-        }
         // fields.push({
         //     type: 'input',
         //     label: t('panel.details.line.reconcileId'),
@@ -154,26 +137,22 @@ const DetailsPanel = () => {
         const type = graph.current.getEdgeAttribute(selectedFirst, 'type');
         const attrs = graph.current.getEdgeAttribute(selectedFirst, type);
         fields.push(
-            ...edges[type].fields.map(
+            ...linePaths[type].fields.map(
                 field =>
                     ({
+                        // TODO: fix this
                         type: field.type,
                         label: t(field.label),
-                        // TODO: fix this
                         // @ts-ignore-error
                         value: field.value(attrs),
-                        // TODO: fix this
                         // @ts-ignore-error
                         options: field.options,
-                        // TODO: fix this
                         // @ts-ignore-error
                         disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
-                        // TODO: fix this
                         // @ts-ignore-error
                         validator: field.validator,
                         onChange: (val: string | number) => {
                             graph.current.mergeEdgeAttributes(selectedFirst, {
-                                // TODO: fix this
                                 // @ts-ignore-error
                                 [type]: field.onChange(val, attrs),
                             });
@@ -183,15 +162,11 @@ const DetailsPanel = () => {
                     } as RmgFieldsField)
             )
         );
+        const style = graph.current.getEdgeAttribute(selectedFirst, 'style');
+        // TODO: filter will complain the type
+        // @ts-expect-error
+        fields.push(...lineStyles[style].fields.filter(field => field.type === 'custom'));
     }
-
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
-    const handleChangeLineColor = (color: Theme) => {
-        if (selected.at(0) && graph.current.hasEdge(selected.at(0))) {
-            graph.current.mergeEdgeAttributes(selected.at(0), { color });
-            hardRefresh();
-        }
-    };
 
     return (
         <RmgSidePanel isOpen={selected.length > 0} width={300} header="Dummy header" alwaysOverlay>
@@ -201,24 +176,17 @@ const DetailsPanel = () => {
 
                 {selected.length === 1 && graph.current.hasNode(selectedFirst) && <NodePositionSection />}
 
-                <Box p={1}>
-                    <Heading as="h5" size="sm">
-                        {t('panel.details.specificAttrsTitle')}
-                    </Heading>
+                {selected.length === 1 && graph.current.hasEdge(selectedFirst) && <LineExtremitiesSection />}
 
-                    <RmgFields fields={fields} minW={276} />
-                </Box>
+                {selected.length === 1 && (
+                    <Box p={1}>
+                        <Heading as="h5" size="sm">
+                            {t('panel.details.specificAttrsTitle')}
+                        </Heading>
 
-                <ColourModal
-                    isOpen={isModalOpen}
-                    defaultTheme={
-                        selected.at(0)?.startsWith('line')
-                            ? graph.current.getEdgeAttribute(selected.at(0), 'color')
-                            : undefined
-                    }
-                    onClose={() => setIsModalOpen(false)}
-                    onUpdate={nextTheme => handleChangeLineColor(nextTheme)}
-                />
+                        <RmgFields fields={fields} minW={276} />
+                    </Box>
+                )}
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
                 <HStack>
@@ -230,11 +198,11 @@ const DetailsPanel = () => {
                     <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>
-                    {selected.length === 1 && selectedFirst?.startsWith('line-') && (
+                    {/* {selected.length === 1 && selectedFirst?.startsWith('line-') && (
                         <Button size="sm" variant="outline" onClick={() => handleRemoveEntireLine(selected.at(0)!)}>
                             {t('panel.details.footer.removeEntireLine')}
                         </Button>
-                    )}
+                    )} */}
                 </HStack>
             </RmgSidePanelFooter>
         </RmgSidePanel>

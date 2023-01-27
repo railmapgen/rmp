@@ -1,10 +1,9 @@
 import { MultiDirectedGraph } from 'graphology';
-import lines from '../components/svgs/lines/lines';
-import miscEdges from '../components/svgs/edges/misc-edges';
 import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { linePaths } from '../components/svgs/lines/lines';
 import { roundPathCorners } from './pathRounding';
 
-const edges = { ...lines, ...miscEdges };
+const edges = linePaths;
 
 /**
  * Only lines have a reconcileId will be considered.

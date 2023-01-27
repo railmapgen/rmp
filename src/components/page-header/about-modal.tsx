@@ -63,7 +63,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             cursor="pointer"
                         >
                             <Avatar src="https://github.com/thekingofcity.png" size="lg" my={2} ml={-1} mr={2} />
-                            <TagLabel display="block">
+                            <TagLabel display="block" width="100%">
                                 <Text fontSize="lg" fontWeight="bold" mb={1}>
                                     thekingofcity
                                 </Text>

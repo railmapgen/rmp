@@ -22,7 +22,6 @@ export default function NodePositionSection() {
 
     const [pos, setPos] = React.useState({ x: 0, y: 0 });
     React.useEffect(() => {
-        const selectedFirst = selected.at(0);
         if (selectedFirst?.startsWith('stn') || selectedFirst?.startsWith('misc_node_')) {
             const x = graph.current.getNodeAttribute(selectedFirst, 'x');
             const y = graph.current.getNodeAttribute(selectedFirst, 'y');

@@ -1,9 +1,12 @@
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalStationAttributes, StationType } from './stations';
-import { ExternalLineAttributes, LineType } from './lines';
+import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
-import { MiscEdgeAttributes, MiscEdgeType } from './edges';
+import { MiscEdgeType } from './edges';
 
+/**
+ * Attributes shared both in nodes and edges.
+ */
 interface BaseAttributes {
     visible: boolean;
     zIndex: number;
@@ -17,17 +20,16 @@ export type NodeAttributes = BaseAttributes & {
 } & Partial<ExternalStationAttributes> &
     Partial<MiscNodeAttributes>;
 
-export type EdgeType = LineType | MiscEdgeType;
+export type EdgeType = LinePathType;
 export type EdgeAttributes = BaseAttributes & {
-    // TODO: split to path generation type and style type.
-    color: Theme;
     type: EdgeType;
+    style: LineStyleType;
     /**
      * Unique ID to reconcile lines.
      */
     reconcileId: string;
-} & Partial<ExternalLineAttributes> &
-    Partial<MiscEdgeAttributes>;
+} & Partial<ExternalLinePathAttributes> &
+    Partial<ExternalLineStyleAttributes>;
 
 export type GraphAttributes = {
     name?: string;
@@ -57,7 +59,7 @@ export type ActiveType = StnId | LineId | MiscNodeId | MiscEdgeId | 'background'
  */
 export type RuntimeMode =
     | 'free'
-    | `line-${LineType}`
+    | `line-${LinePathType}`
     | `station-${StationType}`
     | `misc-node-${MiscNodeType}`
     | `misc-edge-${MiscEdgeType}`;

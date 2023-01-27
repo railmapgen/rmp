@@ -5,6 +5,9 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefresh } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import ColourModal from '../colour-modal/colour-modal';
+import { StationType } from '../../../constants/stations';
+import { MiscNodeType } from '../../../constants/nodes';
+import { LineStyleType } from '../../../constants/lines';
 
 /**
  * An Attributes that have a color field.
@@ -17,6 +20,8 @@ export interface AttributesWithColor {
     color: Theme;
 }
 
+type GetNodeOrEdgeAttribute = (id: string, type: NodeType | LineStyleType) => AttributesWithColor;
+
 /**
  * This component provides an easy way to have a color input in the details panel.
  * It will read the first id in `selected` and change the `color` field in the related attrs.
@@ -25,7 +30,7 @@ export interface AttributesWithColor {
  * You may extend AttributesWithColor interface.
  * Fail to do this will result in a redundant color field in your component's attributes.
  */
-export const ColorField = (props: { type: NodeType; defaultAttrs: AttributesWithColor }) => {
+export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs: AttributesWithColor }) => {
     const { type, defaultAttrs } = props;
 
     const dispatch = useRootDispatch();
@@ -38,21 +43,42 @@ export const ColorField = (props: { type: NodeType; defaultAttrs: AttributesWith
     const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);
 
+    const [hasNodeOrEdge, getNodeOrEdgeAttribute, mergeNodeOrEdgeAttributes] = ([] as NodeType[])
+        .concat(Object.values(StationType))
+        .concat(Object.values(MiscNodeType))
+        .find(nodeType => type === nodeType)
+        ? [
+              graph.current.hasNode,
+              graph.current.getNodeAttribute as GetNodeOrEdgeAttribute,
+              graph.current.mergeNodeAttributes,
+          ]
+        : [
+              graph.current.hasEdge,
+              graph.current.getEdgeAttribute as GetNodeOrEdgeAttribute,
+              graph.current.mergeEdgeAttributes,
+          ];
+
+    // TODO: fix bind this
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const handleChangeColor = (color: Theme) => {
-        if (selectedFirst && graph.current.hasNode(selectedFirst)) {
-            const attrs = (graph.current.getNodeAttribute(selectedFirst, type) as AttributesWithColor) ?? defaultAttrs;
+        if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
+            const attrs =
+                (getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) as AttributesWithColor) ??
+                defaultAttrs;
             attrs.color = color;
-            graph.current.mergeNodeAttributes(selectedFirst, { [type]: attrs });
+            mergeNodeOrEdgeAttributes.bind(graph.current)(selectedFirst, { [type]: attrs });
             hardRefresh();
         }
     };
 
     const theme =
         selectedFirst &&
-        graph.current.hasNode(selectedFirst) &&
-        graph.current.getNodeAttribute(selectedFirst, 'type') === type
-            ? ((graph.current.getNodeAttribute(selectedFirst, type) as AttributesWithColor) ?? defaultAttrs).color
+        hasNodeOrEdge.bind(graph.current)(selectedFirst) &&
+        (selectedFirst.startsWith('stn') || selectedFirst.startsWith('misc_node')
+            ? graph.current.getNodeAttribute(selectedFirst, 'type') === type
+            : graph.current.getEdgeAttribute(selectedFirst, 'style') === type)
+            ? ((getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) as AttributesWithColor) ?? defaultAttrs)
+                  .color
             : defaultAttrs.color;
 
     return (

@@ -1,22 +1,21 @@
 import React from 'react';
-import { nanoid } from 'nanoid';
-import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
+import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
+import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { nanoid } from 'nanoid';
 import { useRootDispatch } from '../../redux';
 import { ParamState, saveGraph, setFullState } from '../../redux/param/param-slice';
 import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
-import { upgrade } from '../../util/save';
+import { LinePathType, LineStyleType } from '../../constants/lines';
 import { StationAttributes, StationType } from '../../constants/stations';
-import { LineType } from '../../constants/lines';
-import stations from '../svgs/stations/stations';
-import lines from '../svgs/lines/lines';
-import { ShmetroBasic2020StationAttributes } from '../svgs/stations/shmetro-basic-2020';
-import { RMPSave } from '../../util/save';
-import { GalleryModal } from './gallery-modal';
-import { GzmtrBasicStationAttributes } from '../svgs/stations/gzmtr-basic';
 import { InterchangeInfo } from '../panels/details/interchange-field';
+import { linePaths, lineStyles } from '../svgs/lines/lines';
+import { GzmtrBasicStationAttributes } from '../svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../svgs/stations/gzmtr-int';
+import { ShmetroBasic2020StationAttributes } from '../svgs/stations/shmetro-basic-2020';
+import stations from '../svgs/stations/stations';
+import { RMPSave, upgrade } from '../../util/save';
+import { GalleryModal } from './gallery-modal';
 
 export default function OpenActions() {
     const { t } = useTranslation();
@@ -67,9 +66,10 @@ export default function OpenActions() {
                     .forEach(([id, stnInfo]) => {
                         const nodes = graph.current.filterNodes(
                             (node, attr) =>
-                                // @ts-ignore-error
+                                // @ts-expect-error
                                 Object.values(StationType).includes(attr.type) &&
-                                (attr[attr.type] as StationAttributes).names[0] === (stnInfo as any).name[0]
+                                // @ts-expect-error
+                                (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
                         );
                         if (nodes.length !== 0) stnIdMap[id] = nodes[0];
                     });
@@ -81,9 +81,10 @@ export default function OpenActions() {
                         ([id, stnInfo]) =>
                             graph.current.filterNodes(
                                 (node, attr) =>
-                                    // @ts-ignore-error
+                                    // @ts-expect-error
                                     Object.values(StationType).includes(attr.type) &&
-                                    (attr[attr.type] as StationAttributes).names[0] === (stnInfo as any).name[0]
+                                    // @ts-expect-error
+                                    (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
                             ).length === 0
                     )
                     .forEach(([id, stnInfo], i) => {
@@ -156,11 +157,14 @@ export default function OpenActions() {
                                     {
                                         visible: true,
                                         zIndex: 0,
-                                        color: theme,
-                                        type: LineType.Diagonal,
+                                        type: LinePathType.Diagonal,
                                         // deep copy to prevent mutual reference
-                                        [LineType.Diagonal]: JSON.parse(
-                                            JSON.stringify(lines[LineType.Diagonal].defaultAttrs)
+                                        [LinePathType.Diagonal]: JSON.parse(
+                                            JSON.stringify(linePaths[LinePathType.Diagonal].defaultAttrs)
+                                        ),
+                                        style: LineStyleType.SingleColor,
+                                        [LineStyleType.SingleColor]: JSON.parse(
+                                            JSON.stringify(lineStyles[LineStyleType.SingleColor].defaultAttrs)
                                         ),
                                         reconcileId: '',
                                     }

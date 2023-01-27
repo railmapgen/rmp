@@ -1,21 +1,18 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
-import { StnId, LineId, MiscNodeId, MiscEdgeId } from '../constants/constants';
-import { LineType } from '../constants/lines';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
-import { MiscEdgeType } from '../constants/edges';
+import { StnId, LineId, MiscNodeId } from '../constants/constants';
+import { LineStyleType, LinePathType } from '../constants/lines';
 import allStations from './svgs/stations/stations';
-import allLines from './svgs/lines/lines';
+import { linePaths } from './svgs/lines/lines';
+import LineWrapper from './svgs/lines/line-wrapper';
 import miscNodes from './svgs/nodes/misc-nodes';
-import miscEdges from './svgs/edges/misc-edges';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
-import { getStations, getMiscNodes, getLines, getMiscEdges } from '../util/process-elements';
-
-const EDGES = { ...allLines, ...miscEdges };
+import { getStations, getMiscNodes, getLines } from '../util/process-elements';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -68,7 +65,7 @@ const SvgCanvas = () => {
             });
             refreshAndSave();
             // console.log('move ', graph.current.getNodeAttributes(node));
-        } else if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
+        } else if (mode.startsWith('line')) {
             setNewLinePosition({
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
@@ -78,7 +75,7 @@ const SvgCanvas = () => {
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
-        if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
+        if (mode.startsWith('line')) {
             dispatch(setMode('free'));
 
             const prefixs = ['stn_core_', 'virtual_circle_'];
@@ -86,17 +83,16 @@ const SvgCanvas = () => {
                 const elems = document.elementsFromPoint(e.clientX, e.clientY);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
                 if (id?.startsWith(prefix)) {
-                    const type = mode.startsWith('line')
-                        ? (mode.slice(5) as LineType)
-                        : (mode.slice(10) as MiscEdgeType);
-                    const newLineId = `${mode.startsWith('line') ? 'line' : 'misc_edge'}_${nanoid(10)}`;
+                    const type = mode.slice(5) as LinePathType;
+                    const newLineId = `line_${nanoid(10)}`;
                     graph.current.addDirectedEdgeWithKey(newLineId, active, id.slice(prefix.length), {
                         visible: true,
                         zIndex: 0,
-                        color: theme,
                         type,
                         // deep copy to prevent mutual reference
-                        [type]: JSON.parse(JSON.stringify(EDGES[type].defaultAttrs)),
+                        [type]: JSON.parse(JSON.stringify(linePaths[type].defaultAttrs)),
+                        style: LineStyleType.SingleColor,
+                        [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',
                     });
                 }
@@ -113,7 +109,7 @@ const SvgCanvas = () => {
         refreshAndSave();
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
-    const handleEdgeClick = useEvent((edge: LineId | MiscEdgeId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+    const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
         dispatch(clearSelected());
         dispatch(addSelected(edge));
     });
@@ -123,14 +119,12 @@ const SvgCanvas = () => {
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
     const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
-    const [edges, setEdges] = React.useState(getMiscEdges(graph.current));
     const [allReconciledLines, setAllReconciledLines] = React.useState([] as LineId[][]);
     const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
     React.useEffect(() => {
         setStations(getStations(graph.current));
         setLines(getLines(graph.current));
         setNodes(getMiscNodes(graph.current));
-        setEdges(getMiscEdges(graph.current));
     }, [refreshAll]);
     React.useEffect(() => {
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
@@ -143,14 +137,11 @@ const SvgCanvas = () => {
         setDanglingLines(danglingLines);
     }, [reconcileLine]);
 
-    const DrawLineComponent =
-        mode.startsWith('line') || mode.startsWith('misc-edge')
-            ? EDGES[mode.startsWith('line') ? (mode.slice(5) as LineType) : (mode.slice(10) as MiscEdgeType)].component
-            : (props: any) => <></>;
+    const DrawLineComponent = mode.startsWith('line') ? LineWrapper : (props: any) => <></>;
 
     return (
         <>
-            {danglingLines.map(edge => {
+            {/* {danglingLines.map(edge => {
                 const LineComponent = allLines[LineType.Simple].component;
                 const [source, target] = graph.current.extremities(edge);
                 const sourceAttr = graph.current.getNodeAttributes(source);
@@ -186,7 +177,7 @@ const SvgCanvas = () => {
                         strokeLinejoin="round"
                     />
                 );
-            })}
+            })} */}
             {nodes.map(n => {
                 const { node, x, y, type } = n;
                 const MiscNodeComponent = miscNodes[type].component;
@@ -204,19 +195,20 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {[...lines, ...edges].map(({ edge, x1, y1, x2, y2, attr, type }) => {
-                const EdgeComponent = EDGES[type].component;
+            {lines.map(({ edge, x1, y1, x2, y2, type, attr, style, styleAttr }) => {
                 return (
-                    <EdgeComponent
-                        // @ts-expect-error
-                        id={edge as LineId | MiscEdgeId}
+                    <LineWrapper
+                        id={edge as LineId}
                         key={edge}
                         x1={x1}
                         y1={y1}
                         x2={x2}
                         y2={y2}
                         newLine={false}
+                        type={type}
                         attrs={attr}
+                        styleType={style}
+                        styleAttrs={styleAttr}
                         handleClick={handleEdgeClick}
                     />
                 );
@@ -237,7 +229,7 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {(mode.startsWith('line') || mode.startsWith('misc-edge')) && active && (
+            {mode.startsWith('line') && active && (
                 <DrawLineComponent
                     // @ts-expect-error
                     id="create_in_progress___no_use"
@@ -246,13 +238,10 @@ const SvgCanvas = () => {
                     x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
                     y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
                     newLine={true}
-                    attrs={{
-                        visible: true,
-                        zIndex: 0,
-                        color: theme,
-                        type: LineType.Diagonal,
-                        reconcileId: '',
-                    }}
+                    type={mode.slice(5) as LinePathType}
+                    attrs={linePaths[mode.slice(5) as LinePathType]}
+                    styleType={LineStyleType.SingleColor}
+                    styleAttrs={{ color: theme }}
                 />
             )}
         </>

@@ -2,7 +2,8 @@
     "color": "颜色",
     "warning": "警告",
     "cancel": "取消",
-    
+    "rmp2linePathAndStyle": "选择任何线条并更改它们的类型和样式！",
+
     "colorModal": {
         "title": "选择颜色",
         "example": "例子",
@@ -27,7 +28,9 @@
             "info": {
                 "title": "基本信息",
                 "id": "唯一识别符",
-                "type": "种类"
+                "stationType": "车站类型",
+                "linePathType": "线段路径类型",
+                "lineStyleType": "线段样式类型"
             },
             "nodePosition": {
                 "title": "车站位置",
@@ -36,10 +39,18 @@
                     "y": "纵坐标"
                 }
             },
+            "lineExtremities": {
+                "title": "线段两端",
+                "source": "起点",
+                "target": "终点",
+                "sourceName": "起点名称",
+                "targetName": "终点名称"
+            },
             "specificAttrsTitle": "独特属性",
             "multipleSelection": "多重选取",
             "changeStationTypeContent": "修改车站类型会移除所有独特属性除了名称。",
-            "changeStationType": "更改类型",
+            "changeLineTypeContent": "修改线段类型会移除所有独特属性。",
+            "changeType": "更改类型",
             "node": {
                 "shmetroNumLineBadge": {
                     "displayName": "上海地铁数字线路标识",
@@ -136,24 +147,27 @@
                     "displayName": "135°折线线段",
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
-                    "startFrom": "样式"
+                    "startFrom": "从这里开始",
+                    "roundCornerFactor": "转折圆角因子"
                 },
                 "perpendicular": {
                     "displayName": "90°垂直线段",
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
-                    "startFrom": "样式",
+                    "startFrom": "从这里开始",
                     "roundCornerFactor": "转折圆角因子"
-                }
-            },
-            "edge": {
+                },
+                "singleColor": {
+                    "displayName": "纯色样式"
+                },
                 "shmetroVirtualInt": {
-                    "displayName": "上海地铁出站换乘线段"
+                    "displayName": "上海地铁出站换乘样式"
                 },
                 "gzmtrVirtualInt": {
-                    "displayName": "广州地铁出站换乘线段"
+                    "displayName": "广州地铁出站换乘样式"
                 }
             },
+            "edge": {},
             "footer": {
                 "duplicate": "复制",
                 "remove": "移除",
@@ -212,9 +226,9 @@
             "title": "关于",
             "rmp": "地铁线路图绘制器",
             "railmapgen": "一个railmapgen项目",
-            "desc": "选择并拖动不同城市的地铁站并用45度斜线链接它们。",
-            "content1": "谨以此纪念我们曾拥有的自由与平等",
-            "content2": "06/01/2022在上海",
+            "desc": "通过自由拖动来自不同城市的车站并以 45 度圆角或垂直线将它们连接起来，设计您自己的铁路地图！",
+            "content1": "谨以此纪念我们曾拥有的自由与平等。",
+            "content2": "06/01/2022于上海",
             "contributors": "贡献者",
             "coreContributors": "核心贡献者"
         }
