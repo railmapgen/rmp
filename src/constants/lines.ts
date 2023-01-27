@@ -7,6 +7,7 @@ import { SingleColorAttributes } from '../components/svgs/lines/styles/single-co
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
+import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -25,6 +26,7 @@ export enum LineStyleType {
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
     ChinaRailway = 'china-railway',
+    BjsubwayTram = 'bjsubway-tram',
     // Maglev = 'maglev',
 }
 
@@ -33,6 +35,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
+    [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
     // [LineStyleType.Maglev]?: SingleColorAttributes;
 }
 

@@ -5,10 +5,8 @@ import { AttributesWithColor, ColorField } from '../../panels/details/color-fiel
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const {
-        names = defaultShmetroTextLineBadgeAttributes.names,
-        color = defaultShmetroTextLineBadgeAttributes.color,
-    } = attrs ?? defaultShmetroTextLineBadgeAttributes;
+    const { names = defaultShmetroTextLineBadgeAttributes.names, color = defaultShmetroTextLineBadgeAttributes.color } =
+        attrs ?? defaultShmetroTextLineBadgeAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);

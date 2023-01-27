@@ -168,6 +168,9 @@
                 },
                 "chinaRailway": {
                     "displayName": "China Railway style"
+                },
+                "bjsubwayTram": {
+                    "displayName": "Beijing Subway tram style"
                 }
             },
             "edge": {},

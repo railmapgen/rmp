@@ -168,6 +168,9 @@
                 },
                 "chinaRailway": {
                     "displayName": "中国铁路样式"
+                },
+                "bjsubwayTram": {
+                    "displayName": "北京地铁有轨电车样式"
                 }
             },
             "edge": {},

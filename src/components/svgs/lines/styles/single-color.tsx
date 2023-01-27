@@ -19,7 +19,7 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
             d={path}
             fill="none"
             stroke={color[2]}
-            strokeWidth={5}
+            strokeWidth="5"
             strokeLinecap="round"
             onClick={newLine ? undefined : onClick}
             pointerEvents={newLine ? 'none' : undefined}
