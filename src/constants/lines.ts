@@ -6,7 +6,7 @@ import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perp
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
-// import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
+import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -24,16 +24,16 @@ export enum LineStyleType {
     SingleColor = 'single-color',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
+    ChinaRailway = 'china-railway',
     // Maglev = 'maglev',
-    // ChinaRailway = 'china-railway',
 }
 
 export interface ExternalLineStyleAttributes {
     [LineStyleType.SingleColor]?: SingleColorAttributes;
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
+    [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     // [LineStyleType.Maglev]?: SingleColorAttributes;
-    // [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
 }
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */

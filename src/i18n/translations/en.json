@@ -165,6 +165,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "Guangzhou Metro out-of-station interchange style"
+                },
+                "chinaRailway": {
+                    "displayName": "China Railway style"
                 }
             },
             "edge": {},

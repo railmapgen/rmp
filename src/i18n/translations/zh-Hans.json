@@ -33,7 +33,7 @@
                 "lineStyleType": "线段样式类型"
             },
             "nodePosition": {
-                "title": "车站位置",
+                "title": "节点位置",
                 "pos": {
                     "x": "横坐标",
                     "y": "纵坐标"
@@ -165,6 +165,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "广州地铁出站换乘样式"
+                },
+                "chinaRailway": {
+                    "displayName": "中国铁路样式"
                 }
             },
             "edge": {},

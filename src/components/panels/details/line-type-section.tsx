@@ -32,27 +32,33 @@ export default function LineTypeSection() {
     const [isChangeTypeWarningOpen, setIsChangeTypeWarningOpen] = React.useState(false);
     const cancelRef = React.useRef(null);
 
-    const [newLinePathType, setNewLinePathType] = React.useState<LinePathType | undefined>(undefined);
-    const currentLinePathType = graph.current.getEdgeAttribute(selectedFirst, 'type');
     const availableLinePathOptions = Object.fromEntries(
         Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
     ) as { [k in LinePathType]: string };
+    const [currentLinePathType, setCurrentLinePathType] = React.useState(
+        graph.current.getEdgeAttribute(selectedFirst, 'type')
+    );
+    const [newLinePathType, setNewLinePathType] = React.useState<LinePathType | undefined>(undefined);
 
-    const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
-    const currentLineStyleType = graph.current.getEdgeAttribute(selectedFirst, 'style');
     const availableLineStyleOptions = Object.fromEntries(
         Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
     ) as { [k in LineStyleType]: string };
+    const [currentLineStyleType, setCurrentLineStyleType] = React.useState(
+        graph.current.getEdgeAttribute(selectedFirst, 'style')
+    );
+    const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
 
     const handleChangeLinePathType = () => {
         if (newLinePathType) {
             changeLinePathType(graph.current, selectedFirst!, newLinePathType);
+            setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
             hardRefresh();
         }
     };
     const handleChangeLineStyleType = () => {
         if (newLineStyleType) {
             changeLineStyleType(graph.current, selectedFirst!, newLineStyleType, theme);
+            setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
             hardRefresh();
         }
     };

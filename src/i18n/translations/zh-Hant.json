@@ -33,7 +33,7 @@
                 "lineStyleType": "線段樣式類型"
             },
             "nodePosition": {
-                "title": "車站位置",
+                "title": "節點位置",
                 "pos": {
                     "x": "橫坐標",
                     "y": "縱坐標"
@@ -156,6 +156,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "廣州地鐵出站換乘樣式"
+                },
+                "chinaRailway": {
+                    "displayName": "中國鐵路樣式"
                 }
             },
             "edge": {},

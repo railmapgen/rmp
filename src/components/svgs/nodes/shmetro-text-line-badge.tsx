@@ -5,8 +5,10 @@ import { AttributesWithColor, ColorField } from '../../panels/details/color-fiel
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { names = defaultShmetroTextLineBadgeAttributes.names, color = defaultShmetroTextLineBadgeAttributes.color } =
-        attrs ?? defaultShmetroTextLineBadgeAttributes;
+    const {
+        names = defaultShmetroTextLineBadgeAttributes.names,
+        color = defaultShmetroTextLineBadgeAttributes.color,
+    } = attrs ?? defaultShmetroTextLineBadgeAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
@@ -25,10 +27,13 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
         [id, handlePointerUp]
     );
 
+    // Special hack for Jinshan Railway and wait for the completion of Jichanglianluoxian
+    if (names.at(0)?.includes('铁路')) color[3] = MonoColour.black;
+
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x={0} width={bBox.width + 3} height="16" />
+                {!names.at(0)?.includes('铁路') && <rect fill={color[2]} x={0} width={bBox.width + 3} height="16" />}
                 <g ref={textLineEl}>
                     <text
                         className="rmp-name__zh"
