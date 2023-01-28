@@ -1,7 +1,5 @@
 :root {
     background-color: #FFFFFF;
-    --rmg-black: black;
-    --rmg-white: white;
 }
 
 @media (prefers-color-scheme: dark) {

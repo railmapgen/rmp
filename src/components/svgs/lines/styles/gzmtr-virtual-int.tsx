@@ -13,7 +13,7 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
         <path
             d={path}
             fill="none"
-            stroke="var(--rmg-black)"
+            stroke="black"
             strokeWidth="3"
             strokeDasharray="3"
             onClick={newLine ? undefined : onClick}

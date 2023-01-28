@@ -11,12 +11,12 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
 
     return (
         <g id={id}>
-            <path d={path} fill="none" stroke="var(--rmg-black)" strokeWidth="5" strokeLinecap="round" />
-            <path d={path} fill="none" stroke="var(--rmg-white)" strokeWidth="3" strokeDasharray="10" />
+            <path d={path} fill="none" stroke="black" strokeWidth="5" strokeLinecap="round" />
+            <path d={path} fill="none" stroke="white" strokeWidth="3" strokeDasharray="10" />
             <path
                 d={path}
                 fill="none"
-                stroke="var(--rmg-black)"
+                stroke="black"
                 strokeOpacity="0"
                 strokeWidth="5"
                 strokeLinecap="round"

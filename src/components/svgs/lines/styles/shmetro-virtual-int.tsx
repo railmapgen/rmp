@@ -14,7 +14,7 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
             <path
                 d={path}
                 fill="none"
-                stroke="var(--rmg-black)"
+                stroke="black"
                 strokeWidth="7"
                 strokeLinecap="round"
                 pointerEvents={newLine ? 'none' : undefined}
@@ -22,7 +22,7 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
             <path
                 d={path}
                 fill="none"
-                stroke="var(--rmg-white)"
+                stroke="white"
                 strokeWidth="5"
                 strokeLinecap="round"
                 pointerEvents={newLine ? 'none' : undefined}
@@ -31,7 +31,7 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
             <path
                 d={path}
                 fill="none"
-                stroke="var(--rmg-white)"
+                stroke="white"
                 strokeOpacity="0"
                 strokeWidth="7"
                 strokeLinecap="round"

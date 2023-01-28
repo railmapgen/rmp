@@ -15,11 +15,11 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
     return (
         <g id={id}>
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
-            <path d={path} fill="none" stroke="var(--rmg-white)" strokeWidth="1.67" />
+            <path d={path} fill="none" stroke="white" strokeWidth="1.67" />
             <path
                 d={path}
                 fill="none"
-                stroke="var(--rmg-white)"
+                stroke="white"
                 strokeOpacity="0"
                 strokeWidth={5}
                 strokeLinecap="round"
