@@ -14,7 +14,7 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
 
     return (
         <g id={id}>
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
             <path d={path} fill="none" stroke="white" strokeWidth="1.67" />
             <path
                 d={path}
@@ -22,7 +22,6 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
                 stroke="white"
                 strokeOpacity="0"
                 strokeWidth={5}
-                strokeLinecap="round"
                 onClick={newLine ? undefined : onClick}
                 pointerEvents={newLine ? 'none' : undefined}
             />
