@@ -2,16 +2,15 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { Size, useWindowSize } from '../util/hooks';
-import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { clearSelected, setActive, setMode, setRefresh } from '../redux/runtime/runtime-slice';
-import { setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
+import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { saveGraph } from '../redux/param/param-slice';
+import { Size, useWindowSize } from '../util/hooks';
+import { getMousePosition, roundToNearestN } from '../util/helpers';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -62,9 +61,9 @@ const SvgWrapper = () => {
                 [type]: JSON.parse(JSON.stringify(miscNodes[type].defaultAttrs)),
             });
             refreshAndSave();
-        } else if (mode === 'free' || mode.startsWith('line') || mode.startsWith('misc-edge')) {
+        } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
-            if (mode.startsWith('line') || mode.startsWith('misc-edge')) dispatch(setMode('free'));
+            if (mode.startsWith('line')) dispatch(setMode('free'));
 
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);

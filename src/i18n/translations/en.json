@@ -2,7 +2,7 @@
     "color": "Color",
     "warning": "Warning",
     "cancel": "Cancel",
-    "testRmp2": "Want to change line types and see the new China Railway style? Help us test RMP 2 today here!",
+    "rmp2linePathAndStyle": "Select any lines and change their type and style!",
 
     "colorModal": {
         "title": "Select a color",
@@ -28,17 +28,27 @@
             "info": {
                 "title": "Basic information",
                 "id": "ID",
-                "type": "Type"
+                "stationType": "Station Type",
+                "linePathType": "Line Path Type",
+                "lineStyleType": "Line Style Type"
             },
             "multipleSelection": "Multiple Selection",
-            "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its position and names.",
-            "changeStationType": "Change Type",
+            "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
+            "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
+            "changeType": "Change Type",
             "nodePosition": {
                 "title": "Node Position",
                 "pos": {
                     "x": "Coordinate X",
                     "y": "Coordinate Y"
                 }
+            },
+            "lineExtremities": {
+                "title": "Line Extremities",
+                "source": "Source",
+                "target": "Target",
+                "sourceName": "Source Name",
+                "targetName": "Target Name"
             },
             "specificAttrsTitle": "Specific Attributes",
             "node": {
@@ -134,27 +144,36 @@
                     "displayName": "Simple line"
                 },
                 "diagonal": {
-                    "displayName": "135° diagonal line",
-                    "offsetFrom": "Offset From",
-                    "offsetTo": "Offset To",
-                    "startFrom": "Start From"
-                },
-                "perpendicular": {
-                    "displayName": "90° perpendicular line",
+                    "displayName": "135° diagonal path",
                     "offsetFrom": "Offset From",
                     "offsetTo": "Offset To",
                     "startFrom": "Start From",
                     "roundCornerFactor": "Round Corner Factor"
-                }
-            },
-            "edge": {
+                },
+                "perpendicular": {
+                    "displayName": "90° perpendicular path",
+                    "offsetFrom": "Offset From",
+                    "offsetTo": "Offset To",
+                    "startFrom": "Start From",
+                    "roundCornerFactor": "Round Corner Factor"
+                },
+                "singleColor": {
+                    "displayName": "Single color style"
+                },
                 "shmetroVirtualInt": {
-                    "displayName": "Shanghai Metro out-of-station interchange line"
+                    "displayName": "Shanghai Metro out-of-station interchange style"
                 },
                 "gzmtrVirtualInt": {
-                    "displayName": "Guangzhou Metro out-of-station interchange line"
+                    "displayName": "Guangzhou Metro out-of-station interchange style"
+                },
+                "chinaRailway": {
+                    "displayName": "China Railway style"
+                },
+                "bjsubwayTram": {
+                    "displayName": "Beijing Subway tram style"
                 }
             },
+            "edge": {},
             "footer": {
                 "duplicate": "Duplicate",
                 "remove": "Remove",
@@ -213,8 +232,8 @@
             "title": "About",
             "rmp": "Rail Map Painter",
             "railmapgen": "A railmapgen project",
-            "desc": "Choose and drag metro stations from different cities and connect them with 45 degree rounded corner lines.",
-            "content1": "In memory of all the freedom and equality we once had",
+            "desc": "Design your own rail map by freely dragging stations from different cities and connecting them with 45-degree rounded corners or perpendicular lines!",
+            "content1": "In memory of all the freedom and equality we once had.",
             "content2": "06/01/2022 in Shanghai",
             "contributors": "Contributors",
             "coreContributors": "Core Contributors"

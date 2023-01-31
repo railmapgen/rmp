@@ -19,8 +19,7 @@ export default function AppRoot() {
             dispatch(
                 setGlobalAlert({
                     status: 'info',
-                    message: t('testRmp2'),
-                    url: 'https://uat-railmapgen.github.io/rmp/',
+                    message: t('rmp2linePathAndStyle'),
                 })
             );
         }, 1000);

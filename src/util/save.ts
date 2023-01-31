@@ -1,8 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
-import { StationType } from '../constants/stations';
+import { nanoid } from 'nanoid';
 import { ParamState } from '../redux/param/param-slice';
+import { NodeAttributes, EdgeAttributes, GraphAttributes, Theme } from '../constants/constants';
+import { LinePathType, LineStyleType } from '../constants/lines';
+import { StationType } from '../constants/stations';
+import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 
 export interface RMPSave {
     version: number;
@@ -16,7 +19,54 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 3;
+export const CURRENT_VERSION = 4;
+
+// Load shanghai template only if param is missing or invalid.
+const getInitialParam = async () =>
+    JSON.stringify((await import(/* webpackChunkName: "template" */ '../saves/shanghai.json')).default);
+
+/**
+ * Upgrade the passed param to the latest format.
+ */
+export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
+    let changed = false;
+
+    if (!originalParam) {
+        originalParam = await getInitialParam();
+        changed = true;
+    }
+
+    let originalSave = JSON.parse(originalParam);
+    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) {
+        originalSave = JSON.parse(await getInitialParam());
+        changed = true;
+    }
+
+    let version = Number(originalSave.version);
+    let save = JSON.stringify(originalSave);
+    while (version in UPGRADE_COLLECTION) {
+        save = UPGRADE_COLLECTION[version](save);
+        version = Number(JSON.parse(save).version);
+        changed = true;
+    }
+
+    if (changed) {
+        console.warn(`Upgrade save to version: ${version}`);
+        // Backup original param in case of bugs in the upgrades.
+        localStorage.setItem('rmp__param__backup', originalParam);
+    }
+
+    // Version should be CURRENT_VERSION now.
+    return save;
+};
+
+/**
+ * Return a valid save string from ParamState.
+ */
+export const stringifyParam = (paramState: ParamState) => {
+    const save: RMPSave = { ...paramState, graph: JSON.parse(paramState.graph), version: CURRENT_VERSION };
+    return JSON.stringify(save);
+};
 
 /**
  * Contains all version upgrade functions.
@@ -66,51 +116,54 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 3, graph: graph.export() });
     },
-};
+    3: param => {
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        // Add style and single color attrs to all existing lines.
+        graph
+            .filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => edge.startsWith('line'))
+            .forEach(edge => {
+                // @ts-expect-error We are dealing with old saves.
+                const color = graph.getEdgeAttribute(edge, 'color') as Theme;
+                // @ts-expect-error We are dealing with old saves.
+                graph.removeEdgeAttribute(edge, 'color');
+                // All the existing lines are single color lines and there is no name changes in type.
+                graph.mergeEdgeAttributes(edge, {
+                    style: LineStyleType.SingleColor,
+                    [LineStyleType.SingleColor]: { color },
+                });
+            });
+        // Transform all misc edges to lines with LineStyleType.ShmetroVirtualInt or LineStyleType.GzmtrVirtualInt style.
+        graph
+            .filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
+                edge.startsWith('misc_edge')
+            )
+            .forEach(edge => {
+                const id = `line_${nanoid(10)}`;
+                const [source, target] = graph.extremities(edge);
+                const type = graph.getEdgeAttribute(edge, 'type') as string;
 
-// Load shanghai template only if param is missing or invalid.
-const getInitialParam = async () =>
-    JSON.stringify((await import(/* webpackChunkName: "template" */ '../saves/shanghai.json')).default);
+                // We only have two misc edge types before and they belong to different styles now.
+                const style = type as LineStyleType;
+                // if (type === 'shmetro-virtual-int') style = LineStyleType.ShmetroVirtualInt;
+                // else style = LineStyleType.GzmtrVirtualInt;
 
-/**
- * Upgrade the passed param to the latest format.
- */
-export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
-    let changed = false;
+                // Add a new edge as we also need to change its id.
+                graph.addDirectedEdgeWithKey(id, source, target, {
+                    visible: true,
+                    zIndex: 0,
+                    type: LinePathType.Simple,
+                    // deep copy to prevent mutual reference
+                    [type]: JSON.parse(JSON.stringify(linePaths[LinePathType.Simple].defaultAttrs)),
+                    style,
+                    [style]: JSON.parse(JSON.stringify(lineStyles[style].defaultAttrs)),
+                    reconcileId: '',
+                });
 
-    if (!originalParam) {
-        originalParam = await getInitialParam();
-        changed = true;
-    }
-
-    let originalSave = JSON.parse(originalParam);
-    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) {
-        originalSave = JSON.parse(await getInitialParam());
-        changed = true;
-    }
-
-    let version = Number(originalSave.version);
-    let save = JSON.stringify(originalSave);
-    while (version in UPGRADE_COLLECTION) {
-        save = UPGRADE_COLLECTION[version](save);
-        version = Number(JSON.parse(save).version);
-        changed = true;
-    }
-
-    if (changed) {
-        console.warn(`Upgrade save to version: ${version}`);
-        // Backup original param in case of bugs in the upgrades.
-        localStorage.setItem('rmp__param__backup', originalParam);
-    }
-
-    // Version should be CURRENT_VERSION now.
-    return save;
-};
-
-/**
- * Return a valid save string from ParamState.
- */
-export const stringifyParam = (paramState: ParamState) => {
-    const save: RMPSave = { ...paramState, graph: JSON.parse(paramState.graph), version: CURRENT_VERSION };
-    return JSON.stringify(save);
+                // Remove the old edge.
+                graph.dropEdge(edge);
+            });
+        return JSON.stringify({ ...p, version: 4, graph: graph.export() });
+    },
 };
