@@ -30,7 +30,7 @@ const DetailsPanel = () => {
         dispatch(setRefresh());
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefresh, saveGraph]);
-    const { selected } = useRootSelector(state => state.runtime);
+    const { selected, mode } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     const handleClose = () => dispatch(clearSelected());
@@ -169,7 +169,12 @@ const DetailsPanel = () => {
     }
 
     return (
-        <RmgSidePanel isOpen={selected.length > 0} width={300} header="Dummy header" alwaysOverlay>
+        <RmgSidePanel
+            isOpen={selected.length > 0 && !mode.startsWith('line') && !mode.startsWith('misc-edge')}
+            width={300}
+            header="Dummy header"
+            alwaysOverlay
+        >
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />

@@ -63,7 +63,7 @@ const SvgCanvas = () => {
                     y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                 }));
             });
-            refreshAndSave();
+            dispatch(setRefresh());
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
             setNewLinePosition({
@@ -75,7 +75,7 @@ const SvgCanvas = () => {
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
-        if (mode.startsWith('line')) {
+        if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
             dispatch(setMode('free'));
 
             const prefixs = ['stn_core_', 'virtual_circle_'];
