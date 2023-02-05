@@ -30,7 +30,7 @@ jobs:
         with:
           app_name: rmp
           version: ${{ steps.build.outputs.RMG_VER }}
-          dist: dist
+          dist: build
           token: ${{ secrets.RMG_BUILD_AND_RELEASE }}
 
       - name: Auto deploy
