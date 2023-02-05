@@ -1,4 +1,4 @@
-name: Build
+name: Build UI
 
 on:
   workflow_dispatch:
@@ -14,20 +14,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
       - run: npm i
 
-      - name: Clone UAT repo
-        run: git clone --depth 1 https://wongchito:${{ secrets.RMG_BUILD_AND_RELEASE }}@github.com/uat-railmapgen/rmg-repositories.git
-
       - name: Build
-        run: |
-          chmod +x ./scripts/build.sh
-          ./scripts/build.sh
         id: build
+        run: ./scripts/build.sh
+        shell: bash
+
+      - name: Upload artefacts
+        uses: railmapgen/upload-artefacts@main
+        with:
+          app_name: rmp
+          version: ${{ steps.build.outputs.RMG_VER }}
+          dist: build
+          token: ${{ secrets.RMG_BUILD_AND_RELEASE }}
 
       - name: Auto deploy
         if: ${{ github.event.inputs.auto_deploy == 'UAT' || github.event.inputs.auto_deploy == 'PRD' }}
