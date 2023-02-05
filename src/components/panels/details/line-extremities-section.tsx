@@ -1,12 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Heading } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useRootSelector } from '../../../redux';
+import { useRootDispatch, useRootSelector } from '../../../redux';
 import { ExternalStationAttributes } from '../../../constants/stations';
+import { addSelected, clearSelected } from '../../../redux/runtime/runtime-slice';
 
 export default function LineExtremitiesSection() {
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);
@@ -75,6 +77,28 @@ export default function LineExtremitiesSection() {
             </Heading>
 
             <RmgFields fields={fields} minW={130} />
+            <Flex>
+                <Button
+                    flex={1}
+                    size="sm"
+                    onClick={() => {
+                        dispatch(clearSelected());
+                        dispatch(addSelected(source));
+                    }}
+                >
+                    {sourceName}
+                </Button>
+                <Button
+                    flex={1}
+                    size="sm"
+                    onClick={() => {
+                        dispatch(clearSelected());
+                        dispatch(addSelected(target));
+                    }}
+                >
+                    {targetName}
+                </Button>
+            </Flex>
         </Box>
     );
 }
