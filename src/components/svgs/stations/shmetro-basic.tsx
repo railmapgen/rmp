@@ -34,11 +34,9 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
     );
 
     const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
-    const textDy =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
-        NAME_DY[nameOffsetY].lineHeight *
+    const textY =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'top' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(

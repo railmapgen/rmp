@@ -84,11 +84,9 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     );
 
     const textX = nameOffsetX === 'left' ? -18 : nameOffsetX === 'right' ? 18 : 0;
-    const textDy =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
-        NAME_DY[nameOffsetY].lineHeight *
+    const textY =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 11) *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'top' ? -21 : nameOffsetY === 'bottom' ? 27 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(

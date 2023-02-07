@@ -42,7 +42,7 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
 MultilineText.displayName = 'MultilineText';
 
 /**
- * This is the default const of name height in different languages..
+ * This is the default const of name height in different languages.
  */
 export const LINE_HEIGHT = {
     [LanguageCode.Chinese]: 16,
@@ -62,7 +62,7 @@ export const NAME_DY: {
 } = {
     top: {
         namesPos: 1,
-        lineHeight: LINE_HEIGHT[LanguageCode.Chinese],
+        lineHeight: LINE_HEIGHT[LanguageCode.English],
         polarity: -1,
     },
     middle: {
@@ -72,7 +72,7 @@ export const NAME_DY: {
     },
     bottom: {
         namesPos: 0,
-        lineHeight: LINE_HEIGHT[LanguageCode.English],
+        lineHeight: LINE_HEIGHT[LanguageCode.Chinese],
         polarity: 1,
     },
 };

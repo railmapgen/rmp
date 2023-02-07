@@ -51,11 +51,9 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     );
 
     const textX = nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0;
-    const textDy =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length - 1) *
-        NAME_DY[nameOffsetY].lineHeight *
+    const textY =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
         NAME_DY[nameOffsetY].polarity;
-    const textY = textDy + (nameOffsetY === 'top' ? -24 : nameOffsetY === 'bottom' ? 24 : 0);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     const transferAll = transfer.flat().slice(0, 3); // slice to make sure at most 3 transfers
