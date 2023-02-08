@@ -24,7 +24,7 @@ import { RmgSelect } from '@railmapgen/rmg-components';
 import { StationType } from '../../constants/stations';
 import { useRootSelector, useRootDispatch } from '../../redux';
 import { setTelemetryApp } from '../../redux/app/app-slice';
-import { setRefresh } from '../../redux/runtime/runtime-slice';
+import { setRefreshNodes, setRefreshEdges } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/param/param-slice';
 import stations from '../svgs/stations/stations';
 import { changeStationsTypeInBatch } from '../../util/change-types';
@@ -34,9 +34,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
+    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const graph = React.useRef(window.graph);
     const linkColour = useColorModeValue('primary.500', 'primary.300');
 

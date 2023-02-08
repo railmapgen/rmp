@@ -10,9 +10,12 @@ import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
 interface RuntimeState {
     selected: string[];
     active: ActiveType | undefined;
+    /**
+     * Watch these refresh indicators to know whether there is a change in `window.graph`.
+     */
     refresh: {
-        all: Record<string, never>;
-        reconcileLine: Record<string, never>;
+        nodes: Record<string, never>;
+        edges: Record<string, never>;
     };
     mode: RuntimeMode;
     theme: Theme;
@@ -23,8 +26,8 @@ const initialState: RuntimeState = {
     selected: [],
     active: undefined,
     refresh: {
-        all: {},
-        reconcileLine: {},
+        nodes: {},
+        edges: {},
     },
     mode: 'free',
     theme: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
@@ -49,11 +52,11 @@ const runtimeSlice = createSlice({
         setActive: (state, action: PayloadAction<ActiveType | undefined>) => {
             state.active = action.payload;
         },
-        setRefresh: state => {
-            state.refresh.all = {};
+        setRefreshNodes: state => {
+            state.refresh.nodes = {};
         },
-        setRefreshReconcile: state => {
-            state.refresh.reconcileLine = {};
+        setRefreshEdges: state => {
+            state.refresh.edges = {};
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             state.mode = action.payload;
@@ -84,8 +87,8 @@ export const {
     removeSelected,
     clearSelected,
     setActive,
-    setRefresh,
-    setRefreshReconcile,
+    setRefreshNodes,
+    setRefreshEdges,
     setMode,
     setTheme,
     setGlobalAlert,

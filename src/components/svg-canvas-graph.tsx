@@ -3,11 +3,18 @@ import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
-import { setActive, addSelected, setRefresh, setMode, clearSelected } from '../redux/runtime/runtime-slice';
+import {
+    setActive,
+    addSelected,
+    setRefreshNodes,
+    setRefreshEdges,
+    setMode,
+    clearSelected,
+} from '../redux/runtime/runtime-slice';
 import { StnId, LineId, MiscNodeId } from '../constants/constants';
-import { LineStyleType, LinePathType } from '../constants/lines';
+import { LineStyleType, LinePathType, ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import allStations from './svgs/stations/stations';
-import { linePaths } from './svgs/lines/lines';
+import { linePaths, lineStyles } from './svgs/lines/lines';
 import LineWrapper from './svgs/lines/line-wrapper';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
@@ -19,14 +26,15 @@ const SvgCanvas = () => {
 
     const {
         selected,
-        refresh: { all: refreshAll, reconcileLine },
+        refresh: { nodes: refreshNodes, edges: refreshEdges },
         mode,
         active,
         theme,
     } = useRootSelector(state => state.runtime);
     const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const refreshAndSave = () => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
     };
 
@@ -63,7 +71,8 @@ const SvgCanvas = () => {
                     y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                 }));
             });
-            dispatch(setRefresh());
+            dispatch(setRefreshNodes());
+            dispatch(setRefreshEdges());
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
             setNewLinePosition({
@@ -119,65 +128,28 @@ const SvgCanvas = () => {
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
     const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
-    const [allReconciledLines, setAllReconciledLines] = React.useState([] as LineId[][]);
+    const [reconciledLines, setReconciledLines] = React.useState([] as LineId[][]);
     const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
     React.useEffect(() => {
         setStations(getStations(graph.current));
         setLines(getLines(graph.current));
         setNodes(getMiscNodes(graph.current));
-    }, [refreshAll]);
+    }, [refreshNodes]);
     React.useEffect(() => {
+        setLines(getLines(graph.current));
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
-        setAllReconciledLines(allReconciledLines);
+        setReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
     }, []);
     React.useEffect(() => {
+        setLines(getLines(graph.current));
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
-        setAllReconciledLines(allReconciledLines);
+        setReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
-    }, [reconcileLine]);
-
-    const DrawLineComponent = mode.startsWith('line') ? LineWrapper : (props: any) => <></>;
+    }, [refreshEdges]);
 
     return (
         <>
-            {/* {danglingLines.map(edge => {
-                const LineComponent = allLines[LineType.Simple].component;
-                const [source, target] = graph.current.extremities(edge);
-                const sourceAttr = graph.current.getNodeAttributes(source);
-                const targetAttr = graph.current.getNodeAttributes(target);
-                return (
-                    <LineComponent
-                        id={edge as LineId}
-                        key={edge}
-                        x1={sourceAttr.x}
-                        y1={sourceAttr.y}
-                        x2={targetAttr.x}
-                        y2={targetAttr.y}
-                        newLine={false}
-                        attrs={graph.current.getEdgeAttributes(edge)}
-                        handleClick={handleEdgeClick}
-                    />
-                );
-            })}
-            {allReconciledLines.map(reconciledLine => {
-                const path = generateReconciledPath(graph.current, reconciledLine);
-                if (path === '') return <></>;
-                const color = graph.current.getEdgeAttribute(reconciledLine[0], 'color');
-
-                // TODO: reconciled line could be clicked
-
-                return (
-                    <path
-                        key={reconciledLine.join(',')}
-                        d={path}
-                        fill="none"
-                        stroke={color[2]}
-                        strokeWidth={5}
-                        strokeLinejoin="round"
-                    />
-                );
-            })} */}
             {nodes.map(n => {
                 const { node, x, y, type } = n;
                 const MiscNodeComponent = miscNodes[type].component;
@@ -195,10 +167,57 @@ const SvgCanvas = () => {
                     />
                 );
             })}
+            {danglingLines.map(edge => {
+                const [source, target] = graph.current.extremities(edge);
+                const sourceAttr = graph.current.getNodeAttributes(source);
+                const targetAttr = graph.current.getNodeAttributes(target);
+                return (
+                    <LineWrapper
+                        id={edge}
+                        key={edge}
+                        x1={sourceAttr.x}
+                        y1={sourceAttr.y}
+                        x2={targetAttr.x}
+                        y2={targetAttr.y}
+                        newLine={false}
+                        type={LinePathType.Simple}
+                        attrs={linePaths[LinePathType.Simple].defaultAttrs}
+                        styleType={LineStyleType.SingleColor}
+                        styleAttrs={{ color: ['', '', '#c0c0c0', '#fff'] }}
+                        handleClick={handleEdgeClick}
+                    />
+                );
+            })}
+            {reconciledLines.map(reconciledLine => {
+                const path = generateReconciledPath(graph.current, reconciledLine);
+                if (!path) return <></>;
+
+                const id = reconciledLine.at(0)!;
+                const style = graph.current.getEdgeAttribute(id, 'style');
+                const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
+                    ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
+                >;
+                const StyleComponent = lineStyles[style].component as <
+                    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
+                >(
+                    props: LineStyleComponentProps<T>
+                ) => JSX.Element;
+
+                return (
+                    <StyleComponent
+                        id={id}
+                        key={id}
+                        path={path}
+                        styleAttrs={styleAttrs}
+                        newLine={false}
+                        handleClick={handleEdgeClick}
+                    />
+                );
+            })}
             {lines.map(({ edge, x1, y1, x2, y2, type, attr, style, styleAttr }) => {
                 return (
                     <LineWrapper
-                        id={edge as LineId}
+                        id={edge}
                         key={edge}
                         x1={x1}
                         y1={y1}
@@ -230,7 +249,7 @@ const SvgCanvas = () => {
                 );
             })}
             {mode.startsWith('line') && active && (
-                <DrawLineComponent
+                <LineWrapper
                     // @ts-expect-error
                     id="create_in_progress___no_use"
                     x1={graph.current.getNodeAttribute(active, 'x')}

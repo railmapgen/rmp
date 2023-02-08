@@ -2,7 +2,7 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { clearSelected, setActive, setMode, setRefresh } from '../redux/runtime/runtime-slice';
+import { clearSelected, setActive, setMode, setRefreshNodes, setRefreshEdges } from '../redux/runtime/runtime-slice';
 import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
 import SvgCanvas from './svg-canvas-graph';
 import { StationType } from '../constants/stations';
@@ -15,7 +15,8 @@ import { getMousePosition, roundToNearestN } from '../util/helpers';
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const refreshAndSave = () => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
     };
 

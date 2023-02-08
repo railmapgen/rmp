@@ -12,7 +12,7 @@ import {
 } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { clearSelected, setGlobalAlert, setRefresh, setRefreshReconcile } from '../../../redux/runtime/runtime-slice';
+import { clearSelected, setGlobalAlert, setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import { NodeAttributes } from '../../../constants/constants';
 import stations from '../../svgs/stations/stations';
 import miscNodes from '../../svgs/nodes/misc-nodes';
@@ -27,9 +27,10 @@ const DetailsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
+    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const { selected, mode } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
@@ -40,15 +41,21 @@ const DetailsPanel = () => {
         allAttr.y += 50;
         const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;
         graph.current.addNode(id, allAttr);
-        hardRefresh();
+        dispatch(setRefreshNodes());
+        dispatch(saveGraph(graph.current.export()));
     };
     const handleRemove = (selected: string[]) => {
         dispatch(clearSelected());
         selected.forEach(s => {
-            if (graph.current.hasNode(s)) graph.current.dropNode(s);
-            else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            if (graph.current.hasNode(s)) {
+                graph.current.dropNode(s);
+                hardRefresh();
+            } else if (graph.current.hasEdge(s)) {
+                graph.current.dropEdge(s);
+                dispatch(setRefreshEdges());
+                dispatch(saveGraph(graph.current.export()));
+            }
         });
-        hardRefresh();
     };
     // A helper method to remove all lines with the same color
     // const handleRemoveEntireLine = (selectedFirst: string) => {
@@ -112,7 +119,8 @@ const DetailsPanel = () => {
                                 graph.current.mergeNodeAttributes(selectedFirst, {
                                     [type]: updatedAttrs,
                                 });
-                                hardRefresh();
+                                dispatch(setRefreshNodes());
+                                dispatch(saveGraph(graph.current.export()));
                             },
                         } as RmgFieldsField)
                 ),
@@ -130,7 +138,7 @@ const DetailsPanel = () => {
         //     onChange: val => {
         //         setReconcileId(val);
         //         graph.current.mergeEdgeAttributes(selectedFirst, { reconcileId: val });
-        //         dispatch(setRefreshReconcile());
+        //         dispatch(setRefreshEdges());
         //         dispatch(saveGraph(graph.current.export()));
         //     },
         // });
@@ -157,7 +165,8 @@ const DetailsPanel = () => {
                                 [type]: field.onChange(val, attrs),
                             });
                             // console.log(graph.current.getEdgeAttributes(selectedFirst));
-                            hardRefresh();
+                            dispatch(setRefreshEdges());
+                            dispatch(saveGraph(graph.current.export()));
                         },
                     } as RmgFieldsField)
             )

@@ -1,9 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { linePaths } from '../components/svgs/lines/lines';
-import { roundPathCorners } from './pathRounding';
-
-const edges = linePaths;
 
 /**
  * Only lines have a reconcileId will be considered.
@@ -44,14 +41,20 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
             return;
         }
 
-        // every type of line in linesNeedToReconcile should implement generatePath function
-        if (!linesNeedToReconcile.every(line => edges[graph.getEdgeAttribute(line, 'type')].generatePath)) {
+        // all the lines in linesNeedToReconcile should be the same type and style
+        const type = graph.getEdgeAttribute(linesNeedToReconcile.at(0), 'type');
+        if (!linesNeedToReconcile.every(line => graph.getEdgeAttribute(line, 'type') === type)) {
+            danglingLines.push(...linesNeedToReconcile);
+            return;
+        }
+        const style = graph.getEdgeAttribute(linesNeedToReconcile.at(0), 'style');
+        if (!linesNeedToReconcile.every(line => graph.getEdgeAttribute(line, 'style') === style)) {
             danglingLines.push(...linesNeedToReconcile);
             return;
         }
 
         // find the source and target for the whole line
-        const count: { [node: string]: number } = {}; // count on evert nodes' occurrence
+        const count: { [node: string]: number } = {}; // count on every nodes' occurrence
         const sources: Set<string> = new Set();
         const targets: Set<string> = new Set();
         const extremities = Object.fromEntries(
@@ -109,33 +112,31 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
 export default reconcileLines;
 
 /**
- * Call each lines' generatePath and merge all the path to a single one.
+ * Call each lines' `generatePath` and merge all the paths to a single path.
  */
 export const generateReconciledPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    reconciledLine: LineId[]
+    reconciledLines: LineId[]
 ) => {
-    if (!reconciledLine.every(line => graph.hasEdge(line))) return '';
+    if (!reconciledLines.every(line => graph.hasEdge(line))) return undefined;
 
-    // call each line to generate its own path
-    const paths = reconciledLine.map(line => {
+    // call each line's generatePath to generate its own path
+    const paths = reconciledLines.map(line => {
         const [source, target] = graph.extremities(line);
         const sourceAttr = graph.getNodeAttributes(source);
         const targetAttr = graph.getNodeAttributes(target);
         const type = graph.getEdgeAttribute(line, 'type');
-        const attr = graph.getEdgeAttribute(line, type) ?? edges[type].defaultAttrs;
+        const attr = graph.getEdgeAttribute(line, type) ?? linePaths[type].defaultAttrs;
         // @ts-ignore-error
-        return lines[type].generatePath!(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr);
+        return linePaths[type].generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr);
     });
-    // console.log(reconciledLine, paths);
 
     // merge paths to one
     let path = `${paths[0].d} `;
-    for (let i = 1; i < reconciledLine.length; i = i + 1) {
-        // path += `L ${paths[i].d.slice(1)} `;
+    for (let i = 1; i < reconciledLines.length; i = i + 1) {
         path += paths[i].d.replace(/M\s*-?\d+(\.\d+)?(\s*|,)-?\d+(\.*\d+)?\s*/i, '');
     }
-    // console.log(path);
+    // console.log(reconciledLines, paths, path);
 
-    return roundPathCorners(path, 7.5, false) as string;
+    return path as `${'m' | 'M'}${string}`;
 };

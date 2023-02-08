@@ -5,7 +5,7 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra
 import { nanoid } from 'nanoid';
 import { useRootDispatch } from '../../redux';
 import { ParamState, saveGraph, setFullState } from '../../redux/param/param-slice';
-import { clearSelected, setRefresh } from '../../redux/runtime/runtime-slice';
+import { clearSelected, setRefreshNodes, setRefreshEdges } from '../../redux/runtime/runtime-slice';
 import { LinePathType, LineStyleType } from '../../constants/lines';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { InterchangeInfo } from '../panels/details/interchange-field';
@@ -28,9 +28,10 @@ export default function OpenActions() {
     const [isGalleryModalOpen, setIsGalleryModalOpen] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph, graph]);
+    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph, graph]);
 
     const handleNew = () => {
         dispatch(clearSelected());

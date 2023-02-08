@@ -12,7 +12,7 @@ import {
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefresh } from '../../../redux/runtime/runtime-slice';
+import { setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
@@ -21,9 +21,9 @@ export default function LineTypeSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
+    }, [dispatch, setRefreshEdges, saveGraph]);
 
     const { selected, theme } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);

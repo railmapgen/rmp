@@ -12,7 +12,7 @@ import {
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefresh } from '../../../redux/runtime/runtime-slice';
+import { setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { StationType } from '../../../constants/stations';
 import stations from '../../svgs/stations/stations';
 import { changeStationType } from '../../../util/change-types';
@@ -21,9 +21,9 @@ export default function StationTypeSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
+    }, [dispatch, setRefreshNodes, saveGraph]);
 
     const { selected } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);

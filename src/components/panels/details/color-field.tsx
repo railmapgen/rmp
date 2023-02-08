@@ -2,7 +2,7 @@ import React from 'react';
 import { NodeType, Theme } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefresh } from '../../../redux/runtime/runtime-slice';
+import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import ColourModal from '../colour-modal/colour-modal';
 import { StationType } from '../../../constants/stations';
@@ -36,9 +36,10 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
     const dispatch = useRootDispatch();
 
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
+    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const { selected } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);

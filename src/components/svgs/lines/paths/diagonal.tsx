@@ -15,13 +15,12 @@ const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
         roundCornerFactor = defaultDiagonalPathAttributes.roundCornerFactor,
     } = attrs;
 
-    const x1_ = startFrom === 'from' ? propsx1 : propsx2;
-    const x2_ = startFrom === 'from' ? propsx2 : propsx1;
-    const y1_ = startFrom === 'from' ? propsy1 : propsy2;
-    const y2_ = startFrom === 'from' ? propsy2 : propsy1;
+    // flip x and y if startFrom === 'to'
+    const [x1a, x2a, y1a, y2a] =
+        startFrom === 'from' ? [propsx1, propsx2, propsy1, propsy2] : [propsx2, propsx1, propsy2, propsy1];
 
     // indicate the line angle start from x1, y1
-    const horizontalOrVertical = Math.abs(x2_ - x1_) > Math.abs(y2_ - y1_) ? 'vertical' : 'horizontal';
+    const horizontalOrVertical = Math.abs(x2a - x1a) > Math.abs(y2a - y1a) ? 'vertical' : 'horizontal';
 
     const [offset1, offset2] = startFrom === 'from' ? [offsetFrom, offsetTo] : [offsetTo, offsetFrom];
     const dx1 = horizontalOrVertical === 'vertical' ? 0 : offset1;
@@ -29,10 +28,13 @@ const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
     const dx2 = offset2 * Math.SQRT1_2;
     const dy2 = offset2 * Math.SQRT1_2;
 
-    const [x1, y1, x2, y2] = [x1_ + dx1, y1_ + dy1, x2_ + dx2, y2_ + dy2];
+    const [x1b, y1b, x2b, y2b] = [x1a + dx1, y1a + dy1, x2a + dx2, y2a + dy2];
 
-    const x = horizontalOrVertical === 'vertical' ? x2 + Math.abs(y2 - y1) * (x2 - x1 > 0 ? -1 : 1) : x1;
-    const y = horizontalOrVertical === 'vertical' ? y1 : y2 + Math.abs(x2 - x1) * (y2 - y1 > 0 ? -1 : 1);
+    const x = horizontalOrVertical === 'vertical' ? x2b + Math.abs(y2b - y1b) * (x2b - x1b > 0 ? -1 : 1) : x1b;
+    const y = horizontalOrVertical === 'vertical' ? y1b : y2b + Math.abs(x2b - x1b) * (y2b - y1b > 0 ? -1 : 1);
+
+    // flip back x and y if startFrom === 'to'
+    const [x1, y1, x2, y2] = startFrom === 'from' ? [x1b, y1b, x2b, y2b] : [x2b, y2b, x1b, y1b];
 
     const path = roundPathCorners(`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`, roundCornerFactor, false);
 

@@ -4,18 +4,19 @@ import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefresh } from '../../../redux/runtime/runtime-slice';
+import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 
 export default function NodePositionSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefresh());
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefresh, saveGraph]);
+    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const {
         selected,
-        refresh: { all: refreshAll },
+        refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);
@@ -27,7 +28,7 @@ export default function NodePositionSection() {
             const y = graph.current.getNodeAttribute(selectedFirst, 'y');
             setPos({ x, y });
         }
-    }, [refreshAll, selected]);
+    }, [refreshNodes, selected]);
 
     const fields: RmgFieldsField[] = [
         {
