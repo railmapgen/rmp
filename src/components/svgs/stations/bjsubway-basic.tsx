@@ -36,7 +36,9 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
+        ((names[NAME_DY[nameOffsetY].namesPos].split('\\').length + (nameOffsetY === 'top' && !open ? 1 : 0)) *
+            NAME_DY[nameOffsetY].lineHeight +
+            8) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
