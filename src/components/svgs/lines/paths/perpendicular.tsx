@@ -28,7 +28,7 @@ const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttribute
         false
     );
 
-    return { type: LinePathType.Perpendicular, d: path };
+    return path;
 };
 
 /**

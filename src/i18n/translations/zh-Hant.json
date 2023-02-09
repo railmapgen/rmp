@@ -162,6 +162,9 @@
                 },
                 "bjsubwayTram": {
                     "displayName": "北京地鐵有軌電車樣式"
+                },
+                "dualColor": {
+                    "displayName": "上海磁懸浮樣式"
                 }
             },
             "edge": {},

@@ -38,7 +38,7 @@ const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
 
     const path = roundPathCorners(`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`, roundCornerFactor, false);
 
-    return { type: LinePathType.Diagonal, d: path };
+    return path;
 };
 
 /**

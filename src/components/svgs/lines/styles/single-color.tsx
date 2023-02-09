@@ -1,6 +1,6 @@
 import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
 import { LineStyleType } from '../../../../constants/lines';
 
@@ -49,7 +49,10 @@ const singleColor: LineStyle<SingleColorAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: singleColorFields,
-    metadata: { displayName: 'panel.details.line.singleColor.displayName' },
+    metadata: {
+        displayName: 'panel.details.line.singleColor.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+    },
 };
 
 export default singleColor;

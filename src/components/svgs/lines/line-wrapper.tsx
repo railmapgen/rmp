@@ -7,9 +7,9 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
     const { id, type, attrs, styleType, styleAttrs = lineStyles[styleType].defaultAttrs, newLine, handleClick } = props;
     const { x1, y1, x2, y2 } = props;
 
-    const [path, setPath] = React.useState('M 0,0' as `${'m' | 'M'}${string}`);
+    const [path, setPath] = React.useState('M 0,0 L 0,0' as `${'m' | 'M'}${string}`);
     React.useEffect(() => {
-        setPath(linePaths[type].generatePath(x1, x2, y1, y2, attrs as any).d);
+        setPath(linePaths[type].generatePath(x1, x2, y1, y2, attrs as any));
     }, [type, JSON.stringify(attrs), x1, x2, y1, y2]);
 
     // HELP NEEDED: Why component is not this type?
@@ -21,7 +21,14 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
 
     return React.useMemo(
         () => (
-            <StyleComponent id={id} path={path} styleAttrs={styleAttrs} newLine={newLine} handleClick={handleClick} />
+            <StyleComponent
+                id={id}
+                type={type}
+                path={path}
+                styleAttrs={styleAttrs}
+                newLine={newLine}
+                handleClick={handleClick}
+            />
         ),
         [id, path, styleType, JSON.stringify(styleAttrs), newLine, handleClick]
     );

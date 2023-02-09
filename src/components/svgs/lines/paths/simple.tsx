@@ -6,10 +6,7 @@ const generateSimplePath: GeneratePathFunction<SimplePathAttributes> = (
     y1: number,
     y2: number,
     attrs: SimplePathAttributes = defaultSimplePathAttributes
-) => ({
-    type: LinePathType.Simple,
-    d: `M ${x1},${y1} L ${x2},${y2}`,
-});
+) => `M ${x1},${y1} L ${x2},${y2}`;
 
 export interface SimplePathAttributes extends LinePathAttributes {}
 

@@ -132,9 +132,9 @@ export const generateReconciledPath = (
     });
 
     // merge paths to one
-    let path = `${paths[0].d} `;
+    let path = `${paths[0]} `;
     for (let i = 1; i < reconciledLines.length; i = i + 1) {
-        path += paths[i].d.replace(/M\s*-?\d+(\.\d+)?(\s*|,)-?\d+(\.*\d+)?\s*/i, '');
+        path += paths[i].replace(/M\s*-?\d+(\.\d+)?(\s*|,)-?\d+(\.*\d+)?\s*/i, '');
     }
     // console.log(reconciledLines, paths, path);
 

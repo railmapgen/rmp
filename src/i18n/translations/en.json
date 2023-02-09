@@ -171,6 +171,9 @@
                 },
                 "bjsubwayTram": {
                     "displayName": "Beijing Subway tram style"
+                },
+                "dualColor": {
+                    "displayName": "Shanghai Maglev style"
                 }
             },
             "edge": {},

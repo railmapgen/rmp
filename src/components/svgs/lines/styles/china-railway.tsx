@@ -1,8 +1,8 @@
 import React from 'react';
-import { LinePathAttributes, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) => {
-    const { id, path, newLine, handleClick } = props;
+    const { id, path, handleClick } = props;
 
     const onClick = React.useCallback(
         (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
@@ -20,8 +20,7 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
                 strokeOpacity="0"
                 strokeWidth="5"
                 strokeLinecap="round"
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
+                onClick={onClick}
             />
         </g>
     );
@@ -40,7 +39,10 @@ const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: [],
-    metadata: { displayName: 'panel.details.line.chinaRailway.displayName' },
+    metadata: {
+        displayName: 'panel.details.line.chinaRailway.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+    },
 };
 
 export default chinaRailway;

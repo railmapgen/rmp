@@ -7,6 +7,7 @@ import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
 import chinaRailway from './styles/china-railway';
 import bjsubwayTram from './styles/bjsubway-tram';
+import dualColor from './styles/dual-color';
 
 export const linePaths = {
     [LinePathType.Simple]: simplePath,
@@ -20,5 +21,5 @@ export const lineStyles = {
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwayTram]: bjsubwayTram,
-    // [LineStyleType.Maglev]: singleColor,
+    [LineStyleType.DualColor]: dualColor,
 };

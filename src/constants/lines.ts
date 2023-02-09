@@ -8,6 +8,7 @@ import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shm
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
+import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -27,7 +28,7 @@ export enum LineStyleType {
     GzmtrVirtualInt = 'gzmtr-virtual-int',
     ChinaRailway = 'china-railway',
     BjsubwayTram = 'bjsubway-tram',
-    // Maglev = 'maglev',
+    DualColor = 'dual-color',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -36,7 +37,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
-    // [LineStyleType.Maglev]?: SingleColorAttributes;
+    [LineStyleType.DualColor]?: DualColorAttributes;
 }
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
@@ -65,6 +66,7 @@ export interface LineStyleComponentProps<
     T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
 > {
     id: LineId;
+    type: LinePathType;
     path: `${'m' | 'M'}${string}`;
     /**
      * Indicate whether or not this line is created in progress.
@@ -138,6 +140,10 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
          * The name displayed in the details panel. In react-i18next index format.
          */
         displayName: string;
+        /**
+         * Indicate which LinePathType will this style support.
+         */
+        supportLinePathType: LinePathType[];
     };
 }
 
@@ -150,7 +156,4 @@ export type GeneratePathFunction<T> = (
     y1: number,
     y2: number,
     attrs?: T
-) => {
-    type: LinePathType;
-    d: `${'m' | 'M'}${string}`;
-};
+) => `${'m' | 'M'}${string}`;

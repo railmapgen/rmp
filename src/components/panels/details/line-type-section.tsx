@@ -48,6 +48,13 @@ export default function LineTypeSection() {
     );
     const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
 
+    const disabledLinePathOptions = Object.values(LinePathType).filter(
+        linePathType => !lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType)
+    );
+    const disabledLineStyleOptions = Object.values(LineStyleType).filter(
+        lineStyleType => !lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType)
+    );
+
     const handleChangeLinePathType = () => {
         if (newLinePathType) {
             changeLinePathType(graph.current, selectedFirst!, newLinePathType);
@@ -80,7 +87,7 @@ export default function LineTypeSection() {
             <RmgLabel label={t('panel.details.info.linePathType')} minW="276">
                 <RmgSelect
                     options={availableLinePathOptions}
-                    disabledOptions={[currentLinePathType]}
+                    disabledOptions={disabledLinePathOptions}
                     value={currentLinePathType}
                     onChange={({ target: { value } }) => {
                         setNewLinePathType(value as LinePathType);
@@ -91,7 +98,7 @@ export default function LineTypeSection() {
             <RmgLabel label={t('panel.details.info.lineStyleType')} minW="276">
                 <RmgSelect
                     options={availableLineStyleOptions}
-                    disabledOptions={[currentLineStyleType]}
+                    disabledOptions={disabledLineStyleOptions}
                     value={currentLineStyleType}
                     onChange={({ target: { value } }) => {
                         setNewLineStyleType(value as LineStyleType);

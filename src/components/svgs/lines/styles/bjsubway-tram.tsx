@@ -1,10 +1,16 @@
 import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LineStyle, LineStyleComponentProps, LineStyleType } from '../../../../constants/lines';
+import {
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+    LineStyleType,
+} from '../../../../constants/lines';
 import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
 
 const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) => {
-    const { id, path, styleAttrs, newLine, handleClick } = props;
+    const { id, path, styleAttrs, handleClick } = props;
     const { color = defaultBjsubwayTramAttributes.color } = styleAttrs ?? defaultBjsubwayTramAttributes;
 
     const onClick = React.useCallback(
@@ -16,15 +22,7 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
         <g id={id}>
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
             <path d={path} fill="none" stroke="white" strokeWidth="1.67" />
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeOpacity="0"
-                strokeWidth={5}
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
-            />
+            <path d={path} fill="none" stroke="white" strokeOpacity="0" strokeWidth={5} onClick={onClick} />
         </g>
     );
 };
@@ -51,7 +49,10 @@ const bjsubwayTram: LineStyle<BjsubwayTramAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: bjsubwayTramFields,
-    metadata: { displayName: 'panel.details.line.bjsubwayTram.displayName' },
+    metadata: {
+        displayName: 'panel.details.line.bjsubwayTram.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+    },
 };
 
 export default bjsubwayTram;

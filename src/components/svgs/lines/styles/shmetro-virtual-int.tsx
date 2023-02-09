@@ -1,8 +1,8 @@
 import React from 'react';
-import { LinePathAttributes, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttributes>) => {
-    const { id, path, newLine, handleClick } = props;
+    const { id, path, handleClick } = props;
 
     const onClick = React.useCallback(
         (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
@@ -11,22 +11,8 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
 
     return (
         <g id={id}>
-            <path
-                d={path}
-                fill="none"
-                stroke="black"
-                strokeWidth="7"
-                strokeLinecap="round"
-                pointerEvents={newLine ? 'none' : undefined}
-            />
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeWidth="5"
-                strokeLinecap="round"
-                pointerEvents={newLine ? 'none' : undefined}
-            />
+            <path d={path} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
+            <path d={path} fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" />
             {/* Below is an overlay element that has all event hooks but can not be seen. */}
             <path
                 d={path}
@@ -35,8 +21,7 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
                 strokeOpacity="0"
                 strokeWidth="7"
                 strokeLinecap="round"
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
+                onClick={onClick}
             />
         </g>
     );
@@ -53,7 +38,10 @@ const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
     component: ShmetroVirtualInt,
     defaultAttrs: defaultShmetroVirtualIntAttributes,
     fields: [],
-    metadata: { displayName: 'panel.details.line.shmetroVirtualInt.displayName' },
+    metadata: {
+        displayName: 'panel.details.line.shmetroVirtualInt.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+    },
 };
 
 export default shmetroVirtualInt;

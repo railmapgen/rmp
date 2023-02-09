@@ -193,6 +193,7 @@ const SvgCanvas = () => {
                 if (!path) return <></>;
 
                 const id = reconciledLine.at(0)!;
+                const type = graph.current.getEdgeAttribute(id, 'type');
                 const style = graph.current.getEdgeAttribute(id, 'style');
                 const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
@@ -207,6 +208,7 @@ const SvgCanvas = () => {
                     <StyleComponent
                         id={id}
                         key={id}
+                        type={type}
                         path={path}
                         styleAttrs={styleAttrs}
                         newLine={false}
