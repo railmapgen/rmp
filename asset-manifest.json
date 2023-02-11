@@ -1,11 +1,11 @@
 {
   "files": {
     "main.css": "/rmp/static/css/main.03f5944c.css",
-    "main.js": "/rmp/static/js/main.904ecaab.js",
-    "WindowHeader.js": "/rmp/static/js/WindowHeader.03aee1ad.chunk.js",
-    "ToolsPanel.js": "/rmp/static/js/ToolsPanel.5b16a0c3.chunk.js",
-    "SvgWrapper.js": "/rmp/static/js/SvgWrapper.36f4fb21.chunk.js",
-    "DetailsPanel.js": "/rmp/static/js/DetailsPanel.a94ac636.chunk.js",
+    "main.js": "/rmp/static/js/main.957773e9.js",
+    "WindowHeader.js": "/rmp/static/js/WindowHeader.d4d4530d.chunk.js",
+    "ToolsPanel.js": "/rmp/static/js/ToolsPanel.8631a70d.chunk.js",
+    "SvgWrapper.js": "/rmp/static/js/SvgWrapper.8703058c.chunk.js",
+    "DetailsPanel.js": "/rmp/static/js/DetailsPanel.11a08423.chunk.js",
     "template.js": "/rmp/static/js/template.9eb42b2b.chunk.js",
     "static/js/9121.f46bae5e.chunk.js": "/rmp/static/js/9121.f46bae5e.chunk.js",
     "static/js/9427.e611924a.chunk.js": "/rmp/static/js/9427.e611924a.chunk.js",
@@ -216,11 +216,11 @@
     "static/media/1F1F5-1F1F1.svg": "/rmp/static/media/1F1F5-1F1F1.0f2053ce10733fcf148d.svg",
     "static/media/1F1EF-1F1F5.svg": "/rmp/static/media/1F1EF-1F1F5.5bd4e29b292e65a558dd.svg",
     "main.03f5944c.css.map": "/rmp/static/css/main.03f5944c.css.map",
-    "main.904ecaab.js.map": "/rmp/static/js/main.904ecaab.js.map",
-    "WindowHeader.03aee1ad.chunk.js.map": "/rmp/static/js/WindowHeader.03aee1ad.chunk.js.map",
-    "ToolsPanel.5b16a0c3.chunk.js.map": "/rmp/static/js/ToolsPanel.5b16a0c3.chunk.js.map",
-    "SvgWrapper.36f4fb21.chunk.js.map": "/rmp/static/js/SvgWrapper.36f4fb21.chunk.js.map",
-    "DetailsPanel.a94ac636.chunk.js.map": "/rmp/static/js/DetailsPanel.a94ac636.chunk.js.map",
+    "main.957773e9.js.map": "/rmp/static/js/main.957773e9.js.map",
+    "WindowHeader.d4d4530d.chunk.js.map": "/rmp/static/js/WindowHeader.d4d4530d.chunk.js.map",
+    "ToolsPanel.8631a70d.chunk.js.map": "/rmp/static/js/ToolsPanel.8631a70d.chunk.js.map",
+    "SvgWrapper.8703058c.chunk.js.map": "/rmp/static/js/SvgWrapper.8703058c.chunk.js.map",
+    "DetailsPanel.11a08423.chunk.js.map": "/rmp/static/js/DetailsPanel.11a08423.chunk.js.map",
     "palettes0.982bc677.chunk.js.map": "/rmp/static/js/palettes0.982bc677.chunk.js.map",
     "palettes1.8a75daaa.chunk.js.map": "/rmp/static/js/palettes1.8a75daaa.chunk.js.map",
     "palettes2.88dbeccc.chunk.js.map": "/rmp/static/js/palettes2.88dbeccc.chunk.js.map",
@@ -338,6 +338,6 @@
   },
   "entrypoints": [
     "static/css/main.03f5944c.css",
-    "static/js/main.904ecaab.js"
+    "static/js/main.957773e9.js"
   ]
 }
