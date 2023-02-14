@@ -111,7 +111,22 @@
                     "nameOffsetX": "名稱橫向偏移",
                     "nameOffsetY": "名稱縱向偏移",
                     "lineCode": "路綫編碼",
-                    "stationCode": "車站編碼"
+                    "stationCode": "車站編碼",
+                    "open": "是否開通",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱"
+                },
+                "gzmtrInt": {
+                    "displayName": "廣州地鐵換乘車站",
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移",
+                    "lineCode": "路綫編碼",
+                    "stationCode": "車站編碼",
+                    "open": "是否開通",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",

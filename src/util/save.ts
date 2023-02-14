@@ -19,7 +19,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 4;
+export const CURRENT_VERSION = 5;
 
 // Load shanghai template only if param is missing or invalid.
 const getInitialParam = async () =>
@@ -165,5 +165,25 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.dropEdge(edge);
             });
         return JSON.stringify({ ...p, version: 4, graph: graph.export() });
+    },
+    4: param => {
+        // Add secondary names ans open in gzmtr-basic and gzmtr-int. #140
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes(
+                (node, attr) =>
+                    node.startsWith('stn') &&
+                    (attr.type === StationType.GzmtrBasic || attr.type === StationType.GzmtrInt)
+            )
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.open = true;
+                attr.secondaryNames = ['', ''];
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 5, graph: graph.export() });
     },
 };

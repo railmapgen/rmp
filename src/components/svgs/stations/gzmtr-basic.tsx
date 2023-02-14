@@ -68,6 +68,8 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         color = defaultGzmtrBasicStationAttributes.color,
         lineCode = defaultGzmtrBasicStationAttributes.lineCode,
         stationCode = defaultGzmtrBasicStationAttributes.stationCode,
+        open = defaultGzmtrBasicStationAttributes.open,
+        secondaryNames = defaultGzmtrBasicStationAttributes.secondaryNames,
     } = attrs[StationType.GzmtrBasic] ?? defaultGzmtrBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -87,13 +89,45 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 11) *
         NAME_DY[nameOffsetY].polarity;
-    const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+    const textAnchor =
+        nameOffsetX === 'left'
+            ? 'end'
+            : nameOffsetX === 'right'
+            ? 'start'
+            : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
+            ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
+              'end'
+            : // Default to middle when nameOffsetX === 'middle'.
+              'middle';
+
+    const secondaryTextRef = React.useRef<SVGGElement | null>(null);
+    const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
+    React.useEffect(() => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0), [...secondaryNames]);
+
+    const textRef = React.useRef<SVGGElement | null>(null);
+    const [textWidth, setTextWidth] = React.useState(0);
+    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names]);
+
+    const secondaryDx =
+        nameOffsetX === 'middle'
+            ? textWidth / 2 + (secondaryTextWidth + 12 * 2) / 2
+            : (textWidth + (secondaryTextWidth + 12 * 2) / 2) * (nameOffsetX === 'left' ? -1 : 1);
+    const underConstructionDx =
+        nameOffsetX === 'middle' && secondaryNames.join('') !== ''
+            ? textWidth / 2 + (secondaryTextWidth + 12 * 2)
+            : (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) *
+              (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
+                <g
+                    ref={textRef}
+                    transform={`translate(${textX}, ${textY})`}
+                    textAnchor={textAnchor}
+                    className="rmp-name-station"
+                >
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={16}
@@ -109,6 +143,55 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         className="rmp-name__en"
                     />
                 </g>
+                {secondaryNames.join('') !== '' && (
+                    <g
+                        transform={`translate(${textX + secondaryDx}, ${textY})`}
+                        textAnchor="middle"
+                        className="rmp-name-station"
+                    >
+                        <text
+                            fontSize="20"
+                            dx={-(secondaryTextWidth + 5) / 2}
+                            textAnchor="end"
+                            dominantBaseline="middle"
+                            className="rmp-name__zh"
+                        >
+                            （
+                        </text>
+                        <text
+                            fontSize="20"
+                            dx={(secondaryTextWidth + 5) / 2}
+                            textAnchor="start"
+                            dominantBaseline="middle"
+                            className="rmp-name__zh"
+                        >
+                            ）
+                        </text>
+                        <g ref={secondaryTextRef}>
+                            <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                                {secondaryNames[0]}
+                            </text>
+                            <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                                {secondaryNames[1]}
+                            </text>
+                        </g>
+                    </g>
+                )}
+                {!open && (
+                    <g
+                        transform={`translate(${textX + underConstructionDx}, ${textY})`}
+                        textAnchor={nameOffsetX === 'middle' ? 'start' : textAnchor}
+                        fill="red"
+                        className="rmp-name-station"
+                    >
+                        <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                            （未开通）
+                        </text>
+                        <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                            (Under Construction)
+                        </text>
+                    </g>
+                )}
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <path
                     id={`stn_core_${id}`}
@@ -133,6 +216,11 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
             color,
             lineCode,
             stationCode,
+            open,
+            ...secondaryNames,
+            // bbox will only be computed after first render and won't cause this to update another time
+            textWidth,
+            secondaryTextWidth,
             onPointerDown,
             onPointerMove,
             onPointerUp,
@@ -141,13 +229,18 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * <GzmtrStation /> specific props.
+ * GzmtrStation specific props.
  */
 export interface GzmtrBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     lineCode: string;
     stationCode: string;
+    /**
+     * Whether to show a Under Construction hint.
+     */
+    open: boolean;
+    secondaryNames: [string, string];
 }
 
 const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
@@ -157,6 +250,8 @@ const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
     lineCode: '1',
     stationCode: '01',
+    open: true,
+    secondaryNames: ['', ''],
 };
 
 const gzmtrBasicStationFields = [
@@ -193,6 +288,7 @@ const gzmtrBasicStationFields = [
         label: 'panel.details.station.gzmtrBasic.nameOffsetX',
         value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
+        disabledOptions: (attrs?: GzmtrBasicStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
@@ -207,6 +303,7 @@ const gzmtrBasicStationFields = [
         label: 'panel.details.station.gzmtrBasic.nameOffsetY',
         value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+        disabledOptions: (attrs?: GzmtrBasicStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
@@ -242,6 +339,46 @@ const gzmtrBasicStationFields = [
             const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.stationCode = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'switch',
+        label: 'panel.details.station.gzmtrBasic.open',
+        oneLine: true,
+        isChecked: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).open,
+        onChange: (val: boolean, attrs_: GzmtrBasicStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
+            // set value
+            attrs.open = val;
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.gzmtrBasic.secondaryNameZh',
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).secondaryNames[0],
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
+            // set value
+            attrs.secondaryNames[0] = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.gzmtrBasic.secondaryNameEn',
+        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).secondaryNames[1],
+        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
+            // set value
+            attrs.secondaryNames[1] = val.toString();
             // return modified attrs
             return attrs;
         },

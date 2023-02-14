@@ -111,7 +111,10 @@
                     "nameOffsetX": "Name offset X",
                     "nameOffsetY": "Name offset Y",
                     "lineCode": "Line code",
-                    "stationCode": "Station code"
+                    "stationCode": "Station code",
+                    "open": "Is opened",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English"
                 },
                 "gzmtrInt": {
                     "displayName": "Guangzhou Metro interchange station",
@@ -120,7 +123,10 @@
                     "nameOffsetX": "Name offset X",
                     "nameOffsetY": "Name offset Y",
                     "lineCode": "Line code",
-                    "stationCode": "Station code"
+                    "stationCode": "Station code",
+                    "open": "Is opened",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English"
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",

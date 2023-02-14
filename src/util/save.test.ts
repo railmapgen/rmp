@@ -86,4 +86,17 @@ describe('Unit tests for param upgrade function', () => {
         // And make sure there is no misc edges any more.
         expect(newParam).not.toContain('misc_edge');
     });
+
+    it('4 -> 5', () => {
+        // 1st station should not change.
+        // 2nd station should have open and secondaryNames added.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_pS3a6J0rUt","attributes":{"visible":true,"zIndex":0,"x":270,"y":240,"type":"shmetro-basic-2020","shmetro-basic-2020":{"names":["车站","Stn"],"rotate":0,"color":["shanghai","sh1","#E4002B","#fff"]}}},{"key":"stn_QvrX-1kJtK","attributes":{"visible":true,"zIndex":0,"x":270,"y":315,"type":"gzmtr-basic","gzmtr-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"],"lineCode":"1","stationCode":"01"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":4}';
+        const newParam = UPGRADE_COLLECTION[4](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_pS3a6J0rUt","attributes":{"visible":true,"zIndex":0,"x":270,"y":240,"type":"shmetro-basic-2020","shmetro-basic-2020":{"names":["车站","Stn"],"rotate":0,"color":["shanghai","sh1","#E4002B","#fff"]}}},{"key":"stn_QvrX-1kJtK","attributes":{"visible":true,"zIndex":0,"x":270,"y":315,"type":"gzmtr-basic","gzmtr-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"],"lineCode":"1","stationCode":"01","open":true,"secondaryNames":["",""]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":5}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

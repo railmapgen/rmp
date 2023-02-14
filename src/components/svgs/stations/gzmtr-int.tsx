@@ -35,6 +35,8 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         nameOffsetX = defaultGzmtrIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultGzmtrIntStationAttributes.nameOffsetY,
         transfer = defaultGzmtrIntStationAttributes.transfer,
+        open = defaultGzmtrIntStationAttributes.open,
+        secondaryNames = defaultGzmtrIntStationAttributes.secondaryNames,
     } = attrs[StationType.GzmtrInt] ?? defaultGzmtrIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -63,6 +65,18 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         [transferAll.at(0)?.at(2) ?? 'black', transferAll.at(1)?.at(2) ?? 'black'],
         [transferAll.at(0)?.at(2) ?? 'black', transferAll.at(1)?.at(2) ?? 'black', transferAll.at(2)?.at(2) ?? 'black'],
     ];
+
+    const secondaryTextRef = React.useRef<SVGGElement | null>(null);
+    const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
+    React.useEffect(() => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0), [...secondaryNames]);
+
+    const textRef = React.useRef<SVGGElement | null>(null);
+    const [textWidth, setTextWidth] = React.useState(0);
+    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names]);
+
+    const secondaryDx = (textWidth + (secondaryTextWidth + 12 * 2) / 2) * (nameOffsetX === 'left' ? -1 : 1);
+    const underConstructionDx =
+        (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) * (nameOffsetX === 'left' ? -1 : 1);
 
     return React.useMemo(
         () => (
@@ -167,7 +181,12 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
                 />
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
+                <g
+                    ref={textRef}
+                    transform={`translate(${textX}, ${textY})`}
+                    textAnchor={textAnchor}
+                    className="rmp-name-station"
+                >
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={16}
@@ -183,16 +202,70 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                         className="rmp-name__en"
                     />
                 </g>
+                {secondaryNames.join('') !== '' && (
+                    <g
+                        transform={`translate(${textX + secondaryDx}, ${textY})`}
+                        textAnchor="middle"
+                        className="rmp-name-station"
+                    >
+                        <text
+                            fontSize="20"
+                            dx={-(secondaryTextWidth + 5) / 2}
+                            textAnchor="end"
+                            dominantBaseline="middle"
+                            className="rmp-name__zh"
+                        >
+                            （
+                        </text>
+                        <text
+                            fontSize="20"
+                            dx={(secondaryTextWidth + 5) / 2}
+                            textAnchor="start"
+                            dominantBaseline="middle"
+                            className="rmp-name__zh"
+                        >
+                            ）
+                        </text>
+                        <g ref={secondaryTextRef}>
+                            <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                                {secondaryNames[0]}
+                            </text>
+                            <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                                {secondaryNames[1]}
+                            </text>
+                        </g>
+                    </g>
+                )}
+                {!open && (
+                    <g
+                        transform={`translate(${textX + underConstructionDx}, ${textY})`}
+                        textAnchor={textAnchor}
+                        fill="red"
+                        className="rmp-name-station"
+                    >
+                        <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                            （未开通）
+                        </text>
+                        <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                            (Under Construction)
+                        </text>
+                    </g>
+                )}
             </g>
         ),
         [
             id,
             x,
             y,
-            JSON.stringify(names),
+            ...names,
             nameOffsetX,
             nameOffsetY,
             JSON.stringify(transferAll),
+            open,
+            ...secondaryNames,
+            // bbox will only be computed after first render and won't cause this to update another time
+            textWidth,
+            secondaryTextWidth,
             onPointerDown,
             onPointerMove,
             onPointerUp,
@@ -206,6 +279,11 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: Exclude<NameOffsetX, 'middle'>;
     nameOffsetY: Exclude<NameOffsetY, 'middle'>;
+    /**
+     * Whether to show a Under Construction hint.
+     */
+    open: boolean;
+    secondaryNames: [string, string];
 }
 
 const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
@@ -213,6 +291,8 @@ const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     transfer: [[], []],
+    open: true,
+    secondaryNames: ['', ''],
 };
 
 const gzmtrIntStationFields = [
@@ -268,6 +348,46 @@ const gzmtrIntStationFields = [
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
             // set value
             attrs.nameOffsetY = val as Exclude<NameOffsetY, 'middle'>;
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'switch',
+        label: 'panel.details.station.gzmtrInt.open',
+        oneLine: true,
+        isChecked: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).open,
+        onChange: (val: boolean, attrs_: GzmtrIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
+            // set value
+            attrs.open = val;
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.gzmtrInt.secondaryNameZh',
+        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).secondaryNames[0],
+        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
+            // set value
+            attrs.secondaryNames[0] = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'input',
+        label: 'panel.details.station.gzmtrInt.secondaryNameEn',
+        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).secondaryNames[1],
+        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
+            // set value
+            attrs.secondaryNames[1] = val.toString();
             // return modified attrs
             return attrs;
         },
