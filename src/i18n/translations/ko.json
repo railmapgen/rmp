@@ -1,0 +1,251 @@
+{
+    "color": "색깔",
+    "warning": "경고",
+    "cancel": "취소",
+    "rmp2linePathAndStyle": "어떤 선이든 선택하고 종류와 스타일을 변경하세요!",
+
+    "colorModal": {
+        "title": "색깔 선택",
+        "example": "보기",
+        "palette": "색상 라이브러리",
+        "custom": "사용자 지정",
+        "city": "도시 주제",
+        "line": "노선 주제",
+        "bg": "배경색",
+        "fg": "전경색",
+        "white":"하얀색",
+        "black": "검정색",
+        "seeAll": "전체 보기",
+        "submit": "제출"
+    },
+
+    "panel": {
+        "tools": {
+            "header": "공구"
+        },
+        "details": {
+            "header": "상세한 상황",
+            "info": {
+                "title": "기본정보",
+                "id": "고유 식별자",
+                "stationType": "역 유형",
+                "linePathType": "선분 경로 유형",
+                "lineStyleType": "선분 스타일 유형"
+            },
+            "nodePosition": {
+                "title": "노드 위치",
+                "pos": {
+                    "x": "가로 좌표",
+                    "y": "세로 좌표"
+                }
+            },
+            "lineExtremities": {
+                "title": "선분 양단",
+                "source": "시작점",
+                "target": "종말점",
+                "sourceName": "시작점 명칭",
+                "targetName": "종말점 명칭"
+            },
+            "specificAttrsTitle": "독특 속성",
+            "multipleSelection": "다중 선택",
+            "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
+            "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
+            "changeType": "종류 변경",
+            "node": {
+                "shmetroNumLineBadge": {
+                    "displayName": "상해 지하철 디지털 노선 표지",
+                    "num": "노선 번호"
+                },
+                "shmetroTextLineBadge": {
+                    "displayName": "상해 지하철 문자 노선 표지",
+                    "nameZh": "한자 노선명칭",
+                    "nameEn": "영문 노선명칭"
+                },
+                "gzmtrLineBadge": {
+                    "displayName": "광저우 지하철 노선 표지",
+                    "nameZh": "한자 노선명칭",
+                    "nameEn": "영문 노선명칭"
+                }
+            },
+            "station": {
+                "interchange": {
+                    "title": "환승",
+                    "within": "같은 역에서 환승한",
+                    "outStation": "역을 나가 환승한",
+                    "outSystem": "시스템외환승",
+                    "addGroup": "환승 조합 추가",
+                    "noInterchanges": "비환승역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "add": "환승 추가",
+                    "copy": "환승 복제",
+                    "remove": "환승 삭제"
+                },
+                "shmetroBasic": {
+                    "displayName": "상해 지하철의 기본 역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동"
+                },
+                "shmetroBasic2020": {
+                    "displayName": "상해 지하철 기본 역(2020년)",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "rotate": "역회전각도"
+                },
+                "shmetroInt": {
+                    "displayName": "상해 지하철 환승역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동",
+                    "height": "역 높이",
+                    "width": "역 폭",
+                    "rotate": "역회전각도"
+                },
+                "gzmtrBasic": {
+                    "displayName": "광저우 지하철 기본역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동",
+                    "lineCode": "노선 번호",
+                    "stationCode": "역 번호",
+                    "open": "개통여부",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭"
+                },
+                "gzmtrInt": {
+                    "displayName": "광저우 지하철 환승역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동",
+                    "lineCode": "노선 번호",
+                    "stationCode": "역 번호",
+                    "open": "개통여부",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭"
+                },
+                "bjsubwayBasic": {
+                    "displayName": "베이징 지하철 기본역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동",
+                    "open": "개통여부"
+                },
+                "bjsubwayInt": {
+                    "displayName": "베이징 지하철 환승역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동"
+                }
+            },
+            "line": {
+                "reconcileId": "연결 선분 고유 식별자",
+                "simple": {
+                    "displayName": "기본 선분"
+                },
+                "diagonal": {
+                    "displayName": "135° 접힌 선분",
+                    "offsetFrom": "시작점 오프셋",
+                    "offsetTo": "끝점 오프셋",
+                    "startFrom": "여기서부터 시작",
+                    "roundCornerFactor": "회전원각인자"
+                },
+                "perpendicular": {
+                    "displayName": "90° 수직 선분",
+                    "offsetFrom": "시작점 오프셋",
+                    "offsetTo": "끝점 오프셋",
+                    "startFrom": "여기서부터 시작",
+                    "roundCornerFactor": "회전원각인자"
+                },
+                "singleColor": {
+                    "displayName": "단색 스타일"
+                },
+                "shmetroVirtualInt": {
+                    "displayName": "상해 지하철 역 환승 모습"
+                },
+                "gzmtrVirtualInt": {
+                    "displayName": "광저우 지하철 역 환승 모습"
+                },
+                "chinaRailway": {
+                    "displayName": "중국 철도 모습"
+                },
+                "bjsubwayTram": {
+                    "displayName": "베이징 지하철 노면 전차 모습"
+                },
+                "dualColor": {
+                    "displayName": "상하이 자기부상 모습"
+                }
+            },
+            "edge": {},
+            "footer": {
+                "duplicate": "복사",
+                "remove": "삭제",
+                "removeEntireLine": "현재 색상의 모든 선분을 삭제"
+            }
+        }
+    },
+
+    "header": {
+        "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
+        "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
+        "open": {
+            "new": "신 프로젝트",
+            "config": "프로젝트 가져오기",
+            "configRMG": "RMG 파일에서 가져오기",
+            "gallery": "갤러리에서 가져오기",
+            "shanghai": "상해",
+            "guangzhou": "광저우",
+            "beijing": "베이징",
+            "santiago": "산티아고"
+        },
+        "download": {
+            "config": "프로젝트 내보내기",
+            "image": "사진 내보내기",
+            "format": "파일 종류",
+            "png": "PNG 이미지",
+            "svg": "SVG 이미지(웹용)",
+            "transparent": "투명 배경",
+            "scale": "확대/축소",
+            "shareInfo1": "이 사진을 공유할 때",
+            "shareInfo2": "링크를 첨부할 것입니다.",
+            "termsAndConditions": "약관 및 세칙",
+            "termsAndConditionsInfo": "동의",
+            "period": ".",
+            "confirm": "다운로드"
+        },
+        "settings": {
+            "title": "설정",
+            "pro": "잠시 무료 PRO 기능입니다!",
+            "changeType": {
+                "title": "역의 종류를 대량으로 수정",
+                "changeFrom": "이 유형의 모든 역:",
+                "changeTo": "이 유형의 역으로 변환:",
+                "info": "역 유형을 변경하면 이름을 제외한 모든 고유한 속성이 제거됩니다.저장했다가 다시 실행!"
+            },
+            "telemetry": {
+                "title": "원격 계측",
+                "essential": "기본",
+                "essentialInfo": "지하철 노선도 그리기기는 Google Analytics를 사용하여 데이터를 수집하여 사용자가 프로젝트에 액세스하는 방법과 시기를 이해하는 데 도움이 됩니다.지하철 노선도 그리기 장치에는 사용자 등록과 백엔드 서비스가 없기 때문에 프로젝트를 계속 업데이트할 수 있는 기여자의 유일한 피드백입니다.전송되는 모든 데이터에는 프로젝트에 포함된 개인 정보 및 데이터가 포함되어 있지 않습니다.",
+                "essentialLink": "Google Analytics에서 수집할 수 있는 세부 필드를 보려면 이 링크를 클릭하십시오.",
+                "additional": "별도",
+                "additionalInfo": "마우스나 키보드를 사용하여 상호 작용할 때(보기: 프로젝트 생성 또는 사이트 추가), 지하철 노선도 그리기기는 다른 이벤트도 보냅니다. 항상 그렇듯이 개인 신원 정보를 포함하지 않으며 통계 목적으로만 사용됩니다."
+            }
+        },
+        "about": {
+            "title": "대함",
+            "rmp": "지하철 노선도 그리기",
+            "railmapgen": "railmapgen 프로젝트",
+            "desc": "서로 다른 도시의 역들을 자유롭게 끌어다 45도 둥근 모서리나 수직선으로 연결하여 자신만의 철도 지도를 디자인하세요!",
+            "content1": "우리가 가졌던 자유와 평등을 기념한다.",
+            "content2": "2022년 6월 1일 상해",
+            "contributors": "기여자",
+            "coreContributors": "핵심 기여자"
+        }
+    }
+}
