@@ -20,6 +20,7 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
                 strokeOpacity="0"
                 strokeWidth="5"
                 strokeLinecap="round"
+                cursor="pointer"
                 onClick={onClick}
             />
         </g>

@@ -9,7 +9,17 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
         [id, handleClick]
     );
 
-    return <path d={path} fill="none" stroke="black" strokeWidth="3" strokeDasharray="3" onClick={onClick} />;
+    return (
+        <path
+            d={path}
+            fill="none"
+            stroke="black"
+            strokeWidth="3"
+            strokeDasharray="3"
+            cursor="pointer"
+            onClick={onClick}
+        />
+    );
 };
 
 /**

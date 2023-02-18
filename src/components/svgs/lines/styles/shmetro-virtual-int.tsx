@@ -21,6 +21,7 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
                 strokeOpacity="0"
                 strokeWidth="7"
                 strokeLinecap="round"
+                cursor="pointer"
                 onClick={onClick}
             />
         </g>

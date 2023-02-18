@@ -21,6 +21,7 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
             stroke={color[2]}
             strokeWidth="5"
             strokeLinecap="round"
+            cursor="pointer"
             onClick={newLine ? undefined : onClick}
             pointerEvents={newLine ? 'none' : undefined}
         />

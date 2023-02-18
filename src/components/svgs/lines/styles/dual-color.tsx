@@ -161,6 +161,7 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
                 strokeOpacity="0"
                 strokeWidth="5"
                 strokeLinecap="round"
+                cursor="pointer"
                 onClick={onClick}
             />
         </g>
