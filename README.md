@@ -4,9 +4,9 @@ Design your own rail map by freely dragging stations from different cities and c
 
 We currently support stations and miscellaneous elements from following cities:
 
-* Shanghai (except Maglev and Jinshan Railway)
+* Shanghai
 * Guangzhou (except facilities icons and perfect interchange station)
-* Beijing (only interchange station)
+* Beijing (no path of Capital Airport Express)
 
 Make your own rail map on the [GitHub mirror](https://railmapgen.github.io/rmp/) or get the latest offline desktop application at the [release page](https://github.com/railmapgen/rmp/releases).
 

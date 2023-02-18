@@ -247,7 +247,12 @@
             "content1": "In memory of all the freedom and equality we once had.",
             "content2": "06/01/2022 in Shanghai",
             "contributors": "Contributors",
-            "coreContributors": "Core Contributors"
+            "coreContributors": "Core Contributors",
+            "contactUs": "Contact Us",
+            "github": "Project repository",
+            "githubContent": "Face any problems? Search or raise an issue here!",
+            "slack": "Slack group",
+            "slackContent": "Chat in these Slack channels!"
         }
     }
 }

@@ -247,7 +247,12 @@
             "content1": "우리가 가졌던 자유와 평등을 기념한다.",
             "content2": "2022년 6월 1일 상해",
             "contributors": "기여자",
-            "coreContributors": "핵심 기여자"
+            "coreContributors": "핵심 기여자",
+            "contactUs": "Contact Us",
+            "github": "Project repository",
+            "githubContent": "Face any problems? Search or raise an issue here!",
+            "slack": "Slack group",
+            "slackContent": "Chat in these Slack channels!"
         }
     }
 }

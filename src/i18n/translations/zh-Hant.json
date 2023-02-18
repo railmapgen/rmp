@@ -247,7 +247,11 @@
             "content1": "謹以此紀念我們曾擁有的自由與平等。",
             "content2": "06/01/2022於上海",
             "contributors": "貢獻者",
-            "coreContributors": "核心貢獻者"
+            "coreContributors": "核心貢獻者",
+            "github": "項目倉庫",
+            "githubContent": "遇到任何問題？在這裡搜索或提出一個問題！",
+            "slack": "Slack群組",
+            "slackContent": "在這些Slack頻道中討論!"
         }
     }
 }

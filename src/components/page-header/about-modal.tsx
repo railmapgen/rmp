@@ -17,6 +17,8 @@ import {
     Text,
     VStack,
 } from '@chakra-ui/react';
+import GithubIcon from '../../images/github-mark.svg';
+import SlackIcon from '../../images/slack-mark.svg';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -38,7 +40,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 {t('header.about.rmp')}
                             </Text>
                             <Text>{appVersion}</Text>
-                            <Text> </Text>
+                            <Text />
                             <Text fontSize="sm">{t('header.about.railmapgen')}</Text>
                         </Flex>
                     </Flex>
@@ -58,7 +60,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                     <VStack>
                         <Tag
                             size="lg"
-                            minW="80%"
+                            w="85%"
                             onClick={() => window.open('https://github.com/thekingofcity', '_blank')}
                             cursor="pointer"
                         >
@@ -70,6 +72,49 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="sm">{t('header.about.content1')}</Text>
                                 <Text fontSize="sm" align="right">
                                     {t('header.about.content2')}
+                                </Text>
+                            </TagLabel>
+                        </Tag>
+                    </VStack>
+
+                    <Heading as="h5" size="sm" mt={3} mb={2}>
+                        {t('header.about.contactUs')}
+                    </Heading>
+
+                    <VStack>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => window.open('https://github.com/railmapgen/rmp/issues', '_blank')}
+                            cursor="pointer"
+                        >
+                            <Avatar src={GithubIcon} size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    {t('header.about.github')}
+                                </Text>
+                                <Text fontSize="sm">{t('header.about.githubContent')}</Text>
+                            </TagLabel>
+                        </Tag>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() =>
+                                window.open(
+                                    'https://join.slack.com/t/railmapgenerator/shared_invite/zt-1odhhta3n-DdZF~fnVwo_q0S0RJmgV8A',
+                                    '_blank'
+                                )
+                            }
+                            cursor="pointer"
+                        >
+                            <Avatar src={SlackIcon} size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    {t('header.about.slack')}
+                                </Text>
+                                <Text fontSize="sm">{t('header.about.slackContent')}</Text>
+                                <Text fontSize="sm" as="i">
+                                    #rmg, #rmp, #palette-and-templates, #random
                                 </Text>
                             </TagLabel>
                         </Tag>
