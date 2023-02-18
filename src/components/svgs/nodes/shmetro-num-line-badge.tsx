@@ -55,7 +55,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
 };
 
 /**
- * <ShmetroNumLineBadge /> specific props.
+ * ShmetroNumLineBadge specific props.
  */
 export interface ShmetroNumLineBadgeAttributes extends AttributesWithColor {
     num: number;

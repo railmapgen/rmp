@@ -65,6 +65,15 @@
                     "displayName": "광저우 지하철 노선 표지",
                     "nameZh": "한자 노선명칭",
                     "nameEn": "영문 노선명칭"
+                },
+                "text": {
+                    "displayName": "Arbitrary text",
+                    "content": "Content",
+                    "fontSize": "Font size",
+                    "lineHeight": "Line height",
+                    "textAnchor": "Text anchor",
+                    "dominantBaseline": "Dominant baseline",
+                    "language": "Font family in which language"
                 }
             },
             "station": {

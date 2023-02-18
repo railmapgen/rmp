@@ -40,7 +40,7 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
 };
 
 /**
- * <Virtual /> specific props.
+ * Virtual specific props.
  */
 export interface VirtualAttributes {}
 

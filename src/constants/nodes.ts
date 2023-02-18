@@ -3,6 +3,7 @@ import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge/gzmtr-line-badge';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
+import { TextAttributes } from '../components/svgs/nodes/text';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { MiscNodeId } from './constants';
 
@@ -10,16 +11,18 @@ export enum MiscNodeType {
     Virtual = 'virtual',
     ShmetroNumLineBadge = 'shmetro-num-line-badge',
     ShmetroTextLineBadge = 'shmetro-text-line-badge',
-    Facilities = 'facilities',
     GzmtrLineBadge = 'gzmtr-line-badge',
+    Facilities = 'facilities',
+    Text = 'text',
 }
 
 export interface MiscNodeAttributes {
     [MiscNodeType.Virtual]?: VirtualAttributes;
     [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
     [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
-    [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
+    [MiscNodeType.Facilities]?: FacilitiesAttributes;
+    [MiscNodeType.Text]?: TextAttributes;
 }
 
 export interface NodeComponentProps<T> {

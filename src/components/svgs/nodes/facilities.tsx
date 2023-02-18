@@ -206,7 +206,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
 };
 
 /**
- * <Facilities /> specific props.
+ * Facilities specific props.
  */
 export interface FacilitiesAttributes {
     type: 'airport' | 'maglev' | 'disney' | 'railway' | 'hsr';

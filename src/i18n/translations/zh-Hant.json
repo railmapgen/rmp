@@ -65,6 +65,15 @@
                     "displayName": "廣州地鐵線路標識",
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱"
+                },
+                "text": {
+                    "displayName": "任意文字",
+                    "content": "內容",
+                    "fontSize": "文字大小",
+                    "lineHeight": "行高度",
+                    "textAnchor": "文字錨點",
+                    "dominantBaseline": "顯性基線",
+                    "language": "哪個語言的字體系列"
                 }
             },
             "station": {
