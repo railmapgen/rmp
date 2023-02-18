@@ -30,7 +30,7 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
                 handleClick={handleClick}
             />
         ),
-        [id, path, styleType, JSON.stringify(styleAttrs), newLine, handleClick]
+        [id, type, path, styleType, JSON.stringify(styleAttrs), newLine, handleClick]
     );
 };
 

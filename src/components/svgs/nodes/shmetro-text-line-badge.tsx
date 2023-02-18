@@ -26,12 +26,14 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
     );
 
     // Special hack for Jinshan Railway and wait for the completion of Jichanglianluoxian
-    if (names.at(0)?.includes('铁路')) color[3] = MonoColour.black;
+    if (names.at(0)?.match(/铁路|磁(悬?)浮/)) color[3] = MonoColour.black;
 
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                {!names.at(0)?.includes('铁路') && <rect fill={color[2]} x={0} width={bBox.width + 3} height="16" />}
+                {!names.at(0)?.match(/铁路|磁(悬?)浮/) && (
+                    <rect fill={color[2]} x={0} width={bBox.width + 3} height="16" />
+                )}
                 <g ref={textLineEl}>
                     <text
                         className="rmp-name__zh"

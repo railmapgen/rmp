@@ -26,7 +26,7 @@ const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttribute
         `M ${x1 + dx1},${y1 + dy1} L ${x},${y} L ${x2 + dx2},${y2 + dy2}`,
         roundCornerFactor,
         false
-    );
+    ) as `M ${string}`;
 
     return path;
 };

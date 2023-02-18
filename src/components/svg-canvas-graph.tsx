@@ -260,7 +260,7 @@ const SvgCanvas = () => {
                     y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
                     newLine={true}
                     type={mode.slice(5) as LinePathType}
-                    attrs={linePaths[mode.slice(5) as LinePathType]}
+                    attrs={linePaths[mode.slice(5) as LinePathType].defaultAttrs}
                     styleType={LineStyleType.SingleColor}
                     styleAttrs={{ color: theme }}
                 />

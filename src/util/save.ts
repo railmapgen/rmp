@@ -19,7 +19,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 5;
+export const CURRENT_VERSION = 6;
 
 // Load shanghai template only if param is missing or invalid.
 const getInitialParam = async () =>
@@ -185,5 +185,22 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 5, graph: graph.export() });
+    },
+    5: param => {
+        // Add offset to simple line path. #184
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterEdges(
+                (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
+                    edge.startsWith('line') && attr.type === LinePathType.Simple
+            )
+            .forEach(edge => {
+                const attr = graph.getEdgeAttribute(edge, LinePathType.Simple) ?? { offset: 0 };
+                attr.offset = 0;
+                graph.mergeEdgeAttributes(edge, { [LinePathType.Simple]: attr });
+            });
+        return JSON.stringify({ ...p, version: 6, graph: graph.export() });
     },
 };

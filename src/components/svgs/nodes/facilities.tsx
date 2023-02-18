@@ -45,7 +45,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                 )}
                 {type === 'maglev' && (
                     <g id="intbox_maglev" transform="translate(-20,0)scale(0.2)">
-                        <rect id="maglev_5" height="144" width="130" y="40" x="30" fill="grey" />
+                        <rect id="maglev_5" fill="#0E7572" height="144" width="130" y="40" x="30" />
                         <path
                             id="maglev_3"
                             fill="white"
@@ -56,8 +56,8 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                             fill="white"
                             d="m90,140l-40,0a10,5 0 0 1 -10,-5l0,25a10,15 0 0 0 10,15l15,0l0,-10l-15,0l0,-15l90,0l0,15l-15,0l0,10l15,0a10,15 0 0 0 10,-15l0,-25a10,5 0 0 1 -10,5l-50,0"
                         />
-                        <rect id="maglev_1" fill="grey" height="25" width="40" y="80" x="50" />
-                        <rect id="maglev_2" fill="grey" height="25" width="40" y="80" x="100" />
+                        <rect id="maglev_1" fill="#0E7572" height="25" width="40" y="80" x="50" />
+                        <rect id="maglev_2" fill="#0E7572" height="25" width="40" y="80" x="100" />
                         {/* Below is an overlay element that has all event hooks but can not be seen. */}
                         <rect
                             id="maglev_overlay"

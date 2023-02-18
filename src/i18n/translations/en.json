@@ -147,7 +147,8 @@
             "line": {
                 "reconcileId": "Reconcile ID",
                 "simple": {
-                    "displayName": "Simple line"
+                    "displayName": "Simple line",
+                    "offset": "Offset"
                 },
                 "diagonal": {
                     "displayName": "135° diagonal path",
@@ -179,7 +180,8 @@
                     "displayName": "Beijing Subway tram style"
                 },
                 "dualColor": {
-                    "displayName": "Shanghai Maglev style"
+                    "displayName": "Shanghai Maglev style",
+                    "swap": "Swap color"
                 }
             },
             "edge": {},

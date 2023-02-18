@@ -150,10 +150,4 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
 /**
  * The generator type of a line path.
  */
-export type GeneratePathFunction<T> = (
-    x1: number,
-    x2: number,
-    y1: number,
-    y2: number,
-    attrs?: T
-) => `${'m' | 'M'}${string}`;
+export type GeneratePathFunction<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => `M ${string}`;

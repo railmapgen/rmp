@@ -147,7 +147,8 @@
             "line": {
                 "reconcileId": "合并线段唯一标识符",
                 "simple": {
-                    "displayName": "基本线段"
+                    "displayName": "基本线段",
+                    "offset": "偏移"
                 },
                 "diagonal": {
                     "displayName": "135°折线线段",
@@ -179,7 +180,8 @@
                     "displayName": "北京地铁有轨电车样式"
                 },
                 "dualColor": {
-                    "displayName": "上海磁悬浮样式"
+                    "displayName": "上海磁悬浮样式",
+                    "swap": "切换颜色"
                 }
             },
             "edge": {},

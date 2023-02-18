@@ -147,7 +147,8 @@
             "line": {
                 "reconcileId": "연결 선분 고유 식별자",
                 "simple": {
-                    "displayName": "기본 선분"
+                    "displayName": "기본 선분",
+                    "offset": "Offset"
                 },
                 "diagonal": {
                     "displayName": "135° 접힌 선분",
@@ -179,7 +180,8 @@
                     "displayName": "베이징 지하철 노면 전차 모습"
                 },
                 "dualColor": {
-                    "displayName": "상하이 자기부상 모습"
+                    "displayName": "상하이 자기부상 모습",
+                    "swap": "Swap color"
                 }
             },
             "edge": {},

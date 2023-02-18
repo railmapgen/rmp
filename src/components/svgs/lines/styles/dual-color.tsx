@@ -1,11 +1,24 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdOutlineSwapVert } from 'react-icons/md';
 import { Bezier } from 'bezier-js';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import { useRootDispatch, useRootSelector } from '../../../../redux';
+import { saveGraph } from '../../../../redux/param/param-slice';
+import { setRefreshEdges } from '../../../../redux/runtime/runtime-slice';
+import {
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+    LineStyleType,
+} from '../../../../constants/lines';
 import { Theme } from '../../../../constants/constants';
+import { Button } from '@chakra-ui/button';
 
 /**
- * This helper function find the 4th vertex of a parallelogram.
+ * Given the coordinates of point A, B, and C,
+ * this helper function find the 4th vertex of the parallelogram.
  *   D---C
  *  /   /
  * A---B
@@ -18,7 +31,7 @@ const find4thVertexOfAParallelogram = (xa: number, xb: number, xc: number, ya: n
 };
 
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, type, path, styleAttrs, handleClick } = props;
     const { colorA = defaultDualColorAttributes.colorA, colorB = defaultDualColorAttributes.colorB } =
         styleAttrs ?? defaultDualColorAttributes;
 
@@ -31,6 +44,50 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     const [pathB, setPathB] = React.useState(path);
     React.useEffect(() => {
         // Note this is not reconcile ready meaning it only handles short path.
+
+        // Find the start point of the original path.
+        const m = path
+            .match(/M\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
+            ?.at(0)
+            ?.replace(/M\s*/, '')
+            .split(' ')
+            .map(n => Number(n));
+        // Find the end point of the original path.
+        const end = path
+            .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*$/)
+            ?.at(0)
+            ?.replace(/L\s*/, '')
+            .split(' ')
+            .map(n => Number(n));
+        if (!m || !end) return;
+
+        // Check whether it is a linear line and process it specifically.
+        if (
+            m[0] === end[0] ||
+            m[1] === end[1] ||
+            (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
+        ) {
+            const [x1, y1, x2, y2] = [m[0], m[1], end[0], end[1]];
+            const k = Math.abs((y2 - y1) / (x2 - x1));
+            if (k === Infinity) {
+                // Vertical line
+                setPathA(`M ${x1 + 1.25},${y1} L ${x2 + 1.25},${y2}`);
+                setPathB(`M ${x1 - 1.25},${y1} L ${x2 - 1.25},${y2}`);
+            } else if (k === 0) {
+                // Horizontal line
+                setPathA(`M ${x1},${y1 + 1.25} L ${x2},${y2 + 1.25}`);
+                setPathB(`M ${x1},${y1 - 1.25} L ${x2},${y2 - 1.25}`);
+            } else {
+                const kk = 1 / k;
+                const dx = 1.25 / Math.sqrt(kk * kk + 1);
+                const dy = dx * kk * -Math.sign((x2 - x1) * (y2 - y1));
+                setPathA(`M ${x1 + dx},${y1 + dy} L ${x2 + dx},${y2 + dy}`);
+                setPathB(`M ${x1 - dx},${y1 - dy} L ${x2 - dx},${y2 - dy}`);
+            }
+            return;
+        }
+
+        // Deal with complex Bezier curve.
         // Find the start point of the Bezier curve.
         const l = path
             .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
@@ -54,13 +111,6 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
         const [cA, cB] = [b.scale(-1.25), b.scale(1.25)];
 
         // Connect the curve with the first half of the linear line.
-        // Find the start point of the original path.
-        const m = path
-            .match(/M\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-            ?.at(0)
-            ?.replace(/M\s*/, '')
-            .split(' ')
-            .map(n => Number(n));
         // Find the start point of the new curve path.
         const cStartingA = [cA.points.at(0)!.x, cA.points.at(0)!.y];
         // Find the start point of the new curve path.
@@ -71,13 +121,6 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
         const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
 
         // Connect the curve with the second half of the linear line.
-        // Find the end point of the original path.
-        const end = path
-            .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*$/)
-            ?.at(0)
-            ?.replace(/L\s*/, '')
-            .split(' ')
-            .map(n => Number(n));
         // Find the end point of the new curve path.
         const cEndingA = [cA.points.at(-1)!.x, cA.points.at(-1)!.y];
         // Find the end point of the new curve path.
@@ -137,13 +180,51 @@ const defaultDualColorAttributes: DualColorAttributes = {
     colorB: [CityCode.Shanghai, 'maglevB', '#ED6E01', MonoColour.white],
 };
 
+const DualColorSwitch = () => {
+    const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+
+    const { selected } = useRootSelector(state => state.runtime);
+    const selectedFirst = selected.at(0);
+    const graph = React.useRef(window.graph);
+
+    return (
+        <Button
+            leftIcon={<MdOutlineSwapVert />}
+            size="sm"
+            onClick={() => {
+                const attrs =
+                    graph.current.getEdgeAttribute(selectedFirst, LineStyleType.DualColor) ??
+                    defaultDualColorAttributes;
+                const tmp = attrs.colorA;
+                attrs.colorA = attrs.colorB;
+                attrs.colorB = tmp;
+                graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.DualColor]: attrs });
+                dispatch(setRefreshEdges());
+                dispatch(saveGraph(graph.current.export()));
+            }}
+        >
+            {t('panel.details.line.dualColor.swap')}
+        </Button>
+    );
+};
+
+const dualColorFields = [
+    {
+        type: 'custom',
+        component: <DualColorSwitch />,
+    },
+];
+
 const dualColor: LineStyle<DualColorAttributes> = {
     component: DualColor,
     defaultAttrs: defaultDualColorAttributes,
-    fields: [],
+    // TODO: fix this
+    // @ts-ignore-error
+    fields: dualColorFields,
     metadata: {
         displayName: 'panel.details.line.dualColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
     },
 };
 
