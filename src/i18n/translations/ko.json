@@ -67,13 +67,13 @@
                     "nameEn": "영문 노선명칭"
                 },
                 "text": {
-                    "displayName": "Arbitrary text",
-                    "content": "Content",
-                    "fontSize": "Font size",
-                    "lineHeight": "Line height",
-                    "textAnchor": "Text anchor",
-                    "dominantBaseline": "Dominant baseline",
-                    "language": "Font family in which language"
+                    "displayName": "임의 글자",
+                    "content": "내용",
+                    "fontSize": "글자 대소",
+                    "lineHeight": "행고도",
+                    "textAnchor": "글자 앵커",
+                    "dominantBaseline": "현성 바셀린",
+                    "language": "언어로 된 글꼴 종류"
                 }
             },
             "station": {
@@ -157,7 +157,7 @@
                 "reconcileId": "연결 선분 고유 식별자",
                 "simple": {
                     "displayName": "기본 선분",
-                    "offset": "Offset"
+                    "offset": "오프셋"
                 },
                 "diagonal": {
                     "displayName": "135° 접힌 선분",
@@ -190,7 +190,7 @@
                 },
                 "dualColor": {
                     "displayName": "상하이 자기부상 모습",
-                    "swap": "Swap color"
+                    "swap": "색을 바꾸기"
                 }
             },
             "edge": {},
@@ -252,16 +252,16 @@
             "title": "대함",
             "rmp": "지하철 노선도 그리기",
             "railmapgen": "railmapgen 프로젝트",
-            "desc": "서로 다른 도시의 역들을 자유롭게 끌어다 45도 둥근 모서리나 수직선으로 연결하여 자신만의 철도 지도를 디자인하세요!",
+            "desc": "Design your own rail map by freely dragging stations from different cities and connecting them with 90 or 135-degree rounded corners lines!",
             "content1": "우리가 가졌던 자유와 평등을 기념한다.",
             "content2": "2022년 6월 1일 상해",
             "contributors": "기여자",
             "coreContributors": "핵심 기여자",
-            "contactUs": "Contact Us",
-            "github": "Project repository",
-            "githubContent": "Face any problems? Search or raise an issue here!",
-            "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!"
+            "contactUs": "우리에게 연락하기",
+            "github": "프로젝트 저장소",
+            "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
+            "slack": "슬랙 그룹",
+            "slackContent": "이 슬랙 채널에서 채팅해요!"
         }
     }
 }
