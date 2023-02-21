@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/rmp/static/css/main.03f5944c.css",
-    "main.js": "/rmp/static/js/main.6c4cce4c.js",
+    "main.js": "/rmp/static/js/main.6043efec.js",
     "WindowHeader.js": "/rmp/static/js/WindowHeader.4d51cf86.chunk.js",
     "ToolsPanel.js": "/rmp/static/js/ToolsPanel.f1cc7ef6.chunk.js",
     "SvgWrapper.js": "/rmp/static/js/SvgWrapper.8f6338b9.chunk.js",
@@ -115,8 +115,8 @@
     "palettes60.js": "/rmp/static/js/palettes60.38581c63.chunk.js",
     "palettes61.js": "/rmp/static/js/palettes61.4562d23e.chunk.js",
     "palettes62.js": "/rmp/static/js/palettes62.e1709bc9.chunk.js",
-    "palettes63.js": "/rmp/static/js/palettes63.4f58cb91.chunk.js",
-    "palettes64.js": "/rmp/static/js/palettes64.d3c10f8d.chunk.js",
+    "palettes63.js": "/rmp/static/js/palettes63.4cdee4d3.chunk.js",
+    "palettes64.js": "/rmp/static/js/palettes64.b9bcc18a.chunk.js",
     "palettes65.js": "/rmp/static/js/palettes65.707db67e.chunk.js",
     "palettes66.js": "/rmp/static/js/palettes66.df5cbf2a.chunk.js",
     "palettes67.js": "/rmp/static/js/palettes67.31b1a41b.chunk.js",
@@ -140,7 +140,7 @@
     "palettes85.js": "/rmp/static/js/palettes85.92ee710d.chunk.js",
     "palettes86.js": "/rmp/static/js/palettes86.0f9b35ef.chunk.js",
     "palettes87.js": "/rmp/static/js/palettes87.d76b56a6.chunk.js",
-    "palettes88.js": "/rmp/static/js/palettes88.9968affe.chunk.js",
+    "palettes88.js": "/rmp/static/js/palettes88.bd4743fb.chunk.js",
     "palettes89.js": "/rmp/static/js/palettes89.ea470f92.chunk.js",
     "palettes90.js": "/rmp/static/js/palettes90.4b5f2b08.chunk.js",
     "palettes91.js": "/rmp/static/js/palettes91.5b60d1ce.chunk.js",
@@ -219,7 +219,7 @@
     "static/media/1F1F5-1F1F1.svg": "/rmp/static/media/1F1F5-1F1F1.0f2053ce10733fcf148d.svg",
     "static/media/1F1EF-1F1F5.svg": "/rmp/static/media/1F1EF-1F1F5.5bd4e29b292e65a558dd.svg",
     "main.03f5944c.css.map": "/rmp/static/css/main.03f5944c.css.map",
-    "main.6c4cce4c.js.map": "/rmp/static/js/main.6c4cce4c.js.map",
+    "main.6043efec.js.map": "/rmp/static/js/main.6043efec.js.map",
     "WindowHeader.4d51cf86.chunk.js.map": "/rmp/static/js/WindowHeader.4d51cf86.chunk.js.map",
     "ToolsPanel.f1cc7ef6.chunk.js.map": "/rmp/static/js/ToolsPanel.f1cc7ef6.chunk.js.map",
     "SvgWrapper.8f6338b9.chunk.js.map": "/rmp/static/js/SvgWrapper.8f6338b9.chunk.js.map",
@@ -287,8 +287,8 @@
     "palettes60.38581c63.chunk.js.map": "/rmp/static/js/palettes60.38581c63.chunk.js.map",
     "palettes61.4562d23e.chunk.js.map": "/rmp/static/js/palettes61.4562d23e.chunk.js.map",
     "palettes62.e1709bc9.chunk.js.map": "/rmp/static/js/palettes62.e1709bc9.chunk.js.map",
-    "palettes63.4f58cb91.chunk.js.map": "/rmp/static/js/palettes63.4f58cb91.chunk.js.map",
-    "palettes64.d3c10f8d.chunk.js.map": "/rmp/static/js/palettes64.d3c10f8d.chunk.js.map",
+    "palettes63.4cdee4d3.chunk.js.map": "/rmp/static/js/palettes63.4cdee4d3.chunk.js.map",
+    "palettes64.b9bcc18a.chunk.js.map": "/rmp/static/js/palettes64.b9bcc18a.chunk.js.map",
     "palettes65.707db67e.chunk.js.map": "/rmp/static/js/palettes65.707db67e.chunk.js.map",
     "palettes66.df5cbf2a.chunk.js.map": "/rmp/static/js/palettes66.df5cbf2a.chunk.js.map",
     "palettes67.31b1a41b.chunk.js.map": "/rmp/static/js/palettes67.31b1a41b.chunk.js.map",
@@ -312,7 +312,7 @@
     "palettes85.92ee710d.chunk.js.map": "/rmp/static/js/palettes85.92ee710d.chunk.js.map",
     "palettes86.0f9b35ef.chunk.js.map": "/rmp/static/js/palettes86.0f9b35ef.chunk.js.map",
     "palettes87.d76b56a6.chunk.js.map": "/rmp/static/js/palettes87.d76b56a6.chunk.js.map",
-    "palettes88.9968affe.chunk.js.map": "/rmp/static/js/palettes88.9968affe.chunk.js.map",
+    "palettes88.bd4743fb.chunk.js.map": "/rmp/static/js/palettes88.bd4743fb.chunk.js.map",
     "palettes89.ea470f92.chunk.js.map": "/rmp/static/js/palettes89.ea470f92.chunk.js.map",
     "palettes90.4b5f2b08.chunk.js.map": "/rmp/static/js/palettes90.4b5f2b08.chunk.js.map",
     "palettes91.5b60d1ce.chunk.js.map": "/rmp/static/js/palettes91.5b60d1ce.chunk.js.map",
@@ -342,6 +342,6 @@
   },
   "entrypoints": [
     "static/css/main.03f5944c.css",
-    "static/js/main.6c4cce4c.js"
+    "static/js/main.6043efec.js"
   ]
 }
