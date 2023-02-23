@@ -66,6 +66,15 @@
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
                 },
+                "bjsubwayNumLineBadge": {
+                    "displayName": "Beijing Subway num line badge",
+                    "num": "Line Number"
+                },
+                "bjsubwayTextLineBadge": {
+                    "displayName": "Beijing Subway text line badge",
+                    "nameZh": "Line name in Chinese",
+                    "nameEn": "Line name in English"
+                },
                 "text": {
                     "displayName": "Arbitrary text",
                     "content": "Content",

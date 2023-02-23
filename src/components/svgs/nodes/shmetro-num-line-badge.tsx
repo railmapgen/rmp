@@ -26,7 +26,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x={0} width={width} height="16" />
+                <rect fill={color[2]} x="0" width={width} height="16" />
                 <text className="rmp-name__zh" textAnchor="middle" x={width / 2} y="14" fill={color[3]}>
                     {num}
                 </text>
@@ -40,9 +40,9 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
                 <rect
                     fill="white"
                     fillOpacity="0"
-                    x={0}
+                    x="0"
                     width={width}
-                    height={10}
+                    height="16"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}

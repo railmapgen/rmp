@@ -3,10 +3,12 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
-const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
+const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { names = defaultShmetroTextLineBadgeAttributes.names, color = defaultShmetroTextLineBadgeAttributes.color } =
-        attrs ?? defaultShmetroTextLineBadgeAttributes;
+    const {
+        names = defaultBjsubwayTextLineBadgeAttributes.names,
+        color = defaultBjsubwayTextLineBadgeAttributes.color,
+    } = attrs ?? defaultBjsubwayTextLineBadgeAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
@@ -28,7 +30,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 3} height="16" />
+                <rect fill={color[2]} x="0" width={bBox.width + 3} height="16" rx="2" />
                 <g ref={textLineEl}>
                     <text
                         className="rmp-name__zh"
@@ -45,7 +47,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                         textAnchor="middle"
                         x={(bBox.width + 3) / 2}
                         y="14"
-                        fontSize="6"
+                        fontSize="5"
                         fill={color[3]}
                     >
                         {names[1]}
@@ -58,6 +60,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                     x="0"
                     width={bBox.width + 3}
                     height="16"
+                    rx="2"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
@@ -70,25 +73,25 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
 };
 
 /**
- * ShmetroTextLineBadge specific props.
+ * BjsubwayTextLineBadge specific props.
  */
-export interface ShmetroTextLineBadgeAttributes extends AttributesWithColor {
+export interface BjsubwayTextLineBadgeAttributes extends AttributesWithColor {
     names: [string, string];
 }
 
-const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
-    names: ['浦江线', 'Pujiang Line'],
-    color: [CityCode.Shanghai, 'pjl', '#999999', MonoColour.white],
+const defaultBjsubwayTextLineBadgeAttributes: BjsubwayTextLineBadgeAttributes = {
+    names: ['八通线', 'Batong Line'],
+    color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const ShmetroTextLineBadgeFields = [
+const BjsubwayTextLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.shmetroTextLineBadge.nameZh',
-        value: (attrs?: ShmetroTextLineBadgeAttributes) => (attrs ?? defaultShmetroTextLineBadgeAttributes).names[0],
-        onChange: (val: string | number, attrs_: ShmetroTextLineBadgeAttributes | undefined) => {
+        label: 'panel.details.node.bjsubwayTextLineBadge.nameZh',
+        value: (attrs?: BjsubwayTextLineBadgeAttributes) => (attrs ?? defaultBjsubwayTextLineBadgeAttributes).names[0],
+        onChange: (val: string | number, attrs_: BjsubwayTextLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroTextLineBadgeAttributes;
+            const attrs = attrs_ ?? defaultBjsubwayTextLineBadgeAttributes;
             // set value
             attrs.names[0] = val.toString();
             // return modified attrs
@@ -97,11 +100,11 @@ const ShmetroTextLineBadgeFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.node.shmetroTextLineBadge.nameEn',
-        value: (attrs?: ShmetroTextLineBadgeAttributes) => (attrs ?? defaultShmetroTextLineBadgeAttributes).names[1],
-        onChange: (val: string | number, attrs_: ShmetroTextLineBadgeAttributes | undefined) => {
+        label: 'panel.details.node.bjsubwayTextLineBadge.nameEn',
+        value: (attrs?: BjsubwayTextLineBadgeAttributes) => (attrs ?? defaultBjsubwayTextLineBadgeAttributes).names[1],
+        onChange: (val: string | number, attrs_: BjsubwayTextLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroTextLineBadgeAttributes;
+            const attrs = attrs_ ?? defaultBjsubwayTextLineBadgeAttributes;
             // return if invalid
             // set value
             attrs.names[1] = val.toString();
@@ -112,34 +115,37 @@ const ShmetroTextLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.ShmetroTextLineBadge} defaultAttrs={defaultShmetroTextLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.BjsubwayTextLineBadge}
+                defaultAttrs={defaultBjsubwayTextLineBadgeAttributes}
+            />
         ),
     },
 ];
 
-const ShmetroTextLineBadgeIcon = (
+const BjsubwayTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect fill="currentColor" x="2" y="6" width="20" height="12" />
-        <text x="5" y="11" fontSize="5" fill="white">
-            浦江线
+        <rect fill="currentColor" x="2" y="6" width="20" height="12" rx="2" />
+        <text x="3" y="12" fontSize="6" fill="white">
+            八通线
         </text>
-        <text x="3" y="16" fontSize="4" fill="white">
-            Pujiang Line
+        <text x="3" y="16" fontSize="3.2" fill="white">
+            Batong Line
         </text>
     </svg>
 );
 
-const shmetroTextLineBadge: Node<ShmetroTextLineBadgeAttributes> = {
-    component: ShmetroTextLineBadge,
-    icon: ShmetroTextLineBadgeIcon,
-    defaultAttrs: defaultShmetroTextLineBadgeAttributes,
+const bjsubwayTextLineBadge: Node<BjsubwayTextLineBadgeAttributes> = {
+    component: BjsubwayTextLineBadge,
+    icon: BjsubwayTextLineBadgeIcon,
+    defaultAttrs: defaultBjsubwayTextLineBadgeAttributes,
     // TODO: fix this
     // @ts-ignore-error
-    fields: ShmetroTextLineBadgeFields,
+    fields: BjsubwayTextLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.shmetroTextLineBadge.displayName',
+        displayName: 'panel.details.node.bjsubwayTextLineBadge.displayName',
         tags: [],
     },
 };
 
-export default shmetroTextLineBadge;
+export default bjsubwayTextLineBadge;

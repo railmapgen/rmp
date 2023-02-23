@@ -1,4 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
+import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
+import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge/gzmtr-line-badge';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
@@ -12,6 +14,8 @@ export enum MiscNodeType {
     ShmetroNumLineBadge = 'shmetro-num-line-badge',
     ShmetroTextLineBadge = 'shmetro-text-line-badge',
     GzmtrLineBadge = 'gzmtr-line-badge',
+    BjsubwayNumLineBadge = 'bjsubway-num-line-badge',
+    BjsubwayTextLineBadge = 'bjsubway-text-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -21,6 +25,8 @@ export interface MiscNodeAttributes {
     [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
     [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
+    [MiscNodeType.BjsubwayNumLineBadge]?: BjsubwayNumLineBadgeAttributes;
+    [MiscNodeType.BjsubwayTextLineBadge]?: BjsubwayTextLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }

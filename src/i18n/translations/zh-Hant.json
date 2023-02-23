@@ -66,6 +66,15 @@
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱"
                 },
+                "bjsubwayNumLineBadge": {
+                    "displayName": "北京地鐵數字線路標識",
+                    "num": "線路號"
+                },
+                "bjsubwayTextLineBadge": {
+                    "displayName": "北京地鐵文字線路標識",
+                    "nameZh": "中文線路名稱",
+                    "nameEn": "英文線路名稱"
+                },
                 "text": {
                     "displayName": "任意文字",
                     "content": "內容",
