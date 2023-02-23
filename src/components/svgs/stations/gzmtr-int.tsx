@@ -52,11 +52,22 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0;
+    const textX =
+        (nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0) * (nameOffsetY === 'middle' ? 1.8 : 1);
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
+            20 * (nameOffsetX === 'middle' ? 1.8 : 1)) *
         NAME_DY[nameOffsetY].polarity;
-    const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+    const textAnchor =
+        nameOffsetX === 'left'
+            ? 'end'
+            : nameOffsetX === 'right'
+            ? 'start'
+            : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
+            ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
+              'end'
+            : // Default to middle when nameOffsetX === 'middle'.
+              'middle';
 
     const transferAll = transfer.flat().slice(0, 3); // slice to make sure at most 3 transfers
     const arrowColor = [
@@ -274,11 +285,11 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * <GzmtrStation /> specific props.
+ * GzmtrStation specific props.
  */
 export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
-    nameOffsetX: Exclude<NameOffsetX, 'middle'>;
-    nameOffsetY: Exclude<NameOffsetY, 'middle'>;
+    nameOffsetX: NameOffsetX;
+    nameOffsetY: NameOffsetY;
     /**
      * Whether to show a Under Construction hint.
      */
@@ -328,7 +339,8 @@ const gzmtrIntStationFields = [
         type: 'select',
         label: 'panel.details.station.gzmtrInt.nameOffsetX',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetX,
-        options: { left: 'left', right: 'right' },
+        options: { left: 'left', middle: 'middle', right: 'right' },
+        disabledOptions: (attrs?: GzmtrIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
@@ -342,7 +354,8 @@ const gzmtrIntStationFields = [
         type: 'select',
         label: 'panel.details.station.gzmtrInt.nameOffsetY',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetY,
-        options: { top: 'top', bottom: 'bottom' },
+        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+        disabledOptions: (attrs?: GzmtrIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
