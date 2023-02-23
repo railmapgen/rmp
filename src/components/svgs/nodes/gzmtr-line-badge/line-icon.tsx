@@ -1,7 +1,7 @@
 import React from 'react';
+import { ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineIconType2 } from './line-icon-type2';
 import { InterchangeBox } from './interchange-box';
-import { ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 
 export const MAX_WIDTH = 42;
 
@@ -9,10 +9,11 @@ interface LineIconProps {
     lineName: string[];
     foregroundColour: MonoColour;
     backgroundColour: ColourHex;
+    passed?: boolean;
 }
 
 export const LineIcon = (props: LineIconProps) => {
-    const { lineName, foregroundColour, backgroundColour } = props;
+    const { lineName, foregroundColour, backgroundColour, passed } = props;
 
     const [type, commonPart] = getType(lineName);
 
@@ -30,27 +31,39 @@ export const LineIcon = (props: LineIconProps) => {
     const nameZhScale = MAX_WIDTH / Math.max(MAX_WIDTH, nameZhBBox.width);
     const nameEnScale = MAX_WIDTH / Math.max(MAX_WIDTH, nameEnBBox.width);
 
+    const transforms = {
+        nameZh: {
+            // 7.3 -- original y
+            // 13.5 -- text height
+            // (1 - scale) -- offset multiplier
+            // scale -- visualisation offset
+            // 2 -- divide into halves (top and bottom)
+            y: 7.3 + (13.5 * (1 - nameZhScale) * nameZhScale) / 2,
+        },
+        nameEn: {
+            y: 19.5 - (9 * (1 - nameEnScale) * nameEnScale) / 2,
+        },
+    };
+
     return (
-        <g textAnchor="middle" fill={foregroundColour}>
-            <InterchangeBox fill={backgroundColour} />
+        <g textAnchor="middle" fill={passed ? MonoColour.white : foregroundColour}>
+            <InterchangeBox fill={passed ? '#aaa' : backgroundColour} />
             {type === 2 ? (
                 <LineIconType2 lineName={lineName} commonPart={commonPart} />
             ) : (
                 <>
                     <text
                         ref={nameZhEl}
-                        y={getYByType(type, 'zh', nameZhScale)}
-                        className="rmp-name__zh"
-                        dominantBaseline="middle"
+                        className="rmg-name__zh"
                         fontSize={12}
-                        transform={`scale(${nameZhScale})`}
+                        transform={`translate(0,${transforms.nameZh.y})scale(${nameZhScale})`}
                     >
                         {type === 1 ? (
                             <>
-                                <tspan fontSize={16} dy={0.7} dominantBaseline="middle" className="rmp-name__zh">
+                                <tspan fontSize={16} dy={0.7} className="rmp-name__zh">
                                     {commonPart}
                                 </tspan>
-                                <tspan dy={-0.7} dominantBaseline="middle" className="rmp-name__zh">
+                                <tspan dy={-0.7} className="rmp-name__zh">
                                     {lineName[0].slice(commonPart.length)}
                                 </tspan>
                             </>
@@ -60,11 +73,9 @@ export const LineIcon = (props: LineIconProps) => {
                     </text>
                     <text
                         ref={nameEnEl}
-                        y={getYByType(type, 'en', nameEnScale)}
-                        className="rmg-name__en"
-                        dominantBaseline="middle"
+                        className="rmp-name__en"
                         fontSize={8}
-                        transform={`scale(${nameEnScale})`}
+                        transform={`translate(0,${transforms.nameEn.y})scale(${nameEnScale})`}
                     >
                         {lineName[1]}
                     </text>
@@ -83,25 +94,10 @@ const getType = (name: string[]): [1 | 2 | 3, string] => {
     const matchResultForType1 = name[0].match(/^(\d+)\D+$/);
     if (matchResultForType1) return [1, matchResultForType1[1]];
 
-    const matchResultForType2 = name.map(text => text.match(/^([\w\d]+).+$/));
+    const matchResultForType2 = name.map(text => text.match(/^(\w+).+$/));
     if (matchResultForType2[0] && matchResultForType2[1] && matchResultForType2[0][1] === matchResultForType2[1][1]) {
         return [2, matchResultForType2[0][1]];
     }
 
     return [3, ''];
-};
-
-const getYByType = (type: ReturnType<typeof getType>[0], field: 'zh' | 'en', scale: number) => {
-    switch (type) {
-        case 1:
-            return (field === 'zh' ? 7.3 : 19.5) * (1 + 1 - scale);
-        case 2:
-            return 0;
-        case 3:
-            if (field === 'zh') {
-                return 8 * (2 - scale);
-            } else {
-                return 19.5 + 19.5 * (19.5 / 8) * (1 - scale) - (scale === 1 ? 0 : 5.5);
-            }
-    }
 };
