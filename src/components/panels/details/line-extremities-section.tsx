@@ -1,6 +1,7 @@
 import React from 'react';
+import useEvent from 'react-use-event-hook';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Flex, Heading } from '@chakra-ui/react';
+import { Box, Button, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { ExternalStationAttributes } from '../../../constants/stations';
@@ -22,6 +23,8 @@ export default function LineExtremitiesSection() {
             const [s, t] = graph.current.extremities(selectedFirst);
             setSource(s);
             setTarget(t);
+
+            // Extract name[0] from nodes if this node is a station.
             if (s.startsWith('stn')) {
                 const type = graph.current.getNodeAttribute(s, 'type');
                 setSourceName(
@@ -47,16 +50,33 @@ export default function LineExtremitiesSection() {
         }
     }, [selected]);
 
+    const handleSource = useEvent(() => {
+        dispatch(clearSelected());
+        dispatch(addSelected(source));
+    });
+    const handleTarget = useEvent(() => {
+        dispatch(clearSelected());
+        dispatch(addSelected(target));
+    });
+
     const fields: RmgFieldsField[] = [
         {
-            type: 'input',
+            type: 'custom',
             label: t('panel.details.lineExtremities.source'),
-            value: source,
+            component: (
+                <Button flex={1} size="sm" variant="link" onClick={handleSource}>
+                    {source}
+                </Button>
+            ),
         },
         {
-            type: 'input',
+            type: 'custom',
             label: t('panel.details.lineExtremities.target'),
-            value: target,
+            component: (
+                <Button flex={1} size="sm" variant="link" onClick={handleTarget}>
+                    {target}
+                </Button>
+            ),
         },
         {
             type: 'input',
@@ -77,28 +97,6 @@ export default function LineExtremitiesSection() {
             </Heading>
 
             <RmgFields fields={fields} minW={130} />
-            <Flex>
-                <Button
-                    flex={1}
-                    size="sm"
-                    onClick={() => {
-                        dispatch(clearSelected());
-                        dispatch(addSelected(source));
-                    }}
-                >
-                    {sourceName}
-                </Button>
-                <Button
-                    flex={1}
-                    size="sm"
-                    onClick={() => {
-                        dispatch(clearSelected());
-                        dispatch(addSelected(target));
-                    }}
-                >
-                    {targetName}
-                </Button>
-            </Flex>
         </Box>
     );
 }
