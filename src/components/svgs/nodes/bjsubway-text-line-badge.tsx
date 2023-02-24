@@ -29,15 +29,15 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 3} height="16" rx="2" />
+            <g id={id} transform={`translate(${x}, ${y})scale(1.5)`}>
+                <rect fill={color[2]} x="0" width={bBox.width + 6} height="16" rx="2" />
                 <g ref={textLineEl}>
                     <text
                         className="rmp-name__zh"
                         textAnchor="middle"
-                        x={(bBox.width + 3) / 2}
+                        x={(bBox.width + 6) / 2}
                         y="8"
-                        fontSize="8"
+                        fontSize="7"
                         fill={color[3]}
                     >
                         {names[0]}
@@ -45,9 +45,9 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
                     <text
                         className="rmp-name__en"
                         textAnchor="middle"
-                        x={(bBox.width + 3) / 2}
-                        y="14"
-                        fontSize="5"
+                        x={(bBox.width + 6) / 2}
+                        y="13.5"
+                        fontSize="4"
                         fill={color[3]}
                     >
                         {names[1]}

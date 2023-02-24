@@ -27,22 +27,22 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 24} height="16" rx="2" />
+            <g id={id} transform={`translate(${x}, ${y})scale(1.5)`}>
+                <rect fill={color[2]} x="0" width={bBox.width + 23} height="16" rx="2" />
                 <text
                     ref={numEl}
                     className="rmp-name__zh"
                     textAnchor="middle"
-                    x={bBox.width / 2 + 2}
-                    y="14"
+                    x={bBox.width / 2 + 3}
+                    y="13.5"
                     fill={color[3]}
                 >
                     {num}
                 </text>
-                <text className="rmp-name__zh" x={bBox.width + 3} y="9" fontSize="10" fill={color[3]}>
+                <text className="rmp-name__zh" x={bBox.width + 4} y="8.5" fontSize="8" fill={color[3]}>
                     号线
                 </text>
-                <text className="rmp-name__en" x={bBox.width + 4} y="15" fontSize="5" fill={color[3]}>
+                <text className="rmp-name__en" x={bBox.width + 6} y="13.5" fontSize="4" fill={color[3]}>
                     Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
