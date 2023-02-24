@@ -159,7 +159,8 @@
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移"
+                    "nameOffsetY": "名称纵向偏移",
+                    "outOfStation": "出站换乘"
                 }
             },
             "line": {

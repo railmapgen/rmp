@@ -159,7 +159,8 @@
                     "nameZh": "한자 명칭",
                     "nameEn": "영문 명칭",
                     "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동"
+                    "nameOffsetY": "명칭 세로 이동",
+                    "outOfStation": "Out of station interchange"
                 }
             },
             "line": {

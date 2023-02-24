@@ -52,6 +52,9 @@
             },
             "specificAttrsTitle": "Specific Attributes",
             "node": {
+                "virtual": {
+                    "displayName": "Virtual node"
+                },
                 "shmetroNumLineBadge": {
                     "displayName": "Shanghai Metro num line badge",
                     "num": "Line Number"
@@ -74,6 +77,9 @@
                     "displayName": "Beijing Subway text line badge",
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
+                },
+                "facilities": {
+                    "displayName": "Facilities"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
@@ -159,7 +165,8 @@
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y"
+                    "nameOffsetY": "Name offset Y",
+                    "outOfStation": "Out of station interchange"
                 }
             },
             "line": {

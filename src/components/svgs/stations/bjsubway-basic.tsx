@@ -47,8 +47,9 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <circle
                     id={`stn_core_${id}`}
-                    r={5}
+                    r="4"
                     stroke="black"
+                    strokeWidth="0.5"
                     strokeDasharray={open ? undefined : '1.5'}
                     fill="white"
                     onPointerDown={onPointerDown}
@@ -89,7 +90,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * <BjsubwayBasicStation /> specific props.
+ * BjsubwayBasicStation specific props.
  */
 export interface BjsubwayBasicStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
@@ -186,7 +187,7 @@ const bjsubwayBasicStationFields = [
 
 const bjsubwayBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
+        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="0.5" fill="none" />
     </svg>
 );
 
