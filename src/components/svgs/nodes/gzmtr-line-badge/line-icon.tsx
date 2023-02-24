@@ -54,9 +54,11 @@ export const LineIcon = (props: LineIconProps) => {
                 <>
                     <text
                         ref={nameZhEl}
-                        className="rmg-name__zh"
+                        className="rmp-name__zh"
                         fontSize={12}
                         transform={`translate(0,${transforms.nameZh.y})scale(${nameZhScale})`}
+                        // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                        dominantBaseline="central"
                     >
                         {type === 1 ? (
                             <>
@@ -76,6 +78,8 @@ export const LineIcon = (props: LineIconProps) => {
                         className="rmp-name__en"
                         fontSize={8}
                         transform={`translate(0,${transforms.nameEn.y})scale(${nameEnScale})`}
+                        // dominantBaseline is specified in rmg-name__en but missing in rmp-name__en
+                        dominantBaseline="middle"
                     >
                         {lineName[1]}
                     </text>
