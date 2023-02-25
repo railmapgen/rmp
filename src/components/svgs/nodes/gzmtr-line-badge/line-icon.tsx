@@ -62,10 +62,21 @@ export const LineIcon = (props: LineIconProps) => {
                     >
                         {type === 1 ? (
                             <>
-                                <tspan fontSize={16} dy={0.7} className="rmp-name__zh">
+                                <tspan
+                                    fontSize={16}
+                                    dy={0.7}
+                                    className="rmp-name__zh"
+                                    // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                                    dominantBaseline="central"
+                                >
                                     {commonPart}
                                 </tspan>
-                                <tspan dy={-0.7} className="rmp-name__zh">
+                                <tspan
+                                    dy={-0.7}
+                                    className="rmp-name__zh"
+                                    // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                                    dominantBaseline="central"
+                                >
                                     {lineName[0].slice(commonPart.length)}
                                 </tspan>
                             </>

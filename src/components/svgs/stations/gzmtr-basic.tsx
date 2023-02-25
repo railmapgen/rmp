@@ -45,12 +45,22 @@ export const StationNumber = (props: { strokeColor: ColourHex; lineCode: string;
             <path d={PATH} strokeWidth="2" stroke={strokeColor} fill="white" transform="scale(0.75)" />
             <g textAnchor="middle" dominantBaseline="middle" fontSize="8">
                 <g transform={`translate(-6,0)scale(${lineCodeScale})`}>
-                    <text ref={lineCodeEl} className="rmp-name__zh">
+                    <text
+                        ref={lineCodeEl}
+                        className="rmp-name__zh"
+                        // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                        dominantBaseline="central"
+                    >
                         {lineCode}
                     </text>
                 </g>
                 <g transform={`translate(6,0)scale(${stnCodeScale})`}>
-                    <text ref={stnCodeEl} className="rmp-name__zh">
+                    <text
+                        ref={stnCodeEl}
+                        className="rmp-name__zh"
+                        // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                        dominantBaseline="central"
+                    >
                         {stationCode}
                     </text>
                 </g>
