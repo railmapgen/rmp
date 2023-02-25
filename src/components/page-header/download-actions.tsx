@@ -94,7 +94,7 @@ export default function DownloadActions() {
             )
             .forEach(e => elem.removeChild(e));
         // append rmp info if user does not want to share rmp info
-        if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 600, yMax - 60));
+        if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 400, yMax - 60));
         // reset svg viewBox to display all the nodes in the graph
         // otherwise the later drawImage won't be able to show all of them
         elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -253,11 +253,14 @@ const generateRmpInfo = (x: number, y: number) => {
     logo.setAttribute('y', '-20');
 
     const rmp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    rmp.setAttribute('font-size', '20');
+    rmp.setAttribute('font-family', 'Arial, sans-serif');
+    rmp.setAttribute('font-size', '16');
     rmp.appendChild(document.createTextNode('Rail Map Painter'));
 
     const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    link.setAttribute('y', '15');
+    link.setAttribute('font-family', 'Arial, sans-serif');
+    link.setAttribute('font-size', '10');
+    link.setAttribute('y', '10');
     link.appendChild(document.createTextNode('https://railmapgen.github.io/rmp/'));
 
     info.appendChild(logo);
