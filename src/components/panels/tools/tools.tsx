@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdCircle, MdExpandLess, MdExpandMore } from 'react-icons/md';
+import { MdExpandLess, MdExpandMore } from 'react-icons/md';
 import {
     Accordion,
     AccordionButton,
@@ -11,6 +11,8 @@ import {
     Button,
     Flex,
     SystemStyleObject,
+    Text,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
@@ -21,7 +23,6 @@ import stations from '../../svgs/stations/stations';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import { linePaths } from '../../svgs/lines/lines';
 import ColourModal from '../colour-modal/colour-modal';
-import ColourUtil from '../colour-util';
 import ThemeButton from '../theme-button';
 
 const buttonStyle: SystemStyleObject = {
@@ -43,38 +44,39 @@ const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { mode, theme } = useRootSelector(state => state.runtime);
+    const bgColor = useColorModeValue('white', 'gray.800');
 
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
+    const [isColourModalOpen, setIsColourModalOpen] = React.useState(false);
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
-    const [isOpen, setIsOpen] = React.useState(true);
-
     return (
         <Flex
             flexShrink="0"
             direction="column"
-            width={isOpen ? 400 : 50}
+            width={isToolsExpanded ? 400 : 50}
             maxWidth="100%"
             height="100%"
+            bg={bgColor}
             zIndex="5"
             transition="width 0.3s ease-in-out"
         >
             <Button
                 aria-label="Menu"
                 leftIcon={
-                    isOpen ? (
+                    isToolsExpanded ? (
                         <MdExpandMore size={40} transform="rotate(90)" />
                     ) : (
                         <MdExpandLess size={40} transform="rotate(90)" />
                     )
                 }
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setIsToolsExpanded(!isToolsExpanded)}
                 sx={buttonStyle}
             >
-                {isOpen ? t('panel.tools.showLess') : undefined}
+                {isToolsExpanded ? t('panel.tools.showLess') : undefined}
             </Button>
 
             <Flex className="tools" overflow="auto">
@@ -82,29 +84,21 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton sx={{ minH: 50, maxH: 50 }}>
                             <Box as="span" flex="1" textAlign="left">
-                                {isOpen ? t('panel.tools.section.lineDrawing') : undefined}
+                                {isToolsExpanded ? t('panel.tools.section.lineDrawing') : undefined}
                             </Box>
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            {/* <Button
-                                aria-label="Color"
-                                leftIcon={<MdCircle />}
-                                color={theme[3]}
-                                bg={theme[2]}
-                                size="lg"
-                                style={{ minHeight: 50, minWidth: 50 }}
-                                _hover={{ bg: ColourUtil.fade(theme[2], 0.7) }}
-                                onClick={() => setIsModalOpen(true)}
-                                sx={buttonStyle}
-                            >
-                                {isOpen ? t('Color') : undefined}
-                            </Button> */}
-                            <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />
+                            <Flex>
+                                <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
+                                <Text fontWeight="600" pl="1" alignSelf="center">
+                                    {isToolsExpanded ? t('Color') : undefined}
+                                </Text>
+                            </Flex>
                             <ColourModal
-                                isOpen={isModalOpen}
+                                isOpen={isColourModalOpen}
                                 defaultTheme={theme}
-                                onClose={() => setIsModalOpen(false)}
+                                onClose={() => setIsColourModalOpen(false)}
                                 onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
                             />
 
@@ -117,7 +111,7 @@ const ToolsPanel = () => {
                                     variant={mode === `line-${type}` ? 'solid' : 'outline'}
                                     sx={buttonStyle}
                                 >
-                                    {isOpen ? t(linePaths[type].metadata.displayName) : undefined}
+                                    {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
                                 </Button>
                             ))}
                             <Button
@@ -127,7 +121,7 @@ const ToolsPanel = () => {
                                 variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
                                 sx={buttonStyle}
                             >
-                                {isOpen ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                                {isToolsExpanded ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                             </Button>
                         </AccordionPanel>
                     </AccordionItem>
@@ -135,7 +129,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton sx={{ minH: 50, maxH: 50 }}>
                             <Box as="span" flex="1" textAlign="left">
-                                {isOpen ? t('panel.tools.section.stations') : undefined}
+                                {isToolsExpanded ? t('panel.tools.section.stations') : undefined}
                             </Box>
                             <AccordionIcon />
                         </AccordionButton>
@@ -149,7 +143,7 @@ const ToolsPanel = () => {
                                     variant={mode === `station-${type}` ? 'solid' : 'outline'}
                                     sx={buttonStyle}
                                 >
-                                    {isOpen ? t(stations[type].metadata.displayName) : undefined}
+                                    {isToolsExpanded ? t(stations[type].metadata.displayName) : undefined}
                                 </Button>
                             ))}
                         </AccordionPanel>
@@ -158,7 +152,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton sx={{ minH: 50, maxH: 50 }}>
                             <Box as="span" flex="1" textAlign="left">
-                                {isOpen ? t('panel.tools.section.miscellaneousNodes') : undefined}
+                                {isToolsExpanded ? t('panel.tools.section.miscellaneousNodes') : undefined}
                             </Box>
                             <AccordionIcon />
                         </AccordionButton>
@@ -174,7 +168,7 @@ const ToolsPanel = () => {
                                         variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
                                         sx={buttonStyle}
                                     >
-                                        {isOpen ? t(miscNodes[type].metadata.displayName) : undefined}
+                                        {isToolsExpanded ? t(miscNodes[type].metadata.displayName) : undefined}
                                     </Button>
                                 ))}
                         </AccordionPanel>

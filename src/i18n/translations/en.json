@@ -2,7 +2,6 @@
     "color": "Color",
     "warning": "Warning",
     "cancel": "Cancel",
-    "rmp2linePathAndStyle": "Select any lines and change their type and style!",
 
     "colorModal": {
         "title": "Select a color",
@@ -21,7 +20,12 @@
 
     "panel": {
         "tools": {
-            "header": "Tools"
+            "showLess": "Show less",
+            "section": {
+                "lineDrawing": "Line drawing",
+                "stations": "Stations",
+                "miscellaneousNodes": "Miscellaneous nodes"
+            }
         },
         "details": {
             "header": "Details",
@@ -172,7 +176,7 @@
             "line": {
                 "reconcileId": "Reconcile ID",
                 "simple": {
-                    "displayName": "Simple line",
+                    "displayName": "Simple path",
                     "offset": "Offset"
                 },
                 "diagonal": {

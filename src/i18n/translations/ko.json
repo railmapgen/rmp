@@ -20,7 +20,12 @@
 
     "panel": {
         "tools": {
-            "header": "공구"
+            "showLess": "Show less",
+            "section": {
+                "lineDrawing": "Line drawing",
+                "stations": "Stations",
+                "miscellaneousNodes": "Miscellaneous nodes"
+            }
         },
         "details": {
             "header": "상세한 상황",
