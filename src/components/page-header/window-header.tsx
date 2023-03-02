@@ -3,10 +3,10 @@ import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } fro
 import { MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
-import { LanguageCode } from '@railmapgen/rmg-translate';
+import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
-import { useRootSelector } from '../../redux/index';
+import { useRootSelector } from '../../redux';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about-modal';
@@ -14,7 +14,7 @@ import { ZoomPopover } from './zoom-popover';
 import SettingsModal from './settings-modal';
 
 export default function WindowHeader() {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
@@ -33,9 +33,7 @@ export default function WindowHeader() {
 
     const handleChangeLanguage = async (language: LanguageCode) => {
         rmgRuntime.setLanguage(language);
-        const t = await i18n.changeLanguage(language);
-        document.documentElement.lang = language;
-        document.title = t('header.about.rmp');
+        rmgRuntime.getI18nInstance().changeLanguage(language);
     };
 
     return (
@@ -72,10 +70,11 @@ export default function WindowHeader() {
                 <Menu>
                     <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
                     <MenuList>
-                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.English)}>English</MenuItem>
-                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.ChineseSimp)}>简体中文</MenuItem>
-                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.ChineseTrad)}>繁體中文</MenuItem>
-                        <MenuItem onClick={() => handleChangeLanguage(LanguageCode.Korean)}>한국어</MenuItem>
+                        {SUPPORTED_LANGUAGES.map(lang => (
+                            <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
+                                {LANGUAGE_NAMES[lang][lang]}
+                            </MenuItem>
+                        ))}
                     </MenuList>
                 </Menu>
 

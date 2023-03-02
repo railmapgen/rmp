@@ -1,5 +1,4 @@
 import React from 'react';
-import { LanguageCode } from '@railmapgen/rmg-translate';
 import { NameOffsetY } from '../../../constants/stations';
 
 interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
@@ -45,8 +44,8 @@ MultilineText.displayName = 'MultilineText';
  * This is the default const of name height in different languages.
  */
 export const LINE_HEIGHT = {
-    [LanguageCode.Chinese]: 16,
-    [LanguageCode.English]: 10,
+    zh: 16,
+    en: 10,
 };
 
 /**
@@ -62,7 +61,7 @@ export const NAME_DY: {
 } = {
     top: {
         namesPos: 1,
-        lineHeight: LINE_HEIGHT[LanguageCode.English],
+        lineHeight: LINE_HEIGHT.en,
         polarity: -1,
     },
     middle: {
@@ -72,7 +71,7 @@ export const NAME_DY: {
     },
     bottom: {
         namesPos: 0,
-        lineHeight: LINE_HEIGHT[LanguageCode.Chinese],
+        lineHeight: LINE_HEIGHT.zh,
         polarity: 1,
     },
 };
