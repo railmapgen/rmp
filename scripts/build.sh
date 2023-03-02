@@ -24,7 +24,7 @@ npm config set tag-version-prefix "${APP_NAME}-"
 if [ "$BRANCH" = "main" ]
 then
   # build with a normal version
-  npm version patch -m "${APP_NAME}-%s release" --force || { echo "Release Error"; exit 1; }
+  npm version $BUMP_VERSION -m "${APP_NAME}-%s release" --force || { echo "Release Error"; exit 1; }
   export RMG_VER=$(node -p "require('./package.json').version")
 else
   # build with a hashed version
