@@ -2,7 +2,6 @@
     "color": "색깔",
     "warning": "경고",
     "cancel": "취소",
-    "rmp2linePathAndStyle": "어떤 선이든 선택하고 종류와 스타일을 변경하세요!",
 
     "colorModal": {
         "title": "색깔 선택",
@@ -21,7 +20,12 @@
 
     "panel": {
         "tools": {
-            "header": "공구"
+            "showLess": "Show less",
+            "section": {
+                "lineDrawing": "Line drawing",
+                "stations": "Stations",
+                "miscellaneousNodes": "Miscellaneous nodes"
+            }
         },
         "details": {
             "header": "상세한 상황",
@@ -74,6 +78,9 @@
                     "displayName": "베이징 지하철 텍스트 라인 배지",
                     "nameZh": "한자 노선 명칭",
                     "nameEn": "영문 노선 명칭"
+                },
+                "facilities": {
+                    "displayName": "Facilities"
                 },
                 "text": {
                     "displayName": "임의 글자",

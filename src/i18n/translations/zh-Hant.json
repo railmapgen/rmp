@@ -2,7 +2,6 @@
     "color": "顏色",
     "warning": "警告",
     "cancel": "取消",
-    "rmp2linePathAndStyle": "選擇任何線條並更改它們的類型和样式！",
 
     "colorModal": {
         "title": "選擇顏色",
@@ -21,7 +20,12 @@
 
     "panel": {
         "tools": {
-            "header": "工具"
+            "showLess": "顯示更少",
+            "section": {
+                "lineDrawing": "線段繪製",
+                "stations": "車站",
+                "miscellaneousNodes": "雜項節點"
+            }
         },
         "details": {
             "header": "詳情",
@@ -74,6 +78,9 @@
                     "displayName": "北京地鐵文字線路標識",
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱"
+                },
+                "facilities": {
+                    "displayName": "設施"
                 },
                 "text": {
                     "displayName": "任意文字",

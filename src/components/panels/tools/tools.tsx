@@ -1,5 +1,19 @@
 import React from 'react';
-import { Flex, IconButton } from '@chakra-ui/react';
+import { useTranslation } from 'react-i18next';
+import { MdExpandLess, MdExpandMore } from 'react-icons/md';
+import {
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
+    Box,
+    Button,
+    Flex,
+    SystemStyleObject,
+    Text,
+    useColorModeValue,
+} from '@chakra-ui/react';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { StationType } from '../../../constants/stations';
@@ -11,55 +25,156 @@ import { linePaths } from '../../svgs/lines/lines';
 import ColourModal from '../colour-modal/colour-modal';
 import ThemeButton from '../theme-button';
 
+const buttonStyle: SystemStyleObject = {
+    justifyContent: 'flex-start',
+    p: 0,
+    pl: '5px',
+    pr: '5px',
+    maxH: 50,
+    minH: 50,
+};
+
+const accordionPanelStyle: SystemStyleObject = {
+    p: '0',
+    display: 'flex',
+    flexDirection: 'column',
+};
+
 const ToolsPanel = () => {
+    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { mode, theme } = useRootSelector(state => state.runtime);
+    const bgColor = useColorModeValue('white', 'gray.800');
 
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
+    const [isColourModalOpen, setIsColourModalOpen] = React.useState(false);
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
     return (
-        <Flex className="tools" width={50} direction="column" overflow="auto">
-            {Object.values(LinePathType).map(type => (
-                <IconButton
-                    key={type}
-                    aria-label={type}
-                    size="lg"
-                    icon={linePaths[type].icon}
-                    onClick={() => handleLine(type)}
-                    variant={mode === `line-${type}` ? 'solid' : 'outline'}
-                />
-            ))}
-            {Object.values(StationType).map(type => (
-                <IconButton
-                    key={type}
-                    aria-label={type}
-                    size="lg"
-                    icon={stations[type].icon}
-                    onClick={() => handleStation(type)}
-                    variant={mode === `station-${type}` ? 'solid' : 'outline'}
-                />
-            ))}
-            {Object.values(MiscNodeType).map(type => (
-                <IconButton
-                    key={type}
-                    aria-label={type}
-                    size="lg"
-                    icon={miscNodes[type].icon}
-                    onClick={() => handleMiscNode(type)}
-                    variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
-                />
-            ))}
-            <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />
-            <ColourModal
-                isOpen={isModalOpen}
-                defaultTheme={theme}
-                onClose={() => setIsModalOpen(false)}
-                onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
-            />
+        <Flex
+            flexShrink="0"
+            direction="column"
+            width={isToolsExpanded ? 400 : 50}
+            maxWidth="100%"
+            height="100%"
+            bg={bgColor}
+            zIndex="5"
+            transition="width 0.3s ease-in-out"
+        >
+            <Button
+                aria-label="Menu"
+                leftIcon={
+                    isToolsExpanded ? (
+                        <MdExpandMore size={40} transform="rotate(90)" />
+                    ) : (
+                        <MdExpandLess size={40} transform="rotate(90)" />
+                    )
+                }
+                onClick={() => setIsToolsExpanded(!isToolsExpanded)}
+                sx={buttonStyle}
+            >
+                {isToolsExpanded ? t('panel.tools.showLess') : undefined}
+            </Button>
+
+            <Flex className="tools" overflow="auto">
+                <Accordion width="100%" allowMultiple defaultIndex={[0, 1, 2]}>
+                    <AccordionItem>
+                        <AccordionButton sx={{ minH: 50, maxH: 50 }}>
+                            <Box as="span" flex="1" textAlign="left">
+                                {isToolsExpanded ? t('panel.tools.section.lineDrawing') : undefined}
+                            </Box>
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            <Flex>
+                                <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
+                                <Text fontWeight="600" pl="1" alignSelf="center">
+                                    {isToolsExpanded ? t('Color') : undefined}
+                                </Text>
+                            </Flex>
+                            <ColourModal
+                                isOpen={isColourModalOpen}
+                                defaultTheme={theme}
+                                onClose={() => setIsColourModalOpen(false)}
+                                onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
+                            />
+
+                            {Object.values(LinePathType).map(type => (
+                                <Button
+                                    key={type}
+                                    aria-label={type}
+                                    leftIcon={linePaths[type].icon}
+                                    onClick={() => handleLine(type)}
+                                    variant={mode === `line-${type}` ? 'solid' : 'outline'}
+                                    sx={buttonStyle}
+                                >
+                                    {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
+                                </Button>
+                            ))}
+                            <Button
+                                aria-label={MiscNodeType.Virtual}
+                                leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                                onClick={() => handleMiscNode(MiscNodeType.Virtual)}
+                                variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
+                                sx={buttonStyle}
+                            >
+                                {isToolsExpanded ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                            </Button>
+                        </AccordionPanel>
+                    </AccordionItem>
+
+                    <AccordionItem>
+                        <AccordionButton sx={{ minH: 50, maxH: 50 }}>
+                            <Box as="span" flex="1" textAlign="left">
+                                {isToolsExpanded ? t('panel.tools.section.stations') : undefined}
+                            </Box>
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            {Object.values(StationType).map(type => (
+                                <Button
+                                    key={type}
+                                    aria-label={type}
+                                    leftIcon={stations[type].icon}
+                                    onClick={() => handleStation(type)}
+                                    variant={mode === `station-${type}` ? 'solid' : 'outline'}
+                                    sx={buttonStyle}
+                                >
+                                    {isToolsExpanded ? t(stations[type].metadata.displayName) : undefined}
+                                </Button>
+                            ))}
+                        </AccordionPanel>
+                    </AccordionItem>
+
+                    <AccordionItem>
+                        <AccordionButton sx={{ minH: 50, maxH: 50 }}>
+                            <Box as="span" flex="1" textAlign="left">
+                                {isToolsExpanded ? t('panel.tools.section.miscellaneousNodes') : undefined}
+                            </Box>
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            {Object.values(MiscNodeType)
+                                .filter(type => type !== MiscNodeType.Virtual)
+                                .map(type => (
+                                    <Button
+                                        key={type}
+                                        aria-label={type}
+                                        leftIcon={miscNodes[type].icon}
+                                        onClick={() => handleMiscNode(type)}
+                                        variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
+                                        sx={buttonStyle}
+                                    >
+                                        {isToolsExpanded ? t(miscNodes[type].metadata.displayName) : undefined}
+                                    </Button>
+                                ))}
+                        </AccordionPanel>
+                    </AccordionItem>
+                </Accordion>
+            </Flex>
         </Flex>
     );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useColorMode, useColorModeValue } from '@chakra-ui/react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
@@ -52,6 +53,9 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    const { colorMode } = useColorMode();
+    const bgColor = useColorModeValue('white', 'gray.800');
+
     const textX =
         (nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0) * (nameOffsetY === 'middle' ? 1.8 : 1);
     const textY =
@@ -92,7 +96,6 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
-                <circle r={transferAll.length === 3 ? 22.395 : 18} fill="white" />
                 {transferAll
                     .map(info => info[2])
                     .filter((color, i, arr) => arr.indexOf(color) === i)
@@ -111,8 +114,8 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     ))}
                 {transferAll.length <= 2 && (
                     <g>
-                        {/* A simple white mask to hide all underlying lines. */}
-                        <path d="M -18,-12 A 24 24 0 0 1 18,-12 L 18,12 A 24 24 0 0 1 -18,12 Z" fill="white" />
+                        {/* A simple mask to hide all underlying lines. */}
+                        <path d="M -18,-12 A 24 24 0 0 1 18,-12 L 18,12 A 24 24 0 0 1 -18,12 Z" fill={bgColor} />
                         <path
                             d="M -18,-12 A 24 24 0 0 1 18,-12"
                             fill="none"
@@ -131,6 +134,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                 )}
                 {transferAll.length >= 3 && (
                     <g>
+                        <circle r="22.395" fill={bgColor} />
                         <path
                             d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
                             fill="none"
@@ -274,7 +278,9 @@ const GzmtrIntStation = (props: StationComponentProps) => {
             JSON.stringify(transferAll),
             open,
             ...secondaryNames,
-            // bbox will only be computed after first render and won't cause this to update another time
+            // Update the mask on dark mode changes.
+            colorMode,
+            // BBox will only be computed after first render and won't cause this to update another time.
             textWidth,
             secondaryTextWidth,
             onPointerDown,
