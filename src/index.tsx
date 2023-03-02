@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { MultiDirectedGraph } from 'graphology';
 import { ChakraProvider } from '@chakra-ui/react';
 import { rmgChakraTheme } from '@railmapgen/rmg-components';
-import './i18n/config';
+import i18n from './i18n/config';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
 import AppRoot from './components/app-root';
 import store from './redux';
@@ -12,6 +12,7 @@ import { setTelemetryApp } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
 import './index.css';
+import { I18nextProvider } from 'react-i18next';
 
 declare global {
     interface Window {
@@ -27,7 +28,9 @@ const renderApp = () => {
         <StrictMode>
             <Provider store={store}>
                 <ChakraProvider theme={rmgChakraTheme}>
-                    <AppRoot />
+                    <I18nextProvider i18n={i18n}>
+                        <AppRoot />
+                    </I18nextProvider>
                 </ChakraProvider>
             </Provider>
         </StrictMode>

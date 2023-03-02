@@ -104,7 +104,7 @@ const defaultTextAttributes: TextAttributes = {
     lineHeight: 16,
     textAnchor: 'middle',
     dominantBaseline: 'middle',
-    language: LanguageCode.English,
+    language: 'en',
 };
 
 const TextFields = [
@@ -181,7 +181,7 @@ const TextFields = [
         type: 'select',
         label: 'panel.details.node.text.language',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).language,
-        options: { [LanguageCode.Chinese]: 'Chinese', [LanguageCode.English]: 'English' },
+        options: { zh: 'Chinese', en: 'English' },
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultTextAttributes;
