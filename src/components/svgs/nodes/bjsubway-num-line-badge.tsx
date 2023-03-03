@@ -25,6 +25,8 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
         [id, handlePointerUp]
     );
 
+    const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
+
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(1.5)`}>
@@ -35,14 +37,14 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
                     textAnchor="middle"
                     x={bBox.width / 2 + 3}
                     y="13.5"
-                    fill={color[3]}
+                    fill={fgColor}
                 >
                     {num}
                 </text>
-                <text className="rmp-name__zh" x={bBox.width + 4} y="8.5" fontSize="8" fill={color[3]}>
+                <text className="rmp-name__zh" x={bBox.width + 4} y="8.5" fontSize="8" fill={fgColor}>
                     号线
                 </text>
-                <text className="rmp-name__en" x={bBox.width + 6} y="13.5" fontSize="4" fill={color[3]}>
+                <text className="rmp-name__en" x={bBox.width + 6} y="13.5" fontSize="4" fill={fgColor}>
                     Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}

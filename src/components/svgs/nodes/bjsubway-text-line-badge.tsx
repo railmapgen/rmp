@@ -27,6 +27,8 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
         [id, handlePointerUp]
     );
 
+    const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
+
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(1.5)`}>
@@ -38,7 +40,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
                         x={(bBox.width + 6) / 2}
                         y="8"
                         fontSize="7"
-                        fill={color[3]}
+                        fill={fgColor}
                     >
                         {names[0]}
                     </text>
@@ -48,7 +50,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
                         x={(bBox.width + 6) / 2}
                         y="13.5"
                         fontSize="4"
-                        fill={color[3]}
+                        fill={fgColor}
                     >
                         {names[1]}
                     </text>

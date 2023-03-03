@@ -47,7 +47,7 @@ export interface VirtualAttributes {}
 const defaultVirtualAttributes: VirtualAttributes = {};
 
 const virtualIcon = (
-    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+    <svg viewBox="0 0 24 24" height={40} width={40} transform="rotate(45)" focusable={false}>
         <circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" />
         <line x1="6" y1="12" x2="18" y2="12" stroke="currentColor" />
         <line x1="12" y1="6" x2="12" y2="18" stroke="currentColor" />

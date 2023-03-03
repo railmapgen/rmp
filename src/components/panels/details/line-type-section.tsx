@@ -88,6 +88,7 @@ export default function LineTypeSection() {
                 <RmgSelect
                     options={availableLinePathOptions}
                     disabledOptions={disabledLinePathOptions}
+                    defaultValue={currentLinePathType}
                     value={currentLinePathType}
                     onChange={({ target: { value } }) => {
                         setNewLinePathType(value as LinePathType);
@@ -99,6 +100,7 @@ export default function LineTypeSection() {
                 <RmgSelect
                     options={availableLineStyleOptions}
                     disabledOptions={disabledLineStyleOptions}
+                    defaultValue={currentLineStyleType}
                     value={currentLineStyleType}
                     onChange={({ target: { value } }) => {
                         setNewLineStyleType(value as LineStyleType);

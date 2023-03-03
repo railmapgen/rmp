@@ -33,7 +33,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
+            <g id={id} transform={`translate(${x}, ${y})`}>
                 {/* This hint rect is hard to remove in exporting. */}
                 {/* <rect
                     fill="gray"

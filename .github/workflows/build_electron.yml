@@ -13,6 +13,7 @@ jobs:
       PUBLIC_URL: ./
 
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
 

@@ -1,18 +1,18 @@
 import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
+import { I18nextProvider } from 'react-i18next';
 import { MultiDirectedGraph } from 'graphology';
-import { ChakraProvider } from '@chakra-ui/react';
 import { rmgChakraTheme } from '@railmapgen/rmg-components';
-import i18n from './i18n/config';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
+import { ChakraProvider } from '@chakra-ui/react';
 import AppRoot from './components/app-root';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
+import i18n from './i18n/config';
+import './index.css';
 import store from './redux';
 import { setTelemetryApp } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
-import './index.css';
-import { I18nextProvider } from 'react-i18next';
 
 declare global {
     interface Window {
