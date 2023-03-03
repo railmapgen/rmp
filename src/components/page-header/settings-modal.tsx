@@ -23,6 +23,7 @@ import {
 } from '@chakra-ui/react';
 import { MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
+import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { setTelemetryApp } from '../../redux/app/app-slice';
 import {
     ChangeTypeModal,
@@ -38,6 +39,7 @@ const procedureButtonStyle: SystemStyleObject = {
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
+    const { keepLastPath } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
@@ -63,11 +65,24 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                 <ModalBody>
                     <VStack divider={<StackDivider borderColor="gray.200" />}>
                         <Box width="100%" mb="3">
-                            <Box display="flex" alignItems="center">
-                                <Text as="b" fontSize="xl">
-                                    {t('header.settings.procedures.title')}
-                                </Text>
+                            <Text as="b" fontSize="xl">
+                                {t('header.settings.preference.title')}
+                            </Text>
+                            <Box mt="3">
+                                <Box display="flex" mb="1">
+                                    <Text flex="1">{t('header.settings.preference.keepLastPath')}</Text>
+                                    <Switch
+                                        isChecked={keepLastPath}
+                                        onChange={({ target: { checked } }) => dispatch(setKeepLastPath(checked))}
+                                    />
+                                </Box>
                             </Box>
+                        </Box>
+
+                        <Box width="100%" mb="3">
+                            <Text as="b" fontSize="xl">
+                                {t('header.settings.procedures.title')}
+                            </Text>
                             <Box mt="3">
                                 <Button
                                     sx={procedureButtonStyle}
@@ -128,7 +143,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             <Text as="b" fontSize="xl">
                                 {t('header.settings.telemetry.title')}
                             </Text>
-                            <Box mt="3" mb="3">
+                            <Box mt="3">
                                 <Box display="flex" mb="1">
                                     <Text flex="1">{t('header.settings.telemetry.essential')}</Text>
                                     <Switch isChecked={isAllowAnalytics} isDisabled />
@@ -145,8 +160,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 >
                                     {t('header.settings.telemetry.essentialLink')} <Icon as={MdOpenInNew} />
                                 </Link>
-                            </Box>
-                            <Box mb="3">
+
                                 <Box display="flex" mb="1">
                                     <Text flex="1">{t('header.settings.telemetry.additional')}</Text>
                                     <Switch

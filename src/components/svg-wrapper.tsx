@@ -1,12 +1,20 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
-import { useRootDispatch, useRootSelector } from '../redux';
-import { clearSelected, setActive, setMode, setRefreshNodes, setRefreshEdges } from '../redux/runtime/runtime-slice';
-import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
-import SvgCanvas from './svg-canvas-graph';
+import { RuntimeMode } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
+import { useRootDispatch, useRootSelector } from '../redux';
+import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
+import {
+    clearSelected,
+    setActive,
+    setMode,
+    setRefreshNodes,
+    setRefreshEdges,
+    setKeepLastPath,
+} from '../redux/runtime/runtime-slice';
+import SvgCanvas from './svg-canvas-graph';
 import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { Size, useWindowSize } from '../util/hooks';
@@ -20,7 +28,7 @@ const SvgWrapper = () => {
         dispatch(saveGraph(graph.current.export()));
     };
 
-    const { mode, active, selected, theme } = useRootSelector(state => state.runtime);
+    const { mode, lastTool, active, selected, keepLastPath, theme } = useRootSelector(state => state.runtime);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const graph = React.useRef(window.graph);
 
@@ -64,8 +72,13 @@ const SvgWrapper = () => {
             refreshAndSave();
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
-            if (mode.startsWith('line')) dispatch(setMode('free'));
+            if (mode.startsWith('line')) {
+                dispatch(setMode('free'));
+                // also turn keepLastPath off to exit keeping drawing lines
+                if (keepLastPath) dispatch(setKeepLastPath(false));
+            }
 
+            // set initial position of the pointer, this is used in handleBackgroundMove
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);
             if (!e.shiftKey) {
@@ -127,6 +140,8 @@ const SvgWrapper = () => {
                     y: svgViewBoxMin.y + ((d * svgViewBoxZoom) / 100) * y_factor,
                 })
             );
+        } else if (e.key === 'f' && lastTool) {
+            dispatch(setMode(lastTool as RuntimeMode));
         }
     });
 
@@ -143,7 +158,7 @@ const SvgWrapper = () => {
             width={width}
             viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
                 (height * svgViewBoxZoom) / 100
-            } `}
+            }`}
             onPointerDown={handleBackgroundDown}
             onPointerMove={handleBackgroundMove}
             onPointerUp={handleBackgroundUp}

@@ -252,6 +252,10 @@
         "settings": {
             "title": "設置",
             "pro": "這是一個暫時免費的 PRO 功能！",
+            "preference": {
+                "title": "偏好",
+                "keepLastPath": "在下一次操作中持續畫線段直到點擊背景"
+            },
             "procedures":{
                 "title": "过程",
                 "translate": {

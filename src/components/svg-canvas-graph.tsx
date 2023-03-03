@@ -29,6 +29,7 @@ const SvgCanvas = () => {
         refresh: { nodes: refreshNodes, edges: refreshEdges },
         mode,
         active,
+        keepLastPath,
         theme,
     } = useRootSelector(state => state.runtime);
     const { svgViewBoxZoom } = useRootSelector(state => state.param);
@@ -85,7 +86,7 @@ const SvgCanvas = () => {
         e.stopPropagation();
 
         if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
-            dispatch(setMode('free'));
+            if (!keepLastPath) dispatch(setMode('free'));
 
             const prefixs = ['stn_core_', 'virtual_circle_'];
             prefixs.forEach(prefix => {
@@ -150,23 +151,6 @@ const SvgCanvas = () => {
 
     return (
         <>
-            {nodes.map(n => {
-                const { node, x, y, type } = n;
-                const MiscNodeComponent = miscNodes[type].component;
-                return (
-                    <MiscNodeComponent
-                        id={node}
-                        key={node}
-                        x={x}
-                        y={y}
-                        // @ts-expect-error
-                        attrs={n[type]}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-            })}
             {danglingLines.map(edge => {
                 const [source, target] = graph.current.extremities(edge);
                 const sourceAttr = graph.current.getNodeAttributes(source);
@@ -231,6 +215,23 @@ const SvgCanvas = () => {
                         styleType={style}
                         styleAttrs={styleAttr}
                         handleClick={handleEdgeClick}
+                    />
+                );
+            })}
+            {nodes.map(n => {
+                const { node, x, y, type } = n;
+                const MiscNodeComponent = miscNodes[type].component;
+                return (
+                    <MiscNodeComponent
+                        id={node}
+                        key={node}
+                        x={x}
+                        y={y}
+                        // @ts-expect-error
+                        attrs={n[type]}
+                        handlePointerDown={handlePointerDown}
+                        handlePointerMove={handlePointerMove}
+                        handlePointerUp={handlePointerUp}
                     />
                 );
             })}

@@ -255,6 +255,10 @@
         "settings": {
             "title": "Settings",
             "pro": "This is PRO feature and is free for a limited time!",
+            "preference": {
+                "title": "Preference",
+                "keepLastPath": "Keep drawing lines until clicking on the background in the next move"
+            },
             "procedures":{
                 "title": "Procedures",
                 "translate": {

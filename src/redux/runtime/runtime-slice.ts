@@ -8,6 +8,9 @@ import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
  * All of them can be initiated with default value.
  */
 interface RuntimeState {
+    /**
+     * Current selection (nodes and edges id, possible multiple selection).
+     */
     selected: string[];
     active: ActiveType | undefined;
     /**
@@ -18,6 +21,16 @@ interface RuntimeState {
         edges: Record<string, never>;
     };
     mode: RuntimeMode;
+    /**
+     * The last tool used by the user.
+     * Will be undefined on first load.
+     * Will never be free!
+     */
+    lastTool: Omit<RuntimeMode, 'free'> | undefined;
+    /**
+     * Never set runtime.mode to free after placing edges.
+     */
+    keepLastPath: boolean;
     theme: Theme;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
@@ -30,6 +43,8 @@ const initialState: RuntimeState = {
         edges: {},
     },
     mode: 'free',
+    lastTool: undefined,
+    keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
     globalAlerts: {},
 };
@@ -59,7 +74,11 @@ const runtimeSlice = createSlice({
             state.refresh.edges = {};
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
+            if (state.mode !== 'free') state.lastTool = state.mode;
             state.mode = action.payload;
+        },
+        setKeepLastPath: (state, action: PayloadAction<boolean>) => {
+            state.keepLastPath = action.payload;
         },
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
@@ -90,6 +109,7 @@ export const {
     setRefreshNodes,
     setRefreshEdges,
     setMode,
+    setKeepLastPath,
     setTheme,
     setGlobalAlert,
     closeGlobalAlert,

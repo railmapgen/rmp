@@ -252,6 +252,10 @@
         "settings": {
             "title": "설정",
             "pro": "잠시 무료 PRO 기능입니다!",
+            "preference": {
+                "title": "Preference",
+                "keepLastPath": "Keep drawing lines until clicking on the background in the next move"
+            },
             "procedures":{
                 "title": "Procedures",
                 "translate": {
