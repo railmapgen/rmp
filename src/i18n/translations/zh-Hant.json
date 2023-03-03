@@ -2,6 +2,8 @@
     "color": "顏色",
     "warning": "警告",
     "cancel": "取消",
+    "apply": "應用",
+    "remove": "移除",
 
     "colorModal": {
         "title": "選擇顏色",
@@ -250,11 +252,29 @@
         "settings": {
             "title": "設置",
             "pro": "這是一個暫時免費的 PRO 功能！",
-            "changeType": {
-                "title": "批量修改車站種類",
-                "changeFrom": "將此類型的所有車站：",
-                "changeTo": "轉換為這個類型的車站：",
-                "info": "修改車站類型會移除所有獨特屬性除了名稱。保存再操作！"
+            "procedures":{
+                "title": "过程",
+                "translate": {
+                    "title": "轉化節點坐標",
+                    "content": "將以下偏移加到所有節點的x和y上：",
+                    "x": "橫坐標",
+                    "y": "縱坐標"
+                },
+                "scale": {
+                    "title": "縮放節點坐標",
+                    "content": "將所有節點的x和y乘以以下值：",
+                    "factor": "縮放因子"
+                },
+                "changeType": {
+                    "title": "批量修改車站種類",
+                    "changeFrom": "將此類型的所有車站：",
+                    "changeTo": "轉換為這個類型的車站：",
+                    "info": "修改車站類型會移除所有獨特屬性除了名稱。保存再操作！"
+                },
+                "removeLines": {
+                    "title": "移除所有純色線段",
+                    "content": "移除具有此顏色的所有線段： "
+                }
             },
             "telemetry": {
                 "title": "遙測",

@@ -2,6 +2,8 @@
     "color": "颜色",
     "warning": "警告",
     "cancel": "取消",
+    "apply": "应用",
+    "remove": "移除",
 
     "colorModal": {
         "title": "选择颜色",
@@ -250,11 +252,29 @@
         "settings": {
             "title": "设置",
             "pro": "这是一个暂时免费的 PRO 功能！",
-            "changeType": {
-                "title": "批量修改车站种类",
-                "changeFrom": "将此类型的所有车站：",
-                "changeTo": "转换为这个类型的车站：",
-                "info": "修改车站类型会移除所有独特属性除了名称。保存再操作！"
+            "procedures":{
+                "title": "过程",
+                "translate": {
+                    "title": "转化节点坐标",
+                    "content": "将以下偏移加到所有节点的x和y上：",
+                    "x": "横坐标",
+                    "y": "纵坐标"
+                },
+                "scale": {
+                    "title": "缩放节点坐标",
+                    "content": "将所有节点的x和y乘以以下值：",
+                    "factor": "缩放因子"
+                },
+                "changeType": {
+                    "title": "批量修改车站种类",
+                    "changeFrom": "将此类型的所有车站：",
+                    "changeTo": "转换为这个类型的车站：",
+                    "info": "修改车站类型会移除所有独特属性除了名称。保存再操作！"
+                },
+                "removeLines": {
+                    "title": "移除所有纯色线段",
+                    "content": "移除具有此颜色的所有线段： "
+                }
             },
             "telemetry": {
                 "title": "遥测",

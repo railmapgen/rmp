@@ -2,6 +2,8 @@
     "color": "색깔",
     "warning": "경고",
     "cancel": "취소",
+    "apply": "Apply",
+    "remove": "Remove",
 
     "colorModal": {
         "title": "색깔 선택",
@@ -250,11 +252,29 @@
         "settings": {
             "title": "설정",
             "pro": "잠시 무료 PRO 기능입니다!",
-            "changeType": {
-                "title": "역의 종류를 대량으로 수정",
-                "changeFrom": "이 유형의 모든 역:",
-                "changeTo": "이 유형의 역으로 변환:",
-                "info": "역 유형을 변경하면 이름을 제외한 모든 고유한 속성이 제거됩니다.저장했다가 다시 실행!"
+            "procedures":{
+                "title": "Procedures",
+                "translate": {
+                    "title": "Translate nodes' coordinates",
+                    "content": "Add the following offset to all nodes' x and y:",
+                    "x": "X axis",
+                    "y": "Y axis"
+                },
+                "scale": {
+                    "title": "Scale nodes' coordinates",
+                    "content": "Multiply the following value to all nodes' x and y:",
+                    "factor": "Scale factor"
+                },
+                "changeType": {
+                    "title": "역의 종류를 대량으로 수정",
+                    "changeFrom": "이 유형의 모든 역:",
+                    "changeTo": "이 유형의 역으로 변환:",
+                    "info": "역 유형을 변경하면 이름을 제외한 모든 고유한 속성이 제거됩니다.저장했다가 다시 실행!"
+                },
+                "removeLines": {
+                    "title": "Remove lines with single color",
+                    "content": "Remove lines that have this color: "
+                }
             },
             "telemetry": {
                 "title": "원격 계측",

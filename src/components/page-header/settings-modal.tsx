@@ -2,7 +2,9 @@ import React from 'react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useTranslation } from 'react-i18next';
 import {
+    Badge,
     Box,
+    Button,
     Icon,
     Link,
     Modal,
@@ -13,48 +15,39 @@ import {
     ModalOverlay,
     StackDivider,
     Switch,
+    SystemStyleObject,
     Text,
-    VStack,
-    useColorModeValue,
-    Badge,
     Tooltip,
+    useColorModeValue,
+    VStack,
 } from '@chakra-ui/react';
-import { MdOpenInNew } from 'react-icons/md';
-import { RmgSelect } from '@railmapgen/rmg-components';
-import { StationType } from '../../constants/stations';
-import { useRootSelector, useRootDispatch } from '../../redux';
+import { MdOpenInNew, MdReadMore } from 'react-icons/md';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTelemetryApp } from '../../redux/app/app-slice';
-import { setRefreshNodes, setRefreshEdges } from '../../redux/runtime/runtime-slice';
-import { saveGraph } from '../../redux/param/param-slice';
-import stations from '../svgs/stations/stations';
-import { changeStationsTypeInBatch } from '../../util/change-types';
+import {
+    ChangeTypeModal,
+    RemoveLinesWithSingleColorModal,
+    ScaleNodesModal,
+    TranslateNodesModal,
+} from './procedures-modal';
+
+const procedureButtonStyle: SystemStyleObject = {
+    width: '100%',
+    justifyContent: 'space-between',
+};
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
-    const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
-        dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
-    const graph = React.useRef(window.graph);
     const linkColour = useColorModeValue('primary.500', 'primary.300');
 
-    const availableStationOptions = Object.fromEntries(
-        Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-    ) as { [k in StationType]: string };
-    const [oldStnType, setOldStnType] = React.useState(Object.keys(stations).at(0)! as StationType);
-    const [newStnType, setNewStnType] = React.useState(undefined as StationType | undefined);
-    React.useEffect(() => {
-        if (newStnType) {
-            changeStationsTypeInBatch(graph.current, oldStnType, newStnType);
-            hardRefresh();
-        }
-    }, [newStnType]);
+    const [isTranslateNodesOpen, setIsTranslateNodesOpen] = React.useState(false);
+    const [isScaleNodesOpen, setIsScaleNodesOpen] = React.useState(false);
+    const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
+    const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
-
     const {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
@@ -72,37 +65,65 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         <Box width="100%" mb="3">
                             <Box display="flex" alignItems="center">
                                 <Text as="b" fontSize="xl">
-                                    {t('header.settings.changeType.title')}
+                                    {t('header.settings.procedures.title')}
                                 </Text>
-                                <Tooltip label={t('header.settings.pro')}>
-                                    <Badge
-                                        ml="1"
-                                        color="gray.50"
-                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                    >
-                                        PRO
-                                    </Badge>
-                                </Tooltip>
                             </Box>
                             <Box mt="3">
-                                <Text>{t('header.settings.changeType.changeFrom')}</Text>
-                                <RmgSelect
-                                    options={availableStationOptions}
-                                    defaultValue={oldStnType}
-                                    onChange={({ target: { value } }) => setOldStnType(value as StationType)}
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsTranslateNodesOpen(true)}
+                                >
+                                    {t('header.settings.procedures.translate.title')}
+                                </Button>
+                                <TranslateNodesModal
+                                    isOpen={isTranslateNodesOpen}
+                                    onClose={() => setIsTranslateNodesOpen(false)}
                                 />
-                                <Text>{t('header.settings.changeType.changeTo')}</Text>
-                                <RmgSelect
-                                    options={availableStationOptions}
-                                    disabledOptions={[oldStnType]}
-                                    value={newStnType}
-                                    onChange={({ target: { value } }) => setNewStnType(value as StationType)}
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsScaleNodesOpen(true)}
+                                >
+                                    {t('header.settings.procedures.scale.title')}
+                                </Button>
+                                <ScaleNodesModal isOpen={isScaleNodesOpen} onClose={() => setIsScaleNodesOpen(false)} />
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsChangeTypeOpen(true)}
+                                >
+                                    <Box>
+                                        {t('header.settings.procedures.changeType.title')}
+                                        <Tooltip label={t('header.settings.pro')}>
+                                            <Badge
+                                                ml="1"
+                                                color="gray.50"
+                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                            >
+                                                PRO
+                                            </Badge>
+                                        </Tooltip>
+                                    </Box>
+                                </Button>
+                                <ChangeTypeModal isOpen={isChangeTypeOpen} onClose={() => setIsChangeTypeOpen(false)} />
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsRemoveLinesWithSingleColorOpen(true)}
+                                >
+                                    {t('header.settings.procedures.removeLines.title')}
+                                </Button>
+                                <RemoveLinesWithSingleColorModal
+                                    isOpen={isRemoveLinesWithSingleColorOpen}
+                                    onClose={() => setIsRemoveLinesWithSingleColorOpen(false)}
                                 />
-                                <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
-                                    {t('header.settings.changeType.info')}
-                                </Text>
                             </Box>
                         </Box>
+
                         <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">
                                 {t('header.settings.telemetry.title')}
