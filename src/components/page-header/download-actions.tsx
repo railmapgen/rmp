@@ -1,14 +1,16 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Button,
     Checkbox,
     HStack,
     Icon,
     IconButton,
+    Link,
     Menu,
     MenuButton,
-    MenuList,
     MenuItem,
+    MenuList,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -17,21 +19,21 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
-    Link,
+    useColorModeValue,
 } from '@chakra-ui/react';
 import { MdDownload, MdImage, MdOpenInNew, MdSave } from 'react-icons/md';
-import { useTranslation } from 'react-i18next';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { MiscNodeType } from '../../constants/nodes';
 import store from '../../redux';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import TermsAndConditionsModal from './terms-and-conditions';
-import { MiscNodeType } from '../../constants/nodes';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
 
     const graph = React.useRef(window.graph);
+    const bgColor = useColorModeValue('white', 'gray.800');
 
     const [format, setFormat] = React.useState('png' as 'png' | 'svg');
     const formatOptions = {
@@ -101,7 +103,7 @@ export default function DownloadActions() {
         // Chrome will stretch the image if the following width and height are not set
         elem.setAttribute('width', width.toString());
         elem.setAttribute('height', height.toString());
-        // copy attributes from css to each elem in the new cloned svg
+        // copy attributes from css to each elem in the newly cloned svg
         Object.entries({
             '.rmp-name__zh': ['font-family'],
             '.rmp-name__en': ['font-family'],
@@ -135,9 +137,9 @@ export default function DownloadActions() {
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        // white background
+        // set background, respect to dark mode
         if (!isTransparent) {
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
 
