@@ -111,4 +111,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_Tf4drXXk4j","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"virtual","virtual":{}}},{"key":"misc_node_tl5B2E-qFH","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"virtual","virtual":{}}}],"edges":[{"key":"line_amQZxTi0rW","source":"misc_node_Tf4drXXk4j","target":"misc_node_tl5B2E-qFH","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{"offset":0},"style":"single-color","single-color":{"color":["shanghai","sh1","#E4002B","#fff"]},"reconcileId":""}}]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":6}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('6 -> 7', () => {
+        // gzmtr-basic will have a tram field while shmetro-basic-2020 won't.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_UhPXorSlbo","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"gzmtr-basic","gzmtr-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"],"lineCode":"1","stationCode":"01","open":true,"secondaryNames":["",""]}}},{"key":"stn_QxSE1Wncyi","attributes":{"visible":true,"zIndex":0,"x":10,"y":10,"type":"shmetro-basic-2020","shmetro-basic-2020":{"names":["车站","Stn"],"rotate":0,"color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":6}';
+        const newParam = UPGRADE_COLLECTION[6](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_UhPXorSlbo","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"gzmtr-basic","gzmtr-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"],"lineCode":"1","stationCode":"01","open":true,"secondaryNames":["",""],"tram":false}}},{"key":"stn_QxSE1Wncyi","attributes":{"visible":true,"zIndex":0,"x":10,"y":10,"type":"shmetro-basic-2020","shmetro-basic-2020":{"names":["车站","Stn"],"rotate":0,"color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":7}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

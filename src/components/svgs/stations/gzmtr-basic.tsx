@@ -80,6 +80,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         stationCode = defaultGzmtrBasicStationAttributes.stationCode,
         open = defaultGzmtrBasicStationAttributes.open,
         secondaryNames = defaultGzmtrBasicStationAttributes.secondaryNames,
+        tram = defaultGzmtrBasicStationAttributes.tram,
     } = attrs[StationType.GzmtrBasic] ?? defaultGzmtrBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -130,7 +131,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
+            <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
                 <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
                 <g
                     ref={textRef}
@@ -228,6 +229,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
             stationCode,
             open,
             ...secondaryNames,
+            tram,
             // bbox will only be computed after first render and won't cause this to update another time
             textWidth,
             secondaryTextWidth,
@@ -251,6 +253,7 @@ export interface GzmtrBasicStationAttributes extends StationAttributes, Attribut
      */
     open: boolean;
     secondaryNames: [string, string];
+    tram: boolean;
 }
 
 const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
@@ -262,6 +265,7 @@ const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     stationCode: '01',
     open: true,
     secondaryNames: ['', ''],
+    tram: false,
 };
 
 const gzmtrBasicStationFields = [
@@ -389,6 +393,20 @@ const gzmtrBasicStationFields = [
             const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
             // set value
             attrs.secondaryNames[1] = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'switch',
+        label: 'panel.details.station.gzmtrBasic.tram',
+        oneLine: true,
+        isChecked: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).tram,
+        onChange: (val: boolean, attrs_: GzmtrBasicStationAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
+            // set value
+            attrs.tram = val;
             // return modified attrs
             return attrs;
         },

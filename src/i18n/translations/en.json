@@ -144,7 +144,8 @@
                     "stationCode": "Station code",
                     "open": "Is opened",
                     "secondaryNameZh": "Secondary name in Chinese",
-                    "secondaryNameEn": "Secondary name in English"
+                    "secondaryNameEn": "Secondary name in English",
+                    "tram": "Tram"
                 },
                 "gzmtrInt": {
                     "displayName": "Guangzhou Metro interchange station",

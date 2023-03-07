@@ -141,7 +141,8 @@
                     "stationCode": "车站编号",
                     "open": "是否开通",
                     "secondaryNameZh": "中文第二名称",
-                    "secondaryNameEn": "英文第二名称"
+                    "secondaryNameEn": "英文第二名称",
+                    "tram": "有轨电车"
                 },
                 "gzmtrInt": {
                     "displayName": "广州地铁换乘车站",

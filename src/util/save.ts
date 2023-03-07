@@ -19,7 +19,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 6;
+export const CURRENT_VERSION = 7;
 
 // Load shanghai template only if param is missing or invalid.
 const getInitialParam = async () =>
@@ -167,7 +167,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         return JSON.stringify({ ...p, version: 4, graph: graph.export() });
     },
     4: param => {
-        // Add secondary names ans open in gzmtr-basic and gzmtr-int. #140
+        // Add secondary names and open in gzmtr-basic and gzmtr-int. #140
         const p = JSON.parse(param);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         graph.import(p?.graph);
@@ -202,5 +202,20 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeEdgeAttributes(edge, { [LinePathType.Simple]: attr });
             });
         return JSON.stringify({ ...p, version: 6, graph: graph.export() });
+    },
+    6: param => {
+        // Add the tram option to gzmtr-basic. #142
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GzmtrBasic)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.tram = false;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 7, graph: graph.export() });
     },
 };

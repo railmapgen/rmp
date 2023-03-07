@@ -141,7 +141,8 @@
                     "stationCode": "역 번호",
                     "open": "개통여부",
                     "secondaryNameZh": "한자 제2명칭",
-                    "secondaryNameEn": "영문 제2명칭"
+                    "secondaryNameEn": "영문 제2명칭",
+                    "tram": "Tram"
                 },
                 "gzmtrInt": {
                     "displayName": "광저우 지하철 환승역",

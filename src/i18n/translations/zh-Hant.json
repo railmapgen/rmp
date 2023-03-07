@@ -141,7 +141,8 @@
                     "stationCode": "車站編碼",
                     "open": "是否開通",
                     "secondaryNameZh": "中文第二名稱",
-                    "secondaryNameEn": "英文第二名稱"
+                    "secondaryNameEn": "英文第二名稱",
+                    "tram": "輕軌"
                 },
                 "gzmtrInt": {
                     "displayName": "廣州地鐵換乘車站",
