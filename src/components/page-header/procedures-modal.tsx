@@ -231,11 +231,9 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
             .filterEdges(
                 (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
                     attr.style === LineStyleType.SingleColor &&
-                    JSON.stringify(attr[LineStyleType.SingleColor]) === JSON.stringify(theme)
+                    JSON.stringify(attr[LineStyleType.SingleColor]!.color) === JSON.stringify(theme)
             )
-            .forEach(edge => {
-                graph.current.dropEdge(edge);
-            });
+            .forEach(edge => graph.current.dropEdge(edge));
         dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
         onClose();
