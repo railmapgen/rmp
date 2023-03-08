@@ -1,6 +1,7 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import {
@@ -11,7 +12,7 @@ import {
     setMode,
     clearSelected,
 } from '../redux/runtime/runtime-slice';
-import { StnId, LineId, MiscNodeId } from '../constants/constants';
+import { StnId, LineId, MiscNodeId, Events } from '../constants/constants';
 import { LineStyleType, LinePathType, ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import allStations from './svgs/stations/stations';
 import { linePaths, lineStyles } from './svgs/lines/lines';
@@ -25,6 +26,10 @@ const SvgCanvas = () => {
     const dispatch = useRootDispatch();
 
     const {
+        telemetry: { project: isAllowProjectTelemetry },
+    } = useRootSelector(state => state.app);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param);
+    const {
         selected,
         refresh: { nodes: refreshNodes, edges: refreshEdges },
         mode,
@@ -32,7 +37,6 @@ const SvgCanvas = () => {
         keepLastPath,
         theme,
     } = useRootSelector(state => state.runtime);
-    const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const refreshAndSave = () => {
         dispatch(setRefreshNodes());
         dispatch(setRefreshEdges());
@@ -105,6 +109,7 @@ const SvgCanvas = () => {
                         [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',
                     });
+                    if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
             });
         } else if (mode === 'free') {

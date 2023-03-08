@@ -88,4 +88,6 @@ export enum CategoriesType {
  */
 export enum Events {
     APP_LOAD = 'APP_LOAD',
+    ADD_STATION = 'ADD_STATION',
+    ADD_LINE = 'ADD_LINE',
 }

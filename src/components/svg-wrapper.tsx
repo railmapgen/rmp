@@ -1,7 +1,8 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
-import { RuntimeMode } from '../constants/constants';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { Events, RuntimeMode } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -17,8 +18,8 @@ import {
 import SvgCanvas from './svg-canvas-graph';
 import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { Size, useWindowSize } from '../util/hooks';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
+import { Size, useWindowSize } from '../util/hooks';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -28,8 +29,11 @@ const SvgWrapper = () => {
         dispatch(saveGraph(graph.current.export()));
     };
 
-    const { mode, lastTool, active, selected, keepLastPath, theme } = useRootSelector(state => state.runtime);
+    const {
+        telemetry: { project: isAllowProjectTelemetry },
+    } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { mode, lastTool, active, selected, keepLastPath, theme } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
@@ -56,6 +60,7 @@ const SvgWrapper = () => {
             });
             // console.log('down', active, offset);
             refreshAndSave();
+            if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
         } else if (mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
@@ -70,6 +75,7 @@ const SvgWrapper = () => {
                 [type]: JSON.parse(JSON.stringify(miscNodes[type].defaultAttrs)),
             });
             refreshAndSave();
+            if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
             if (mode.startsWith('line')) {
