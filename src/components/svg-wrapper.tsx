@@ -117,11 +117,27 @@ const SvgWrapper = () => {
         }
     });
 
-    // const [svgViewBoxZoom, setSvgViewBoxZoom] = React.useState(100);
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) dispatch(setSvgViewBoxZoom(svgViewBoxZoom + 10));
-        else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) dispatch(setSvgViewBoxZoom(svgViewBoxZoom - 10));
+        let newSvgViewBoxZoom = svgViewBoxZoom;
+        if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) newSvgViewBoxZoom = svgViewBoxZoom + 10;
+        else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) newSvgViewBoxZoom = svgViewBoxZoom - 10;
+        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+
+        // the position the pointer points will still be in the same place after zooming
+        const { x, y } = getMousePosition(e);
+        const bbox = e.currentTarget.getBoundingClientRect();
+        // calculate the proportion of the pointer in the canvas
+        const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
+        // the final svgViewBoxMin will be the position the pointer points minus
+        // the left/top part of the new canvas (new width/height times the proportion)
+        dispatch(
+            setSvgViewBoxMin({
+                x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+                y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+            })
+        );
     });
+
     const handleKeyDown = useEvent((e: React.KeyboardEvent<SVGSVGElement>) => {
         // tabIndex need to be on the element to make onKeyDown worked
         // https://www.delftstack.com/howto/react/onkeydown-react/
