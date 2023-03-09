@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/rmp/static/css/main.03f5944c.css",
-    "main.js": "/rmp/static/js/main.11754022.js",
+    "main.js": "/rmp/static/js/main.5985ceae.js",
     "WindowHeader.js": "/rmp/static/js/WindowHeader.c890c06a.chunk.js",
     "ToolsPanel.js": "/rmp/static/js/ToolsPanel.2aa6922e.chunk.js",
-    "SvgWrapper.js": "/rmp/static/js/SvgWrapper.dbb152f4.chunk.js",
+    "SvgWrapper.js": "/rmp/static/js/SvgWrapper.4fb1c564.chunk.js",
     "DetailsPanel.js": "/rmp/static/js/DetailsPanel.5efb5f59.chunk.js",
     "template.js": "/rmp/static/js/template.5cb8f732.chunk.js",
     "static/js/9121.f46bae5e.chunk.js": "/rmp/static/js/9121.f46bae5e.chunk.js",
@@ -164,7 +164,7 @@
     "palettes109.js": "/rmp/static/js/palettes109.133dd4d6.chunk.js",
     "palettes110.js": "/rmp/static/js/palettes110.e2a827fb.chunk.js",
     "palettes111.js": "/rmp/static/js/palettes111.8b92b1bc.chunk.js",
-    "template0.js": "/rmp/static/js/template0.c1dd883a.chunk.js",
+    "template0.js": "/rmp/static/js/template0.282cded7.chunk.js",
     "template1.js": "/rmp/static/js/template1.315c8a39.chunk.js",
     "template2.js": "/rmp/static/js/template2.3c8e0877.chunk.js",
     "static/js/8870.2b6f0395.chunk.js": "/rmp/static/js/8870.2b6f0395.chunk.js",
@@ -220,10 +220,10 @@
     "static/media/1F1F5-1F1F1.svg": "/rmp/static/media/1F1F5-1F1F1.0f2053ce10733fcf148d.svg",
     "static/media/1F1EF-1F1F5.svg": "/rmp/static/media/1F1EF-1F1F5.5bd4e29b292e65a558dd.svg",
     "main.03f5944c.css.map": "/rmp/static/css/main.03f5944c.css.map",
-    "main.11754022.js.map": "/rmp/static/js/main.11754022.js.map",
+    "main.5985ceae.js.map": "/rmp/static/js/main.5985ceae.js.map",
     "WindowHeader.c890c06a.chunk.js.map": "/rmp/static/js/WindowHeader.c890c06a.chunk.js.map",
     "ToolsPanel.2aa6922e.chunk.js.map": "/rmp/static/js/ToolsPanel.2aa6922e.chunk.js.map",
-    "SvgWrapper.dbb152f4.chunk.js.map": "/rmp/static/js/SvgWrapper.dbb152f4.chunk.js.map",
+    "SvgWrapper.4fb1c564.chunk.js.map": "/rmp/static/js/SvgWrapper.4fb1c564.chunk.js.map",
     "DetailsPanel.5efb5f59.chunk.js.map": "/rmp/static/js/DetailsPanel.5efb5f59.chunk.js.map",
     "palettes0.982bc677.chunk.js.map": "/rmp/static/js/palettes0.982bc677.chunk.js.map",
     "palettes1.8a75daaa.chunk.js.map": "/rmp/static/js/palettes1.8a75daaa.chunk.js.map",
@@ -344,6 +344,6 @@
   },
   "entrypoints": [
     "static/css/main.03f5944c.css",
-    "static/js/main.11754022.js"
+    "static/js/main.5985ceae.js"
   ]
 }
