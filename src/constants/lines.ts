@@ -9,6 +9,7 @@ import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
+import { RiverAttributes } from '../components/svgs/lines/styles/river';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -29,6 +30,7 @@ export enum LineStyleType {
     ChinaRailway = 'china-railway',
     BjsubwayTram = 'bjsubway-tram',
     DualColor = 'dual-color',
+    River = 'river',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -38,6 +40,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
     [LineStyleType.DualColor]?: DualColorAttributes;
+    [LineStyleType.River]?: RiverAttributes;
 }
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
@@ -68,15 +71,16 @@ export interface LineStyleComponentProps<
     id: LineId;
     type: LinePathType;
     path: `${'m' | 'M'}${string}`;
+    styleAttrs: T;
     /**
      * Indicate whether or not this line is created in progress.
-     * If yes, we need to set pointer-events to none
+     * If true, we need to set pointer-events to none
      * so elementsFromPoint will return the underlying station instead of this line.
+     * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
      * https://stackoverflow.com/a/49174322
      */
     newLine: boolean;
     handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
-    styleAttrs: T;
 }
 
 /**

@@ -172,6 +172,39 @@ const DetailsPanel = () => {
             )
         );
         const style = graph.current.getEdgeAttribute(selectedFirst, 'style');
+        const styleAttrs = graph.current.getEdgeAttribute(selectedFirst, style);
+        fields.push(
+            ...lineStyles[style].fields
+                // TODO: filter will complain the type
+                // @ts-expect-error
+                .filter(field => field.type !== 'custom')
+                .map(
+                    // @ts-expect-error
+                    field =>
+                        ({
+                            // TODO: fix this
+                            type: field.type,
+                            label: t(field.label),
+                            // @ts-ignore-error
+                            value: field.value(styleAttrs),
+                            // @ts-ignore-error
+                            options: field.options,
+                            // @ts-ignore-error
+                            disabledOptions: field.disabledOptions && field.disabledOptions(styleAttrs),
+                            // @ts-ignore-error
+                            validator: field.validator,
+                            onChange: (val: string | number) => {
+                                graph.current.mergeEdgeAttributes(selectedFirst, {
+                                    // @ts-ignore-error
+                                    [style]: field.onChange(val, styleAttrs),
+                                });
+                                // console.log(graph.current.getEdgeAttributes(selectedFirst));
+                                dispatch(setRefreshEdges());
+                                dispatch(saveGraph(graph.current.export()));
+                            },
+                        } as RmgFieldsField)
+                )
+        );
         // TODO: filter will complain the type
         // @ts-expect-error
         fields.push(...lineStyles[style].fields.filter(field => field.type === 'custom'));

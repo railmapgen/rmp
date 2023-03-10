@@ -8,6 +8,7 @@ import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
 import chinaRailway from './styles/china-railway';
 import bjsubwayTram from './styles/bjsubway-tram';
 import dualColor from './styles/dual-color';
+import river from './styles/river';
 
 export const linePaths = {
     [LinePathType.Simple]: simplePath,
@@ -22,4 +23,5 @@ export const lineStyles = {
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwayTram]: bjsubwayTram,
     [LineStyleType.DualColor]: dualColor,
+    [LineStyleType.River]: river,
 };

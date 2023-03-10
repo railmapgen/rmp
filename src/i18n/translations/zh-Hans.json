@@ -211,6 +211,10 @@
                 "dualColor": {
                     "displayName": "上海磁悬浮样式",
                     "swap": "切换颜色"
+                },
+                "river": {
+                    "displayName": "河流样式",
+                    "width": "宽度"
                 }
             },
             "edge": {},

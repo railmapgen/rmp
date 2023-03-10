@@ -214,6 +214,10 @@
                 "dualColor": {
                     "displayName": "Shanghai Maglev style",
                     "swap": "Swap color"
+                },
+                "river": {
+                    "displayName": "River style",
+                    "width": "Width"
                 }
             },
             "edge": {},
