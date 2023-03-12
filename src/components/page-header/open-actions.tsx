@@ -5,7 +5,7 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra
 import { nanoid } from 'nanoid';
 import { useRootDispatch } from '../../redux';
 import { ParamState, saveGraph, setFullState } from '../../redux/param/param-slice';
-import { clearSelected, setRefreshNodes, setRefreshEdges } from '../../redux/runtime/runtime-slice';
+import { clearSelected, setRefreshNodes, setRefreshEdges, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { LinePathType, LineStyleType } from '../../constants/lines';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { InterchangeInfo } from '../panels/details/interchange-field';
@@ -46,7 +46,7 @@ export default function OpenActions() {
         console.log('OpenActions.handleUploadRMG():: received file', file);
 
         if (file?.type !== 'application/json') {
-            // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
+            dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
             console.error('OpenActions.handleUploadRMG():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
@@ -164,9 +164,7 @@ export default function OpenActions() {
                                             JSON.stringify(linePaths[LinePathType.Diagonal].defaultAttrs)
                                         ),
                                         style: LineStyleType.SingleColor,
-                                        [LineStyleType.SingleColor]: JSON.parse(
-                                            JSON.stringify(lineStyles[LineStyleType.SingleColor].defaultAttrs)
-                                        ),
+                                        [LineStyleType.SingleColor]: { color: theme },
                                         reconcileId: '',
                                     }
                                 );
@@ -175,7 +173,7 @@ export default function OpenActions() {
 
                 refreshAndSave();
             } catch (err) {
-                // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
+                dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
                 console.error(
                     'OpenActions.handleUploadRMG():: Unknown error occurred while parsing the uploaded file',
                     err
@@ -192,7 +190,7 @@ export default function OpenActions() {
         console.log('OpenActions.handleUpload():: received file', file);
 
         if (file?.type !== 'application/json') {
-            // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
+            dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
             console.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
@@ -208,7 +206,7 @@ export default function OpenActions() {
 
                 refreshAndSave();
             } catch (err) {
-                // dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
+                dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
                 console.error(
                     'OpenActions.handleUpload():: Unknown error occurred while parsing the uploaded file',
                     err
