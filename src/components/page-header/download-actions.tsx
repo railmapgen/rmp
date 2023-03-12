@@ -115,7 +115,7 @@ export default function DownloadActions() {
                 styleSet.forEach(styleName => {
                     el.setAttribute(styleName, style.getPropertyValue(styleName));
                 });
-                el.removeAttribute('class');
+                el.classList.remove(className);
             });
         });
 

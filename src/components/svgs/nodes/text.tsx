@@ -51,7 +51,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                     lineHeight={lineHeight}
                     textAnchor={textAnchor}
                     dominantBaseline={dominantBaseline}
-                    grow="down" // this will be neglected
+                    grow="down" // this will be ignored
                 />
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
