@@ -1,23 +1,26 @@
 import React from 'react';
 import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, useColorMode } from '@chakra-ui/react';
-import { MdDarkMode, MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
+import { MdDarkMode, MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
-import { useRootSelector } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about-modal';
 import { ZoomPopover } from './zoom-popover';
 import SettingsModal from './settings-modal';
+import { undo, redoAction } from '../../redux/runtime/undo-slice';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
     const {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
+    const { past, future } = useRootSelector(state => state.undo);
     const { toggleColorMode } = useColorMode();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
@@ -62,6 +65,23 @@ export default function WindowHeader() {
             />
 
             <HStack ml="auto">
+                <IconButton
+                    size="sm"
+                    variant="ghost"
+                    aria-label="Undo"
+                    icon={<MdUndo />}
+                    disabled={past.length === 0}
+                    onClick={() => dispatch(undo())}
+                />
+                <IconButton
+                    size="sm"
+                    variant="ghost"
+                    aria-label="Redo"
+                    icon={<MdRedo />}
+                    disabled={future.length === 0}
+                    onClick={() => dispatch(redoAction())}
+                />
+
                 <ZoomPopover />
 
                 <OpenActions />

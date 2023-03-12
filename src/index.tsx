@@ -11,7 +11,7 @@ import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
 import { setTelemetryApp } from './redux/app/app-slice';
-import { ParamState, setFullState } from './redux/param/param-slice';
+import { ParamState, setFullStateAction } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
 
 declare global {
@@ -55,7 +55,7 @@ upgrade(param).then(param => {
     const { version, ...save } = JSON.parse(param) as RMPSave;
     window.graph = graph.import(save.graph as any);
     const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
-    store.dispatch(setFullState(state));
+    store.dispatch(setFullStateAction(state));
 
     renderApp();
 });

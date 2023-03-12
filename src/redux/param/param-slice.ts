@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 
@@ -30,25 +30,47 @@ const initialState: ParamState = {
     svgViewBoxMin: { x: 0, y: 0 },
 };
 
+export const setFullState = createAction<ParamState>('runtime/setFullState');
+export const saveGraph =
+    createAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>('runtime/saveGraph');
+
 const paramSlice = createSlice({
     name: 'param',
     initialState,
     reducers: {
-        setFullState: (state, action: PayloadAction<ParamState>) => {
-            // https://stackoverflow.com/questions/60002846/how-can-you-replace-entire-state-in-redux-toolkit-reducer
-            return { ...action.payload };
-        },
-        saveGraph: (state, action: PayloadAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>) => {
-            state.graph = JSON.stringify(action.payload);
-        },
+        // setFullStateAction: (state, action: PayloadAction<ParamState>) => {
+        //     // https://stackoverflow.com/questions/60002846/how-can-you-replace-entire-state-in-redux-toolkit-reducer
+        //     return { ...action.payload };
+        // },
+        // saveGraph: (
+        //     state,
+        //     action: PayloadAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>
+        // ) => {
+        //     state.graph = JSON.stringify(action.payload);
+        // },
         setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
             state.svgViewBoxZoom = action.payload;
         },
         setSvgViewBoxMin: (state, action: PayloadAction<{ x: number; y: number }>) => {
             state.svgViewBoxMin = action.payload;
         },
+        saveGraphNoEffects: (
+            state,
+            action: PayloadAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>
+        ) => {
+            state.graph = JSON.stringify(action.payload);
+        },
+    },
+    extraReducers: builder => {
+        builder
+            .addCase(setFullState, (state, action) => {
+                return { ...action.payload };
+            })
+            .addCase(saveGraph, (state, action) => {
+                state.graph = JSON.stringify(action.payload);
+            });
     },
 });
 
-export const { setFullState, saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } = paramSlice.actions;
+export const { saveGraphNoEffects, setSvgViewBoxZoom, setSvgViewBoxMin } = paramSlice.actions;
 export default paramSlice.reducer;

@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
+import { undoAction, redoAction } from './undo-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -17,8 +18,8 @@ interface RuntimeState {
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
      */
     refresh: {
-        nodes: Record<string, never>;
-        edges: Record<string, never>;
+        nodes: number;
+        edges: number;
     };
     mode: RuntimeMode;
     /**
@@ -28,7 +29,7 @@ interface RuntimeState {
      */
     lastTool: Omit<RuntimeMode, 'free'> | undefined;
     /**
-     * Never set runtime.mode to free after placing edges.
+     * If this is true, we will never set runtime.mode to free after placing edges.
      */
     keepLastPath: boolean;
     theme: Theme;
@@ -39,13 +40,13 @@ const initialState: RuntimeState = {
     selected: [],
     active: undefined,
     refresh: {
-        nodes: {},
-        edges: {},
+        nodes: Date.now(),
+        edges: Date.now(),
     },
     mode: 'free',
     lastTool: undefined,
     keepLastPath: false,
-    theme: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+    theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
     globalAlerts: {},
 };
 
@@ -68,10 +69,10 @@ const runtimeSlice = createSlice({
             state.active = action.payload;
         },
         setRefreshNodes: state => {
-            state.refresh.nodes = {};
+            state.refresh.nodes = Date.now();
         },
         setRefreshEdges: state => {
-            state.refresh.edges = {};
+            state.refresh.edges = Date.now();
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             if (state.mode !== 'free') state.lastTool = state.mode;
@@ -98,6 +99,17 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
+    },
+    extraReducers: builder => {
+        builder
+            .addCase(undoAction, state => {
+                state.refresh.nodes = Date.now();
+                state.refresh.edges = Date.now();
+            })
+            .addCase(redoAction, state => {
+                state.refresh.nodes = Date.now();
+                state.refresh.edges = Date.now();
+            });
     },
 });
 

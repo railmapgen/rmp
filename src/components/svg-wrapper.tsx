@@ -20,9 +20,12 @@ import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
+// import { useGraphEvents } from '../util/use-graph-events';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
+    const graph = React.useRef(window.graph);
+    // useGraphEvents();
     const refreshAndSave = () => {
         dispatch(setRefreshNodes());
         dispatch(setRefreshEdges());
@@ -34,7 +37,6 @@ const SvgWrapper = () => {
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const { mode, lastTool, active, selected, keepLastPath, theme } = useRootSelector(state => state.runtime);
-    const graph = React.useRef(window.graph);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
