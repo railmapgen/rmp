@@ -2,8 +2,8 @@
     "color": "색깔",
     "warning": "경고",
     "cancel": "취소",
-    "apply": "Apply",
-    "remove": "Remove",
+    "apply": "사용",
+    "remove": "삭제",
 
     "colorModal": {
         "title": "색깔 선택",
@@ -22,11 +22,11 @@
 
     "panel": {
         "tools": {
-            "showLess": "Show less",
+            "showLess": "적게 표시",
             "section": {
-                "lineDrawing": "Line drawing",
-                "stations": "Stations",
-                "miscellaneousNodes": "Miscellaneous nodes"
+                "lineDrawing": "선 그리기",
+                "stations": "역",
+                "miscellaneousNodes": "기타 노드"
             }
         },
         "details": {
@@ -82,7 +82,7 @@
                     "nameEn": "영문 노선 명칭"
                 },
                 "facilities": {
-                    "displayName": "Facilities"
+                    "displayName": "시설"
                 },
                 "text": {
                     "displayName": "임의 글자",
@@ -213,8 +213,8 @@
                     "swap": "색을 바꾸기"
                 },
                 "river": {
-                    "displayName": "River style",
-                    "width": "Width"
+                    "displayName": "강 스타일",
+                    "width": "폭"
                 }
             },
             "edge": {},
@@ -258,21 +258,21 @@
             "title": "설정",
             "pro": "잠시 무료 PRO 기능입니다!",
             "preference": {
-                "title": "Preference",
-                "keepLastPath": "Keep drawing lines until clicking on the background in the next move"
+                "title": "선호",
+                "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다"
             },
             "procedures":{
-                "title": "Procedures",
+                "title": "절차",
                 "translate": {
-                    "title": "Translate nodes' coordinates",
-                    "content": "Add the following offset to all nodes' x and y:",
-                    "x": "X axis",
-                    "y": "Y axis"
+                    "title": "노드 좌표 변환",
+                    "content": "모든 노드의 x 및 y에 다음 오프셋을 추가:",
+                    "x": "X축",
+                    "y": "Y축"
                 },
                 "scale": {
-                    "title": "Scale nodes' coordinates",
-                    "content": "Multiply the following value to all nodes' x and y:",
-                    "factor": "Scale factor"
+                    "title": "스케일 노드의 좌표",
+                    "content": "모든 노드의 x 및 y에 다음 값을 곱하:",
+                    "factor": "스케일 팩터"
                 },
                 "changeType": {
                     "title": "역의 종류를 대량으로 수정",
