@@ -3,7 +3,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 
-const MAX_UNDO_SIZE = 49;
+export const MAX_UNDO_SIZE = 49;
 
 /**
  * ParamState contains all the data that a save has, except for the `version` key.
