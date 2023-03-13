@@ -6,7 +6,7 @@ import { Events, RuntimeMode } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } from '../redux/param/param-slice';
+import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin, undoAction, redoAction } from '../redux/param/param-slice';
 import {
     clearSelected,
     setActive,
@@ -20,12 +20,10 @@ import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
-// import { useGraphEvents } from '../util/use-graph-events';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
-    // useGraphEvents();
     const refreshAndSave = () => {
         dispatch(setRefreshNodes());
         dispatch(setRefreshEdges());
@@ -166,6 +164,10 @@ const SvgWrapper = () => {
             );
         } else if (e.key === 'f' && lastTool) {
             dispatch(setMode(lastTool as RuntimeMode));
+        } else if (e.key === 'z' && e.ctrlKey) {
+            dispatch(undoAction());
+        } else if (e.key === 'y' && e.ctrlKey) {
+            dispatch(redoAction());
         }
     });
 

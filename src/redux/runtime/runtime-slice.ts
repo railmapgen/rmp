@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ActiveType, RuntimeMode, Theme } from '../../constants/constants';
-import { undoAction, redoAction } from './undo-slice';
+import { undoAction, redoAction } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.

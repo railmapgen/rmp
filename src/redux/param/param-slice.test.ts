@@ -9,7 +9,7 @@ describe('ParamSlice', () => {
     it('Can save graph as expected', () => {
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         const nextState = appReducer(realStore.param, saveGraph(graph.export()));
-        expect(nextState.graph).toEqual(
+        expect(nextState.present).toEqual(
             '{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]}'
         );
     });

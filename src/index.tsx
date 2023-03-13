@@ -2,16 +2,16 @@ import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { I18nextProvider } from 'react-i18next';
+import { ChakraProvider } from '@chakra-ui/react';
 import { MultiDirectedGraph } from 'graphology';
 import { rmgChakraTheme } from '@railmapgen/rmg-components';
-import { ChakraProvider } from '@chakra-ui/react';
 import AppRoot from './components/app-root';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
 import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
 import { setTelemetryApp } from './redux/app/app-slice';
-import { ParamState, setFullStateAction } from './redux/param/param-slice';
+import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
 
 declare global {
@@ -19,8 +19,6 @@ declare global {
         graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     }
 }
-
-const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 
 const renderApp = () => {
     const root = createRoot(document.getElementById('root') as HTMLDivElement);
@@ -52,10 +50,10 @@ const param = localStorage.getItem('rmp__param');
 // Upgrade param and inject to ParamState.
 // top-level await is not possible here
 upgrade(param).then(param => {
-    const { version, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = graph.import(save.graph as any);
-    const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
-    store.dispatch(setFullStateAction(state));
+    const { version, graph, ...save } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(graph);
+    const state: ParamState = { ...save, present: graph, past: [], future: [] };
+    store.dispatch(setFullState(state));
 
     renderApp();
 });

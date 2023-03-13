@@ -1,5 +1,16 @@
 import React from 'react';
-import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList, useColorMode } from '@chakra-ui/react';
+import {
+    Heading,
+    IconButton,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    Wrap,
+    WrapItem,
+    useColorMode,
+    useColorModeValue,
+} from '@chakra-ui/react';
 import { MdDarkMode, MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
@@ -7,12 +18,12 @@ import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/r
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
+import { undoAction, redoAction } from '../../redux/param/param-slice';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about-modal';
 import { ZoomPopover } from './zoom-popover';
 import SettingsModal from './settings-modal';
-import { undo, redoAction } from '../../redux/runtime/undo-slice';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -20,7 +31,8 @@ export default function WindowHeader() {
     const {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
-    const { past, future } = useRootSelector(state => state.undo);
+    const { past, future } = useRootSelector(state => state.param);
+    const bgColor = useColorModeValue('white', 'gray.800');
     const { toggleColorMode } = useColorMode();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
@@ -41,7 +53,7 @@ export default function WindowHeader() {
     };
 
     return (
-        <RmgWindowHeader>
+        <RmgWindowHeader style={{ background: bgColor }}>
             <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
                 {t('header.about.rmp')}
             </Heading>
@@ -64,65 +76,83 @@ export default function WindowHeader() {
                 }
             />
 
-            <HStack ml="auto">
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Undo"
-                    icon={<MdUndo />}
-                    disabled={past.length === 0}
-                    onClick={() => dispatch(undo())}
-                />
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Redo"
-                    icon={<MdRedo />}
-                    disabled={future.length === 0}
-                    onClick={() => dispatch(redoAction())}
-                />
+            <Wrap ml="auto">
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Undo"
+                        icon={<MdUndo />}
+                        disabled={past.length === 0}
+                        onClick={() => dispatch(undoAction())}
+                    />
+                </WrapItem>
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Redo"
+                        icon={<MdRedo />}
+                        disabled={future.length === 0}
+                        onClick={() => dispatch(redoAction())}
+                    />
+                </WrapItem>
 
-                <ZoomPopover />
+                <WrapItem>
+                    <ZoomPopover />
+                </WrapItem>
 
-                <OpenActions />
+                <WrapItem>
+                    <OpenActions />
+                </WrapItem>
 
-                <DownloadActions />
+                <WrapItem>
+                    <DownloadActions />
+                </WrapItem>
 
-                <Menu>
-                    <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
-                    <MenuList>
-                        {SUPPORTED_LANGUAGES.map(lang => (
-                            <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
-                                {LANGUAGE_NAMES[lang][lang]}
-                            </MenuItem>
-                        ))}
-                    </MenuList>
-                </Menu>
+                <WrapItem>
+                    <Menu>
+                        <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
+                        <MenuList>
+                            {SUPPORTED_LANGUAGES.map(lang => (
+                                <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
+                                    {LANGUAGE_NAMES[lang][lang]}
+                                </MenuItem>
+                            ))}
+                        </MenuList>
+                    </Menu>
+                </WrapItem>
 
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Dark Mode"
-                    icon={<MdDarkMode />}
-                    onClick={toggleColorMode}
-                />
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Dark Mode"
+                        icon={<MdDarkMode />}
+                        onClick={toggleColorMode}
+                    />
+                </WrapItem>
 
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Settings"
-                    icon={<MdSettings />}
-                    onClick={() => setIsSettingsModalOpen(true)}
-                />
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Settings"
+                        icon={<MdSettings />}
+                        onClick={() => setIsSettingsModalOpen(true)}
+                    />
+                </WrapItem>
 
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Help"
-                    icon={<MdHelp />}
-                    onClick={() => setIsAboutModalOpen(true)}
-                />
-            </HStack>
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Help"
+                        icon={<MdHelp />}
+                        onClick={() => setIsAboutModalOpen(true)}
+                    />
+                </WrapItem>
+            </Wrap>
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />

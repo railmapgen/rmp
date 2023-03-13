@@ -4,14 +4,12 @@ import { stringifyParam } from '../util/save';
 import appReducer from './app/app-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
-import undoReducer from './runtime/undo-slice';
 
 const store = configureStore({
     reducer: {
         app: appReducer,
         param: paramReducer,
         runtime: runtimeReducer,
-        undo: undoReducer,
     },
     // undo slice contains MultiDirectedGraph instance, it is not meant to be serialized nor persisted
     middleware: getDefaultMiddleware => getDefaultMiddleware({ serializableCheck: false }),
