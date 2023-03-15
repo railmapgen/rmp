@@ -1,4 +1,4 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { ActionReducerMapBuilder, createAction, createSlice, original, PayloadAction } from '@reduxjs/toolkit';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
@@ -11,10 +11,12 @@ export const MAX_UNDO_SIZE = 49;
  *
  * `past` and `future` contains the undo and redo stack.
  * It is similar to redux-undo but due to window.graph, we are implementing it again.
+ * https://redux.js.org/usage/implementing-undo-history
+ * https://redux-toolkit.js.org/usage/immer-reducers
+ *
  * https://stackoverflow.com/questions/72807148/how-to-access-state-of-one-slice-in-reducer-of-another-slice-using-redux-toolkit
  * https://stackoverflow.com/questions/61138775/redux-toolkit-have-two-slices-reference-each-others-actions-in-extrareducers
  * https://redux-toolkit.js.org/api/createSlice#extrareducers
- * https://redux.js.org/usage/implementing-undo-history
  * https://redux.js.org/usage/structuring-reducers/beyond-combinereducers
  *
  * https://stackoverflow.com/questions/63516716/redux-toolkit-is-it-possible-to-dispatch-other-actions-from-the-same-slice-in-o
@@ -55,15 +57,14 @@ const paramSlice = createSlice({
     initialState,
     reducers: {
         setFullState: (state, action: PayloadAction<ParamState>) => {
-            // https://stackoverflow.com/questions/60002846/how-can-you-replace-entire-state-in-redux-toolkit-reducer
-            return { ...action.payload };
+            return JSON.parse(JSON.stringify(action.payload));
         },
         saveGraph: (state, action: PayloadAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>) => {
             state.future = [];
             state.past.push(state.present);
             // limit the maximum undo stack size to prevent insane memory usage
             if (state.past.length > MAX_UNDO_SIZE) state.past.shift();
-            state.present = action.payload;
+            state.present = JSON.parse(JSON.stringify(action.payload));
         },
         setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
             state.svgViewBoxZoom = action.payload;
@@ -72,29 +73,27 @@ const paramSlice = createSlice({
             state.svgViewBoxMin = action.payload;
         },
     },
-    extraReducers: builder => {
+    extraReducers: (builder: ActionReducerMapBuilder<ParamState>) => {
         builder
             .addCase(undoAction, state => {
                 if (state.past.length === 0) return;
                 const previous = state.past.pop()!;
                 state.future.unshift(state.present);
                 state.present = previous;
-                // window.graph = previous;
-                window.graph.clear();
-                // window.graph.import(previous);
-                window.graph.import(JSON.parse(JSON.stringify(previous)));
-                // window.graph.import(MultiDirectedGraph.from(previous).export());
+                // window.graph = previous; // useRef won't get the new one
+                window.graph.clear(); // so we have no choice but to clear and reimport the graph
+                // window.graph.import(previous); // no Immer proxy in graph, it will freeze the attributes
+                window.graph.import(JSON.parse(JSON.stringify(original(previous)!)));
             })
             .addCase(redoAction, state => {
                 if (state.future.length === 0) return;
                 const next = state.future.shift()!;
                 state.past.push(state.present);
                 state.present = next;
-                // window.graph = next;
-                window.graph.clear();
-                // window.graph.import(next);
-                window.graph.import(JSON.parse(JSON.stringify(next)));
-                // window.graph.import(MultiDirectedGraph.from(next).export());
+                // window.graph = next; // useRef won't get the new one
+                window.graph.clear(); // so we have no choice but to clear and reimport the graph
+                // window.graph.import(next); // no Immer proxy in graph, it will freeze the attributes
+                window.graph.import(JSON.parse(JSON.stringify(original(next)!)));
             });
     },
 });
