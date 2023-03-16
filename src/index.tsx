@@ -3,8 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { I18nextProvider } from 'react-i18next';
 import { MultiDirectedGraph } from 'graphology';
-import { rmgChakraTheme } from '@railmapgen/rmg-components';
-import { ChakraProvider } from '@chakra-ui/react';
 import AppRoot from './components/app-root';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from './constants/constants';
 import i18n from './i18n/config';
@@ -27,11 +25,9 @@ const renderApp = () => {
     root.render(
         <StrictMode>
             <Provider store={store}>
-                <ChakraProvider theme={rmgChakraTheme}>
-                    <I18nextProvider i18n={i18n}>
-                        <AppRoot />
-                    </I18nextProvider>
-                </ChakraProvider>
+                <I18nextProvider i18n={i18n}>
+                    <AppRoot />
+                </I18nextProvider>
             </Provider>
         </StrictMode>
     );

@@ -1,5 +1,4 @@
 import { ColourHex } from '@railmapgen/rmg-palette-resources';
-import { rmgChakraTheme } from '@railmapgen/rmg-components';
 
 export default class ColourUtil {
     private static hexToRgb(hex: ColourHex): [number, number, number] {
@@ -16,23 +15,3 @@ export default class ColourUtil {
         }, 0);
     }
 }
-
-export const findNearestColour = (hex: ColourHex): string => {
-    const colourDb: Record<string, Record<string, ColourHex> | ColourHex> = rmgChakraTheme.colors;
-
-    const [nearestColour] = Object.entries(colourDb).reduce(
-        (acc, cur) => {
-            if (cur[0].includes('Alpha') || cur[0] === 'current') {
-                return acc;
-            } else if (typeof cur[1] === 'string') {
-                const dist = ColourUtil.euclideanDistance(hex, cur[1]);
-                return dist < acc[1] ? [cur[0], dist] : acc;
-            } else {
-                const dist = ColourUtil.euclideanDistance(hex, cur[1]['600']);
-                return dist < acc[1] ? [cur[0], dist] : acc;
-            }
-        },
-        ['brand', Infinity]
-    );
-    return nearestColour;
-};
