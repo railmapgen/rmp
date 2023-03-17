@@ -1,8 +1,8 @@
 import React from 'react';
 import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdDarkMode, MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
+import { MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
-import { RmgEnvBadge, RmgWindowHeader, useReadyConfig, useRmgColourMode } from '@railmapgen/rmg-components';
+import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
@@ -18,7 +18,6 @@ export default function WindowHeader() {
     const {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
-    const { colourMode, setColourMode } = useRmgColourMode();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -78,15 +77,6 @@ export default function WindowHeader() {
                         ))}
                     </MenuList>
                 </Menu>
-
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Dark Mode"
-                    icon={<MdDarkMode />}
-                    // FIXME: unable to change to 'system'
-                    onClick={() => setColourMode(colourMode === 'dark' ? 'light' : 'dark')}
-                />
 
                 <IconButton
                     size="sm"
