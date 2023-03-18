@@ -75,7 +75,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * <ShmetroBasicStation /> specific props.
+ * ShmetroBasicStation specific props.
  */
 export interface ShmetroBasicStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
@@ -150,7 +150,7 @@ const shmetroBasicStationFields = [
 ];
 
 const shmetroBasicStationIcon = (
-    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+    <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
     </svg>
 );

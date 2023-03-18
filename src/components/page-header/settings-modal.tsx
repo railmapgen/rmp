@@ -6,6 +6,7 @@ import {
     Box,
     Button,
     Icon,
+    Kbd,
     Link,
     Modal,
     ModalBody,
@@ -16,12 +17,18 @@ import {
     StackDivider,
     Switch,
     SystemStyleObject,
+    Table,
+    Tbody,
+    Td,
     Text,
+    Th,
+    Thead,
     Tooltip,
+    Tr,
     useColorModeValue,
     VStack,
 } from '@chakra-ui/react';
-import { MdOpenInNew, MdReadMore } from 'react-icons/md';
+import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { setTelemetryApp } from '../../redux/app/app-slice';
@@ -76,6 +83,96 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         onChange={({ target: { checked } }) => dispatch(setKeepLastPath(checked))}
                                     />
                                 </Box>
+                            </Box>
+                        </Box>
+
+                        <Box width="100%" mb="3">
+                            <Text as="b" fontSize="xl">
+                                {t('header.settings.shortcuts.title')}
+                            </Text>
+                            <Box mt="3">
+                                <Table>
+                                    <Thead>
+                                        <Tr>
+                                            <Th>{t('header.settings.shortcuts.keys')}</Th>
+                                            <Th>{t('header.settings.shortcuts.description')}</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>f</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.f')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <MdArrowUpward />
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.arrowUpward')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <MdArrowBack />
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.arrowBack')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <MdArrowForward />
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.arrowForward')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <MdArrowDownward />
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.arrowDownward')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>i</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.i')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>j</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.j')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>k</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.k')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>l</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.l')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>shift</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.shift')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>alt</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.alt')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>delete</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.delete')}</Td>
+                                        </Tr>
+                                    </Tbody>
+                                </Table>
                             </Box>
                         </Box>
 

@@ -90,4 +90,6 @@ export enum Events {
     APP_LOAD = 'APP_LOAD',
     ADD_STATION = 'ADD_STATION',
     ADD_LINE = 'ADD_LINE',
+    SAVE_PROJECT = 'SAVE_PROJECT',
+    EXPORT_IMAGE = 'EXPORT_IMAGE',
 }

@@ -69,14 +69,17 @@ export interface LineStyleComponentProps<
     T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
 > {
     id: LineId;
+    /**
+     * Sometimes you might need to know the path type and call different generating algorithms.
+     */
     type: LinePathType;
     path: `${'m' | 'M'}${string}`;
     styleAttrs: T;
     /**
+     * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
      * Indicate whether or not this line is created in progress.
      * If true, we need to set pointer-events to none
      * so elementsFromPoint will return the underlying station instead of this line.
-     * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
      * https://stackoverflow.com/a/49174322
      */
     newLine: boolean;

@@ -23,15 +23,19 @@ import {
 } from '@chakra-ui/react';
 import { MdDownload, MdImage, MdOpenInNew, MdSave } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { Events } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
-import store from '../../redux';
+import store, { useRootSelector } from '../../redux';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
-
+    const {
+        telemetry: { project: isAllowProjectTelemetry },
+    } = useRootSelector(state => state.app);
     const graph = React.useRef(window.graph);
     const bgColor = useColorModeValue('white', 'gray.800');
 
@@ -75,6 +79,8 @@ export default function DownloadActions() {
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
 
     const handleDownloadJson = () => {
+        if (isAllowProjectTelemetry)
+            rmgRuntime.event(Events.SAVE_PROJECT, { '#nodes': graph.current.order, '#edges': graph.current.size });
         const param = stringifyParam(store.getState().param);
         downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', param);
     };
@@ -82,6 +88,8 @@ export default function DownloadActions() {
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = () => {
         setIsDownloadModalOpen(false);
+        if (isAllowProjectTelemetry)
+            rmgRuntime.event(Events.EXPORT_IMAGE, { '#nodes': graph.current.order, '#edges': graph.current.size });
 
         // get the minimum and maximum of the graph
         const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);

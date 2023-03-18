@@ -8,10 +8,9 @@ import {
     MenuList,
     Wrap,
     WrapItem,
-    useColorMode,
     useColorModeValue,
 } from '@chakra-ui/react';
-import { MdDarkMode, MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
+import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/rmg-translate';
@@ -33,7 +32,6 @@ export default function WindowHeader() {
     } = useRootSelector(state => state.app);
     const { past, future } = useRootSelector(state => state.param);
     const bgColor = useColorModeValue('white', 'gray.800');
-    const { toggleColorMode } = useColorMode();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -121,16 +119,6 @@ export default function WindowHeader() {
                             ))}
                         </MenuList>
                     </Menu>
-                </WrapItem>
-
-                <WrapItem>
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
-                        aria-label="Dark Mode"
-                        icon={<MdDarkMode />}
-                        onClick={toggleColorMode}
-                    />
                 </WrapItem>
 
                 <WrapItem>

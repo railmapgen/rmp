@@ -1,7 +1,7 @@
 import { StationType } from '../../../constants/stations';
-import shmetroIntStation from './shmetro-int';
 import shmetroBasicStation from './shmetro-basic';
 import shmetroBasic2020Station from './shmetro-basic-2020';
+import shmetroIntStation from './shmetro-int';
 import gzmtrBasicStation from './gzmtr-basic';
 import gzmtrIntStation from './gzmtr-int';
 import bjsubwayBasicStation from './bjsubway-basic';
