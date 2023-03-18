@@ -162,6 +162,19 @@ const SvgWrapper = () => {
                     y: svgViewBoxMin.y + ((d * svgViewBoxZoom) / 100) * y_factor,
                 })
             );
+        } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
+            const d = 10;
+            const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * d;
+            const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * d;
+            if (selected.length > 0) {
+                selected
+                    .filter(s => graph.current.hasNode(s))
+                    .forEach(s => {
+                        graph.current.updateNodeAttribute(s, 'x', x => (x ?? 0) + x_factor);
+                        graph.current.updateNodeAttribute(s, 'y', y => (y ?? 0) + y_factor);
+                        refreshAndSave();
+                    });
+            }
         } else if (e.key === 'f' && lastTool) {
             dispatch(setMode(lastTool as RuntimeMode));
         }

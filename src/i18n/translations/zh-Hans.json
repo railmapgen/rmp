@@ -261,6 +261,23 @@
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景"
             },
+            "shortcuts": {
+                "title": "快捷键",
+                "keys": "键",
+                "description": "描述",
+                "f": "使用上一个工具。",
+                "arrowUpward": "将画布向上移动一点。",
+                "arrowBack": "将画布向左移动一点。",
+                "arrowDownward": "将画布向下移动一点。",
+                "arrowForward": "将画布向右移动一点。",
+                "i": "将所选站点向上移动一点。",
+                "j": "将所选站点向左移动一点。",
+                "k": "将所选站点向下移动一点。",
+                "l": "将所选站点向右移动一点。",
+                "shift": "多选。",
+                "alt": "精确移动。",
+                "delete": "删除所有选择。"
+            },
             "procedures":{
                 "title": "过程",
                 "translate": {

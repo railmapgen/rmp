@@ -1,9 +1,9 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, StnId, CategoriesType } from './constants';
-import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
@@ -11,8 +11,8 @@ import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubw
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
-    ShmetroInt = 'shmetro-int',
     ShmetroBasic2020 = 'shmetro-basic-2020',
+    ShmetroInt = 'shmetro-int',
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
     BjsubwayBasic = 'bjsubway-basic',
@@ -20,9 +20,9 @@ export enum StationType {
 }
 
 export interface ExternalStationAttributes {
-    [StationType.ShmetroInt]?: ShmetroIntStationAttributes;
     [StationType.ShmetroBasic]?: ShmetroBasicStationAttributes;
     [StationType.ShmetroBasic2020]?: ShmetroBasic2020StationAttributes;
+    [StationType.ShmetroInt]?: ShmetroIntStationAttributes;
     [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
     [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;

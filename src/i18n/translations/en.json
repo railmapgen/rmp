@@ -264,6 +264,23 @@
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move"
             },
+            "shortcuts": {
+                "title": "Shortcuts",
+                "keys": "Keys",
+                "description": "Description",
+                "f": "Use the last tool.",
+                "arrowUpward": "Move the canvas up a little bit.",
+                "arrowBack": "Move the canvas left a little bit.",
+                "arrowDownward": "Move the canvas down a little bit.",
+                "arrowForward": "Move the canvas right a little bit.",
+                "i": "Move the selected stations up a little bit.",
+                "j": "Move the selected stations left a little bit.",
+                "k": "Move the selected stations down a little bit.",
+                "l": "Move the selected stations right a little bit.",
+                "shift": "Multiple selection.",
+                "alt": "Precise movement.",
+                "delete": "Delete all selection."
+            },
             "procedures":{
                 "title": "Procedures",
                 "translate": {
