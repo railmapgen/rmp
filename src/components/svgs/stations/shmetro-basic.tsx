@@ -55,14 +55,14 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
+                        fontSize={17}
+                        lineHeight={17.67}
                         grow="up"
                         className="rmp-name__zh"
                     />
                     <MultilineText
                         text={names[1].split('\\')}
-                        fontSize={10}
+                        fontSize={9}
                         lineHeight={10}
                         grow="down"
                         className="rmp-name__en"

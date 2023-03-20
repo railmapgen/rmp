@@ -68,14 +68,14 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 >
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
+                        fontSize={17}
+                        lineHeight={17.67}
                         grow="up"
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={10}
+                        text={names[1].split('\\').map(s => (nameOffsetX === 'right' ? ' ' : '') + s)}
+                        fontSize={9}
                         lineHeight={10}
                         grow="down"
                         className="rmp-name__en"
@@ -88,7 +88,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * <ShmetroIntStation /> specific props.
+ * ShmetroIntStation specific props.
  */
 export interface ShmetroIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
@@ -107,7 +107,7 @@ const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
     nameOffsetY: 'top',
     rotate: 0,
     height: 10,
-    width: 15,
+    width: 13,
 };
 
 const shmetroIntStationFields = [

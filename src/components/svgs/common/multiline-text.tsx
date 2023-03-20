@@ -32,7 +32,7 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
                 ))}
             </g>
         ),
-        [text.join(''), lineHeight, grow, dominantBaseline, JSON.stringify(otherSvgTextProps)]
+        [text.join('+'), lineHeight, grow, dominantBaseline, JSON.stringify(otherSvgTextProps)]
     );
 });
 

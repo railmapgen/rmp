@@ -9,7 +9,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { ColorField, AttributesWithColor } from '../../panels/details/color-field';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineText } from '../common/multiline-text';
 
 type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 
@@ -122,10 +122,10 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
                         id={`stn_core_${id}`}
-                        x="-2.5"
-                        y="-10"
-                        width="5"
-                        height="10"
+                        x="-2.33"
+                        y="-7.83"
+                        width="4.67"
+                        height="7.83"
                         stroke="none"
                         fill={color[2]}
                         onPointerDown={onPointerDown}
@@ -141,14 +141,14 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 >
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
+                        fontSize={17}
+                        lineHeight={17.67}
                         grow="up"
                         className="rmp-name__zh"
                     />
                     <MultilineText
                         text={names[1].split('\\')}
-                        fontSize={10}
+                        fontSize={9}
                         lineHeight={10}
                         grow="down"
                         className="rmp-name__en"
@@ -161,7 +161,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 };
 
 /**
- * <ShmetroBasic2020Station /> specific props.
+ * ShmetroBasic2020Station specific props.
  */
 export interface ShmetroBasic2020StationAttributes extends StationAttributes, AttributesWithColor {
     rotate: ROTATE;

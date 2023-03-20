@@ -56,7 +56,7 @@ const defaultPerpendicularPathAttributes: PerpendicularPathAttributes = {
     startFrom: 'from',
     offsetFrom: 0,
     offsetTo: 0,
-    roundCornerFactor: 7.5,
+    roundCornerFactor: 18.33,
 };
 
 const perpendicularFields = [

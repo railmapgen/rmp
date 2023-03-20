@@ -25,15 +25,15 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(2)`}>
-                <rect fill={color[2]} x="0" width={width} height="16" />
-                <text className="rmp-name__zh" textAnchor="middle" x={width / 2} y="14" fill={color[3]}>
+            <g id={id} transform={`translate(${x}, ${y})`}>
+                <rect fill={color[2]} width={width} height="21" />
+                <text className="rmp-name__zh" textAnchor="middle" x={width / 2} y="18" fill={color[3]} fontSize="21">
                     {num}
                 </text>
-                <text className="rmp-name__zh" x={width + 2} y="9" fontSize="10">
+                <text className="rmp-name__zh" x={width + 2} y="13" fontSize="14.67">
                     号线
                 </text>
-                <text className="rmp-name__en" x={width + 2} y="16" fontSize="6">
+                <text className="rmp-name__en" x={width + 4} y="20" fontSize="8">
                     Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}

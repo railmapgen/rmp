@@ -73,7 +73,7 @@ const defaultDiagonalPathAttributes: DiagonalPathAttributes = {
     startFrom: 'from',
     offsetFrom: 0,
     offsetTo: 0,
-    roundCornerFactor: 7.5,
+    roundCornerFactor: 10,
 };
 
 const diagonalFields = [
