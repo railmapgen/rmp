@@ -276,7 +276,9 @@
                 "l": "선택한 역을 조금 오른쪽으로 이동합니다.",
                 "shift": "다중 선택",
                 "alt": "정확한 이동",
-                "delete": "모든 선택 삭제"
+                "delete": "모든 선택 삭제",
+                "undo": "Undo.",
+                "redo": "Redo."
             },
             "procedures":{
                 "title": "절차",

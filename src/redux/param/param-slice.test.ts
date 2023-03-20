@@ -60,7 +60,6 @@ describe('ParamSlice', () => {
             },
             redoAction()
         );
-        console.log(nextState)
         expect(nextState.past.length).toEqual(1);
         expect(nextState.future.length).toEqual(MAX_UNDO_SIZE - 1);
         expect(nextState.present).toEqual(emptySerializedGraph);
