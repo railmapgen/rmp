@@ -37,7 +37,7 @@ export const ZoomPopover = () => {
                     aria-label="zoom"
                     variant="ghost"
                     size="sm"
-                    icon={<MdZoomOut />}
+                    icon={<MdZoomIn />}
                     onClick={() => setIsOpen(!isOpen)}
                 />
             </PopoverTrigger>

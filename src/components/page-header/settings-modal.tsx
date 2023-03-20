@@ -171,6 +171,18 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.delete')}</Td>
                                         </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>ctrl</Kbd>+<Kbd>z</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.undo')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>ctrl</Kbd>+<Kbd>y</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.redo')}</Td>
+                                        </Tr>
                                     </Tbody>
                                 </Table>
                             </Box>

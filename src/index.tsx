@@ -18,8 +18,6 @@ declare global {
     }
 }
 
-const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-
 const renderApp = () => {
     const root = createRoot(document.getElementById('root') as HTMLDivElement);
     root.render(
@@ -48,9 +46,9 @@ const param = localStorage.getItem('rmp__param');
 // Upgrade param and inject to ParamState.
 // top-level await is not possible here
 upgrade(param).then(param => {
-    const { version, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = graph.import(save.graph as any);
-    const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
+    const { version, graph, ...save } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(graph);
+    const state: ParamState = { ...save, present: graph, past: [], future: [] };
     store.dispatch(setFullState(state));
 
     renderApp();

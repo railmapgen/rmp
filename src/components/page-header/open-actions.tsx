@@ -4,12 +4,18 @@ import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
 import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { nanoid } from 'nanoid';
 import { useRootDispatch } from '../../redux';
-import { ParamState, saveGraph, setFullState } from '../../redux/param/param-slice';
+import {
+    ParamState,
+    setSvgViewBoxZoom,
+    setSvgViewBoxMin,
+    saveGraph,
+    setFullState,
+} from '../../redux/param/param-slice';
 import { clearSelected, setRefreshNodes, setRefreshEdges, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { LinePathType, LineStyleType } from '../../constants/lines';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { InterchangeInfo } from '../panels/details/interchange-field';
-import { linePaths, lineStyles } from '../svgs/lines/lines';
+import { linePaths } from '../svgs/lines/lines';
 import { GzmtrBasicStationAttributes } from '../svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../svgs/stations/gzmtr-int';
 import { ShmetroBasic2020StationAttributes } from '../svgs/stations/shmetro-basic-2020';
@@ -36,8 +42,8 @@ export default function OpenActions() {
     const handleNew = () => {
         dispatch(clearSelected());
         graph.current.clear();
-        const state: ParamState = { graph: '{}', svgViewBoxZoom: 100, svgViewBoxMin: { x: 0, y: 0 } };
-        dispatch(setFullState(state));
+        dispatch(setSvgViewBoxZoom(100));
+        dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
         refreshAndSave();
     };
 
@@ -201,7 +207,7 @@ export default function OpenActions() {
                 dispatch(clearSelected());
                 graph.current.clear();
                 graph.current.import(save.graph);
-                const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
+                const state: ParamState = { ...save, present: save.graph, past: [], future: [] };
                 dispatch(setFullState(state));
 
                 refreshAndSave();
@@ -220,13 +226,13 @@ export default function OpenActions() {
 
     const handleOpenTemplates = async (rmpSave: RMPSave) => {
         // templates may be obsolete and require upgrades
-        const { version, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave)));
+        const { version, graph: g, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
-        // details panel will complain unknown nodes or edges if last state is not cleared
+        // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
         graph.current.clear();
-        graph.current.import(save.graph);
-        const state: ParamState = { ...save, graph: JSON.stringify(save.graph) };
+        graph.current.import(g);
+        const state: ParamState = { ...save, present: g, past: [], future: [] };
         dispatch(setFullState(state));
 
         refreshAndSave();

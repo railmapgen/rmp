@@ -279,7 +279,9 @@
                 "l": "Move the selected stations right a little bit.",
                 "shift": "Multiple selection.",
                 "alt": "Precise movement.",
-                "delete": "Delete all selection."
+                "delete": "Delete all selection.",
+                "undo": "Undo.",
+                "redo": "Redo."
             },
             "procedures":{
                 "title": "Procedures",

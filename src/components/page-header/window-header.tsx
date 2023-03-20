@@ -1,12 +1,23 @@
 import React from 'react';
-import { Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { MdHelp, MdSettings, MdTranslate } from 'react-icons/md';
+import {
+    Heading,
+    IconButton,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    Wrap,
+    WrapItem,
+    useColorModeValue,
+} from '@chakra-ui/react';
+import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
-import { useRootSelector } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { undoAction, redoAction } from '../../redux/param/param-slice';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about-modal';
@@ -15,9 +26,12 @@ import SettingsModal from './settings-modal';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
     const {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
+    const { past, future } = useRootSelector(state => state.param);
+    const bgColor = useColorModeValue('white', 'gray.800');
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -37,7 +51,7 @@ export default function WindowHeader() {
     };
 
     return (
-        <RmgWindowHeader>
+        <RmgWindowHeader style={{ background: bgColor }}>
             <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
                 {t('header.about.rmp')}
             </Heading>
@@ -60,40 +74,73 @@ export default function WindowHeader() {
                 }
             />
 
-            <HStack ml="auto">
-                <ZoomPopover />
+            <Wrap ml="auto">
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Undo"
+                        icon={<MdUndo />}
+                        disabled={past.length === 0}
+                        onClick={() => dispatch(undoAction())}
+                    />
+                </WrapItem>
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Redo"
+                        icon={<MdRedo />}
+                        disabled={future.length === 0}
+                        onClick={() => dispatch(redoAction())}
+                    />
+                </WrapItem>
 
-                <OpenActions />
+                <WrapItem>
+                    <ZoomPopover />
+                </WrapItem>
 
-                <DownloadActions />
+                <WrapItem>
+                    <OpenActions />
+                </WrapItem>
 
-                <Menu>
-                    <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
-                    <MenuList>
-                        {SUPPORTED_LANGUAGES.map(lang => (
-                            <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
-                                {LANGUAGE_NAMES[lang][lang]}
-                            </MenuItem>
-                        ))}
-                    </MenuList>
-                </Menu>
+                <WrapItem>
+                    <DownloadActions />
+                </WrapItem>
 
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Settings"
-                    icon={<MdSettings />}
-                    onClick={() => setIsSettingsModalOpen(true)}
-                />
+                <WrapItem>
+                    <Menu>
+                        <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
+                        <MenuList>
+                            {SUPPORTED_LANGUAGES.map(lang => (
+                                <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
+                                    {LANGUAGE_NAMES[lang][lang]}
+                                </MenuItem>
+                            ))}
+                        </MenuList>
+                    </Menu>
+                </WrapItem>
 
-                <IconButton
-                    size="sm"
-                    variant="ghost"
-                    aria-label="Help"
-                    icon={<MdHelp />}
-                    onClick={() => setIsAboutModalOpen(true)}
-                />
-            </HStack>
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Settings"
+                        icon={<MdSettings />}
+                        onClick={() => setIsSettingsModalOpen(true)}
+                    />
+                </WrapItem>
+
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Help"
+                        icon={<MdHelp />}
+                        onClick={() => setIsAboutModalOpen(true)}
+                    />
+                </WrapItem>
+            </Wrap>
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
