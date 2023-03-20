@@ -58,6 +58,9 @@
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
             "node": {
+                "virtual": {
+                    "displayName": "虛擬節點"
+                },
                 "shmetroNumLineBadge": {
                     "displayName": "上海地鐵數字線路標識",
                     "num": "線路號"

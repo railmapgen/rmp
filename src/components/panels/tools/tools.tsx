@@ -92,7 +92,7 @@ const ToolsPanel = () => {
                             <Flex>
                                 <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
                                 <Text fontWeight="600" pl="1" alignSelf="center">
-                                    {isToolsExpanded ? t('Color') : undefined}
+                                    {isToolsExpanded ? t('color') : undefined}
                                 </Text>
                             </Flex>
                             <ColourModal

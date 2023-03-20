@@ -58,6 +58,9 @@
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",
             "node": {
+                "virtual": {
+                    "displayName": "가상 노드"
+                },
                 "shmetroNumLineBadge": {
                     "displayName": "상해 지하철 디지털 노선 표지",
                     "num": "노선 번호"
