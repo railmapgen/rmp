@@ -8,7 +8,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     const { num = defaultShmetroNumLineBadgeAttributes.num, color = defaultShmetroNumLineBadgeAttributes.color } =
         attrs ?? defaultShmetroNumLineBadgeAttributes;
 
-    const width = num >= 10 ? 17.5 : 14.5;
+    const width = num >= 10 ? 22.67 : 22.67;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
