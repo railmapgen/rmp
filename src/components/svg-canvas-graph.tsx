@@ -52,7 +52,7 @@ const SvgCanvas = () => {
 
         setOffset({ x, y });
 
-        dispatch(setActive(node)); // svg mouse event only
+        dispatch(setActive(node));
         // details panel only, remove all if this is not a multiple selection
         if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
         dispatch(addSelected(node)); // details panel only
@@ -110,17 +110,23 @@ const SvgCanvas = () => {
             dispatch(setRefreshEdges());
             dispatch(saveGraph(graph.current.export()));
         } else if (mode === 'free') {
-            // check the offset and if it's not 0, it must be a click not move
-            const { x, y } = getMousePosition(e);
-            if (offset.x - x === 0 && offset.y - y === 0) {
-                // display the details of current node/edge
-                dispatch(setActive(node)); // svg mouse event only
+            if (active) {
+                // the node is pointed down before
+                // check the offset and if it's not 0, it must be a click not move
+                const { x, y } = getMousePosition(e);
+                if (offset.x - x === 0 && offset.y - y === 0) {
+                    // display the details of current node on click
+                    dispatch(addSelected(node));
+                } else {
+                    // its a moving node operation, save the final coordinate
+                    dispatch(saveGraph(graph.current.export()));
+                }
             } else {
-                // its a moving node operation, save the final coordinate
-                dispatch(saveGraph(graph.current.export()));
+                // the node is just placed and should not trigger any save, only display the details
+                dispatch(addSelected(node));
             }
         }
-        dispatch(setActive(undefined)); // svg mouse event only
+        dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
