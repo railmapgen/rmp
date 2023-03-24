@@ -8,7 +8,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     const { num = defaultShmetroNumLineBadgeAttributes.num, color = defaultShmetroNumLineBadgeAttributes.color } =
         attrs ?? defaultShmetroNumLineBadgeAttributes;
 
-    const width = num >= 10 ? 22.67 : 22.67;
+    const width = num >= 10 ? 22.67 : 21;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -26,23 +26,29 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} width={width} height="21" />
-                <text className="rmp-name__zh" textAnchor="middle" x={width / 2} y="18" fill={color[3]} fontSize="21">
+                <rect fill={color[2]} width={width} height="22.67" />
+                <text
+                    className="rmp-name__zh"
+                    textAnchor="middle"
+                    x={width / 2}
+                    y="18.5"
+                    fill={color[3]}
+                    fontSize="21.33"
+                >
                     {num}
                 </text>
-                <text className="rmp-name__zh" x={width + 2} y="13" fontSize="14.67">
+                <text className="rmp-name__zh" x={width + 2} y="12" fontSize="14.67">
                     号线
                 </text>
-                <text className="rmp-name__en" x={width + 4} y="20" fontSize="8">
+                <text className="rmp-name__en" x={width + 4} y="21.5" fontSize="8">
                     Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
                     fill="white"
                     fillOpacity="0"
-                    x="0"
                     width={width}
-                    height="16"
+                    height="22.67"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
