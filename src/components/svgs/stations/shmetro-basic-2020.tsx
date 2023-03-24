@@ -3,15 +3,14 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
+    ROTATE,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
 } from '../../../constants/stations';
 import { ColorField, AttributesWithColor } from '../../panels/details/color-field';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
-
-type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
+import { MultilineText } from '../common/multiline-text';
 
 const ROTATE_CONST: {
     [rotate: number]: {
