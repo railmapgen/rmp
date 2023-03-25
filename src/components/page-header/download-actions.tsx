@@ -80,7 +80,7 @@ export default function DownloadActions() {
 
     const handleDownloadJson = () => {
         if (isAllowProjectTelemetry)
-            rmgRuntime.event(Events.SAVE_PROJECT, { '#nodes': graph.current.order, '#edges': graph.current.size });
+            rmgRuntime.event(Events.DOWNLOAD_PARAM, { '#nodes': graph.current.order, '#edges': graph.current.size });
         const param = stringifyParam(store.getState().param);
         downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', param);
     };
@@ -89,7 +89,10 @@ export default function DownloadActions() {
     const handleDownload = () => {
         setIsDownloadModalOpen(false);
         if (isAllowProjectTelemetry)
-            rmgRuntime.event(Events.EXPORT_IMAGE, { '#nodes': graph.current.order, '#edges': graph.current.size });
+            rmgRuntime.event(Events.DOWNLOAD_IMAGES, {
+                numberOfNodes: graph.current.order,
+                numberOfEdges: graph.current.size,
+            });
 
         // get the minimum and maximum of the graph
         const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
