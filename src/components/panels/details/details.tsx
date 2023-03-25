@@ -26,13 +26,13 @@ const nodes = { ...stations, ...miscNodes };
 const DetailsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const graph = React.useRef(window.graph);
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
         dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const { selected, mode } = useRootSelector(state => state.runtime);
-    const graph = React.useRef(window.graph);
 
     const handleClose = () => dispatch(clearSelected());
     const handleDuplicate = (selectedFirst: string) => {
@@ -57,18 +57,6 @@ const DetailsPanel = () => {
             }
         });
     };
-    // A helper method to remove all lines with the same color
-    // const handleRemoveEntireLine = (selectedFirst: string) => {
-    //     dispatch(clearSelected());
-    //     const theme = graph.current.getEdgeAttribute(selectedFirst, 'color');
-    //     const lines = graph.current.filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-    //         attr.color.every((v, i) => v === theme[i])
-    //     );
-    //     lines.forEach(line => {
-    //         graph.current.dropEdge(line);
-    //     });
-    //     hardRefresh();
-    // };
 
     // hide reconcile for now
     const [reconcileId, setReconcileId] = React.useState('');
@@ -245,11 +233,6 @@ const DetailsPanel = () => {
                     <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>
-                    {/* {selected.length === 1 && selectedFirst?.startsWith('line-') && (
-                        <Button size="sm" variant="outline" onClick={() => handleRemoveEntireLine(selected.at(0)!)}>
-                            {t('panel.details.footer.removeEntireLine')}
-                        </Button>
-                    )} */}
                 </HStack>
             </RmgSidePanelFooter>
         </RmgSidePanel>

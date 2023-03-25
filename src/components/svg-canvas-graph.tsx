@@ -24,7 +24,7 @@ import { getStations, getMiscNodes, getLines } from '../util/process-elements';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
-
+    const graph = React.useRef(window.graph);
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -37,16 +37,11 @@ const SvgCanvas = () => {
         keepLastPath,
         theme,
     } = useRootSelector(state => state.runtime);
-    const refreshAndSave = () => {
-        dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
-        dispatch(saveGraph(graph.current.export()));
-    };
 
-    const graph = React.useRef(window.graph);
-
+    // the position of pointer down
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
-    const [newLinePosition, setNewLinePosition] = React.useState({ x: 0, y: 0 });
+    // the position of pointer move
+    const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -57,7 +52,7 @@ const SvgCanvas = () => {
 
         setOffset({ x, y });
 
-        dispatch(setActive(node)); // svg mouse event only
+        dispatch(setActive(node));
         // details panel only, remove all if this is not a multiple selection
         if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
         dispatch(addSelected(node)); // details panel only
@@ -80,7 +75,7 @@ const SvgCanvas = () => {
             dispatch(setRefreshEdges());
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
-            setNewLinePosition({
+            setMovingPosition({
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
             });
@@ -92,8 +87,8 @@ const SvgCanvas = () => {
         if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
-            const prefixs = ['stn_core_', 'virtual_circle_'];
-            prefixs.forEach(prefix => {
+            const prefixes = ['stn_core_', 'virtual_circle_'];
+            prefixes.forEach(prefix => {
                 const elems = document.elementsFromPoint(e.clientX, e.clientY);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
                 if (id?.startsWith(prefix)) {
@@ -112,16 +107,26 @@ const SvgCanvas = () => {
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
             });
+            dispatch(setRefreshEdges());
+            dispatch(saveGraph(graph.current.export()));
         } else if (mode === 'free') {
-            // check the offset and if it's not 0, it must be a click not move
-            // then dispatch the current station/line to display the details
-            const { x, y } = getMousePosition(e);
-            if (offset.x - x === 0 && offset.y - y === 0) {
-                dispatch(setActive(node)); // svg mouse event only
+            if (active) {
+                // the node is pointed down before
+                // check the offset and if it's not 0, it must be a click not move
+                const { x, y } = getMousePosition(e);
+                if (offset.x - x === 0 && offset.y - y === 0) {
+                    // display the details of current node on click
+                    dispatch(addSelected(node));
+                } else {
+                    // its a moving node operation, save the final coordinate
+                    dispatch(saveGraph(graph.current.export()));
+                }
+            } else {
+                // the node is just placed and should not trigger any save, only display the details
+                dispatch(addSelected(node));
             }
         }
-        dispatch(setActive(undefined)); // svg mouse event only
-        refreshAndSave();
+        dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
@@ -129,16 +134,15 @@ const SvgCanvas = () => {
         dispatch(addSelected(edge));
     });
 
-    // These are states that the svg draws from.
-    // They are updated by refresh trigger in runtime slice.
+    // These are elements that the svg draws from.
+    // They are updated by the refresh triggers in the runtime state.
     const [stations, setStations] = React.useState(getStations(graph.current));
-    const [lines, setLines] = React.useState(getLines(graph.current));
     const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
+    const [lines, setLines] = React.useState(getLines(graph.current));
     const [reconciledLines, setReconciledLines] = React.useState([] as LineId[][]);
     const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
     React.useEffect(() => {
         setStations(getStations(graph.current));
-        setLines(getLines(graph.current));
         setNodes(getMiscNodes(graph.current));
     }, [refreshNodes]);
     React.useEffect(() => {
@@ -262,8 +266,8 @@ const SvgCanvas = () => {
                     id="create_in_progress___no_use"
                     x1={graph.current.getNodeAttribute(active, 'x')}
                     y1={graph.current.getNodeAttribute(active, 'y')}
-                    x2={graph.current.getNodeAttribute(active, 'x') - newLinePosition.x}
-                    y2={graph.current.getNodeAttribute(active, 'y') - newLinePosition.y}
+                    x2={graph.current.getNodeAttribute(active, 'x') - movingPosition.x}
+                    y2={graph.current.getNodeAttribute(active, 'y') - movingPosition.y}
                     newLine={true}
                     type={mode.slice(5) as LinePathType}
                     attrs={linePaths[mode.slice(5) as LinePathType].defaultAttrs}

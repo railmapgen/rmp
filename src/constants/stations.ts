@@ -8,6 +8,7 @@ import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-b
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
+import { MTRStationAttributes } from '../components/svgs/stations/mtr';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -17,6 +18,7 @@ export enum StationType {
     GzmtrInt = 'gzmtr-int',
     BjsubwayBasic = 'bjsubway-basic',
     BjsubwayInt = 'bjsubway-int',
+    MTR = 'mtr',
 }
 
 export interface ExternalStationAttributes {
@@ -27,6 +29,7 @@ export interface ExternalStationAttributes {
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
     [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;
     [StationType.BjsubwayInt]?: BjsubwayIntStationAttributes;
+    [StationType.MTR]?: MTRStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
@@ -52,6 +55,8 @@ export interface StationAttributes {
 // handy types for nameOffset
 export type NameOffsetX = 'left' | 'middle' | 'right';
 export type NameOffsetY = 'top' | 'middle' | 'bottom';
+// handy types for rotate
+export type Rotate = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 /**
  * The interface a customized Station should export.
  */
