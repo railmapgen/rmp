@@ -3,7 +3,7 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     defaultStationAttributes,
-    ROTATE,
+    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -163,7 +163,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
  * <ShmetroBasic2020Station /> specific props.
  */
 export interface ShmetroBasic2020StationAttributes extends StationAttributes, AttributesWithColor {
-    rotate: ROTATE;
+    rotate: Rotate;
 }
 
 const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttributes = {
@@ -213,7 +213,7 @@ const shmetroBasic2020StationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroBasic2020StationAttributes;
             // set value
-            attrs.rotate = Number(val) as ROTATE;
+            attrs.rotate = Number(val) as Rotate;
             // return modified attrs
             return attrs;
         },

@@ -56,7 +56,7 @@ export interface StationAttributes {
 export type NameOffsetX = 'left' | 'middle' | 'right';
 export type NameOffsetY = 'top' | 'middle' | 'bottom';
 // handy types for rotate
-export type ROTATE = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
+export type Rotate = 0 | 45 | 90 | 135 | 180 | 225 | 270 | 315;
 /**
  * The interface a customized Station should export.
  */

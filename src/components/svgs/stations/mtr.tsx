@@ -5,7 +5,7 @@ import {
     defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
-    ROTATE,
+    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -145,7 +145,7 @@ const MTRStation = (props: StationComponentProps) => {
 export interface MTRStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
-    rotate: ROTATE;
+    rotate: Rotate;
 }
 
 const defaultMTRStationAttributes: MTRStationAttributes = {
@@ -222,7 +222,7 @@ const mtrStationFields = [
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultMTRStationAttributes;
             // set value
-            attrs.rotate = Number(val) as ROTATE;
+            attrs.rotate = Number(val) as Rotate;
             // return modified attrs
             return attrs;
         },
