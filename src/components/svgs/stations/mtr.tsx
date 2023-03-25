@@ -65,8 +65,6 @@ const MTRStation = (props: StationComponentProps) => {
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    console.log(transfer);
-
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
