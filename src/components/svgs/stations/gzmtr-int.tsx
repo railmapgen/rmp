@@ -414,7 +414,11 @@ const gzmtrIntStationFields = [
     {
         type: 'custom',
         component: (
-            <InterchangeField stationType={StationType.GzmtrInt} defaultAttrs={defaultGzmtrIntStationAttributes} />
+            <InterchangeField
+                stationType={StationType.GzmtrInt}
+                defaultAttrs={defaultGzmtrIntStationAttributes}
+                maximumTransfers={[3, 3, 0]}
+            />
         ),
     },
 ];

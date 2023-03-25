@@ -29,12 +29,17 @@ export interface StationAttributesWithInterchange extends StationAttributes {
  *
  * Make sure your station has a transfer field in the extended StationAttributes. (a.k.a extends StationAttributesWithInterchange)
  * Fail to do this will result in a redundant transfer field in your StationAttributes.
+ *
+ * @param stationType The station type of this station.
+ * @param defaultAttrs The default attributes of this type of station.
+ * @param maximumTransfers The maximum transfers limit for each kind of transfer. (within, outStation, outSystem)
  */
 export const InterchangeField = (props: {
     stationType: StationType;
     defaultAttrs: StationAttributesWithInterchange;
+    maximumTransfers: [number, number, number];
 }) => {
-    const { stationType, defaultAttrs } = props;
+    const { stationType, defaultAttrs, maximumTransfers } = props;
 
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -118,14 +123,14 @@ export const InterchangeField = (props: {
 
                     <InterchangeCard
                         interchangeList={infoList}
-                        onAdd={handleAdd(i)}
+                        onAdd={maximumTransfers[i] > infoList.length ? handleAdd(i) : undefined}
                         onDelete={handleDelete(i)}
                         onUpdate={handleUpdate(i)}
                     />
                 </Fragment>
             ))}
 
-            {attr.transfer.length < 2 && (
+            {maximumTransfers[attr.transfer.length] > 0 && (
                 <Button
                     size="xs"
                     variant="ghost"

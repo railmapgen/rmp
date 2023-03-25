@@ -73,7 +73,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
 
                     <RmgFields fields={interchangeFields[i]} noLabel={i !== 0} />
 
-                    {onAdd && i === interchangeFields.length - 1 && interchangeFields.length < 3 ? (
+                    {onAdd && i === interchangeFields.length - 1 ? (
                         <IconButton
                             size="sm"
                             variant="ghost"
