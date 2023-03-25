@@ -54,6 +54,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                         width={width}
                         ry={height / 2}
                         stroke="black"
+                        strokeWidth="1.33"
                         fill="white"
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}

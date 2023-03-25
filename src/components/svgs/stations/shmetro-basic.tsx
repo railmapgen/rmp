@@ -46,6 +46,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                     id={`stn_core_${id}`}
                     r={5}
                     stroke="black"
+                    strokeWidth="1.33"
                     fill="white"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
