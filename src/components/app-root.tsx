@@ -8,6 +8,26 @@ const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ 
 const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
 
 export default function AppRoot() {
+    React.useEffect(() => {
+        (async () => {
+            const res = await fetch(process.env.PUBLIC_URL + '/styles/fonts_mtr.css');
+            if (!res.ok) return;
+            const cssContent = await res.text();
+            const style = document.createElement('style');
+            style.id = 'fonts_mtr';
+            style.appendChild(document.createTextNode(cssContent));
+            document.head.append(style);
+        })();
+
+        // const link = document.createElement('link');
+        // link.type = 'text/css';
+        // link.id = 'fonts_mtr';
+        // link.href = process.env.PUBLIC_URL + '/styles/fonts_mtr.css';
+        // document.head.append(link);
+        return () => {
+            // document.head.removeChild(link);
+        };
+    }, []);
     return (
         <RmgThemeProvider>
             <RmgWindow>

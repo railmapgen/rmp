@@ -40,15 +40,16 @@ div#root {
   scrollbar-width: none;  /* Firefox */
 }
 
-.rmp-name__zh {
-    font-family: Arial, SimHei, STHeitiSC-Medium, PingFangSC-Regular, sans-serif;
-}
-.rmp-name__en {
-    font-family: Arial, sans-serif;
-}
 /* text outline: https://stackoverflow.com/a/26498819 */
 .rmp-name-station {
     paint-order: stroke;
     stroke: #FFFFFF;
     stroke-width: 2px;
+}
+
+.rmp-name__zh {
+    font-family: Arial, SimHei, STHeitiSC-Medium, PingFangSC-Regular, sans-serif;
+}
+.rmp-name__en {
+    font-family: Arial, sans-serif;
 }

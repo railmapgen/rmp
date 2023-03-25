@@ -111,14 +111,14 @@ const MTRStation = (props: StationComponentProps) => {
                         fontSize={16}
                         lineHeight={16}
                         grow="up"
-                        className="rmp-name__zh"
+                        className="rmp-name__mtr__zh"
                     />
                     <MultilineText
                         text={names[1].split('\\')}
                         fontSize={10}
                         lineHeight={10}
                         grow="down"
-                        className="rmp-name__en"
+                        className="rmp-name__mtr__en"
                     />
                 </g>
             </g>
