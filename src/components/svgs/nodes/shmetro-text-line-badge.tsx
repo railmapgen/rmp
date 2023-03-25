@@ -49,6 +49,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                         y="13"
                         fontSize="5"
                         fill={color[3]}
+                        letterSpacing="-0.25"
                     >
                         {names[1]}
                     </text>

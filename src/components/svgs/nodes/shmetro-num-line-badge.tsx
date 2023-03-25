@@ -34,6 +34,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
                     y="18.5"
                     fill={color[3]}
                     fontSize="21.33"
+                    letterSpacing="-0.75"
                 >
                     {num}
                 </text>
