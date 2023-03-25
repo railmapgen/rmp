@@ -65,6 +65,8 @@ const MTRStation = (props: StationComponentProps) => {
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
+    console.log(transfer);
+
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
@@ -85,7 +87,7 @@ const MTRStation = (props: StationComponentProps) => {
                         .map(info => info[2])
                         .map((color, i) => (
                             <line
-                                key={color}
+                                key={`${i}_${color}`}
                                 transform={`rotate(${rotate})`}
                                 x1={-lineWidth / 2 + i * lineWidth}
                                 x2={lineWidth / 2 + i * lineWidth}
