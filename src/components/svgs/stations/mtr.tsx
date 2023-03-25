@@ -254,7 +254,7 @@ const mtrStation: Station<MTRStationAttributes> = {
     fields: mtrStationFields,
     metadata: {
         displayName: 'panel.details.station.mtr.displayName',
-        cities: [CityCode.Shanghai],
+        cities: [CityCode.Hongkong],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: [],
