@@ -69,16 +69,18 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 >
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={17}
-                        lineHeight={17.67}
+                        fontSize={12.67}
+                        lineHeight={12.67}
                         grow="up"
+                        baseOffset={1}
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\').map(s => (nameOffsetX === 'right' ? ' ' : '') + s)}
-                        fontSize={9}
-                        lineHeight={10}
+                        text={names[1].split('\\').map(s => (nameOffsetX === 'right' ? '\u00A0' : '') + s)}
+                        fontSize={6.67}
+                        lineHeight={6.67}
                         grow="down"
+                        baseOffset={1.5}
                         className="rmp-name__en"
                     />
                 </g>
