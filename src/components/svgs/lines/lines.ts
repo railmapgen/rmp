@@ -9,6 +9,8 @@ import chinaRailway from './styles/china-railway';
 import bjsubwayTram from './styles/bjsubway-tram';
 import dualColor from './styles/dual-color';
 import river from './styles/river';
+import mtrRaceDays from './styles/mtr-race-day';
+import mtrLightRail from './styles/mtr-light-rail';
 
 export const linePaths = {
     [LinePathType.Simple]: simplePath,
@@ -24,4 +26,6 @@ export const lineStyles = {
     [LineStyleType.BjsubwayTram]: bjsubwayTram,
     [LineStyleType.DualColor]: dualColor,
     [LineStyleType.River]: river,
+    [LineStyleType.MTRRaceDays]: mtrRaceDays,
+    [LineStyleType.MTRLightRail]: mtrLightRail,
 };

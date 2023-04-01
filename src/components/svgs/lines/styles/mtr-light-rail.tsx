@@ -4,9 +4,9 @@ import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } 
 import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
 import { LineStyleType } from '../../../../constants/lines';
 
-const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
+const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
-    const { color = defaultMTRRaceDaysAttributes.color } = styleAttrs ?? defaultMTRRaceDaysAttributes;
+    const { color = defaultMTRLightRailAttributes.color } = styleAttrs ?? defaultMTRLightRailAttributes;
 
     const onClick = React.useCallback(
         (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
@@ -19,9 +19,8 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
             d={path}
             fill="none"
             stroke={color[2]}
-            strokeWidth="5"
-            strokeLinecap="butt"
-            strokeDasharray="5 2.5"
+            strokeWidth="2.5"
+            strokeLinecap="round"
             cursor="pointer"
             onClick={onClick}
         />
@@ -29,31 +28,31 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
 };
 
 /**
- * MTRRaceDays specific props.
+ * MTRLightRail specific props.
  */
-export interface MTRRaceDaysAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface MTRLightRailAttributes extends LinePathAttributes, AttributesWithColor {}
 
-const defaultMTRRaceDaysAttributes: MTRRaceDaysAttributes = {
-    color: [CityCode.Hongkong, 'twl', '#E2231A', MonoColour.white],
+const defaultMTRLightRailAttributes: MTRLightRailAttributes = {
+    color: [CityCode.Hongkong, 'lrl', '#CD9700', MonoColour.white],
 };
 
-const mtrRaceDaysFields = [
+const mtrLightRailFields = [
     {
         type: 'custom',
-        component: <ColorField type={LineStyleType.MTRRaceDays} defaultAttrs={defaultMTRRaceDaysAttributes} />,
+        component: <ColorField type={LineStyleType.MTRLightRail} defaultAttrs={defaultMTRLightRailAttributes} />,
     },
 ];
 
-const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
-    component: MTRRaceDays,
-    defaultAttrs: defaultMTRRaceDaysAttributes,
+const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
+    component: MTRLightRail,
+    defaultAttrs: defaultMTRLightRailAttributes,
     // TODO: fix this
     // @ts-ignore-error
-    fields: mtrRaceDaysFields,
+    fields: mtrLightRailFields,
     metadata: {
-        displayName: 'panel.details.line.mtrRaceDays.displayName',
+        displayName: 'panel.details.line.mtrLightRail.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
     },
 };
 
-export default mtrRaceDays;
+export default mtrLightRail;
