@@ -8,7 +8,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
     const { num = defaultShmetroNumLineBadgeAttributes.num, color = defaultShmetroNumLineBadgeAttributes.color } =
         attrs ?? defaultShmetroNumLineBadgeAttributes;
 
-    const width = num >= 10 ? 22.67 : 21;
+    const [width, numX] = num >= 10 ? [22.67, 10.75] : [21, 10];
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -30,7 +30,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
                 <text
                     className="rmp-name__zh"
                     textAnchor="middle"
-                    x="10.75"
+                    x={numX}
                     y="18.5"
                     fill={color[3]}
                     fontSize="21.33"

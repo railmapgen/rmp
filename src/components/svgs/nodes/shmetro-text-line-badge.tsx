@@ -35,9 +35,10 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                         textAnchor="middle"
                         dominantBaseline="hanging"
                         x={(bBox.width + 3) / 2}
-                        y="3"
+                        y="4"
                         fontSize="10"
                         fill={color[3]}
+                        letterSpacing="-0.25"
                     >
                         {names[0]}
                     </text>
@@ -60,7 +61,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                     fillOpacity="0"
                     x="0"
                     width={bBox.width + 3}
-                    height="16"
+                    height="21"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
