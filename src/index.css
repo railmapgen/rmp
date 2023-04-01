@@ -50,5 +50,5 @@ div#root {
 .rmp-name-station {
     paint-order: stroke;
     stroke: #FFFFFF;
-    stroke-width: 1px;
+    stroke-width: 1.5px;
 }
