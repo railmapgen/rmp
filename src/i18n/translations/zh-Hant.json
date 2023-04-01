@@ -235,6 +235,9 @@
                 },
                 "mtrUnpaidArea": {
                     "displayName": "MTR未付費區域樣式"
+                },
+                "mtrPaidArea": {
+                    "displayName": "MTR付費區域樣式"
                 }
             },
             "edge": {},

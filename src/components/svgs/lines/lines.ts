@@ -12,6 +12,7 @@ import river from './styles/river';
 import mtrRaceDays from './styles/mtr-race-day';
 import mtrLightRail from './styles/mtr-light-rail';
 import mtrUnpaidArea from './styles/mtr-unpaid-area';
+import mtrPaidArea from './styles/mtr-paid-area';
 
 export const linePaths = {
     [LinePathType.Simple]: simplePath,
@@ -30,4 +31,5 @@ export const lineStyles = {
     [LineStyleType.MTRRaceDays]: mtrRaceDays,
     [LineStyleType.MTRLightRail]: mtrLightRail,
     [LineStyleType.MTRUnpaidArea]: mtrUnpaidArea,
+    [LineStyleType.MTRPaidArea]: mtrPaidArea,
 };

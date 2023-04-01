@@ -235,6 +235,9 @@
                 },
                 "mtrUnpaidArea": {
                     "displayName": "MTR 미결제 구역 스타일"
+                },
+                "mtrPaidArea": {
+                    "displayName": "MTR 결제완료 구역 스타일"
                 }
             },
             "edge": {},

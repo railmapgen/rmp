@@ -235,6 +235,9 @@
                 },
                 "mtrUnpaidArea": {
                     "displayName": "MTR unpaid area style"
+                },
+                "mtrPaidArea": {
+                    "displayName": "MTR paid area style"
                 }
             },
             "edge": {},
