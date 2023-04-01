@@ -16,9 +16,10 @@ import { LinePathType, LineStyleType } from '../../constants/lines';
 import { StationAttributes, StationType } from '../../constants/stations';
 import { InterchangeInfo } from '../panels/details/interchange-field';
 import { linePaths } from '../svgs/lines/lines';
+import { ShmetroBasic2020StationAttributes } from '../svgs/stations/shmetro-basic-2020';
 import { GzmtrBasicStationAttributes } from '../svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../svgs/stations/gzmtr-int';
-import { ShmetroBasic2020StationAttributes } from '../svgs/stations/shmetro-basic-2020';
+import { MTRStationAttributes } from '../svgs/stations/mtr';
 import stations from '../svgs/stations/stations';
 import { RMPSave, upgrade } from '../../util/save';
 import { GalleryModal } from './gallery-modal';
@@ -101,9 +102,11 @@ export default function OpenActions() {
                             if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.ShmetroInt;
                             else if (param.info_panel_type === 'sh2020') type = StationType.ShmetroBasic2020;
                             else type = StationType.ShmetroBasic;
-                        } else if (param.style === 'gzmtr' || param.style === 'mtr') {
+                        } else if (param.style === 'gzmtr') {
                             if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.GzmtrInt;
                             else type = StationType.GzmtrBasic;
+                        } else if (param.style === 'mtr') {
+                            type = StationType.MTR;
                         }
 
                         // read default attrs
@@ -138,6 +141,24 @@ export default function OpenActions() {
                                 (stnInfo as any).num,
                             ] as unknown as InterchangeInfo);
                             (attr as GzmtrIntStationAttributes).transfer = transfer;
+                        } else if (type === StationType.MTR) {
+                            let transfer = JSON.parse(
+                                JSON.stringify((stnInfo as any).transfer.info)
+                            ) as InterchangeInfo[][];
+                            // drop out of station transfer as they should be placed in another station
+                            transfer = [transfer[0]];
+                            // override line code and station code to empty as they are useless in MTR station
+                            transfer.forEach(level =>
+                                level.forEach(transferInfo => {
+                                    transferInfo[4] = '';
+                                    transferInfo[5] = '';
+                                })
+                            );
+                            if (transfer.flat().length > 0) {
+                                // add current theme to transfer[0][0] as MTR display all transfers including the current line
+                                transfer[0].unshift([...param.theme, '', ''] as unknown as InterchangeInfo);
+                            }
+                            (attr as MTRStationAttributes).transfer = transfer;
                         }
 
                         graph.current.addNode(stnIdMap[id], {
