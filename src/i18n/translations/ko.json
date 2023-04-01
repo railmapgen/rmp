@@ -226,6 +226,15 @@
                 "river": {
                     "displayName": "강 스타일",
                     "width": "폭"
+                },
+                "mtrRaceDays": {
+                    "displayName": "MTR 경마일 스타일"
+                },
+                "mtrLightRail": {
+                    "displayName": "MTR 경전철 스타일"
+                },
+                "mtrUnpaidArea": {
+                    "displayName": "MTR 미결제 구역 스타일"
                 }
             },
             "edge": {},
