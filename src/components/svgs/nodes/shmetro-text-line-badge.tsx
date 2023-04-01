@@ -28,13 +28,13 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 3} height="21" />
+                <rect fill={color[2]} x="0" width={bBox.width + 7} height="21" />
                 <g ref={textLineEl}>
                     <text
                         className="rmp-name__zh"
                         textAnchor="middle"
                         dominantBaseline="hanging"
-                        x={(bBox.width + 3) / 2}
+                        x={(bBox.width + 7) / 2}
                         y="4"
                         fontSize="10"
                         fill={color[3]}
@@ -46,7 +46,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                         className="rmp-name__en"
                         textAnchor="middle"
                         dominantBaseline="hanging"
-                        x={(bBox.width + 3) / 2}
+                        x={(bBox.width + 7) / 2}
                         y="13"
                         fontSize="5"
                         fill={color[3]}
@@ -60,7 +60,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                     fill="white"
                     fillOpacity="0"
                     x="0"
-                    width={bBox.width + 3}
+                    width={bBox.width + 7}
                     height="21"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
