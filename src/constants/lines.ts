@@ -12,6 +12,7 @@ import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color'
 import { RiverAttributes } from '../components/svgs/lines/styles/river';
 import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
 import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
+import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -35,6 +36,7 @@ export enum LineStyleType {
     River = 'river',
     MTRRaceDays = 'mtr-race-days',
     MTRLightRail = 'mtr-light-rail',
+    MTRUnpaidArea = 'mtr-unpaid-area',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -47,6 +49,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.River]?: RiverAttributes;
     [LineStyleType.MTRRaceDays]?: MTRRaceDaysAttributes;
     [LineStyleType.MTRLightRail]?: MTRLightRailAttributes;
+    [LineStyleType.MTRUnpaidArea]?: MTRUnpaidAreaAttributes;
 }
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
