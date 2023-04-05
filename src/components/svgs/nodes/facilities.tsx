@@ -44,27 +44,30 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                     </g>
                 )}
                 {type === 'maglev' && (
-                    <g id="intbox_maglev" transform="translate(-20,0)scale(0.2)">
-                        <rect id="maglev_5" fill="#0E7572" height="144" width="130" y="40" x="30" />
+                    <g id="intbox_maglev" transform="translate(-14.4,0)scale(0.2)">
+                        <rect id="maglev_5" fill="#0E7572" height="144" width="144" y="40" x="0" rx="5" />
                         <path
                             id="maglev_3"
                             fill="white"
+                            transform="translate(-23,5)"
                             d="m90,55a40,5 0 0 0 -40,3a5,5 0 0 0 -5,5a5,60 0 0 0 -3,60a5,5 0 0 0 5,5l96,0a5,5 0 0 0 5,-5a5,60 0 0 0 -3,-60a5,5 0 0 0 -5,-5a40,5 0 0 0 -40,-3l-5,-10l-5,10"
                         />
                         <path
                             id="maglev_4"
                             fill="white"
+                            transform="translate(-23,-4)"
                             d="m90,140l-40,0a10,5 0 0 1 -10,-5l0,25a10,15 0 0 0 10,15l15,0l0,-10l-15,0l0,-15l90,0l0,15l-15,0l0,10l15,0a10,15 0 0 0 10,-15l0,-25a10,5 0 0 1 -10,5l-50,0"
                         />
-                        <rect id="maglev_1" fill="#0E7572" height="25" width="40" y="80" x="50" />
-                        <rect id="maglev_2" fill="#0E7572" height="25" width="40" y="80" x="100" />
+                        <rect id="maglev_1" fill="#0E7572" height="25" width="40" y="85" x="27" />
+                        <rect id="maglev_2" fill="#0E7572" height="25" width="40" y="85" x="77" />
                         {/* Below is an overlay element that has all event hooks but can not be seen. */}
                         <rect
                             id="maglev_overlay"
                             height="144"
-                            width="130"
+                            width="144"
                             y="40"
-                            x="30"
+                            x="0"
+                            rx="5"
                             fillOpacity="0"
                             onPointerDown={onPointerDown}
                             onPointerMove={onPointerMove}
