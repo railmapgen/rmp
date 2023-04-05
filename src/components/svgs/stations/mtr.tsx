@@ -71,7 +71,7 @@ const MTRStation = (props: StationComponentProps) => {
                 <path
                     transform={`rotate(${rotate})`}
                     d={path}
-                    stroke="black"
+                    stroke="#132647"
                     strokeWidth="1.5"
                     fill="white"
                     onPointerDown={onPointerDown}
@@ -112,6 +112,7 @@ const MTRStation = (props: StationComponentProps) => {
                         lineHeight={16}
                         grow="up"
                         className="rmp-name__mtr__zh"
+                        fill="#132647"
                     />
                     <MultilineText
                         text={names[1].split('\\')}
@@ -119,6 +120,7 @@ const MTRStation = (props: StationComponentProps) => {
                         lineHeight={10}
                         grow="down"
                         className="rmp-name__mtr__en"
+                        fill="#132647"
                     />
                 </g>
             </g>

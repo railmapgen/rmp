@@ -226,6 +226,18 @@
                 "river": {
                     "displayName": "河流样式",
                     "width": "宽度"
+                },
+                "mtrRaceDays": {
+                    "displayName": "MTR赛马日样式"
+                },
+                "mtrLightRail": {
+                    "displayName": "MTR轻轨样式"
+                },
+                "mtrUnpaidArea": {
+                    "displayName": "MTR未付费区域样式"
+                },
+                "mtrPaidArea": {
+                    "displayName": "MTR付费区域样式"
                 }
             },
             "edge": {},
