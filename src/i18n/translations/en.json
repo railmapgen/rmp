@@ -226,6 +226,18 @@
                 "river": {
                     "displayName": "River style",
                     "width": "Width"
+                },
+                "mtrRaceDays": {
+                    "displayName": "MTR race days style"
+                },
+                "mtrLightRail": {
+                    "displayName": "MTR light rail style"
+                },
+                "mtrUnpaidArea": {
+                    "displayName": "MTR unpaid area style"
+                },
+                "mtrPaidArea": {
+                    "displayName": "MTR paid area style"
                 }
             },
             "edge": {},

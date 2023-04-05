@@ -11,8 +11,8 @@
         "@emotion/react": "^11.10.5",
         "@emotion/styled": "^11.10.5",
         "@railmapgen/rmg-components": "^7.0.4",
+        "@railmapgen/rmg-palette-resources": "^0.7.5",
         "@railmapgen/rmg-runtime": "^4.0.10",
-        "@railmapgen/rmg-palette-resources": "^0.7.4",
         "@railmapgen/rmg-translate": "^2.0.1",
         "@reduxjs/toolkit": "^1.9.1",
         "bezier-js": "^6.1.0",
@@ -50,7 +50,7 @@
         "prettier": "^2.8.1",
         "react-scripts": "^5.0.1",
         "redux-mock-store": "^1.5.4",
-        "typescript": "^4.9.4"
+        "typescript": "^5.0.2"
     },
     "scripts": {
         "start": "react-scripts start",
@@ -76,7 +76,7 @@
             "last 1 safari version"
         ]
     },
-    "version": "2.4.0",
+    "version": "2.4.4",
     "main": "public/electron.js",
     "build": {
         "publish": [
