@@ -32,7 +32,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm i
+      - run: npm i --force
 
       - name: Build
         id: build
