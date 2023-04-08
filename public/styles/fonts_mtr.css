@@ -6,11 +6,10 @@
     font-family: Myriad Pro, Vegur, Helvetica, sans-serif;
 }
 
-
 @font-face {
     font-family: 'Vegur';
     font-display: swap;
-    src: url('/fonts/Vegur-Regular.otf') format('opentype');
+    src: url('../fonts/Vegur-Regular.otf') format('opentype');
     unicode-range: U+0-10FFFF;
 }
 
@@ -112,4 +111,3 @@
     src: url('../fonts/GenYoMin-TW-SB.98.woff2') format('woff2');
     unicode-range: U+9800-9FFF;
 }
-

@@ -12,7 +12,7 @@ export const waitForFontReady = async () => {
     let retryAttempt = 3;
 
     while (retryAttempt--) {
-        // #274 ready font fact set may not contain GenYoMin when first resolved
+        // railmapgen/rmg#274 ready font fact set may not contain GenYoMin when first resolved
         const fontFaceSet = await document.fonts.ready;
         const it = fontFaceSet.values();
         while (true) {
@@ -43,9 +43,10 @@ const readBlobAsDataURL = (blob: Blob): Promise<string> => {
 
 const matchCssRuleByFontFace = (rules: CSSFontFaceRule[], font: FontFace): CSSFontFaceRule | undefined => {
     return rules.find(rule => {
-        const cssStyle = rule.style as any;
+        const cssStyle = rule.style;
         return (
-            cssStyle.fontFamily.replace(/^"(.+)"$/, '$1') === font.family && cssStyle.unicodeRange === font.unicodeRange
+            cssStyle.getPropertyValue('font-family').replace(/^"(.+)"$/, '$1') === font.family &&
+            cssStyle.getPropertyValue('unicode-range') === font.unicodeRange
         );
     });
 };
@@ -64,19 +65,18 @@ export const getBase64FontFace = async (svgEl: SVGSVGElement): Promise<string[]>
     ).join('');
 
     const fontFaceList = await document.fonts.load('80px GenYoMin TW, Vegur', uniqueCharacters);
-    const cssRules = Array.from(
-        (document.querySelector<HTMLLinkElement>('link#css_share')?.sheet?.cssRules?.[0] as CSSImportRule).styleSheet
-            .cssRules
-    ) as CSSFontFaceRule[];
+    const cssRules = document.querySelector<HTMLLinkElement>('link#fonts_mtr')?.sheet?.cssRules;
+    if (!cssRules) return Promise.reject(new Error('cssRules can not be found in link#css_share'));
+    const cssFontFaceRules = Array.from(cssRules).filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
     const distinctCssRules = fontFaceList.reduce<CSSFontFaceRule[]>((acc, cur) => {
-        const matchedRule = matchCssRuleByFontFace(cssRules, cur);
+        const matchedRule = matchCssRuleByFontFace(cssFontFaceRules, cur);
         if (matchedRule) {
             const existence = acc.find(rule => {
-                const ruleStyle = rule.style as any;
-                const matchedStyle = matchedRule.style as any;
+                const ruleStyle = rule.style;
+                const matchedStyle = matchedRule.style;
                 return (
-                    ruleStyle.fontFamily === matchedStyle.fontFamily &&
-                    ruleStyle.unicodeRange === matchedStyle.unicodeRange
+                    ruleStyle.getPropertyValue('font-family') === matchedStyle.getPropertyValue('font-family') &&
+                    ruleStyle.getPropertyValue('unicode-range') === matchedStyle.getPropertyValue('unicode-range')
                 );
             });
             return existence ? acc : acc.concat(matchedRule);
@@ -103,5 +103,5 @@ export const getAbsoluteUrl = (cssRule: CSSFontFaceRule) => {
     const ruleStyleSrc = (cssRule.style as any).src;
     return isSafari()
         ? ruleStyleSrc.replace(/^url\("(\S+)"\).*$/, '$1')
-        : process.env.PUBLIC_URL + 'styles/' + ruleStyleSrc.match(/^url\("([\S*]+)"\)/)?.[1];
+        : process.env.PUBLIC_URL + '/styles/' + ruleStyleSrc.match(/^url\("([\S*]+)"\)/)?.[1];
 };
