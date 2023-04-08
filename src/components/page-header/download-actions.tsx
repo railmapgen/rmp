@@ -121,7 +121,8 @@ export default function DownloadActions() {
             '.rmp-name-station': ['paint-order', 'stroke', 'stroke-width'],
         }).forEach(([className, styleSet]) => {
             const e = document.querySelector(className);
-            const style = window.getComputedStyle(e!);
+            if (e === null) return; // no element in the canvas uses this class
+            const style = window.getComputedStyle(e);
             elem.querySelectorAll(className).forEach(el => {
                 styleSet.forEach(styleName => {
                     el.setAttribute(styleName, style.getPropertyValue(styleName));
