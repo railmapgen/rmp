@@ -10,7 +10,12 @@ import {
     StationComponentProps,
     StationType,
 } from '../../../constants/stations';
-import { MultilineText, LINE_HEIGHT, NAME_DY } from '../common/multiline-text';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
+
+export const LINE_HEIGHT = {
+    zh: 10,
+    en: 6.2,
+};
 
 const BjsubwayBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -47,10 +52,10 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <circle
                     id={`stn_core_${id}`}
-                    r="4"
+                    r="6.5"
                     stroke="black"
-                    strokeWidth="0.5"
-                    strokeDasharray={open ? undefined : '1.5'}
+                    strokeWidth="1"
+                    strokeDasharray={open ? undefined : '2'}
                     fill="white"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}

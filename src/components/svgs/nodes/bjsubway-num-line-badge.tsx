@@ -3,14 +3,12 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
+const NUM_WIDTH = 9;
+
 const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { num = defaultBjsubwayNumLineBadgeAttributes.num, color = defaultBjsubwayNumLineBadgeAttributes.color } =
         attrs ?? defaultBjsubwayNumLineBadgeAttributes;
-
-    const numEl = React.useRef<SVGTextElement | null>(null);
-    const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
-    React.useEffect(() => setBBox(numEl.current!.getBBox()), [num, setBBox, numEl]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -29,22 +27,22 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(1.5)`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 23} height="16" rx="2" />
+            <g id={id} transform={`translate(${x}, ${y})`}>
+                <rect fill={color[2]} x="0" width={NUM_WIDTH + 23} height="16" rx="2" />
                 <text
-                    ref={numEl}
                     className="rmp-name__zh"
                     textAnchor="middle"
-                    x={bBox.width / 2 + 3}
+                    x={NUM_WIDTH / 2 + 3}
                     y="13.5"
                     fill={fgColor}
+                    letterSpacing="-1"
                 >
                     {num}
                 </text>
-                <text className="rmp-name__zh" x={bBox.width + 4} y="8.5" fontSize="8" fill={fgColor}>
+                <text className="rmp-name__zh" x={NUM_WIDTH + 4} y="8.5" fontSize="7" fill={fgColor}>
                     号线
                 </text>
-                <text className="rmp-name__en" x={bBox.width + 6} y="13.5" fontSize="4" fill={fgColor}>
+                <text className="rmp-name__en" x={NUM_WIDTH + 6} y="13.5" fontSize="4" fill={fgColor}>
                     Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
@@ -52,7 +50,7 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
                     fill="white"
                     fillOpacity="0"
                     x="0"
-                    width={bBox.width + 24}
+                    width={NUM_WIDTH + 23}
                     height="16"
                     rx="2"
                     onPointerDown={onPointerDown}
@@ -62,7 +60,7 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
                 />
             </g>
         ),
-        [id, x, y, num, ...color, bBox, onPointerDown, onPointerMove, onPointerUp]
+        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
     );
 };
 
