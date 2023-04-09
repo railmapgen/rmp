@@ -31,12 +31,14 @@ import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { getBase64FontFace } from '../../util/fonts';
 import TermsAndConditionsModal from './terms-and-conditions';
+import { StationType } from '../../constants/stations';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
+    const { nodeExists } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
     const bgColor = useColorModeValue('white', 'gray.800');
 
@@ -134,17 +136,17 @@ export default function DownloadActions() {
             });
         });
 
-        // if (rmgStyle === RmgStyle.MTR) {
-        try {
-            const uris = await getBase64FontFace(elem);
-            const s = document.createElement('style');
-            s.textContent = uris.join('\n');
-            elem.prepend(s);
-        } catch (err) {
-            alert('Failed to fonts. Fonts in the exported PNG will be missing.');
-            console.error(err);
+        if (nodeExists[StationType.MTR]) {
+            try {
+                const uris = await getBase64FontFace(elem);
+                const s = document.createElement('style');
+                s.textContent = uris.join('\n');
+                elem.prepend(s);
+            } catch (err) {
+                alert('Failed to fonts. Fonts in the exported PNG will be missing.');
+                console.error(err);
+            }
         }
-        // }
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);
