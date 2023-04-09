@@ -6,7 +6,7 @@ import stations from '../components/svgs/stations/stations';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 
-const AttrsInvalid = [StationType.ShmetroBasic2020];
+const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
 /**
  * Change a station's type.
@@ -21,13 +21,29 @@ export const changeStationType = (
 ) => {
     const currentStnType = graph.getNodeAttribute(selectedFirst, 'type') as StationType;
     const names = graph.getNodeAttribute(selectedFirst, currentStnType)!.names;
-    let newAttrs = { ...stations[newStnType].defaultAttrs, names };
-    if (!Object.values(AttrsInvalid).includes(currentStnType) || !Object.values(AttrsInvalid).includes(newStnType)) {
-        newAttrs = { ...stations[newStnType].defaultAttrs, names };
-        //@ts-expect-error
-        newAttrs.nameOffsetX = graph.getNodeAttribute(selectedFirst, currentStnType)!.nameOffsetX;
-        //@ts-expect-error
-        newAttrs.nameOffsetY = graph.getNodeAttribute(selectedFirst, currentStnType)!.nameOffsetY;
+    const newAttrs = { ...stations[newStnType].defaultAttrs, names };
+    if (
+        !Object.values(StationsWithoutNameOffset).includes(currentStnType) ||
+        !Object.values(StationsWithoutNameOffset).includes(newStnType)
+    ) {
+        (
+            newAttrs as Exclude<
+                ExternalStationAttributes[keyof ExternalStationAttributes],
+                ShmetroBasic2020StationAttributes | undefined
+            >
+        ).nameOffsetX = graph.getNodeAttribute(
+            selectedFirst,
+            currentStnType as Exclude<StationType, StationType.ShmetroBasic2020>
+        )!.nameOffsetX;
+        (
+            newAttrs as Exclude<
+                ExternalStationAttributes[keyof ExternalStationAttributes],
+                ShmetroBasic2020StationAttributes | undefined
+            >
+        ).nameOffsetY = graph.getNodeAttribute(
+            selectedFirst,
+            currentStnType as Exclude<StationType, StationType.ShmetroBasic2020>
+        )!.nameOffsetY;
     }
     graph.removeNodeAttribute(selectedFirst, currentStnType);
     graph.mergeNodeAttributes(selectedFirst, { type: newStnType, [newStnType]: newAttrs });
