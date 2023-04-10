@@ -1,10 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { StationType } from '../constants/stations';
+import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import stations from '../components/svgs/stations/stations';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
+import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
