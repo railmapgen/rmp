@@ -18,7 +18,10 @@ import {
     StationAttributesWithInterchange,
 } from '../../panels/details/interchange-field';
 
-const makeStationPath = (r: number, lineWidth: number, transfer: InterchangeInfo[]): `M${string}` => {
+const LINE_WIDTH = 5;
+const R = 5;
+
+const makeStationPath = (r: number, lineWidth: number = LINE_WIDTH, transfer: InterchangeInfo[] = []): `M${string}` => {
     const y = Math.sqrt(r * r - (lineWidth * lineWidth) / 4);
     const circleCount = transfer.length < 2 ? transfer.length + 1 : transfer.length;
     let d = `M ${-r},0 A ${r},${r},0,0,1,${-lineWidth / 2},-${y} `;
@@ -56,13 +59,19 @@ const MTRStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const lineWidth = 5;
-    const path = makeStationPath(5, lineWidth, transfer.at(0)!);
+    const transferLv1 = transfer.at(0)!;
+    const path = makeStationPath(R, LINE_WIDTH, transferLv1);
 
-    const textX = nameOffsetX === 'left' ? -5 : nameOffsetX === 'right' ? 5 : 0;
-    const textY =
+    const circleCount = transferLv1.length === 0 ? 0 : transferLv1.length <= 2 ? 1 : transferLv1.length - 1;
+    const iconX = Math.cos((rotate * Math.PI) / 180) * circleCount * R;
+    const iconY = Math.sin((rotate * Math.PI) / 180) * circleCount * R;
+    const textDX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
+    // if icon grows the same direction of the text, add the extra icon length to text
+    const textX = Math.sign(iconX) === Math.sign(textDX) ? iconX + textDX : textDX;
+    const textDY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 6) *
         NAME_DY[nameOffsetY].polarity;
+    const textY = Math.sign(iconY) === Math.sign(textDY) ? iconY + textDY : textDY;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -87,8 +96,8 @@ const MTRStation = (props: StationComponentProps) => {
                             <line
                                 key={`${i}_${color}`}
                                 transform={`rotate(${rotate})`}
-                                x1={-lineWidth / 2 + i * lineWidth}
-                                x2={lineWidth / 2 + i * lineWidth}
+                                x1={-LINE_WIDTH / 2 + i * LINE_WIDTH}
+                                x2={LINE_WIDTH / 2 + i * LINE_WIDTH}
                                 stroke={color}
                                 strokeWidth="2"
                             />
@@ -121,7 +130,6 @@ const MTRStation = (props: StationComponentProps) => {
                         grow="down"
                         className="rmp-name__mtr__en"
                         fill="#132647"
-                        fontWeight="600"
                     />
                 </g>
             </g>
