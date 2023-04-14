@@ -77,4 +77,6 @@ export const changeLineStyleType = (
     const newAttrs = JSON.parse(JSON.stringify(lineStyles[newLineStyleType].defaultAttrs));
     if (newLineStyleType === LineStyleType.SingleColor && theme) (newAttrs as SingleColorAttributes).color = theme;
     graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
+    if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
+    else graph.setEdgeAttribute(selectedFirst, 'zIndex', 0);
 };

@@ -11,8 +11,8 @@ import {
 
 /**
  * This file contains helper methods to extract stations/miscNodes/lines
- * from MultiDirectedGraph and return elements that svg-canvas can directly use in
- * various aforementioned components.
+ * from MultiDirectedGraph and return elements that svg-canvas can directly
+ * pass them to corresponding stations/miscNodes/lines components.
  */
 
 type StationElem = NodeAttributes & { node: StnId; type: StationType };
@@ -23,6 +23,7 @@ export const getStations = (
         .filterNodes((node, attr) => node.startsWith('stn'))
         .map(node => [node, graph.getNodeAttributes(node)] as [StnId, NodeAttributes])
         .filter(([node, attr]) => attr.visible)
+        .sort((a, b) => a[1].zIndex - b[1].zIndex)
         .map(([node, attr]) => ({
             node: node as StnId,
             visible: attr.visible,
@@ -50,10 +51,8 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
                 edge.startsWith('line') && attr.visible && attr.reconcileId === ''
         )
+        .sort((a, b) => graph.getEdgeAttribute(a, 'zIndex') - graph.getEdgeAttribute(b, 'zIndex'))
         .map(edge => {
-            const [source, target] = graph.extremities(edge);
-            const sourceAttr = graph.getNodeAttributes(source);
-            const targetAttr = graph.getNodeAttributes(target);
             const type = graph.getEdgeAttribute(edge, 'type') as LinePathType;
             const attr = graph.getEdgeAttribute(
                 edge,
@@ -64,6 +63,9 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
                 edge,
                 style
             ) as ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes];
+            const [source, target] = graph.extremities(edge);
+            const sourceAttr = graph.getNodeAttributes(source);
+            const targetAttr = graph.getNodeAttributes(target);
             return {
                 edge: edge as LineId,
                 x1: sourceAttr.x,
@@ -85,6 +87,7 @@ export const getMiscNodes = (
         .filterNodes((node, attr) => node.startsWith('misc_node'))
         .map(node => [node, graph.getNodeAttributes(node)] as [MiscNodeId, NodeAttributes])
         .filter(([node, attr]) => attr.visible)
+        .sort((a, b) => a[1].zIndex - b[1].zIndex)
         .map(([node, attr]) => ({
             node,
             visible: attr.visible,

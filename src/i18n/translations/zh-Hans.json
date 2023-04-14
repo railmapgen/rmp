@@ -34,6 +34,7 @@
             "info": {
                 "title": "基本信息",
                 "id": "唯一识别符",
+                "zIndex": "深度",
                 "stationType": "车站类型",
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型"

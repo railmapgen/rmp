@@ -34,6 +34,7 @@
             "info": {
                 "title": "Basic information",
                 "id": "ID",
+                "zIndex": "Depth",
                 "stationType": "Station Type",
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type"
