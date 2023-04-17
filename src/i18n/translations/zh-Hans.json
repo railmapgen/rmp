@@ -86,7 +86,8 @@
                     "nameEn": "英文线路名称"
                 },
                 "facilities": {
-                    "displayName": "设施"
+                    "displayName": "设施",
+                    "type": "类型"
                 },
                 "text": {
                     "displayName": "任意文字",

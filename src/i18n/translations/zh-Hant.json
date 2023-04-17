@@ -86,7 +86,8 @@
                     "nameEn": "英文線路名稱"
                 },
                 "facilities": {
-                    "displayName": "設施"
+                    "displayName": "設施",
+                    "type": "類型"
                 },
                 "text": {
                     "displayName": "任意文字",

@@ -199,6 +199,51 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                         </g>
                     </>
                 )}
+                {type === 'ngong_ping_360' && (
+                    <>
+                        <g id="ngong_ping_360" transform="translate(-179,-161)scale(0.5970084519)">
+                            <rect x="270.1" y="270.4" fill="#012639" width="58.7" height="58.7" />
+                            <polygon fill="#FFFFFF" points="277.2,274.7 297.4,280.1 297.4,278.6 277.2,273.2 " />
+                            <polygon fill="#FFFFFF" points="301.4,281.2 321.7,286.6 321.7,285.1 301.4,279.7 " />
+                            <path
+                                fill="#FFFFFF"
+                                d="M312.4,326c0,0.1-0.2,0.2-0.3,0.2h-1.1c-0.2,0-0.3-0.1-0.3-0.3c0,0,0-0.1,0-0.1l0.8-2.4h-23.9l0.8,2.4
+	c0,0,0,0.1,0,0.1c0,0.2-0.1,0.3-0.3,0.3h-1.1c-0.1,0-0.3-0.1-0.3-0.2l-3.8-13.9c-1-3.6-0.3-8.2,0.4-10.5l4.7-14.9
+	c0.2-0.8,0.5-0.9,0.8-0.9h1.2l-0.4,1.2h8.7v-10.2c0-0.2,0.2-0.4,0.4-0.4h1.8c0.2,0,0.4,0.2,0.4,0.4v10.2h8.7l-0.4-1.2h1.2
+	c0.3,0,0.6,0.1,0.8,0.9l4.7,14.9c0.7,2.3,1.4,6.8,0.4,10.5L312.4,326z"
+                            />
+                            <path
+                                fill="#012639"
+                                d="M288.4,289.9v19c0,0.3-0.2,0.5-0.5,0.5h-4c-0.3-3.2,0.4-6,1-8.3L288.4,289.9z"
+                            />
+                            <path
+                                fill="#012639"
+                                d="M310.5,289.9v19c0,0.3,0.2,0.5,0.5,0.5h4c0.3-3.2-0.4-6-1-8.3L310.5,289.9z"
+                            />
+                            <path
+                                fill="#012639"
+                                d="M290.4,289.9h7.7c0.3,0,0.5,0.2,0.5,0.5v18.5c0,0.3-0.2,0.5-0.5,0.5h-7.7c-0.3,0-0.5-0.2-0.5-0.5v-18.5
+	C289.9,290.2,290.2,289.9,290.4,289.9"
+                            />
+                            <path
+                                fill="#012639"
+                                d="M300.7,289.9h7.8c0.3,0,0.5,0.2,0.5,0.5v18.5c0,0.3-0.2,0.5-0.5,0.5h-7.8c-0.3,0-0.5-0.2-0.5-0.5v-18.5
+	C300.2,290.2,300.4,289.9,300.7,289.9"
+                            />
+                            <rect
+                                x="270.1"
+                                y="270.4"
+                                width="58.7"
+                                height="58.7"
+                                fillOpacity="0"
+                                onPointerDown={onPointerDown}
+                                onPointerMove={onPointerMove}
+                                onPointerUp={onPointerUp}
+                                style={{ cursor: 'move' }}
+                            />
+                        </g>
+                    </>
+                )}
             </g>
         ),
         [id, x, y, type, onPointerDown, onPointerMove, onPointerUp]
@@ -209,7 +254,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
  * Facilities specific props.
  */
 export interface FacilitiesAttributes {
-    type: 'airport' | 'maglev' | 'disney' | 'railway' | 'hsr';
+    type: 'airport' | 'maglev' | 'disney' | 'railway' | 'hsr' | 'ngong_ping_360';
 }
 
 const defaultFacilitiesAttributes: FacilitiesAttributes = {
@@ -221,12 +266,19 @@ const FacilitiesFields = [
         type: 'select',
         label: 'panel.details.node.FacilitiesAttributes.type',
         value: (attrs?: FacilitiesAttributes) => (attrs ?? defaultFacilitiesAttributes).type,
-        options: { airport: 'airport', maglev: 'maglev', disney: 'disney', railway: 'railway', hsr: 'hsr' },
+        options: {
+            airport: 'airport',
+            maglev: 'maglev',
+            disney: 'disney',
+            railway: 'railway',
+            hsr: 'hsr',
+            ngong_ping_360: 'Ngong Ping 360',
+        },
         onChange: (val: string | number, attrs_: FacilitiesAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultFacilitiesAttributes;
             // set value
-            attrs.type = val as 'airport' | 'maglev' | 'disney' | 'railway' | 'hsr';
+            attrs.type = val as 'airport' | 'maglev' | 'disney' | 'railway' | 'hsr' | 'ngong_ping_360';
             // return modified attrs
             return attrs;
         },

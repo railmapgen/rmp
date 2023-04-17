@@ -86,7 +86,8 @@
                     "nameEn": "영문 노선 명칭"
                 },
                 "facilities": {
-                    "displayName": "시설"
+                    "displayName": "시설",
+                    "type": "Type"
                 },
                 "text": {
                     "displayName": "임의 글자",

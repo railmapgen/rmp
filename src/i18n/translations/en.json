@@ -86,7 +86,8 @@
                     "nameEn": "Line name in English"
                 },
                 "facilities": {
-                    "displayName": "Facilities"
+                    "displayName": "Facilities",
+                    "type": "Type"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
