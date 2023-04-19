@@ -2,16 +2,31 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useRootSelector } from '../../../redux';
+import { useRootSelector, useRootDispatch } from '../../../redux';
+import { saveGraph } from '../../../redux/param/param-slice';
+import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import StationTypeSection from './station-type-section';
 import LineTypeSection from './line-type-section';
 
 export default function InfoSection() {
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+    const hardRefresh = React.useCallback(() => {
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
+        dispatch(saveGraph(graph.current.export()));
+    }, [dispatch, setRefreshEdges, saveGraph]);
 
     const { selected } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);
+
+    const handleZIndexChange = (val: number) => {
+        const zIndex = Math.min(Math.max(val, -5), 5);
+        if (graph.current.hasNode(selectedFirst)) graph.current.setNodeAttribute(selectedFirst, 'zIndex', zIndex);
+        if (graph.current.hasEdge(selectedFirst)) graph.current.setEdgeAttribute(selectedFirst, 'zIndex', zIndex);
+        hardRefresh();
+    };
 
     const fields: RmgFieldsField[] = [
         {
@@ -19,6 +34,19 @@ export default function InfoSection() {
             label: t('panel.details.info.id'),
             value: selected.length > 0 ? selected.join(', ') : 'undefined',
             minW: 276,
+        },
+        {
+            type: 'select',
+            label: t('panel.details.info.zIndex'),
+            value: selectedFirst
+                ? graph.current.hasNode(selectedFirst)
+                    ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
+                    : graph.current.hasEdge(selectedFirst)
+                    ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
+                    : 0
+                : 0,
+            options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
+            onChange: val => handleZIndexChange(Number(val)),
         },
     ];
 

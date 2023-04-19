@@ -85,6 +85,7 @@ const DetailsPanel = () => {
                             label: t(field.label),
                             value: field.value?.(attrs),
                             isChecked: field.isChecked?.(attrs),
+                            hidden: field.hidden?.(attrs),
                             options: field.options,
                             disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
                             validator: field.validator,

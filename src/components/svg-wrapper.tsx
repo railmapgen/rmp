@@ -14,6 +14,7 @@ import {
     setRefreshNodes,
     setRefreshEdges,
     setKeepLastPath,
+    setNodeExists,
 } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
 import stations from './svgs/stations/stations';
@@ -34,7 +35,42 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
-    const { mode, lastTool, active, selected, keepLastPath, theme } = useRootSelector(state => state.runtime);
+    const {
+        mode,
+        lastTool,
+        active,
+        selected,
+        keepLastPath,
+        theme,
+        refresh: { nodes: refreshNodes },
+        nodeExists,
+    } = useRootSelector(state => state.runtime);
+
+    // Update nodeExists on each update and add mtr fonts if needed.
+    // If later other nodes want to hook some special logic like mtr fonts,
+    // loadMTRFonts(nodeExists: { [key in NodeType]: boolean }) is required and so do other hooks.
+    React.useEffect(() => {
+        const nodeExistsCopy = JSON.parse(JSON.stringify(nodeExists));
+        graph.current.forEachNode(node => {
+            const type = graph.current.getNodeAttribute(node, 'type');
+            nodeExistsCopy[type] = true;
+        });
+        dispatch(setNodeExists(nodeExistsCopy));
+
+        let link: HTMLLinkElement;
+        if (nodeExistsCopy[StationType.MTR]) {
+            link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.id = 'fonts_mtr';
+            link.href = process.env.PUBLIC_URL + `/styles/fonts_mtr.css`;
+            document.head.append(link);
+        }
+        return () => {
+            if (link) {
+                document.head.removeChild(link);
+            }
+        };
+    }, [refreshNodes]);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });

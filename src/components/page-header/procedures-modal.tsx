@@ -75,7 +75,7 @@ export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => voi
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1">
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
                     <Button colorScheme="red" onClick={handleChange}>
@@ -129,7 +129,7 @@ export const ScaleNodesModal = (props: { isOpen: boolean; onClose: () => void })
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1">
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
                     <Button colorScheme="red" onClick={handleChange}>
@@ -204,7 +204,7 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1">
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
                     <Button colorScheme="red" onClick={handleChange}>
@@ -258,7 +258,7 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1">
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
                     <Button colorScheme="red" onClick={handleChange}>

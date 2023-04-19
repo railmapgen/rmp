@@ -34,6 +34,7 @@
             "info": {
                 "title": "기본정보",
                 "id": "고유 식별자",
+                "zIndex": "깊이",
                 "stationType": "역 유형",
                 "linePathType": "선분 경로 유형",
                 "lineStyleType": "선분 스타일 유형"
@@ -85,7 +86,8 @@
                     "nameEn": "영문 노선 명칭"
                 },
                 "facilities": {
-                    "displayName": "시설"
+                    "displayName": "시설",
+                    "type": "Type"
                 },
                 "text": {
                     "displayName": "임의 글자",
@@ -260,6 +262,7 @@
             "shanghai": "상해",
             "guangzhou": "광저우",
             "beijing": "베이징",
+            "hongkong": "홍콩",
             "santiago": "산티아고"
         },
         "download": {

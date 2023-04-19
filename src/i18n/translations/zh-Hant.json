@@ -34,6 +34,7 @@
             "info": {
                 "title": "基本信息",
                 "id": "唯一識別符",
+                "zIndex": "深度",
                 "stationType": "車站類型",
                 "linePathType": "線段路徑類型",
                 "lineStyleType": "線段樣式類型"
@@ -85,7 +86,8 @@
                     "nameEn": "英文線路名稱"
                 },
                 "facilities": {
-                    "displayName": "設施"
+                    "displayName": "設施",
+                    "type": "類型"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -260,6 +262,7 @@
             "shanghai": "上海",
             "guangzhou": "廣州",
             "beijing": "北京",
+            "hongkong": "香港",
             "santiago": "聖地亞哥"
         },
         "download": {
