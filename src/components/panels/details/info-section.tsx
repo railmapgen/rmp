@@ -4,7 +4,7 @@ import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useRootSelector, useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshNodes, setRefreshEdges, } from '../../../redux/runtime/runtime-slice';
+import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import StationTypeSection from './station-type-section';
 import LineTypeSection from './line-type-section';
 
