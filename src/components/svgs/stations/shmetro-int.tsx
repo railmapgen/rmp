@@ -5,6 +5,7 @@ import {
     defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
+    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -36,13 +37,16 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textDX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
+    const iconWidth = Math.cos((rotate * Math.PI) / 180) * width;
+    const iconHeight = Math.sin((rotate * Math.PI) / 180) * height;
+    // x should be ±13.33 in default (width=13), 13.33 - 13 / 2 = 6.83
+    const textDX = nameOffsetX === 'left' ? -6.83 : nameOffsetX === 'right' ? 6.83 : 0;
     // if icon grows the same direction of the text, add the extra icon length to text
-    const textX = (Math.abs(textDX) + width / 2) * Math.sign(textDX);
+    const textX = (Math.abs(textDX) + iconWidth / 2) * Math.sign(textDX);
     const textDY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 6.67) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 1.67) *
         NAME_DY[nameOffsetY].polarity;
-    const textY = (Math.abs(textDY) + height / 2) * Math.sign(textDY);
+    const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -204,15 +208,15 @@ const shmetroIntStationFields = [
         },
     },
     {
-        type: 'input',
+        type: 'select',
         label: 'panel.details.station.shmetroInt.rotate',
-        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).rotate,
-        validator: (val: string) => Number.isInteger(val) && Number(val) >= 0 && Number(val) < 180,
+        value: (attrs?: ShmetroIntStationAttributes) => attrs?.rotate ?? defaultShmetroIntStationAttributes.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
             // set value
-            attrs.rotate = Math.abs(Number(val)) % 180;
+            attrs.rotate = Number(val) as Rotate;
             // return modified attrs
             return attrs;
         },
