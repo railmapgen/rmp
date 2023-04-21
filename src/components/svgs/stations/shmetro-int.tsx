@@ -37,8 +37,10 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const iconWidth = Math.cos((rotate * Math.PI) / 180) * width;
-    const iconHeight = Math.sin((rotate * Math.PI) / 180) * height;
+    const iconWidth =
+        rotate === 0 || rotate === 180 ? width : rotate === 90 || rotate === 270 ? height : width * Math.SQRT1_2;
+    const iconHeight =
+        rotate === 0 || rotate === 180 ? height : rotate === 90 || rotate === 270 ? width : width * Math.SQRT1_2;
     // x should be ±13.33 in default (width=13), 13.33 - 13 / 2 = 6.83
     const textDX = nameOffsetX === 'left' ? -6.83 : nameOffsetX === 'right' ? 6.83 : 0;
     // if icon grows the same direction of the text, add the extra icon length to text
@@ -47,6 +49,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 1.67) *
         NAME_DY[nameOffsetY].polarity;
     const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
+    console.log(iconHeight, textDY, textY)
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
