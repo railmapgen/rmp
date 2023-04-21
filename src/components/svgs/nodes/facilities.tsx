@@ -152,7 +152,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                                 d="M5.1606.89861a3.67176,3.67176,0,0,0-3.676,3.667v48.966a3.67842,3.67842,0,0,0,3.676,3.692h48.443a3.67892,3.67892,0,0,0,3.678-3.692V4.5656a3.67227,3.67227,0,0,0-3.678-3.667Z"
                             />
                         </clipPath>
-                        <g id="hsr" transform="scale(0.5)">
+                        <g id="hsr" transform="scale(0.33)">
                             <rect x={-29.33899} width={58.67798} height={58.67798} />
                             <g clipPath="url(#hsr-clip-path)" transform="translate(-29.33899,0)">
                                 <rect
@@ -227,7 +227,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                     </>
                 )}
                 {type === 'airport_hk' && (
-                    <g id="airport_hk" transform="scale(0.5)">
+                    <g id="airport_hk" transform="scale(0.33)">
                         <rect x="-29.35" fill="#012639" width="58.7" height="58.7" />
                         <path
                             id="airport"
@@ -237,6 +237,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                         />
                         <rect
                             fill="#012639"
+                            x="-29.35"
                             width="58.7"
                             height="58.7"
                             fillOpacity="0"
@@ -248,7 +249,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                     </g>
                 )}
                 {type === 'disney_hk' && (
-                    <g id="disney_hk" transform="scale(0.5)">
+                    <g id="disney_hk" transform="scale(0.33)">
                         <rect x="-29.35" fill="#012639" width="58.7" height="58.7" />
                         <path
                             fill="white"
@@ -257,6 +258,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                         />
                         <rect
                             fill="#012639"
+                            x="-29.35"
                             width="58.7"
                             height="58.7"
                             fillOpacity="0"
@@ -269,7 +271,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                 )}
                 {type === 'ngong_ping_360' && (
                     <>
-                        <g id="ngong_ping_360" transform="translate(-179,-161)scale(0.5)">
+                        <g id="ngong_ping_360" transform="translate(-179,-161)scale(0.33)">
                             <rect x="270.1" y="270.4" fill="#012639" width="58.7" height="58.7" />
                             <polygon fill="#FFFFFF" points="277.2,274.7 297.4,280.1 297.4,278.6 277.2,273.2 " />
                             <polygon fill="#FFFFFF" points="301.4,281.2 321.7,286.6 321.7,285.1 301.4,279.7 " />
