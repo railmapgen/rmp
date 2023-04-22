@@ -13,6 +13,12 @@ import {
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
+const TEXT_Y_OFFSET = {
+    top: 1.67,
+    middle: 0,
+    bottom: 5.67,
+};
+
 const ShmetroIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -46,10 +52,10 @@ const ShmetroIntStation = (props: StationComponentProps) => {
     // if icon grows the same direction of the text, add the extra icon length to text
     const textX = (Math.abs(textDX) + iconWidth / 2) * Math.sign(textDX);
     const textDY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 1.67) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
+            TEXT_Y_OFFSET[nameOffsetY]) *
         NAME_DY[nameOffsetY].polarity;
     const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
-    console.log(iconHeight, textDY, textY)
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
