@@ -13,10 +13,19 @@ import {
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
-const TEXT_Y_OFFSET = {
-    top: 1.67,
-    middle: 0,
-    bottom: 0.33,
+const NAME_DY_SH_INT = {
+    top: {
+        lineHeight: 6.67,
+        offset: 1.67,
+    },
+    middle: {
+        lineHeight: 0,
+        offset: 0,
+    },
+    bottom: {
+        lineHeight: 12.67,
+        offset: 0.33,
+    },
 };
 
 const ShmetroIntStation = (props: StationComponentProps) => {
@@ -52,8 +61,8 @@ const ShmetroIntStation = (props: StationComponentProps) => {
     // if icon grows the same direction of the text, add the extra icon length to text
     const textX = (Math.abs(textDX) + iconWidth / 2) * Math.sign(textDX);
     const textDY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
-            TEXT_Y_OFFSET[nameOffsetY]) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SH_INT[nameOffsetY].lineHeight +
+            NAME_DY_SH_INT[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
     const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
