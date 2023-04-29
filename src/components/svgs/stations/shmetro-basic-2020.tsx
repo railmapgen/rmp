@@ -18,7 +18,7 @@ const ROTATE_CONST: {
         textDy: number;
         textAnchor: 'start' | 'middle' | 'end';
         namesPos: 0 | 1;
-        lineHeight: 0 | 10 | 16;
+        lineHeight: 0 | 6.67 | 12.67;
         polarity: -1 | 0 | 1;
     };
 } = {
@@ -27,15 +27,15 @@ const ROTATE_CONST: {
         textDy: -27,
         textAnchor: 'middle',
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: 6.67,
         polarity: -1,
     },
     45: {
         textDx: 12,
-        textDy: -15,
+        textDy: -16.25,
         textAnchor: 'start',
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: 6.67,
         polarity: -1,
     },
     90: {
@@ -48,26 +48,26 @@ const ROTATE_CONST: {
     },
     135: {
         textDx: 12,
-        textDy: 15,
+        textDy: 21,
         textAnchor: 'start',
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: 12.67,
         polarity: 1,
     },
     180: {
         textDx: 0,
-        textDy: 27,
+        textDy: 22.5,
         textAnchor: 'middle',
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: 12.67,
         polarity: 1,
     },
     225: {
-        textDx: -12,
-        textDy: 15,
+        textDx: -5,
+        textDy: 21,
         textAnchor: 'end',
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: 12.67,
         polarity: 1,
     },
     270: {
@@ -79,11 +79,11 @@ const ROTATE_CONST: {
         polarity: 0,
     },
     315: {
-        textDx: -12,
-        textDy: -15,
+        textDx: -1,
+        textDy: -16.25,
         textAnchor: 'end',
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: 6.67,
         polarity: -1,
     },
 };
