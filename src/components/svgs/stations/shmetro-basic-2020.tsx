@@ -24,14 +24,14 @@ const ROTATE_CONST: {
 } = {
     0: {
         textDx: 0,
-        textDy: -27,
+        textDy: -17.5,
         textAnchor: 'middle',
         namesPos: 1,
         lineHeight: 6.67,
         polarity: -1,
     },
     45: {
-        textDx: 12,
+        textDx: 1,
         textDy: -16.25,
         textAnchor: 'start',
         namesPos: 1,
@@ -47,7 +47,7 @@ const ROTATE_CONST: {
         polarity: 0,
     },
     135: {
-        textDx: 12,
+        textDx: 5,
         textDy: 21,
         textAnchor: 'start',
         namesPos: 0,
