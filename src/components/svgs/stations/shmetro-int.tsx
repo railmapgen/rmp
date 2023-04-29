@@ -16,7 +16,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 const TEXT_Y_OFFSET = {
     top: 1.67,
     middle: 0,
-    bottom: 5.67,
+    bottom: 0.33,
 };
 
 const ShmetroIntStation = (props: StationComponentProps) => {
