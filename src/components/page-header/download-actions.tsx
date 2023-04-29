@@ -182,7 +182,7 @@ export default function DownloadActions() {
     };
 
     return (
-        <Menu>
+        <Menu id="download">
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
                 <MenuItem icon={<MdSave />} onClick={handleDownloadJson}>
