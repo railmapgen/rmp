@@ -12,6 +12,21 @@ import {
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
+const NAME_DY_SH_BASIC = {
+    top: {
+        lineHeight: 6.67,
+        offset: 5.67,
+    },
+    middle: {
+        lineHeight: 0,
+        offset: 0,
+    },
+    bottom: {
+        lineHeight: 12.67,
+        offset: 5.33,
+    },
+};
+
 const ShmetroBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -35,7 +50,8 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 6.67) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
+            NAME_DY_SH_BASIC[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
