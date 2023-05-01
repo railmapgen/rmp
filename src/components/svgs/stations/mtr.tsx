@@ -77,7 +77,6 @@ const MTRStation = (props: StationComponentProps) => {
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_LINE_HEIGHT[nameOffsetY] + 6) *
         NAME_DY[nameOffsetY].polarity;
     const textY = Math.sign(iconY) === Math.sign(textDY) ? iconY + textDY : textDY;
-    console.log(names[NAME_DY[nameOffsetY].namesPos].split('\\').length, NAME_LINE_HEIGHT[nameOffsetY])
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(

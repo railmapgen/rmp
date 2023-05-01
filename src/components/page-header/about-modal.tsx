@@ -70,8 +70,31 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     thekingofcity
                                 </Text>
                                 <Text fontSize="sm">{t('header.about.content1')}</Text>
-                                <Text fontSize="sm" align="right">
+                                <Text fontSize="sm" align="right" mb={1}>
                                     {t('header.about.content2')}
+                                </Text>
+                            </TagLabel>
+                        </Tag>
+                    </VStack>
+
+                    <Heading as="h6" size="xs" my={2}>
+                        {t('header.about.styleContributors')}
+                    </Heading>
+
+                    <VStack>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => window.open('https://github.com/203IhzElttil', '_blank')}
+                            cursor="pointer"
+                        >
+                            <Avatar src="https://github.com/203IhzElttil.png" size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    203IhzElttil
+                                </Text>
+                                <Text fontSize="sm" mb={1}>
+                                    {t('header.about.203IhzElttil')}
                                 </Text>
                             </TagLabel>
                         </Tag>
