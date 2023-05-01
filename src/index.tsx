@@ -11,6 +11,7 @@ import store from './redux';
 import { setTelemetryApp } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 
 declare global {
     interface Window {
@@ -52,4 +53,5 @@ upgrade(param).then(param => {
     store.dispatch(setFullState(state));
 
     renderApp();
+    rmgRuntime.injectUITools();
 });
