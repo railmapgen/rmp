@@ -15,7 +15,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 const NAME_DY_SH_BASIC = {
     top: {
         lineHeight: 6.67,
-        offset: 5.67,
+        offset: 3.5 + 1.5, // offset + baseOffset
     },
     middle: {
         lineHeight: 0,
@@ -23,7 +23,7 @@ const NAME_DY_SH_BASIC = {
     },
     bottom: {
         lineHeight: 12.67,
-        offset: 5.33,
+        offset: -0.17 + 1, // offset + baseOffset
     },
 };
 
