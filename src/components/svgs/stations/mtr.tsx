@@ -20,6 +20,11 @@ import {
 
 const LINE_WIDTH = 5;
 const R = 5;
+const NAME_LINE_HEIGHT = {
+    top: 7.5,
+    middle: 0,
+    bottom: 12.5,
+};
 
 const makeStationPath = (r: number, lineWidth: number = LINE_WIDTH, transfer: InterchangeInfo[] = []): `M${string}` => {
     const y = Math.sqrt(r * r - (lineWidth * lineWidth) / 4);
@@ -69,9 +74,10 @@ const MTRStation = (props: StationComponentProps) => {
     // if icon grows the same direction of the text, add the extra icon length to text
     const textX = Math.sign(iconX) === Math.sign(textDX) ? iconX + textDX : textDX;
     const textDY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 6) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_LINE_HEIGHT[nameOffsetY] + 6) *
         NAME_DY[nameOffsetY].polarity;
     const textY = Math.sign(iconY) === Math.sign(textDY) ? iconY + textDY : textDY;
+    console.log(names[NAME_DY[nameOffsetY].namesPos].split('\\').length, NAME_LINE_HEIGHT[nameOffsetY])
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(

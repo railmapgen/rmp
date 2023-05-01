@@ -19,7 +19,16 @@ export default function GlobalAlerts() {
     return (
         <>
             {Object.entries(globalAlerts).map(([status, { message, url, linkedApp }]) => (
-                <Alert key={status} status={status as AlertStatus} variant="solid" size="xs" pl={3} pr={1} py={0}>
+                <Alert
+                    key={status}
+                    status={status as AlertStatus}
+                    variant="solid"
+                    size="xs"
+                    pl={3}
+                    pr={1}
+                    py={0}
+                    zIndex="5"
+                >
                     <AlertIcon />
                     {linkedApp ? (
                         <Link onClick={() => handleAppOpen(linkedApp)}>{message}</Link>

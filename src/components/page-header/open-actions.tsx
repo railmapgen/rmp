@@ -268,6 +268,7 @@ export default function OpenActions() {
                 </MenuItem>
 
                 <input
+                    id="upload_project"
                     ref={fileInputRef}
                     type="file"
                     accept=".json"
