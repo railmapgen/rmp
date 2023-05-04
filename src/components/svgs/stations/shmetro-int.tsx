@@ -5,12 +5,28 @@ import {
     defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
+    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+
+const NAME_DY_SH_INT = {
+    top: {
+        lineHeight: 6.67,
+        offset: 3.5 + 1.5, // offset + baseOffset
+    },
+    middle: {
+        lineHeight: 0,
+        offset: 0,
+    },
+    bottom: {
+        lineHeight: 12.67,
+        offset: -0.17 + 1, // offset + baseOffset
+    },
+};
 
 const ShmetroIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -36,10 +52,19 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
-    const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
+    const iconWidth =
+        rotate === 0 || rotate === 180 ? width : rotate === 90 || rotate === 270 ? height : width * Math.SQRT1_2;
+    const iconHeight =
+        rotate === 0 || rotate === 180 ? height : rotate === 90 || rotate === 270 ? width : width * Math.SQRT1_2;
+    // x should be ±13.33 in default (width=13), 13.33 - 13 / 2 = 6.83
+    const textDX = nameOffsetX === 'left' ? -6.83 : nameOffsetX === 'right' ? 6.83 : 0;
+    // if icon grows the same direction of the text, add the extra icon length to text
+    const textX = (Math.abs(textDX) + iconWidth / 2) * Math.sign(textDX);
+    const textDY =
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SH_INT[nameOffsetY].lineHeight +
+            NAME_DY_SH_INT[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
+    const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -54,6 +79,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                         width={width}
                         ry={height / 2}
                         stroke="black"
+                        strokeWidth="1.33"
                         fill="white"
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}
@@ -68,16 +94,18 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 >
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
+                        fontSize={12.67}
+                        lineHeight={12.67}
                         grow="up"
+                        baseOffset={1}
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={10}
-                        lineHeight={10}
+                        text={names[1].split('\\').map(s => (nameOffsetX === 'right' ? '\u00A0' : '') + s)}
+                        fontSize={6.67}
+                        lineHeight={6.67}
                         grow="down"
+                        baseOffset={1.5}
                         className="rmp-name__en"
                     />
                 </g>
@@ -88,7 +116,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * <ShmetroIntStation /> specific props.
+ * ShmetroIntStation specific props.
  */
 export interface ShmetroIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
@@ -107,7 +135,7 @@ const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
     nameOffsetY: 'top',
     rotate: 0,
     height: 10,
-    width: 15,
+    width: 13,
 };
 
 const shmetroIntStationFields = [
@@ -198,15 +226,15 @@ const shmetroIntStationFields = [
         },
     },
     {
-        type: 'input',
+        type: 'select',
         label: 'panel.details.station.shmetroInt.rotate',
-        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).rotate,
-        validator: (val: string) => Number.isInteger(val) && Number(val) >= 0 && Number(val) < 180,
+        value: (attrs?: ShmetroIntStationAttributes) => attrs?.rotate ?? defaultShmetroIntStationAttributes.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
             // set value
-            attrs.rotate = Math.abs(Number(val)) % 180;
+            attrs.rotate = Number(val) as Rotate;
             // return modified attrs
             return attrs;
         },

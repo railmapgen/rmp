@@ -29,13 +29,16 @@ import { MiscNodeType } from '../../constants/nodes';
 import store, { useRootSelector } from '../../redux';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
+import { getBase64FontFace } from '../../util/fonts';
 import TermsAndConditionsModal from './terms-and-conditions';
+import { StationType } from '../../constants/stations';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
+    const { nodeExists } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
     const bgColor = useColorModeValue('white', 'gray.800');
 
@@ -86,7 +89,7 @@ export default function DownloadActions() {
     };
     // thanks to this article that includes every steps in converting svg to png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
-    const handleDownload = () => {
+    const handleDownload = async () => {
         setIsDownloadModalOpen(false);
         if (isAllowProjectTelemetry)
             rmgRuntime.event(Events.DOWNLOAD_IMAGES, {
@@ -115,9 +118,12 @@ export default function DownloadActions() {
         elem.setAttribute('width', width.toString());
         elem.setAttribute('height', height.toString());
         // copy attributes from css to each elem in the newly cloned svg
+        // TODO: #274 copy all possible attributes using document.querySelectorAll('link'), this is hard to maintain
         Object.entries({
             '.rmp-name__zh': ['font-family'],
             '.rmp-name__en': ['font-family'],
+            '.rmp-name__mtr__zh': ['font-family'],
+            '.rmp-name__mtr__en': ['font-family'],
             '.rmp-name-station': ['paint-order', 'stroke', 'stroke-width'],
         }).forEach(([className, styleSet]) => {
             const e = document.querySelector(className);
@@ -130,6 +136,18 @@ export default function DownloadActions() {
                 el.classList.remove(className);
             });
         });
+
+        if (nodeExists[StationType.MTR]) {
+            try {
+                const uris = await getBase64FontFace(elem);
+                const s = document.createElement('style');
+                s.textContent = uris.join('\n');
+                elem.prepend(s);
+            } catch (err) {
+                alert('Failed to fonts. Fonts in the exported PNG will be missing.');
+                console.error(err);
+            }
+        }
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);
@@ -164,7 +182,7 @@ export default function DownloadActions() {
     };
 
     return (
-        <Menu>
+        <Menu id="download">
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
                 <MenuItem icon={<MdSave />} onClick={handleDownloadJson}>

@@ -34,6 +34,7 @@
             "info": {
                 "title": "基本信息",
                 "id": "唯一识别符",
+                "zIndex": "深度",
                 "stationType": "车站类型",
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型"
@@ -85,7 +86,8 @@
                     "nameEn": "英文线路名称"
                 },
                 "facilities": {
-                    "displayName": "设施"
+                    "displayName": "设施",
+                    "type": "类型"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -260,6 +262,7 @@
             "shanghai": "上海",
             "guangzhou": "广州",
             "beijing": "北京",
+            "hongkong": "香港",
             "santiago": "圣地亚哥"
         },
         "download": {
@@ -345,6 +348,8 @@
             "content2": "06/01/2022于上海",
             "contributors": "贡献者",
             "coreContributors": "核心贡献者",
+            "styleContributors": "样式贡献者",
+            "203IhzElttil": "特别感谢他的辛勤工作，确保上海地铁站的设计与原始设计相匹配。",
             "contactUs": "联系我们",
             "github": "项目仓库",
             "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",

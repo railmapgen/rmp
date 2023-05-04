@@ -12,6 +12,21 @@ import {
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
+const NAME_DY_SH_BASIC = {
+    top: {
+        lineHeight: 6.67,
+        offset: 3.5 + 1.5, // offset + baseOffset
+    },
+    middle: {
+        lineHeight: 0,
+        offset: 0,
+    },
+    bottom: {
+        lineHeight: 12.67,
+        offset: -0.17 + 1, // offset + baseOffset
+    },
+};
+
 const ShmetroBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -33,9 +48,10 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
+    const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
+            NAME_DY_SH_BASIC[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
@@ -46,6 +62,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                     id={`stn_core_${id}`}
                     r={5}
                     stroke="black"
+                    strokeWidth="1.33"
                     fill="white"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
@@ -55,16 +72,18 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
+                        fontSize={12.67}
+                        lineHeight={12.67}
                         grow="up"
+                        baseOffset={1}
                         className="rmp-name__zh"
                     />
                     <MultilineText
                         text={names[1].split('\\')}
-                        fontSize={10}
-                        lineHeight={10}
+                        fontSize={6.67}
+                        lineHeight={6.67}
                         grow="down"
+                        baseOffset={1.5}
                         className="rmp-name__en"
                     />
                 </g>

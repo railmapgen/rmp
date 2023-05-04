@@ -18,24 +18,24 @@ const ROTATE_CONST: {
         textDy: number;
         textAnchor: 'start' | 'middle' | 'end';
         namesPos: 0 | 1;
-        lineHeight: 0 | 10 | 16;
+        lineHeight: 0 | 6.67 | 12.67;
         polarity: -1 | 0 | 1;
     };
 } = {
     0: {
         textDx: 0,
-        textDy: -27,
+        textDy: -17.5,
         textAnchor: 'middle',
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: 6.67,
         polarity: -1,
     },
     45: {
-        textDx: 12,
-        textDy: -15,
+        textDx: 1,
+        textDy: -16.25,
         textAnchor: 'start',
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: 6.67,
         polarity: -1,
     },
     90: {
@@ -47,27 +47,27 @@ const ROTATE_CONST: {
         polarity: 0,
     },
     135: {
-        textDx: 12,
-        textDy: 15,
+        textDx: 5,
+        textDy: 21,
         textAnchor: 'start',
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: 12.67,
         polarity: 1,
     },
     180: {
         textDx: 0,
-        textDy: 27,
+        textDy: 22.5,
         textAnchor: 'middle',
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: 12.67,
         polarity: 1,
     },
     225: {
-        textDx: -12,
-        textDy: 15,
+        textDx: -5,
+        textDy: 21,
         textAnchor: 'end',
         namesPos: 0,
-        lineHeight: 16,
+        lineHeight: 12.67,
         polarity: 1,
     },
     270: {
@@ -79,11 +79,11 @@ const ROTATE_CONST: {
         polarity: 0,
     },
     315: {
-        textDx: -12,
-        textDy: -15,
+        textDx: -1,
+        textDy: -16.25,
         textAnchor: 'end',
         namesPos: 1,
-        lineHeight: 10,
+        lineHeight: 6.67,
         polarity: -1,
     },
 };
@@ -121,10 +121,10 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
                         id={`stn_core_${id}`}
-                        x="-2.5"
-                        y="-10"
-                        width="5"
-                        height="10"
+                        x="-2.33"
+                        y="-7.83"
+                        width="4.67"
+                        height="7.83"
                         stroke="none"
                         fill={color[2]}
                         onPointerDown={onPointerDown}
@@ -140,16 +140,18 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 >
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
+                        fontSize={12.67}
+                        lineHeight={12.67}
                         grow="up"
+                        baseOffset={1}
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={10}
-                        lineHeight={10}
+                        text={names[1].split('\\').map(s => (rotate >= 45 && rotate <= 135 ? '\u00A0' : '') + s)}
+                        fontSize={6.67}
+                        lineHeight={6.67}
                         grow="down"
+                        baseOffset={1.5}
                         className="rmp-name__en"
                     />
                 </g>
@@ -160,7 +162,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 };
 
 /**
- * <ShmetroBasic2020Station /> specific props.
+ * ShmetroBasic2020Station specific props.
  */
 export interface ShmetroBasic2020StationAttributes extends StationAttributes, AttributesWithColor {
     rotate: Rotate;

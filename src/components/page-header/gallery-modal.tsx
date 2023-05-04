@@ -34,7 +34,7 @@ export const GalleryModal = (props: {
 
                 <ModalBody>
                     <VStack>
-                        {['shanghai', 'guangzhou', 'beijing', 'santiago'].map(city => (
+                        {['shanghai', 'guangzhou', 'beijing', 'hongkong', 'santiago'].map(city => (
                             <Button key={city} minWidth={200} onClick={() => handleSelect(city)}>
                                 {t(`header.open.${city}`)}
                             </Button>

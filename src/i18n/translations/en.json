@@ -34,6 +34,7 @@
             "info": {
                 "title": "Basic information",
                 "id": "ID",
+                "zIndex": "Depth",
                 "stationType": "Station Type",
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type"
@@ -85,7 +86,8 @@
                     "nameEn": "Line name in English"
                 },
                 "facilities": {
-                    "displayName": "Facilities"
+                    "displayName": "Facilities",
+                    "type": "Type"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
@@ -260,6 +262,7 @@
             "shanghai": "Shanghai",
             "guangzhou": "Guangzhou",
             "beijing": "Beijing",
+            "hongkong": "Hongkong",
             "santiago": "Santiago"
         },
         "download": {
@@ -345,6 +348,8 @@
             "content2": "06/01/2022 in Shanghai",
             "contributors": "Contributors",
             "coreContributors": "Core Contributors",
+            "styleContributors": "Style Contributors",
+            "203IhzElttil": "Special thanks for his diligent work in ensuring that the stations of Shanghai Metro match the original design.",
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",

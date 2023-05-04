@@ -6,9 +6,9 @@ import {
     MenuButton,
     MenuItem,
     MenuList,
+    useColorModeValue,
     Wrap,
     WrapItem,
-    useColorModeValue,
 } from '@chakra-ui/react';
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
@@ -17,7 +17,7 @@ import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/r
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { undoAction, redoAction } from '../../redux/param/param-slice';
+import { redoAction, undoAction } from '../../redux/param/param-slice';
 import OpenActions from './open-actions';
 import DownloadActions from './download-actions';
 import AboutModal from './about-modal';
@@ -108,18 +108,20 @@ export default function WindowHeader() {
                     <DownloadActions />
                 </WrapItem>
 
-                <WrapItem>
-                    <Menu>
-                        <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
-                        <MenuList>
-                            {SUPPORTED_LANGUAGES.map(lang => (
-                                <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
-                                    {LANGUAGE_NAMES[lang][lang]}
-                                </MenuItem>
-                            ))}
-                        </MenuList>
-                    </Menu>
-                </WrapItem>
+                {rmgRuntime.isStandaloneWindow() && (
+                    <WrapItem>
+                        <Menu>
+                            <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
+                            <MenuList>
+                                {SUPPORTED_LANGUAGES.map(lang => (
+                                    <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
+                                        {LANGUAGE_NAMES[lang][lang]}
+                                    </MenuItem>
+                                ))}
+                            </MenuList>
+                        </Menu>
+                    </WrapItem>
+                )}
 
                 <WrapItem>
                     <IconButton
