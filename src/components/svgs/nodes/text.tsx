@@ -1,5 +1,5 @@
-import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
+
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { MultilineText } from '../common/multiline-text';
 
@@ -95,7 +95,7 @@ export interface TextAttributes {
     lineHeight: number;
     textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
     dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
-    language: LanguageCode;
+    language: string;
 }
 
 const defaultTextAttributes: TextAttributes = {
@@ -181,12 +181,12 @@ const TextFields = [
         type: 'select',
         label: 'panel.details.node.text.language',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).language,
-        options: { zh: 'Chinese', en: 'English' },
+        options: { zh: 'Chinese', en: 'English', mtr__zh: 'MTR Chinese', mtr__en: 'MTR English' },
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultTextAttributes;
             // set value
-            attrs.language = val as LanguageCode;
+            attrs.language = val.toString();
             // return modified attrs
             return attrs;
         },
