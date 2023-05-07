@@ -1,19 +1,20 @@
-import { nanoid } from 'nanoid';
-import { StationAttributes, StationType } from '../constants/stations';
 import Graph from 'graphology';
-import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
-import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import { nanoid } from 'nanoid';
+
 import { InterchangeInfo } from '../components/panels/details/interchange-field';
-import stations from '../components/svgs/stations/stations';
+import { linePaths } from '../components/svgs/lines/lines';
+import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { MTRStationAttributes } from '../components/svgs/stations/mtr';
+import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import stations from '../components/svgs/stations/stations';
 import { LinePathType, LineStyleType } from '../constants/lines';
-import { linePaths } from '../components/svgs/lines/lines';
+import { StationAttributes, StationType } from '../constants/stations';
 
-export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
-    const stnList = param.stn_list;
-    const theme = param.theme;
-
+export const parseRmgParam = (
+    graph: Graph,
+    { info_panel_type, line_num, stn_list: stnList, style, theme }: Record<string, any>
+) => {
     // generate stn id
     const stnIdMap = Object.fromEntries(
         Object.keys(stnList)
@@ -26,7 +27,6 @@ export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
         .forEach(([id, stnInfo]) => {
             const nodes = graph.filterNodes(
                 (node, attr) =>
-                    // @ts-expect-error
                     Object.values(StationType).includes(attr.type) &&
                     // @ts-expect-error
                     (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
@@ -41,7 +41,6 @@ export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
             ([id, stnInfo]) =>
                 graph.filterNodes(
                     (node, attr) =>
-                        // @ts-expect-error
                         Object.values(StationType).includes(attr.type) &&
                         // @ts-expect-error
                         (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
@@ -50,14 +49,14 @@ export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
         .forEach(([id, stnInfo], i) => {
             // determine station type
             let type: StationType = StationType.ShmetroBasic;
-            if (param.style === 'shmetro') {
+            if (style === 'shmetro') {
                 if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.ShmetroInt;
-                else if (param.info_panel_type === 'sh2020') type = StationType.ShmetroBasic2020;
+                else if (info_panel_type === 'sh2020') type = StationType.ShmetroBasic2020;
                 else type = StationType.ShmetroBasic;
-            } else if (param.style === 'gzmtr') {
+            } else if (style === 'gzmtr') {
                 if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.GzmtrInt;
                 else type = StationType.GzmtrBasic;
-            } else if (param.style === 'mtr') {
+            } else if (style === 'mtr') {
                 type = StationType.MTR;
             }
 
@@ -71,8 +70,8 @@ export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
             // add style specific attrs from RMG save
             if (type === StationType.ShmetroBasic2020) (attr as ShmetroBasic2020StationAttributes).color = theme;
             else if (type === StationType.GzmtrBasic) {
-                (attr as GzmtrBasicStationAttributes).color = param.theme;
-                (attr as GzmtrBasicStationAttributes).lineCode = param.line_num;
+                (attr as GzmtrBasicStationAttributes).color = theme;
+                (attr as GzmtrBasicStationAttributes).lineCode = line_num;
                 (attr as GzmtrBasicStationAttributes).stationCode = (stnInfo as any).num;
             } else if (type === StationType.GzmtrInt) {
                 const transfer = JSON.parse(JSON.stringify((stnInfo as any).transfer.info)) as InterchangeInfo[][];
@@ -84,11 +83,7 @@ export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
                     })
                 );
                 // add current line and station code to transfer[0][0]
-                transfer[0].unshift([
-                    ...param.theme,
-                    param.line_num,
-                    (stnInfo as any).num,
-                ] as unknown as InterchangeInfo);
+                transfer[0].unshift([...theme, line_num, (stnInfo as any).num] as unknown as InterchangeInfo);
                 (attr as GzmtrIntStationAttributes).transfer = transfer;
             } else if (type === StationType.MTR) {
                 let transfer = JSON.parse(JSON.stringify((stnInfo as any).transfer.info)) as InterchangeInfo[][];
@@ -103,7 +98,7 @@ export const parseRmgParam = (graph: Graph, param: Record<string, any>) => {
                 );
                 if (transfer.flat().length > 0) {
                     // add current theme to transfer[0][0] as MTR display all transfers including the current line
-                    transfer[0].unshift([...param.theme, '', ''] as unknown as InterchangeInfo);
+                    transfer[0].unshift([...theme, '', ''] as unknown as InterchangeInfo);
                 }
                 (attr as MTRStationAttributes).transfer = transfer;
             }

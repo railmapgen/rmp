@@ -117,6 +117,8 @@ export default function OpenActions() {
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
+
+        // rest graph with new data
         graph.current.clear();
         graph.current.import(g);
         const state: ParamState = { ...save, present: g, past: [], future: [] };
