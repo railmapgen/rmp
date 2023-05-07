@@ -1,3 +1,5 @@
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
 module.exports = app => {
     app.get('/rmp/info.json', (req, res) => {
         res.send({
@@ -7,4 +9,13 @@ module.exports = app => {
             instance: 'localhost',
         });
     });
+
+    app.use(
+        ['/rmg/'],
+        createProxyMiddleware({
+            target: 'https://uat-railmapgen.github.io',
+            changeOrigin: true,
+            secure: false,
+        })
+    );
 };

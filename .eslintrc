@@ -43,5 +43,5 @@
         "es6": true,
         "node": true
     },
-    "ignorePatterns": ["**/*.json"]
+    "ignorePatterns": ["**/*.json", "setupProxy.js"]
 }
