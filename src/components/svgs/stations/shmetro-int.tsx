@@ -101,7 +101,8 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\').map(s => (nameOffsetX === 'right' ? '\u00A0' : '') + s)}
+                        text={names[1].split('\\')}
+                        dx={nameOffsetX === 'right' ? 1.67 : 0}
                         fontSize={6.67}
                         lineHeight={6.67}
                         grow="down"
