@@ -1,15 +1,5 @@
 import React from 'react';
-import {
-    Heading,
-    IconButton,
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuList,
-    useColorModeValue,
-    Wrap,
-    WrapItem,
-} from '@chakra-ui/react';
+import { Heading, IconButton, Menu, MenuButton, MenuItem, MenuList, Wrap, WrapItem } from '@chakra-ui/react';
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
@@ -31,7 +21,6 @@ export default function WindowHeader() {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
     const { past, future } = useRootSelector(state => state.param);
-    const bgColor = useColorModeValue('white', 'gray.800');
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -51,7 +40,7 @@ export default function WindowHeader() {
     };
 
     return (
-        <RmgWindowHeader style={{ background: bgColor }}>
+        <RmgWindowHeader>
             <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
                 {t('header.about.rmp')}
             </Heading>
