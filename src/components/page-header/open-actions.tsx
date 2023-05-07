@@ -21,7 +21,6 @@ export default function OpenActions() {
     const dispatch = useRootDispatch();
 
     const graph = React.useRef(window.graph);
-    const fileRMGInputRef = React.useRef<HTMLInputElement | null>(null);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const [isGalleryModalOpen, setIsGalleryModalOpen] = React.useState(false);
@@ -39,31 +38,6 @@ export default function OpenActions() {
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
         refreshAndSave();
-    };
-
-    const handleUploadRMG = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        console.log('OpenActions.handleUploadRMG():: received file', file);
-
-        if (file?.type !== 'application/json') {
-            dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
-            console.error('OpenActions.handleUploadRMG():: Invalid file type! Only file in JSON format is accepted.');
-        } else {
-            try {
-                const paramStr = await readFileAsText(file);
-                parseRmgParam(graph.current, JSON.parse(paramStr));
-                refreshAndSave();
-            } catch (err) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
-                console.error(
-                    'OpenActions.handleUploadRMG():: Unknown error occurred while parsing the uploaded file',
-                    err
-                );
-            }
-        }
-
-        // clear field for next upload
-        event.target.value = '';
     };
 
     const handleImportRMGProject = (param: Record<string, any>) => {
@@ -146,18 +120,6 @@ export default function OpenActions() {
                 />
                 <MenuItem icon={<MdUpload />} onClick={() => fileInputRef?.current?.click()}>
                     {t('header.open.config')}
-                </MenuItem>
-
-                <input
-                    ref={fileRMGInputRef}
-                    type="file"
-                    accept=".json"
-                    hidden={true}
-                    onChange={handleUploadRMG}
-                    data-testid="file-upload"
-                />
-                <MenuItem icon={<MdUpload />} onClick={() => fileRMGInputRef?.current?.click()}>
-                    {t('header.open.configRMG')}
                 </MenuItem>
 
                 <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsRmgParamAppClipOpen(true)}>
