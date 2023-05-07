@@ -13,7 +13,7 @@ import {
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
-import { LANGUAGE_NAMES, LanguageCode, SUPPORTED_LANGUAGES } from '@railmapgen/rmg-translate';
+import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, SupportedLanguageCode } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
@@ -45,7 +45,7 @@ export default function WindowHeader() {
             rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
     }, [environment]);
 
-    const handleChangeLanguage = async (language: LanguageCode) => {
+    const handleChangeLanguage = async (language: SupportedLanguageCode) => {
         rmgRuntime.setLanguage(language);
         rmgRuntime.getI18nInstance().changeLanguage(language);
     };
