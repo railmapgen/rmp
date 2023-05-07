@@ -258,6 +258,7 @@
             "new": "新项目",
             "config": "导入项目",
             "configRMG": "从RMG存档中导入",
+            "projectRMG": "从RMG项目中导入",
             "gallery": "从画廊中导入",
             "shanghai": "上海",
             "guangzhou": "广州",

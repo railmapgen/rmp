@@ -258,6 +258,7 @@
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",
             "configRMG": "RMG 파일에서 가져오기",
+            "projectRMG": "RMG 프로젝트에서 가져오기",
             "gallery": "갤러리에서 가져오기",
             "shanghai": "상해",
             "guangzhou": "광저우",

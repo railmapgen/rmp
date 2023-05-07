@@ -258,6 +258,7 @@
             "new": "New project",
             "config": "Import project",
             "configRMG": "Import from RMG save",
+            "projectRMG": "Import from RMG project",
             "gallery": "Import from gallery",
             "shanghai": "Shanghai",
             "guangzhou": "Guangzhou",
