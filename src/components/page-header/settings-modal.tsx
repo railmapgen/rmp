@@ -38,10 +38,15 @@ import {
     ScaleNodesModal,
     TranslateNodesModal,
 } from './procedures-modal';
+import { isMacClient } from '../../util/helpers';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',
     justifyContent: 'space-between',
+};
+
+const macKeyStyle: SystemStyleObject = {
+    fontFamily: '-apple-system',
 };
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
@@ -155,31 +160,45 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tr>
                                         <Tr>
                                             <Td>
-                                                <Kbd>shift</Kbd>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8679;</Kbd> : <Kbd>shift</Kbd>}
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.shift')}</Td>
                                         </Tr>
                                         <Tr>
                                             <Td>
-                                                <Kbd>alt</Kbd>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8997;</Kbd> : <Kbd>alt</Kbd>}
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.alt')}</Td>
                                         </Tr>
                                         <Tr>
                                             <Td>
-                                                <Kbd>delete</Kbd>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#9003;</Kbd> : <Kbd>delete</Kbd>}
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.delete')}</Td>
                                         </Tr>
                                         <Tr>
                                             <Td>
-                                                <Kbd>ctrl</Kbd>+<Kbd>z</Kbd>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
+                                                <Kbd>z</Kbd>
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.undo')}</Td>
                                         </Tr>
                                         <Tr>
                                             <Td>
-                                                <Kbd>ctrl</Kbd>+<Kbd>y</Kbd>
+                                                {isMacClient ? (
+                                                    <>
+                                                        <Kbd sx={macKeyStyle}>&#8679;</Kbd>
+                                                        {' + '}
+                                                        <Kbd sx={macKeyStyle}>&#8984;</Kbd>
+                                                        {' + '}
+                                                        <Kbd>z</Kbd>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Kbd>ctrl</Kbd> + <Kbd>y</Kbd>
+                                                    </>
+                                                )}
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.redo')}</Td>
                                         </Tr>
