@@ -1,10 +1,10 @@
 {
   "files": {
     "main.css": "/rmp/static/css/main.9a5e7b4c.css",
-    "main.js": "/rmp/static/js/main.b94e61c5.js",
-    "WindowHeader.js": "/rmp/static/js/WindowHeader.337f1cd9.chunk.js",
+    "main.js": "/rmp/static/js/main.220f9d50.js",
+    "WindowHeader.js": "/rmp/static/js/WindowHeader.8964bb38.chunk.js",
     "ToolsPanel.js": "/rmp/static/js/ToolsPanel.a44991bd.chunk.js",
-    "SvgWrapper.js": "/rmp/static/js/SvgWrapper.57c5d72a.chunk.js",
+    "SvgWrapper.js": "/rmp/static/js/SvgWrapper.14c20363.chunk.js",
     "DetailsPanel.js": "/rmp/static/js/DetailsPanel.5d292da2.chunk.js",
     "template.js": "/rmp/static/js/template.5cb8f732.chunk.js",
     "static/js/4604.2871ad0d.chunk.js": "/rmp/static/js/4604.2871ad0d.chunk.js",
@@ -235,10 +235,10 @@
     "static/media/1F1F5-1F1F1.svg": "/rmp/static/media/1F1F5-1F1F1.0f2053ce10733fcf148d.svg",
     "static/media/1F1EF-1F1F5.svg": "/rmp/static/media/1F1EF-1F1F5.5bd4e29b292e65a558dd.svg",
     "main.9a5e7b4c.css.map": "/rmp/static/css/main.9a5e7b4c.css.map",
-    "main.b94e61c5.js.map": "/rmp/static/js/main.b94e61c5.js.map",
-    "WindowHeader.337f1cd9.chunk.js.map": "/rmp/static/js/WindowHeader.337f1cd9.chunk.js.map",
+    "main.220f9d50.js.map": "/rmp/static/js/main.220f9d50.js.map",
+    "WindowHeader.8964bb38.chunk.js.map": "/rmp/static/js/WindowHeader.8964bb38.chunk.js.map",
     "ToolsPanel.a44991bd.chunk.js.map": "/rmp/static/js/ToolsPanel.a44991bd.chunk.js.map",
-    "SvgWrapper.57c5d72a.chunk.js.map": "/rmp/static/js/SvgWrapper.57c5d72a.chunk.js.map",
+    "SvgWrapper.14c20363.chunk.js.map": "/rmp/static/js/SvgWrapper.14c20363.chunk.js.map",
     "DetailsPanel.5d292da2.chunk.js.map": "/rmp/static/js/DetailsPanel.5d292da2.chunk.js.map",
     "palettes0.e165daeb.chunk.js.map": "/rmp/static/js/palettes0.e165daeb.chunk.js.map",
     "palettes1.6472ed0a.chunk.js.map": "/rmp/static/js/palettes1.6472ed0a.chunk.js.map",
@@ -369,6 +369,6 @@
   },
   "entrypoints": [
     "static/css/main.9a5e7b4c.css",
-    "static/js/main.b94e61c5.js"
+    "static/js/main.220f9d50.js"
   ]
 }
