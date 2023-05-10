@@ -85,7 +85,7 @@ export default function OpenActions() {
         event.target.value = '';
     };
 
-    const handleOpenTemplates = async (rmpSave: RMPSave) => {
+    const handleOpenTemplate = async (rmpSave: RMPSave) => {
         // templates may be obsolete and require upgrades
         const { version, graph: g, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
@@ -100,6 +100,29 @@ export default function OpenActions() {
 
         refreshAndSave();
     };
+
+    // A one time url match to see if it is a template share link and apply the template if needed.
+    React.useEffect(() => {
+        const fetchAndApplyTemplate = async (id: string) => {
+            const template = (
+                (
+                    await Promise.allSettled([
+                        fetch(`/rmp-gallery/resources/real_world/${id}.json`),
+                        fetch(`/rmp-gallery/resources/fantasy/${id}.json`),
+                    ])
+                ).find(res => res.status === 'fulfilled') as PromiseFulfilledResult<Response> | undefined
+            )?.value.json() as RMPSave | undefined;
+            if (template) handleOpenTemplate(template);
+        };
+
+        const url = window.location.href;
+        if (url.includes('/s/')) {
+            history.replaceState({}, 'Rail Map Painter', url.substring(0, url.indexOf('s/')));
+
+            const id = url.substring(url.lastIndexOf('s/') + 2);
+            fetchAndApplyTemplate(id);
+        }
+    }, []);
 
     return (
         <Menu>
@@ -134,7 +157,7 @@ export default function OpenActions() {
                 </MenuItem>
                 <GalleryModal
                     isOpen={isGalleryModalOpen}
-                    handleOpenTemplates={handleOpenTemplates}
+                    handleOpenTemplate={handleOpenTemplate}
                     onClose={() => setIsGalleryModalOpen(false)}
                 />
             </MenuList>

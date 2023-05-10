@@ -18,4 +18,13 @@ module.exports = app => {
             secure: false,
         })
     );
+    
+    app.use(
+        ['/rmp-gallery/'],
+        createProxyMiddleware({
+            target: 'https://railmapgen.github.io',
+            changeOrigin: true,
+            secure: false,
+        })
+    );
 };
