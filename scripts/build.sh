@@ -4,7 +4,7 @@ set -eux
 # bump resources version
 npm i -g npm-check-updates
 ncu -f '/@railmapgen\/rmg-.*-resources/' -t patch -u
-ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install --force
+ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install
 
 # run tests
 npm run test:no-watch
@@ -24,7 +24,7 @@ npm config set tag-version-prefix "${APP_NAME}-"
 if [ "$BRANCH" = "main" ]
 then
   # build with a normal version
-  npm version $BUMP_VERSION -m "${APP_NAME}-%s release" --force || { echo "Release Error"; exit 1; }
+  npm version $BUMP_VERSION -m "${APP_NAME}-%s release" || { echo "Release Error"; exit 1; }
   export RMG_VER=$(node -p "require('./package.json').version")
 else
   # build with a hashed version
