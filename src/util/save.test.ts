@@ -159,4 +159,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":10}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('10 -> 11', () => {
+        // Bump save version to add color in text misc node.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_YQ39Zou12t","attributes":{"visible":true,"zIndex":0,"x":400,"y":150,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en"}}}],"edges":[]},"version":10}';
+        const newParam = UPGRADE_COLLECTION[10](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_YQ39Zou12t","attributes":{"visible":true,"zIndex":0,"x":400,"y":150,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"]}}}],"edges":[]},"version":11}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

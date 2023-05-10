@@ -1,6 +1,8 @@
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 
-import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
@@ -12,6 +14,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         textAnchor = defaultTextAttributes.textAnchor,
         dominantBaseline = defaultTextAttributes.dominantBaseline,
         language = defaultTextAttributes.language,
+        color = defaultTextAttributes.color,
     } = attrs ?? defaultTextAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
@@ -51,6 +54,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                     lineHeight={lineHeight}
                     textAnchor={textAnchor}
                     dominantBaseline={dominantBaseline}
+                    fill={color[2]}
                     grow="down" // this will be ignored
                 />
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
@@ -78,6 +82,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
             textAnchor,
             dominantBaseline,
             language,
+            color,
             bBox,
             onPointerDown,
             onPointerMove,
@@ -89,7 +94,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 /**
  * Text specific props.
  */
-export interface TextAttributes {
+export interface TextAttributes extends AttributesWithColor {
     content: string;
     fontSize: number;
     lineHeight: number;
@@ -105,6 +110,7 @@ const defaultTextAttributes: TextAttributes = {
     textAnchor: 'middle',
     dominantBaseline: 'middle',
     language: 'en',
+    color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],
 };
 
 const TextFields = [
@@ -190,6 +196,10 @@ const TextFields = [
             // return modified attrs
             return attrs;
         },
+    },
+    {
+        type: 'custom',
+        component: <ColorField type={MiscNodeType.Text} defaultAttrs={defaultTextAttributes} />,
     },
 ];
 
