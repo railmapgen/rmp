@@ -104,14 +104,14 @@ export default function OpenActions() {
     // A one time url match to see if it is a template share link and apply the template if needed.
     React.useEffect(() => {
         const fetchAndApplyTemplate = async (id: string) => {
-            const template = (
+            const template = (await (
                 (
                     await Promise.allSettled([
                         fetch(`/rmp-gallery/resources/real_world/${id}.json`),
                         fetch(`/rmp-gallery/resources/fantasy/${id}.json`),
                     ])
                 ).find(res => res.status === 'fulfilled') as PromiseFulfilledResult<Response> | undefined
-            )?.value.json() as RMPSave | undefined;
+            )?.value.json()) as RMPSave | undefined;
             if (template) handleOpenTemplate(template);
         };
 
