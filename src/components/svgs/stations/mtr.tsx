@@ -21,9 +21,9 @@ import {
 const LINE_WIDTH = 5;
 const R = 5;
 const NAME_LINE_HEIGHT = {
-    top: 7.5,
+    top: 7.5 + 1,
     middle: 0,
-    bottom: 12.5,
+    bottom: 10 + 1,
 };
 
 const makeStationPath = (r: number, lineWidth: number = LINE_WIDTH, transfer: InterchangeInfo[] = []): `M${string}` => {
@@ -125,6 +125,7 @@ const MTRStation = (props: StationComponentProps) => {
                         fontSize={10}
                         lineHeight={10}
                         grow="up"
+                        baseOffset={1}
                         className="rmp-name__mtr__zh"
                         fill="#132647"
                     />
@@ -133,6 +134,7 @@ const MTRStation = (props: StationComponentProps) => {
                         fontSize={7.5}
                         lineHeight={7.5}
                         grow="down"
+                        baseOffset={1}
                         className="rmp-name__mtr__en"
                         fill="#132647"
                     />
