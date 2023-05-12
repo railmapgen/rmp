@@ -1,6 +1,5 @@
 import Graph from 'graphology';
 import { nanoid } from 'nanoid';
-
 import { InterchangeInfo } from '../components/panels/details/interchange-field';
 import { linePaths } from '../components/svgs/lines/lines';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
@@ -10,6 +9,18 @@ import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/s
 import stations from '../components/svgs/stations/stations';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { StationAttributes, StationType } from '../constants/stations';
+import { Theme } from '../constants/constants';
+
+interface ExtendedInterchangeInfo {
+    theme?: Theme;
+    name: [string, string];
+    facility?: string;
+}
+
+interface InterchangeGroup {
+    name?: [string, string];
+    lines: ExtendedInterchangeInfo[];
+}
 
 export const parseRmgParam = (
     graph: Graph,
@@ -49,12 +60,14 @@ export const parseRmgParam = (
         .forEach(([id, stnInfo], i) => {
             // determine station type
             let type: StationType = StationType.ShmetroBasic;
+            const interchangeGroups: InterchangeGroup[] = (stnInfo as any).transfer.groups;
+            const interchangeLines = interchangeGroups.map(group => group.lines).flat();
             if (style === 'shmetro') {
-                if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.ShmetroInt;
+                if (interchangeLines.length > 0) type = StationType.ShmetroInt;
                 else if (info_panel_type === 'sh2020') type = StationType.ShmetroBasic2020;
                 else type = StationType.ShmetroBasic;
             } else if (style === 'gzmtr') {
-                if ((stnInfo as any).transfer.info.flat().length > 0) type = StationType.GzmtrInt;
+                if (interchangeLines.length > 0) type = StationType.GzmtrInt;
                 else type = StationType.GzmtrBasic;
             } else if (style === 'mtr') {
                 type = StationType.MTR;
@@ -74,33 +87,41 @@ export const parseRmgParam = (
                 (attr as GzmtrBasicStationAttributes).lineCode = line_num;
                 (attr as GzmtrBasicStationAttributes).stationCode = (stnInfo as any).num;
             } else if (type === StationType.GzmtrInt) {
-                const transfer = JSON.parse(JSON.stringify((stnInfo as any).transfer.info)) as InterchangeInfo[][];
-                // override line code and station code to default as they are not provided in RMG save
-                transfer.forEach(lv1 =>
-                    lv1.forEach(transferInfo => {
-                        transferInfo[4] = '1';
-                        transferInfo[5] = '01';
-                    })
-                );
-                // add current line and station code to transfer[0][0]
-                transfer[0].unshift([...theme, line_num, (stnInfo as any).num] as unknown as InterchangeInfo);
-                (attr as GzmtrIntStationAttributes).transfer = transfer;
+                (attr as GzmtrIntStationAttributes).transfer = interchangeGroups.map((group, i) => {
+                    // override line code and station code to default as they are not provided in RMG save
+                    const interchangeInfos: InterchangeInfo[] = group.lines.map(line => [
+                        ...(line.theme ?? (theme as Theme)),
+                        '1',
+                        '01',
+                    ]);
+                    // add current line and station code to transfer[0][0]
+                    if (i === 0) {
+                        return [
+                            [...(theme as Theme), line_num, (stnInfo as any).num] as InterchangeInfo,
+                            ...interchangeInfos,
+                        ];
+                    } else {
+                        return interchangeInfos;
+                    }
+                });
             } else if (type === StationType.MTR) {
-                let transfer = JSON.parse(JSON.stringify((stnInfo as any).transfer.info)) as InterchangeInfo[][];
-                // drop out of station transfer as they should be placed in another station
-                transfer = [transfer[0]];
-                // override line code and station code to empty as they are useless in MTR station
-                transfer.forEach(level =>
-                    level.forEach(transferInfo => {
-                        transferInfo[4] = '';
-                        transferInfo[5] = '';
-                    })
-                );
-                if (transfer.flat().length > 0) {
-                    // add current theme to transfer[0][0] as MTR display all transfers including the current line
-                    transfer[0].unshift([...theme, '', ''] as unknown as InterchangeInfo);
+                if (interchangeGroups[0].lines.length) {
+                    (attr as MTRStationAttributes).transfer = [
+                        [
+                            // add current theme to transfer[0][0] as MTR display all transfers including the current line
+                            [...(theme as Theme), '', ''],
+                            // drop out of station transfer as they should be placed in another station
+                            // override line code and station code to empty as they are useless in MTR station
+                            ...interchangeGroups[0].lines.map<InterchangeInfo>(line => [
+                                ...(line.theme ?? (theme as Theme)),
+                                '',
+                                '',
+                            ]),
+                        ],
+                    ];
+                } else {
+                    (attr as MTRStationAttributes).transfer = [[]];
                 }
-                (attr as MTRStationAttributes).transfer = transfer;
             }
 
             graph.addNode(stnIdMap[id], {
