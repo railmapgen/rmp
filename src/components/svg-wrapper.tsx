@@ -175,7 +175,6 @@ const SvgWrapper = () => {
     });
 
     const handleKeyDown = useEvent((e: React.KeyboardEvent<SVGSVGElement>) => {
-        e.preventDefault();
         // tabIndex need to be on the element to make onKeyDown worked
         // https://www.delftstack.com/howto/react/onkeydown-react/
         if (isMacClient ? e.key === 'Backspace' : e.key === 'Delete') {
@@ -215,6 +214,7 @@ const SvgWrapper = () => {
         } else if (e.key === 'f' && lastTool) {
             dispatch(setMode(lastTool as RuntimeMode));
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+            if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
