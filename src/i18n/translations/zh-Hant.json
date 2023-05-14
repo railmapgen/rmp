@@ -260,11 +260,7 @@
             "configRMG": "從RMG存檔中讀入",
             "projectRMG": "從RMG專案中讀入",
             "gallery": "從畫廊中讀入",
-            "shanghai": "上海",
-            "guangzhou": "廣州",
-            "beijing": "北京",
-            "hongkong": "香港",
-            "santiago": "聖地亞哥"
+            "importFromRMPGallery": "範本 {{id}} 已匯入。對此更改不滿意？可通過 Ctrl + Z 或撤銷按鈕進行撤銷。"
         },
         "download": {
             "config": "導出項目",

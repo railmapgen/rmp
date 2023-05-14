@@ -260,11 +260,7 @@
             "configRMG": "Import from RMG save",
             "projectRMG": "Import from RMG project",
             "gallery": "Import from gallery",
-            "shanghai": "Shanghai",
-            "guangzhou": "Guangzhou",
-            "beijing": "Beijing",
-            "hongkong": "Hongkong",
-            "santiago": "Santiago"
+            "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button."
         },
         "download": {
             "config": "Export project",

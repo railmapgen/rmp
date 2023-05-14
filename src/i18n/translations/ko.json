@@ -260,11 +260,7 @@
             "configRMG": "RMG 파일에서 가져오기",
             "projectRMG": "RMG 프로젝트에서 가져오기",
             "gallery": "갤러리에서 가져오기",
-            "shanghai": "상해",
-            "guangzhou": "광저우",
-            "beijing": "베이징",
-            "hongkong": "홍콩",
-            "santiago": "산티아고"
+            "importFromRMPGallery": "템플릿 {{id}}가 가져 왔습니다. 이 변경 사항에 만족하지 않으십니까? Ctrl + Z 또는 실행 취소 버튼을 사용하여 실행 취소하세요."
         },
         "download": {
             "config": "프로젝트 내보내기",
