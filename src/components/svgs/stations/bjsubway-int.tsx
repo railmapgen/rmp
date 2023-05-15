@@ -38,17 +38,17 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
+    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 8) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * LINE_HEIGHT[nameOffsetY] + 8) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
         () => (
             <g id={id}>
-                <g transform={`translate(${x - 12.5}, ${y - 12.5})`}>
-                    <circle cx="12.5" cy="12.5" r="10.5" stroke="black" strokeWidth="1" fill="white" />
+                <g transform={`translate(${x - 6}, ${y - 6})`}>
+                    <circle cx="6" cy="6" r="6" stroke="black" strokeWidth="1" fill="white" />
                     <path
                         d={PATH_ARROW}
                         fill={outOfStation ? '#898989' : 'black'}
@@ -59,9 +59,9 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     />
                     <circle
                         id={`stn_core_${id}`}
-                        cx="12.5"
-                        cy="12.5"
-                        r="10.5"
+                        cx="6"
+                        cy="6"
+                        r="6"
                         stroke="black"
                         strokeWidth="1"
                         strokeOpacity="0"

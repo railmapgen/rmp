@@ -15,6 +15,9 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 export const LINE_HEIGHT = {
     zh: 10,
     en: 6.2,
+    top: 6.2 + 1,
+    middle: 0,
+    bottom: 10 + 1,
 };
 
 const BjsubwayBasicStation = (props: StationComponentProps) => {
@@ -42,7 +45,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
     const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
     const textY =
         ((names[NAME_DY[nameOffsetY].namesPos].split('\\').length + (nameOffsetY === 'top' && !open ? 1 : 0)) *
-            NAME_DY[nameOffsetY].lineHeight +
+            LINE_HEIGHT[nameOffsetY] +
             8) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
@@ -52,10 +55,10 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <circle
                     id={`stn_core_${id}`}
-                    r="6.5"
+                    r="4"
                     stroke="black"
-                    strokeWidth="1"
-                    strokeDasharray={open ? undefined : '2'}
+                    strokeWidth="0.5"
+                    strokeDasharray={open ? undefined : '1.5'}
                     fill="white"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}

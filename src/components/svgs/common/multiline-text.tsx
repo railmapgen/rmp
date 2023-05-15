@@ -15,7 +15,7 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
         grow,
         // if dominantBaseline is defined, use it, or we calculate the dominantBaseline for you
         dominantBaseline = grow === 'up' ? 'auto' : 'hanging',
-        baseOffset = 2, // default dy offset
+        baseOffset = 1, // default dy offset
         ...otherSvgTextProps
     } = props;
 
