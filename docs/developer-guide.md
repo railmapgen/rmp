@@ -4,26 +4,26 @@ To set up a development environment for Rail Map Painter, follow these steps:
 
 1. Clone this repository:
 
-```
-git clone https://github.com/railmapgen/rmp.git
-```
+    ```bash
+    git clone https://github.com/railmapgen/rmp.git
+    ```
 
 2. Navigate to the project folder:
 
-```
-cd rmp
-```
+    ```bash
+    cd rmp
+    ```
 
 3. Install dependencies:
 
-```
-npm install
-```
+    ```bash
+    npm install
+    ```
 
 4. Start the development server:
 
-```
-npm start
-```
+    ```bash
+    npm start
+    ```
 
-This will open the application in your default web browser, and it will automatically reload whenever you make changes to the source code.
+    This will open the application in your default web browser, and it will automatically reload whenever you make changes to the source code.

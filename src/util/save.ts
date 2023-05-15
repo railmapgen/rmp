@@ -1,11 +1,14 @@
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { nanoid } from 'nanoid';
-import { ParamState } from '../redux/param/param-slice';
-import { NodeAttributes, EdgeAttributes, GraphAttributes, Theme } from '../constants/constants';
-import { LinePathType, LineStyleType } from '../constants/lines';
-import { StationType } from '../constants/stations';
+
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
+import { LinePathType, LineStyleType } from '../constants/lines';
+import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
+import { ParamState } from '../redux/param/param-slice';
 
 /**
  * The save format of the project.
@@ -21,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 10;
+export const CURRENT_VERSION = 11;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -232,4 +235,19 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     9: param =>
         // Bump save version to support MTR line style (race days/light rail/unpaid area).
         JSON.stringify({ ...JSON.parse(param), version: 10 }),
+    10: param => {
+        // Bump save version to add color in text misc node.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.Text)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.color = [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white];
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 11, graph: graph.export() });
+    },
 };

@@ -13,15 +13,15 @@ import { RMPSave } from '../../util/save';
 
 export const GalleryModal = (props: {
     isOpen: boolean;
-    handleOpenTemplates: (rmpSave: RMPSave) => void;
+    handleOpenTemplate: (rmpSave: RMPSave) => void;
     onClose: () => void;
 }) => {
-    const { isOpen, handleOpenTemplates, onClose } = props;
+    const { isOpen, handleOpenTemplate, onClose } = props;
     const { t } = useTranslation();
 
     const handleSelect = async (name: string) => {
         const module = await import(/* webpackChunkName: "template" */ `../../saves/${name}.json`);
-        handleOpenTemplates(module.default as RMPSave);
+        handleOpenTemplate(module.default as RMPSave);
         onClose();
     };
 

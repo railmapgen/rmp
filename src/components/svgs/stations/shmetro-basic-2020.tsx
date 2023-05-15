@@ -147,7 +147,8 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\').map(s => (rotate >= 45 && rotate <= 135 ? '\u00A0' : '') + s)}
+                        text={names[1].split('\\')}
+                        dx={rotate >= 45 && rotate <= 135 ? 1.67 : 0}
                         fontSize={6.67}
                         lineHeight={6.67}
                         grow="down"

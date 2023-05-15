@@ -6,6 +6,7 @@ Thank you for your interest in contributing to the Rail Map Painter project! We 
 
 - [Code of Conduct](#code-of-conduct)
 - [Setting Up Your Development Environment](#setting-up-your-development-environment)
+- [Designing and implementing elements](#designing-and-implementing-elements)
 - [Submitting an Issue](#submitting-an-issue)
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [Coding Guidelines](#coding-guidelines)
@@ -18,6 +19,14 @@ By participating in this project, you agree to abide by our [Code of Conduct](./
 ## Setting Up Your Development Environment
 
 Please refer to the [Develop Guide](./docs/developer-guide.md) in the README for instructions on setting up your development environment.
+
+## Designing and implementing elements
+
+We provide tutorials for station, node, and line styles. Check out the one you want to contribute!
+
+- [Station Tutorial](./docs/stations.md)
+- [Node Tutorial](./docs/nodes.md)
+- [Line Style Tutorial](./docs/line-styles.md)
 
 ## Submitting an Issue
 

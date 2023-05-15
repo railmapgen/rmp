@@ -6,20 +6,20 @@ import { Events, RuntimeMode } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin, undoAction, redoAction } from '../redux/param/param-slice';
+import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
     clearSelected,
     setActive,
-    setMode,
-    setRefreshNodes,
-    setRefreshEdges,
     setKeepLastPath,
+    setMode,
     setNodeExists,
+    setRefreshEdges,
+    setRefreshNodes,
 } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
 import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { getMousePosition, roundToNearestN } from '../util/helpers';
+import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 
 const SvgWrapper = () => {
@@ -177,7 +177,7 @@ const SvgWrapper = () => {
     const handleKeyDown = useEvent((e: React.KeyboardEvent<SVGSVGElement>) => {
         // tabIndex need to be on the element to make onKeyDown worked
         // https://www.delftstack.com/howto/react/onkeydown-react/
-        if (e.key === 'Delete') {
+        if (isMacClient ? e.key === 'Backspace' : e.key === 'Delete') {
             // remove all the selected nodes and edges
             if (selected.length > 0) {
                 selected
@@ -213,9 +213,13 @@ const SvgWrapper = () => {
             }
         } else if (e.key === 'f' && lastTool) {
             dispatch(setMode(lastTool as RuntimeMode));
-        } else if (e.key === 'z' && e.ctrlKey) {
+        } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+            if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
-        } else if (e.key === 'y' && e.ctrlKey) {
+        } else if (
+            (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
+            (!isMacClient && e.key === 'y' && e.ctrlKey)
+        ) {
             dispatch(redoAction());
         }
     });
