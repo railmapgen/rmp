@@ -42,7 +42,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
+    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
     const textY =
         ((names[NAME_DY[nameOffsetY].namesPos].split('\\').length + (nameOffsetY === 'top' && !open ? 1 : 0)) *
             LINE_HEIGHT[nameOffsetY] +
