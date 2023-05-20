@@ -334,7 +334,7 @@ const defaultFacilitiesAttributes: FacilitiesAttributes = {
 const FacilitiesFields = [
     {
         type: 'select',
-        label: 'panel.details.node.FacilitiesAttributes.type',
+        label: 'panel.details.node.facilities.type',
         value: (attrs?: FacilitiesAttributes) => (attrs ?? defaultFacilitiesAttributes).type,
         options: {
             airport: 'airport',
