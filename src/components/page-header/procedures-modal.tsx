@@ -23,6 +23,7 @@ import stations from '../svgs/stations/stations';
 import { changeStationsTypeInBatch } from '../../util/change-types';
 import ColourModal from '../panels/colour-modal/colour-modal';
 import ThemeButton from '../panels/theme-button';
+import { toRmg } from '../../util/to-rmg';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -200,6 +201,58 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
                     <RmgFields fields={fields} />
                     <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
                         {t('header.settings.procedures.changeType.info')}
+                    </Text>
+                </ModalBody>
+
+                <ModalFooter>
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
+                        {t('cancel')}
+                    </Button>
+                    <Button colorScheme="red" onClick={handleChange}>
+                        {t('apply')}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+};
+
+export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
+    const { isOpen, onClose } = props;
+    const dispatch = useRootDispatch();
+    const { t } = useTranslation();
+    const graph = React.useRef(window.graph);
+
+    const availableStationOptions = Object.fromEntries(
+        Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+    ) as { [k in StationType]: string };
+
+    let resultToRmg = 'Hey';
+
+    const handleChange = () => {
+        resultToRmg = 'Here!';
+        toRmg(graph.current);
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>
+                    <Text as="b" fontSize="xl">
+                        {resultToRmg}
+                    </Text>
+                    <Tooltip label={t('header.settings.pro')}>
+                        <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                            TEST
+                        </Badge>
+                    </Tooltip>
+                </ModalHeader>
+                <ModalCloseButton />
+
+                <ModalBody>
+                    <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
+                        Change?
                     </Text>
                 </ModalBody>
 
