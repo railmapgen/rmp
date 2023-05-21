@@ -219,17 +219,13 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
 
 export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
-    const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
-
-    const availableStationOptions = Object.fromEntries(
-        Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-    ) as { [k in StationType]: string };
 
     let resultToRmg = 'Hey';
 
     const handleChange = () => {
+        console.log('Here!');
         resultToRmg = 'Here!';
         toRmg(graph.current);
     };
