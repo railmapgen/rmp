@@ -16,9 +16,10 @@ interface edgeVector {
 const visStn: Set<any> = new Set();
 const colorList: Set<Array<string>> = new Set<Array<string>>();
 const colorStart: Map<Array<string>, string> = new Map<Array<string>, string>();
-const headGraph: Map<string, number> = new Map<string, number>();
+const headGraph: Map<string, any> = new Map<string, any>();
 let edgeGraph: Array<edgeVector> = new Array<edgeVector>();
 let countGraph = 0;
+const outDegree: Map<string, any> = new Map<string, any>();
 
 const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, lineId: string) => {
     console.log(lineId);
@@ -60,7 +61,7 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
     }
 };
 
-const edgeDfs = (u: any, color: Array<string>) => {
+const edgeDfs = (u: any, f: any, color: Array<string>) => {
     if (visStn.has(u)) {
         return;
     }
@@ -70,9 +71,9 @@ const edgeDfs = (u: any, color: Array<string>) => {
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
-        if (color[0] == col[0] && color[1] == col[1] && color[2] == col[2] && color[3] == col[3]) {
-            edgeDfs(v, color);
-        }
+        if (v == f || col != color) continue;
+        outDegree.set(u, outDegree.get(u) + 1);
+        edgeDfs(v, u, color);
     }
 };
 
@@ -87,6 +88,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     headGraph.clear();
     edgeGraph = new Array<edgeVector>();
     countGraph = 0;
+    outDegree.clear();
     graph
         .filterEdges(edge => edge.startsWith('line'))
         .forEach(edgeId => {
@@ -94,8 +96,21 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         });
     colorList.forEach(value => {
         visStn.clear();
+        outDegree.clear();
         console.log('Start DFS color as ' + value[2]);
-        edgeDfs(colorStart.get(value), value);
+        edgeDfs(colorStart.get(value), 'line_root', value);
+        let newStart = 'no_val';
+        for (const [u, deg] of outDegree) {
+            if (deg == 1) {
+                newStart = u;
+                break;
+            }
+        }
+        if (newStart != 'no_val') {
+            // line
+        } else {
+            // ring
+        }
     });
 };
 
