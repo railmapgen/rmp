@@ -82,7 +82,7 @@ export interface ShmetroTextLineBadgeAttributes extends AttributesWithColor {
 
 const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
     names: ['浦江线', 'Pujiang Line'],
-    color: [CityCode.Shanghai, 'pjl', '#999999', MonoColour.white],
+    color: [CityCode.Shanghai, 'pjl', '#B5B5B6', MonoColour.white],
 };
 
 const ShmetroTextLineBadgeFields = [
