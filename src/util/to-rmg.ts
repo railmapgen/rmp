@@ -257,22 +257,24 @@ const generateNewStn = (
     let countTransfer = 0;
     const newChild = new Array<string>();
     const newInterchange = new Array<RMGInterchange>();
+    const newInterchangeSet = new Set<string>;
     // @ts-ignore-error
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
+        if (v == f) continue;
         if (!visStn.has(v) && colorToString(col) == colorToString(color)) {
             countChild++;
             newChild.push(v);
-            console.log(visStn);
             generateNewStn(v, u, counter + 1, graph, color, newParam);
         }
-        if (colorToString(col) != colorToString(color)) {
+        if (!newInterchangeSet.has(colorToString(col)) && colorToString(col) != colorToString(color)) {
             console.warn('INTERCHANGE');
             countTransfer++;
+            newInterchangeSet.add(colorToString(col));
             const tmpInterchange: RMGInterchange = {
-                theme: [col[2], col[3]],
-                name: [col[0], col[1]],
+                theme: col,
+                name: [col[1], col[1]],
             };
             newInterchange.push(tmpInterchange);
         }
@@ -286,7 +288,7 @@ const generateNewStn = (
     newParam.stn_list[u].parents = [f];
     if (countTransfer != 0) {
         console.log(newInterchange);
-        newParam.stn_list[u].transfer.groups.lines = structuredClone(newInterchange);
+        newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
     }
 };
 
