@@ -1,4 +1,4 @@
-import { Box, IconButton, SystemStyleObject, useToast } from '@chakra-ui/react';
+import { Box, CloseButton, IconButton, SystemStyleObject, useToast } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -98,9 +98,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         <>
             <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
                 <iframe src="/rmp-gallery/" loading="lazy" />
-                <Box onClick={onClose} position="fixed" top="0" right="10px" zIndex={3}>
-                    <IconButton aria-label="new" size="md" icon={<MdClose />} variant="ghost" />
-                </Box>
+                <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
             </RmgAppClip>
         </>
     );
