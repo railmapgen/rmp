@@ -4,6 +4,9 @@
     "cancel": "취소",
     "apply": "사용",
     "remove": "삭제",
+    "close": "다시",
+    "noShowAgain": "표시하지 않기",
+    "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
 
     "colorModal": {
         "title": "색깔 선택",

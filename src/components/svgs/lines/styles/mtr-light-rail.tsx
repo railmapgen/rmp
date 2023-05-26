@@ -51,7 +51,7 @@ const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
     fields: mtrLightRailFields,
     metadata: {
         displayName: 'panel.details.line.mtrLightRail.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
     },
 };
 

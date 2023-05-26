@@ -1,5 +1,6 @@
 import { configureStore, ThunkAction, AnyAction } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { LocalStorageKey } from '../constants/constants';
 import { stringifyParam } from '../util/save';
 import appReducer from './app/app-slice';
 import paramReducer from './param/param-slice';
@@ -16,8 +17,8 @@ const store = configureStore({
 });
 
 store.subscribe(() => {
-    localStorage.setItem('rmp__param', stringifyParam(store.getState().param));
-    localStorage.setItem('rmp__app', JSON.stringify(store.getState().app));
+    localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(store.getState().param));
+    localStorage.setItem(LocalStorageKey.APP, JSON.stringify(store.getState().app));
 });
 
 export type RootState = ReturnType<typeof store.getState>;
