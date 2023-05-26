@@ -62,9 +62,26 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                     fetch(`/rmp-gallery/resources/real_world/${id}.json`),
                     fetch(`/rmp-gallery/resources/fantasy/${id}.json`),
                 ])
-            ).find(res => res.status === 'fulfilled') as PromiseFulfilledResult<Response> | undefined
-        )?.value.json()) as RMPSave | undefined;
-        if (template) handleOpenTemplate(template);
+            ).filter(res => res.status === 'fulfilled') as PromiseFulfilledResult<Response>[]
+        )
+            .find(res => res.value.status === 200)
+            ?.value.json()) as RMPSave | undefined;
+        if (template) {
+            handleOpenTemplate(template);
+            toast({
+                title: t('header.open.importFromRMPGallery', { id }),
+                status: 'success' as const,
+                duration: 9000,
+                isClosable: true,
+            });
+        } else {
+            toast({
+                title: t('header.open.failToImportFromRMPGallery', { id }),
+                status: 'error' as const,
+                duration: 9000,
+                isClosable: true,
+            });
+        }
     };
 
     // A one time url match to see if it is a template share link and apply the template if needed.
@@ -83,12 +100,6 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             const { event, data: id } = e.data;
             if (event === RMP_GALLERY_CHANNEL_EVENT) {
                 fetchAndApplyTemplate(id);
-                toast({
-                    title: t('header.open.importFromRMPGallery', { id }),
-                    status: 'success' as const,
-                    duration: 9000,
-                    isClosable: true,
-                });
                 onClose();
             }
         };
