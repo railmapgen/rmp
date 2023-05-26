@@ -21,8 +21,8 @@ export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, Ed
         yMax = Math.max(attr.y, yMax);
     });
 
-    xMin -= 150;
-    yMin -= 150;
+    xMin -= 100;
+    yMin -= 100;
     xMax += 150;
     yMax += 150;
 

@@ -13,16 +13,41 @@ export default function AppRoot() {
             <RmgWindow>
                 <React.Suspense
                     fallback={
-                        <p
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                            }}
-                        >
-                            Initializing Rail Map Painter core...
-                        </p>
+                        <>
+                            <p
+                                style={{
+                                    position: 'absolute',
+                                    top: '50%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                }}
+                            >
+                                Rail Map Toolkit protocol... checked
+                            </p>
+                            <p
+                                style={{
+                                    position: 'absolute',
+                                    top: '75%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    fontSize: 'small',
+                                    color: 'gray',
+                                }}
+                            >
+                                Seeing this page for too long? Try another mirror{' '}
+                                <a href="https://railmapgen.github.io/?app=rmp" target="_blank" rel="noreferrer">
+                                    GitHub
+                                </a>{' '}
+                                <a href="https://railmapgen.gitlab.io/?app=rmp" target="_blank" rel="noreferrer">
+                                    Gitlab
+                                </a>{' '}
+                                or the{' '}
+                                <a href="https://github.com/railmapgen/rmp/releases" target="_blank" rel="noreferrer">
+                                    offline application
+                                </a>{' '}
+                                :)
+                            </p>
+                        </>
                     }
                 >
                     <PageHeader />
