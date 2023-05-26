@@ -93,3 +93,10 @@ export enum Events {
     DOWNLOAD_PARAM = 'DOWNLOAD_PARAM',
     DOWNLOAD_IMAGES = 'DOWNLOAD_IMAGES',
 }
+
+export enum LocalStorageKey {
+    APP = 'rmp__app',
+    PARAM = 'rmp__param',
+    PARAM_BACKUP = 'rmp__param__backup',
+    DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
+}
