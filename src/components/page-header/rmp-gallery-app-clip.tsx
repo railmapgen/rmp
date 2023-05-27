@@ -88,7 +88,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     React.useEffect(() => {
         const url = window.location.href;
         if (url.includes('/s/')) {
-            history.replaceState({}, 'Rail Map Painter', url.substring(0, url.indexOf('s/')));
+            history.replaceState({}, t('about.rmp'), url.substring(0, url.indexOf('s/')));
 
             const id = url.substring(url.lastIndexOf('s/') + 2);
             fetchAndApplyTemplate(id);
