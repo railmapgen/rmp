@@ -56,6 +56,10 @@ const paramSlice = createSlice({
     name: 'param',
     initialState,
     reducers: {
+        /**
+         * Only set full state in initialization or undo/redo won't work.
+         * It relies on changes to be updated by saveGraph.
+         */
         setFullState: (state, action: PayloadAction<ParamState>) => {
             return JSON.parse(JSON.stringify(action.payload));
         },

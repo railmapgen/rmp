@@ -47,17 +47,17 @@ export default function AppRoot() {
                                     color: 'gray',
                                 }}
                             >
-                                Seeing this page for too long? Try another mirror
+                                Seeing this page for too long? Try another mirror{' '}
                                 <a href="https://railmapgen.github.io/?app=rmp" target="_blank" rel="noreferrer">
                                     GitHub
-                                </a>
+                                </a>{' '}
                                 <a href="https://railmapgen.gitlab.io/?app=rmp" target="_blank" rel="noreferrer">
                                     Gitlab
-                                </a>
-                                or the
+                                </a>{' '}
+                                or the{' '}
                                 <a href="https://github.com/railmapgen/rmp/releases" target="_blank" rel="noreferrer">
                                     offline application
-                                </a>
+                                </a>{' '}
                                 :)
                             </p>
                         </>
