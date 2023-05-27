@@ -43,6 +43,7 @@ interface RuntimeState {
      */
     nodeExists: { [key in NodeType]: boolean };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
+    openGallery: boolean;
 }
 
 const initialState: RuntimeState = {
@@ -60,6 +61,7 @@ const initialState: RuntimeState = {
         [...Object.keys(StationType), ...Object.keys(MiscNodeType)].map(key => [key, false])
     ) as { [key in NodeType]: boolean },
     globalAlerts: {},
+    openGallery: false,
 };
 
 const runtimeSlice = createSlice({
@@ -114,6 +116,9 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
+        setOpenGallery: (state, action: PayloadAction<boolean>) => {
+            state.openGallery = action.payload;
+        },
     },
     extraReducers: builder => {
         builder
@@ -141,5 +146,6 @@ export const {
     setNodeExists,
     setGlobalAlert,
     closeGlobalAlert,
+    setOpenGallery,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

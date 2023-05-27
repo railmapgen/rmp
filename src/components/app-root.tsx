@@ -4,6 +4,8 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
+import { useRootDispatch } from '../redux';
+import { setOpenGallery } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
 const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
@@ -11,6 +13,7 @@ const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ 
 const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
 
 export default function AppRoot() {
+    const dispatch = useRootDispatch();
     const { t } = useTranslation();
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
@@ -94,6 +97,13 @@ export default function AppRoot() {
                             </Text>
                         </Alert>
                     )}
+
+                    <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
+                        <AlertIcon />
+                        <Text>
+                            <Link onClick={() => dispatch(setOpenGallery(true))}>{t('meetRMP3')}</Link>
+                        </Text>
+                    </Alert>
 
                     <RmgErrorBoundary allowReset>
                         <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
