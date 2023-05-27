@@ -4,6 +4,9 @@
     "cancel": "取消",
     "apply": "应用",
     "remove": "移除",
+    "close": "关闭",
+    "noShowAgain": "不再显示",
+    "rmtPromotion": "您绝对不想错过的全能工具包！",
 
     "colorModal": {
         "title": "选择颜色",
@@ -260,11 +263,8 @@
             "configRMG": "从RMG存档中导入",
             "projectRMG": "从RMG项目中导入",
             "gallery": "从画廊中导入",
-            "shanghai": "上海",
-            "guangzhou": "广州",
-            "beijing": "北京",
-            "hongkong": "香港",
-            "santiago": "圣地亚哥"
+            "importFromRMPGallery": "模板 {{id}} 已导入。对此更改不满意？可通过 Ctrl + Z 或撤销按钮进行撤销。",
+            "failToImportFromRMPGallery": "无法从画廊导入{{id}}，找不到文件。"
         },
         "download": {
             "config": "导出项目",

@@ -4,7 +4,7 @@ import { SerializedGraph } from 'graphology-types';
 import { nanoid } from 'nanoid';
 
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -60,7 +60,7 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
     if (changed) {
         console.warn(`Upgrade save to version: ${version}`);
         // Backup original param in case of bugs in the upgrades.
-        localStorage.setItem('rmp__param__backup', originalParam);
+        localStorage.setItem(LocalStorageKey.PARAM_BACKUP, originalParam);
     }
 
     // Version should be CURRENT_VERSION now.

@@ -4,6 +4,9 @@
     "cancel": "Cancel",
     "apply": "Apply",
     "remove": "Remove",
+    "close": "Close",
+    "noShowAgain": "Don't show me again",
+    "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
 
     "colorModal": {
         "title": "Select a color",
@@ -260,11 +263,8 @@
             "configRMG": "Import from RMG save",
             "projectRMG": "Import from RMG project",
             "gallery": "Import from gallery",
-            "shanghai": "Shanghai",
-            "guangzhou": "Guangzhou",
-            "beijing": "Beijing",
-            "hongkong": "Hongkong",
-            "santiago": "Santiago"
+            "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
+            "failToImportFromRMPGallery": "Fail to import {{id}} from the gallery. The file can not be found."
         },
         "download": {
             "config": "Export project",

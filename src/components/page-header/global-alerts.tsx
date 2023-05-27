@@ -27,7 +27,7 @@ export default function GlobalAlerts() {
                     pl={3}
                     pr={1}
                     py={0}
-                    zIndex="5"
+                    zIndex="1"
                 >
                     <AlertIcon />
                     {linkedApp ? (

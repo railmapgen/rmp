@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { NodeAttributes, EdgeAttributes, GraphAttributes, LocalStorageKey } from '../constants/constants';
 import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
@@ -33,7 +33,7 @@ describe('Unit tests for param upgrade function', () => {
         const save =
             '{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]}';
         await upgrade(save);
-        expect(localStorage.getItem('rmp__param__backup')).toEqual(save);
+        expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
     });
 
     it('UPGRADE_COLLECTION contains all the upgrade functions to CURRENT_VERSION', () => {

@@ -1,20 +1,14 @@
+import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
-import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { useRootDispatch } from '../../redux';
-import {
-    ParamState,
-    saveGraph,
-    setFullState,
-    setSvgViewBoxMin,
-    setSvgViewBoxZoom,
-} from '../../redux/param/param-slice';
+import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
-import { RMPSave, upgrade } from '../../util/save';
-import { GalleryModal } from './gallery-modal';
 import { parseRmgParam } from '../../util/rmg-param-parser';
+import { upgrade } from '../../util/save';
 import RmgParamAppClip from './rmg-param-app-clip';
+import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
 export default function OpenActions() {
     const { t } = useTranslation();
@@ -64,12 +58,12 @@ export default function OpenActions() {
                 const paramStr = await readFileAsText(file);
                 const { version, ...save } = JSON.parse(await upgrade(paramStr));
 
-                // details panel will complain unknown nodes or edges if last state is not cleared
+                // details panel will complain about unknown nodes or edges if the last selected is not cleared
                 dispatch(clearSelected());
+
+                // rest graph with new data
                 graph.current.clear();
                 graph.current.import(save.graph);
-                const state: ParamState = { ...save, present: save.graph, past: [], future: [] };
-                dispatch(setFullState(state));
 
                 refreshAndSave();
             } catch (err) {
@@ -84,45 +78,6 @@ export default function OpenActions() {
         // clear field for next upload
         event.target.value = '';
     };
-
-    const handleOpenTemplate = async (rmpSave: RMPSave) => {
-        // templates may be obsolete and require upgrades
-        const { version, graph: g, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
-
-        // details panel will complain about unknown nodes or edges if the last selected is not cleared
-        dispatch(clearSelected());
-
-        // rest graph with new data
-        graph.current.clear();
-        graph.current.import(g);
-        const state: ParamState = { ...save, present: g, past: [], future: [] };
-        dispatch(setFullState(state));
-
-        refreshAndSave();
-    };
-
-    // A one time url match to see if it is a template share link and apply the template if needed.
-    React.useEffect(() => {
-        const fetchAndApplyTemplate = async (id: string) => {
-            const template = (await (
-                (
-                    await Promise.allSettled([
-                        fetch(`/rmp-gallery/resources/real_world/${id}.json`),
-                        fetch(`/rmp-gallery/resources/fantasy/${id}.json`),
-                    ])
-                ).find(res => res.status === 'fulfilled') as PromiseFulfilledResult<Response> | undefined
-            )?.value.json()) as RMPSave | undefined;
-            if (template) handleOpenTemplate(template);
-        };
-
-        const url = window.location.href;
-        if (url.includes('/s/')) {
-            history.replaceState({}, 'Rail Map Painter', url.substring(0, url.indexOf('s/')));
-
-            const id = url.substring(url.lastIndexOf('s/') + 2);
-            fetchAndApplyTemplate(id);
-        }
-    }, []);
 
     return (
         <Menu>
@@ -155,11 +110,6 @@ export default function OpenActions() {
                         New
                     </Badge>
                 </MenuItem>
-                <GalleryModal
-                    isOpen={isGalleryModalOpen}
-                    handleOpenTemplate={handleOpenTemplate}
-                    onClose={() => setIsGalleryModalOpen(false)}
-                />
             </MenuList>
 
             <RmgParamAppClip
@@ -167,6 +117,7 @@ export default function OpenActions() {
                 onClose={() => setIsRmgParamAppClipOpen(false)}
                 onImport={handleImportRMGProject}
             />
+            <RmpGalleryAppClip isOpen={isGalleryModalOpen} onClose={() => setIsGalleryModalOpen(false)} />
         </Menu>
     );
 }
