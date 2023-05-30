@@ -1,14 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { LinePathType, LineStyleType } from '../constants/lines';
-import stations from '../components/svgs/stations/stations';
-import { linePaths, lineStyles } from '../components/svgs/lines/lines';
-import singleColor, { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
-import { count } from 'console';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { RmgMultiLineString } from '@railmapgen/rmg-components';
-import { networkInterfaces } from 'os';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { StationType } from '../constants/stations';
+import { LineStyleType } from '../constants/lines';
 
 interface edgeVector {
     target: string;
@@ -146,7 +139,7 @@ const newParamTemple = {
     loop: false,
     loop_info: {
         bank: true,
-        left_and_right_factor: 1,
+        left_and_right_factor: 0,
         bottom_factor: 1,
     },
 };
@@ -156,24 +149,17 @@ const colorToString = (color: any) => {
 };
 
 const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, lineId: string) => {
-    console.log(lineId);
     const u = graph.extremities(lineId)[0];
     const v = graph.extremities(lineId)[1];
     const now = graph.getEdgeAttributes(lineId);
-    console.log(now);
     const nowStyle: string = now.style;
     if (nowStyle == LineStyleType['SingleColor']) {
         // @ts-ignore-error
         const nowColor: Array<string> = now[LineStyleType['SingleColor']].color;
-        if (colorList.has(nowColor)) console.warn('HAS');
-        // if (!colorList.has(nowColor)) {
         if (!colorSet.has(colorToString(nowColor))) {
             colorList.add(nowColor);
             colorSet.add(colorToString(nowColor));
-            if (colorList.has(nowColor)) console.warn('HAS2');
             colorStart.set(nowColor, u);
-            console.warn('HEY COLOR');
-            console.warn(colorList);
         }
         // countGraph;
         if (!headGraph.has(u)) {
@@ -204,9 +190,9 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
-        if (col != color) continue;
+        if (colorToString(col) != colorToString(color)) continue;
         countDegree++;
-        // if (v == f) continue;
+        if (v == f) continue;
         edgeDfs(v, u, color);
     }
     outDegree.set(u, countDegree);
@@ -257,7 +243,7 @@ const generateNewStn = (
     let countTransfer = 0;
     const newChild = new Array<string>();
     const newInterchange = new Array<RMGInterchange>();
-    const newInterchangeSet = new Set<string>;
+    const newInterchangeSet = new Set<string>();
     // @ts-ignore-error
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
@@ -269,7 +255,6 @@ const generateNewStn = (
             generateNewStn(v, u, counter + 1, graph, color, newParam);
         }
         if (!newInterchangeSet.has(colorToString(col)) && colorToString(col) != colorToString(color)) {
-            console.warn('INTERCHANGE');
             countTransfer++;
             newInterchangeSet.add(colorToString(col));
             const tmpInterchange: RMGInterchange = {
@@ -287,7 +272,6 @@ const generateNewStn = (
     }
     newParam.stn_list[u].parents = [f];
     if (countTransfer != 0) {
-        console.log(newInterchange);
         newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
     }
 };
@@ -334,7 +318,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         outDegree.clear();
         console.log('Start DFS color as ' + value[2]);
         edgeDfs(colorStart.get(value), 'line_root', value);
-        let newStart = 'no_val';
+        let newStart: any = 'no_val';
         let branchFlag = true;
         for (const [u, deg] of outDegree) {
             if (deg == 1) {
@@ -348,6 +332,15 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             // throw error
         }
         let newParam = newParamTemple;
+        if (newStart != 'no_val') {
+            // line
+            console.log('Color ' + value[2] + 'is a line.');
+        } else {
+            // ring
+            console.log('Color ' + value[2] + 'is a ring.');
+            newParam.loop = true;
+            newStart = colorStart.get(value);
+        }
         let newType: string;
         switch (graph.getNodeAttributes(newStart).type) {
             case StationType.GzmtrBasic:
@@ -363,23 +356,13 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         }
         newParam = structuredClone(newParamTemple);
         newParam.theme = structuredClone(value);
-        console.warn(newParam.theme);
         newParam.style = structuredClone(newType);
         newParam.current_stn_idx = structuredClone(newStart);
         newParam.stn_list['linestart'] = defRMGLeft;
         newParam.stn_list['lineend'] = defRMGRight;
         visStn.clear();
         newParam.stn_list['linestart'].children = [newStart];
-        console.warn(newParam.theme);
         generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
-        if (newStart != 'no_val') {
-            // line
-            console.log('Color ' + value[2] + 'is a line.');
-        } else {
-            // ring
-            console.log('Color ' + value[2] + 'is a ring.');
-        }
-        console.warn(newParam.theme);
         console.log(newParam);
         downloadAs(`RMP_genRMG_${newParam.theme}.json`, 'application/json', JSON.stringify(structuredClone(newParam)));
     });
