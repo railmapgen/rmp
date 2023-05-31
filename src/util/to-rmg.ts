@@ -25,8 +25,8 @@ interface RMGInterchange {
 
 interface RMGStn {
     name: Array<any>;
-    secondaryName: boolean;
-    num: string;
+    secondaryName: any;
+    num: any;
     services: Array<any>;
     parents: Array<any>;
     children: Array<any>;
@@ -238,7 +238,25 @@ const generateNewStn = (
         one_line: true,
         int_padding: 355,
     };
-    newParam.stn_list[u] = newRMGStn;
+    newParam.stn_list[u] = structuredClone(newRMGStn);
+    if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
+        // @ts-ignore-error
+        newParam.stn_list[u].num = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].stationCode;
+        // @ts-ignore-error
+        newParam.stn_list[u].secondaryName = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].secondaryNames;
+    }
+    if (graph.getNodeAttributes(u).type == StationType.GzmtrInt) {
+        // @ts-ignore-error
+        const tmpTransfer: Array<any> = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].transfer[0];
+        for (const p of tmpTransfer) {
+            if (colorToString(p) == colorToString(color)) {
+                newParam.stn_list[u].num = String(p[5]);
+                break;
+            }
+        }
+        // @ts-ignore-error
+        newParam.stn_list[u].secondaryName = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].secondaryNames;
+    }
     let countChild = 0;
     let countTransfer = 0;
     const newChild = new Array<string>();
