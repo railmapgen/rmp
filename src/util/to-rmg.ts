@@ -184,7 +184,7 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
         return;
     }
     visStn.add(u);
-    console.log('DFS: ' + u);
+    // console.log('DFS: ' + u);
     let countDegree = 0;
     // @ts-ignore-error
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
@@ -210,56 +210,11 @@ const generateNewStn = (
         return;
     }
     visStn.add(u);
-    console.log('DFS2: ' + u);
-    // @ts-ignore-error
-    const newNames = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].names;
-    const newRMGStn: RMGStn = {
-        name: newNames,
-        secondaryName: false,
-        num: String(counter),
-        services: ['local'],
-        parents: [],
-        children: [],
-        branch: {
-            left: [],
-            right: [],
-        },
-        transfer: {
-            groups: [
-                {
-                    lines: [],
-                },
-            ],
-            tick_direc: 'r',
-            paid_area: true,
-        },
-        facility: '',
-        loop_pivot: false,
-        one_line: true,
-        int_padding: 355,
-    };
-    newParam.stn_list[u] = structuredClone(newRMGStn);
-    if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
-        // @ts-ignore-error
-        newParam.stn_list[u].num = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].stationCode;
-        // @ts-ignore-error
-        newParam.stn_list[u].secondaryName = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].secondaryNames;
-    }
-    if (graph.getNodeAttributes(u).type == StationType.GzmtrInt) {
-        // @ts-ignore-error
-        const tmpTransfer: Array<any> = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].transfer[0];
-        for (const p of tmpTransfer) {
-            if (colorToString(p) == colorToString(color)) {
-                newParam.stn_list[u].num = String(p[5]);
-                break;
-            }
-        }
-        // @ts-ignore-error
-        newParam.stn_list[u].secondaryName = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].secondaryNames;
-    }
+    // console.log('DFS2: ' + u);
+
     let countChild = 0;
     let countTransfer = 0;
-    const newChild = new Array<string>();
+    const newChild = new Array<any>();
     const newInterchange = new Array<RMGInterchange>();
     const newInterchangeSet = new Set<string>();
     // @ts-ignore-error
@@ -269,8 +224,12 @@ const generateNewStn = (
         if (v == f) continue;
         if (!visStn.has(v) && colorToString(col) == colorToString(color)) {
             countChild++;
-            newChild.push(v);
-            generateNewStn(v, u, counter + 1, graph, color, newParam);
+            // newChild.push(v);
+            if (!String(u).startsWith('misc_node_')) {
+                newChild.push(generateNewStn(v, u, counter + 1, graph, color, newParam));
+            } else {
+                newChild.push(generateNewStn(v, f, counter + 1, graph, color, newParam));
+            }
         }
         if (!newInterchangeSet.has(colorToString(col)) && colorToString(col) != colorToString(color)) {
             countTransfer++;
@@ -282,15 +241,66 @@ const generateNewStn = (
             newInterchange.push(tmpInterchange);
         }
     }
-    if (countChild != 0) {
-        newParam.stn_list[u].children = newChild;
+    if (!String(u).startsWith('misc_node_')) {
+        // @ts-ignore-error
+        const newNames = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].names;
+        const newRMGStn: RMGStn = {
+            name: newNames,
+            secondaryName: false,
+            num: String(counter),
+            services: ['local'],
+            parents: [],
+            children: [],
+            branch: {
+                left: [],
+                right: [],
+            },
+            transfer: {
+                groups: [
+                    {
+                        lines: [],
+                    },
+                ],
+                tick_direc: 'r',
+                paid_area: true,
+            },
+            facility: '',
+            loop_pivot: false,
+            one_line: true,
+            int_padding: 355,
+        };
+        newParam.stn_list[u] = structuredClone(newRMGStn);
+        if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
+            // @ts-ignore-error
+            newParam.stn_list[u].num = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].stationCode;
+            // @ts-ignore-error
+            newParam.stn_list[u].secondaryName = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].secondaryNames;
+        }
+        if (graph.getNodeAttributes(u).type == StationType.GzmtrInt) {
+            // @ts-ignore-error
+            const tmpTransfer: Array<any> = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].transfer[0];
+            for (const p of tmpTransfer) {
+                if (colorToString(p) == colorToString(color)) {
+                    newParam.stn_list[u].num = String(p[5]);
+                    break;
+                }
+            }
+            // @ts-ignore-error
+            newParam.stn_list[u].secondaryName = graph.getNodeAttributes(u)[graph.getNodeAttributes(u).type].secondaryNames;
+        }
+        if (countChild != 0) {
+            newParam.stn_list[u].children = newChild;
+        } else {
+            newParam.stn_list[u].children = ['lineend'];
+            newParam.stn_list['lineend'].parents = [u];
+        }
+        newParam.stn_list[u].parents = [f];
+        if (countTransfer != 0) {
+            newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
+        }
+        return u;
     } else {
-        newParam.stn_list[u].children = ['lineend'];
-        newParam.stn_list['lineend'].parents = [u];
-    }
-    newParam.stn_list[u].parents = [f];
-    if (countTransfer != 0) {
-        newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
+        return newChild[0];
     }
 };
 
@@ -349,7 +359,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         if (!branchFlag) {
             // throw error
         }
-        let newParam = newParamTemple;
+        let newParam = structuredClone(newParamTemple);
         if (newStart != 'no_val') {
             // line
             console.log('Color ' + value[2] + 'is a line.');
@@ -382,6 +392,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         newParam.stn_list['linestart'].children = [newStart];
         generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
         console.log(newParam);
-        downloadAs(`RMP_genRMG_${newParam.theme}.json`, 'application/json', JSON.stringify(structuredClone(newParam)));
+        console.info(JSON.stringify(structuredClone(newParam)));
+        // downloadAs(`RMP_genRMG_${newParam.theme}.json`, 'application/json', JSON.stringify(structuredClone(newParam)));
     });
 };
