@@ -1,0 +1,362 @@
+{
+    "color": "カラー",
+    "warning": "警告",
+    "cancel": "キャンセル",
+    "apply": "適用",
+    "remove": "削除",
+    "close": "閉じる",
+    "noShowAgain": "次回表示しない",
+    "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
+    "meetRMP3": "Rail Map Painter 3 にご参加ください！世界中の都市のテンプレートをロードするか、ギャラリーに独自のものをアップロードできます。",
+
+    "colorModal": {
+        "title": "色を選択",
+        "example": "例",
+        "palette": "パレットから",
+        "custom": "カスタマイズ",
+        "city": "都市テーマ",
+        "line": "路線テーマ",
+        "bg": "背景色",
+        "fg": "前景色",
+        "white": "白",
+        "black": "黒",
+        "seeAll": "ライブラリ全体を見る",
+        "submit": "送信"
+    },
+
+    "panel": {
+        "tools": {
+            "showLess": "表示を減らす",
+            "section": {
+                "lineDrawing": "路線描画",
+                "stations": "駅",
+                "miscellaneousNodes": "その他のノード"
+            }
+        },
+        "details": {
+            "header": "詳細",
+            "info": {
+                "title": "基本情報",
+                "id": "ID",
+                "zIndex": "深さ",
+                "stationType": "駅タイプ",
+                "linePathType": "路線パスタイプ",
+                "lineStyleType": "路線スタイルタイプ"
+            },
+            "multipleSelection": "複数選択",
+            "changeStationTypeContent": "駅のタイプを変更すると、駅の名前以外のすべての属性が削除されます。",
+            "changeLineTypeContent": "路線のタイプを変更すると、すべての属性が削除されます。",
+            "changeType": "タイプを変更",
+            "nodePosition": {
+                "title": "ノードの位置",
+                "pos": {
+                    "x": "X座標",
+                    "y": "Y座標"
+                }
+            },
+            "lineExtremities": {
+                "title": "路線の端点",
+                "source": "出発点",
+                "target": "到着点",
+                "sourceName": "出発点名",
+                "targetName": "到着点名"
+            },
+            "specificAttrsTitle": "特定の属性",
+            "node": {
+                "virtual": {
+                    "displayName": "仮想ノード"
+                },
+                "shmetroNumLineBadge": {
+                    "displayName": "上海地下鉄路線番号バッジ",
+                    "num": "路線番号"
+                },
+                "shmetroTextLineBadge": {
+                    "displayName": "上海地下鉄テキスト路線バッジ",
+                    "nameZh": "中国語の路線名",
+                    "nameEn": "英語の路線名"
+                },
+                "gzmtrLineBadge": {
+                    "displayName": "広州地下鉄路線バッジ",
+                    "nameZh": "中国語の路線名",
+                    "nameEn": "英語の路線名"
+                },
+                "bjsubwayNumLineBadge": {
+                    "displayName": "北京地下鉄路線番号バッジ",
+                    "num": "路線番号"
+                },
+                "bjsubwayTextLineBadge": {
+                    "displayName": "北京地下鉄テキスト路線バッジ",
+                    "nameZh": "中国語の路線名",
+                    "nameEn": "英語の路線名"
+                },
+                "facilities": {
+                    "displayName": "施設",
+                    "type": "タイプ"
+                },
+                "text": {
+                    "displayName": "任意のテキスト",
+                    "content": "コンテンツ",
+                    "fontSize": "フォントサイズ",
+                    "lineHeight": "行の高さ",
+                    "textAnchor": "テキストのアンカー",
+                    "dominantBaseline": "ドミナントベースライン",
+                    "language": "言語でのフォントファミリー"
+                }
+            },
+            "station": {
+                "interchange": {
+                    "title": "乗り換え",
+                    "within": "駅構内の乗り換え",
+                    "outStation": "駅外の乗り換え",
+                    "outSystem": "システム外の乗り換え",
+                    "addGroup": "乗り換えグループを追加",
+                    "noInterchanges": "乗り換えなし",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "add": "乗り換えを追加",
+                    "copy": "乗り換えをコピー",
+                    "remove": "乗り換えを削除"
+                },
+                "shmetroBasic": {
+                    "displayName": "上海地下鉄基本駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY"
+                },
+                "shmetroBasic2020": {
+                    "displayName": "上海地下鉄基本駅（2020年）",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "rotate": "アイコンの回転"
+                },
+                "shmetroInt": {
+                    "displayName": "上海地下鉄乗り換え駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "height": "アイコンの高さ",
+                    "width": "アイコンの幅",
+                    "rotate": "アイコンの回転"
+                },
+                "gzmtrBasic": {
+                    "displayName": "広州地下鉄基本駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "lineCode": "路線コード",
+                    "stationCode": "駅コード",
+                    "open": "開業済み",
+                    "secondaryNameZh": "中国語の補助駅名",
+                    "secondaryNameEn": "英語の補助駅名",
+                    "tram": "トラム"
+                },
+                "gzmtrInt": {
+                    "displayName": "広州地下鉄乗り換え駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "lineCode": "路線コード",
+                    "stationCode": "駅コード",
+                    "open": "開業済み",
+                    "secondaryNameZh": "中国語の補助駅名",
+                    "secondaryNameEn": "英語の補助駅名"
+                },
+                "bjsubwayBasic": {
+                    "displayName": "北京地下鉄基本駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "open": "開業済み"
+                },
+                "bjsubwayInt": {
+                    "displayName": "北京地下鉄乗り換え駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "outOfStation": "駅外の乗り換え"
+                },
+                "mtr": {
+                    "displayName": "MTR駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "rotate": "アイコンの回転"
+                }
+            },
+            "line": {
+                "reconcileId": "調整ID",
+                "simple": {
+                    "displayName": "シンプルパス",
+                    "offset": "オフセット"
+                },
+                "diagonal": {
+                    "displayName": "135°対角パス",
+                    "offsetFrom": "オフセット（From）",
+                    "offsetTo": "オフセット（To）",
+                    "startFrom": "開始位置",
+                    "roundCornerFactor": "角の丸め係数"
+                },
+                "perpendicular": {
+                    "displayName": "90°垂直パス",
+                    "offsetFrom": "オフセット（From）",
+                    "offsetTo": "オフセット（To）",
+                    "startFrom": "開始位置",
+                    "roundCornerFactor": "角の丸め係数"
+                },
+                "singleColor": {
+                    "displayName": "単色スタイル"
+                },
+                "shmetroVirtualInt": {
+                    "displayName": "上海地下鉄駅外乗り換えスタイル"
+                },
+                "gzmtrVirtualInt": {
+                    "displayName": "広州地下鉄駅外乗り換えスタイル"
+                },
+                "chinaRailway": {
+                    "displayName": "中国鉄道スタイル"
+                },
+                "bjsubwayTram": {
+                    "displayName": "北京地下鉄トラムスタイル"
+                },
+                "dualColor": {
+                    "displayName": "上海磁浮スタイル",
+                    "swap": "色を交換"
+                },
+                "river": {
+                    "displayName": "河川スタイル",
+                    "width": "幅"
+                },
+                "mtrRaceDays": {
+                    "displayName": "MTRレース日スタイル"
+                },
+                "mtrLightRail": {
+                    "displayName": "MTR軽軌スタイル"
+                },
+                "mtrUnpaidArea": {
+                    "displayName": "MTR未払いエリアスタイル"
+                },
+                "mtrPaidArea": {
+                    "displayName": "MTR有料エリアスタイル"
+                }
+            },
+            "edge": {},
+            "footer": {
+                "duplicate": "複製",
+                "remove": "削除",
+                "removeEntireLine": "この色のすべての路線を削除する"
+            }
+        }
+    },
+
+    "header": {
+        "popoverHeader": "<1>{{environment}}</1> 環境です！",
+        "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
+        "open": {
+            "new": "新しいプロジェクト",
+            "config": "プロジェクトをインポート",
+            "configRMG": "RMG保存からインポート",
+            "projectRMG": "RMGプロジェクトからインポート",
+            "gallery": "ギャラリーからインポート",
+            "importFromRMPGallery": "テンプレート{{id}}がインポートされました。この変更に満足していませんか？Ctrl + Zまたは元に戻すボタンで元に戻せます。",
+            "failToImportFromRMPGallery": "ギャラリーから{{id}}のインポートに失敗しました。ファイルが見つかりませんでした。"
+        },
+        "download": {
+            "config": "プロジェクトをエクスポート",
+            "image": "画像をエクスポート",
+            "format": "フォーマット",
+            "png": "PNG",
+            "svg": "SVG（Web用）",
+            "transparent": "透明性",
+            "scale": "スケール",
+            "shareInfo1": "この画像を共有する際に、添付ファイル ",
+            "shareInfo2": " とリンクを添付します。",
+            "termsAndConditions": "利用規約",
+            "termsAndConditionsInfo": "以下の利用規約に同意します：",
+            "period": "。",
+            "confirm": "ダウンロード"
+        },
+        "settings": {
+            "title": "設定",
+            "pro": "これはPROの機能であり、期間限定で無料です！",
+            "preference": {
+                "title": "設定",
+                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける"
+            },
+            "shortcuts": {
+                "title": "ショートカット",
+                "keys": "キー",
+                "description": "説明",
+                "f": "最後のツールを使用する",
+                "arrowUpward": "キャンバスを少し上に移動する",
+                "arrowBack": "キャンバスを少し左に移動する",
+                "arrowDownward": "キャンバスを少し下に移動する",
+                "arrowForward": "キャンバスを少し右に移動する",
+                "i": "選択した駅を少し上に移動する",
+                "j": "選択した駅を少し左に移動する",
+                "k": "選択した駅を少し下に移動する",
+                "l": "選択した駅を少し右に移動する",
+                "shift": "複数選択",
+                "alt": "正確な移動",
+                "delete": "選択をすべて削除する",
+                "undo": "元に戻す",
+                "redo": "やり直す"
+            },
+            "procedures": {
+                "title": "手順",
+                "translate": {
+                    "title": "ノードの座標を変換",
+                    "content": "すべてのノードのX座標とY座標に次のオフセットを追加する：",
+                    "x": "X軸",
+                    "y": "Y軸"
+                },
+                "scale": {
+                    "title": "ノードの座標をスケーリング",
+                    "content": "すべてのノードのX座標とY座標に次の値を乗算する：",
+                    "factor": "スケールファクター"
+                },
+                "changeType": {
+                    "title": "一括で駅のタイプを変更する",
+                    "changeFrom": "すべての駅をこのタイプから変更する：",
+                    "changeTo": "このタイプに変更する：",
+                    "info": "駅のタイプを変更すると、位置と名前以外の特定の属性がすべて削除されます。変更する前に保存してください！"
+                },
+                "removeLines": {
+                    "title": "単一色の路線を削除する",
+                    "content": "この色を持つ路線を削除する："
+                }
+            },
+            "telemetry": {
+                "title": "テレメトリ",
+                "essential": "基本",
+                "essentialInfo": "Rail Map Painterでは、Google Analyticsを使用してデータを収集し、貢献者がユーザーがこのプロジェクトを訪れる方法やタイミングを知るのに役立ちます。Rail Map Painterにはユーザー登録やバックエンドサービスがないため、これが貢献者がフィードバックを得てプロジェクトを更新し続けることにつながる唯一の手段です。転送されるすべてのデータには、個人を特定できる情報やプロジェクトのデータは含まれませんので、安心してください。",
+                "essentialLink": "Google Analyticsが収集する詳細なフィールドを確認するには、このリンクをクリックしてください。",
+                "additional": "追加",
+                "additionalInfo": "Rail Map Painterでは、マウスやキーボードとのやり取り（プロジェクトの作成や駅の追加など）時に、追加のイベントも送信されます。これらのイベントも個人を特定できる情報は含まれず、統計目的にのみ使用されます。"
+            },
+            "about": {
+                "title": "について",
+                "rmp": "Rail Map Painter",
+                "railmapgen": "railmapgenプロジェクト",
+                "desc": "異なる都市の駅を自由にドラッグして、90度または135度の角丸線で接続して独自の鉄道マップをデザインしましょう！",
+                "content1": "かつて私たちが持っていた自由と平等のすべての記憶に捧げます。",
+                "content2": "2022年6月1日、上海",
+                "contributors": "貢献者",
+                "coreContributors": "主要な貢献者",
+                "styleContributors": "スタイルの貢献者",
+                "203IhzElttil": "上海メトロの駅が元のデザインに合致するように熱心な作業を行ったことに感謝します。",
+                "contactUs": "お問い合わせ",
+                "github": "プロジェクトリポジトリ",
+                "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
+                "slack": "Slackグループ",
+                "slackContent": "Slackのチャンネルでチャットしましょう！"
+            }
+        }
+    }
+}

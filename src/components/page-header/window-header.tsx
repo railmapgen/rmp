@@ -3,7 +3,7 @@ import { Heading, IconButton, Menu, MenuButton, MenuItem, MenuList, Wrap, WrapIt
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
-import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, SupportedLanguageCode } from '@railmapgen/rmg-translate';
+import { LanguageCode, LANGUAGE_NAMES } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
@@ -34,8 +34,9 @@ export default function WindowHeader() {
             rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
     }, [environment]);
 
-    const handleChangeLanguage = async (language: SupportedLanguageCode) => {
-        rmgRuntime.setLanguage(language);
+    const handleChangeLanguage = async (language: LanguageCode) => {
+        // do not change language in the global as japanese is not supported in other apps
+        // rmgRuntime.setLanguage(language);
         rmgRuntime.getI18nInstance().changeLanguage(language);
     };
 
@@ -102,7 +103,7 @@ export default function WindowHeader() {
                         <Menu>
                             <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
                             <MenuList>
-                                {SUPPORTED_LANGUAGES.map(lang => (
+                                {(['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko'] as LanguageCode[]).map(lang => (
                                     <MenuItem key={lang} onClick={() => handleChangeLanguage(lang)}>
                                         {LANGUAGE_NAMES[lang][lang]}
                                     </MenuItem>
