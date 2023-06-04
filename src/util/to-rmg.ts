@@ -1,4 +1,4 @@
-import { MultiDirectedGraph } from 'graphology';
+import { MultiDirectedGraph, UndirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { LineStyleType } from '../constants/lines';
@@ -7,6 +7,7 @@ import { Edge } from '../constants/edges';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
+import { count } from 'console';
 
 interface edgeVector {
     target: string;
@@ -22,6 +23,7 @@ const headGraph: Map<string, any> = new Map<string, any>();
 let edgeGraph: Array<edgeVector> = new Array<edgeVector>();
 let countGraph = 0;
 const outDegree: Map<string, any> = new Map<string, any>();
+const stationList = new Map<string, Array<any>>();
 
 interface RMGInterchange {
     theme: Array<string>;
@@ -85,7 +87,7 @@ const defRMGRight: RMGStn = {
     secondaryName: false,
     num: '00',
     services: ['local'],
-    parents: ['linestart'],
+    parents: [],
     children: [],
     branch: {
         left: [],
@@ -184,8 +186,13 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
     }
 };
 
+let errorBranchFlag = false;
+let isBranchFlag = false;
+const branchPoint = new Array<any>();
+
 const edgeDfs = (u: any, f: any, color: Array<string>) => {
     if (visStn.has(u)) {
+        // A-B-C and A-D-C
         return;
     }
     visStn.add(u);
@@ -200,6 +207,11 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
         edgeDfs(v, u, color);
     }
     outDegree.set(u, countDegree);
+    if (countDegree >= 4) {
+        errorBranchFlag = true;
+    } else if (countDegree == 3) {
+        isBranchFlag = true;
+    }
 };
 
 const generateNewStn = (
@@ -290,9 +302,18 @@ const generateNewStn = (
         }
         if (countChild != 0) {
             newParam.stn_list[u].children = structuredClone(newChild);
+            // console.warn('Children: ' + countChild);
+            if (Number(countChild) == 2) {
+                newParam.stn_list[u].branch.right = ['through', newChild[1]];
+            }
         } else {
             newParam.stn_list[u].children = ['lineend'];
-            newParam.stn_list['lineend'].parents = [structuredClone(u)];
+            newParam.stn_list['lineend'].parents.push(structuredClone(u));
+            if (newParam.stn_list['lineend'].branch.left[0] == undefined) {
+                newParam.stn_list['lineend'].branch.left = ['through'];
+            } else {
+                newParam.stn_list['lineend'].branch.left.push(structuredClone(u));
+            }
         }
         newParam.stn_list[u].parents = [f];
         if (countTransfer != 0) {
@@ -336,17 +357,18 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     edgeGraph = new Array<edgeVector>();
     countGraph = 0;
     outDegree.clear();
+    stationList.clear();
     graph
         .filterEdges(edge => edge.startsWith('line'))
         .forEach(edgeId => {
             addEdge(graph, edgeId);
         });
-    console.info(colorList);
+    // console.info(colorList);
     const resultList = new Array<any>();
     for (const value of colorList) {
         visStn.clear();
         outDegree.clear();
-        console.log('Start DFS color as ' + value[2]);
+        // console.log('Start DFS color as ' + value[2]);
         edgeDfs(colorStart.get(value), 'line_root', value);
         let newStart: any = 'no_val';
         let branchFlag = true;
@@ -361,13 +383,13 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         if (!branchFlag) {
             continue;
         }
-        let newParam = structuredClone(newParamTemple);
+        const newParam = structuredClone(newParamTemple);
         if (newStart != 'no_val') {
             // line
-            console.log('Color ' + value[1] + ' ' + value[2] + 'is a line.');
+            // console.log('Color ' + value[1] + ' ' + value[2] + 'is a line.');
         } else {
             // ring
-            console.log('Color ' + value[1] + ' ' + value[2] + 'is a ring.');
+            // console.log('Color ' + value[1] + ' ' + value[2] + 'is a ring.');
             newParam.loop = true;
             newStart = colorStart.get(value);
         }
@@ -384,7 +406,6 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
                 newType = 'shmetro';
                 break;
         }
-        newParam = structuredClone(newParamTemple);
         newParam.theme = structuredClone(value);
         newParam.style = structuredClone(newType);
         newParam.stn_list['linestart'] = structuredClone(defRMGLeft);
@@ -393,11 +414,11 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
         newParam.current_stn_idx = structuredClone(resStart);
         newParam.stn_list['linestart'].children = [resStart];
-        console.log(newParam);
-        console.info(JSON.stringify(structuredClone(newParam)));
+        // console.log(newParam);
+        // console.info(JSON.stringify(structuredClone(newParam)));
         resultList.push(structuredClone(newParam));
     }
-    return resultList;
+    return structuredClone(resultList);
 };
 
 /**
@@ -407,7 +428,9 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
  * @param lineCode Line code string e.g. '1'
  */
 export const exportToRmg = (param: any, lineName: any, lineCode: any) => {
-    param['line_name'] = String(lineName);
+    param['line_name'] = lineName;
     param['line_num'] = String(lineCode);
+    console.log(param);
+    console.log(JSON.stringify(structuredClone(param)));
     downloadAs(`RMG_${lineName[1]}.json`, 'application/json', JSON.stringify(structuredClone(param)));
 };
