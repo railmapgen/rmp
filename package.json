@@ -76,7 +76,7 @@
             "last 1 safari version"
         ]
     },
-    "version": "3.0.17",
+    "version": "3.0.18",
     "main": "public/electron.js",
     "build": {
         "publish": [
