@@ -344,7 +344,7 @@
         "about": {
             "title": "대함",
             "rmp": "지하철 노선도 그리기",
-            "railmapgen": "railmapgen 프로젝트",
+            "railmapgen": "철도 지도 툴킷 프로젝트 노선도 툴킷",
             "desc": "다양한 도시의 역을 자유롭게 끌어서 90도 또는 135도의 둥근 모서리 선으로 연결함으로써 여러분만의 철도 지도를 디자인해요!",
             "content1": "우리가 가졌던 자유와 평등을 기념한다.",
             "content2": "2022년 6월 1일 상해",
@@ -356,7 +356,10 @@
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
             "slack": "슬랙 그룹",
-            "slackContent": "이 슬랙 채널에서 채팅해요!"
+            "slackContent": "이 슬랙 채널에서 채팅해요!",
+            "linkExchange": "연결",
+            "guidaoTransit": "Guidao Transit",
+            "guidaoTransitContent": "상하이의 철도에 대해 더 알고 싶으세요? 이 WeChat 공식 계정을 팔로우하세요! (중국어만 가능)"
         }
     }
 }

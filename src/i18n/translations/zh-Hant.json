@@ -344,7 +344,7 @@
         "about": {
             "title": "關於",
             "rmp": "地鐵線路圖繪製器",
-            "railmapgen": "一個railmapgen項目",
+            "railmapgen": "一個路綫圖工具組的項目",
             "desc": "通過自由拖動來自不同城市的車站並以 90 或 135 度圓角線段將它們連接起來，設計您自己的鐵路地圖！",
             "content1": "謹以此紀念我們曾擁有的自由與平等。",
             "content2": "06/01/2022於上海",
@@ -356,7 +356,10 @@
             "github": "項目倉庫",
             "githubContent": "遇到任何問題？在這裡搜索或提出一個問題！",
             "slack": "Slack群組",
-            "slackContent": "在這些Slack頻道中討論!"
+            "slackContent": "在這些Slack頻道中討論!",
+            "linkExchange": "友情鏈接",
+            "guidaoTransit": "贵道蕉通",
+            "guidaoTransitContent": "想了解更多關於上海的軌道交通嗎？關注這個微信官方帳號！"
         }
     }
 }

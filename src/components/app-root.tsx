@@ -1,11 +1,25 @@
-import { Alert, AlertIcon, Flex, Link, Text } from '@chakra-ui/react';
+import {
+    Alert,
+    AlertIcon,
+    CloseButton,
+    Flex,
+    Image,
+    Link,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+} from '@chakra-ui/react';
 import { RmgErrorBoundary, RmgThemeProvider, RmgWindow } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
-import { useRootDispatch } from '../redux';
-import { setOpenGallery } from '../redux/runtime/runtime-slice';
+import { useRootDispatch, useRootSelector } from '../redux';
+import { setOpenGallery, setOpenGuidaoTransitQECode } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
 const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
@@ -16,7 +30,11 @@ export default function AppRoot() {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
 
+    const { guidaoTransitQECode } = useRootSelector(state => state.runtime);
+
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
+    const [isMeetRMP3Message, setIsMeetRMP3Message] = React.useState(true);
+    const [isGuidaoTransitMessage, setIsGuidaoTransitMessage] = React.useState(true);
 
     React.useEffect(() => {
         if (rmgRuntime.isStandaloneWindow() && !window.localStorage.getItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG)) {
@@ -98,12 +116,47 @@ export default function AppRoot() {
                         </Alert>
                     )}
 
-                    <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
-                        <AlertIcon />
-                        <Text>
-                            <Link onClick={() => dispatch(setOpenGallery(true))}>{t('meetRMP3')}</Link>
-                        </Text>
-                    </Alert>
+                    {isMeetRMP3Message && (
+                        <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
+                            <AlertIcon />
+                            <Text>
+                                <Link onClick={() => dispatch(setOpenGallery(true))}>{t('meetRMP3')}</Link>
+                            </Text>
+                            <CloseButton ml="auto" onClick={() => setIsMeetRMP3Message(false)} />
+                        </Alert>
+                    )}
+
+                    {isGuidaoTransitMessage && (
+                        <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
+                            <AlertIcon />
+                            <Text>
+                                <Link onClick={() => dispatch(setOpenGuidaoTransitQECode(true))}>
+                                    {t('header.about.guidaoTransitContent')}
+                                </Link>
+                            </Text>
+                            <CloseButton ml="auto" onClick={() => setIsGuidaoTransitMessage(false)} />
+                        </Alert>
+                    )}
+
+                    <Modal
+                        size="6xl"
+                        isOpen={guidaoTransitQECode}
+                        onClose={() => dispatch(setOpenGuidaoTransitQECode(false))}
+                    >
+                        <ModalOverlay />
+                        <ModalContent>
+                            <ModalHeader>{t('header.about.guidaoTransit')}</ModalHeader>
+                            <ModalCloseButton />
+
+                            <ModalBody paddingBottom={10}>
+                                <Image
+                                    width="1080"
+                                    height="203"
+                                    src={process.env.PUBLIC_URL + '/images/guidaoTransitQRCode.png'}
+                                />
+                            </ModalBody>
+                        </ModalContent>
+                    </Modal>
 
                     <RmgErrorBoundary allowReset>
                         <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
