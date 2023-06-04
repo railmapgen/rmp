@@ -15,6 +15,7 @@ import {
     PinInputField,
     NumberInputStepper,
     NumberInputField,
+    Input,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { StationType } from '../../constants/stations';
@@ -245,10 +246,6 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         }
     };
 
-    const outputFormDownload = (param: any) => {
-        exportToRmg(structuredClone(param), 'Chinese', 'English');
-    };
-
     const outputForm = () => {
         const result = [];
         for (const param of toRmgRes) {
@@ -264,13 +261,25 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         />
                     </td>
                     <td>
-                        <input type="text" id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]} />
+                        <Input
+                            placeholder="Chinese"
+                            id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                            size="sm"
+                        />
                     </td>
                     <td>
-                        <input type="text" id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]} />
+                        <Input
+                            placeholder="English"
+                            id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                            size="sm"
+                        />
                     </td>
                     <td>
-                        <input type="text" id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]} />
+                        <Input
+                            placeholder="Number"
+                            id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                            size="sm"
+                        />
                     </td>
                     <td>{outputLineType(isLoop)}</td>
                     <td>
@@ -290,6 +299,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 ) as HTMLInputElement;
                                 exportToRmg(structuredClone(param), [chName.value, enName.value], lineNum.value);
                             }}
+                            size="sm"
                         >
                             Download
                         </Button>
