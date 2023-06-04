@@ -12,8 +12,11 @@ import {
     Tooltip,
     ModalFooter,
     Button,
+    PinInputField,
+    NumberInputStepper,
+    NumberInputField,
 } from '@chakra-ui/react';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { StationType } from '../../constants/stations';
 import { LineStyleType } from '../../constants/lines';
 import { useRootSelector, useRootDispatch } from '../../redux';
@@ -23,7 +26,9 @@ import stations from '../svgs/stations/stations';
 import { changeStationsTypeInBatch } from '../../util/change-types';
 import ColourModal from '../panels/colour-modal/colour-modal';
 import ThemeButton from '../panels/theme-button';
-import { toRmg } from '../../util/to-rmg';
+import { exportToRmg, toRmg } from '../../util/to-rmg';
+import { resourceLimits } from 'worker_threads';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -222,12 +227,81 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
-    let resultToRmg = 'Hey';
+    const toRmgRes = toRmg(graph.current);
+
+    const outputLineName = (theme: any) => {
+        if (theme[0] == 'other' && theme[1] == 'other') {
+            return theme[2];
+        } else {
+            return theme[1];
+        }
+    };
+
+    const outputLineType = (type: any) => {
+        if (type == true) {
+            return <RmgLineBadge name="Loop" bg="#ff6666" fg={MonoColour.white} />;
+        } else {
+            return <RmgLineBadge name="Line" bg="#33ccff" fg={MonoColour.white} />;
+        }
+    };
+
+    const outputFormDownload = (param: any) => {
+        exportToRmg(structuredClone(param), 'Chinese', 'English');
+    };
+
+    const outputForm = () => {
+        const result = [];
+        for (const param of toRmgRes) {
+            const theme = param.theme;
+            const isLoop = param.loop;
+            result.push(
+                <tr>
+                    <td>
+                        <RmgLineBadge
+                            name={outputLineName(structuredClone(theme))}
+                            bg={structuredClone(theme[2])}
+                            fg={structuredClone(theme[3])}
+                        />
+                    </td>
+                    <td>
+                        <input type="text" id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]} />
+                    </td>
+                    <td>
+                        <input type="text" id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]} />
+                    </td>
+                    <td>
+                        <input type="text" id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]} />
+                    </td>
+                    <td>{outputLineType(isLoop)}</td>
+                    <td>
+                        <Button
+                            colorScheme="blue"
+                            variant="ghost"
+                            mr="1"
+                            onClick={() => {
+                                const chName = document.getElementById(
+                                    'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                ) as HTMLInputElement;
+                                const enName = document.getElementById(
+                                    'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                ) as HTMLInputElement;
+                                const lineNum = document.getElementById(
+                                    'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                ) as HTMLInputElement;
+                                exportToRmg(structuredClone(param), [chName.value, enName.value], lineNum.value);
+                            }}
+                        >
+                            Download
+                        </Button>
+                    </td>
+                </tr>
+            );
+        }
+        return result;
+    };
 
     const handleChange = () => {
         console.log('Here!');
-        resultToRmg = 'Here!';
-        toRmg(graph.current);
     };
 
     return (
@@ -236,7 +310,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        {resultToRmg}
+                        RMP to RMG Converter
                     </Text>
                     <Tooltip label={t('header.settings.pro')}>
                         <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
@@ -247,9 +321,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                 <ModalCloseButton />
 
                 <ModalBody>
-                    <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
-                        Change?
-                    </Text>
+                    <table>{outputForm()}</table>
                 </ModalBody>
 
                 <ModalFooter>
