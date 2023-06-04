@@ -3,11 +3,9 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/co
 import { StationType } from '../constants/stations';
 import { LineStyleType } from '../constants/lines';
 import { StationAttributes } from '../constants/stations';
-import { Edge } from '../constants/edges';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
-import { count } from 'console';
 
 interface edgeVector {
     target: string;
@@ -188,7 +186,6 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
 
 let errorBranchFlag = false;
 let isBranchFlag = false;
-const branchPoint = new Array<any>();
 
 const edgeDfs = (u: any, f: any, color: Array<string>) => {
     if (visStn.has(u)) {
@@ -361,7 +358,9 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     graph
         .filterEdges(edge => edge.startsWith('line'))
         .forEach(edgeId => {
-            addEdge(graph, edgeId);
+            if (String(graph.getEdgeAttributes(edgeId).style) == LineStyleType['SingleColor']) {
+                addEdge(graph, edgeId);
+            }
         });
     // console.info(colorList);
     const resultList = new Array<any>();
@@ -384,11 +383,8 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             continue;
         }
         const newParam = structuredClone(newParamTemple);
-        if (newStart != 'no_val') {
-            // line
-            // console.log('Color ' + value[1] + ' ' + value[2] + 'is a line.');
-        } else {
-            // ring
+        if (newStart == 'no_val') {
+            // loop
             // console.log('Color ' + value[1] + ' ' + value[2] + 'is a ring.');
             newParam.loop = true;
             newStart = colorStart.get(value);
@@ -414,8 +410,6 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
         newParam.current_stn_idx = structuredClone(resStart);
         newParam.stn_list['linestart'].children = [resStart];
-        // console.log(newParam);
-        // console.info(JSON.stringify(structuredClone(newParam)));
         resultList.push(structuredClone(newParam));
     }
     return structuredClone(resultList);
