@@ -168,7 +168,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="lg" fontWeight="bold" mb={1}>
                                     {t('header.about.guidaoTransit')}
                                 </Text>
-                                <Text fontSize="sm">{t('header.about.githubContent')}</Text>
+                                <Text fontSize="sm">{t('header.about.guidaoTransitContent')}</Text>
                             </TagLabel>
                         </Tag>
                     </VStack>
