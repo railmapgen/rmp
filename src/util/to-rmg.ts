@@ -6,6 +6,7 @@ import { StationAttributes } from '../constants/stations';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
+import { platform } from 'os';
 
 interface edgeVector {
     target: string;
@@ -153,6 +154,14 @@ const colorToString = (color: any) => {
     return String(color[0] + color[1] + color[2] + color[3]);
 };
 
+const reverse = (a: any) => {
+    const p = [];
+    for (let i = a.length - 1; i >= 0; i--) {
+        p.push(a[i]);
+    }
+    return p;
+};
+
 const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, lineId: string) => {
     const u = graph.extremities(lineId)[0];
     const v = graph.extremities(lineId)[1];
@@ -208,6 +217,15 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
         errorBranchFlag = true;
     } else if (countDegree == 3) {
         isBranchFlag = true;
+    }
+};
+
+const editLineend = (newParam: any, u: any) => {
+    newParam.stn_list['lineend'].parents.push(structuredClone(u));
+    if (newParam.stn_list['lineend'].branch.left[0] == undefined) {
+        newParam.stn_list['lineend'].branch.left = ['through'];
+    } else {
+        newParam.stn_list['lineend'].branch.left.push(structuredClone(u));
     }
 };
 
@@ -298,19 +316,15 @@ const generateNewStn = (
             newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
         }
         if (countChild != 0) {
-            newParam.stn_list[u].children = structuredClone(newChild);
+            // newParam.stn_list[u].children = structuredClone(newChild);
+            newParam.stn_list[u].children = reverse(structuredClone(newChild));
             // console.warn('Children: ' + countChild);
             if (Number(countChild) == 2) {
                 newParam.stn_list[u].branch.right = ['through', newChild[1]];
             }
         } else {
             newParam.stn_list[u].children = ['lineend'];
-            newParam.stn_list['lineend'].parents.push(structuredClone(u));
-            if (newParam.stn_list['lineend'].branch.left[0] == undefined) {
-                newParam.stn_list['lineend'].branch.left = ['through'];
-            } else {
-                newParam.stn_list['lineend'].branch.left.push(structuredClone(u));
-            }
+            editLineend(newParam, u);
         }
         newParam.stn_list[u].parents = [f];
         if (countTransfer != 0) {
@@ -318,8 +332,10 @@ const generateNewStn = (
         }
         return u;
     } else {
-        if (newChild.length == 0) return 'lineend';
-        else return newChild[0];
+        if (newChild.length == 0) {
+            editLineend(newParam, f);
+            return 'lineend';
+        } else return newChild[0];
     }
 };
 
@@ -375,7 +391,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             if (deg == 1) {
                 newStart = u;
             }
-            if (deg > 4) {
+            if (deg > 3) {
                 branchFlag = false;
             }
         }
