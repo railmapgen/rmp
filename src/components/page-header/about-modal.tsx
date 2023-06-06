@@ -13,7 +13,7 @@ import {
     Tag,
     TagLabel,
     Text,
-    VStack
+    VStack,
 } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useTranslation } from 'react-i18next';
