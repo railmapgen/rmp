@@ -44,6 +44,7 @@ interface RuntimeState {
     nodeExists: { [key in NodeType]: boolean };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
     openGallery: boolean;
+    guidaoTransitQECode: boolean;
 }
 
 const initialState: RuntimeState = {
@@ -62,6 +63,7 @@ const initialState: RuntimeState = {
     ) as { [key in NodeType]: boolean },
     globalAlerts: {},
     openGallery: false,
+    guidaoTransitQECode: false,
 };
 
 const runtimeSlice = createSlice({
@@ -119,6 +121,9 @@ const runtimeSlice = createSlice({
         setOpenGallery: (state, action: PayloadAction<boolean>) => {
             state.openGallery = action.payload;
         },
+        setOpenGuidaoTransitQECode: (state, action: PayloadAction<boolean>) => {
+            state.guidaoTransitQECode = action.payload;
+        },
     },
     extraReducers: builder => {
         builder
@@ -147,5 +152,6 @@ export const {
     setGlobalAlert,
     closeGlobalAlert,
     setOpenGallery,
+    setOpenGuidaoTransitQECode,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

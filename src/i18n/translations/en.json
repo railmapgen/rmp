@@ -344,7 +344,7 @@
         "about": {
             "title": "About",
             "rmp": "Rail Map Painter",
-            "railmapgen": "A railmapgen project",
+            "railmapgen": "A Rail Map Toolkit project",
             "desc": "Design your own rail map by freely dragging stations from different cities and connecting them with 90 or 135-degree rounded corners lines!",
             "content1": "In memory of all the freedom and equality we once had.",
             "content2": "06/01/2022 in Shanghai",
@@ -356,7 +356,10 @@
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
             "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!"
+            "slackContent": "Chat in these Slack channels!",
+            "linkExchange": "Link Exchange",
+            "guidaoTransit": "Guidao Transit",
+            "guidaoTransitContent": "Want to know more about Shanghai rail transit? Follow this WeChat account! (Chinese Only)"
         }
     }
 }
