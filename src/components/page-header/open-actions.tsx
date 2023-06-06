@@ -2,15 +2,9 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } fro
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
-import { useRootDispatch, useRootSelector } from '../../redux';
+import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import {
-    clearSelected,
-    setGlobalAlert,
-    setOpenGallery,
-    setRefreshEdges,
-    setRefreshNodes,
-} from '../../redux/runtime/runtime-slice';
+import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { parseRmgParam } from '../../util/rmg-param-parser';
 import { upgrade } from '../../util/save';
 import RmgParamAppClip from './rmg-param-app-clip';
@@ -19,12 +13,12 @@ import RmpGalleryAppClip from './rmp-gallery-app-clip';
 export default function OpenActions() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const { openGallery } = useRootSelector(state => state.runtime);
 
     const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const [isRmgParamAppClipOpen, setIsRmgParamAppClipOpen] = React.useState(false);
+    const [isOpenGallery, setIsOpenGallery] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(setRefreshNodes());
@@ -110,7 +104,7 @@ export default function OpenActions() {
                     {t('header.open.projectRMG')}
                 </MenuItem>
 
-                <MenuItem icon={<MdInsertDriveFile />} onClick={() => dispatch(setOpenGallery(true))}>
+                <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsOpenGallery(true)}>
                     {t('header.open.gallery')}
                     <Badge ml="1" colorScheme="green">
                         New
@@ -123,7 +117,7 @@ export default function OpenActions() {
                 onClose={() => setIsRmgParamAppClipOpen(false)}
                 onImport={handleImportRMGProject}
             />
-            <RmpGalleryAppClip isOpen={openGallery} onClose={() => dispatch(setOpenGallery(false))} />
+            <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
         </Menu>
     );
 }

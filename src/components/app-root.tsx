@@ -19,7 +19,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { setOpenGallery, setOpenGuidaoTransitQECode } from '../redux/runtime/runtime-slice';
+import { setOpenGuidaoTransitQECode } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
 const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
@@ -33,7 +33,6 @@ export default function AppRoot() {
     const { guidaoTransitQECode } = useRootSelector(state => state.runtime);
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
-    const [isMeetRMP3Message, setIsMeetRMP3Message] = React.useState(true);
     const [isGuidaoTransitMessage, setIsGuidaoTransitMessage] = React.useState(true);
 
     React.useEffect(() => {
@@ -113,16 +112,6 @@ export default function AppRoot() {
                                     {t('noShowAgain')}
                                 </Link>
                             </Text>
-                        </Alert>
-                    )}
-
-                    {isMeetRMP3Message && (
-                        <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
-                            <AlertIcon />
-                            <Text>
-                                <Link onClick={() => dispatch(setOpenGallery(true))}>{t('meetRMP3')}</Link>
-                            </Text>
-                            <CloseButton ml="auto" onClick={() => setIsMeetRMP3Message(false)} />
                         </Alert>
                     )}
 
