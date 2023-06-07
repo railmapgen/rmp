@@ -387,9 +387,13 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         edgeDfs(colorStart.get(value), 'line_root', value);
         let newStart: any = 'no_val';
         let branchFlag = true;
+        let typeInfo = 'LINE';
         for (const [u, deg] of outDegree) {
             if (deg == 1) {
                 newStart = u;
+            }
+            if (deg == 3) {
+                typeInfo = 'BRANCH';
             }
             if (deg > 3) {
                 branchFlag = false;
@@ -404,6 +408,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             // console.log('Color ' + value[1] + ' ' + value[2] + 'is a ring.');
             newParam.loop = true;
             newStart = colorStart.get(value);
+            typeInfo = 'LOOP';
         }
         let newType: string;
         switch (graph.getNodeAttributes(newStart).type) {
@@ -426,7 +431,12 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
         newParam.current_stn_idx = structuredClone(resStart);
         newParam.stn_list['linestart'].children = [resStart];
-        resultList.push(structuredClone(newParam));
+        let countStn = 0;
+        for (const i in newParam.stn_list) {
+            countStn++;
+        }
+        if (countStn <= 3) continue;
+        resultList.push([structuredClone(newParam), typeInfo]);
     }
     return structuredClone(resultList);
 };

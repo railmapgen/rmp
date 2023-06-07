@@ -239,18 +239,19 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     };
 
     const outputLineType = (type: any) => {
-        if (type == true) {
+        if (type == 'LOOP') {
             return <RmgLineBadge name="Loop" bg="#ff6666" fg={MonoColour.white} />;
-        } else {
+        } else if (type == 'LINE') {
             return <RmgLineBadge name="Line" bg="#33ccff" fg={MonoColour.white} />;
+        } else if (type == 'BRANCH') {
+            return <RmgLineBadge name="Branch" bg="#00e600" fg={MonoColour.white} />;
         }
     };
 
     const outputForm = () => {
         const result = [];
-        for (const param of toRmgRes) {
+        for (const [param, type] of toRmgRes) {
             const theme = param.theme;
-            const isLoop = param.loop;
             result.push(
                 <tr>
                     <td>
@@ -281,7 +282,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             size="sm"
                         />
                     </td>
-                    <td>{outputLineType(isLoop)}</td>
+                    <td>{outputLineType(type)}</td>
                     <td>
                         <Button
                             colorScheme="blue"
