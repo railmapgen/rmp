@@ -321,7 +321,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        RMP to RMG Converter
+                        Generate RMG Saves
                     </Text>
                     <Tooltip label={t('header.settings.pro')}>
                         <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
@@ -337,10 +337,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalFooter>
                     <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
-                        {t('cancel')}
-                    </Button>
-                    <Button colorScheme="red" onClick={handleChange}>
-                        {t('apply')}
+                        {t('close')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

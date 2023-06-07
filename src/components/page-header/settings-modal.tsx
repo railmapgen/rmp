@@ -261,7 +261,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     onClick={() => setIsToRmgOpen(true)}
                                 >
                                     <Box>
-                                        to RMG
+                                        Generate RMG Saves
                                         <Tooltip label={t('header.settings.pro')}>
                                             <Badge
                                                 ml="1"
