@@ -1,4 +1,4 @@
-import { MultiDirectedGraph, UndirectedGraph } from 'graphology';
+import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { LineStyleType } from '../constants/lines';
@@ -6,7 +6,6 @@ import { StationAttributes } from '../constants/stations';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
-import { platform } from 'os';
 
 interface edgeVector {
     target: string;
@@ -150,6 +149,32 @@ const newParamTemple = {
     },
 };
 
+const newRMGStn: RMGStn = {
+    name: [],
+    secondaryName: false,
+    num: '',
+    services: ['local'],
+    parents: [],
+    children: [],
+    branch: {
+        left: [],
+        right: [],
+    },
+    transfer: {
+        groups: [
+            {
+                lines: [],
+            },
+        ],
+        tick_direc: 'r',
+        paid_area: true,
+    },
+    facility: '',
+    loop_pivot: false,
+    one_line: true,
+    int_padding: 355,
+};
+
 const colorToString = (color: any) => {
     return String(color[0] + color[1] + color[2] + color[3]);
 };
@@ -162,14 +187,39 @@ const reverse = (a: any) => {
     return p;
 };
 
+const countArray = (a: any) => {
+    let counter = 0;
+    for (const i in a) {
+        counter++;
+    }
+    return counter;
+};
+
+const isColorLine = (type: any) => {
+    if (type == LineStyleType['SingleColor'] || type == LineStyleType['MTRRaceDays']) {
+        return true;
+    } else return false;
+};
+
+const getColor = (attr: any) => {
+    let nowColor = new Array<any>();
+    if (attr.style == LineStyleType['SingleColor']) {
+        const newAttr = attr[LineStyleType['SingleColor']] as SingleColorAttributes;
+        nowColor = newAttr.color;
+    } else if (attr.style == LineStyleType['MTRRaceDays']) {
+        const newAttr = attr[LineStyleType['MTRRaceDays']] as SingleColorAttributes;
+        nowColor = newAttr.color;
+    }
+    return structuredClone(nowColor);
+};
+
 const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, lineId: string) => {
     const u = graph.extremities(lineId)[0];
     const v = graph.extremities(lineId)[1];
     const now = graph.getEdgeAttributes(lineId);
     const nowStyle: string = now.style;
-    if (nowStyle == LineStyleType['SingleColor']) {
-        const newAttr = now[LineStyleType['SingleColor']] as SingleColorAttributes;
-        const nowColor: Array<string> = newAttr.color;
+    if (isColorLine(nowStyle)) {
+        const nowColor = getColor(now);
         if (!colorSet.has(colorToString(nowColor))) {
             colorList.add(nowColor);
             colorSet.add(colorToString(nowColor));
@@ -198,7 +248,6 @@ let isBranchFlag = false;
 
 const edgeDfs = (u: any, f: any, color: Array<string>) => {
     if (visStn.has(u)) {
-        // A-B-C and A-D-C
         return;
     }
     visStn.add(u);
@@ -221,11 +270,11 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
 };
 
 const editLineend = (newParam: any, u: any) => {
-    newParam.stn_list['lineend'].parents.push(structuredClone(u));
-    if (newParam.stn_list['lineend'].branch.left[0] == undefined) {
-        newParam.stn_list['lineend'].branch.left = ['through'];
-    } else {
-        newParam.stn_list['lineend'].branch.left.push(structuredClone(u));
+    const newParent = structuredClone(newParam.stn_list['lineend'].parents);
+    newParent.push(u);
+    newParam.stn_list['lineend'].parents = reverse(structuredClone(newParent));
+    if (countArray(newParam.stn_list['lineend'].parents) == 2) {
+        newParam.stn_list['lineend'].branch.left = ['through', structuredClone(newParent[1])];
     }
 };
 
@@ -237,8 +286,21 @@ const generateNewStn = (
     color: Array<string>,
     newParam: any
 ) => {
-    if (visStn.has(u)) {
+    if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_'))) {
         return;
+    } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countArray(newParam.stn_list[u].children) >= 2) {
+        // parent
+        newParam.stn_list[u].parents = [f, ...structuredClone(newParam.stn_list[u].parents)];
+        newParam.stn_list[u].branch.left = ['through', f];
+        const newChild = [];
+        for (const ch of newParam.stn_list[u].children) {
+            if (ch != f) {
+                newChild.push(ch);
+            }
+        }
+        newParam.stn_list[u].children = structuredClone(newChild);
+        newParam.stn_list[u].branch.right = [];
+        return u;
     }
     visStn.add(u);
     // console.log('DFS2: ' + u);
@@ -251,12 +313,18 @@ const generateNewStn = (
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
         if (v == f) continue;
-        if (!visStn.has(v) && colorToString(col) == colorToString(color)) {
+        if (colorToString(col) == colorToString(color)) {
             if (!String(u).startsWith('misc_node_')) {
-                countChild++;
-                newChild.push(generateNewStn(v, u, counter + 1, graph, color, newParam));
+                const r = generateNewStn(v, u, counter + 1, graph, color, newParam);
+                if (r != undefined) {
+                    countChild++;
+                    newChild.push(r);
+                }
             } else {
-                newChild.push(generateNewStn(v, f, counter + 1, graph, color, newParam));
+                const r = generateNewStn(v, f, counter + 1, graph, color, newParam);
+                if (r != undefined) {
+                    newChild.push(r);
+                }
             }
         }
         if (!newInterchangeSet.has(colorToString(col)) && colorToString(col) != colorToString(color)) {
@@ -272,33 +340,9 @@ const generateNewStn = (
     if (!String(u).startsWith('misc_node_')) {
         const uType = graph.getNodeAttributes(u).type as StationType;
         const uAttr = graph.getNodeAttributes(u)[uType] as StationAttributes;
-        const newNames = uAttr.names;
-        const newRMGStn: RMGStn = {
-            name: newNames,
-            secondaryName: false,
-            num: String(counter),
-            services: ['local'],
-            parents: [],
-            children: [],
-            branch: {
-                left: [],
-                right: [],
-            },
-            transfer: {
-                groups: [
-                    {
-                        lines: [],
-                    },
-                ],
-                tick_direc: 'r',
-                paid_area: true,
-            },
-            facility: '',
-            loop_pivot: false,
-            one_line: true,
-            int_padding: 355,
-        };
         newParam.stn_list[u] = structuredClone(newRMGStn);
+        newParam.stn_list[u].name = uAttr.names;
+        newParam.stn_list[u].num = String(counter);
         if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
             const gzAttr = uAttr as GzmtrBasicStationAttributes;
             newParam.stn_list[u].num = gzAttr.stationCode;
@@ -316,9 +360,7 @@ const generateNewStn = (
             newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
         }
         if (countChild != 0) {
-            // newParam.stn_list[u].children = structuredClone(newChild);
             newParam.stn_list[u].children = reverse(structuredClone(newChild));
-            // console.warn('Children: ' + countChild);
             if (Number(countChild) == 2) {
                 newParam.stn_list[u].branch.right = ['through', newChild[1]];
             }
@@ -374,7 +416,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     graph
         .filterEdges(edge => edge.startsWith('line'))
         .forEach(edgeId => {
-            if (String(graph.getEdgeAttributes(edgeId).style) == LineStyleType['SingleColor']) {
+            if (isColorLine(String(graph.getEdgeAttributes(edgeId).style))) {
                 addEdge(graph, edgeId);
             }
         });
@@ -431,11 +473,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
         newParam.current_stn_idx = structuredClone(resStart);
         newParam.stn_list['linestart'].children = [resStart];
-        let countStn = 0;
-        for (const i in newParam.stn_list) {
-            countStn++;
-        }
-        if (countStn <= 3) continue;
+        if (countArray(newParam.stn_list) <= 3) continue;
         resultList.push([structuredClone(newParam), typeInfo]);
     }
     return structuredClone(resultList);
