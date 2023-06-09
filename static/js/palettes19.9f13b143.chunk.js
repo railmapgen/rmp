@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkrmp=self.webpackChunkrmp||[]).push([[4447],{3132:function(e,n,a){a.r(n);var h=[{id:"R1",colour:"#e9322b",fg:a(1125).AJ.white,name:{en:"Light Rail Line 1","zh-Hans":"\u8f7b\u8f681\u53f7\u7ebf","zh-Hant":"\u8f15\u8ecc1\u865f\u7dda"}}];n.default=h}}]);
+//# sourceMappingURL=palettes19.9f13b143.chunk.js.map
