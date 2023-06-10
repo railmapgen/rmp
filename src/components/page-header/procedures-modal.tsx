@@ -12,9 +12,6 @@ import {
     Tooltip,
     ModalFooter,
     Button,
-    PinInputField,
-    NumberInputStepper,
-    NumberInputField,
     Input,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
@@ -28,8 +25,8 @@ import { changeStationsTypeInBatch } from '../../util/change-types';
 import ColourModal from '../panels/colour-modal/colour-modal';
 import ThemeButton from '../panels/theme-button';
 import { exportToRmg, toRmg } from '../../util/to-rmg';
-import { resourceLimits } from 'worker_threads';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MdDownload } from 'react-icons/md';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -244,7 +241,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         } else if (type == 'LINE') {
             return <RmgLineBadge name="Line" bg="#33ccff" fg={MonoColour.white} />;
         } else if (type == 'BRANCH') {
-            return <RmgLineBadge name="Branch" bg="#00e600" fg={MonoColour.white} />;
+            return <RmgLineBadge name="Branch" bg="#007B61" fg={MonoColour.white} />;
         }
     };
 
@@ -263,21 +260,21 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                     </td>
                     <td>
                         <Input
-                            placeholder="Chinese"
+                            placeholder="Chinese Name"
                             id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]}
                             size="sm"
                         />
                     </td>
                     <td>
                         <Input
-                            placeholder="English"
+                            placeholder="English Name"
                             id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]}
                             size="sm"
                         />
                     </td>
                     <td>
                         <Input
-                            placeholder="Number"
+                            placeholder="Line Code"
                             id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]}
                             size="sm"
                         />
@@ -302,7 +299,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             }}
                             size="sm"
                         >
-                            Download
+                            <MdDownload />
                         </Button>
                     </td>
                 </tr>
@@ -311,12 +308,13 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         return result;
     };
 
-    const handleChange = () => {
-        console.log('Here!');
-    };
+    /*
+Chinese
+本功能旨在将RMP保存文件转化为RMG保存文件。以下列表中的线路即为可以转化的线路。您可以在左侧的文本框中输入中文线路名称，在中间的输入英文线路名称，在右侧输入线路编号（供广州地铁样式使用），然后点击右侧下载按钮保存您的RMG保存文件。
+    */
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
@@ -332,6 +330,16 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                 <ModalCloseButton />
 
                 <ModalBody>
+                    <Text fontSize="sm" mt="3" lineHeight="100%">
+                        This function is designed to convert RMP saves into RMG saves.
+                    </Text>
+                    <Text fontSize="sm" mt="3" lineHeight="100%">
+                        The lines in the list following are the available lines for converting. You can enter the
+                        Chinese line name in the text box on the left, the English line name in the middle, the line
+                        code (for Guangzhou Metro style) on the right, and then click the download button on the right
+                        to save your RMG saves.
+                    </Text>
+                    <br />
                     <table>{outputForm()}</table>
                 </ModalBody>
 

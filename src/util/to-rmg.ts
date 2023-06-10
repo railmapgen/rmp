@@ -176,7 +176,7 @@ const newRMGStn: RMGStn = {
 };
 
 const colorToString = (color: any) => {
-    return String(color[0] + color[1] + color[2] + color[3]);
+    return String(color[0] + '/' + color[1] + '=' + color[2] + color[3]);
 };
 
 const reverse = (a: any) => {
@@ -218,6 +218,7 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
     const v = graph.extremities(lineId)[1];
     const now = graph.getEdgeAttributes(lineId);
     const nowStyle: string = now.style;
+    if (u == v) return;
     if (isColorLine(nowStyle)) {
         const nowColor = getColor(now);
         if (!colorSet.has(colorToString(nowColor))) {
@@ -241,10 +242,8 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
         headGraph.set(v, countGraph);
         countGraph++;
     }
+    if (u == 'stn_N4wnz_oJh4') console.log(v);
 };
-
-let errorBranchFlag = false;
-let isBranchFlag = false;
 
 const edgeDfs = (u: any, f: any, color: Array<string>) => {
     if (visStn.has(u)) {
@@ -253,20 +252,18 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
     visStn.add(u);
     // console.log('DFS: ' + u);
     let countDegree = 0;
+    const visNext: Set<string> = new Set<string>();
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
         if (colorToString(col) != colorToString(color)) continue;
+        if (visNext.has(v)) continue;
+        visNext.add(v);
         countDegree++;
         if (v == f) continue;
         edgeDfs(v, u, color);
     }
     outDegree.set(u, countDegree);
-    if (countDegree >= 4) {
-        errorBranchFlag = true;
-    } else if (countDegree == 3) {
-        isBranchFlag = true;
-    }
 };
 
 const editLineend = (newParam: any, u: any) => {
@@ -286,7 +283,7 @@ const generateNewStn = (
     color: Array<string>,
     newParam: any
 ) => {
-    if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_'))) {
+    if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_') || newParam.loop)) {
         return;
     } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countArray(newParam.stn_list[u].children) >= 2) {
         // parent
@@ -309,11 +306,14 @@ const generateNewStn = (
     const newChild = new Array<any>();
     const newInterchange = new Array<RMGInterchange>();
     const newInterchangeSet = new Set<string>();
+    const visNext: Set<string> = new Set<string>();
     for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
         if (v == f) continue;
         if (colorToString(col) == colorToString(color)) {
+            if (visNext.has(v)) continue;
+            visNext.add(v);
             if (!String(u).startsWith('misc_node_')) {
                 const r = generateNewStn(v, u, counter + 1, graph, color, newParam);
                 if (r != undefined) {
@@ -446,8 +446,6 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         }
         const newParam = structuredClone(newParamTemple);
         if (newStart == 'no_val') {
-            // loop
-            // console.log('Color ' + value[1] + ' ' + value[2] + 'is a ring.');
             newParam.loop = true;
             newStart = colorStart.get(value);
             typeInfo = 'LOOP';
