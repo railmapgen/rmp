@@ -18,15 +18,19 @@ import {
     StationAttributesWithInterchange,
 } from '../../panels/details/interchange-field';
 
-const LINE_WIDTH = 5;
-const R = 5;
+export const LINE_WIDTH = 5;
+export const R = 5;
 const NAME_LINE_HEIGHT = {
     top: 7.5 + 1,
     middle: 0,
     bottom: 10 + 1,
 };
 
-const makeStationPath = (r: number, lineWidth: number = LINE_WIDTH, transfer: InterchangeInfo[] = []): `M${string}` => {
+export const makeStationPath = (
+    r: number,
+    lineWidth: number = LINE_WIDTH,
+    transfer: InterchangeInfo[] = []
+): `M${string}` => {
     const y = Math.sqrt(r * r - (lineWidth * lineWidth) / 4);
     const circleCount = transfer.length < 2 ? transfer.length + 1 : transfer.length;
     let d = `M ${-r},0 A ${r},${r},0,0,1,${-lineWidth / 2},-${y} `;
@@ -252,7 +256,7 @@ const mtrStationFields = [
             <InterchangeField
                 stationType={StationType.MTR}
                 defaultAttrs={defaultMTRStationAttributes}
-                maximumTransfers={[5, 0, 0]}
+                maximumTransfers={[99, 0, 0]}
             />
         ),
     },
