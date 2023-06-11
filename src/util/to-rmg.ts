@@ -242,7 +242,6 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
         headGraph.set(v, countGraph);
         countGraph++;
     }
-    if (u == 'stn_N4wnz_oJh4') console.log(v);
 };
 
 const edgeDfs = (u: any, f: any, color: Array<string>) => {
