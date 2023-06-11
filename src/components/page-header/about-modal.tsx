@@ -1,5 +1,3 @@
-import rmgRuntime from '@railmapgen/rmg-runtime';
-import { useTranslation } from 'react-i18next';
 import {
     Avatar,
     Box,
@@ -17,11 +15,16 @@ import {
     Text,
     VStack,
 } from '@chakra-ui/react';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { useTranslation } from 'react-i18next';
 import GithubIcon from '../../images/github-mark.svg';
 import SlackIcon from '../../images/slack-mark.svg';
+import { useRootDispatch } from '../../redux';
+import { setOpenGuidaoTransitQECode } from '../../redux/runtime/runtime-slice';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
+    const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const appVersion = rmgRuntime.getAppVersion();
 
@@ -156,6 +159,33 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="sm" as="i">
                                     #rmg, #rmp, #palette-and-templates, #random
                                 </Text>
+                            </TagLabel>
+                        </Tag>
+                    </VStack>
+
+                    <Heading as="h5" size="sm" mt={3} mb={2}>
+                        {t('header.about.linkExchange')}
+                    </Heading>
+
+                    <VStack>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => dispatch(setOpenGuidaoTransitQECode(true))}
+                            cursor="pointer"
+                        >
+                            <Avatar
+                                src={process.env.PUBLIC_URL + '/images/guidaoTransit.jpg'}
+                                size="lg"
+                                my={2}
+                                ml={-1}
+                                mr={2}
+                            />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    {t('header.about.guidaoTransit')}
+                                </Text>
+                                <Text fontSize="sm">{t('header.about.guidaoTransitContent')}</Text>
                             </TagLabel>
                         </Tag>
                     </VStack>

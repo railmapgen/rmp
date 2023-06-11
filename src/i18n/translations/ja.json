@@ -342,8 +342,8 @@
             },
             "about": {
                 "title": "について",
-                "rmp": "Rail Map Painter",
-                "railmapgen": "railmapgenプロジェクト",
+                "rmp": "地下鉄路線図ペインター",
+                "railmapgen": "地下鉄路線図ツールキットのプロジェクト",
                 "desc": "異なる都市の駅を自由にドラッグして、90度または135度の角丸線で接続して独自の鉄道マップをデザインしましょう！",
                 "content1": "かつて私たちが持っていた自由と平等のすべての記憶に捧げます。",
                 "content2": "2022年6月1日、上海",
@@ -355,7 +355,10 @@
                 "github": "プロジェクトリポジトリ",
                 "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
                 "slack": "Slackグループ",
-                "slackContent": "Slackのチャンネルでチャットしましょう！"
+                "slackContent": "Slackのチャンネルでチャットしましょう！",
+                "linkExchange": "リンク",
+                "guidaoTransit": "贵道蕉通",
+                "guidaoTransitContent": "上海鉄道交通についてもっと知りたいですか? このWeChatアカウントをフォローしてください！ (中国語のみ)"
             }
         }
     }
