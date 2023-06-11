@@ -9,7 +9,7 @@ import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int
 
 interface edgeVector {
     target: string;
-    next: any;
+    next: number;
     color: Array<string>;
 }
 
@@ -17,11 +17,10 @@ const visStn: Set<string> = new Set<string>();
 const colorList: Set<Array<string>> = new Set<Array<string>>();
 const colorSet: Set<string> = new Set<string>();
 const colorStart: Map<Array<string>, string> = new Map<Array<string>, string>();
-const headGraph: Map<string, any> = new Map<string, any>();
+const headGraph: Map<string, number> = new Map<string, number>();
 let edgeGraph: Array<edgeVector> = new Array<edgeVector>();
 let countGraph = 0;
-const outDegree: Map<string, any> = new Map<string, any>();
-const stationList = new Map<string, Array<any>>();
+const outDegree: Map<string, number> = new Map<string, number>();
 
 interface RMGInterchange {
     theme: Array<string>;
@@ -29,9 +28,9 @@ interface RMGInterchange {
 }
 
 interface RMGStn {
-    name: Array<any>;
+    name: Array<string>;
     secondaryName: any;
-    num: any;
+    num: string;
     services: Array<any>;
     parents: Array<any>;
     children: Array<any>;
@@ -175,11 +174,11 @@ const newRMGStn: RMGStn = {
     int_padding: 355,
 };
 
-const colorToString = (color: any) => {
+const colorToString = (color: Array<any>) => {
     return String(color[0] + '/' + color[1] + '=' + color[2] + color[3]);
 };
 
-const reverse = (a: any) => {
+const reverse = (a: Array<any>) => {
     const p = [];
     for (let i = a.length - 1; i >= 0; i--) {
         p.push(a[i]);
@@ -187,7 +186,7 @@ const reverse = (a: any) => {
     return p;
 };
 
-const countArray = (a: any) => {
+const countArray = (a: Array<any>) => {
     let counter = 0;
     for (const i in a) {
         counter++;
@@ -201,8 +200,8 @@ const isColorLine = (type: any) => {
     } else return false;
 };
 
-const getColor = (attr: any) => {
-    let nowColor = new Array<any>();
+const getColor = (attr: EdgeAttributes) => {
+    let nowColor = new Array<string>();
     if (attr.style == LineStyleType['SingleColor']) {
         const newAttr = attr[LineStyleType['SingleColor']] as SingleColorAttributes;
         nowColor = newAttr.color;
@@ -230,21 +229,21 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
         if (!headGraph.has(u)) {
             edgeGraph.push({ target: v, next: -1, color: nowColor });
         } else {
-            edgeGraph.push({ target: v, next: headGraph.get(u), color: nowColor });
+            edgeGraph.push({ target: v, next: headGraph.get(u) as number, color: nowColor });
         }
         headGraph.set(u, countGraph);
         countGraph++;
         if (!headGraph.has(v)) {
             edgeGraph.push({ target: u, next: -1, color: nowColor });
         } else {
-            edgeGraph.push({ target: u, next: headGraph.get(v), color: nowColor });
+            edgeGraph.push({ target: u, next: headGraph.get(v) as number, color: nowColor });
         }
         headGraph.set(v, countGraph);
         countGraph++;
     }
 };
 
-const edgeDfs = (u: any, f: any, color: Array<string>) => {
+const edgeDfs = (u: string, f: string, color: Array<string>) => {
     if (visStn.has(u)) {
         return;
     }
@@ -252,7 +251,7 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
     // console.log('DFS: ' + u);
     let countDegree = 0;
     const visNext: Set<string> = new Set<string>();
-    for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
+    for (let i: number = headGraph.get(u) as number; i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
         if (colorToString(col) != colorToString(color)) continue;
@@ -265,7 +264,7 @@ const edgeDfs = (u: any, f: any, color: Array<string>) => {
     outDegree.set(u, countDegree);
 };
 
-const editLineend = (newParam: any, u: any) => {
+const editLineend = (newParam: any, u: string) => {
     const newParent = structuredClone(newParam.stn_list['lineend'].parents);
     newParent.push(u);
     newParam.stn_list['lineend'].parents = reverse(structuredClone(newParent));
@@ -275,9 +274,9 @@ const editLineend = (newParam: any, u: any) => {
 };
 
 const generateNewStn = (
-    u: any,
-    f: any,
-    counter: any,
+    u: string,
+    f: string,
+    counter: number,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     color: Array<string>,
     newParam: any
@@ -302,11 +301,11 @@ const generateNewStn = (
     // console.log('DFS2: ' + u);
     let countChild = 0;
     let countTransfer = 0;
-    const newChild = new Array<any>();
+    const newChild = new Array<string>();
     const newInterchange = new Array<RMGInterchange>();
     const newInterchangeSet = new Set<string>();
     const visNext: Set<string> = new Set<string>();
-    for (let i: number = headGraph.get(u); i != -1; i = edgeGraph[i].next) {
+    for (let i: number = headGraph.get(u) as number; i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
         if (v == f) continue;
@@ -411,7 +410,6 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     edgeGraph = new Array<edgeVector>();
     countGraph = 0;
     outDegree.clear();
-    stationList.clear();
     graph
         .filterEdges(edge => edge.startsWith('line'))
         .forEach(edgeId => {
@@ -425,7 +423,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         visStn.clear();
         outDegree.clear();
         // console.log('Start DFS color as ' + value[2]);
-        edgeDfs(colorStart.get(value), 'line_root', value);
+        edgeDfs(colorStart.get(value) as string, 'line_root', value);
         let newStart: any = 'no_val';
         let branchFlag = true;
         let typeInfo = 'LINE';
@@ -468,7 +466,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         newParam.stn_list['lineend'] = structuredClone(defRMGRight);
         visStn.clear();
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
-        newParam.current_stn_idx = structuredClone(resStart);
+        newParam.current_stn_idx = structuredClone(resStart) as string;
         newParam.stn_list['linestart'].children = [resStart];
         if (countArray(newParam.stn_list) <= 3) continue;
         resultList.push([structuredClone(newParam), typeInfo]);
@@ -482,7 +480,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
  * @param lineName Line name array: [Chinese, English]
  * @param lineCode Line code string e.g. '1'
  */
-export const exportToRmg = (param: any, lineName: any, lineCode: any) => {
+export const exportToRmg = (param: any, lineName: Array<string>, lineCode: string) => {
     param['line_name'] = lineName;
     param['line_num'] = String(lineCode);
     console.log(param);
