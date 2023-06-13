@@ -336,6 +336,7 @@ const generateNewStn = (
                 const r = generateNewStn(v, f, counter + 1, graph, color, newParam);
                 if (r != undefined) {
                     newChild.push(r);
+                    break;
                 }
             }
         }
