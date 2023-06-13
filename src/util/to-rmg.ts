@@ -15,11 +15,11 @@ interface edgeVector {
 
 const visStn: Set<string> = new Set<string>();
 const colorList: Set<Array<string>> = new Set<Array<string>>();
-const colorSet: Set<string> = new Set<string>();
-const colorStart: Map<Array<string>, string> = new Map<Array<string>, string>();
-const headGraph: Map<string, number> = new Map<string, number>();
-let edgeGraph: Array<edgeVector> = new Array<edgeVector>();
-let countGraph = 0;
+const colorSet: Set<string> = new Set<string>(); // color visit
+const colorStart: Map<Array<string>, string> = new Map<Array<string>, string>(); // starting stn of each color
+const headGraph: Map<string, number> = new Map<string, number>(); // head[]
+let edgeGraph: Array<edgeVector> = new Array<edgeVector>(); // e[]
+let countGraph = 0; // nn
 const outDegree: Map<string, number> = new Map<string, number>();
 
 interface RMGInterchange {
@@ -174,10 +174,12 @@ const newRMGStn: RMGStn = {
     int_padding: 355,
 };
 
+// convert color['shanghai', 'sh1', ...] to a string (for compare)
 const colorToString = (color: Array<any>) => {
     return String(color[0] + '/' + color[1] + '=' + color[2] + color[3]);
 };
 
+// reverse an array
 const reverse = (a: Array<any>) => {
     const p = [];
     for (let i = a.length - 1; i >= 0; i--) {
@@ -186,6 +188,7 @@ const reverse = (a: Array<any>) => {
     return p;
 };
 
+// count elements of an array
 const countArray = (a: Array<any>) => {
     let counter = 0;
     for (const i in a) {
@@ -194,12 +197,14 @@ const countArray = (a: Array<any>) => {
     return counter;
 };
 
+// verify the line whether is needed to add
 const isColorLine = (type: any) => {
     if (type == LineStyleType['SingleColor'] || type == LineStyleType['MTRRaceDays']) {
         return true;
     } else return false;
 };
 
+// get line color array
 const getColor = (attr: EdgeAttributes) => {
     let nowColor = new Array<string>();
     if (attr.style == LineStyleType['SingleColor']) {
@@ -212,20 +217,22 @@ const getColor = (attr: EdgeAttributes) => {
     return structuredClone(nowColor);
 };
 
+// add edge
 const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, lineId: string) => {
     const u = graph.extremities(lineId)[0];
     const v = graph.extremities(lineId)[1];
     const now = graph.getEdgeAttributes(lineId);
     const nowStyle: string = now.style;
-    if (u == v) return;
+    if (u == v) return; // skip u-u
     if (isColorLine(nowStyle)) {
         const nowColor = getColor(now);
         if (!colorSet.has(colorToString(nowColor))) {
+            // count color
             colorList.add(nowColor);
             colorSet.add(colorToString(nowColor));
             colorStart.set(nowColor, u);
         }
-        // countGraph;
+        // do add edge (u-v)
         if (!headGraph.has(u)) {
             edgeGraph.push({ target: v, next: -1, color: nowColor });
         } else {
@@ -233,6 +240,7 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
         }
         headGraph.set(u, countGraph);
         countGraph++;
+        // (v-u)
         if (!headGraph.has(v)) {
             edgeGraph.push({ target: u, next: -1, color: nowColor });
         } else {
@@ -243,6 +251,7 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
     }
 };
 
+// Calc stn out-degree (dfs)
 const edgeDfs = (u: string, f: string, color: Array<string>) => {
     if (visStn.has(u)) {
         return;
@@ -273,6 +282,7 @@ const editLineend = (newParam: any, u: string) => {
     }
 };
 
+// Generate RMG saves (dfs)
 const generateNewStn = (
     u: string,
     f: string,
@@ -284,9 +294,10 @@ const generateNewStn = (
     if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_') || newParam.loop)) {
         return;
     } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countArray(newParam.stn_list[u].children) >= 2) {
-        // parent
+        // parent (for MTR Racecourse Station) update branch right (merge) info
         newParam.stn_list[u].parents = [f, ...structuredClone(newParam.stn_list[u].parents)];
         newParam.stn_list[u].branch.left = ['through', f];
+        // delete f in u's children
         const newChild = [];
         for (const ch of newParam.stn_list[u].children) {
             if (ch != f) {
@@ -310,15 +321,18 @@ const generateNewStn = (
         const col = edgeGraph[i].color;
         if (v == f) continue;
         if (colorToString(col) == colorToString(color)) {
+            // same color => count children
             if (visNext.has(v)) continue;
             visNext.add(v);
             if (!String(u).startsWith('misc_node_')) {
+                // a normal stn
                 const r = generateNewStn(v, u, counter + 1, graph, color, newParam);
                 if (r != undefined) {
                     countChild++;
                     newChild.push(r);
                 }
             } else {
+                // a virtual stn
                 const r = generateNewStn(v, f, counter + 1, graph, color, newParam);
                 if (r != undefined) {
                     newChild.push(r);
@@ -372,6 +386,7 @@ const generateNewStn = (
         }
         return u;
     } else {
+        // if this is a virtual stn, should return the children of u.
         if (newChild.length == 0) {
             editLineend(newParam, f);
             return 'lineend';
@@ -410,6 +425,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     edgeGraph = new Array<edgeVector>();
     countGraph = 0;
     outDegree.clear();
+    // calc color
     graph
         .filterEdges(edge => edge.startsWith('line'))
         .forEach(edgeId => {

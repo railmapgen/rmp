@@ -89,9 +89,9 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="lg" fontWeight="bold" mb={1}>
                                     langonginc
                                 </Text>
-                                <Text fontSize="sm">{t('header.about.content1')}</Text>
+                                <Text fontSize="sm">{t('header.about.langonginc')}</Text>
                                 <Text fontSize="sm" align="right" mb={1}>
-                                    {t('header.about.content2')}
+                                    --Avicii
                                 </Text>
                             </TagLabel>
                         </Tag>
