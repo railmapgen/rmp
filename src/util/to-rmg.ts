@@ -21,6 +21,7 @@ const headGraph: Map<string, number> = new Map<string, number>(); // head[]
 let edgeGraph: Array<edgeVector> = new Array<edgeVector>(); // e[]
 let countGraph = 0; // nn
 const outDegree: Map<string, number> = new Map<string, number>();
+const nodeIndex: Map<string, number> = new Map<string, number>();
 
 interface RMGInterchange {
     theme: Array<string>;
@@ -350,6 +351,15 @@ const generateNewStn = (
             newInterchange.push(tmpInterchange);
         }
     }
+    if (countChild == 2) {
+        const xNum = nodeIndex.get(newChild[0]) as number;
+        const yNum = nodeIndex.get(newChild[1]) as number;
+        if (xNum > yNum) {
+            const t = structuredClone(newChild[0]);
+            newChild[0] = structuredClone(newChild[1]);
+            newChild[1] = t;
+        }
+    }
     if (!String(u).startsWith('misc_node_')) {
         const uType = graph.getNodeAttributes(u).type as StationType;
         const uAttr = graph.getNodeAttributes(u)[uType] as StationAttributes;
@@ -426,6 +436,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     edgeGraph = new Array<edgeVector>();
     countGraph = 0;
     outDegree.clear();
+    nodeIndex.clear();
     // calc color
     graph
         .filterEdges(edge => edge.startsWith('line'))
@@ -434,6 +445,11 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
                 addEdge(graph, edgeId);
             }
         });
+    // calc node index
+    let index = 0;
+    graph.forEachNode(u => {
+        nodeIndex.set(u, ++index);
+    });
     // console.info(colorList);
     const resultList = new Array<any>();
     for (const value of colorList) {
@@ -442,11 +458,16 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         // console.log('Start DFS color as ' + value[2]);
         edgeDfs(colorStart.get(value) as string, 'line_root', value);
         let newStart: any = 'no_val';
+        let minStartNum: any = 2147483647;
         let branchFlag = true;
         let typeInfo = 'LINE';
         for (const [u, deg] of outDegree) {
             if (deg == 1) {
-                newStart = u;
+                const index = nodeIndex.get(u) as number;
+                if (index < minStartNum) {
+                    newStart = u;
+                    minStartNum = index;
+                }
             }
             if (deg == 3) {
                 typeInfo = 'BRANCH';
