@@ -283,6 +283,18 @@ const editLineend = (newParam: any, u: string) => {
     }
 };
 
+const swapBranchAsIndex = (newChild: Array<string>) => {
+    const xNum = nodeIndex.get(newChild[0]) as number;
+    const yNum = nodeIndex.get(newChild[1]) as number;
+    if (xNum > yNum) {
+        const t = structuredClone(newChild[0]);
+        // console.log('swap: ' + u + ' @ ' + newChild[0] + ' ' + newChild[1]);
+        newChild[0] = structuredClone(newChild[1]);
+        newChild[1] = t;
+    }
+    return newChild;
+};
+
 // Generate RMG saves (dfs)
 const generateNewStn = (
     u: string,
@@ -296,8 +308,9 @@ const generateNewStn = (
         return;
     } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countArray(newParam.stn_list[u].children) >= 2) {
         // parent (for MTR Racecourse Station) update branch right (merge) info
-        newParam.stn_list[u].parents = [f, ...structuredClone(newParam.stn_list[u].parents)];
-        newParam.stn_list[u].branch.left = ['through', f];
+        const newParent = swapBranchAsIndex([f, ...structuredClone(newParam.stn_list[u].parents)]);
+        newParam.stn_list[u].parents = reverse(newParent);
+        newParam.stn_list[u].branch.left = ['through', newParent[1]];
         // delete f in u's children
         const newChild = [];
         for (const ch of newParam.stn_list[u].children) {
@@ -307,6 +320,17 @@ const generateNewStn = (
         }
         newParam.stn_list[u].children = structuredClone(newChild);
         newParam.stn_list[u].branch.right = [];
+        const endParent = [];
+        for (const p of newParam.stn_list['lineend'].parents) {
+            if (p != u) {
+                endParent.push(p);
+            }
+        }
+        const newEndParent = swapBranchAsIndex(endParent);
+        newParam.stn_list['lineend'].parents = reverse(structuredClone(newEndParent));
+        if (countArray(newParam.stn_list['lineend'].parents) == 2) {
+            newParam.stn_list['lineend'].branch.left = ['through', structuredClone(newEndParent[1])];
+        }
         return u;
     }
     visStn.add(u);
@@ -317,6 +341,7 @@ const generateNewStn = (
     const newInterchange = new Array<RMGInterchange>();
     const newInterchangeSet = new Set<string>();
     const visNext: Set<string> = new Set<string>();
+    let isUndefined = false;
     for (let i: number = headGraph.get(u) as number; i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
@@ -331,6 +356,8 @@ const generateNewStn = (
                 if (r != undefined) {
                     countChild++;
                     newChild.push(r);
+                } else {
+                    isUndefined = true;
                 }
             } else {
                 // a virtual stn
@@ -338,6 +365,8 @@ const generateNewStn = (
                 if (r != undefined) {
                     newChild.push(r);
                     break;
+                } else {
+                    isUndefined = true;
                 }
             }
         }
@@ -351,14 +380,8 @@ const generateNewStn = (
             newInterchange.push(tmpInterchange);
         }
     }
-    if (countChild == 2) {
-        const xNum = nodeIndex.get(newChild[0]) as number;
-        const yNum = nodeIndex.get(newChild[1]) as number;
-        if (xNum > yNum) {
-            const t = structuredClone(newChild[0]);
-            newChild[0] = structuredClone(newChild[1]);
-            newChild[1] = t;
-        }
+    if (countChild == 2 && newParam.stn_list[newChild[0]].children[0] != 'lineend' && newParam.stn_list[newChild[1]].children[0] != 'lineend') {
+        swapBranchAsIndex(newChild);
     }
     if (!String(u).startsWith('misc_node_')) {
         const uType = graph.getNodeAttributes(u).type as StationType;
