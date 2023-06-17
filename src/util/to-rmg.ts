@@ -380,7 +380,11 @@ const generateNewStn = (
             newInterchange.push(tmpInterchange);
         }
     }
-    if (countChild == 2 && newParam.stn_list[newChild[0]].children[0] != 'lineend' && newParam.stn_list[newChild[1]].children[0] != 'lineend') {
+    if (
+        countChild == 2 &&
+        newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
+        newParam.stn_list[newChild[1]].children[0] != 'lineend'
+    ) {
         swapBranchAsIndex(newChild);
     }
     if (!String(u).startsWith('misc_node_')) {
@@ -529,7 +533,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
         newParam.current_stn_idx = structuredClone(resStart) as string;
         newParam.stn_list['linestart'].children = [resStart];
-        if (countArray(newParam.stn_list) <= 3) continue;
+        if (countArray(newParam.stn_list) <= 3 || countArray(newParam.stn_list['lineend'].parents) >= 3) continue;
         resultList.push([structuredClone(newParam), typeInfo]);
     }
     return structuredClone(resultList);

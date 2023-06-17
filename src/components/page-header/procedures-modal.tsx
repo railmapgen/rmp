@@ -312,6 +312,11 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         return result;
     };
 
+    const outputContent = () => {
+        if (toRmgRes.length != 0) return <table>{outputForm()}</table>;
+        else return <Text fontSize="md">No available lines found.</Text>;
+    };
+
     /*
 Chinese
 本功能旨在将RMP保存文件转化为RMG保存文件。以下列表中的线路即为可以转化的线路。您可以在左侧的文本框中输入中文线路名称，在中间的输入英文线路名称，在右侧输入线路编号（供广州地铁样式使用），然后点击右侧下载按钮保存您的RMG保存文件。
@@ -344,7 +349,7 @@ Chinese
                         to save your RMG saves.
                     </Text>
                     <br />
-                    <table>{outputForm()}</table>
+                    {outputContent()}
                 </ModalBody>
 
                 <ModalFooter>
