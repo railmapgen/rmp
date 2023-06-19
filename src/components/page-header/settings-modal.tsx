@@ -59,7 +59,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isTranslateNodesOpen, setIsTranslateNodesOpen] = React.useState(false);
     const [isScaleNodesOpen, setIsScaleNodesOpen] = React.useState(false);
     const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
-    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
