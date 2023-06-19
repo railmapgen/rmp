@@ -21,7 +21,7 @@ import {
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
-import { MdDownload, MdImage, MdOpenInNew, MdSave } from 'react-icons/md';
+import { MdDownload, MdImage, MdOpenInNew, MdSave, MdShare } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { Events } from '../../constants/constants';
@@ -32,6 +32,7 @@ import { stringifyParam } from '../../util/save';
 import { getBase64FontFace } from '../../util/fonts';
 import TermsAndConditionsModal from './terms-and-conditions';
 import { StationType } from '../../constants/stations';
+import { ToRmgModal } from './rmp-to-rmg';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
@@ -80,6 +81,7 @@ export default function DownloadActions() {
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
+    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
 
     const handleDownloadJson = () => {
         if (isAllowProjectTelemetry)
@@ -191,6 +193,9 @@ export default function DownloadActions() {
                 <MenuItem icon={<MdImage />} onClick={() => setIsDownloadModalOpen(true)}>
                     {t('header.download.image')}
                 </MenuItem>
+                <MenuItem icon={<MdShare />} onClick={() => setIsToRmgOpen(true)}>
+                    Generate RMG saves
+                </MenuItem>
             </MenuList>
 
             <Modal size="xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
@@ -249,6 +254,7 @@ export default function DownloadActions() {
                     />
                 </ModalContent>
             </Modal>
+            <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
         </Menu>
     );
 }

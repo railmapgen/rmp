@@ -34,7 +34,6 @@ import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { setTelemetryApp } from '../../redux/app/app-slice';
 import {
     ChangeTypeModal,
-    ToRmgModal,
     RemoveLinesWithSingleColorModal,
     ScaleNodesModal,
     TranslateNodesModal,
@@ -254,26 +253,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     </Box>
                                 </Button>
                                 <ChangeTypeModal isOpen={isChangeTypeOpen} onClose={() => setIsChangeTypeOpen(false)} />
-
-                                <Button
-                                    sx={procedureButtonStyle}
-                                    rightIcon={<MdReadMore />}
-                                    onClick={() => setIsToRmgOpen(true)}
-                                >
-                                    <Box>
-                                        Generate RMG Saves
-                                        <Tooltip label={t('header.settings.pro')}>
-                                            <Badge
-                                                ml="1"
-                                                color="gray.50"
-                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            >
-                                                TEST
-                                            </Badge>
-                                        </Tooltip>
-                                    </Box>
-                                </Button>
-                                <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
 
                                 <Button
                                     sx={procedureButtonStyle}
