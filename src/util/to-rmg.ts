@@ -189,15 +189,6 @@ const reverse = (a: Array<any>) => {
     return p;
 };
 
-// count elements of an array
-const countArray = (a: Array<any>) => {
-    let counter = 0;
-    for (const i in a) {
-        counter++;
-    }
-    return counter;
-};
-
 // verify the line whether is needed to add
 const isColorLine = (type: any) => {
     if (type == LineStyleType['SingleColor'] || type == LineStyleType['MTRRaceDays']) {
@@ -278,7 +269,7 @@ const editLineend = (newParam: any, u: string) => {
     const newParent = structuredClone(newParam.stn_list['lineend'].parents);
     newParent.push(u);
     newParam.stn_list['lineend'].parents = reverse(structuredClone(newParent));
-    if (countArray(newParam.stn_list['lineend'].parents) == 2) {
+    if (newParam.stn_list['lineend'].parents.length == 2) {
         newParam.stn_list['lineend'].branch.left = ['through', structuredClone(newParent[1])];
     }
 };
@@ -305,8 +296,8 @@ const generateNewStn = (
     newParam: any
 ) => {
     if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_') || newParam.loop)) {
-        return;
-    } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countArray(newParam.stn_list[u].children) >= 2) {
+        return [];
+    } else if (visStn.has(u) && newParam.stn_list[u] != undefined && newParam.stn_list[u].children.length >= 2) {
         // parent (for MTR Racecourse Station) update branch right (merge) info
         const newParent = swapBranchAsIndex([f, ...structuredClone(newParam.stn_list[u].parents)]);
         newParam.stn_list[u].parents = reverse(newParent);
@@ -328,20 +319,17 @@ const generateNewStn = (
         }
         const newEndParent = swapBranchAsIndex(endParent);
         newParam.stn_list['lineend'].parents = reverse(structuredClone(newEndParent));
-        if (countArray(newParam.stn_list['lineend'].parents) == 2) {
+        if (newParam.stn_list['lineend'].parents.length == 2) {
             newParam.stn_list['lineend'].branch.left = ['through', structuredClone(newEndParent[1])];
         }
-        return u;
+        return [u];
     }
     visStn.add(u);
     // console.log('DFS2: ' + u);
-    let countChild = 0;
-    let countTransfer = 0;
     const newChild = new Array<string>();
     const newInterchange = new Array<RMGInterchange>();
     const newInterchangeSet = new Set<string>();
     const visNext: Set<string> = new Set<string>();
-    let isUndefined = false;
     for (let i: number = headGraph.get(u) as number; i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
@@ -353,25 +341,18 @@ const generateNewStn = (
             if (!String(u).startsWith('misc_node_')) {
                 // a normal stn
                 const r = generateNewStn(v, u, counter + 1, graph, color, newParam);
-                if (r != undefined) {
-                    countChild++;
-                    newChild.push(r);
-                } else {
-                    isUndefined = true;
+                if (r.length != 0) {
+                    newChild.push(...r);
                 }
             } else {
                 // a virtual stn
                 const r = generateNewStn(v, f, counter + 1, graph, color, newParam);
-                if (r != undefined) {
-                    newChild.push(r);
-                    break;
-                } else {
-                    isUndefined = true;
+                if (r.length != 0) {
+                    newChild.push(...r);
                 }
             }
         }
         if (!newInterchangeSet.has(colorToString(col)) && colorToString(col) != colorToString(color)) {
-            countTransfer++;
             newInterchangeSet.add(colorToString(col));
             const tmpInterchange: RMGInterchange = {
                 theme: col,
@@ -381,7 +362,7 @@ const generateNewStn = (
         }
     }
     if (
-        countChild == 2 &&
+        newChild.length == 2 &&
         newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
         newParam.stn_list[newChild[1]].children[0] != 'lineend'
     ) {
@@ -409,9 +390,9 @@ const generateNewStn = (
             }
             newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
         }
-        if (countChild != 0) {
+        if (newChild.length != 0) {
             newParam.stn_list[u].children = reverse(structuredClone(newChild));
-            if (Number(countChild) == 2) {
+            if (newChild.length == 2) {
                 newParam.stn_list[u].branch.right = ['through', newChild[1]];
             }
         } else {
@@ -419,16 +400,16 @@ const generateNewStn = (
             editLineend(newParam, u);
         }
         newParam.stn_list[u].parents = [f];
-        if (countTransfer != 0) {
+        if (newInterchange.length != 0) {
             newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
         }
-        return u;
+        return [u];
     } else {
         // if this is a virtual stn, should return the children of u.
         if (newChild.length == 0) {
             editLineend(newParam, f);
-            return 'lineend';
-        } else return newChild[0];
+            return ['lineend'];
+        } else return newChild;
     }
 };
 
@@ -531,9 +512,9 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         newParam.stn_list['lineend'] = structuredClone(defRMGRight);
         visStn.clear();
         const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
-        newParam.current_stn_idx = structuredClone(resStart) as string;
-        newParam.stn_list['linestart'].children = [resStart];
-        if (countArray(newParam.stn_list) <= 3 || countArray(newParam.stn_list['lineend'].parents) >= 3) continue;
+        newParam.current_stn_idx = structuredClone(resStart[0]) as string;
+        newParam.stn_list['linestart'].children = [resStart[0]];
+        if (newParam.stn_list.length <= 3 || newParam.stn_list['lineend'].parents.length >= 3) continue;
         resultList.push([structuredClone(newParam), typeInfo]);
     }
     return structuredClone(resultList);
