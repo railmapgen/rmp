@@ -279,7 +279,6 @@ const swapBranchAsIndex = (newChild: Array<string>) => {
     const yNum = nodeIndex.get(newChild[1]) as number;
     if (xNum > yNum) {
         const t = structuredClone(newChild[0]);
-        // console.log('swap: ' + u + ' @ ' + newChild[0] + ' ' + newChild[1]);
         newChild[0] = structuredClone(newChild[1]);
         newChild[1] = t;
     }
@@ -345,7 +344,7 @@ const generateNewStn = (
                     newChild.push(...r);
                 }
             } else {
-                // a virtual stn
+                // a virtual stn, use this.father as children's father
                 const r = generateNewStn(v, f, counter + 1, graph, color, newParam);
                 if (r.length != 0) {
                     newChild.push(...r);
@@ -362,6 +361,7 @@ const generateNewStn = (
         }
     }
     if (newChild.length == 2) {
+        // delete branch without stn
         for (let i = 0; i < 2; i++) {
             if (newChild[i] == 'lineend') {
                 newChild.splice(i, 1);
@@ -373,6 +373,7 @@ const generateNewStn = (
         newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
         newParam.stn_list[newChild[1]].children[0] != 'lineend'
     ) {
+        // sort branch as stn index
         swapBranchAsIndex(newChild);
     }
     if (!String(u).startsWith('misc_node_')) {
