@@ -361,6 +361,13 @@ const generateNewStn = (
             newInterchange.push(tmpInterchange);
         }
     }
+    if (newChild.length == 2) {
+        for (let i = 0; i < 2; i++) {
+            if (newChild[i] == 'lineend') {
+                newChild.splice(i, 1);
+            }
+        }
+    }
     if (
         newChild.length == 2 &&
         newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
