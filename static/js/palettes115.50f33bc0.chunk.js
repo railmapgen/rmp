@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkrmp=self.webpackChunkrmp||[]).push([[1063],{4230:function(e,a,n){n.r(a);var h=[{id:"shiraz1",colour:"#ea1d23",fg:n(1125).AJ.white,name:{en:"Line 1","zh-Hans":"1\u53f7\u7ebf","zh-Hant":"1\u865f\u7dda",fa:"\u062e\u0637 \u06f1"}}];a.default=h}}]);
-//# sourceMappingURL=palettes115.50f33bc0.chunk.js.map
