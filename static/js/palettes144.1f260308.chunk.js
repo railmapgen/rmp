@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkrmp=self.webpackChunkrmp||[]).push([[785],{101:function(e,n,a){a.r(n);var r=[{id:"gl",colour:"#007a3d",fg:a(1125).AJ.white,name:{en:"Green Line","zh-Hans":"\u7eff\u7ebf","zh-Hant":"\u7da0\u7dda",ru:"\u0417\u0435\u043b\u0435\u043d\u0430\u044f \u043b\u0438\u043d\u0438\u044f"}}];n.default=r}}]);
+//# sourceMappingURL=palettes144.1f260308.chunk.js.map
