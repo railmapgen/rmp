@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Modal,
@@ -19,10 +19,22 @@ import { exportToRmg, toRmg } from '../../util/to-rmg';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MdDownload } from 'react-icons/md';
 
+let testVal = '';
+
+const setTest = (val: string) => {
+    testVal = val;
+};
+
+const getTest = () => {
+    return testVal;
+};
+
 export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
+    const [isToRmgEndSelectOpen, setIsToRmgEndSelectOpen] = React.useState(false);
+    const [startArr, setStartArr] = React.useState(['0']);
 
     const toRmgRes = toRmg(graph.current);
 
@@ -46,8 +58,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
     const outputForm = () => {
         const result = [];
-        for (const [param, type] of toRmgRes) {
-            const theme = param.theme;
+        for (const [theme, paramList, type] of toRmgRes) {
             result.push(
                 <tr>
                     <td>
@@ -94,11 +105,13 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 const lineNum = document.getElementById(
                                     'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]
                                 ) as HTMLInputElement;
-                                exportToRmg(
-                                    structuredClone(param),
-                                    [chName.value as string, enName.value as string],
-                                    lineNum.value as string
-                                );
+                                // exportToRmg(
+                                //     structuredClone(param),
+                                //     [chName.value as string, enName.value as string],
+                                //     lineNum.value as string
+                                // );
+                                setStartArr([chName.value]);
+                                setIsToRmgEndSelectOpen(true);
                             }}
                             size="sm"
                         >
@@ -149,6 +162,41 @@ Chinese
                     </Text>
                     <br />
                     {outputContent()}
+                </ModalBody>
+
+                <ModalFooter>
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
+                        {t('close')}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+            <ToRmgEndSelectModal isOpen={isToRmgEndSelectOpen} onClose={() => setIsToRmgEndSelectOpen(false)} start={startArr} />
+        </Modal>
+    );
+};
+
+export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => void; start: Array<string> }) => {
+    const { isOpen, onClose, start } = props;
+    const { t } = useTranslation();
+    const [text0, setText0] = useState('Start');
+
+    const handleChange = () => {
+        setText0('True');
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>
+                    <Text as="b" fontSize="xl">
+                        Download
+                    </Text>
+                </ModalHeader>
+                <ModalCloseButton />
+
+                <ModalBody>
+                    <Button onClick={handleChange}>{start[0]}</Button>
                 </ModalBody>
 
                 <ModalFooter>

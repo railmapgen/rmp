@@ -439,6 +439,41 @@ const downloadAs = (filename: string, type: string, data: any) => {
     downloadBlobAs(filename, blob);
 };
 
+const generateParam = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    color: string[],
+    newStart: string,
+    typeInfo: string
+) => {
+    const newParam = structuredClone(newParamTemple);
+    if (typeInfo == 'LOOP') {
+        newParam.loop = true;
+    }
+    let newType: string;
+    switch (graph.getNodeAttributes(newStart).type) {
+        case StationType.GzmtrBasic:
+        case StationType.GzmtrInt:
+            newType = 'gzmtr';
+            break;
+        case StationType.MTR:
+            newType = 'mtr';
+            break;
+        default:
+            newType = 'shmetro';
+            break;
+    }
+    newParam.theme = structuredClone(color);
+    newParam.style = structuredClone(newType);
+    newParam.stn_list['linestart'] = structuredClone(defRMGLeft);
+    newParam.stn_list['lineend'] = structuredClone(defRMGRight);
+    visStn.clear();
+    const resStart = generateNewStn(newStart, 'linestart', 1, graph, color, newParam);
+    newParam.current_stn_idx = structuredClone(resStart[0]) as string;
+    newParam.stn_list['linestart'].children = [resStart[0]];
+    if (newParam.stn_list.length <= 3 || newParam.stn_list['lineend'].parents.length >= 3) return undefined;
+    else return structuredClone(newParam);
+};
+
 /**
  * Convert RMP to RMG
  * @param graph Graph.
@@ -477,6 +512,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         let minStartNum: any = 2147483647;
         let branchFlag = true;
         let typeInfo = 'LINE';
+        const entrance = new Array<string>();
         for (const [u, deg] of outDegree) {
             if (deg == 1) {
                 const index = nodeIndex.get(u) as number;
@@ -484,6 +520,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
                     newStart = u;
                     minStartNum = index;
                 }
+                entrance.push(u);
             }
             if (deg == 3) {
                 typeInfo = 'BRANCH';
@@ -495,35 +532,19 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         if (!branchFlag) {
             continue;
         }
-        const newParam = structuredClone(newParamTemple);
         if (newStart == 'no_val') {
-            newParam.loop = true;
             newStart = colorStart.get(value);
             typeInfo = 'LOOP';
+            entrance.push(newStart);
         }
-        let newType: string;
-        switch (graph.getNodeAttributes(newStart).type) {
-            case StationType.GzmtrBasic:
-            case StationType.GzmtrInt:
-                newType = 'gzmtr';
-                break;
-            case StationType.MTR:
-                newType = 'mtr';
-                break;
-            default:
-                newType = 'shmetro';
-                break;
+        const nowResult = [];
+        for (const start of entrance) {
+            const newParam = generateParam(graph, value, start, typeInfo);
+            if (newParam != undefined) {
+                nowResult.push(start, newParam);
+            }
         }
-        newParam.theme = structuredClone(value);
-        newParam.style = structuredClone(newType);
-        newParam.stn_list['linestart'] = structuredClone(defRMGLeft);
-        newParam.stn_list['lineend'] = structuredClone(defRMGRight);
-        visStn.clear();
-        const resStart = generateNewStn(newStart, 'linestart', 1, graph, value, newParam);
-        newParam.current_stn_idx = structuredClone(resStart[0]) as string;
-        newParam.stn_list['linestart'].children = [resStart[0]];
-        if (newParam.stn_list.length <= 3 || newParam.stn_list['lineend'].parents.length >= 3) continue;
-        resultList.push([structuredClone(newParam), typeInfo]);
+        resultList.push([value, structuredClone(nowResult), typeInfo]);
     }
     return structuredClone(resultList);
 };
