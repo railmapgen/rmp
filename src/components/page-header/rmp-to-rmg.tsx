@@ -13,6 +13,7 @@ import {
     ModalFooter,
     Button,
     Input,
+    NumberInputStepper,
 } from '@chakra-ui/react';
 import { RmgLineBadge } from '@railmapgen/rmg-components';
 import { exportToRmg, toRmg } from '../../util/to-rmg';
@@ -34,9 +35,8 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
     const [isToRmgEndSelectOpen, setIsToRmgEndSelectOpen] = React.useState(false);
-    const [startArr, setStartArr] = React.useState(['0']);
-
-    const toRmgRes = toRmg(graph.current);
+    const [paramArr, setParamArr] = React.useState([['', '']]);
+    const [nameArr, setNameArr] = React.useState(['']);
 
     const outputLineName = (theme: any) => {
         if (theme[0] == 'other' && theme[1] == 'other') {
@@ -56,7 +56,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         }
     };
 
-    const outputForm = () => {
+    const outputForm = (toRmgRes: any) => {
         const result = [];
         for (const [theme, paramList, type] of toRmgRes) {
             result.push(
@@ -110,7 +110,8 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 //     [chName.value as string, enName.value as string],
                                 //     lineNum.value as string
                                 // );
-                                setStartArr([chName.value]);
+                                setParamArr(paramList);
+                                setNameArr([chName.value.trim(), enName.value.trim(), lineNum.value.trim()]);
                                 setIsToRmgEndSelectOpen(true);
                             }}
                             size="sm"
@@ -125,7 +126,8 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     };
 
     const outputContent = () => {
-        if (toRmgRes.length != 0) return <table>{outputForm()}</table>;
+        const toRmgRes = toRmg(graph.current);
+        if (toRmgRes.length != 0) return <table>{outputForm(toRmgRes)}</table>;
         else return <Text fontSize="md">No available lines found.</Text>;
     };
 
@@ -170,19 +172,47 @@ Chinese
                     </Button>
                 </ModalFooter>
             </ModalContent>
-            <ToRmgEndSelectModal isOpen={isToRmgEndSelectOpen} onClose={() => setIsToRmgEndSelectOpen(false)} start={startArr} />
+            <ToRmgEndSelectModal
+                isOpen={isToRmgEndSelectOpen}
+                onClose={() => setIsToRmgEndSelectOpen(false)}
+                param={paramArr}
+                nameList={nameArr}
+            />
         </Modal>
     );
 };
 
-export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => void; start: Array<string> }) => {
-    const { isOpen, onClose, start } = props;
+export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => void; param: any; nameList: any }) => {
+    const { isOpen, onClose, param, nameList } = props;
     const { t } = useTranslation();
-    const [text0, setText0] = useState('Start');
 
-    const handleChange = () => {
-        setText0('True');
+    const outputTitle = () => {
+        if (nameList[0] != '' && nameList[1] != '') return nameList[0] + '/' + nameList[1];
+        else if (nameList[0] != '') return nameList[0];
+        else if (nameList[1] != '') return nameList[1];
+        else return '';
     };
+
+    const outputContent = () => {
+        const result = [];
+        for (const [start, newParam, name1, name2] of param) {
+            result.push(
+                <Button
+                    onClick={() => {
+                        exportToRmg(structuredClone(newParam), [nameList[0], nameList[1]], nameList[2]);
+                    }}
+                >
+                    {name1}/{name2}
+                </Button>,
+                <span> </span>
+            );
+        }
+        return result;
+    };
+
+    /*
+请在下列车站中选择一个车站作为始发站，点击它即可下载。
+*/
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
@@ -190,13 +220,17 @@ export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => voi
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        Download
+                        Download {outputTitle()}
                     </Text>
                 </ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
-                    <Button onClick={handleChange}>{start[0]}</Button>
+                    <Text fontSize="sm" mt="3" lineHeight="100%">
+                        Please select one of the following stations as the starting station and click it to download.
+                    </Text>
+                    <br />
+                    {outputContent()}
                 </ModalBody>
 
                 <ModalFooter>
