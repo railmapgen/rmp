@@ -94,11 +94,6 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 const lineNum = document.getElementById(
                                     'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]
                                 ) as HTMLInputElement;
-                                // exportToRmg(
-                                //     structuredClone(param),
-                                //     [chName.value as string, enName.value as string],
-                                //     lineNum.value as string
-                                // );
                                 setParamArr(paramList);
                                 setNameArr([chName.value.trim(), enName.value.trim(), lineNum.value.trim()]);
                                 setIsToRmgEndSelectOpen(true);
@@ -204,7 +199,7 @@ export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => voi
 */
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="md" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>

@@ -553,6 +553,13 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     return structuredClone(resultList);
 };
 
+const getFileName = (nameList: Array<string>) => {
+    if (nameList[0] != '' && nameList[1] != '') return nameList[0] + '_' + nameList[1];
+    else if (nameList[0] != '') return nameList[0];
+    else if (nameList[1] != '') return nameList[1];
+    else return `${new Date().valueOf()}`;
+};
+
 /**
  * Expert RMG json
  * @param graph Graph.
@@ -564,5 +571,5 @@ export const exportToRmg = (param: any, lineName: Array<string>, lineCode: strin
     param['line_num'] = String(lineCode);
     console.log(param);
     console.log(JSON.stringify(structuredClone(param)));
-    downloadAs(`RMG_${lineName[1]}.json`, 'application/json', JSON.stringify(structuredClone(param)));
+    downloadAs(`RMG_${getFileName(lineName)}.json`, 'application/json', JSON.stringify(structuredClone(param)));
 };
