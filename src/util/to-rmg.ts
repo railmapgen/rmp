@@ -542,7 +542,6 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             const newParam = generateParam(graph, value, start, typeInfo);
             if (newParam != undefined) {
                 nowResult.push([
-                    newParam.current_stn_idx,
                     newParam,
                     newParam.stn_list[newParam.current_stn_idx].name[0],
                     newParam.stn_list[newParam.current_stn_idx].name[1],

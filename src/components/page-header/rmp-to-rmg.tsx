@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Modal,
@@ -13,22 +13,11 @@ import {
     ModalFooter,
     Button,
     Input,
-    NumberInputStepper,
 } from '@chakra-ui/react';
 import { RmgLineBadge } from '@railmapgen/rmg-components';
 import { exportToRmg, toRmg } from '../../util/to-rmg';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MdDownload } from 'react-icons/md';
-
-let testVal = '';
-
-const setTest = (val: string) => {
-    testVal = val;
-};
-
-const getTest = () => {
-    return testVal;
-};
 
 export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -195,7 +184,7 @@ export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => voi
 
     const outputContent = () => {
         const result = [];
-        for (const [start, newParam, name1, name2] of param) {
+        for (const [newParam, name1, name2] of param) {
             result.push(
                 <Button
                     onClick={() => {
