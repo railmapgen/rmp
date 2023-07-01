@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/rmp/static/css/main.be1e87ba.css",
-    "main.js": "/rmp/static/js/main.d20f2e55.js",
+    "main.js": "/rmp/static/js/main.6640b450.js",
     "WindowHeader.js": "/rmp/static/js/WindowHeader.42bddbce.chunk.js",
     "ToolsPanel.js": "/rmp/static/js/ToolsPanel.a44991bd.chunk.js",
     "SvgWrapper.js": "/rmp/static/js/SvgWrapper.1ed2d8f8.chunk.js",
@@ -268,7 +268,7 @@
     "static/media/1F1F5-1F1F1.svg": "/rmp/static/media/1F1F5-1F1F1.0f2053ce10733fcf148d.svg",
     "static/media/1F1EF-1F1F5.svg": "/rmp/static/media/1F1EF-1F1F5.5bd4e29b292e65a558dd.svg",
     "main.be1e87ba.css.map": "/rmp/static/css/main.be1e87ba.css.map",
-    "main.d20f2e55.js.map": "/rmp/static/js/main.d20f2e55.js.map",
+    "main.6640b450.js.map": "/rmp/static/js/main.6640b450.js.map",
     "WindowHeader.42bddbce.chunk.js.map": "/rmp/static/js/WindowHeader.42bddbce.chunk.js.map",
     "ToolsPanel.a44991bd.chunk.js.map": "/rmp/static/js/ToolsPanel.a44991bd.chunk.js.map",
     "SvgWrapper.1ed2d8f8.chunk.js.map": "/rmp/static/js/SvgWrapper.1ed2d8f8.chunk.js.map",
@@ -429,6 +429,6 @@
   },
   "entrypoints": [
     "static/css/main.be1e87ba.css",
-    "static/js/main.d20f2e55.js"
+    "static/js/main.6640b450.js"
   ]
 }
