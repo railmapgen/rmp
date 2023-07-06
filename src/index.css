@@ -46,6 +46,7 @@ div#root {
     paint-order: stroke;
     stroke: #FFFFFF;
     stroke-width: 1.5px;
+    stroke-linejoin: round;
 }
 
 .rmp-name__zh {
