@@ -62,7 +62,7 @@ const SvgWrapper = () => {
             link = document.createElement('link');
             link.rel = 'stylesheet';
             link.id = 'fonts_mtr';
-            link.href = process.env.PUBLIC_URL + `/styles/fonts_mtr.css`;
+            link.href = import.meta.env.BASE_URL + `/styles/fonts_mtr.css`;
             document.head.append(link);
         }
         return () => {

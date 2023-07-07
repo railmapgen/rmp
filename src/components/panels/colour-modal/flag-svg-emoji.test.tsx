@@ -1,9 +1,10 @@
-import React from 'react';
-import FlagSvgEmoji from './flag-svg-emoji';
-import { render } from '../../../test-utils';
 import { screen } from '@testing-library/react';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
+import { render } from '../../../test-utils';
+import FlagSvgEmoji from './flag-svg-emoji';
 
-jest.doMock('@railmapgen/rmg-palette-resources/flags/1F1ED-1F1F0.svg', () => ({
+vi.doMock('@railmapgen/rmg-palette-resources/flags/1F1ED-1F1F0.svg', () => ({
     __esModule: true,
     default: 'mock-svg-src-url',
 }));
@@ -25,7 +26,7 @@ describe('FlagSvgEmoji', () => {
                 throw new Error('Element should NOT be found');
             })
             .catch(() => {
-                done();
+                return;
             });
     });
 });

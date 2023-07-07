@@ -1,8 +1,6 @@
-import React from 'react';
-import { render } from '../test-utils';
-import AppRoot from './app-root';
-import { screen } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
+import React from 'react';
+import { describe, expect, it } from 'vitest';
 
 window.graph = new MultiDirectedGraph();
 

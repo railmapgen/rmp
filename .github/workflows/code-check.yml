@@ -16,5 +16,5 @@ jobs:
       - run: npm i
       - name: Check
         run: |
-          npm run lint:dev
-          npm run test:no-watch
+          npm run lint
+          npm run test
