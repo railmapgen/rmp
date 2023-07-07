@@ -2,6 +2,7 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useToast } fro
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdUpload } from 'react-icons/md';
+import { RMGParam } from '../../constants/rmg';
 import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
@@ -34,7 +35,7 @@ export default function OpenActions() {
         refreshAndSave();
     };
 
-    const handleImportRMGProject = (param: Record<string, any>) => {
+    const handleImportRMGProject = (param: RMGParam) => {
         try {
             parseRmgParam(graph.current, param);
             refreshAndSave();

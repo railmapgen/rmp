@@ -1,23 +1,23 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
+    Badge,
+    Button,
+    Input,
     Modal,
     ModalBody,
     ModalCloseButton,
     ModalContent,
+    ModalFooter,
     ModalHeader,
     ModalOverlay,
     Text,
-    Badge,
     Tooltip,
-    ModalFooter,
-    Button,
-    Input,
 } from '@chakra-ui/react';
 import { RmgLineBadge } from '@railmapgen/rmg-components';
-import { exportToRmg, toRmg } from '../../util/to-rmg';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdDownload } from 'react-icons/md';
+import { exportToRmg, toRmg } from '../../util/to-rmg';
 
 export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -115,11 +115,6 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         else return <Text fontSize="md">No available lines found.</Text>;
     };
 
-    /*
-Chinese
-本功能旨在将RMP保存文件转化为RMG保存文件。以下列表中的线路即为可以转化的线路。您可以在左侧的文本框中输入中文线路名称，在中间的输入英文线路名称，在右侧输入线路编号（供广州地铁样式使用），然后点击右侧下载按钮保存您的RMG保存文件。
-    */
-
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside">
             <ModalOverlay />
@@ -193,10 +188,6 @@ export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => voi
         }
         return result;
     };
-
-    /*
-请在下列车站中选择一个车站作为始发站，点击它即可下载。
-*/
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="md" scrollBehavior="inside">

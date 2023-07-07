@@ -270,6 +270,7 @@
         "download": {
             "config": "Export project",
             "image": "Export image",
+            "2rmg": "Convert to RMG save",
             "format": "Format",
             "png": "PNG",
             "svg": "SVG (Web use)",

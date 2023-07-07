@@ -1,5 +1,3 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     Button,
     Checkbox,
@@ -21,18 +19,21 @@ import {
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
-import { MdDownload, MdImage, MdOpenInNew, MdSave, MdShare } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdDownload, MdImage, MdOpenInNew, MdSave, MdShare } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
+import { StationType } from '../../constants/stations';
 import store, { useRootSelector } from '../../redux';
+import { downloadAs, downloadBlobAs } from '../../util/download';
+import { getBase64FontFace } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
-import { getBase64FontFace } from '../../util/fonts';
-import TermsAndConditionsModal from './terms-and-conditions';
-import { StationType } from '../../constants/stations';
 import { ToRmgModal } from './rmp-to-rmg';
+import TermsAndConditionsModal from './terms-and-conditions';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
@@ -194,7 +195,7 @@ export default function DownloadActions() {
                     {t('header.download.image')}
                 </MenuItem>
                 <MenuItem icon={<MdShare />} onClick={() => setIsToRmgOpen(true)}>
-                    Generate RMG saves
+                    {t('header.download.2rmg')}
                 </MenuItem>
             </MenuList>
 
@@ -254,28 +255,11 @@ export default function DownloadActions() {
                     />
                 </ModalContent>
             </Modal>
+
             <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
         </Menu>
     );
 }
-
-const downloadAs = (filename: string, type: string, data: any) => {
-    const blob = new Blob([data], { type });
-    downloadBlobAs(filename, blob);
-};
-
-const downloadBlobAs = (filename: string, blob: Blob) => {
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-};
 
 const generateRmpInfo = (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
