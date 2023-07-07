@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkrmp=self.webpackChunkrmp||[]).push([[9450],{5386:function(e,n,a){a.r(n);var r=[{id:"orange",colour:"#f66725",fg:a(1125).AJ.white,name:{en:"Orange Line","zh-Hans":"\u6a59\u7ebf","zh-Hant":"\u6a59\u7dda"}}];n.default=r}}]);
-//# sourceMappingURL=palettes64.e311644f.chunk.js.map

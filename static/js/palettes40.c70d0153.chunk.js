@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkrmp=self.webpackChunkrmp||[]).push([[2028],{4476:function(e,n,r){r.r(n);n.default=[{id:"inner",name:{en:"Inner Circle"},colour:"#4f4c4d"},{id:"outer",name:{en:"Outer Circle"},colour:"#f57c14"}]}}]);
+//# sourceMappingURL=palettes40.c70d0153.chunk.js.map
