@@ -16,17 +16,17 @@ import {
     VStack,
 } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import GithubIcon from '../../images/github-mark.svg';
 import SlackIcon from '../../images/slack-mark.svg';
-import { useRootDispatch } from '../../redux';
-import { setOpenGuidaoTransitQECode } from '../../redux/runtime/runtime-slice';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
-    const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const appVersion = rmgRuntime.getAppVersion();
+
+    const [isGuidaoTransitQRCodeOpen, setIsGuidaoTransitQRCodeOpen] = React.useState(false);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
@@ -151,12 +151,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                     </Heading>
 
                     <VStack>
-                        <Tag
-                            size="lg"
-                            w="85%"
-                            onClick={() => dispatch(setOpenGuidaoTransitQECode(true))}
-                            cursor="pointer"
-                        >
+                        <Tag size="lg" w="85%" onClick={() => setIsGuidaoTransitQRCodeOpen(true)} cursor="pointer">
                             <Avatar
                                 src={import.meta.env.BASE_URL + '/images/guidaoTransit.jpg'}
                                 size="lg"
@@ -171,6 +166,24 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="sm">{t('header.about.guidaoTransitContent')}</Text>
                             </TagLabel>
                         </Tag>
+                        <Modal
+                            size="6xl"
+                            isOpen={isGuidaoTransitQRCodeOpen}
+                            onClose={() => setIsGuidaoTransitQRCodeOpen(false)}
+                        >
+                            <ModalOverlay />
+                            <ModalContent>
+                                <ModalHeader>{t('header.about.guidaoTransit')}</ModalHeader>
+                                <ModalCloseButton />
+                                <ModalBody paddingBottom={10}>
+                                    <Image
+                                        width="1080"
+                                        height="304"
+                                        src={import.meta.env.BASE_URL + '/images/guidaoTransitQRCode.png'}
+                                    />
+                                </ModalBody>
+                            </ModalContent>
+                        </Modal>
                     </VStack>
                 </ModalBody>
             </ModalContent>

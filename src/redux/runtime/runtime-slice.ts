@@ -43,7 +43,6 @@ interface RuntimeState {
      */
     nodeExists: { [key in NodeType]: boolean };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
-    guidaoTransitQECode: boolean;
 }
 
 const initialState: RuntimeState = {
@@ -61,7 +60,6 @@ const initialState: RuntimeState = {
         [...Object.keys(StationType), ...Object.keys(MiscNodeType)].map(key => [key, false])
     ) as { [key in NodeType]: boolean },
     globalAlerts: {},
-    guidaoTransitQECode: false,
 };
 
 const runtimeSlice = createSlice({
@@ -116,9 +114,6 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
-        setOpenGuidaoTransitQECode: (state, action: PayloadAction<boolean>) => {
-            state.guidaoTransitQECode = action.payload;
-        },
     },
     extraReducers: builder => {
         builder
@@ -146,6 +141,5 @@ export const {
     setNodeExists,
     setGlobalAlert,
     closeGlobalAlert,
-    setOpenGuidaoTransitQECode,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;
