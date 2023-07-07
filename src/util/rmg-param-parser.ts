@@ -75,7 +75,7 @@ export const parseRmgParam = (
             // read default attrs
             const attr = {
                 // deep copy to prevent mutual reference
-                ...JSON.parse(JSON.stringify(stations[type].defaultAttrs)),
+                ...structuredClone(stations[type].defaultAttrs),
                 names: (stnInfo as any).name,
             };
 
@@ -145,9 +145,7 @@ export const parseRmgParam = (
                         zIndex: 0,
                         type: LinePathType.Diagonal,
                         // deep copy to prevent mutual reference
-                        [LinePathType.Diagonal]: JSON.parse(
-                            JSON.stringify(linePaths[LinePathType.Diagonal].defaultAttrs)
-                        ),
+                        [LinePathType.Diagonal]: structuredClone(linePaths[LinePathType.Diagonal].defaultAttrs),
                         style: LineStyleType.SingleColor,
                         [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',

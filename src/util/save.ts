@@ -162,9 +162,9 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                     zIndex: 0,
                     type: LinePathType.Simple,
                     // deep copy to prevent mutual reference
-                    [type]: JSON.parse(JSON.stringify(linePaths[LinePathType.Simple].defaultAttrs)),
+                    [type]: structuredClone(linePaths[LinePathType.Simple].defaultAttrs),
                     style,
-                    [style]: JSON.parse(JSON.stringify(lineStyles[style].defaultAttrs)),
+                    [style]: structuredClone(lineStyles[style].defaultAttrs),
                     reconcileId: '',
                 });
 

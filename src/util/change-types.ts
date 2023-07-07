@@ -81,7 +81,7 @@ export const changeLinePathType = (
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type') as LinePathType;
     graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
-    const newAttrs = JSON.parse(JSON.stringify(linePaths[newLinePathType].defaultAttrs));
+    const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
     graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
 };
 
@@ -100,7 +100,7 @@ export const changeLineStyleType = (
 ) => {
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style') as LineStyleType;
     graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
-    const newAttrs = JSON.parse(JSON.stringify(lineStyles[newLineStyleType].defaultAttrs));
+    const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
     if (newLineStyleType === LineStyleType.SingleColor && theme) (newAttrs as SingleColorAttributes).color = theme;
     graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
     if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);

@@ -99,7 +99,7 @@ const SvgCanvas = () => {
                         zIndex: 0,
                         type,
                         // deep copy to prevent mutual reference
-                        [type]: JSON.parse(JSON.stringify(linePaths[type].defaultAttrs)),
+                        [type]: structuredClone(linePaths[type].defaultAttrs),
                         style: LineStyleType.SingleColor,
                         [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',
