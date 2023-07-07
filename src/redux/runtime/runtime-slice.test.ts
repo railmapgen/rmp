@@ -1,6 +1,7 @@
+import { describe, expect, it } from 'vitest';
 import store from '../index';
+import { redoAction, undoAction } from '../param/param-slice';
 import appReducer from './runtime-slice';
-import { undoAction, redoAction } from '../param/param-slice';
 
 const realStore = store.getState();
 

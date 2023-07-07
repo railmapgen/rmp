@@ -21,10 +21,10 @@ import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setOpenGuidaoTransitQECode } from '../redux/runtime/runtime-slice';
 
-const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
-const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
-const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ './svg-wrapper'));
-const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
+const PageHeader = React.lazy(() => import('./page-header/page-header'));
+const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
+const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
+const DetailsPanel = React.lazy(() => import('./panels/details/details'));
 
 export default function AppRoot() {
     const dispatch = useRootDispatch();
@@ -141,7 +141,7 @@ export default function AppRoot() {
                                 <Image
                                     width="1080"
                                     height="203"
-                                    src={process.env.PUBLIC_URL + '/images/guidaoTransitQRCode.png'}
+                                    src={import.meta.env.BASE_URL + '/images/guidaoTransitQRCode.png'}
                                 />
                             </ModalBody>
                         </ModalContent>

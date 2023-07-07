@@ -29,8 +29,7 @@ export const CURRENT_VERSION = 11;
 /**
  * Load Shanghai template only if the param is missing or invalid.
  */
-const getInitialParam = async () =>
-    JSON.stringify((await import(/* webpackChunkName: "template" */ '../saves/shanghai.json')).default);
+const getInitialParam = async () => JSON.stringify((await import('../saves/shanghai.json')).default);
 
 /**
  * Upgrade the passed param to the latest format.
