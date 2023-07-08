@@ -513,7 +513,7 @@ const getFileName = (nameList: string[]) => {
 
 /**
  * Export RMG json
- * @param graph Graph.
+ * @param param RMG json object.
  * @param lineName Line name array: [Chinese, English]
  * @param lineCode Line code string e.g. '1'
  */
