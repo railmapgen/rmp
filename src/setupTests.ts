@@ -1,6 +1,7 @@
 import { getDefaultMiddleware, ThunkDispatch } from '@reduxjs/toolkit';
 import createMockStore from 'redux-mock-store';
 import { vi } from 'vitest';
+import infoJson from '../info.json';
 import { MockBroadcastChannel } from './mock-broadcast-channel';
 import { RootState } from './redux';
 
@@ -25,13 +26,7 @@ global.fetch = (...args) => {
         return Promise.resolve({
             ok: true,
             status: 200,
-            json: () =>
-                Promise.resolve({
-                    component: 'rmp',
-                    version: '9.9.9',
-                    environment: 'DEV',
-                    instance: 'localhost',
-                }),
+            json: () => Promise.resolve(infoJson),
         }) as any;
     } else {
         return originalFetch(...args);
