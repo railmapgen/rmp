@@ -1,9 +1,10 @@
+import { screen, within } from '@testing-library/react';
 import React from 'react';
+import { describe, expect, it } from 'vitest';
 import rootReducer from '../../redux';
 import { createMockRootStore } from '../../setupTests';
 import { render } from '../../test-utils';
 import GlobalAlerts from './global-alerts';
-import { screen, within } from '@testing-library/react';
 
 const realStore = rootReducer.getState();
 const mockStore = createMockRootStore({

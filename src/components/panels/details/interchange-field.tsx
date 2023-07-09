@@ -61,7 +61,7 @@ export const InterchangeField = (props: {
     const transfer = attr.transfer ?? defaultAttrs.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
-        const newTransferInfo: InterchangeInfo[][] = JSON.parse(JSON.stringify(transfer));
+        const newTransferInfo: InterchangeInfo[][] = structuredClone(transfer);
         if (newTransferInfo.length <= setIndex) {
             for (let i = newTransferInfo.length; i <= setIndex; i++) {
                 newTransferInfo[i] = [];

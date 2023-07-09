@@ -12,9 +12,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '18'
       - run: npm i
       - name: Check
         run: |
-          npm run lint:dev
-          npm run test:no-watch
+          npm run lint
+          npm run test

@@ -37,7 +37,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalBody paddingBottom={10}>
                     <Flex direction="row">
-                        <Image boxSize="128px" src={process.env.PUBLIC_URL + '/logo192.png'} />
+                        <Image boxSize="128px" src={import.meta.env.BASE_URL + '/logo192.png'} />
                         <Flex direction="column" width="100%" alignItems="center" justifyContent="center">
                             <Text fontSize="xl" as="b">
                                 {t('header.about.rmp')}
@@ -153,7 +153,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                     <VStack>
                         <Tag size="lg" w="85%" onClick={() => setIsGuidaoTransitQRCodeOpen(true)} cursor="pointer">
                             <Avatar
-                                src={process.env.PUBLIC_URL + '/images/guidaoTransit.jpg'}
+                                src={import.meta.env.BASE_URL + '/images/guidaoTransit.jpg'}
                                 size="lg"
                                 my={2}
                                 ml={-1}
@@ -179,7 +179,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Image
                                         width="1080"
                                         height="304"
-                                        src={process.env.PUBLIC_URL + '/images/guidaoTransitQRCode.png'}
+                                        src={import.meta.env.BASE_URL + '/images/guidaoTransitQRCode.png'}
                                     />
                                 </ModalBody>
                             </ModalContent>

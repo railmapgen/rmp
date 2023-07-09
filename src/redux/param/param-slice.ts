@@ -61,14 +61,14 @@ const paramSlice = createSlice({
          * It relies on changes to be updated by saveGraph.
          */
         setFullState: (state, action: PayloadAction<ParamState>) => {
-            return JSON.parse(JSON.stringify(action.payload));
+            return structuredClone(action.payload);
         },
         saveGraph: (state, action: PayloadAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>) => {
             state.future = [];
             state.past.push(state.present);
             // limit the maximum undo stack size to prevent insane memory usage
             if (state.past.length > MAX_UNDO_SIZE) state.past.shift();
-            state.present = JSON.parse(JSON.stringify(action.payload));
+            state.present = structuredClone(action.payload);
         },
         setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
             state.svgViewBoxZoom = action.payload;
@@ -87,7 +87,7 @@ const paramSlice = createSlice({
                 // window.graph = previous; // useRef won't get the new one
                 window.graph.clear(); // so we have no choice but to clear and reimport the graph
                 // window.graph.import(previous); // no Immer proxy in graph, it will freeze the attributes
-                window.graph.import(JSON.parse(JSON.stringify(original(previous)!)));
+                window.graph.import(structuredClone(original(previous)!));
             })
             .addCase(redoAction, state => {
                 if (state.future.length === 0) return;
@@ -97,7 +97,7 @@ const paramSlice = createSlice({
                 // window.graph = next; // useRef won't get the new one
                 window.graph.clear(); // so we have no choice but to clear and reimport the graph
                 // window.graph.import(next); // no Immer proxy in graph, it will freeze the attributes
-                window.graph.import(JSON.parse(JSON.stringify(original(next)!)));
+                window.graph.import(structuredClone(original(next)!));
             });
     },
 });

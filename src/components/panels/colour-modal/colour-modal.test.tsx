@@ -1,8 +1,9 @@
 import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockCallbacks = {
-    onClose: jest.fn(),
-    onUpdate: jest.fn(),
+    onClose: vi.fn(),
+    onUpdate: vi.fn(),
 };
 
 describe('ColourModal', () => {

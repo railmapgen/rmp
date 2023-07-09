@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { NodeAttributes, EdgeAttributes, GraphAttributes, LocalStorageKey } from '../constants/constants';
-import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
+import { describe, expect, it } from 'vitest';
+import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { CURRENT_VERSION, upgrade, UPGRADE_COLLECTION } from './save';
 
 describe('Unit tests for param upgrade function', () => {
     it('upgrade will return the default Shanghai template if originalParam is null', async () => {

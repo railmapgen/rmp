@@ -1,6 +1,7 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { describe, expect, it } from 'vitest';
 import { InterchangeInfo } from '../../panels/details/interchange-field';
-import { makeStationPath, R, LINE_WIDTH } from './mtr';
+import { LINE_WIDTH, makeStationPath, R } from './mtr';
 
 const INT: InterchangeInfo = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white, '', ''];
 

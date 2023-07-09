@@ -6,11 +6,8 @@ npm i -g npm-check-updates
 ncu -f '/@railmapgen\/rmg-.*-resources/' -t patch -u
 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm install
 
-# run lint
 npm run lint:fix
-
-# run tests
-npm run test:no-watch
+npm run test
 
 # git config
 git config --global user.name 'github-actions[bot]'

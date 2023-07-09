@@ -5,10 +5,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 
-const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
-const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
-const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ './svg-wrapper'));
-const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
+const PageHeader = React.lazy(() => import('./page-header/page-header'));
+const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
+const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
+const DetailsPanel = React.lazy(() => import('./panels/details/details'));
 
 export default function AppRoot() {
     const { t } = useTranslation();

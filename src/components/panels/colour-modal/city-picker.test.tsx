@@ -1,11 +1,11 @@
-import React from 'react';
-import CityPicker from './city-picker';
-import { render } from '../../../test-utils';
 import { fireEvent, screen } from '@testing-library/react';
+import React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '../../../i18n/config';
+import { render } from '../../../test-utils';
+import CityPicker from './city-picker';
 
-jest.mock('@railmapgen/rmg-palette-resources', () => ({
-    ...jest.requireActual('@railmapgen/rmg-palette-resources'),
+vi.mock('@railmapgen/rmg-palette-resources', () => ({
     __esModule: true,
     cityList: [
         {
@@ -66,10 +66,15 @@ jest.mock('@railmapgen/rmg-palette-resources', () => ({
     CityCode: {
         Other: 'other',
     },
+
+    MonoColour: {
+        black: '#000',
+        white: '#fff',
+    },
 }));
 
 const mockCallbacks = {
-    onChange: jest.fn(),
+    onChange: vi.fn(),
 };
 
 describe('Unit tests for CityPicker component', () => {
@@ -78,7 +83,8 @@ describe('Unit tests for CityPicker component', () => {
     });
 
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
+        vi.resetAllMocks();
     });
 
     it('Can render flag emojis (for non-Windows users) and translations as expected', async () => {
@@ -101,7 +107,7 @@ describe('Unit tests for CityPicker component', () => {
     });
 
     it('Can render OpenMoji SVG-format emoji for Windows users as expected', async () => {
-        const platformGetter = jest.spyOn(window.navigator, 'platform', 'get');
+        const platformGetter = vi.spyOn(window.navigator, 'platform', 'get');
         platformGetter.mockReturnValue('Win64');
 
         render(<CityPicker />);
