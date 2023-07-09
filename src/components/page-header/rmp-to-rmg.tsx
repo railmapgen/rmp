@@ -9,6 +9,7 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Stack,
     Text,
     Tooltip,
 } from '@chakra-ui/react';
@@ -17,103 +18,27 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDownload } from 'react-icons/md';
-import { exportToRmg, toRmg } from '../../util/to-rmg';
+import { exportToRmg, newParamTemplate, ToRmg, toRmg } from '../../util/to-rmg';
+
+const TYPE_COLOR: { [k in 'LINE' | 'BRANCH' | 'LOOP']: `#${string}` } = {
+    LINE: '#33ccff',
+    BRANCH: '#007B61',
+    LOOP: '#ff6666',
+};
 
 export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
     const [isToRmgEndSelectOpen, setIsToRmgEndSelectOpen] = React.useState(false);
-    const [paramArr, setParamArr] = React.useState([['', '']]);
-    const [nameArr, setNameArr] = React.useState(['']);
 
-    const outputLineName = (theme: any) => {
-        if (theme[0] == 'other' && theme[1] == 'other') {
-            return theme[2];
-        } else {
-            return theme[1];
-        }
-    };
+    const [paramArr, setParamArr] = React.useState<ToRmg['param']>([[newParamTemplate, '', '']]);
+    const [nameArr, setNameArr] = React.useState<[string, string, string]>(['', '', '']);
 
-    const outputLineType = (type: any) => {
-        if (type == 'LOOP') {
-            return <RmgLineBadge name="Loop" bg="#ff6666" fg={MonoColour.white} />;
-        } else if (type == 'LINE') {
-            return <RmgLineBadge name="Line" bg="#33ccff" fg={MonoColour.white} />;
-        } else if (type == 'BRANCH') {
-            return <RmgLineBadge name="Branch" bg="#007B61" fg={MonoColour.white} />;
-        }
-    };
-
-    const outputForm = (toRmgRes: any) => {
-        const result = [];
-        for (const [theme, paramList, type] of toRmgRes) {
-            result.push(
-                <tr>
-                    <td>
-                        <RmgLineBadge
-                            name={outputLineName(structuredClone(theme))}
-                            bg={structuredClone(theme[2])}
-                            fg={structuredClone(theme[3])}
-                        />
-                    </td>
-                    <td>
-                        <Input
-                            placeholder="Chinese Name"
-                            id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]}
-                            size="sm"
-                        />
-                    </td>
-                    <td>
-                        <Input
-                            placeholder="English Name"
-                            id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]}
-                            size="sm"
-                        />
-                    </td>
-                    <td>
-                        <Input
-                            placeholder="Line Code"
-                            id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]}
-                            size="sm"
-                        />
-                    </td>
-                    <td>{outputLineType(type)}</td>
-                    <td>
-                        <Button
-                            colorScheme="blue"
-                            variant="ghost"
-                            mr="1"
-                            onClick={() => {
-                                const chName = document.getElementById(
-                                    'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]
-                                ) as HTMLInputElement;
-                                const enName = document.getElementById(
-                                    'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]
-                                ) as HTMLInputElement;
-                                const lineNum = document.getElementById(
-                                    'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]
-                                ) as HTMLInputElement;
-                                setParamArr(paramList);
-                                setNameArr([chName.value.trim(), enName.value.trim(), lineNum.value.trim()]);
-                                setIsToRmgEndSelectOpen(true);
-                            }}
-                            size="sm"
-                        >
-                            <MdDownload />
-                        </Button>
-                    </td>
-                </tr>
-            );
-        }
-        return result;
-    };
-
-    const outputContent = () => {
-        const toRmgRes = toRmg(graph.current);
-        if (toRmgRes.length != 0) return <table>{outputForm(toRmgRes)}</table>;
-        else return <Text fontSize="md">No available lines found.</Text>;
-    };
+    const [toRmgRes, setToRmgRes] = React.useState<ToRmg[]>([]);
+    React.useEffect(() => {
+        if (isOpen) setToRmgRes(toRmg(graph.current));
+    }, [isOpen]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside">
@@ -121,11 +46,11 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        Generate RMG Saves
+                        {t('header.download.2rmg.title')}
                     </Text>
                     <Tooltip label={t('header.settings.pro')}>
                         <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
-                            TEST
+                            PRO
                         </Badge>
                     </Tooltip>
                 </ModalHeader>
@@ -142,7 +67,79 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         to save your RMG saves.
                     </Text>
                     <br />
-                    {outputContent()}
+                    {toRmgRes.length === 0 ? (
+                        <Text fontSize="md">No available lines found.</Text>
+                    ) : (
+                        <table>
+                            {toRmgRes.map(({ theme, param, type }) => (
+                                <tr key={JSON.stringify(theme)}>
+                                    <td>
+                                        <RmgLineBadge
+                                            name={theme[0] == 'other' && theme[1] == 'other' ? theme[2] : theme[1]}
+                                            bg={theme[2]}
+                                            fg={theme[3]}
+                                        />
+                                    </td>
+                                    <td>
+                                        <Input
+                                            placeholder="Chinese Name"
+                                            id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                                            size="sm"
+                                        />
+                                    </td>
+                                    <td>
+                                        <Input
+                                            placeholder="English Name"
+                                            id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                                            size="sm"
+                                        />
+                                    </td>
+                                    <td>
+                                        <Input
+                                            placeholder="Line Code"
+                                            id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                                            size="sm"
+                                        />
+                                    </td>
+                                    <td>
+                                        <RmgLineBadge
+                                            name={t(`header.download.2rmg.type.${type.toLowerCase()}`)}
+                                            bg={TYPE_COLOR[type]}
+                                            fg={MonoColour.white}
+                                        />
+                                    </td>
+                                    <td>
+                                        <Button
+                                            colorScheme="blue"
+                                            variant="ghost"
+                                            mr="1"
+                                            onClick={() => {
+                                                const chName = document.getElementById(
+                                                    'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                                ) as HTMLInputElement;
+                                                const enName = document.getElementById(
+                                                    'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                                ) as HTMLInputElement;
+                                                const lineNum = document.getElementById(
+                                                    'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                                ) as HTMLInputElement;
+                                                setParamArr(param);
+                                                setNameArr([
+                                                    chName.value.trim(),
+                                                    enName.value.trim(),
+                                                    lineNum.value.trim(),
+                                                ]);
+                                                setIsToRmgEndSelectOpen(true);
+                                            }}
+                                            size="sm"
+                                        >
+                                            <MdDownload />
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </table>
+                    )}
                 </ModalBody>
 
                 <ModalFooter>
@@ -161,33 +158,21 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
     );
 };
 
-export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => void; param: any; nameList: any }) => {
+export const ToRmgEndSelectModal = (props: {
+    isOpen: boolean;
+    onClose: () => void;
+    param: ToRmg['param'];
+    nameList: [string, string, string];
+}) => {
     const { isOpen, onClose, param, nameList } = props;
     const { t } = useTranslation();
 
-    const outputTitle = () => {
-        if (nameList[0] != '' && nameList[1] != '') return nameList[0] + '/' + nameList[1];
-        else if (nameList[0] != '') return nameList[0];
-        else if (nameList[1] != '') return nameList[1];
-        else return '';
-    };
-
-    const outputContent = () => {
-        const result = [];
-        for (const [newParam, name1, name2] of param) {
-            result.push(
-                <Button
-                    onClick={() => {
-                        exportToRmg(structuredClone(newParam), [nameList[0], nameList[1]], nameList[2]);
-                    }}
-                >
-                    {name1}/{name2}
-                </Button>,
-                <span> </span>
-            );
-        }
-        return result;
-    };
+    const [title, setTitle] = React.useState('');
+    React.useEffect(() => {
+        if (nameList[0] != '' && nameList[1] != '') setTitle(nameList[0] + '/' + nameList[1]);
+        else if (nameList[0] != '') setTitle(nameList[0]);
+        else if (nameList[1] != '') setTitle(nameList[1]);
+    }, [...nameList]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="md" scrollBehavior="inside">
@@ -195,17 +180,28 @@ export const ToRmgEndSelectModal = (props: { isOpen: boolean; onClose: () => voi
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        Download {outputTitle()}
+                        Download {title}
                     </Text>
                 </ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
-                    <Text fontSize="sm" mt="3" lineHeight="100%">
-                        Please select one of the following stations as the starting station and click it to download.
-                    </Text>
-                    <br />
-                    {outputContent()}
+                    <Stack>
+                        <Text fontSize="sm" mb="2" lineHeight="100%">
+                            Please select one of the following stations as the starting station and click it to
+                            download.
+                        </Text>
+                        {param.map(([newParam, name1, name2]) => (
+                            <Button
+                                key={`${name1}${name2}`}
+                                onClick={() => {
+                                    exportToRmg(structuredClone(newParam), [nameList[0], nameList[1]], nameList[2]);
+                                }}
+                            >
+                                {name1}/{name2}
+                            </Button>
+                        ))}
+                    </Stack>
                 </ModalBody>
 
                 <ModalFooter>

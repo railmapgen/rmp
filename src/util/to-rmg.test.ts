@@ -44,9 +44,9 @@ describe('Unit tests for to rmg function', () => {
         const toRmgRes = toRmg(graph);
 
         expect(toRmgRes).toEqual([
-            [
-                color,
-                [
+            {
+                theme: color,
+                param: [
                     [
                         {
                             svgWidth: { destination: 1500, runin: 1500, railmap: 1500, indoor: 1500 },
@@ -220,8 +220,8 @@ describe('Unit tests for to rmg function', () => {
                         'Stn',
                     ],
                 ],
-                'LINE',
-            ],
+                type: 'LINE',
+            },
         ]);
     });
 
@@ -265,6 +265,6 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
-        expect(toRmgRes).toEqual([[color, [], 'LINE']]);
+        expect(toRmgRes).toEqual([{ theme: color, param: [], type: 'LINE' }]);
     });
 });

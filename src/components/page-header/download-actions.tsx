@@ -23,7 +23,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdDownload, MdImage, MdOpenInNew, MdSave, MdShare } from 'react-icons/md';
+import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import { StationType } from '../../constants/stations';
@@ -191,11 +191,11 @@ export default function DownloadActions() {
                 <MenuItem icon={<MdSave />} onClick={handleDownloadJson}>
                     {t('header.download.config')}
                 </MenuItem>
+                <MenuItem icon={<MdSaveAs />} onClick={() => setIsToRmgOpen(true)}>
+                    {t('header.download.2rmg.title')}
+                </MenuItem>
                 <MenuItem icon={<MdImage />} onClick={() => setIsDownloadModalOpen(true)}>
                     {t('header.download.image')}
-                </MenuItem>
-                <MenuItem icon={<MdShare />} onClick={() => setIsToRmgOpen(true)}>
-                    {t('header.download.2rmg')}
                 </MenuItem>
             </MenuList>
 

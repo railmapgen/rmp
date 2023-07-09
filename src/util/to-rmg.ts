@@ -84,7 +84,7 @@ const defRMGRight: StationInfo = {
 
 const useStn: any = {};
 
-const newParamTemplate: RMGParam = {
+export const newParamTemplate: RMGParam = {
     svgWidth: {
         destination: 1500,
         runin: 1500,
@@ -426,6 +426,15 @@ const generateParam = (
 };
 
 /**
+ * The return type of `toRmg`.
+ */
+export interface ToRmg {
+    theme: Theme;
+    param: [RMGParam, ...Name][];
+    type: 'LINE' | 'BRANCH' | 'LOOP';
+}
+
+/**
  * Convert RMP to RMG
  * @param graph Graph.
  */
@@ -453,7 +462,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         nodeIndex.set(u, ++index);
     });
     // console.info(colorList);
-    const resultList: [Theme, [RMGParam, ...Name][], 'LINE' | 'BRANCH' | 'LOOP'][] = [];
+    const resultList: ToRmg[] = [];
     for (const value of colorList) {
         visStn.clear();
         outDegree.clear();
@@ -499,7 +508,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
                 ]);
             }
         }
-        resultList.push([value, structuredClone(nowResult), typeInfo]);
+        resultList.push({ theme: value, param: structuredClone(nowResult), type: typeInfo });
     }
     return structuredClone(resultList);
 };

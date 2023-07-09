@@ -261,16 +261,22 @@
         "open": {
             "new": "New project",
             "config": "Import project",
-            "configRMG": "Import from RMG save",
             "projectRMG": "Import from RMG project",
-            "gallery": "Import from gallery",
+            "gallery": "Import from Gallery",
             "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
             "failToImportFromRMPGallery": "Fail to import {{id}} from the gallery. The file can not be found."
         },
         "download": {
             "config": "Export project",
             "image": "Export image",
-            "2rmg": "Convert to RMG save",
+            "2rmg": {
+                "title": "Export to RMG project",
+                "type": {
+                    "line": "Line",
+                    "loop": "Loop",
+                    "branch": "Branch"
+                }
+            },
             "format": "Format",
             "png": "PNG",
             "svg": "SVG (Web use)",
