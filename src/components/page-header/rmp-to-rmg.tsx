@@ -195,7 +195,7 @@ export const ToRmgEndSelectModal = (props: {
                             <Button
                                 key={`${name1}${name2}`}
                                 onClick={() => {
-                                    exportToRmg(structuredClone(newParam), [nameList[0], nameList[1]], nameList[2]);
+                                    exportToRmg(newParam, [nameList[0], nameList[1]], nameList[2]);
                                 }}
                             >
                                 {name1}/{name2}

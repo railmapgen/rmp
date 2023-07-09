@@ -5,7 +5,16 @@ import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-b
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LineStyleType } from '../constants/lines';
-import { Name, PanelTypeShmetro, RMGParam, RmgStyle, Services, ShortDirection, StationInfo } from '../constants/rmg';
+import {
+    BranchStyle,
+    Name,
+    PanelTypeShmetro,
+    RMGParam,
+    RmgStyle,
+    Services,
+    ShortDirection,
+    StationInfo,
+} from '../constants/rmg';
 import { StationAttributes, StationType } from '../constants/stations';
 import { downloadAs } from './download';
 
@@ -26,8 +35,8 @@ const outDegree: Map<string, number> = new Map<string, number>();
 const nodeIndex: Map<string, number> = new Map<string, number>();
 
 interface RMGInterchange {
-    theme: string[];
-    name: string[];
+    theme: Theme;
+    name: Name;
 }
 
 const defRMGLeft: StationInfo = {
@@ -233,12 +242,12 @@ const edgeDfs = (u: string, f: string, color: Theme) => {
     outDegree.set(u, countDegree);
 };
 
-const editLineend = (newParam: any, u: string) => {
+const editLineend = (newParam: RMGParam, u: string) => {
     const newParent: string[] = newParam.stn_list['lineend'].parents;
     newParent.push(u);
     newParam.stn_list['lineend'].parents = reverse(structuredClone(newParent));
     if (newParam.stn_list['lineend'].parents.length == 2) {
-        newParam.stn_list['lineend'].branch.left = ['through', newParent[1]];
+        newParam.stn_list['lineend'].branch.left = [BranchStyle.through, newParent[1]];
     }
 };
 
@@ -246,8 +255,8 @@ const swapBranchAsIndex = (newChild: string[]) => {
     const xNum = nodeIndex.get(newChild[0])!;
     const yNum = nodeIndex.get(newChild[1])!;
     if (xNum > yNum) {
-        const t = structuredClone(newChild[0]);
-        newChild[0] = structuredClone(newChild[1]);
+        const t = newChild[0];
+        newChild[0] = newChild[1];
         newChild[1] = t;
     }
     return newChild;
@@ -260,15 +269,15 @@ const generateNewStn = (
     counter: number,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     color: Theme,
-    newParam: any
+    newParam: RMGParam
 ) => {
     if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_') || newParam.loop)) {
         return [];
     } else if (visStn.has(u) && newParam.stn_list[u] != undefined && newParam.stn_list[u].children.length >= 2) {
         // parent (for MTR Racecourse Station) update branch right (merge) info
-        const newParent = swapBranchAsIndex([f, ...structuredClone(newParam.stn_list[u].parents)]);
+        const newParent = swapBranchAsIndex([f, ...newParam.stn_list[u].parents]);
         newParam.stn_list[u].parents = reverse(newParent);
-        newParam.stn_list[u].branch.left = ['through', newParent[1]];
+        newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
         // delete f in u's children
         const newChild = [];
         for (const ch of newParam.stn_list[u].children) {
@@ -287,7 +296,7 @@ const generateNewStn = (
         const newEndParent = swapBranchAsIndex(endParent);
         newParam.stn_list['lineend'].parents = reverse(structuredClone(newEndParent));
         if (newParam.stn_list['lineend'].parents.length == 2) {
-            newParam.stn_list['lineend'].branch.left = ['through', structuredClone(newEndParent[1])];
+            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, newEndParent[1]];
         }
         return [u];
     }
@@ -348,7 +357,7 @@ const generateNewStn = (
         const uType = graph.getNodeAttributes(u).type as StationType;
         const uAttr = graph.getNodeAttributes(u)[uType] as StationAttributes;
         newParam.stn_list[u] = structuredClone(newRMGStn);
-        newParam.stn_list[u].name = uAttr.names;
+        newParam.stn_list[u].name = [uAttr.names[0], uAttr.names[1]];
         newParam.stn_list[u].num = String(counter);
         if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
             const gzAttr = uAttr as GzmtrBasicStationAttributes;
@@ -369,7 +378,7 @@ const generateNewStn = (
         if (newChild.length != 0) {
             newParam.stn_list[u].children = reverse(structuredClone(newChild));
             if (newChild.length == 2) {
-                newParam.stn_list[u].branch.right = ['through', newChild[1]];
+                newParam.stn_list[u].branch.right = [BranchStyle.through, newChild[1]];
             }
         } else {
             newParam.stn_list[u].children = ['lineend'];
@@ -510,7 +519,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         }
         resultList.push({ theme: value, param: structuredClone(nowResult), type: typeInfo });
     }
-    return structuredClone(resultList);
+    return resultList;
 };
 
 const getFileName = (nameList: string[]) => {
@@ -526,10 +535,10 @@ const getFileName = (nameList: string[]) => {
  * @param lineName Line name array: [Chinese, English]
  * @param lineCode Line code string e.g. '1'
  */
-export const exportToRmg = (param: any, lineName: Name, lineCode: string) => {
+export const exportToRmg = (param: RMGParam, lineName: Name, lineCode: string) => {
     param['line_name'] = lineName;
     param['line_num'] = String(lineCode);
     console.log(param);
-    console.log(JSON.stringify(structuredClone(param)));
-    downloadAs(`RMG_${getFileName(lineName)}.json`, 'application/json', JSON.stringify(structuredClone(param)));
+    console.log(JSON.stringify(param));
+    downloadAs(`RMG_${getFileName(lineName)}.json`, 'application/json', JSON.stringify(param));
 };
