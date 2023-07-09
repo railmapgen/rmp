@@ -58,17 +58,14 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalBody>
                     <Text fontSize="sm" mt="3" lineHeight="100%">
-                        This function is designed to convert RMP saves into RMG saves.
+                        {t('header.download.2rmg.info1')}
                     </Text>
                     <Text fontSize="sm" mt="3" lineHeight="100%">
-                        The lines in the list following are the available lines for converting. You can enter the
-                        Chinese line name in the text box on the left, the English line name in the middle, the line
-                        code (for Guangzhou Metro style) on the right, and then click the download button on the right
-                        to save your RMG saves.
+                        {t('header.download.2rmg.info2')}
                     </Text>
                     <br />
                     {toRmgRes.length === 0 ? (
-                        <Text fontSize="md">No available lines found.</Text>
+                        <Text fontSize="md">{t('header.download.2rmg.noline')}</Text>
                     ) : (
                         <table>
                             {toRmgRes.map(({ theme, param, type }) => (
@@ -82,21 +79,21 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     </td>
                                     <td>
                                         <Input
-                                            placeholder="Chinese Name"
+                                            placeholder={t('header.download.2rmg.placeholder.chinese')}
                                             id={'nameCh_' + JSON.stringify(theme)}
                                             size="sm"
                                         />
                                     </td>
                                     <td>
                                         <Input
-                                            placeholder="English Name"
+                                            placeholder={t('header.download.2rmg.placeholder.english')}
                                             id={'nameEn_' + JSON.stringify(theme)}
                                             size="sm"
                                         />
                                     </td>
                                     <td>
                                         <Input
-                                            placeholder="Line Code"
+                                            placeholder={t('header.download.2rmg.placeholder.lineCode')}
                                             id={'lineNum_' + JSON.stringify(theme)}
                                             size="sm"
                                         />
@@ -180,7 +177,7 @@ export const ToRmgEndSelectModal = (props: {
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        Download {title}
+                        {t('header.download.2rmg.download')} {title}
                     </Text>
                 </ModalHeader>
                 <ModalCloseButton />
@@ -188,8 +185,7 @@ export const ToRmgEndSelectModal = (props: {
                 <ModalBody>
                     <Stack>
                         <Text fontSize="sm" mb="2" lineHeight="100%">
-                            Please select one of the following stations as the starting station and click it to
-                            download.
+                            {t('header.download.2rmg.downloadInfo')}
                         </Text>
                         {param.map(([newParam, name1, name2]) => (
                             <Button
