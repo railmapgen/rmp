@@ -83,21 +83,21 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <td>
                                         <Input
                                             placeholder="Chinese Name"
-                                            id={'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                                            id={'nameCh_' + JSON.stringify(theme)}
                                             size="sm"
                                         />
                                     </td>
                                     <td>
                                         <Input
                                             placeholder="English Name"
-                                            id={'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                                            id={'nameEn_' + JSON.stringify(theme)}
                                             size="sm"
                                         />
                                     </td>
                                     <td>
                                         <Input
                                             placeholder="Line Code"
-                                            id={'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]}
+                                            id={'lineNum_' + JSON.stringify(theme)}
                                             size="sm"
                                         />
                                     </td>
@@ -115,13 +115,13 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             mr="1"
                                             onClick={() => {
                                                 const chName = document.getElementById(
-                                                    'nameCh_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                                    'nameCh_' + JSON.stringify(theme)
                                                 ) as HTMLInputElement;
                                                 const enName = document.getElementById(
-                                                    'nameEn_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                                    'nameEn_' + JSON.stringify(theme)
                                                 ) as HTMLInputElement;
                                                 const lineNum = document.getElementById(
-                                                    'lineNum_' + theme[0] + theme[1] + theme[2] + theme[3]
+                                                    'lineNum_' + JSON.stringify(theme)
                                                 ) as HTMLInputElement;
                                                 setParamArr(param);
                                                 setNameArr([
