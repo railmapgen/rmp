@@ -1,4 +1,4 @@
-import React, { StrictMode } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { I18nextProvider } from 'react-i18next';
@@ -22,13 +22,13 @@ declare global {
 const renderApp = () => {
     const root = createRoot(document.getElementById('root') as HTMLDivElement);
     root.render(
-        <StrictMode>
+        <React.StrictMode>
             <Provider store={store}>
                 <I18nextProvider i18n={i18n}>
                     <AppRoot />
                 </I18nextProvider>
             </Provider>
-        </StrictMode>
+        </React.StrictMode>
     );
 };
 
