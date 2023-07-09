@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkrmp=self.webpackChunkrmp||[]).push([[707],{707:function(e,c,s){e.exports=s.p+"static/media/1F1EE-1F1EA.ec6b3cafcbef090da420.svg"}}]);

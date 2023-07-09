@@ -1,0 +1,1 @@
+System.register(["./index-legacy-8eb2fff9.js","./chakra-legacy-dc6bd5f4.js","./react-legacy-d8ea2a5a.js"],(function(e,t){"use strict";var n;return{setters:[function(e){n=e.aj},null,null],execute:function(){e("default",[{id:"R1",colour:"#e9322b",fg:n.white,name:{en:"Light Rail Line 1","zh-Hans":"轻轨1号线","zh-Hant":"輕軌1號線"}}])}}}));
