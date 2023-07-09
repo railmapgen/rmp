@@ -21,6 +21,10 @@ export default function AppRoot() {
         }
     }, []);
 
+    const d = new Date();
+    const tag = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}01`;
+    const ver = `${String(d.getFullYear()).slice(-2)}.${d.getMonth() + 1}.1`;
+
     return (
         <RmgThemeProvider>
             <RmgWindow>
@@ -55,10 +59,33 @@ export default function AppRoot() {
                                     Gitlab
                                 </a>{' '}
                                 or the{' '}
-                                <a href="https://github.com/railmapgen/rmp/releases" target="_blank" rel="noreferrer">
+                                <a
+                                    href="https://github.com/railmapgen/railmapgen.github.io/releases"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
                                     offline application
                                 </a>{' '}
-                                :)
+                                .
+                                <br />
+                                <br />
+                                Offline applications via ghproxy.com{' '}
+                                <a
+                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
+                                >
+                                    Windows
+                                </a>{' '}
+                                <a
+                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64.dmg`}
+                                >
+                                    MacOS
+                                </a>{' '}
+                                <a
+                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
+                                >
+                                    Linux
+                                </a>{' '}
+                                if you are in mainland China :)
                             </p>
                         </>
                     }

@@ -62,10 +62,23 @@
                 <a href="https://railmapgen.github.io/?app=rmp" target="_blank" rel="noreferrer">GitHub</a>
                 <a href="https://railmapgen.gitlab.io/?app=rmp" target="_blank" rel="noreferrer">Gitlab</a>
                 or the
-                <a href="https://github.com/railmapgen/rmp/releases" target="_blank" rel="noreferrer">offline application</a>
-                :)
+                <a href="https://github.com/railmapgen/railmapgen.github.io/releases" target="_blank" rel="noreferrer">offline applications</a>
+                .    
+                </br>
+                </br>
+                Offline applications via ghproxy.com
+                <a id="win">Windows</a>
+                <a id="mac">MacOS</a>
+                <a id="linux">Linux</a>
+                if you are in mainland China :)
             </p>
         </div>
+        <script>
+            const d = new Date();const tag=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2, '0')}01`;const ver=`${String(d.getFullYear()).slice(-2)}.${d.getMonth()+1}.1`;
+            document.getElementById('win').href=`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`;
+            document.getElementById('mac').href=`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64.dmg`;
+            document.getElementById('linux').href=`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`;
+        </script>
         <script type="module" src="src/index.tsx"></script>
     </body>
 </html>
