@@ -1,6 +1,8 @@
-import { RootState } from './redux';
-import createMockStore from 'redux-mock-store';
 import { getDefaultMiddleware, ThunkDispatch } from '@reduxjs/toolkit';
+import createMockStore from 'redux-mock-store';
+import { vi } from 'vitest';
+import { MockBroadcastChannel } from './mock-broadcast-channel';
+import { RootState } from './redux';
 
 // FIXME: any -> AnyAction?
 type DispatchExts = ThunkDispatch<RootState, void, any>;
@@ -15,7 +17,7 @@ class BroadcastChannel {
     }
 }
 
-global.BroadcastChannel = BroadcastChannel as any;
+vi.stubGlobal('BroadcastChannel', MockBroadcastChannel);
 
 const originalFetch = global.fetch;
 global.fetch = (...args) => {
