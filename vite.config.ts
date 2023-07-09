@@ -1,14 +1,23 @@
 /// <reference types="vitest" />
 
-import { defineConfig } from 'vite';
+import legacy from '@vitejs/plugin-legacy';
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import svgr from 'vite-plugin-svgr';
 
 // https://vitejs.dev/config
 export default defineConfig({
     base: '/rmp/',
-    plugins: [react(), svgr(), checker({ typescript: true, eslint: { lintCommand: 'eslint ./src' } })],
+    plugins: [
+        react(),
+        svgr(),
+        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src' } }),
+        legacy({
+            targets: ['defaults', '>0.2%', 'not dead'],
+            modernPolyfills: true,
+        }),
+    ],
     build: {
         rollupOptions: {
             output: {
@@ -23,18 +32,15 @@ export default defineConfig({
     server: {
         proxy: {
             '/rmg/': {
-                target: 'https://railmapgen.github.io/rmg',
+                target: 'https://railmapgen.github.io',
                 changeOrigin: true,
                 secure: false,
             },
             '/rmp-gallery/': {
-                target: 'https://railmapgen.github.io/rmp-gallery',
+                target: 'https://railmapgen.github.io',
                 changeOrigin: true,
                 secure: false,
             },
-            // '/info.json': {
-
-            // },
         },
     },
     test: {
