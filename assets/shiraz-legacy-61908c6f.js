@@ -1,1 +1,0 @@
-System.register(["./index-legacy-8eb2fff9.js","./chakra-legacy-dc6bd5f4.js","./react-legacy-d8ea2a5a.js"],(function(e,a){"use strict";var n;return{setters:[function(e){n=e.aj},null,null],execute:function(){e("default",[{id:"shiraz1",colour:"#ea1d23",fg:n.white,name:{en:"Line 1","zh-Hans":"1号线","zh-Hant":"1號線",fa:"خط ۱"}}])}}}));

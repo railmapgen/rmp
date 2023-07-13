@@ -1,0 +1,1 @@
+System.register(["./index-legacy-dcecdc0d.js","./chakra-legacy-53b88c68.js","./react-legacy-9060605e.js"],(function(e,n){"use strict";var t;return{setters:[function(e){t=e.aj},null,null],execute:function(){e("default",[{id:"rl",colour:"#d90f03",fg:t.white,name:{en:"Red Line","zh-Hans":"红线","zh-Hant":"紅線",hi:"लाल रेखा"}}])}}}));

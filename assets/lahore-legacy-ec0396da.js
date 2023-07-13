@@ -1,1 +1,0 @@
-System.register(["./index-legacy-8eb2fff9.js","./chakra-legacy-dc6bd5f4.js","./react-legacy-d8ea2a5a.js"],(function(e,n){"use strict";var t;return{setters:[function(e){t=e.aj},null,null],execute:function(){e("default",[{id:"orange",colour:"#f66725",fg:t.white,name:{en:"Orange Line","zh-Hans":"橙线","zh-Hant":"橙線"}}])}}}));
