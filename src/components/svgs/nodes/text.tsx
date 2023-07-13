@@ -18,8 +18,13 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
     } = attrs ?? defaultTextAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
-    const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
-    React.useEffect(() => setBBox(textLineEl.current!.getBBox()), [content, setBBox, textLineEl]);
+    const [bBox, setBBox] = React.useState({ x: 0, y: 0, width: 32, height: 16 } as DOMRect);
+    React.useEffect(
+        () => setBBox(textLineEl.current!.getBBox()),
+        // Watch content to get update of bBox's width and height.
+        // Watch textAnchor and dominantBaseline to get update of bBox's x and y.
+        [content, textAnchor, dominantBaseline, setBBox, textLineEl]
+    );
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
