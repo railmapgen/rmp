@@ -140,6 +140,13 @@
                     "width": "车站宽度",
                     "rotate": "车站旋转角度"
                 },
+                "shmetroOsysi": {
+                    "displayName": "上海地铁转乘车站",
+                    "nameZh": "中文名称",
+                    "nameEn": "英文名称",
+                    "nameOffsetX": "名称横向偏移",
+                    "nameOffsetY": "名称纵向偏移"
+                },
                 "gzmtrBasic": {
                     "displayName": "广州地铁基本车站",
                     "nameZh": "中文名称",

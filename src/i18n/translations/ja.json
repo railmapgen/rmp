@@ -140,6 +140,13 @@
                     "width": "アイコンの幅",
                     "rotate": "アイコンの回転"
                 },
+                "shmetroOsysi": {
+                    "displayName": "上海地下鉄の系統外乗り換え駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY"
+                },
                 "gzmtrBasic": {
                     "displayName": "広州地下鉄基本駅",
                     "nameZh": "中国語の駅名",

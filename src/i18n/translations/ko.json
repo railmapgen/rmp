@@ -140,6 +140,13 @@
                     "width": "역 폭",
                     "rotate": "역회전각도"
                 },
+                "shmetroOsysi": {
+                    "displayName": "상하이 지하철 시스템 외환승 역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동"
+                },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
                     "nameZh": "한자 명칭",

@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 11;
+export const CURRENT_VERSION = 12;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -249,4 +249,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 11, graph: graph.export() });
     },
+    11: param =>
+        // Bump save version to support Shanghai Metro out-of-system interchange station.
+        JSON.stringify({ ...JSON.parse(param), version: 12 }),
 };
