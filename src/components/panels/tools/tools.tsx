@@ -102,18 +102,20 @@ const ToolsPanel = () => {
                                 onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
                             />
 
-                            {Object.values(LinePathType).map(type => (
-                                <Button
-                                    key={type}
-                                    aria-label={type}
-                                    leftIcon={linePaths[type].icon}
-                                    onClick={() => handleLine(type)}
-                                    variant={mode === `line-${type}` ? 'solid' : 'outline'}
-                                    sx={buttonStyle}
-                                >
-                                    {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
-                                </Button>
-                            ))}
+                            {Object.values(LinePathType)
+                                .filter(type => type !== LinePathType.Simple)
+                                .map(type => (
+                                    <Button
+                                        key={type}
+                                        aria-label={type}
+                                        leftIcon={linePaths[type].icon}
+                                        onClick={() => handleLine(type)}
+                                        variant={mode === `line-${type}` ? 'solid' : 'outline'}
+                                        sx={buttonStyle}
+                                    >
+                                        {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
+                                    </Button>
+                                ))}
                             <Button
                                 aria-label={MiscNodeType.Virtual}
                                 leftIcon={miscNodes[MiscNodeType.Virtual].icon}
