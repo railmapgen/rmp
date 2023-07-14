@@ -20,8 +20,7 @@ export default function ThemeButton(props: ThemeButtonProps) {
             aria-label={t('Color')}
             color={theme[3]}
             bg={theme[2]}
-            size="lg"
-            style={{ minHeight: 50, minWidth: 50, maxHeight: 50, maxWidth: 50 }}
+            size="md"
             _hover={{ bg: ColourUtil.fade(theme[2], 0.7) }}
             icon={<MdCircle />}
             onClick={onClick}
