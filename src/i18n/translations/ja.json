@@ -100,7 +100,9 @@
                     "lineHeight": "行の高さ",
                     "textAnchor": "テキストのアンカー",
                     "dominantBaseline": "ドミナントベースライン",
-                    "language": "言語でのフォントファミリー"
+                    "language": "言語でのフォントファミリー",
+                    "rotate": "回転",
+                    "italic": "イタリック体"
                 }
             },
             "station": {

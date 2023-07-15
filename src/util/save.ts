@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 12;
+export const CURRENT_VERSION = 13;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -252,4 +252,20 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     11: param =>
         // Bump save version to support Shanghai Metro out-of-system interchange station.
         JSON.stringify({ ...JSON.parse(param), version: 12 }),
+    12: param => {
+        // Bump save version to add rotate and italic in text misc node.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.Text)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.rotate = 0;
+                attr.italic = false;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 13, graph: graph.export() });
+    },
 };

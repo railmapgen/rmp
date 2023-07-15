@@ -100,7 +100,9 @@
                     "lineHeight": "행고도",
                     "textAnchor": "글자 앵커",
                     "dominantBaseline": "현성 바셀린",
-                    "language": "언어로 된 글꼴 종류"
+                    "language": "언어로 된 글꼴 종류",
+                    "rotate": "회전",
+                    "italic": "이탤릭체"
                 }
             },
             "station": {

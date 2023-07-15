@@ -100,7 +100,9 @@
                     "lineHeight": "Line height",
                     "textAnchor": "Text anchor",
                     "dominantBaseline": "Dominant baseline",
-                    "language": "Font family in which language"
+                    "language": "Font family in which language",
+                    "rotate": "Rotation",
+                    "italic": "Italic"
                 }
             },
             "station": {
@@ -128,7 +130,7 @@
                     "displayName": "Shanghai Metro basic station (2020)",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
-                    "rotate": "Icon Rotation"
+                    "rotate": "Icon rotation"
                 },
                 "shmetroInt": {
                     "displayName": "Shanghai Metro interchange station",
