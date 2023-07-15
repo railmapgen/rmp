@@ -2,6 +2,7 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { Rotate } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -15,11 +16,18 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         dominantBaseline = defaultTextAttributes.dominantBaseline,
         language = defaultTextAttributes.language,
         color = defaultTextAttributes.color,
+        rotate = defaultTextAttributes.rotate,
+        italic = defaultTextAttributes.italic,
     } = attrs ?? defaultTextAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
-    const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
-    React.useEffect(() => setBBox(textLineEl.current!.getBBox()), [content, setBBox, textLineEl]);
+    const [bBox, setBBox] = React.useState({ x: 0, y: 0, width: 32, height: 16 } as DOMRect);
+    React.useEffect(
+        () => setBBox(textLineEl.current!.getBBox()),
+        // Watch content to get update of bBox's width and height.
+        // Watch textAnchor and dominantBaseline to get update of bBox's x and y.
+        [content, textAnchor, dominantBaseline, setBBox, textLineEl]
+    );
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -36,7 +44,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
+            <g id={id} transform={`translate(${x}, ${y})rotate(${rotate})`}>
                 {/* This hint rect is hard to remove in exporting. */}
                 {/* <rect
                     fill="gray"
@@ -49,13 +57,14 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                 <MultilineText
                     ref={textLineEl}
                     text={content.split('\n')}
+                    lineHeight={lineHeight}
+                    grow="down" // this will be ignored
                     className={`rmp-name-station rmp-name__${language}`}
                     fontSize={fontSize}
-                    lineHeight={lineHeight}
                     textAnchor={textAnchor}
                     dominantBaseline={dominantBaseline}
                     fill={color[2]}
-                    grow="down" // this will be ignored
+                    fontStyle={italic ? 'italic' : 'normal'}
                 />
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
@@ -83,6 +92,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
             dominantBaseline,
             language,
             color,
+            rotate,
+            italic,
             bBox,
             onPointerDown,
             onPointerMove,
@@ -101,6 +112,11 @@ export interface TextAttributes extends AttributesWithColor {
     textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
     dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
     language: string;
+    /**
+     * 0 <= rotate <= 360
+     */
+    rotate: number;
+    italic: boolean;
 }
 
 const defaultTextAttributes: TextAttributes = {
@@ -111,6 +127,8 @@ const defaultTextAttributes: TextAttributes = {
     dominantBaseline: 'middle',
     language: 'en',
     color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],
+    rotate: 0,
+    italic: false,
 };
 
 const TextFields = [
@@ -193,6 +211,33 @@ const TextFields = [
             const attrs = attrs_ ?? defaultTextAttributes;
             // set value
             attrs.language = val.toString();
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'select',
+        label: 'panel.details.node.text.rotate',
+        value: (attrs?: TextAttributes) => attrs?.rotate ?? defaultTextAttributes.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultTextAttributes;
+            // set value
+            attrs.rotate = Number(val) as Rotate;
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'switch',
+        label: 'panel.details.node.text.italic',
+        isChecked: (attrs?: TextAttributes) => attrs?.italic ?? defaultTextAttributes.italic,
+        onChange: (val: boolean, attrs_: TextAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultTextAttributes;
+            // set value
+            attrs.italic = val;
             // return modified attrs
             return attrs;
         },

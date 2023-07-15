@@ -28,14 +28,17 @@ import ThemeButton from '../theme-button';
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
     p: 0,
-    pl: '5px',
-    pr: '5px',
-    maxH: 50,
-    minH: 50,
+    w: '100%',
+    h: 10,
+};
+
+const accordionButtonStyle: SystemStyleObject = {
+    p: 2.5,
+    h: 10,
 };
 
 const accordionPanelStyle: SystemStyleObject = {
-    p: '0',
+    p: 0,
     display: 'flex',
     flexDirection: 'column',
 };
@@ -57,7 +60,7 @@ const ToolsPanel = () => {
         <Flex
             flexShrink="0"
             direction="column"
-            width={isToolsExpanded ? 400 : 50}
+            width={isToolsExpanded ? 450 : 10}
             maxWidth="100%"
             height="100%"
             bg={bgColor}
@@ -82,10 +85,12 @@ const ToolsPanel = () => {
             <Flex className="tools" overflow="auto">
                 <Accordion width="100%" allowMultiple defaultIndex={[0, 1, 2]}>
                     <AccordionItem>
-                        <AccordionButton sx={{ minH: 50, maxH: 50 }}>
-                            <Box as="span" flex="1" textAlign="left">
-                                {isToolsExpanded ? t('panel.tools.section.lineDrawing') : undefined}
-                            </Box>
+                        <AccordionButton sx={accordionButtonStyle}>
+                            {isToolsExpanded && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.lineDrawing')}
+                                </Box>
+                            )}
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
@@ -102,18 +107,20 @@ const ToolsPanel = () => {
                                 onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
                             />
 
-                            {Object.values(LinePathType).map(type => (
-                                <Button
-                                    key={type}
-                                    aria-label={type}
-                                    leftIcon={linePaths[type].icon}
-                                    onClick={() => handleLine(type)}
-                                    variant={mode === `line-${type}` ? 'solid' : 'outline'}
-                                    sx={buttonStyle}
-                                >
-                                    {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
-                                </Button>
-                            ))}
+                            {Object.values(LinePathType)
+                                .filter(type => type !== LinePathType.Simple)
+                                .map(type => (
+                                    <Button
+                                        key={type}
+                                        aria-label={type}
+                                        leftIcon={linePaths[type].icon}
+                                        onClick={() => handleLine(type)}
+                                        variant={mode === `line-${type}` ? 'solid' : 'outline'}
+                                        sx={buttonStyle}
+                                    >
+                                        {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
+                                    </Button>
+                                ))}
                             <Button
                                 aria-label={MiscNodeType.Virtual}
                                 leftIcon={miscNodes[MiscNodeType.Virtual].icon}
@@ -127,10 +134,12 @@ const ToolsPanel = () => {
                     </AccordionItem>
 
                     <AccordionItem>
-                        <AccordionButton sx={{ minH: 50, maxH: 50 }}>
-                            <Box as="span" flex="1" textAlign="left">
-                                {isToolsExpanded ? t('panel.tools.section.stations') : undefined}
-                            </Box>
+                        <AccordionButton sx={accordionButtonStyle}>
+                            {isToolsExpanded && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.lineDrawing')}
+                                </Box>
+                            )}
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
@@ -150,10 +159,12 @@ const ToolsPanel = () => {
                     </AccordionItem>
 
                     <AccordionItem>
-                        <AccordionButton sx={{ minH: 50, maxH: 50 }}>
-                            <Box as="span" flex="1" textAlign="left">
-                                {isToolsExpanded ? t('panel.tools.section.miscellaneousNodes') : undefined}
-                            </Box>
+                        <AccordionButton sx={accordionButtonStyle}>
+                            {isToolsExpanded && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.lineDrawing')}
+                                </Box>
+                            )}
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>

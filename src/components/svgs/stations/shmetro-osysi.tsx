@@ -27,13 +27,13 @@ const NAME_DY_SH_BASIC = {
     },
 };
 
-const ShmetroBasicStation = (props: StationComponentProps) => {
+const ShmetroOsysiStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultShmetroBasicStationAttributes.nameOffsetX,
-        nameOffsetY = defaultShmetroBasicStationAttributes.nameOffsetY,
-    } = attrs[StationType.ShmetroBasic] ?? defaultShmetroBasicStationAttributes;
+        nameOffsetX = defaultShmetroOsysiStationAttributes.nameOffsetX,
+        nameOffsetY = defaultShmetroOsysiStationAttributes.nameOffsetY,
+    } = attrs[StationType.ShmetroOutOfSystemInt] ?? defaultShmetroOsysiStationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -58,12 +58,14 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})`}>
+                <circle r={5} stroke="#393332" strokeWidth="1.33" fill="white" />
+                <circle r={2.3} stroke="#393332" strokeWidth="1.33" fill="white" />
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <circle
                     id={`stn_core_${id}`}
-                    r={5}
-                    stroke="#393332"
-                    strokeWidth="1.33"
+                    r={5 + 1.33 / 2}
                     fill="white"
+                    fillOpacity="0"
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
@@ -95,28 +97,28 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * ShmetroBasicStation specific props.
+ * ShmetroOsysiStation specific props.
  */
-export interface ShmetroBasicStationAttributes extends StationAttributes {
+export interface ShmetroOsysiStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
 }
 
-const defaultShmetroBasicStationAttributes: ShmetroBasicStationAttributes = {
+const defaultShmetroOsysiStationAttributes: ShmetroOsysiStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
 };
 
-const shmetroBasicStationFields = [
+const shmetroOsysiStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroBasic.nameZh',
-        value: (attrs?: ShmetroBasicStationAttributes) =>
-            (attrs ?? defaultShmetroBasicStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
+        label: 'panel.details.station.shmetroOsysi.nameZh',
+        value: (attrs?: ShmetroOsysiStationAttributes) =>
+            (attrs ?? defaultShmetroOsysiStationAttributes).names[0].replaceAll('\\', '\n'),
+        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
+            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
             // set value
             attrs.names[0] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
@@ -125,12 +127,12 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroBasic.nameEn',
-        value: (attrs?: ShmetroBasicStationAttributes) =>
-            (attrs ?? defaultShmetroBasicStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
+        label: 'panel.details.station.shmetroOsysi.nameEn',
+        value: (attrs?: ShmetroOsysiStationAttributes) =>
+            (attrs ?? defaultShmetroOsysiStationAttributes).names[1].replaceAll('\\', '\n'),
+        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
+            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
             // set value
             attrs.names[1] = val.toString().replaceAll('\n', '\\');
             // return modified attrs
@@ -139,13 +141,13 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroBasic.nameOffsetX',
-        value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).nameOffsetX,
+        label: 'panel.details.station.shmetroOsysi.nameOffsetX',
+        value: (attrs?: ShmetroOsysiStationAttributes) => (attrs ?? defaultShmetroOsysiStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: ShmetroBasicStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
+        disabledOptions: (attrs?: ShmetroOsysiStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
+        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
+            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
             // set value
             attrs.nameOffsetX = val as NameOffsetX;
             // return modified attrs
@@ -154,13 +156,13 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroBasic.nameOffsetY',
-        value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).nameOffsetY,
+        label: 'panel.details.station.shmetroOsysi.nameOffsetY',
+        value: (attrs?: ShmetroOsysiStationAttributes) => (attrs ?? defaultShmetroOsysiStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: ShmetroBasicStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
+        disabledOptions: (attrs?: ShmetroOsysiStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
+        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasicStationAttributes;
+            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
             // set value
             attrs.nameOffsetY = val as NameOffsetY;
             // return modified attrs
@@ -169,21 +171,22 @@ const shmetroBasicStationFields = [
     },
 ];
 
-const shmetroBasicStationIcon = (
+const shmetroOsysiStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.67" fill="white" />
+        <circle cx="12" cy="12" r="4.6" stroke="currentColor" strokeWidth="2.67" fill="white" />
     </svg>
 );
 
-const shmetroBasicStation: Station<ShmetroBasicStationAttributes> = {
-    component: ShmetroBasicStation,
-    icon: shmetroBasicStationIcon,
-    defaultAttrs: defaultShmetroBasicStationAttributes,
+const shmetroOsysiStation: Station<ShmetroOsysiStationAttributes> = {
+    component: ShmetroOsysiStation,
+    icon: shmetroOsysiStationIcon,
+    defaultAttrs: defaultShmetroOsysiStationAttributes,
     // TODO: fix this
     // @ts-ignore-error
-    fields: shmetroBasicStationFields,
+    fields: shmetroOsysiStationFields,
     metadata: {
-        displayName: 'panel.details.station.shmetroBasic.displayName',
+        displayName: 'panel.details.station.shmetroOsysi.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -191,4 +194,4 @@ const shmetroBasicStation: Station<ShmetroBasicStationAttributes> = {
     },
 };
 
-export default shmetroBasicStation;
+export default shmetroOsysiStation;

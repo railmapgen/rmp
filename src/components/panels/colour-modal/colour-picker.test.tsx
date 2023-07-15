@@ -1,11 +1,12 @@
-import React from 'react';
-import ColourPicker from './colour-picker';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { act } from 'react-dom/test-utils';
-import { render } from '../../../test-utils';
 import { fireEvent, screen } from '@testing-library/react';
+import React from 'react';
+import { act } from 'react-dom/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render } from '../../../test-utils';
+import ColourPicker from './colour-picker';
 
-jest.doMock('@railmapgen/rmg-palette-resources/palettes/hongkong.js', () => ({
+vi.doMock('@railmapgen/rmg-palette-resources/palettes/hongkong.js', () => ({
     __esModule: true,
     default: [
         {
@@ -28,7 +29,7 @@ jest.doMock('@railmapgen/rmg-palette-resources/palettes/hongkong.js', () => ({
     ],
 }));
 
-jest.doMock('@railmapgen/rmg-palette-resources/palettes/guangzhou.js', () => ({
+vi.doMock('@railmapgen/rmg-palette-resources/palettes/guangzhou.js', () => ({
     __esModule: true,
     default: [
         {
@@ -52,14 +53,14 @@ jest.doMock('@railmapgen/rmg-palette-resources/palettes/guangzhou.js', () => ({
 }));
 
 const mockCallbacks = {
-    onChange: jest.fn(),
+    onChange: vi.fn(),
 };
 
 const setup = () => render(<ColourPicker city={CityCode.Hongkong} {...mockCallbacks} />);
 
 describe('ColourPicker', () => {
     afterEach(() => {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
     });
 
     it('Can render line badges inside menu item as expected', async () => {
@@ -68,8 +69,28 @@ describe('ColourPicker', () => {
             await Promise.resolve();
         });
 
+        await screen.findByText('Tsuen Wan Line');
         expect(screen.getByText('Tsuen Wan Line')).toHaveStyle({ background: '#E2231A', color: '#FFFFFF' });
         expect(screen.getByText('Kwun Tong Line')).toHaveStyle({ background: '#00AF41', color: '#000000' });
+    });
+
+    it('Can handle invalid city prop as expected', async () => {
+        const { rerender } = setup();
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        fireEvent.focus(screen.getByRole('combobox'));
+        await screen.findByRole('dialog');
+
+        expect(screen.getByRole('menuitem', { name: 'Tsuen Wan Line' })).toBeInTheDocument();
+
+        rerender(<ColourPicker city={undefined} {...mockCallbacks} />);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
     });
 
     it('Can search item by other languages and select item as expected', async () => {
@@ -81,16 +102,16 @@ describe('ColourPicker', () => {
         fireEvent.focus(screen.getByRole('combobox'));
         await screen.findByRole('dialog');
 
-        jest.useFakeTimers();
+        vi.useFakeTimers();
         fireEvent.change(screen.getByRole('combobox'), { target: { value: '荃灣' } });
         await act(async () => {
-            jest.advanceTimersByTime(1000);
+            vi.advanceTimersByTime(1000);
         });
         expect(screen.getByRole('menuitem', { name: 'Tsuen Wan Line' })).toBeInTheDocument();
 
         fireEvent.change(screen.getByRole('combobox'), { target: { value: '觀塘' } });
         await act(async () => {
-            jest.advanceTimersByTime(1000);
+            vi.advanceTimersByTime(1000);
         });
         expect(screen.getByRole('menuitem', { name: 'Kwun Tong Line' })).toBeInTheDocument();
 
@@ -115,24 +136,5 @@ describe('ColourPicker', () => {
 
         expect(screen.getByText('Line 1')).toBeInTheDocument();
         expect(screen.getByText('Line 2')).toBeInTheDocument();
-    });
-
-    it('Can handle invalid city prop as expected', async () => {
-        const { rerender } = setup();
-        await act(async () => {
-            await Promise.resolve();
-        });
-
-        fireEvent.focus(screen.getByRole('combobox'));
-        await screen.findByRole('dialog');
-
-        expect(screen.getByRole('menuitem', { name: 'Tsuen Wan Line' })).toBeInTheDocument();
-
-        rerender(<ColourPicker city={undefined} {...mockCallbacks} />);
-        await act(async () => {
-            await Promise.resolve();
-        });
-
-        expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
     });
 });

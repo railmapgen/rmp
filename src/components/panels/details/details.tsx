@@ -36,7 +36,7 @@ const DetailsPanel = () => {
 
     const handleClose = () => dispatch(clearSelected());
     const handleDuplicate = (selectedFirst: string) => {
-        const allAttr = JSON.parse(JSON.stringify(graph.current.getNodeAttributes(selectedFirst))) as NodeAttributes;
+        const allAttr = structuredClone(graph.current.getNodeAttributes(selectedFirst));
         allAttr.x += 50;
         allAttr.y += 50;
         const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;

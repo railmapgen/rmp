@@ -1,10 +1,11 @@
-import React from 'react';
-import { LineIcon } from './line-icon';
-import { render } from '../../../../test-utils';
-import { screen } from '@testing-library/react';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { screen } from '@testing-library/react';
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from '../../../../test-utils';
+import { LineIcon } from './line-icon';
 
-const mockGetBBox = jest.fn();
+const mockGetBBox = vi.fn();
 (SVGElement.prototype as any).getBBox = mockGetBBox;
 
 describe('GZMTRLineIcon', () => {

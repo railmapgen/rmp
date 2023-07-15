@@ -6,8 +6,8 @@ Rail Map Painter is an open-source React project aimed at making the process of 
 
 - [Features](#features)
 - [Getting Started](#getting-started)
-  - [Online Version](#online-version)
-  - [Offline Electron Package](#offline-electron-package)
+  - [Online Website](#online-website)
+  - [Offline Applications](#offline-applications)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
@@ -18,7 +18,7 @@ Rail Map Painter is an open-source React project aimed at making the process of 
 - Drag-and-drop stations from a large resource library of icons from different cities
 - Connect stations using 135-degree rounded corner or perpendicular lines
 - Export your creations as SVG, PNG, or JSON files
-- Available as a web app hosted on GitHub Pages and as an offline Electron package
+- Available as a web app hosted on GitHub Pages and as an offline applications
 
 ## Projects selected
 
@@ -40,13 +40,13 @@ Rail Map Painter is an open-source React project aimed at making the process of 
 
 ## Getting Started
 
-### Online Version
+### Online Website
 
-Simply visit the [Rail Map Painter](https://railmapgen.github.io/rmp/) to start designing your rail map.
+Simply visit the [Rail Map Painter](https://railmapgen.github.io/?app=rmp) to start designing your rail map.
 
-### Offline Electron Package
+### Offline Applications
 
-Download the prebuilt Electron package from the [releases page](https://github.com/railmapgen/rmp/releases).
+Download the offline applications from the Rail Map Toolkit [releases page](https://github.com/railmapgen/railmapgen.github.io/releases).
 
 ## Usage
 
@@ -58,7 +58,7 @@ Download the prebuilt Electron package from the [releases page](https://github.c
 
 ## Contributing
 
-We welcome contributions to the Rail Map Painter project! Please read our [Contributing Guide](./CONTRIBUTING.md) for more information.
+We welcome contributions to the Rail Map Painter project! Please read our [Contributing Guide](./CONTRIBUTING.md) for more information on reporting issues and developing features.
 
 ## License
 

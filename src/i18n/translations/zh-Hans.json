@@ -7,6 +7,7 @@
     "close": "关闭",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
+    "meetRMP3": "遇见地铁线路图绘制器3！从画廊中载入全球城市的模板亦或是上传你自己的作品。",
 
     "colorModal": {
         "title": "选择颜色",
@@ -99,7 +100,9 @@
                     "lineHeight": "行高度",
                     "textAnchor": "文字锚点",
                     "dominantBaseline": "显性基线",
-                    "language": "哪个语言的字体系列"
+                    "language": "哪个语言的字体系列",
+                    "rotate": "旋转",
+                    "italic": "斜体"
                 }
             },
             "station": {
@@ -138,6 +141,13 @@
                     "height": "车站高度",
                     "width": "车站宽度",
                     "rotate": "车站旋转角度"
+                },
+                "shmetroOsysi": {
+                    "displayName": "上海地铁转乘车站",
+                    "nameZh": "中文名称",
+                    "nameEn": "英文名称",
+                    "nameOffsetX": "名称横向偏移",
+                    "nameOffsetY": "名称纵向偏移"
                 },
                 "gzmtrBasic": {
                     "displayName": "广州地铁基本车站",
@@ -343,7 +353,7 @@
         "about": {
             "title": "关于",
             "rmp": "地铁线路图绘制器",
-            "railmapgen": "一个railmapgen项目",
+            "railmapgen": "一个线路图工具包项目",
             "desc": "通过自由拖动来自不同城市的车站并以 90 或 135 度圆角线段将它们连接起来，设计您自己的铁路地图！",
             "content1": "谨以此纪念我们曾拥有的自由与平等。",
             "content2": "06/01/2022于上海",
@@ -355,7 +365,10 @@
             "github": "项目仓库",
             "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",
             "slack": "Slack群组",
-            "slackContent": "在这些Slack频道中讨论!"
+            "slackContent": "在这些Slack频道中讨论!",
+            "linkExchange": "友情链接",
+            "guidaoTransit": "贵道蕉通",
+            "guidaoTransitContent": "想了解更多关于上海轨道交通的信息吗？关注这个微信账号！"
         }
     }
 }

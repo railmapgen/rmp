@@ -17,8 +17,8 @@ export default function OpenActions() {
     const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
-    const [isGalleryModalOpen, setIsGalleryModalOpen] = React.useState(false);
     const [isRmgParamAppClipOpen, setIsRmgParamAppClipOpen] = React.useState(false);
+    const [isOpenGallery, setIsOpenGallery] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(setRefreshNodes());
@@ -104,7 +104,7 @@ export default function OpenActions() {
                     {t('header.open.projectRMG')}
                 </MenuItem>
 
-                <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsGalleryModalOpen(true)}>
+                <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsOpenGallery(true)}>
                     {t('header.open.gallery')}
                     <Badge ml="1" colorScheme="green">
                         New
@@ -117,7 +117,7 @@ export default function OpenActions() {
                 onClose={() => setIsRmgParamAppClipOpen(false)}
                 onImport={handleImportRMGProject}
             />
-            <RmpGalleryAppClip isOpen={isGalleryModalOpen} onClose={() => setIsGalleryModalOpen(false)} />
+            <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
         </Menu>
     );
 }

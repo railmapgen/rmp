@@ -5,10 +5,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 
-const PageHeader = React.lazy(() => import(/* webpackChunkName: "WindowHeader" */ './page-header/page-header'));
-const ToolsPanel = React.lazy(() => import(/* webpackChunkName: "ToolsPanel" */ './panels/tools/tools'));
-const SvgWrapper = React.lazy(() => import(/* webpackChunkName: "SvgWrapper" */ './svg-wrapper'));
-const DetailsPanel = React.lazy(() => import(/* webpackChunkName: "DetailsPanel" */ './panels/details/details'));
+const PageHeader = React.lazy(() => import('./page-header/page-header'));
+const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
+const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
+const DetailsPanel = React.lazy(() => import('./panels/details/details'));
 
 export default function AppRoot() {
     const { t } = useTranslation();
@@ -20,6 +20,10 @@ export default function AppRoot() {
             setIsShowRMTMessage(true);
         }
     }, []);
+
+    const d = new Date();
+    const tag = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}01`;
+    const ver = `${String(d.getFullYear()).slice(-2)}.${d.getMonth() + 1}.1`;
 
     return (
         <RmgThemeProvider>
@@ -55,10 +59,33 @@ export default function AppRoot() {
                                     Gitlab
                                 </a>{' '}
                                 or the{' '}
-                                <a href="https://github.com/railmapgen/rmp/releases" target="_blank" rel="noreferrer">
+                                <a
+                                    href="https://github.com/railmapgen/railmapgen.github.io/releases"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
                                     offline application
                                 </a>{' '}
-                                :)
+                                .
+                                <br />
+                                <br />
+                                Offline applications via ghproxy.com{' '}
+                                <a
+                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
+                                >
+                                    Windows
+                                </a>{' '}
+                                <a
+                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64.dmg`}
+                                >
+                                    MacOS
+                                </a>{' '}
+                                <a
+                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
+                                >
+                                    Linux
+                                </a>{' '}
+                                if you are in mainland China :)
                             </p>
                         </>
                     }

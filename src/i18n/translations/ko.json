@@ -7,6 +7,7 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
+    "meetRMP3": "지하철 지도 화가 3를 만나보세요! 갤러리에서 전 세계의 도시 템플릿을 로드하거나 직접 업로드하세요.",
 
     "colorModal": {
         "title": "색깔 선택",
@@ -99,7 +100,9 @@
                     "lineHeight": "행고도",
                     "textAnchor": "글자 앵커",
                     "dominantBaseline": "현성 바셀린",
-                    "language": "언어로 된 글꼴 종류"
+                    "language": "언어로 된 글꼴 종류",
+                    "rotate": "회전",
+                    "italic": "이탤릭체"
                 }
             },
             "station": {
@@ -138,6 +141,13 @@
                     "height": "역 높이",
                     "width": "역 폭",
                     "rotate": "역회전각도"
+                },
+                "shmetroOsysi": {
+                    "displayName": "상하이 지하철 시스템 외환승 역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동"
                 },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
@@ -343,7 +353,7 @@
         "about": {
             "title": "대함",
             "rmp": "지하철 노선도 그리기",
-            "railmapgen": "railmapgen 프로젝트",
+            "railmapgen": "철도 지도 툴킷 프로젝트 노선도 툴킷",
             "desc": "다양한 도시의 역을 자유롭게 끌어서 90도 또는 135도의 둥근 모서리 선으로 연결함으로써 여러분만의 철도 지도를 디자인해요!",
             "content1": "우리가 가졌던 자유와 평등을 기념한다.",
             "content2": "2022년 6월 1일 상해",
@@ -355,7 +365,10 @@
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
             "slack": "슬랙 그룹",
-            "slackContent": "이 슬랙 채널에서 채팅해요!"
+            "slackContent": "이 슬랙 채널에서 채팅해요!",
+            "linkExchange": "연결",
+            "guidaoTransit": "Guidao Transit",
+            "guidaoTransitContent": "상하이 철도 운송에 대해 더 알고 싶으십니까? 이 WeChat 계정을 팔로우하세요! (중국어 전용)"
         }
     }
 }

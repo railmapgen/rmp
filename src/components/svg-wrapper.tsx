@@ -50,7 +50,7 @@ const SvgWrapper = () => {
     // If later other nodes want to hook some special logic like mtr fonts,
     // loadMTRFonts(nodeExists: { [key in NodeType]: boolean }) is required and so do other hooks.
     React.useEffect(() => {
-        const nodeExistsCopy = JSON.parse(JSON.stringify(nodeExists));
+        const nodeExistsCopy = structuredClone(nodeExists);
         graph.current.forEachNode(node => {
             const type = graph.current.getNodeAttribute(node, 'type');
             nodeExistsCopy[type] = true;
@@ -62,7 +62,7 @@ const SvgWrapper = () => {
             link = document.createElement('link');
             link.rel = 'stylesheet';
             link.id = 'fonts_mtr';
-            link.href = process.env.PUBLIC_URL + `/styles/fonts_mtr.css`;
+            link.href = import.meta.env.BASE_URL + `/styles/fonts_mtr.css`;
             document.head.append(link);
         }
         return () => {
@@ -82,7 +82,7 @@ const SvgWrapper = () => {
             const type = mode.slice(8) as StationType;
 
             // deep copy to prevent mutual reference
-            const attr = JSON.parse(JSON.stringify(stations[type].defaultAttrs));
+            const attr = structuredClone(stations[type].defaultAttrs);
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
 
@@ -108,7 +108,7 @@ const SvgWrapper = () => {
                 y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
                 type,
                 // deep copy to prevent mutual reference
-                [type]: JSON.parse(JSON.stringify(miscNodes[type].defaultAttrs)),
+                [type]: structuredClone(miscNodes[type].defaultAttrs),
             });
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });

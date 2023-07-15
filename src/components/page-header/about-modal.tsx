@@ -1,5 +1,3 @@
-import rmgRuntime from '@railmapgen/rmg-runtime';
-import { useTranslation } from 'react-i18next';
 import {
     Avatar,
     Box,
@@ -17,6 +15,9 @@ import {
     Text,
     VStack,
 } from '@chakra-ui/react';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import GithubIcon from '../../images/github-mark.svg';
 import SlackIcon from '../../images/slack-mark.svg';
 
@@ -24,6 +25,8 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
     const appVersion = rmgRuntime.getAppVersion();
+
+    const [isGuidaoTransitQRCodeOpen, setIsGuidaoTransitQRCodeOpen] = React.useState(false);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
@@ -34,7 +37,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalBody paddingBottom={10}>
                     <Flex direction="row">
-                        <Image boxSize="128px" src={process.env.PUBLIC_URL + '/logo192.png'} />
+                        <Image boxSize="128px" src={import.meta.env.BASE_URL + '/logo192.png'} />
                         <Flex direction="column" width="100%" alignItems="center" justifyContent="center">
                             <Text fontSize="xl" as="b">
                                 {t('header.about.rmp')}
@@ -141,6 +144,46 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Text>
                             </TagLabel>
                         </Tag>
+                    </VStack>
+
+                    <Heading as="h5" size="sm" mt={3} mb={2}>
+                        {t('header.about.linkExchange')}
+                    </Heading>
+
+                    <VStack>
+                        <Tag size="lg" w="85%" onClick={() => setIsGuidaoTransitQRCodeOpen(true)} cursor="pointer">
+                            <Avatar
+                                src={import.meta.env.BASE_URL + '/images/guidaoTransit.jpg'}
+                                size="lg"
+                                my={2}
+                                ml={-1}
+                                mr={2}
+                            />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    {t('header.about.guidaoTransit')}
+                                </Text>
+                                <Text fontSize="sm">{t('header.about.guidaoTransitContent')}</Text>
+                            </TagLabel>
+                        </Tag>
+                        <Modal
+                            size="6xl"
+                            isOpen={isGuidaoTransitQRCodeOpen}
+                            onClose={() => setIsGuidaoTransitQRCodeOpen(false)}
+                        >
+                            <ModalOverlay />
+                            <ModalContent>
+                                <ModalHeader>{t('header.about.guidaoTransit')}</ModalHeader>
+                                <ModalCloseButton />
+                                <ModalBody paddingBottom={10}>
+                                    <Image
+                                        width="1080"
+                                        height="304"
+                                        src={import.meta.env.BASE_URL + '/images/guidaoTransitQRCode.png'}
+                                    />
+                                </ModalBody>
+                            </ModalContent>
+                        </Modal>
                     </VStack>
                 </ModalBody>
             </ModalContent>
