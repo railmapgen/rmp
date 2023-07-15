@@ -84,6 +84,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                         lineHeight={LINE_HEIGHT.zh}
                         grow="up"
                         className="rmp-name__zh"
+                        baseOffset={1}
                     />
                     <MultilineText
                         text={names[1].split('\\')}
@@ -91,6 +92,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                         lineHeight={LINE_HEIGHT.en}
                         grow="down"
                         className="rmp-name__en"
+                        baseOffset={1}
                     />
                 </g>
             </g>
