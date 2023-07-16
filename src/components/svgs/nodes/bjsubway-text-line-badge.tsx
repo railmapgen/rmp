@@ -3,6 +3,8 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
+const MIN_WIDTH = 28.84375;
+
 const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -27,17 +29,18 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
         [id, handlePointerUp]
     );
 
+    const width = Math.max(MIN_WIDTH, bBox.width);
     const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(1.5)`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 6} height="16" rx="2" />
+            <g id={id} transform={`translate(${x}, ${y})`}>
+                <rect fill={color[2]} x="0" width={width + 4} height="16" rx="2" />
                 <g ref={textLineEl}>
                     <text
                         className="rmp-name__zh"
                         textAnchor="middle"
-                        x={(bBox.width + 6) / 2}
+                        x={(width + 4) / 2}
                         y="8"
                         fontSize="7"
                         fill={fgColor}
@@ -47,7 +50,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
                     <text
                         className="rmp-name__en"
                         textAnchor="middle"
-                        x={(bBox.width + 6) / 2}
+                        x={(width + 4) / 2}
                         y="13.5"
                         fontSize="4"
                         fill={fgColor}
@@ -60,7 +63,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
                     fill="white"
                     fillOpacity="0"
                     x="0"
-                    width={bBox.width + 3}
+                    width={width + 3}
                     height="16"
                     rx="2"
                     onPointerDown={onPointerDown}
