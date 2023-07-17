@@ -177,8 +177,8 @@ export interface DualColorAttributes extends LinePathAttributes {
 }
 
 const defaultDualColorAttributes: DualColorAttributes = {
-    colorA: [CityCode.Shanghai, 'maglevA', '#0E7572', MonoColour.white],
-    colorB: [CityCode.Shanghai, 'maglevB', '#ED6E01', MonoColour.white],
+    colorA: [CityCode.Shanghai, 'maglevA', '#008B9A', MonoColour.white],
+    colorB: [CityCode.Shanghai, 'maglevB', '#F5A74E', MonoColour.white],
 };
 
 const DualColorSwitch = () => {
