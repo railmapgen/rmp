@@ -100,7 +100,9 @@
                     "lineHeight": "行の高さ",
                     "textAnchor": "テキストのアンカー",
                     "dominantBaseline": "ドミナントベースライン",
-                    "language": "言語でのフォントファミリー"
+                    "language": "言語でのフォントファミリー",
+                    "rotate": "回転",
+                    "italic": "イタリック体"
                 }
             },
             "station": {
@@ -139,6 +141,13 @@
                     "height": "アイコンの高さ",
                     "width": "アイコンの幅",
                     "rotate": "アイコンの回転"
+                },
+                "shmetroOsysi": {
+                    "displayName": "上海地下鉄の系統外乗り換え駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY"
                 },
                 "gzmtrBasic": {
                     "displayName": "広州地下鉄基本駅",
@@ -369,7 +378,8 @@
             "contributors": "貢献者",
             "coreContributors": "主要な貢献者",
             "styleContributors": "スタイルの貢献者",
-            "203IhzElttil": "上海メトロの駅が元のデザインに合致するように熱心な作業を行ったことに感謝します。",
+            "203IhzElttil": "上海メトロの駅がオリジナルのデザインと一致するように、彼の勤勉な仕事に特別な感謝を述べます。",
+            "52PD": "北京地下鉄の駅がオリジナルのデザインと一致するように、彼の勤勉な仕事に特別な感謝を述べます。",
             "contactUs": "お問い合わせ",
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",

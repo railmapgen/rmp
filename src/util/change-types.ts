@@ -6,6 +6,7 @@ import stations from '../components/svgs/stations/stations';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import { AttributesWithColor } from '../components/panels/details/color-field';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -85,6 +86,14 @@ export const changeLinePathType = (
     graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
 };
 
+const LineStylesWithColor = [
+    LineStyleType.SingleColor,
+    LineStyleType.BjsubwaySingleColor,
+    LineStyleType.BjsubwayTram,
+    LineStyleType.MTRRaceDays,
+    LineStyleType.MTRLightRail,
+];
+
 /**
  * Change a line's style type.
  * @param graph Graph.
@@ -96,12 +105,15 @@ export const changeLineStyleType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selectedFirst: string,
     newLineStyleType: LineStyleType,
-    theme?: Theme
+    theme: Theme
 ) => {
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style') as LineStyleType;
+    const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
     graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
     const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
-    if (newLineStyleType === LineStyleType.SingleColor && theme) (newAttrs as SingleColorAttributes).color = theme;
+    if (LineStylesWithColor.includes(currentLineStyleType) && LineStylesWithColor.includes(newLineStyleType))
+        (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
+    else if (newLineStyleType === LineStyleType.SingleColor && theme) (newAttrs as SingleColorAttributes).color = theme;
     graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
     if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
     else graph.setEdgeAttribute(selectedFirst, 'zIndex', 0);

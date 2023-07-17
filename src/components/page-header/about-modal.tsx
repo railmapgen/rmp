@@ -118,6 +118,22 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Text>
                             </TagLabel>
                         </Tag>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => window.open('https://github.com/52PD', '_blank')}
+                            cursor="pointer"
+                        >
+                            <Avatar src="https://github.com/52PD.png" size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    52PD
+                                </Text>
+                                <Text fontSize="sm" mb={1}>
+                                    {t('header.about.52PD')}
+                                </Text>
+                            </TagLabel>
+                        </Tag>
                     </VStack>
 
                     <Heading as="h5" size="sm" mt={3} mb={2}>
@@ -157,7 +173,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Text>
                                 <Text fontSize="sm">{t('header.about.slackContent')}</Text>
                                 <Text fontSize="sm" as="i">
-                                    #rmg, #rmp, #palette-and-templates, #random
+                                    #rmp, #gallery, #rmg, #palette-and-templates
                                 </Text>
                             </TagLabel>
                         </Tag>

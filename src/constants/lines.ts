@@ -7,6 +7,7 @@ import { SingleColorAttributes } from '../components/svgs/lines/styles/single-co
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
+import { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
 import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
 import { RiverAttributes } from '../components/svgs/lines/styles/river';
@@ -32,6 +33,7 @@ export enum LineStyleType {
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
     ChinaRailway = 'china-railway',
+    BjsubwaySingleColor = 'bjsubway-single-color',
     BjsubwayTram = 'bjsubway-tram',
     DualColor = 'dual-color',
     River = 'river',
@@ -46,6 +48,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
+    [LineStyleType.BjsubwaySingleColor]?: BjsubwaySingleColorAttributes;
     [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
     [LineStyleType.DualColor]?: DualColorAttributes;
     [LineStyleType.River]?: RiverAttributes;

@@ -100,7 +100,9 @@
                     "lineHeight": "行高度",
                     "textAnchor": "文字錨點",
                     "dominantBaseline": "顯性基線",
-                    "language": "哪個語言的字體系列"
+                    "language": "哪個語言的字體系列",
+                    "rotate": "旋轉",
+                    "italic": "斜體"
                 }
             },
             "station": {
@@ -139,6 +141,13 @@
                     "height": "車站高度",
                     "width": "車站寬度",
                     "rotate": "車站旋轉角度"
+                },
+                "shmetroOsysi": {
+                    "displayName": "上海地鐵轉乘車站",
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移"
                 },
                 "gzmtrBasic": {
                     "displayName": "廣州地鐵基本車站",
@@ -369,8 +378,9 @@
             "contributors": "貢獻者",
             "coreContributors": "核心貢獻者",
             "styleContributors": "樣式貢獻者",
-            "203IhzElttil": "特別感謝他的辛勤工作，確保上海地鐵站的設計與原始設計相符。",
             "langonginc": "活出值得銘記的人生。",
+            "203IhzElttil": "特別感謝他勤奮工作，確保上海地鐵站與原始設計相符。",
+            "52PD": "特別感謝他勤奮工作，確保北京地鐵站與原始設計相符。",
             "contactUs": "聯繫我們",
             "github": "項目倉庫",
             "githubContent": "遇到任何問題？在這裡搜索或提出一個問題！",

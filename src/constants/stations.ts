@@ -4,6 +4,7 @@ import { CanvasType, StnId, CategoriesType } from './constants';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
+import { ShmetroOsysiStationAttributes } from '../components/svgs/stations/shmetro-osysi';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
@@ -14,6 +15,7 @@ export enum StationType {
     ShmetroBasic = 'shmetro-basic',
     ShmetroBasic2020 = 'shmetro-basic-2020',
     ShmetroInt = 'shmetro-int',
+    ShmetroOutOfSystemInt = 'shmetro-osysi',
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
     BjsubwayBasic = 'bjsubway-basic',
@@ -25,6 +27,7 @@ export interface ExternalStationAttributes {
     [StationType.ShmetroBasic]?: ShmetroBasicStationAttributes;
     [StationType.ShmetroBasic2020]?: ShmetroBasic2020StationAttributes;
     [StationType.ShmetroInt]?: ShmetroIntStationAttributes;
+    [StationType.ShmetroOutOfSystemInt]?: ShmetroOsysiStationAttributes;
     [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
     [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;

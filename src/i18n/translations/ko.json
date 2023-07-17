@@ -100,7 +100,9 @@
                     "lineHeight": "행고도",
                     "textAnchor": "글자 앵커",
                     "dominantBaseline": "현성 바셀린",
-                    "language": "언어로 된 글꼴 종류"
+                    "language": "언어로 된 글꼴 종류",
+                    "rotate": "회전",
+                    "italic": "이탤릭체"
                 }
             },
             "station": {
@@ -139,6 +141,13 @@
                     "height": "역 높이",
                     "width": "역 폭",
                     "rotate": "역회전각도"
+                },
+                "shmetroOsysi": {
+                    "displayName": "상하이 지하철 시스템 외환승 역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동"
                 },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
@@ -369,8 +378,9 @@
             "contributors": "기여자",
             "coreContributors": "핵심 기여자",
             "styleContributors": "스타일 기여자",
-            "203IhzElttil": "상하이 지하철 역사의 원본 디자인과 일치하도록 근실한 노력을 다해 작업해주신 분께 특별히 감사드립니다.",
             "langonginc": "기억에 남을 삶을 살아보세요.",
+            "203IhzElttil": "상하이 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
+            "52PD": "베이징 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
             "contactUs": "우리에게 연락하기",
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",

@@ -100,7 +100,9 @@
                     "lineHeight": "Line height",
                     "textAnchor": "Text anchor",
                     "dominantBaseline": "Dominant baseline",
-                    "language": "Font family in which language"
+                    "language": "Font family in which language",
+                    "rotate": "Rotation",
+                    "italic": "Italic"
                 }
             },
             "station": {
@@ -128,7 +130,7 @@
                     "displayName": "Shanghai Metro basic station (2020)",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
-                    "rotate": "Icon Rotation"
+                    "rotate": "Icon rotation"
                 },
                 "shmetroInt": {
                     "displayName": "Shanghai Metro interchange station",
@@ -139,6 +141,13 @@
                     "height": "Icon height",
                     "width": "Icon width",
                     "rotate": "Icon rotation"
+                },
+                "shmetroOsysi": {
+                    "displayName": "Shanghai Metro out-of-system interchange station",
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y"
                 },
                 "gzmtrBasic": {
                     "displayName": "Guangzhou Metro basic station",
@@ -368,8 +377,9 @@
             "contributors": "Contributors",
             "coreContributors": "Core Contributors",
             "styleContributors": "Style Contributors",
-            "203IhzElttil": "Special thanks for his diligent work in ensuring that the stations of Shanghai Metro match the original design.",
             "langonginc": "Live a life you will remember.",
+            "203IhzElttil": "Special thanks for his diligent work in ensuring that the stations of Shanghai Metro match the original design.",
+            "52PD": "Special thanks for his diligent work in ensuring that the stations of Beijing Subway match the original design.",
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
