@@ -178,6 +178,7 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
         changeStationsTypeInBatch(graph.current, oldStnType, newStnType);
         dispatch(setRefreshNodes());
         dispatch(saveGraph(graph.current.export()));
+        onClose();
     };
 
     return (
