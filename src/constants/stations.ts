@@ -10,6 +10,8 @@ import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 import { MTRStationAttributes } from '../components/svgs/stations/mtr';
+import { SuzhouRTBasicStationAttributes } from '../components/svgs/stations/suzhourt-basic';
+import { SuzhouRTIntStationAttributes } from '../components/svgs/stations/suzhourt-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -21,6 +23,8 @@ export enum StationType {
     BjsubwayBasic = 'bjsubway-basic',
     BjsubwayInt = 'bjsubway-int',
     MTR = 'mtr',
+    SuzhouRTBasic = 'suzhourt-basic',
+    SuzhouRTInt = 'suzhourt-int',
 }
 
 export interface ExternalStationAttributes {
@@ -33,6 +37,8 @@ export interface ExternalStationAttributes {
     [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;
     [StationType.BjsubwayInt]?: BjsubwayIntStationAttributes;
     [StationType.MTR]?: MTRStationAttributes;
+    [StationType.SuzhouRTBasic]?: SuzhouRTBasicStationAttributes;
+    [StationType.SuzhouRTInt]?: SuzhouRTIntStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */

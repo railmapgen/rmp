@@ -5,6 +5,7 @@ import shmetroTextLineBadge from './shmetro-text-line-badge';
 import gzmtrLineBadge from './gzmtr-line-badge/gzmtr-line-badge';
 import bjsubwayNumLineBadge from './bjsubway-num-line-badge';
 import bjsubwayTextLineBadge from './bjsubway-text-line-badge';
+import suzhouRTNumLineBadge from './suzhourt-num-line-badge';
 import facilities from './facilities';
 import text from './text';
 
@@ -15,6 +16,7 @@ const miscNodes = {
     [MiscNodeType.GzmtrLineBadge]: gzmtrLineBadge,
     [MiscNodeType.BjsubwayNumLineBadge]: bjsubwayNumLineBadge,
     [MiscNodeType.BjsubwayTextLineBadge]: bjsubwayTextLineBadge,
+    [MiscNodeType.SuzhouRTNumLineBadge]: suzhouRTNumLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
 };
