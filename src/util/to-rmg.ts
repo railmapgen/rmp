@@ -25,6 +25,7 @@ interface edgeVector {
 }
 
 const visStn: Set<string> = new Set<string>();
+const visVir: Set<string> = new Set<string>();
 const colorList: Set<Theme> = new Set<Theme>();
 const colorSet: Set<string> = new Set<string>(); // color visit
 const colorStart: Map<Theme, string> = new Map<Theme, string>(); // starting stn of each color
@@ -248,34 +249,59 @@ const editLineend = (newParam: RMGParam, u: string) => {
     newParam.stn_list['lineend'].parents = reverse(structuredClone(newParent));
     if (newParam.stn_list['lineend'].parents.length == 2) {
         newParam.stn_list['lineend'].branch.left = [BranchStyle.through, newParent[1]];
-    }
+    } else newParam.stn_list['lineend'].branch.left = [];
 };
 
-const swapBranchAsIndex = (newChild: string[]) => {
-    const xNum = nodeIndex.get(newChild[0])!;
-    const yNum = nodeIndex.get(newChild[1])!;
-    if (xNum > yNum) {
-        const t = newChild[0];
-        newChild[0] = newChild[1];
-        newChild[1] = t;
+// const swapBranchAsIndex = (newChild: string[]) => {
+//     const xNum = nodeIndex.get(newChild[0])!;
+//     const yNum = nodeIndex.get(newChild[1])!;
+//     if (xNum > yNum) {
+//         const t = newChild[0];
+//         newChild[0] = newChild[1];
+//         newChild[1] = t;
+//     }
+//     return newChild;
+// };
+
+// Count children in same color
+const countChild = (u: string, color: Theme) => {
+    let count = 0;
+    for (let i: number = headGraph.get(u)!; i != -1; i = edgeGraph[i].next) {
+        const v = edgeGraph[i].target;
+        const col = edgeGraph[i].color;
+        if (colorToString(col) == colorToString(color)) {
+            count++;
+        }
     }
-    return newChild;
+    return count;
 };
 
 // Generate RMG saves (dfs)
 const generateNewStn = (
     u: string,
     f: string,
+    absFather: string,
     counter: number,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     color: Theme,
     newParam: RMGParam
 ) => {
-    if (visStn.has(u) && (newParam.stn_list[u] == undefined || u.startsWith('misc_node_') || newParam.loop)) {
+    if (
+        visStn.has(u) &&
+        ((!u.startsWith('misc_node_') && newParam.stn_list[u] == undefined) ||
+            (u.startsWith('misc_node_') && !visVir.has(u)) ||
+            newParam.loop)
+    ) {
         return [];
-    } else if (visStn.has(u) && newParam.stn_list[u] != undefined && newParam.stn_list[u].children.length >= 2) {
+    } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countChild(u, color) - 1 >= 2) {
         // parent (for MTR Racecourse Station) update branch right (merge) info
-        const newParent = swapBranchAsIndex([f, ...newParam.stn_list[u].parents]);
+        // const newParent = swapBranchAsIndex([...newParam.stn_list[u].parents, f]);
+        const newParent = [...newParam.stn_list[u].parents, f];
+        if (newParam.stn_list[newParent[1]] == undefined) {
+            const t = newParent[0];
+            newParent[0] = newParent[1];
+            newParent[1] = t;
+        }
         newParam.stn_list[u].parents = reverse(newParent);
         newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
         // delete f in u's children
@@ -293,12 +319,30 @@ const generateNewStn = (
                 endParent.push(p);
             }
         }
-        const newEndParent = swapBranchAsIndex(endParent);
-        newParam.stn_list['lineend'].parents = reverse(structuredClone(newEndParent));
+        // const newEndParent = swapBranchAsIndex(endParent);
+        newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
         if (newParam.stn_list['lineend'].parents.length == 2) {
-            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, newEndParent[1]];
+            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
+        } else newParam.stn_list['lineend'].branch.left = [];
+        if (newChild.length == 0) {
+            console.error('No children!!!');
+            newParam.stn_list[u].children = ['lineend'];
+            editLineend(newParam, u);
         }
         return [u];
+    } else if (visStn.has(u) && newParam.stn_list[u] != undefined) {
+        // delete lineend info for MTR Racecourse Line
+        const endParent: string[] = [];
+        for (const p of newParam.stn_list['lineend'].parents) {
+            if (p != u) {
+                endParent.push(p);
+            }
+        }
+        // const newEndParent = swapBranchAsIndex(endParent);
+        newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
+        if (newParam.stn_list['lineend'].parents.length == 2) {
+            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
+        } else newParam.stn_list['lineend'].branch.left = [];
     }
     visStn.add(u);
     // console.log('DFS2: ' + u);
@@ -309,20 +353,20 @@ const generateNewStn = (
     for (let i: number = headGraph.get(u)!; i != -1; i = edgeGraph[i].next) {
         const v = edgeGraph[i].target;
         const col = edgeGraph[i].color;
-        if (v == f) continue;
+        if (v == absFather) continue;
         if (colorToString(col) == colorToString(color)) {
             // same color => count children
             if (visNext.has(v)) continue;
             visNext.add(v);
             if (!u.startsWith('misc_node_')) {
                 // a normal stn
-                const r = generateNewStn(v, u, counter + 1, graph, color, newParam);
+                const r = generateNewStn(v, u, u, counter + 1, graph, color, newParam);
                 if (r.length != 0) {
                     newChild.push(...r);
                 }
             } else {
                 // a virtual stn, use this.father as children's father
-                const r = generateNewStn(v, f, counter + 1, graph, color, newParam);
+                const r = generateNewStn(v, f, u, counter + 1, graph, color, newParam);
                 if (r.length != 0) {
                     newChild.push(...r);
                 }
@@ -345,13 +389,20 @@ const generateNewStn = (
             }
         }
     }
-    if (
-        newChild.length == 2 &&
-        newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
-        newParam.stn_list[newChild[1]].children[0] != 'lineend'
-    ) {
-        // sort branch as stn index
-        swapBranchAsIndex(newChild);
+    // if (
+    //     newChild.length == 2 &&
+    //     newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
+    //     newParam.stn_list[newChild[1]].children[0] != 'lineend'
+    // ) {
+    if (newChild.length == 2) {
+        // move down if no station on main line
+        // swapBranchAsIndex(newChild);
+        console.log(newParam.stn_list[newChild[0]].parents.length, newParam.stn_list[newChild[1]].parents.length);
+        if (newParam.stn_list[newChild[1]].parents.length >= 2) {
+            const t = newChild[0];
+            newChild[0] = newChild[1];
+            newChild[1] = t;
+        }
     }
     if (!u.startsWith('misc_node_')) {
         const uType = graph.getNodeAttributes(u).type as StationType;
@@ -391,6 +442,7 @@ const generateNewStn = (
         return [u];
     } else {
         // if this is a virtual stn, should return the children of u.
+        visVir.add(u);
         if (newChild.length == 0) {
             editLineend(newParam, f);
             return ['lineend'];
@@ -426,7 +478,8 @@ const generateParam = (
     newParam.stn_list['linestart'] = structuredClone(defRMGLeft);
     newParam.stn_list['lineend'] = structuredClone(defRMGRight);
     visStn.clear();
-    const resStart = generateNewStn(newStart, 'linestart', 1, graph, color, newParam);
+    visVir.clear();
+    const resStart = generateNewStn(newStart, 'linestart', 'linestart', 1, graph, color, newParam);
     newParam.current_stn_idx = resStart[0];
     newParam.stn_list['linestart'].children = [resStart[0]];
     if (Object.keys(newParam.stn_list).length <= 3 || newParam.stn_list['lineend'].parents.length >= 3)
@@ -470,6 +523,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     graph.forEachNode(u => {
         nodeIndex.set(u, ++index);
     });
+    nodeIndex.set('lineend', ++index);
     // console.info(colorList);
     const resultList: ToRmg[] = [];
     for (const value of colorList) {
