@@ -106,7 +106,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                 </g>
             </g>
         ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, onPointerDown, onPointerMove, onPointerUp]
+        [id, x, y, ...names, ...color, nameOffsetX, nameOffsetY, onPointerDown, onPointerMove, onPointerUp]
     );
 };
 
