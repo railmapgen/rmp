@@ -227,7 +227,6 @@ const edgeDfs = (u: string, f: string, color: Theme) => {
         return;
     }
     visStn.add(u);
-    // console.log('DFS: ' + u);
     let countDegree = 0;
     const visNext: Set<string> = new Set<string>();
     for (let i: number = headGraph.get(u)!; i != -1; i = edgeGraph[i].next) {
@@ -252,17 +251,6 @@ const editLineend = (newParam: RMGParam, u: string) => {
     } else newParam.stn_list['lineend'].branch.left = [];
 };
 
-// const swapBranchAsIndex = (newChild: string[]) => {
-//     const xNum = nodeIndex.get(newChild[0])!;
-//     const yNum = nodeIndex.get(newChild[1])!;
-//     if (xNum > yNum) {
-//         const t = newChild[0];
-//         newChild[0] = newChild[1];
-//         newChild[1] = t;
-//     }
-//     return newChild;
-// };
-
 // Count children in same color
 const countChild = (u: string, color: Theme) => {
     let count = 0;
@@ -274,6 +262,31 @@ const countChild = (u: string, color: Theme) => {
         }
     }
     return count;
+};
+
+const expandVirtualNodeVisStn: Set<string> = new Set<string>();
+
+/**
+ * List children of a station (expand its children's station if it is a virtual node).
+ * **subVisStn needs to be clear before run expandVirtualNode() !!!**
+ */
+const expandVirtualNode = (u: string, f: string, color: Theme) => {
+    if (expandVirtualNodeVisStn.has(u)) return [];
+    expandVirtualNodeVisStn.add(u);
+    const resultList: string[] = [];
+    for (let i: number = headGraph.get(u)!; i != -1; i = edgeGraph[i].next) {
+        const v = edgeGraph[i].target;
+        const col = edgeGraph[i].color;
+        if (v == f) continue;
+        if (colorToString(col) == colorToString(color)) {
+            if (v.startsWith('stn')) {
+                resultList.push(v);
+            } else {
+                resultList.push(...expandVirtualNode(v, u, color));
+            }
+        }
+    }
+    return resultList;
 };
 
 // Generate RMG saves (dfs)
@@ -295,7 +308,6 @@ const generateNewStn = (
         return [];
     } else if (visStn.has(u) && newParam.stn_list[u] != undefined && countChild(u, color) - 1 >= 2) {
         // parent (for MTR Racecourse Station) update branch right (merge) info
-        // const newParent = swapBranchAsIndex([...newParam.stn_list[u].parents, f]);
         const newParent = [...newParam.stn_list[u].parents, f];
         if (newParam.stn_list[newParent[1]] == undefined) {
             const t = newParent[0];
@@ -319,34 +331,19 @@ const generateNewStn = (
                 endParent.push(p);
             }
         }
-        // const newEndParent = swapBranchAsIndex(endParent);
         newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
         if (newParam.stn_list['lineend'].parents.length == 2) {
             newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
         } else newParam.stn_list['lineend'].branch.left = [];
         if (newChild.length == 0) {
-            console.error('No children!!!');
             newParam.stn_list[u].children = ['lineend'];
             editLineend(newParam, u);
         }
         return [u];
-    } else if (visStn.has(u) && newParam.stn_list[u] != undefined) {
-        // delete lineend info for MTR Racecourse Line
-        const endParent: string[] = [];
-        for (const p of newParam.stn_list['lineend'].parents) {
-            if (p != u) {
-                endParent.push(p);
-            }
-        }
-        // const newEndParent = swapBranchAsIndex(endParent);
-        newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
-        if (newParam.stn_list['lineend'].parents.length == 2) {
-            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
-        } else newParam.stn_list['lineend'].branch.left = [];
     }
     visStn.add(u);
-    // console.log('DFS2: ' + u);
     const newChild: string[] = [];
+    const newParent: string[] = [];
     const newInterchange: RMGInterchange[] = [];
     const newInterchangeSet = new Set<string>();
     const visNext: Set<string> = new Set<string>();
@@ -388,20 +385,29 @@ const generateNewStn = (
                 newChild.splice(i, 1);
             }
         }
-    }
-    // if (
-    //     newChild.length == 2 &&
-    //     newParam.stn_list[newChild[0]].children[0] != 'lineend' &&
-    //     newParam.stn_list[newChild[1]].children[0] != 'lineend'
-    // ) {
-    if (newChild.length == 2) {
+
         // move down if no station on main line
-        // swapBranchAsIndex(newChild);
-        console.log(newParam.stn_list[newChild[0]].parents.length, newParam.stn_list[newChild[1]].parents.length);
         if (newParam.stn_list[newChild[1]].parents.length >= 2) {
             const t = newChild[0];
             newChild[0] = newChild[1];
             newChild[1] = t;
+        }
+    }
+    if (visStn.has(u) && newParam.stn_list[u] != undefined) {
+        // delete lineend info for lamp line
+        const endParent: string[] = [];
+        for (const p of newParam.stn_list['lineend'].parents) {
+            if (p != u) {
+                endParent.push(p);
+            }
+        }
+        newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
+        if (newParam.stn_list['lineend'].parents.length == 2) {
+            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
+        } else newParam.stn_list['lineend'].branch.left = [];
+        if (newChild.length == 0) {
+            expandVirtualNodeVisStn.clear();
+            newParent.push(...expandVirtualNode(u, f, color));
         }
     }
     if (!u.startsWith('misc_node_')) {
@@ -435,18 +441,19 @@ const generateNewStn = (
             newParam.stn_list[u].children = ['lineend'];
             editLineend(newParam, u);
         }
-        newParam.stn_list[u].parents = [f];
+        newParent.push(f);
+        newParam.stn_list[u].parents = reverse(structuredClone(newParent));
+        if (newParent.length == 2) {
+            newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
+        }
         if (newInterchange.length != 0) {
             newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
         }
         return [u];
     } else {
-        // if this is a virtual stn, should return the children of u.
+        // if this is a virtual stn, return the children of u.
         visVir.add(u);
-        if (newChild.length == 0) {
-            editLineend(newParam, f);
-            return ['lineend'];
-        } else return newChild;
+        return newChild;
     }
 };
 
@@ -524,45 +531,35 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         nodeIndex.set(u, ++index);
     });
     nodeIndex.set('lineend', ++index);
-    // console.info(colorList);
     const resultList: ToRmg[] = [];
-    for (const value of colorList) {
+    for (const color of colorList) {
         visStn.clear();
         outDegree.clear();
-        // console.log('Start DFS color as ' + value[2]);
-        edgeDfs(colorStart.get(value)!, 'line_root', value);
-        let newStart: any = 'no_val';
-        let minStartNum: any = 2147483647;
-        let branchFlag = true;
+        edgeDfs(colorStart.get(color)!, 'line_root', color);
+        let branchErrorFlag = true;
         let typeInfo: 'LINE' | 'BRANCH' | 'LOOP' = 'LINE';
         const entrance: string[] = [];
         for (const [u, deg] of outDegree) {
             if (deg == 1) {
-                const index = nodeIndex.get(u)!;
-                if (index < minStartNum) {
-                    newStart = u;
-                    minStartNum = index;
-                }
                 entrance.push(u);
             }
             if (deg == 3) {
                 typeInfo = 'BRANCH';
             }
             if (deg > 3) {
-                branchFlag = false;
+                branchErrorFlag = false;
             }
         }
-        if (!branchFlag) {
+        if (!branchErrorFlag) {
             continue;
         }
-        if (newStart == 'no_val') {
-            newStart = colorStart.get(value);
+        if (entrance.length == 0) {
             typeInfo = 'LOOP';
-            entrance.push(newStart);
+            entrance.push(colorStart.get(color) as string);
         }
         const nowResult: [RMGParam, ...Name][] = [];
         for (const start of entrance) {
-            const newParam = generateParam(graph, value, start, typeInfo);
+            const newParam = generateParam(graph, color, start, typeInfo);
             if (newParam != undefined) {
                 nowResult.push([
                     newParam,
@@ -571,7 +568,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
                 ]);
             }
         }
-        resultList.push({ theme: value, param: structuredClone(nowResult), type: typeInfo });
+        resultList.push({ theme: color, param: structuredClone(nowResult), type: typeInfo });
     }
     return resultList;
 };
