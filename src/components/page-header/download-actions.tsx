@@ -1,4 +1,5 @@
 import {
+    Badge,
     Button,
     Checkbox,
     HStack,
@@ -193,6 +194,9 @@ export default function DownloadActions() {
                 </MenuItem>
                 <MenuItem icon={<MdSaveAs />} onClick={() => setIsToRmgOpen(true)}>
                     {t('header.download.2rmg.title')}
+                    <Badge ml="1" colorScheme="green">
+                        New
+                    </Badge>
                 </MenuItem>
                 <MenuItem icon={<MdImage />} onClick={() => setIsDownloadModalOpen(true)}>
                     {t('header.download.image')}

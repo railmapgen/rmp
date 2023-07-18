@@ -48,11 +48,6 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                     <Text as="b" fontSize="xl">
                         {t('header.download.2rmg.title')}
                     </Text>
-                    <Tooltip label={t('header.settings.pro')}>
-                        <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
-                            PRO
-                        </Badge>
-                    </Tooltip>
                 </ModalHeader>
                 <ModalCloseButton />
 
