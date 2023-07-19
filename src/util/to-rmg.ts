@@ -164,26 +164,12 @@ const newRMGStn: StationInfo = {
 // convert color['shanghai', 'sh1', ...] to a string (for compare)
 const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
-// reverse an array
-const reverse = (a: Array<any>) => {
-    const p = [];
-    for (let i = a.length - 1; i >= 0; i--) {
-        p.push(a[i]);
-    }
-    return p;
-};
-
 // verify the line whether is needed to add
-const isColorLine = (type: LineStyleType) => {
-    if (type == LineStyleType['SingleColor'] || type == LineStyleType['MTRRaceDays']) {
-        return true;
-    }
-    return false;
-};
+const isColorLine = (type: LineStyleType) => [LineStyleType.SingleColor, LineStyleType.MTRRaceDays].includes(type);
 
 // get line color array
 const getColor = (attr: EdgeAttributes) => {
-    if (attr.style == LineStyleType['SingleColor'] || attr.style == LineStyleType['MTRRaceDays']) {
+    if ([LineStyleType.SingleColor, LineStyleType.MTRRaceDays].includes(attr.style)) {
         return structuredClone((attr[attr.style] as AttributesWithColor).color);
     }
 };
@@ -245,7 +231,7 @@ const edgeDfs = (u: string, f: string, color: Theme) => {
 const editLineend = (newParam: RMGParam, u: string) => {
     const newParent: string[] = newParam.stn_list['lineend'].parents;
     newParent.push(u);
-    newParam.stn_list['lineend'].parents = reverse(structuredClone(newParent));
+    newParam.stn_list['lineend'].parents = structuredClone(newParent).reverse();
     if (newParam.stn_list['lineend'].parents.length == 2) {
         newParam.stn_list['lineend'].branch.left = [BranchStyle.through, newParent[1]];
     } else newParam.stn_list['lineend'].branch.left = [];
@@ -314,7 +300,7 @@ const generateNewStn = (
             newParent[0] = newParent[1];
             newParent[1] = t;
         }
-        newParam.stn_list[u].parents = reverse(newParent);
+        newParam.stn_list[u].parents = structuredClone(newParent).reverse();
         newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
         // delete f in u's children
         const newChild = [];
@@ -331,7 +317,7 @@ const generateNewStn = (
                 endParent.push(p);
             }
         }
-        newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
+        newParam.stn_list['lineend'].parents = structuredClone(endParent).reverse();
         if (newParam.stn_list['lineend'].parents.length == 2) {
             newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
         } else newParam.stn_list['lineend'].branch.left = [];
@@ -401,7 +387,7 @@ const generateNewStn = (
                 endParent.push(p);
             }
         }
-        newParam.stn_list['lineend'].parents = reverse(structuredClone(endParent));
+        newParam.stn_list['lineend'].parents = structuredClone(endParent).reverse();
         if (newParam.stn_list['lineend'].parents.length == 2) {
             newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
         } else newParam.stn_list['lineend'].branch.left = [];
@@ -433,7 +419,7 @@ const generateNewStn = (
             newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
         }
         if (newChild.length != 0) {
-            newParam.stn_list[u].children = reverse(structuredClone(newChild));
+            newParam.stn_list[u].children = structuredClone(newChild).reverse();
             if (newChild.length == 2) {
                 newParam.stn_list[u].branch.right = [BranchStyle.through, newChild[1]];
             }
@@ -442,7 +428,7 @@ const generateNewStn = (
             editLineend(newParam, u);
         }
         newParent.push(f);
-        newParam.stn_list[u].parents = reverse(structuredClone(newParent));
+        newParam.stn_list[u].parents = structuredClone(newParent).reverse();
         if (newParent.length == 2) {
             newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
         }
