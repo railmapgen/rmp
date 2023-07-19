@@ -1,1 +1,0 @@
-import{aj as o}from"./index-8c94c27d.js";import"./chakra-1e9eecfc.js";import"./react-beb26faf.js";const e=[{id:"nt1",colour:"#e60012",fg:o.white,name:{en:"Line 1",ko:"1호선","zh-Hans":"1号线","zh-Hant":"1號線"}},{id:"nt2",colour:"#0072c8",fg:o.white,name:{en:"Line 2",ko:"2호선","zh-Hans":"2号线","zh-Hant":"2號線"}}];export{e as default};
