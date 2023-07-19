@@ -1045,6 +1045,94 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
-        expect(toRmgRes).toEqual([{ theme: color, param: [], type: 'LINE' }]);
+        expect(toRmgRes).toEqual([]);
+    });
+
+    it('will not throw error if only one station connect more than 3 stations', async () => {
+        const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
+        graph.addNode('stn_1', {
+            visible: true,
+            zIndex: 0,
+            x: -1,
+            y: 0,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: stations[StationType.ShmetroBasic].defaultAttrs,
+        });
+        graph.addNode('stn_2', {
+            visible: true,
+            zIndex: 0,
+            x: 1,
+            y: 1,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: stations[StationType.ShmetroBasic].defaultAttrs,
+        });
+        graph.addNode('stn_3', {
+            visible: true,
+            zIndex: 0,
+            x: 1,
+            y: 2,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: stations[StationType.ShmetroBasic].defaultAttrs,
+        });
+        graph.addNode('stn_4', {
+            visible: true,
+            zIndex: 0,
+            x: 1,
+            y: 3,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: stations[StationType.ShmetroBasic].defaultAttrs,
+        });
+        graph.addNode('stn_a', {
+            visible: true,
+            zIndex: 0,
+            x: -1,
+            y: 1,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: stations[StationType.ShmetroBasic].defaultAttrs,
+        });
+        graph.addDirectedEdgeWithKey('line_1', 'stn_a', 'stn_1', {
+            visible: true,
+            zIndex: 0,
+            type: LinePathType.Simple,
+            // deep copy to prevent mutual reference
+            [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
+            style: LineStyleType.SingleColor,
+            [LineStyleType.SingleColor]: { color },
+            reconcileId: '',
+        });
+        graph.addDirectedEdgeWithKey('line_2', 'stn_a', 'stn_2', {
+            visible: true,
+            zIndex: 0,
+            type: LinePathType.Simple,
+            // deep copy to prevent mutual reference
+            [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
+            style: LineStyleType.SingleColor,
+            [LineStyleType.SingleColor]: { color },
+            reconcileId: '',
+        });
+        graph.addDirectedEdgeWithKey('line_3', 'stn_a', 'stn_3', {
+            visible: true,
+            zIndex: 0,
+            type: LinePathType.Simple,
+            // deep copy to prevent mutual reference
+            [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
+            style: LineStyleType.SingleColor,
+            [LineStyleType.SingleColor]: { color },
+            reconcileId: '',
+        });
+        graph.addDirectedEdgeWithKey('line_4', 'stn_a', 'stn_4', {
+            visible: true,
+            zIndex: 0,
+            type: LinePathType.Simple,
+            // deep copy to prevent mutual reference
+            [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
+            style: LineStyleType.SingleColor,
+            [LineStyleType.SingleColor]: { color },
+            reconcileId: '',
+        });
+
+        const toRmgRes = toRmg(graph);
+
+        expect(toRmgRes).toEqual([]);
     });
 });
