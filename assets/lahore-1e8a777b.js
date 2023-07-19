@@ -1,1 +1,0 @@
-import{aj as o}from"./index-158a3fbb.js";import"./chakra-1e9eecfc.js";import"./react-beb26faf.js";const n=[{id:"orange",colour:"#f66725",fg:o.white,name:{en:"Orange Line","zh-Hans":"橙线","zh-Hant":"橙線"}}];export{n as default};
