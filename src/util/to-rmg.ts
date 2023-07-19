@@ -568,7 +568,9 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
                 ]);
             }
         }
-        resultList.push({ theme: color, param: structuredClone(nowResult), type: typeInfo });
+        if (nowResult.length != 0) {
+            resultList.push({ theme: color, param: structuredClone(nowResult), type: typeInfo });
+        }
     }
     return resultList;
 };
