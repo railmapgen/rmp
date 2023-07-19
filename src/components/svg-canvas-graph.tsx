@@ -21,6 +21,8 @@ import miscNodes from './svgs/nodes/misc-nodes';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 import { getStations, getMiscNodes, getLines } from '../util/process-elements';
+import { StationType } from '../constants/stations';
+import { MiscNodeType } from '../constants/nodes';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -84,17 +86,25 @@ const SvgCanvas = () => {
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
-        if (mode.startsWith('line') || mode.startsWith('misc-edge')) {
+        if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
+
+            const connectableNodesType = [...Object.values(StationType), MiscNodeType.Virtual];
+            const couldActiveBeConnected =
+                graph.current.hasNode(active) &&
+                connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
             const prefixes = ['stn_core_', 'virtual_circle_'];
             prefixes.forEach(prefix => {
                 const elems = document.elementsFromPoint(e.clientX, e.clientY);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
-                if (id?.startsWith(prefix)) {
+                // all connectable nodes have prefixes in their mask/event elements' ids
+                const couldIDBeConnected = id?.startsWith(prefix);
+
+                if (couldActiveBeConnected && couldIDBeConnected) {
                     const type = mode.slice(5) as LinePathType;
                     const newLineId = `line_${nanoid(10)}`;
-                    graph.current.addDirectedEdgeWithKey(newLineId, active, id.slice(prefix.length), {
+                    graph.current.addDirectedEdgeWithKey(newLineId, active, id!.slice(prefix.length), {
                         visible: true,
                         zIndex: 0,
                         type,
