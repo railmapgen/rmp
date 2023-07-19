@@ -1035,7 +1035,7 @@ describe('Unit tests for to rmg function', () => {
         expect(toRmgRes).toEqual([]);
     });
 
-    it('will not throw error if only one station connect more than 3 stations', async () => {
+    it('will not throw error if only one station connects more than 3 stations', async () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
