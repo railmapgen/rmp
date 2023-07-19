@@ -34,7 +34,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -255,7 +254,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -265,7 +263,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -275,7 +272,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -431,7 +427,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -441,7 +436,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -451,7 +445,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -850,7 +843,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -860,7 +852,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -870,7 +861,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -880,7 +870,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -1029,14 +1018,12 @@ describe('Unit tests for to rmg function', () => {
             x: 1,
             y: 1,
             type: MiscNodeType.Virtual,
-            // deep copy to prevent mutual reference
             [MiscNodeType.Virtual]: miscNodes[MiscNodeType.Virtual].defaultAttrs,
         });
         graph.addDirectedEdgeWithKey('line_1', 'stn_1', 'misc_node_2', {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -1094,7 +1081,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -1104,7 +1090,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -1114,7 +1099,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
@@ -1124,7 +1108,6 @@ describe('Unit tests for to rmg function', () => {
             visible: true,
             zIndex: 0,
             type: LinePathType.Simple,
-            // deep copy to prevent mutual reference
             [LinePathType.Simple]: linePaths[LinePathType.Simple].defaultAttrs,
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
