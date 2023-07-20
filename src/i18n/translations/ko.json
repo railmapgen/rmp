@@ -231,6 +231,9 @@
                 "chinaRailway": {
                     "displayName": "중국 철도 모습"
                 },
+                "bjsubwaySingleColor": {
+                    "displayName": "베이징 지하철 단색 스타일"
+                },
                 "bjsubwayTram": {
                     "displayName": "베이징 지하철 노면 전차 모습"
                 },

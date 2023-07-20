@@ -231,6 +231,9 @@
                 "chinaRailway": {
                     "displayName": "中国铁路样式"
                 },
+                "bjsubwaySingleColor": {
+                    "displayName": "北京地铁纯色样式"
+                },
                 "bjsubwayTram": {
                     "displayName": "北京地铁有轨电车样式"
                 },

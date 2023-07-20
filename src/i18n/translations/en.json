@@ -231,6 +231,9 @@
                 "chinaRailway": {
                     "displayName": "China Railway style"
                 },
+                "bjsubwaySingleColor": {
+                    "displayName": "Beijing Subway single color style"
+                },
                 "bjsubwayTram": {
                     "displayName": "Beijing Subway tram style"
                 },
