@@ -34,6 +34,7 @@ let edgeGraph: edgeVector[] = []; // e[]
 let countGraph = 0; // nn
 const outDegree: Map<string, number> = new Map<string, number>();
 const nodeIndex: Map<string, number> = new Map<string, number>();
+const expandVirtualNodeVisStn: Set<string> = new Set<string>();
 
 interface RMGInterchange {
     theme: Theme;
@@ -249,8 +250,6 @@ const countChild = (u: string, color: Theme) => {
     }
     return count;
 };
-
-const expandVirtualNodeVisStn: Set<string> = new Set<string>();
 
 /**
  * List children of a station (expand its children's station if it is a virtual node).
@@ -578,6 +577,5 @@ export const exportToRmg = (param: RMGParam, lineName: Name, lineCode: string) =
     param['line_name'] = lineName;
     param['line_num'] = String(lineCode);
     console.log(param);
-    console.log(JSON.stringify(param));
     downloadAs(`RMG_${getFileName(lineName)}.json`, 'application/json', JSON.stringify(param));
 };
