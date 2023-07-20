@@ -1,0 +1,1 @@
+System.register(["./index-legacy-b642ece6.js","./chakra-legacy-53b88c68.js","./react-legacy-9060605e.js"],(function(e,n){"use strict";var t;return{setters:[function(e){t=e.aj},null,null],execute:function(){e("default",[{id:"sx1",colour:"#c5003e",fg:t.white,name:{en:"Line 1","zh-Hans":"1号线","zh-Hant":"1號線"}}])}}}));
