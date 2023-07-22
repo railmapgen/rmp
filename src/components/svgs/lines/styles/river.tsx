@@ -35,7 +35,7 @@ export interface RiverAttributes extends LinePathAttributes, AttributesWithColor
 }
 
 const defaultRiverAttributes: RiverAttributes = {
-    color: [CityCode.Shanghai, 'river', '#9EE3F9', MonoColour.white],
+    color: [CityCode.Shanghai, 'river', '#B9E3F9', MonoColour.white],
     width: 20,
 };
 

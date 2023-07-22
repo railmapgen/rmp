@@ -27,7 +27,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
 
     const [appClipId] = useState(crypto.randomUUID());
     const frameUrl =
-        '/rmg/import?' +
+        '/rmg/#/import?' +
         new URLSearchParams({
             parentComponent: rmgRuntime.getAppName(),
             parentId: appClipId,

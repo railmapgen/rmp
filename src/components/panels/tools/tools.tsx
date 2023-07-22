@@ -137,7 +137,7 @@ const ToolsPanel = () => {
                         <AccordionButton sx={accordionButtonStyle}>
                             {isToolsExpanded && (
                                 <Box as="span" flex="1" textAlign="left">
-                                    {t('panel.tools.section.lineDrawing')}
+                                    {t('panel.tools.section.stations')}
                                 </Box>
                             )}
                             <AccordionIcon />
@@ -162,7 +162,7 @@ const ToolsPanel = () => {
                         <AccordionButton sx={accordionButtonStyle}>
                             {isToolsExpanded && (
                                 <Box as="span" flex="1" textAlign="left">
-                                    {t('panel.tools.section.lineDrawing')}
+                                    {t('panel.tools.section.miscellaneousNodes')}
                                 </Box>
                             )}
                             <AccordionIcon />

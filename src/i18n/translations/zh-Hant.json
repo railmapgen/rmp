@@ -231,6 +231,9 @@
                 "chinaRailway": {
                     "displayName": "中國鐵路樣式"
                 },
+                "bjsubwaySingleColor": {
+                    "displayName": "北京地鐵純色樣式"
+                },
                 "bjsubwayTram": {
                     "displayName": "北京地鐵有軌電車樣式"
                 },
@@ -321,17 +324,11 @@
                 "keys": "按鍵",
                 "description": "描述",
                 "f": "使用上一個工具。",
-                "arrowUpward": "將畫布向上移動一點。",
-                "arrowBack": "將畫布向左移動一點。",
-                "arrowDownward": "將畫布向下移動一點。",
-                "arrowForward": "將畫布向右移動一點。",
-                "i": "將所選車站向上移動一點。",
-                "j": "將所選車站向左移動一點。",
-                "k": "將所選車站向下移動一點。",
-                "l": "將所選車站向右移動一點。",
-                "shift": "多重選擇。",
+                "arrows": "稍微移動畫布。",
+                "ijkl": "稍微移動所選站點。",
+                "shift": "多選。",
                 "alt": "精確移動。",
-                "delete": "刪除所有選擇。",
+                "delete": "刪除所選站點。",
                 "undo": "撤銷。",
                 "redo": "重做。"
             },
