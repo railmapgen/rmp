@@ -7,9 +7,10 @@ import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int
 import { MTRStationAttributes } from '../components/svgs/stations/mtr';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import stations from '../components/svgs/stations/stations';
-import { LinePathType, LineStyleType } from '../constants/lines';
-import { StationAttributes, StationType } from '../constants/stations';
 import { Theme } from '../constants/constants';
+import { LinePathType, LineStyleType } from '../constants/lines';
+import { PanelTypeShmetro, RMGParam, RmgStyle } from '../constants/rmg';
+import { StationAttributes, StationType } from '../constants/stations';
 
 interface ExtendedInterchangeInfo {
     theme?: Theme;
@@ -24,7 +25,7 @@ interface InterchangeGroup {
 
 export const parseRmgParam = (
     graph: Graph,
-    { info_panel_type, line_num, stn_list: stnList, style, theme }: Record<string, any>
+    { info_panel_type, line_num, stn_list: stnList, style, theme }: RMGParam
 ) => {
     // generate stn id
     const stnIdMap = Object.fromEntries(
@@ -39,7 +40,6 @@ export const parseRmgParam = (
             const nodes = graph.filterNodes(
                 (node, attr) =>
                     Object.values(StationType).includes(attr.type) &&
-                    // @ts-expect-error
                     (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
             );
             if (nodes.length !== 0) stnIdMap[id] = nodes[0];
@@ -53,7 +53,6 @@ export const parseRmgParam = (
                 graph.filterNodes(
                     (node, attr) =>
                         Object.values(StationType).includes(attr.type) &&
-                        // @ts-expect-error
                         (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
                 ).length === 0
         )
@@ -62,14 +61,14 @@ export const parseRmgParam = (
             let type: StationType = StationType.ShmetroBasic;
             const interchangeGroups: InterchangeGroup[] = (stnInfo as any).transfer.groups;
             const interchangeLines = interchangeGroups.map(group => group.lines).flat();
-            if (style === 'shmetro') {
+            if (style === RmgStyle.SHMetro) {
                 if (interchangeLines.length > 0) type = StationType.ShmetroInt;
-                else if (info_panel_type === 'sh2020') type = StationType.ShmetroBasic2020;
+                else if (info_panel_type === PanelTypeShmetro.sh2020) type = StationType.ShmetroBasic2020;
                 else type = StationType.ShmetroBasic;
-            } else if (style === 'gzmtr') {
+            } else if (style === RmgStyle.GZMTR) {
                 if (interchangeLines.length > 0) type = StationType.GzmtrInt;
                 else type = StationType.GzmtrBasic;
-            } else if (style === 'mtr') {
+            } else if (style === RmgStyle.MTR) {
                 type = StationType.MTR;
             }
 

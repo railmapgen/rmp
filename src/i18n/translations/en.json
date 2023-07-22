@@ -273,15 +273,32 @@
         "open": {
             "new": "New project",
             "config": "Import project",
-            "configRMG": "Import from RMG save",
             "projectRMG": "Import from RMG project",
-            "gallery": "Import from gallery",
+            "gallery": "Import from Gallery",
             "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
             "failToImportFromRMPGallery": "Fail to import {{id}} from the gallery. The file can not be found."
         },
         "download": {
             "config": "Export project",
             "image": "Export image",
+            "2rmg": {
+                "title": "Export to RMG project",
+                "type": {
+                    "line": "Line",
+                    "loop": "Loop",
+                    "branch": "Branch"
+                },
+                "placeholder": {
+                    "chinese": "Chinese name",
+                    "english": "English name",
+                    "lineCode": "Line code"
+                },
+                "info1": "This function is designed to convert the RMP project into RMG projects.",
+                "info2": "The lines in the list following are the available lines for converting. You can enter the Chinese line name in the text box on the left, the English line name in the middle, the line code (for Guangzhou Metro style) on the right, and then click the download button on the right to save your RMG projects.",
+                "noline": "No available lines found.",
+                "download": "Download",
+                "downloadInfo": "Please select one of the following stations as the starting station and click it to download."
+            },
             "format": "Format",
             "png": "PNG",
             "svg": "SVG (Web use)",
@@ -357,6 +374,7 @@
             "contributors": "Contributors",
             "coreContributors": "Core Contributors",
             "styleContributors": "Style Contributors",
+            "langonginc": "Live a life you will remember.",
             "203IhzElttil": "Special thanks for his diligent work in ensuring that the stations of Shanghai Metro match the original design.",
             "52PD": "Special thanks for his diligent work in ensuring that the stations of Beijing Subway match the original design.",
             "contactUs": "Contact Us",

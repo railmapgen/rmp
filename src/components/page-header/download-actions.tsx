@@ -1,6 +1,5 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
+    Badge,
     Button,
     Checkbox,
     HStack,
@@ -21,17 +20,21 @@ import {
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
-import { MdDownload, MdImage, MdOpenInNew, MdSave } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
+import { StationType } from '../../constants/stations';
 import store, { useRootSelector } from '../../redux';
+import { downloadAs, downloadBlobAs } from '../../util/download';
+import { getBase64FontFace } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
-import { getBase64FontFace } from '../../util/fonts';
+import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
-import { StationType } from '../../constants/stations';
 
 export default function DownloadActions() {
     const { t } = useTranslation();
@@ -80,6 +83,7 @@ export default function DownloadActions() {
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
+    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
 
     const handleDownloadJson = () => {
         if (isAllowProjectTelemetry)
@@ -188,6 +192,12 @@ export default function DownloadActions() {
                 <MenuItem icon={<MdSave />} onClick={handleDownloadJson}>
                     {t('header.download.config')}
                 </MenuItem>
+                <MenuItem icon={<MdSaveAs />} onClick={() => setIsToRmgOpen(true)}>
+                    {t('header.download.2rmg.title')}
+                    <Badge ml="1" colorScheme="green">
+                        New
+                    </Badge>
+                </MenuItem>
                 <MenuItem icon={<MdImage />} onClick={() => setIsDownloadModalOpen(true)}>
                     {t('header.download.image')}
                 </MenuItem>
@@ -249,27 +259,11 @@ export default function DownloadActions() {
                     />
                 </ModalContent>
             </Modal>
+
+            <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
         </Menu>
     );
 }
-
-const downloadAs = (filename: string, type: string, data: any) => {
-    const blob = new Blob([data], { type });
-    downloadBlobAs(filename, blob);
-};
-
-const downloadBlobAs = (filename: string, blob: Blob) => {
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-};
 
 const generateRmpInfo = (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');

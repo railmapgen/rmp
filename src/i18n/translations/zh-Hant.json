@@ -282,6 +282,24 @@
         "download": {
             "config": "導出項目",
             "image": "導出圖片",
+            "2rmg": {
+                "title": "導出RMG項目",
+                "type": {
+                    "line": "直線",
+                    "loop": "環線",
+                    "branch": "支線"
+                },
+                "placeholder": {
+                    "chinese": "中文線路名稱",
+                    "english": "英文線路名稱",
+                    "lineCode": "路綫編碼"
+                },
+                "info1": "這個功能可將RMP項目導出為RMG項目。",
+                "info2": "下面的線路將可以被導出，你可以在左側文本框中輸入中文線路名稱、在中間輸入英文線路名稱、右邊輸入線路編號（廣州地鐵樣式專用），隨後點擊下載按鈕即可導出RMG項目。",
+                "noline": "未找到可用線路。",
+                "download": "下載",
+                "downloadInfo": "請選擇一個起始車站，並點擊它。"
+            },
             "format": "檔案種類",
             "png": "PNG影像",
             "svg": "SVG影像（網頁用）",
@@ -357,6 +375,7 @@
             "contributors": "貢獻者",
             "coreContributors": "核心貢獻者",
             "styleContributors": "樣式貢獻者",
+            "langonginc": "活出值得銘記的人生。",
             "203IhzElttil": "特別感謝他勤奮工作，確保上海地鐵站與原始設計相符。",
             "52PD": "特別感謝他勤奮工作，確保北京地鐵站與原始設計相符。",
             "contactUs": "聯繫我們",

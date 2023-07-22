@@ -282,6 +282,24 @@
         "download": {
             "config": "导出项目",
             "image": "导出图片",
+            "2rmg": {
+                "title": "导出RMG项目",
+                "type": {
+                    "line": "直线",
+                    "loop": "环线",
+                    "branch": "支线"
+                },
+                "placeholder": {
+                    "chinese": "中文线路名称",
+                    "english": "英文线路名称",
+                    "lineCode": "路线编号"
+                },
+                "info1": "这个功能可将RMP项目导出为RMG项目。",
+                "info2": "下面的线路将可以被导出，你可以在左侧文本框中输入中文线路名称、在中间输入英文线路名称、右边输入线路编号（广州地铁样式专用），随后点击下载按钮即可导出RMG项目。",
+                "noline": "未找到可用线路。",
+                "download": "下载",
+                "downloadInfo": "请选择一个起始车站，并点击它。"
+            },
             "format": "文件种类",
             "png": "PNG图像",
             "svg": "SVG图像（网页用）",
@@ -357,6 +375,7 @@
             "contributors": "贡献者",
             "coreContributors": "核心贡献者",
             "styleContributors": "样式贡献者",
+            "langonginc": "活出值得铭记的人生。",
             "203IhzElttil": "特别感谢他勤勉工作，确保上海地铁站与原始设计相符。",
             "52PD": "特别感谢他勤勉工作，确保北京地铁站与原始设计相符。",
             "contactUs": "联系我们",

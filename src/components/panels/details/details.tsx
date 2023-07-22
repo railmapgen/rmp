@@ -201,7 +201,7 @@ const DetailsPanel = () => {
 
     return (
         <RmgSidePanel
-            isOpen={selected.length > 0 && !mode.startsWith('line') && !mode.startsWith('misc-edge')}
+            isOpen={selected.length > 0 && !mode.startsWith('line')}
             width={300}
             header="Dummy header"
             alwaysOverlay
