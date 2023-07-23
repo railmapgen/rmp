@@ -41,7 +41,8 @@
                 "zIndex": "깊이",
                 "stationType": "역 유형",
                 "linePathType": "선분 경로 유형",
-                "lineStyleType": "선분 스타일 유형"
+                "lineStyleType": "선분 스타일 유형",
+                "type": "유형"
             },
             "nodePosition": {
                 "title": "노드 위치",

@@ -41,7 +41,8 @@
                 "zIndex": "深度",
                 "stationType": "车站类型",
                 "linePathType": "线段路径类型",
-                "lineStyleType": "线段样式类型"
+                "lineStyleType": "线段样式类型",
+                "type": "类型"
             },
             "nodePosition": {
                 "title": "节点位置",
