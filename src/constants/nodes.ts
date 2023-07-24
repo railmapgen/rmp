@@ -1,4 +1,5 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
+import { BerlinUBahnBadgeAttributes } from '../components/svgs/nodes/berlin-u-bahn-badge';
 import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
 import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
@@ -16,6 +17,7 @@ export enum MiscNodeType {
     GzmtrLineBadge = 'gzmtr-line-badge',
     BjsubwayNumLineBadge = 'bjsubway-num-line-badge',
     BjsubwayTextLineBadge = 'bjsubway-text-line-badge',
+    BerlinUBahnBadge = 'berlin-u-bahn-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -27,6 +29,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
     [MiscNodeType.BjsubwayNumLineBadge]?: BjsubwayNumLineBadgeAttributes;
     [MiscNodeType.BjsubwayTextLineBadge]?: BjsubwayTextLineBadgeAttributes;
+    [MiscNodeType.BerlinUBahnBadge]?: BerlinUBahnBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }
