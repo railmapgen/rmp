@@ -8,6 +8,7 @@ import bjsubwayTextLineBadge from './bjsubway-text-line-badge';
 import facilities from './facilities';
 import text from './text';
 import berlinUBahnBadge from './berlin-u-bahn-badge';
+import berlinSBahnBadge from './berlin-s-bahn-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -17,6 +18,7 @@ const miscNodes = {
     [MiscNodeType.BjsubwayNumLineBadge]: bjsubwayNumLineBadge,
     [MiscNodeType.BjsubwayTextLineBadge]: bjsubwayTextLineBadge,
     [MiscNodeType.BerlinUBahnBadge]: berlinUBahnBadge,
+    [MiscNodeType.BerlinSBahnBadge]: berlinSBahnBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
 };
