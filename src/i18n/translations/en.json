@@ -41,7 +41,8 @@
                 "zIndex": "Depth",
                 "stationType": "Station Type",
                 "linePathType": "Line Path Type",
-                "lineStyleType": "Line Style Type"
+                "lineStyleType": "Line Style Type",
+                "type": "Type"
             },
             "multipleSelection": "Multiple Selection",
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",

@@ -41,7 +41,8 @@
                 "zIndex": "深さ",
                 "stationType": "駅タイプ",
                 "linePathType": "路線パスタイプ",
-                "lineStyleType": "路線スタイルタイプ"
+                "lineStyleType": "路線スタイルタイプ",
+                "type": "タイプ"
             },
             "multipleSelection": "複数選択",
             "changeStationTypeContent": "駅のタイプを変更すると、駅の名前以外のすべての属性が削除されます。",
