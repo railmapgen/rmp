@@ -3,10 +3,10 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
-const BerlinUBahnBadge = (props: NodeComponentProps<BerlinSBahnBadgeAttributes>) => {
+const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { num = defaultBerlinSBahnBadgeAttributes.num, color = defaultBerlinSBahnBadgeAttributes.color } =
-        attrs ?? defaultBerlinSBahnBadgeAttributes;
+    const { num = defaultBerlinSBahnLineBadgeAttributes.num, color = defaultBerlinSBahnLineBadgeAttributes.color } =
+        attrs ?? defaultBerlinSBahnLineBadgeAttributes;
 
     const [sX, numX] = num >= 10 ? [7, 20] : [10, 20];
 
@@ -30,7 +30,7 @@ const BerlinUBahnBadge = (props: NodeComponentProps<BerlinSBahnBadgeAttributes>)
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <rect fill={color[2]} x="0" width="30" height="15" rx="8" />
                 <text
-                    className="rmp-name__en"
+                    className="rmp-name__berlin"
                     textAnchor="middle"
                     x={sX}
                     y="12.5"
@@ -42,7 +42,7 @@ const BerlinUBahnBadge = (props: NodeComponentProps<BerlinSBahnBadgeAttributes>)
                     S
                 </text>
                 <text
-                    className="rmp-name__en"
+                    className="rmp-name__berlin"
                     textAnchor="middle"
                     x={numX}
                     y="12.5"
@@ -72,26 +72,26 @@ const BerlinUBahnBadge = (props: NodeComponentProps<BerlinSBahnBadgeAttributes>)
 };
 
 /**
- * BjsubwayNumLineBadge specific props.
+ * BerlinSBahnLineBadge specific props.
  */
-export interface BerlinSBahnBadgeAttributes extends AttributesWithColor {
+export interface BerlinSBahnLineBadgeAttributes extends AttributesWithColor {
     num: number;
 }
 
-const defaultBerlinSBahnBadgeAttributes: BerlinSBahnBadgeAttributes = {
+const defaultBerlinSBahnLineBadgeAttributes: BerlinSBahnLineBadgeAttributes = {
     num: 1,
     color: [CityCode.Berlin, 'bs1', '#DD6CA6', MonoColour.white],
 };
 
-const BerlinSBahnBadgeFields = [
+const BerlinSBahnLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.berlinSBahnBadge.num',
-        value: (attrs?: BerlinSBahnBadgeAttributes) => (attrs ?? defaultBerlinSBahnBadgeAttributes).num,
+        label: 'panel.details.node.berlinSBahnLineBadge.num',
+        value: (attrs?: BerlinSBahnLineBadgeAttributes) => (attrs ?? defaultBerlinSBahnLineBadgeAttributes).num,
         validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: BerlinSBahnBadgeAttributes | undefined) => {
+        onChange: (val: string | number, attrs_: BerlinSBahnLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBerlinSBahnBadgeAttributes;
+            const attrs = attrs_ ?? defaultBerlinSBahnLineBadgeAttributes;
             // return if invalid
             if (Number.isNaN(val)) return attrs;
             // set value
@@ -102,11 +102,13 @@ const BerlinSBahnBadgeFields = [
     },
     {
         type: 'custom',
-        component: <ColorField type={MiscNodeType.BerlinSBahnBadge} defaultAttrs={defaultBerlinSBahnBadgeAttributes} />,
+        component: (
+            <ColorField type={MiscNodeType.BerlinSBahnLineBadge} defaultAttrs={defaultBerlinSBahnLineBadgeAttributes} />
+        ),
     },
 ];
 
-const BerlinSBahnBadgeIcon = (
+const BerlinSBahnLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="20" height="16" rx="8" />
         <text x="4.5" y="16.5" fill="white" fontSize="14">
@@ -115,17 +117,17 @@ const BerlinSBahnBadgeIcon = (
     </svg>
 );
 
-const berlinSBahnBadge: Node<BerlinSBahnBadgeAttributes> = {
-    component: BerlinUBahnBadge,
-    icon: BerlinSBahnBadgeIcon,
-    defaultAttrs: defaultBerlinSBahnBadgeAttributes,
+const berlinSBahnLineBadge: Node<BerlinSBahnLineBadgeAttributes> = {
+    component: BerlinUBahnLineBadge,
+    icon: BerlinSBahnLineBadgeIcon,
+    defaultAttrs: defaultBerlinSBahnLineBadgeAttributes,
     // TODO: fix this
     // @ts-ignore-error
-    fields: BerlinSBahnBadgeFields,
+    fields: BerlinSBahnLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.BerlinSBahnBadge.displayName',
+        displayName: 'panel.details.node.BerlinSBahnLineBadge.displayName',
         tags: [],
     },
 };
 
-export default berlinSBahnBadge;
+export default berlinSBahnLineBadge;

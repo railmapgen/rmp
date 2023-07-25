@@ -1,0 +1,9 @@
+.rmp-name__berlin {
+    font-family: Roboto, serif;
+}
+
+@font-face {
+    font-family: Roboto;
+    font-display: swap;
+    src: url('../fonts/Roboto-Bold.ttf');
+}

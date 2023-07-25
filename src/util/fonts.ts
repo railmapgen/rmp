@@ -1,3 +1,7 @@
+import { NodeType } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
+
 const waitForMs = (ms: number) => {
     return new Promise<void>(resolve => {
         setTimeout(resolve, ms);
@@ -66,7 +70,7 @@ export const getBase64FontFace = async (svgEl: SVGSVGElement): Promise<string[]>
 
     const fontFaceList = await document.fonts.load('80px GenYoMin TW, Vegur', uniqueCharacters);
     const cssRules = document.querySelector<HTMLLinkElement>('link#fonts_mtr')?.sheet?.cssRules;
-    if (!cssRules) return Promise.reject(new Error('cssRules can not be found in link#css_share'));
+    if (!cssRules) return Promise.reject(new Error('cssRules can not be found in link#fonts_mtr'));
     const cssFontFaceRules = Array.from(cssRules).filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
     const distinctCssRules = fontFaceList.reduce<CSSFontFaceRule[]>((acc, cur) => {
         const matchedRule = matchCssRuleByFontFace(cssFontFaceRules, cur);
@@ -104,4 +108,13 @@ export const getAbsoluteUrl = (cssRule: CSSFontFaceRule) => {
     return isSafari()
         ? ruleStyleSrc.replace(/^url\("(\S+)"\).*$/, '$1')
         : import.meta.env.BASE_URL + '/styles/' + ruleStyleSrc.match(/^url\("([\S*]+)"\)/)?.[1];
+};
+
+/**
+ * Node type to fonts' css name.
+ */
+export const FONTS_CSS: { [k in NodeType]?: string } = {
+    [StationType.MTR]: 'fonts_mtr',
+    [MiscNodeType.BerlinSBahnLineBadge]: 'fonts_berlin',
+    [MiscNodeType.BerlinUBahnLineBadge]: 'fonts_berlin',
 };

@@ -31,7 +31,7 @@ import { StationType } from '../../constants/stations';
 import store, { useRootSelector } from '../../redux';
 import { downloadAs, downloadBlobAs } from '../../util/download';
 import { getBase64FontFace } from '../../util/fonts';
-import { calculateCanvasSize } from '../../util/helpers';
+import { calculateCanvasSize, findNodesExist } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
@@ -41,7 +41,6 @@ export default function DownloadActions() {
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
-    const { nodeExists } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
     const bgColor = useColorModeValue('white', 'gray.800');
 
@@ -128,6 +127,7 @@ export default function DownloadActions() {
             '.rmp-name__en': ['font-family'],
             '.rmp-name__mtr__zh': ['font-family'],
             '.rmp-name__mtr__en': ['font-family'],
+            '.rmp-name__berlin': ['font-family'],
             '.rmp-name-station': ['paint-order', 'stroke', 'stroke-width'],
         }).forEach(([className, styleSet]) => {
             const e = document.querySelector(className);
@@ -141,7 +141,8 @@ export default function DownloadActions() {
             });
         });
 
-        if (nodeExists[StationType.MTR]) {
+        const nodesExist = findNodesExist(graph.current);
+        if (nodesExist[StationType.MTR]) {
             try {
                 const uris = await getBase64FontFace(elem);
                 const s = document.createElement('style');

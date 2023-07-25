@@ -38,10 +38,6 @@ interface RuntimeState {
      * The theme when users make single color lines and some stations.
      */
     theme: Theme;
-    /**
-     * Whether a special kind of node exists in the graph.
-     */
-    nodeExists: { [key in NodeType]: boolean };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
 
@@ -56,9 +52,6 @@ const initialState: RuntimeState = {
     lastTool: undefined,
     keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
-    nodeExists: Object.fromEntries(
-        [...Object.keys(StationType), ...Object.keys(MiscNodeType)].map(key => [key, false])
-    ) as { [key in NodeType]: boolean },
     globalAlerts: {},
 };
 
@@ -95,9 +88,6 @@ const runtimeSlice = createSlice({
         },
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
-        },
-        setNodeExists: (state, action: PayloadAction<{ [key in NodeType]: boolean }>) => {
-            state.nodeExists = action.payload;
         },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
@@ -138,7 +128,6 @@ export const {
     setMode,
     setKeepLastPath,
     setTheme,
-    setNodeExists,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;
