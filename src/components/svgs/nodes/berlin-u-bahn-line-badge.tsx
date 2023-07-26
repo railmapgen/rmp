@@ -31,10 +31,10 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinUBahnLineBadgeAttr
                     className="rmp-name__berlin"
                     textAnchor="middle"
                     x="12.5"
-                    y="13.25"
+                    y="12.5"
                     fill={fgColor}
-                    fontSize="16"
-                    letterSpacing="0"
+                    fontSize="14"
+                    letterSpacing="1"
                     fontWeight="bold"
                 >
                     U{num}

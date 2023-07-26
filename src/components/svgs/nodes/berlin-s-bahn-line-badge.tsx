@@ -8,7 +8,7 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttr
     const { num = defaultBerlinSBahnLineBadgeAttributes.num, color = defaultBerlinSBahnLineBadgeAttributes.color } =
         attrs ?? defaultBerlinSBahnLineBadgeAttributes;
 
-    const [sX, numX] = num >= 10 ? [7, 20] : [10, 20];
+    const [sX, numX] = num >= 10 ? [6, 19.75] : [10, 20];
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -48,7 +48,7 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttr
                     y="12.5"
                     fill={fgColor}
                     fontSize="14"
-                    letterSpacing="-0.4"
+                    letterSpacing="-0.2"
                     fontWeight="bold"
                 >
                     {num}
