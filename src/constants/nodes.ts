@@ -18,8 +18,8 @@ export enum MiscNodeType {
     GzmtrLineBadge = 'gzmtr-line-badge',
     BjsubwayNumLineBadge = 'bjsubway-num-line-badge',
     BjsubwayTextLineBadge = 'bjsubway-text-line-badge',
-    BerlinUBahnLineBadge = 'berlin-u-bahn-badge',
-    BerlinSBahnLineBadge = 'berlin-s-bahn-badge',
+    BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
+    BerlinSBahnLineBadge = 'berlin-s-bahn-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
