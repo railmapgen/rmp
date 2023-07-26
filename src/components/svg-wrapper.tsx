@@ -45,7 +45,7 @@ const SvgWrapper = () => {
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
 
-    // Find node existence on each update and load fonts if needed.
+    // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
         const nodesExist = findNodesExist(graph.current);
 
