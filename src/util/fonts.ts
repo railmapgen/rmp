@@ -116,7 +116,7 @@ export const getAbsoluteUrl = (cssRule: CSSFontFaceRule) => {
 };
 
 /**
- * Node type to fonts' css name.
+ * Node type to fonts' css related data.
  */
 export const FONTS_CSS: {
     [k in NodeType]?: {
