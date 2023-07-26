@@ -6,4 +6,9 @@
     font-family: Roboto;
     font-display: swap;
     src: url('../fonts/Roboto-Bold.ttf');
+    /*
+     * This obvious as the font only support ascii letters,
+     * but required in getBase64FontFace and matchCssRuleByFontFace.
+    */
+    unicode-range: U+0-7F;
 }

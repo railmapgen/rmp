@@ -55,10 +55,9 @@ const SvgWrapper = () => {
             // only type is needed
             .map(([type, _]) => type as NodeType)
             // only load fonts that are not loaded before
-            // @ts-expect-error type must be in FONTS_CSS as we filtered above
-            .filter(type => document.getElementById(FONTS_CSS[type]) === null)
+            .filter(type => FONTS_CSS[type] && document.getElementById(FONTS_CSS[type]!.cssName) === null)
             // get the css name
-            .map(type => FONTS_CSS[type])
+            .map(type => FONTS_CSS[type]!.cssName)
             // remove duplicates
             .filter((type, i, arr) => i === arr.findIndex(t => t === type))
             .forEach(css => {

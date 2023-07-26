@@ -25,12 +25,12 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
-import { Events } from '../../constants/constants';
+import { Events, NodeType } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import { StationType } from '../../constants/stations';
 import store, { useRootSelector } from '../../redux';
 import { downloadAs, downloadBlobAs } from '../../util/download';
-import { getBase64FontFace } from '../../util/fonts';
+import { FONTS_CSS, getBase64FontFace } from '../../util/fonts';
 import { calculateCanvasSize, findNodesExist } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
@@ -142,15 +142,18 @@ export default function DownloadActions() {
         });
 
         const nodesExist = findNodesExist(graph.current);
-        if (nodesExist[StationType.MTR]) {
-            try {
-                const uris = await getBase64FontFace(elem);
-                const s = document.createElement('style');
-                s.textContent = uris.join('\n');
-                elem.prepend(s);
-            } catch (err) {
-                alert('Failed to fonts. Fonts in the exported PNG will be missing.');
-                console.error(err);
+        for (const nodeType in FONTS_CSS) {
+            if (nodesExist[nodeType as NodeType]) {
+                try {
+                    const { className, cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
+                    const uris = await getBase64FontFace(elem, className, cssFont, cssName);
+                    const s = document.createElement('style');
+                    s.textContent = uris.join('\n');
+                    elem.prepend(s);
+                } catch (err) {
+                    alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
+                    console.error(err);
+                }
             }
         }
 
