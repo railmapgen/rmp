@@ -111,7 +111,7 @@ const berlinUBahnLineBadge: Node<BerlinUBahnLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: BerlinUBahnLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.BerlinUBahnLineBadge.displayName',
+        displayName: 'panel.details.node.berlinUBahnLineBadge.displayName',
         tags: [],
     },
 };

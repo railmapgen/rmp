@@ -90,6 +90,14 @@
                     "nameZh": "中文线路名称",
                     "nameEn": "英文线路名称"
                 },
+                "berlinSBahnLineBadge": {
+                    "displayName": "柏林地铁",
+                    "num": "线路号"
+                },
+                "berlinUBahnLineBadge": {
+                    "displayName": "柏林城市快铁",
+                    "num": "线路号"
+                },
                 "facilities": {
                     "displayName": "设施",
                     "type": "类型"

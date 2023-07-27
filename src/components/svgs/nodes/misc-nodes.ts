@@ -17,8 +17,8 @@ const miscNodes = {
     [MiscNodeType.GzmtrLineBadge]: gzmtrLineBadge,
     [MiscNodeType.BjsubwayNumLineBadge]: bjsubwayNumLineBadge,
     [MiscNodeType.BjsubwayTextLineBadge]: bjsubwayTextLineBadge,
-    [MiscNodeType.BerlinUBahnLineBadge]: berlinUBahnLineBadge,
     [MiscNodeType.BerlinSBahnLineBadge]: berlinSBahnLineBadge,
+    [MiscNodeType.BerlinUBahnLineBadge]: berlinUBahnLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
 };

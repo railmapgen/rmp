@@ -90,6 +90,14 @@
                     "nameZh": "中国語の路線名",
                     "nameEn": "英語の路線名"
                 },
+                "berlinSBahnLineBadge": {
+                    "displayName": "ベルリン地下鉄番号バッジ",
+                    "num": "路線番号"
+                },
+                "berlinUBahnLineBadge": {
+                    "displayName": "ベルリンSバーン番号バッジ",
+                    "num": "路線番号"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "タイプ"

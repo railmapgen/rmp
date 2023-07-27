@@ -18,8 +18,8 @@ export enum MiscNodeType {
     GzmtrLineBadge = 'gzmtr-line-badge',
     BjsubwayNumLineBadge = 'bjsubway-num-line-badge',
     BjsubwayTextLineBadge = 'bjsubway-text-line-badge',
-    BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     BerlinSBahnLineBadge = 'berlin-s-bahn-line-badge',
+    BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -31,8 +31,8 @@ export interface MiscNodeAttributes {
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
     [MiscNodeType.BjsubwayNumLineBadge]?: BjsubwayNumLineBadgeAttributes;
     [MiscNodeType.BjsubwayTextLineBadge]?: BjsubwayTextLineBadgeAttributes;
-    [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.BerlinSBahnLineBadge]?: BerlinSBahnLineBadgeAttributes;
+    [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }

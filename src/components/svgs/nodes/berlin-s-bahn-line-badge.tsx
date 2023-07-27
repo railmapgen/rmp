@@ -125,7 +125,7 @@ const berlinSBahnLineBadge: Node<BerlinSBahnLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: BerlinSBahnLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.BerlinSBahnLineBadge.displayName',
+        displayName: 'panel.details.node.berlinSBahnLineBadge.displayName',
         tags: [],
     },
 };
