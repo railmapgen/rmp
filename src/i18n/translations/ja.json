@@ -41,7 +41,8 @@
                 "zIndex": "深さ",
                 "stationType": "駅タイプ",
                 "linePathType": "路線パスタイプ",
-                "lineStyleType": "路線スタイルタイプ"
+                "lineStyleType": "路線スタイルタイプ",
+                "type": "タイプ"
             },
             "multipleSelection": "複数選択",
             "changeStationTypeContent": "駅のタイプを変更すると、駅の名前以外のすべての属性が削除されます。",
@@ -231,6 +232,9 @@
                 "chinaRailway": {
                     "displayName": "中国鉄道スタイル"
                 },
+                "bjsubwaySingleColor": {
+                    "displayName": "北京地下鉄単色スタイル"
+                },
                 "bjsubwayTram": {
                     "displayName": "北京地下鉄トラムスタイル"
                 },
@@ -279,6 +283,24 @@
         "download": {
             "config": "プロジェクトをエクスポート",
             "image": "画像をエクスポート",
+            "2rmg": {
+                "title": "RMGプロジェクトへエクスポート",
+                "type": {
+                    "line": "直線",
+                    "loop": "ループ",
+                    "branch": "支線"
+                },
+                "placeholder": {
+                    "chinese": "中国語のライン名",
+                    "english": "英語の路線名",
+                    "lineCode": "路線番号"
+                },
+                "info1": "この機能は、RMPプロジェクトをRMGプロジェクトに変換するために設計されています。",
+                "info2": "以下のリストの行は、変換用に利用できます。左側のテキストボックスに中国語の行名、中央に英語の行名、右側に（広州メトロスタイル用の）行コードを入力し、ダウンロードボタンをクリックしてRMGプロジェクトを保存できます。",
+                "noline": "利用可能な回線が見つかりません。",
+                "download": "ダウンロード",
+                "downloadInfo": "出発駅を選択してクリックしてください。"
+            },
             "format": "フォーマット",
             "png": "PNG",
             "svg": "SVG（Web用）",
@@ -303,17 +325,11 @@
                 "keys": "キー",
                 "description": "説明",
                 "f": "最後のツールを使用する",
-                "arrowUpward": "キャンバスを少し上に移動する",
-                "arrowBack": "キャンバスを少し左に移動する",
-                "arrowDownward": "キャンバスを少し下に移動する",
-                "arrowForward": "キャンバスを少し右に移動する",
-                "i": "選択した駅を少し上に移動する",
-                "j": "選択した駅を少し左に移動する",
-                "k": "選択した駅を少し下に移動する",
-                "l": "選択した駅を少し右に移動する",
-                "shift": "複数選択",
-                "alt": "正確な移動",
-                "delete": "選択をすべて削除する",
+                "arrows": "キャンバスを少し移動します。",
+                "ijkl": "選択した駅を少し移動します。",
+                "shift": "複数選択。",
+                "alt": "正確な移動。",
+                "delete": "選択した駅を削除します。",
                 "undo": "元に戻す",
                 "redo": "やり直す"
             },

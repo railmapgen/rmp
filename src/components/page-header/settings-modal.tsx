@@ -1,6 +1,3 @@
-import React from 'react';
-import rmgRuntime from '@railmapgen/rmg-runtime';
-import { useTranslation } from 'react-i18next';
 import {
     Badge,
     Box,
@@ -28,17 +25,20 @@ import {
     useColorModeValue,
     VStack,
 } from '@chakra-ui/react';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { setTelemetryApp } from '../../redux/app/app-slice';
+import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
+import { isMacClient } from '../../util/helpers';
 import {
     ChangeTypeModal,
     RemoveLinesWithSingleColorModal,
     ScaleNodesModal,
     TranslateNodesModal,
 } from './procedures-modal';
-import { isMacClient } from '../../util/helpers';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',
@@ -88,122 +88,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         onChange={({ target: { checked } }) => dispatch(setKeepLastPath(checked))}
                                     />
                                 </Box>
-                            </Box>
-                        </Box>
-
-                        <Box width="100%" mb="3">
-                            <Text as="b" fontSize="xl">
-                                {t('header.settings.shortcuts.title')}
-                            </Text>
-                            <Box mt="3">
-                                <Table>
-                                    <Thead>
-                                        <Tr>
-                                            <Th>{t('header.settings.shortcuts.keys')}</Th>
-                                            <Th>{t('header.settings.shortcuts.description')}</Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-                                        <Tr>
-                                            <Td>
-                                                <Kbd>f</Kbd>
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.f')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <MdArrowUpward />
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.arrowUpward')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <MdArrowBack />
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.arrowBack')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <MdArrowForward />
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.arrowForward')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <MdArrowDownward />
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.arrowDownward')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <Kbd>i</Kbd>
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.i')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <Kbd>j</Kbd>
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.j')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <Kbd>k</Kbd>
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.k')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                <Kbd>l</Kbd>
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.l')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8679;</Kbd> : <Kbd>shift</Kbd>}
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.shift')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8997;</Kbd> : <Kbd>alt</Kbd>}
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.alt')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#9003;</Kbd> : <Kbd>delete</Kbd>}
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.delete')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
-                                                {' + '}
-                                                <Kbd>z</Kbd>
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.undo')}</Td>
-                                        </Tr>
-                                        <Tr>
-                                            <Td>
-                                                {isMacClient ? (
-                                                    <>
-                                                        <Kbd sx={macKeyStyle}>&#8679;</Kbd>
-                                                        {' + '}
-                                                        <Kbd sx={macKeyStyle}>&#8984;</Kbd>
-                                                        {' + '}
-                                                        <Kbd>z</Kbd>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Kbd>ctrl</Kbd> + <Kbd>y</Kbd>
-                                                    </>
-                                                )}
-                                            </Td>
-                                            <Td>{t('header.settings.shortcuts.redo')}</Td>
-                                        </Tr>
-                                    </Tbody>
-                                </Table>
                             </Box>
                         </Box>
 
@@ -264,6 +148,96 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     isOpen={isRemoveLinesWithSingleColorOpen}
                                     onClose={() => setIsRemoveLinesWithSingleColorOpen(false)}
                                 />
+                            </Box>
+                        </Box>
+
+                        <Box width="100%" mb="3">
+                            <Text as="b" fontSize="xl">
+                                {t('header.settings.shortcuts.title')}
+                            </Text>
+                            <Box mt="3">
+                                <Table>
+                                    <Thead>
+                                        <Tr>
+                                            <Th>{t('header.settings.shortcuts.keys')}</Th>
+                                            <Th>{t('header.settings.shortcuts.description')}</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>f</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.f')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Box display="flex" flexDirection="row">
+                                                    <MdArrowUpward />
+                                                    <MdArrowBack />
+                                                    <MdArrowForward />
+                                                    <MdArrowDownward />
+                                                </Box>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.arrows')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Box display="flex" flexDirection="row">
+                                                    <Kbd>i</Kbd>
+                                                    <Kbd>j</Kbd>
+                                                    <Kbd>k</Kbd>
+                                                    <Kbd>l</Kbd>
+                                                </Box>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.ijkl')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8679;</Kbd> : <Kbd>shift</Kbd>}
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.shift')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8997;</Kbd> : <Kbd>alt</Kbd>}
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.alt')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#9003;</Kbd> : <Kbd>delete</Kbd>}
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.delete')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
+                                                <Kbd>z</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.undo')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? (
+                                                    <>
+                                                        <Kbd sx={macKeyStyle}>&#8679;</Kbd>
+                                                        {' + '}
+                                                        <Kbd sx={macKeyStyle}>&#8984;</Kbd>
+                                                        {' + '}
+                                                        <Kbd>z</Kbd>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Kbd>ctrl</Kbd> + <Kbd>y</Kbd>
+                                                    </>
+                                                )}
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.redo')}</Td>
+                                        </Tr>
+                                    </Tbody>
+                                </Table>
                             </Box>
                         </Box>
 

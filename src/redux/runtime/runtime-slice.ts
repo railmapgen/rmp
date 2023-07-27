@@ -1,10 +1,10 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { ActiveType, RuntimeMode, Theme, NodeType } from '../../constants/constants';
-import { undoAction, redoAction } from '../param/param-slice';
-import { StationType } from '../../constants/stations';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { MiscNodeId, NodeType, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
+import { StationType } from '../../constants/stations';
+import { redoAction, undoAction } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -15,7 +15,7 @@ interface RuntimeState {
      * Current selection (nodes and edges id, possible multiple selection).
      */
     selected: string[];
-    active: ActiveType | undefined;
+    active: StnId | MiscNodeId | 'background' | undefined;
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
      */
@@ -77,7 +77,7 @@ const runtimeSlice = createSlice({
         clearSelected: state => {
             state.selected = [];
         },
-        setActive: (state, action: PayloadAction<ActiveType | undefined>) => {
+        setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;
         },
         setRefreshNodes: state => {

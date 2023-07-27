@@ -2,6 +2,7 @@ import { SystemStyleObject } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { RmgAppClip } from '@railmapgen/rmg-components';
+import { RMGParam } from '../../constants/rmg';
 
 const CHANNEL_PREFIX = 'rmg-bridge--';
 
@@ -18,7 +19,7 @@ const styles: SystemStyleObject = {
 interface RmgAppClipProps {
     isOpen: boolean;
     onClose: () => void;
-    onImport: (param: Record<string, any>) => void;
+    onImport: (param: RMGParam) => void;
 }
 
 export default function RmgParamAppClip(props: RmgAppClipProps) {
@@ -26,7 +27,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
 
     const [appClipId] = useState(crypto.randomUUID());
     const frameUrl =
-        '/rmg/import?' +
+        '/rmg/#/import?' +
         new URLSearchParams({
             parentComponent: rmgRuntime.getAppName(),
             parentId: appClipId,
@@ -40,7 +41,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
             if (event === 'CLOSE') {
                 onClose();
             } else if (event === 'IMPORT') {
-                onImport(data);
+                onImport(data as RMGParam);
             }
         };
 

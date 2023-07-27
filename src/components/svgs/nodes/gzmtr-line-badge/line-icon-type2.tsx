@@ -21,12 +21,35 @@ export const LineIconType2 = (props: LineIconType2Props) => {
 
     return (
         <g ref={wrapperEl} transform={`translate(${dx},${dy})scale(${scale})`}>
-            <text className="rmp-name__zh" fontSize={14} y={12} textAnchor="end">
+            <text
+                className="rmp-name__zh"
+                fontSize={14}
+                y={12}
+                textAnchor="end"
+                // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                dominantBaseline="central"
+            >
                 {commonPart}
-                <tspan className="rmp-name__zh" fontSize={8} x={0} dy={-2} textAnchor="start">
+                <tspan
+                    className="rmp-name__zh"
+                    fontSize={8}
+                    x={0}
+                    dy={-2}
+                    textAnchor="start"
+                    // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                    dominantBaseline="central"
+                >
                     {lineName[0].slice(commonPart.length).trim()}
                 </tspan>
-                <tspan className="rmg-name__en" fontSize={4} x={0} dy={6} textAnchor="start">
+                <tspan
+                    className="rmg-name__en"
+                    fontSize={4}
+                    x={0}
+                    dy={6}
+                    textAnchor="start"
+                    // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
+                    dominantBaseline="central"
+                >
                     {lineName[1].slice(commonPart.length).trim()}
                 </tspan>
             </text>
