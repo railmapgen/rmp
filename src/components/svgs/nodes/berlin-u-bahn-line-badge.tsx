@@ -35,7 +35,6 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinUBahnLineBadgeAttr
                     fill={fgColor}
                     fontSize="14"
                     letterSpacing="1"
-                    fontWeight="bold"
                 >
                     U{num}
                 </text>

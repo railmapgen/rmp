@@ -37,7 +37,6 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttr
                     fill={fgColor}
                     fontSize="14"
                     letterSpacing="0"
-                    fontWeight="bold"
                 >
                     S
                 </text>
@@ -49,7 +48,6 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttr
                     fill={fgColor}
                     fontSize="14"
                     letterSpacing="-0.2"
-                    fontWeight="bold"
                 >
                     {num}
                 </text>
