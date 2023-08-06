@@ -1,5 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { NodeAttributes, EdgeAttributes, GraphAttributes, NodeType } from '../constants/constants';
+import { StationType } from '../constants/stations';
+import { MiscNodeType } from '../constants/nodes';
 
 export const getMousePosition = (e: React.MouseEvent) => {
     const bbox = e.currentTarget.getBoundingClientRect();
@@ -30,3 +32,14 @@ export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, Ed
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
+
+export const findNodesExist = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+    const nodesExist: { [key in NodeType]: boolean } = Object.fromEntries(
+        [...Object.values(StationType), Object.values(MiscNodeType)].map(type => [type, false])
+    );
+    graph.forEachNode(node => {
+        const type = graph.getNodeAttribute(node, 'type');
+        nodesExist[type] = true;
+    });
+    return nodesExist;
+};

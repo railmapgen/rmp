@@ -1,3 +1,7 @@
+import { NodeType } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
+
 const waitForMs = (ms: number) => {
     return new Promise<void>(resolve => {
         setTimeout(resolve, ms);
@@ -45,28 +49,33 @@ const matchCssRuleByFontFace = (rules: CSSFontFaceRule[], font: FontFace): CSSFo
     return rules.find(rule => {
         const cssStyle = rule.style;
         return (
-            cssStyle.getPropertyValue('font-family').replace(/^"(.+)"$/, '$1') === font.family &&
+            cssStyle.getPropertyValue('font-family') === font.family &&
             cssStyle.getPropertyValue('unicode-range') === font.unicodeRange
         );
     });
 };
 
-export const getBase64FontFace = async (svgEl: SVGSVGElement): Promise<string[]> => {
+export const getBase64FontFace = async (
+    svgEl: SVGSVGElement,
+    className: string[],
+    cssFont: string[],
+    cssName: string
+): Promise<string[]> => {
     const uniqueCharacters = Array.from(
         new Set(
-            [
-                ...svgEl.querySelectorAll<SVGElement>('.rmp-name__mtr__zh'),
-                ...svgEl.querySelectorAll<SVGElement>('.rmp-name__mtr__en'),
-            ]
+            className
+                // convert NodeListOf<SVGElement> to SVGElement[]
+                .map(c => [...svgEl.querySelectorAll<SVGElement>(c)])
+                .flat()
                 .map(el => el.innerHTML)
                 .join('')
                 .replace(/\s/g, '')
         )
     ).join('');
 
-    const fontFaceList = await document.fonts.load('80px GenYoMin TW, Vegur', uniqueCharacters);
-    const cssRules = document.querySelector<HTMLLinkElement>('link#fonts_mtr')?.sheet?.cssRules;
-    if (!cssRules) return Promise.reject(new Error('cssRules can not be found in link#css_share'));
+    const fontFaceList = await document.fonts.load(cssFont.join(', '), uniqueCharacters);
+    const cssRules = document.querySelector<HTMLLinkElement>(`link#${cssName}`)?.sheet?.cssRules;
+    if (!cssRules) return Promise.reject(new Error(`cssRules can not be found in link#${cssName}`));
     const cssFontFaceRules = Array.from(cssRules).filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
     const distinctCssRules = fontFaceList.reduce<CSSFontFaceRule[]>((acc, cur) => {
         const matchedRule = matchCssRuleByFontFace(cssFontFaceRules, cur);
@@ -100,8 +109,35 @@ export const getBase64FontFace = async (svgEl: SVGSVGElement): Promise<string[]>
 };
 
 export const getAbsoluteUrl = (cssRule: CSSFontFaceRule) => {
-    const ruleStyleSrc = (cssRule.style as any).src;
+    const ruleStyleSrc = cssRule.style.getPropertyValue('src');
     return isSafari()
         ? ruleStyleSrc.replace(/^url\("(\S+)"\).*$/, '$1')
         : import.meta.env.BASE_URL + '/styles/' + ruleStyleSrc.match(/^url\("([\S*]+)"\)/)?.[1];
+};
+
+/**
+ * Node type to fonts' css related data.
+ */
+export const FONTS_CSS: {
+    [k in NodeType]?: {
+        className: string[];
+        cssFont: string[];
+        cssName: string;
+    };
+} = {
+    [StationType.MTR]: {
+        className: ['.rmp-name__mtr__zh', '.rmp-name__mtr__en'],
+        cssFont: ['80px GenYoMin TW', 'Vegur'],
+        cssName: 'fonts_mtr',
+    },
+    [MiscNodeType.BerlinSBahnLineBadge]: {
+        className: ['.rmp-name__berlin'],
+        cssFont: ['16px Roboto'],
+        cssName: 'fonts_berlin',
+    },
+    [MiscNodeType.BerlinUBahnLineBadge]: {
+        className: ['.rmp-name__berlin'],
+        cssFont: ['16px Roboto'],
+        cssName: 'fonts_berlin',
+    },
 };

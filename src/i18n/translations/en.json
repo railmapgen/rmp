@@ -90,6 +90,14 @@
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
                 },
+                "berlinSBahnLineBadge": {
+                    "displayName": "Berlin S Bahn line badge",
+                    "num": "Line Number"
+                },
+                "berlinUBahnLineBadge": {
+                    "displayName": "Berlin U Bahn line badge",
+                    "num": "Line Number"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"

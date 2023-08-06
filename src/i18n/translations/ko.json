@@ -83,12 +83,20 @@
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "베이징 지하철 노선 배지",
-                    "num": "Line Number"
+                    "num": "노선 번호"
                 },
                 "bjsubwayTextLineBadge": {
                     "displayName": "베이징 지하철 텍스트 라인 배지",
                     "nameZh": "한자 노선 명칭",
                     "nameEn": "영문 노선 명칭"
+                },
+                "berlinSBahnLineBadge": {
+                    "displayName": "베를린 S반 노선 배지",
+                    "num": "노선 번호"
+                },
+                "berlinUBahnLineBadge": {
+                    "displayName": "베를린 U반 노선 배지",
+                    "num": "노선 번호"
                 },
                 "facilities": {
                     "displayName": "시설",
