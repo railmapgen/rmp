@@ -1,0 +1,1 @@
+System.register(["./index-legacy-1d787828.js","./chakra-legacy-fe32153b.js","./react-legacy-9060605e.js"],(function(e,t){"use strict";var n;return{setters:[function(e){n=e.v},null,null],execute:function(){e("default",[{id:"to1",colour:"#feed03",fg:n.black,name:{en:"Metro Line 1","zh-Hans":"地铁1号线","zh-Hant":"捷運1號線",it:"M1"}}])}}}));
