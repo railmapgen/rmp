@@ -284,6 +284,8 @@
             "config": "导入项目",
             "configRMG": "从RMG存档中导入",
             "projectRMG": "从RMG项目中导入",
+            "invalidType": "无效的文件类型！仅接受JSON格式的文件。",
+            "unknownError": "解析上传文件时发生未知错误！请重试。",
             "gallery": "从画廊中导入",
             "importFromRMPGallery": "模板 {{id}} 已导入。对此更改不满意？可通过 Ctrl + Z 或撤销按钮进行撤销。",
             "failToImportFromRMPGallery": "无法从画廊导入{{id}}，找不到文件。"
@@ -314,6 +316,9 @@
             "svg": "SVG图像（网页用）",
             "transparent": "透明背景",
             "scale": "缩放",
+            "disabledScaleOptions": "由于浏览器的画布限制，部分缩放选项被禁用。",
+            "disabledScaleOptionsWorkarounds": "可能的解决方法包括使用此命令行工具从SVG生成图像：",
+            "imageTooBig": "图像太大，无法在您的浏览器中生成！",
             "shareInfo1": "当我分享此图片时我会附上",
             "shareInfo2": "和它的链接。",
             "termsAndConditions": "条款及细则",

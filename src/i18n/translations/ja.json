@@ -284,6 +284,8 @@
             "config": "プロジェクトをインポート",
             "configRMG": "RMG保存からインポート",
             "projectRMG": "RMGプロジェクトからインポート",
+            "invalidType": "無効なファイルタイプです！JSON形式のファイルのみが受け付けられます。",
+            "unknownError": "アップロードされたファイルの解析中に不明なエラーが発生しました。もう一度お試しください。",
             "gallery": "ギャラリーからインポート",
             "importFromRMPGallery": "テンプレート{{id}}がインポートされました。この変更に満足していませんか？Ctrl + Zまたは元に戻すボタンで元に戻せます。",
             "failToImportFromRMPGallery": "ギャラリーから{{id}}のインポートに失敗しました。ファイルが見つかりませんでした。"
@@ -314,6 +316,9 @@
             "svg": "SVG（Web用）",
             "transparent": "透明性",
             "scale": "スケール",
+            "disabledScaleOptions": "ブラウザのキャンバス制限のため、一部のスケールオプションが無効になっています。",
+            "disabledScaleOptionsWorkarounds": "回避策として、このCLIツールを使用してSVGから画像を生成する方法が考えられます：",
+            "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",
             "shareInfo2": " とリンクを添付します。",
             "termsAndConditions": "利用規約",
