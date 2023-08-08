@@ -2,7 +2,7 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { nanoid } from 'nanoid';
 import rmgRuntime from '@railmapgen/rmg-runtime';
-import { Events, RuntimeMode } from '../constants/constants';
+import { Events, NodeType, RuntimeMode } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -12,15 +12,15 @@ import {
     setActive,
     setKeepLastPath,
     setMode,
-    setNodeExists,
     setRefreshEdges,
     setRefreshNodes,
 } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
 import stations from './svgs/stations/stations';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
+import { findNodesExist, getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
+import { FONTS_CSS } from '../util/fonts';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -43,33 +43,30 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
-        nodeExists,
     } = useRootSelector(state => state.runtime);
 
-    // Update nodeExists on each update and add mtr fonts if needed.
-    // If later other nodes want to hook some special logic like mtr fonts,
-    // loadMTRFonts(nodeExists: { [key in NodeType]: boolean }) is required and so do other hooks.
+    // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
-        const nodeExistsCopy = structuredClone(nodeExists);
-        graph.current.forEachNode(node => {
-            const type = graph.current.getNodeAttribute(node, 'type');
-            nodeExistsCopy[type] = true;
-        });
-        dispatch(setNodeExists(nodeExistsCopy));
+        const nodesExist = findNodesExist(graph.current);
 
-        let link: HTMLLinkElement;
-        if (nodeExistsCopy[StationType.MTR]) {
-            link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.id = 'fonts_mtr';
-            link.href = import.meta.env.BASE_URL + `/styles/fonts_mtr.css`;
-            document.head.append(link);
-        }
-        return () => {
-            if (link) {
-                document.head.removeChild(link);
-            }
-        };
+        Object.entries(nodesExist)
+            // find nodes that exist and require additional fonts
+            .filter(([type, exists]) => exists && type in FONTS_CSS)
+            // only type is needed
+            .map(([type, _]) => type as NodeType)
+            // only load fonts that are not loaded before
+            .filter(type => FONTS_CSS[type] && document.getElementById(FONTS_CSS[type]!.cssName) === null)
+            // get the css name
+            .map(type => FONTS_CSS[type]!.cssName)
+            // remove duplicates
+            .filter((type, i, arr) => i === arr.findIndex(t => t === type))
+            .forEach(css => {
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.id = css!;
+                link.href = import.meta.env.BASE_URL + `styles/${css!}.css`;
+                document.head.append(link);
+            });
     }, [refreshNodes]);
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });

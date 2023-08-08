@@ -40,7 +40,7 @@ export default function OpenActions() {
             parseRmgParam(graph.current, param);
             refreshAndSave();
         } catch (err) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
+            dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
             console.error('OpenActions.handleUploadRMG():: Unknown error occurred while parsing the RMG project', err);
         } finally {
             setIsRmgParamAppClipOpen(false);
@@ -52,7 +52,7 @@ export default function OpenActions() {
         console.log('OpenActions.handleUpload():: received file', file);
 
         if (file?.type !== 'application/json') {
-            dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.invalidType') }));
+            dispatch(setGlobalAlert({ status: 'error', message: t('header.open.invalidType') }));
             console.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
@@ -68,7 +68,7 @@ export default function OpenActions() {
 
                 refreshAndSave();
             } catch (err) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('OpenActions.unknownError') }));
+                dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
                 console.error(
                     'OpenActions.handleUpload():: Unknown error occurred while parsing the uploaded file',
                     err

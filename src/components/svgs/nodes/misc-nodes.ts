@@ -8,6 +8,8 @@ import bjsubwayTextLineBadge from './bjsubway-text-line-badge';
 import suzhouRTNumLineBadge from './suzhourt-num-line-badge';
 import facilities from './facilities';
 import text from './text';
+import berlinUBahnLineBadge from './berlin-u-bahn-line-badge';
+import berlinSBahnLineBadge from './berlin-s-bahn-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -17,6 +19,8 @@ const miscNodes = {
     [MiscNodeType.BjsubwayNumLineBadge]: bjsubwayNumLineBadge,
     [MiscNodeType.BjsubwayTextLineBadge]: bjsubwayTextLineBadge,
     [MiscNodeType.SuzhouRTNumLineBadge]: suzhouRTNumLineBadge,
+    [MiscNodeType.BerlinSBahnLineBadge]: berlinSBahnLineBadge,
+    [MiscNodeType.BerlinUBahnLineBadge]: berlinUBahnLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
 };

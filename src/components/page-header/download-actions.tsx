@@ -22,38 +22,41 @@ import {
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import canvasSize from 'canvas-size';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
-import { Events } from '../../constants/constants';
+import { Events, NodeType } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
-import { StationType } from '../../constants/stations';
-import store, { useRootSelector } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs } from '../../util/download';
-import { getBase64FontFace } from '../../util/fonts';
-import { calculateCanvasSize } from '../../util/helpers';
+import { FONTS_CSS, getBase64FontFace } from '../../util/fonts';
+import { calculateCanvasSize, findNodesExist } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 export default function DownloadActions() {
-    const { t } = useTranslation();
+    const bgColor = useColorModeValue('white', 'gray.800');
+    const dispatch = useRootDispatch();
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
-    const { nodeExists } = useRootSelector(state => state.runtime);
-    const graph = React.useRef(window.graph);
-    const bgColor = useColorModeValue('white', 'gray.800');
+    const param = useRootSelector(state => state.param);
+    const { t } = useTranslation();
 
+    const graph = React.useRef(window.graph);
     const [format, setFormat] = React.useState('png' as 'png' | 'svg');
     const formatOptions = {
         png: t('header.download.png'),
         svg: t('header.download.svg'),
     };
+    const [maxArea, setMaxArea] = React.useState({ width: 1, height: 1, benchmark: 0.001 });
     const [scale, setScale] = React.useState(100);
-    const scaleOptions = Object.fromEntries(
-        [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500].map(v => [v, `${v}%`])
-    );
+    const scales = [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500, 750, 1000];
+    const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
+    const [disabledScaleOptions, setDisabledScaleOptions] = React.useState<number[]>([]);
     const [isTransparent, setIsTransparent] = React.useState(false);
     const fields: RmgFieldsField[] = [
         {
@@ -70,6 +73,7 @@ export default function DownloadActions() {
             label: t('header.download.scale'),
             value: scale,
             options: scaleOptions,
+            disabledOptions: disabledScaleOptions,
             onChange: value => setScale(value as number),
         },
         {
@@ -85,13 +89,35 @@ export default function DownloadActions() {
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
 
+    // calculate the max canvas area the current browser can support
+    React.useEffect(() => {
+        const getMaxArea = async () => {
+            const maximumArea = await canvasSize.maxArea({
+                usePromise: true,
+                useWorker: true,
+            });
+            setMaxArea(maximumArea);
+        };
+        getMaxArea();
+    }, []);
+    // disable some scale options that are too big for the current browser to generate
+    React.useEffect(() => {
+        if (isDownloadModalOpen) {
+            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+            const [width, height] = [xMax - xMin, yMax - yMin];
+            const disabledScales = scales.filter(
+                scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
+            );
+            setDisabledScaleOptions(disabledScales);
+        }
+    }, [isDownloadModalOpen]);
+
     const handleDownloadJson = () => {
         if (isAllowProjectTelemetry)
             rmgRuntime.event(Events.DOWNLOAD_PARAM, { '#nodes': graph.current.order, '#edges': graph.current.size });
-        const param = stringifyParam(store.getState().param);
-        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', param);
+        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(param));
     };
-    // thanks to this article that includes every steps in converting svg to png
+    // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = async () => {
         setIsDownloadModalOpen(false);
@@ -128,6 +154,7 @@ export default function DownloadActions() {
             '.rmp-name__en': ['font-family'],
             '.rmp-name__mtr__zh': ['font-family'],
             '.rmp-name__mtr__en': ['font-family'],
+            '.rmp-name__berlin': ['font-family'],
             '.rmp-name-station': ['paint-order', 'stroke', 'stroke-width'],
         }).forEach(([className, styleSet]) => {
             const e = document.querySelector(className);
@@ -141,15 +168,19 @@ export default function DownloadActions() {
             });
         });
 
-        if (nodeExists[StationType.MTR]) {
-            try {
-                const uris = await getBase64FontFace(elem);
-                const s = document.createElement('style');
-                s.textContent = uris.join('\n');
-                elem.prepend(s);
-            } catch (err) {
-                alert('Failed to fonts. Fonts in the exported PNG will be missing.');
-                console.error(err);
+        const nodesExist = findNodesExist(graph.current);
+        for (const nodeType in FONTS_CSS) {
+            if (nodesExist[nodeType as NodeType]) {
+                try {
+                    const { className, cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
+                    const uris = await getBase64FontFace(elem, className, cssFont, cssName);
+                    const s = document.createElement('style');
+                    s.textContent = uris.join('\n');
+                    elem.prepend(s);
+                } catch (err) {
+                    alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
+                    console.error(err);
+                }
             }
         }
 
@@ -180,7 +211,15 @@ export default function DownloadActions() {
         const img = new Image();
         img.onload = () => {
             ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-            canvas.toBlob(blob => downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!), 'image/png');
+            canvas.toBlob(blob => {
+                if (!blob) {
+                    // The canvas size is bigger than the current browser can support.
+                    // See #301 for more discussion and more on https://github.com/jhildenbiddle/canvas-size#test-results
+                    // Possible solutions include RazrFalcon/resvg and yisibl/resvg-js.
+                    dispatch(setGlobalAlert({ status: 'error', message: t('header.download.imageTooBig') }));
+                }
+                downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!);
+            }, 'image/png');
         };
         img.src = src; // draw src on canvas
     };
@@ -212,6 +251,24 @@ export default function DownloadActions() {
                     <ModalBody>
                         <RmgFields fields={fields} />
                         {format === 'png' && <RmgFields fields={pngFields} />}
+                        {format === 'png' && disabledScaleOptions.length > 0 && (
+                            <>
+                                <Text as="i" fontSize="sm">
+                                    {t('header.download.disabledScaleOptions')}
+                                </Text>
+                                <br />
+                                <Text as="i" fontSize="sm">
+                                    {t('header.download.disabledScaleOptionsWorkarounds')}
+                                </Text>
+                                <Link
+                                    color="teal.500"
+                                    onClick={() => window.open('https://github.com/RazrFalcon/resvg', '_blank')}
+                                >
+                                    RazrFalcon/resvg <Icon as={MdOpenInNew} />
+                                </Link>
+                                <br />
+                            </>
+                        )}
                         <br />
                         <Checkbox isChecked={isAttachSelected} onChange={e => setIsAttachSelected(e.target.checked)}>
                             <Text>

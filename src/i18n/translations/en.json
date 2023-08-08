@@ -90,6 +90,14 @@
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English"
                 },
+                "berlinSBahnLineBadge": {
+                    "displayName": "Berlin S Bahn line badge",
+                    "num": "Line Number"
+                },
+                "berlinUBahnLineBadge": {
+                    "displayName": "Berlin U Bahn line badge",
+                    "num": "Line Number"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"
@@ -275,6 +283,8 @@
             "new": "New project",
             "config": "Import project",
             "projectRMG": "Import from RMG project",
+            "invalidType": "Invalid file type! Only file in JSON format is accepted.",
+            "unknownError": "Unknown error occurred while parsing the uploaded file! Please try again.",
             "gallery": "Import from Gallery",
             "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
             "failToImportFromRMPGallery": "Fail to import {{id}} from the gallery. The file can not be found."
@@ -305,6 +315,9 @@
             "svg": "SVG (Web use)",
             "transparent": "Transparency",
             "scale": "Scale",
+            "disabledScaleOptions": "Some scale options are disabled due to your browser's canvas limitation.",
+            "disabledScaleOptionsWorkarounds": "Possible workarounds include generating the image from svg using this cli tool: ",
+            "imageTooBig": "The image is too big for your browser to generate!",
             "shareInfo1": "I will attach ",
             "shareInfo2": " and its link when I share this image.",
             "termsAndConditions": "Terms and Conditions",

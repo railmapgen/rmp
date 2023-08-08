@@ -198,7 +198,7 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('13 -> 14', () => {
-        // Bump save version to support Suzhou stations.
+        // Bump save version to support Berlin U and S Bahn lin badges.
         const oldParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":13}';
         const newParam = UPGRADE_COLLECTION[13](oldParam);
@@ -206,6 +206,18 @@ describe('Unit tests for param upgrade function', () => {
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":14}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('14 -> 15', () => {
+        // Bump save version to support Suzhou stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":14}';
+        const newParam = UPGRADE_COLLECTION[14](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":15}';
         expect(newParam).toEqual(expectParam);
     });
 });

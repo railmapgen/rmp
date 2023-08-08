@@ -1,4 +1,6 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
+import { BerlinUBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-u-bahn-line-badge';
+import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-s-bahn-line-badge';
 import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
 import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
@@ -18,6 +20,8 @@ export enum MiscNodeType {
     BjsubwayNumLineBadge = 'bjsubway-num-line-badge',
     BjsubwayTextLineBadge = 'bjsubway-text-line-badge',
     SuzhouRTNumLineBadge = 'suzhourt-num-line-badge',
+    BerlinSBahnLineBadge = 'berlin-s-bahn-line-badge',
+    BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -30,6 +34,8 @@ export interface MiscNodeAttributes {
     [MiscNodeType.BjsubwayNumLineBadge]?: BjsubwayNumLineBadgeAttributes;
     [MiscNodeType.BjsubwayTextLineBadge]?: BjsubwayTextLineBadgeAttributes;
     [MiscNodeType.SuzhouRTNumLineBadge]?: SuzhouRTNumLineBadgeAttributes;
+    [MiscNodeType.BerlinSBahnLineBadge]?: BerlinSBahnLineBadgeAttributes;
+    [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }

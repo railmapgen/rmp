@@ -90,6 +90,14 @@
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱"
                 },
+                "berlinSBahnLineBadge": {
+                    "displayName": "柏林地鐵",
+                    "num": "線路號"
+                },
+                "berlinUBahnLineBadge": {
+                    "displayName": "柏林城市快鐵",
+                    "num": "線路號"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"
@@ -276,6 +284,8 @@
             "config": "讀入項目",
             "configRMG": "從RMG存檔中讀入",
             "projectRMG": "從RMG專案中讀入",
+            "invalidType": "無效的文件類型！僅接受JSON格式的文件。",
+            "unknownError": "解析上傳文件時發生未知錯誤！請重試。",
             "gallery": "從畫廊中讀入",
             "importFromRMPGallery": "範本 {{id}} 已匯入。對此更改不滿意？可通過 Ctrl + Z 或撤銷按鈕進行撤銷。",
             "failToImportFromRMPGallery": "無法從畫廊導入{{id}}，找不到檔案。"
@@ -306,6 +316,9 @@
             "svg": "SVG影像（網頁用）",
             "transparent": "透明背景",
             "scale": "縮放",
+            "disabledScaleOptions": "由於您的瀏覽器的畫布限制，部分縮放選項已被禁用。",
+            "disabledScaleOptionsWorkarounds": "可能的解決方法包括使用此命令行工具從SVG生成圖像：",
+            "imageTooBig": "圖像太大，您的瀏覽器無法生成！",
             "shareInfo1": "當我分享此圖片時我會附上",
             "shareInfo2": "和它的鏈接。",
             "termsAndConditions": "條款及細則",
