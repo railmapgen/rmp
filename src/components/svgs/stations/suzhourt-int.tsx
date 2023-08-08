@@ -14,7 +14,7 @@ import {
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
-const [ICON_WIDTH, ICON_HEIGHT] = [12, 6];
+const ICON_SIZE = 6;
 
 const NAME_SZ_BASIC = {
     zh: {
@@ -30,7 +30,7 @@ const NAME_SZ_BASIC = {
 const NAME_DY_SZ_BASIC = {
     top: {
         lineHeight: 5,
-        offset: 1 + NAME_SZ_BASIC.en.baseOffset + 2.5, // offset + baseOffset + iconRadius
+        offset: 0 + NAME_SZ_BASIC.en.baseOffset + 3, // offset + baseOffset + iconRadius
         polarity: -1,
     },
     middle: {
@@ -40,7 +40,7 @@ const NAME_DY_SZ_BASIC = {
     },
     bottom: {
         lineHeight: 10,
-        offset: 0 + NAME_SZ_BASIC.zh.baseOffset + 2.5, // offset + baseOffset + iconRadius
+        offset: 0 + NAME_SZ_BASIC.zh.baseOffset + 3, // offset + baseOffset + iconRadius
         polarity: 1,
     },
 };
@@ -68,11 +68,21 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -5 : nameOffsetX === 'right' ? 5 : 0;
+    const width = (ICON_SIZE - 1) * transfer.at(0)!.length + 1;
+    const iconWidth = Math.abs(Math.cos((rotate * Math.PI) / 180) * width);
+    //     Math.max(ICON_SIZE, Math.abs(Math.cos((rotate * Math.PI) / 180) * width)) *
+    //     Math.sign(Math.cos((rotate * Math.PI) / 180));
+    const iconHeight = Math.abs(Math.sin((rotate * Math.PI) / 180) * width);
+    // console.log(iconWidth, iconHeight);
+
+    const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
+    const textX = (iconWidth / 2 + 5) * textPolarity;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SZ_BASIC[nameOffsetY].lineHeight +
-            NAME_DY_SZ_BASIC[nameOffsetY].offset) *
+            NAME_DY_SZ_BASIC[nameOffsetY].offset +
+            iconHeight / 2) *
         NAME_DY_SZ_BASIC[nameOffsetY].polarity;
+    // const textY = iconHeight / 2 + textDY;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -80,11 +90,11 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <g transform={`rotate(${rotate})`}>
                     <rect
-                        x={-ICON_WIDTH / 2}
-                        y={-ICON_HEIGHT / 2}
-                        width={ICON_WIDTH}
-                        height={ICON_HEIGHT}
-                        ry={ICON_HEIGHT / 2}
+                        x={-width / 2}
+                        y={-ICON_SIZE / 2}
+                        width={width}
+                        height={ICON_SIZE}
+                        ry={ICON_SIZE / 2}
                         stroke="#616161"
                         strokeWidth="1"
                         fill="white"
@@ -94,20 +104,15 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                             .at(0)!
                             .map(info => info[2])
                             .map((color, i) => (
-                                <circle
-                                    key={`${i}_${color}`}
-                                    r={2}
-                                    cx={(5 /* line width, not int > 2 compatible */ / 2) * (i === 0 ? -1 : 1)}
-                                    fill={color}
-                                />
+                                <circle key={`${i}_${color}`} r={2} cx={-width / 2 + 3 + i * 5} fill={color} />
                             ))}
                     <rect
                         id={`stn_core_${id}`}
-                        x={-ICON_WIDTH / 2}
-                        y={-ICON_HEIGHT / 2}
-                        width={ICON_WIDTH}
-                        height={ICON_HEIGHT}
-                        ry={ICON_HEIGHT / 2}
+                        x={-width / 2}
+                        y={-ICON_SIZE / 2}
+                        width={width}
+                        height={ICON_SIZE}
+                        ry={ICON_SIZE / 2}
                         fill="white"
                         fillOpacity="0"
                         onPointerDown={onPointerDown}
@@ -258,7 +263,7 @@ const suzhouRTIntStationFields = [
             <InterchangeField
                 stationType={StationType.SuzhouRTInt}
                 defaultAttrs={defaultSuzhouRTIntStationAttributes}
-                maximumTransfers={[2, 0, 0]}
+                maximumTransfers={[99, 0, 0]}
             />
         ),
     },
