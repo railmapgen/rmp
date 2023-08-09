@@ -70,10 +70,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
 
     const width = (ICON_SIZE - 1) * transfer.at(0)!.length + 1;
     const iconWidth = Math.abs(Math.cos((rotate * Math.PI) / 180) * width);
-    //     Math.max(ICON_SIZE, Math.abs(Math.cos((rotate * Math.PI) / 180) * width)) *
-    //     Math.sign(Math.cos((rotate * Math.PI) / 180));
     const iconHeight = Math.abs(Math.sin((rotate * Math.PI) / 180) * width);
-    // console.log(iconWidth, iconHeight);
 
     const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
     const textX = (iconWidth / 2 + 5) * textPolarity;
@@ -82,7 +79,6 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
             NAME_DY_SZ_BASIC[nameOffsetY].offset +
             iconHeight / 2) *
         NAME_DY_SZ_BASIC[nameOffsetY].polarity;
-    // const textY = iconHeight / 2 + textDY;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
@@ -177,8 +173,8 @@ const defaultSuzhouRTIntStationAttributes: SuzhouRTIntStationAttributes = {
     rotate: 0,
     transfer: [
         [
-            [CityCode.Suzhou, 'sz2', '#ED3240', MonoColour.white, '', ''],
-            [CityCode.Suzhou, 'sh2', '#8CC220', MonoColour.black, '', ''],
+            [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white, '', ''],
+            [CityCode.Suzhou, 'sz2', '#ED3240', MonoColour.black, '', ''],
         ],
     ],
 };

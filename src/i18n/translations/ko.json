@@ -7,7 +7,6 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
-    "meetRMP3": "지하철 지도 화가 3를 만나보세요! 갤러리에서 전 세계의 도시 템플릿을 로드하거나 직접 업로드하세요.",
 
     "colorModal": {
         "title": "색깔 선택",
@@ -200,7 +199,22 @@
                     "outOfStation": "역을 나가 환승"
                 },
                 "mtr": {
-                    "displayName": "MTR station",
+                    "displayName": "MTR 역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동",
+                    "rotate": "역회전각도"
+                },
+                "suzhouRTBasic": {
+                    "displayName": "쑤저우 궤도교통 기본역",
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동"
+                },
+                "suzhouRTInt": {
+                    "displayName": "쑤저우 궤도교통 환승역",
                     "nameZh": "한자 명칭",
                     "nameEn": "영문 명칭",
                     "nameOffsetX": "명칭 가로 이동",
