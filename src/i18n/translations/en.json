@@ -97,6 +97,11 @@
                     "displayName": "Berlin U Bahn line badge",
                     "num": "Line Number"
                 },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "Suzhou Rail Transit num line badge",
+                    "num": "Line Number",
+                    "branch": "Is branch line"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"

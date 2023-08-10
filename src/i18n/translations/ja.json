@@ -97,6 +97,11 @@
                     "displayName": "ベルリンSバーン番号バッジ",
                     "num": "路線番号"
                 },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "蘇州軌道交通 線番号 バッジ",
+                    "num": "路線番号",
+                    "branch": "支線です"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "タイプ"

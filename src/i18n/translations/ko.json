@@ -97,6 +97,11 @@
                     "displayName": "베를린 U반 노선 배지",
                     "num": "노선 번호"
                 },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "수주 철도 번호 라인 배지",
+                    "num": "노선 번호",
+                    "branch": "지선입니다"
+                },
                 "facilities": {
                     "displayName": "시설",
                     "type": "Type"

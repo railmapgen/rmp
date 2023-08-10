@@ -97,6 +97,11 @@
                     "displayName": "柏林城市快鐵",
                     "num": "線路號"
                 },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "蘇州軌道交通數字線路標識",
+                    "num": "線路號",
+                    "branch": "是否支線"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"
