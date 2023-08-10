@@ -130,12 +130,12 @@ const diagonalFields = [
         label: 'panel.details.line.diagonal.roundCornerFactor',
         value: (attrs?: DiagonalPathAttributes) =>
             (attrs?.roundCornerFactor ?? defaultDiagonalPathAttributes.roundCornerFactor).toString(),
-        validator: (val: string) => !Number.isNaN(val),
+        validator: (val: string) => !Number.isNaN(val) && Number(val) > 0,
         onChange: (val: string | number, attrs_: DiagonalPathAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultDiagonalPathAttributes;
             // return if invalid
-            if (Number.isNaN(val)) return attrs;
+            if (Number.isNaN(val) || Number(val) <= 0) return attrs;
             // set value
             attrs.roundCornerFactor = Number(val);
             // return modified attrs
