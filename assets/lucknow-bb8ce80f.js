@@ -1,1 +1,0 @@
-import{v as o}from"./index-7c685f58.js";import"./chakra-e455e76b.js";import"./react-beb26faf.js";const e=[{id:"rl",colour:"#d90f03",fg:o.white,name:{en:"Red Line","zh-Hans":"红线","zh-Hant":"紅線",hi:"लाल रेखा"}}];export{e as default};
