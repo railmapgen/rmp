@@ -7,7 +7,6 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-    "meetRMP3": "遇見地鐵線路圖繪製器3！從畫廊中載入全球城市的模板亦或是上傳你自己的作品。",
 
     "colorModal": {
         "title": "選擇顏色",
@@ -97,6 +96,11 @@
                 "berlinUBahnLineBadge": {
                     "displayName": "柏林城市快鐵",
                     "num": "線路號"
+                },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "蘇州軌道交通數字線路標識",
+                    "num": "線路號",
+                    "branch": "是否支線"
                 },
                 "facilities": {
                     "displayName": "設施",
@@ -201,6 +205,21 @@
                 },
                 "mtr": {
                     "displayName": "MTR車站",
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移",
+                    "rotate": "車站旋轉角度"
+                },
+                "suzhouRTBasic": {
+                    "displayName": "蘇州軌道交通基本車站",
+                    "nameZh": "中文名稱",
+                    "nameEn": "英文名稱",
+                    "nameOffsetX": "名稱橫向偏移",
+                    "nameOffsetY": "名稱縱向偏移"
+                },
+                "suzhouRTInt": {
+                    "displayName": "蘇州軌道交通換乘車站",
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",

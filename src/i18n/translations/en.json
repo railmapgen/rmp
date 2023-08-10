@@ -7,7 +7,6 @@
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
-    "meetRMP3": "Meet Rail Map Painter 3! Load templates of cities from around the world or upload your own in the Gallery.",
 
     "colorModal": {
         "title": "Select a color",
@@ -97,6 +96,11 @@
                 "berlinUBahnLineBadge": {
                     "displayName": "Berlin U Bahn line badge",
                     "num": "Line Number"
+                },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "Suzhou Rail Transit num line badge",
+                    "num": "Line Number",
+                    "branch": "Is branch line"
                 },
                 "facilities": {
                     "displayName": "Facilities",
@@ -201,6 +205,21 @@
                 },
                 "mtr": {
                     "displayName": "MTR station",
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y",
+                    "rotate": "Icon rotation"
+                },
+                "suzhouRTBasic": {
+                    "displayName": "Suzhou Rail Transit basic station",
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y"
+                },
+                "suzhouRTInt": {
+                    "displayName": "Suzhou Rail Transit interchange station",
                     "nameZh": "Name in Chinese",
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",

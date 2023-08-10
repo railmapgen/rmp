@@ -11,21 +11,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
-
-const NAME_DY_SH_BASIC = {
-    top: {
-        lineHeight: 6.67,
-        offset: 3.5 + 1.5 + 5, // offset + baseOffset
-    },
-    middle: {
-        lineHeight: 0,
-        offset: 0,
-    },
-    bottom: {
-        lineHeight: 12.67,
-        offset: -0.17 + 1 + 5, // offset + baseOffset
-    },
-};
+import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
 const ShmetroOsysiStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;

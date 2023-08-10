@@ -8,6 +8,8 @@ import gzmtrIntStation from './gzmtr-int';
 import bjsubwayBasicStation from './bjsubway-basic';
 import bjsubwayIntStation from './bjsubway-int';
 import mtrStation from './mtr';
+import suzhouRTBasicStation from './suzhourt-basic';
+import suzhouRTIntStation from './suzhourt-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -19,6 +21,8 @@ const stations = {
     [StationType.BjsubwayBasic]: bjsubwayBasicStation,
     [StationType.BjsubwayInt]: bjsubwayIntStation,
     [StationType.MTR]: mtrStation,
+    [StationType.SuzhouRTBasic]: suzhouRTBasicStation,
+    [StationType.SuzhouRTInt]: suzhouRTIntStation,
 };
 
 export default stations;

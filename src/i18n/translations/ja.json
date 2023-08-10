@@ -7,7 +7,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-    "meetRMP3": "Rail Map Painter 3 にご参加ください！世界中の都市のテンプレートをロードするか、ギャラリーに独自のものをアップロードできます。",
 
     "colorModal": {
         "title": "色を選択",
@@ -97,6 +96,11 @@
                 "berlinUBahnLineBadge": {
                     "displayName": "ベルリンSバーン番号バッジ",
                     "num": "路線番号"
+                },
+                "suzhouRTNumLineBadge": {
+                    "displayName": "蘇州軌道交通 線番号 バッジ",
+                    "num": "路線番号",
+                    "branch": "支線です"
                 },
                 "facilities": {
                     "displayName": "施設",
@@ -201,6 +205,21 @@
                 },
                 "mtr": {
                     "displayName": "MTR駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY",
+                    "rotate": "アイコンの回転"
+                },
+                "suzhouRTBasic": {
+                    "displayName": "蘇州軌道交通基本駅",
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameOffsetX": "駅名オフセットX",
+                    "nameOffsetY": "駅名オフセットY"
+                },
+                "suzhouRTInt": {
+                    "displayName": "蘇州軌道交通乗り換え駅",
                     "nameZh": "中国語の駅名",
                     "nameEn": "英語の駅名",
                     "nameOffsetX": "駅名オフセットX",

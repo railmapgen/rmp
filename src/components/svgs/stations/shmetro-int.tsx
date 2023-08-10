@@ -123,7 +123,7 @@ export interface ShmetroIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     /**
-     * 0 <= rotate < 180
+     * 0 <= rotate < 360
      */
     rotate: number;
     width: number;

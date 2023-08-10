@@ -10,6 +10,7 @@ import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { MiscNodeId } from './constants';
+import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -18,6 +19,7 @@ export enum MiscNodeType {
     GzmtrLineBadge = 'gzmtr-line-badge',
     BjsubwayNumLineBadge = 'bjsubway-num-line-badge',
     BjsubwayTextLineBadge = 'bjsubway-text-line-badge',
+    SuzhouRTNumLineBadge = 'suzhourt-num-line-badge',
     BerlinSBahnLineBadge = 'berlin-s-bahn-line-badge',
     BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     Facilities = 'facilities',
@@ -31,6 +33,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
     [MiscNodeType.BjsubwayNumLineBadge]?: BjsubwayNumLineBadgeAttributes;
     [MiscNodeType.BjsubwayTextLineBadge]?: BjsubwayTextLineBadgeAttributes;
+    [MiscNodeType.SuzhouRTNumLineBadge]?: SuzhouRTNumLineBadgeAttributes;
     [MiscNodeType.BerlinSBahnLineBadge]?: BerlinSBahnLineBadgeAttributes;
     [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
