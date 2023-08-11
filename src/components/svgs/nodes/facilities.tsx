@@ -44,8 +44,6 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                 <image
                     ref={imgEl}
                     href={`/images/facilities/${type}.svg`}
-                    // eslint-disable-next-line react/no-unknown-property
-                    onLoad={() => setBBox(imgEl.current!.getBBox())}
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
