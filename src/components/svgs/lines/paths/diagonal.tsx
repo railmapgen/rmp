@@ -1,4 +1,4 @@
-import { GeneratePathFunction, LinePathAttributes, LinePath, LinePathType } from '../../../../constants/lines';
+import { GeneratePathFunction, LinePathAttributes, LinePath } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
