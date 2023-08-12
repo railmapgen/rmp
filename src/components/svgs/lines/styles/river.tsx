@@ -64,7 +64,12 @@ const river: LineStyle<RiverAttributes> = {
     fields: riverFields,
     metadata: {
         displayName: 'panel.details.line.river.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+        supportLinePathType: [
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.Simple,
+        ],
     },
 };
 
