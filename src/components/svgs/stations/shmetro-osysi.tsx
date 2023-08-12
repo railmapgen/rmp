@@ -99,7 +99,7 @@ const defaultShmetroOsysiStationAttributes: ShmetroOsysiStationAttributes = {
 const shmetroOsysiStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroOsysi.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: ShmetroOsysiStationAttributes) =>
             (attrs ?? defaultShmetroOsysiStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
@@ -113,7 +113,7 @@ const shmetroOsysiStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroOsysi.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: ShmetroOsysiStationAttributes) =>
             (attrs ?? defaultShmetroOsysiStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
@@ -127,7 +127,7 @@ const shmetroOsysiStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroOsysi.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: ShmetroOsysiStationAttributes) => (attrs ?? defaultShmetroOsysiStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: ShmetroOsysiStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
@@ -142,7 +142,7 @@ const shmetroOsysiStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroOsysi.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: ShmetroOsysiStationAttributes) => (attrs ?? defaultShmetroOsysiStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: ShmetroOsysiStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
@@ -172,7 +172,7 @@ const shmetroOsysiStation: Station<ShmetroOsysiStationAttributes> = {
     // @ts-ignore-error
     fields: shmetroOsysiStationFields,
     metadata: {
-        displayName: 'panel.details.station.shmetroOsysi.displayName',
+        displayName: 'panel.details.stations.shmetroOsysi.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

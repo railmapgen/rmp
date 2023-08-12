@@ -35,7 +35,7 @@ const defaultSimplePathAttributes = {
 const diagonalFields = [
     {
         type: 'input',
-        label: 'panel.details.line.simple.offset',
+        label: 'panel.details.lines.simple.offset',
         value: (attrs?: SimplePathAttributes) => (attrs?.offset ?? defaultSimplePathAttributes.offset).toString(),
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: SimplePathAttributes | undefined) => {
@@ -64,7 +64,7 @@ const simplePath: LinePath<SimplePathAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: diagonalFields,
-    metadata: { displayName: 'panel.details.line.simple.displayName' },
+    metadata: { displayName: 'panel.details.lines.simple.displayName' },
 };
 
 export default simplePath;

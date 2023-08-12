@@ -50,7 +50,7 @@ const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
     // @ts-ignore-error
     fields: mtrLightRailFields,
     metadata: {
-        displayName: 'panel.details.line.mtrLightRail.displayName',
+        displayName: 'panel.details.lines.mtrLightRail.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
     },
 };

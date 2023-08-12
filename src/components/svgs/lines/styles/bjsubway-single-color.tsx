@@ -61,7 +61,7 @@ const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
     // @ts-ignore-error
     fields: bjsubwaySingleColorFields,
     metadata: {
-        displayName: 'panel.details.line.bjsubwaySingleColor.displayName',
+        displayName: 'panel.details.lines.bjsubwaySingleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
     },
 };

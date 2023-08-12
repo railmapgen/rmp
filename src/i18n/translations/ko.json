@@ -47,44 +47,38 @@
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",
-            "node": {
+            "nodes": {
+                "common": {
+                    "nameZh": "한자 노선명칭",
+                    "nameEn": "영문 노선명칭",
+                    "num": "노선 번호"
+                },
                 "virtual": {
                     "displayName": "가상 노드"
                 },
                 "shmetroNumLineBadge": {
-                    "displayName": "상해 지하철 디지털 노선 표지",
-                    "num": "노선 번호"
+                    "displayName": "상해 지하철 디지털 노선 표지"
                 },
                 "shmetroTextLineBadge": {
-                    "displayName": "상해 지하철 문자 노선 표지",
-                    "nameZh": "한자 노선명칭",
-                    "nameEn": "영문 노선명칭"
+                    "displayName": "상해 지하철 문자 노선 표지"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "광저우 지하철 노선 표지",
-                    "nameZh": "한자 노선명칭",
-                    "nameEn": "영문 노선명칭"
+                    "displayName": "광저우 지하철 노선 표지"
                 },
                 "bjsubwayNumLineBadge": {
-                    "displayName": "베이징 지하철 노선 배지",
-                    "num": "노선 번호"
+                    "displayName": "베이징 지하철 노선 배지"
                 },
                 "bjsubwayTextLineBadge": {
-                    "displayName": "베이징 지하철 텍스트 라인 배지",
-                    "nameZh": "한자 노선 명칭",
-                    "nameEn": "영문 노선 명칭"
+                    "displayName": "베이징 지하철 텍스트 라인 배지"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "베를린 S반 노선 배지",
-                    "num": "노선 번호"
+                    "displayName": "베를린 S반 노선 배지"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "베를린 U반 노선 배지",
-                    "num": "노선 번호"
+                    "displayName": "베를린 U반 노선 배지"
                 },
                 "suzhouRTNumLineBadge": {
                     "displayName": "수주 철도 번호 라인 배지",
-                    "num": "노선 번호",
                     "branch": "지선입니다"
                 },
                 "facilities": {
@@ -103,7 +97,14 @@
                     "italic": "이탤릭체"
                 }
             },
-            "station": {
+            "stations": {
+                "common": {
+                    "nameZh": "한자 명칭",
+                    "nameEn": "영문 명칭",
+                    "nameOffsetX": "명칭 가로 이동",
+                    "nameOffsetY": "명칭 세로 이동",
+                    "rotate": "역회전각도"
+                },
                 "interchange": {
                     "title": "환승",
                     "within": "같은 역에서 환승한",
@@ -118,41 +119,21 @@
                     "remove": "환승 삭제"
                 },
                 "shmetroBasic": {
-                    "displayName": "상해 지하철의 기본 역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동"
+                    "displayName": "상해 지하철의 기본 역"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "상해 지하철 기본 역(2020년)",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "rotate": "역회전각도"
+                    "displayName": "상해 지하철 기본 역(2020년)"
                 },
                 "shmetroInt": {
                     "displayName": "상해 지하철 환승역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
                     "height": "역 높이",
-                    "width": "역 폭",
-                    "rotate": "역회전각도"
+                    "width": "역 폭"
                 },
                 "shmetroOsysi": {
-                    "displayName": "상하이 지하철 시스템 외환승 역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동"
+                    "displayName": "상하이 지하철 시스템 외환승 역"
                 },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
                     "lineCode": "노선 번호",
                     "stationCode": "역 번호",
                     "open": "개통여부",
@@ -162,10 +143,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "광저우 지하철 환승역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
                     "lineCode": "노선 번호",
                     "stationCode": "역 번호",
                     "open": "개통여부",
@@ -174,63 +151,39 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
                     "open": "개통여부"
                 },
                 "bjsubwayInt": {
                     "displayName": "베이징 지하철 환승역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
                     "outOfStation": "역을 나가 환승"
                 },
                 "mtr": {
-                    "displayName": "MTR 역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
-                    "rotate": "역회전각도"
+                    "displayName": "MTR 역"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "쑤저우 궤도교통 기본역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동"
+                    "displayName": "쑤저우 궤도교통 기본역"
                 },
                 "suzhouRTInt": {
-                    "displayName": "쑤저우 궤도교통 환승역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
-                    "rotate": "역회전각도"
+                    "displayName": "쑤저우 궤도교통 환승역"
                 }
             },
-            "line": {
+            "lines": {
                 "reconcileId": "연결 선분 고유 식별자",
+                "common": {
+                    "offsetFrom": "시작점 오프셋",
+                    "offsetTo": "끝점 오프셋",
+                    "startFrom": "여기서부터 시작",
+                    "roundCornerFactor": "회전원각인자"
+                },
                 "simple": {
                     "displayName": "기본 선분",
                     "offset": "오프셋"
                 },
                 "diagonal": {
-                    "displayName": "135° 접힌 선분",
-                    "offsetFrom": "시작점 오프셋",
-                    "offsetTo": "끝점 오프셋",
-                    "startFrom": "여기서부터 시작",
-                    "roundCornerFactor": "회전원각인자"
+                    "displayName": "135° 접힌 선분"
                 },
                 "perpendicular": {
-                    "displayName": "90° 수직 선분",
-                    "offsetFrom": "시작점 오프셋",
-                    "offsetTo": "끝점 오프셋",
-                    "startFrom": "여기서부터 시작",
-                    "roundCornerFactor": "회전원각인자"
+                    "displayName": "90° 수직 선분"
                 },
                 "singleColor": {
                     "displayName": "단색 스타일"
@@ -271,7 +224,7 @@
                     "displayName": "MTR 결제완료 구역 스타일"
                 }
             },
-            "edge": {},
+            "edges": {},
             "footer": {
                 "duplicate": "복사",
                 "remove": "삭제",

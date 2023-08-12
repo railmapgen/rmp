@@ -128,7 +128,7 @@ const defaultSuzhouRTBasicStationAttributes: SuzhouRTBasicStationAttributes = {
 const suzhouRTBasicStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.suzhouRTBasic.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: SuzhouRTBasicStationAttributes) =>
             (attrs ?? defaultSuzhouRTBasicStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: SuzhouRTBasicStationAttributes | undefined) => {
@@ -142,7 +142,7 @@ const suzhouRTBasicStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.suzhouRTBasic.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: SuzhouRTBasicStationAttributes) =>
             (attrs ?? defaultSuzhouRTBasicStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: SuzhouRTBasicStationAttributes | undefined) => {
@@ -156,7 +156,7 @@ const suzhouRTBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.suzhouRTBasic.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: SuzhouRTBasicStationAttributes) => (attrs ?? defaultSuzhouRTBasicStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: SuzhouRTBasicStationAttributes) =>
@@ -172,7 +172,7 @@ const suzhouRTBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.suzhouRTBasic.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: SuzhouRTBasicStationAttributes) => (attrs ?? defaultSuzhouRTBasicStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: SuzhouRTBasicStationAttributes) =>
@@ -206,7 +206,7 @@ const suzhouRTBasicStation: Station<SuzhouRTBasicStationAttributes> = {
     // @ts-ignore-error
     fields: suzhouRTBasicStationFields,
     metadata: {
-        displayName: 'panel.details.station.suzhouRTBasic.displayName',
+        displayName: 'panel.details.stations.suzhouRTBasic.displayName',
         cities: [CityCode.Suzhou],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

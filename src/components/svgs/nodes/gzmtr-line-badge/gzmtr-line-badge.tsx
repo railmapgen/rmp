@@ -62,7 +62,7 @@ const defaultGzmtrLineBadgeAttributes: GzmtrLineBadgeAttributes = {
 const GzmtrLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.gzmtrLineBadge.nameZh',
+        label: 'panel.details.nodes.common.nameZh',
         value: (attrs?: GzmtrLineBadgeAttributes) => (attrs ?? defaultGzmtrLineBadgeAttributes).names[0],
         onChange: (val: string | number, attrs_: GzmtrLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
@@ -75,7 +75,7 @@ const GzmtrLineBadgeFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.node.gzmtrLineBadge.nameEn',
+        label: 'panel.details.nodes.common.nameEn',
         value: (attrs?: GzmtrLineBadgeAttributes) => (attrs ?? defaultGzmtrLineBadgeAttributes).names[1],
         onChange: (val: string | number, attrs_: GzmtrLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
@@ -113,7 +113,7 @@ const gzmtrLineBadge: Node<GzmtrLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: GzmtrLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.gzmtrLineBadge.displayName',
+        displayName: 'panel.details.nodes.gzmtrLineBadge.displayName',
         tags: [],
     },
 };

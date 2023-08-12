@@ -134,7 +134,7 @@ const defaultTextAttributes: TextAttributes = {
 const TextFields = [
     {
         type: 'textarea',
-        label: 'panel.details.node.text.content',
+        label: 'panel.details.nodes.text.content',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).content,
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
             // set default value if switched from another type
@@ -147,7 +147,7 @@ const TextFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.node.text.fontSize',
+        label: 'panel.details.nodes.text.fontSize',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).fontSize,
         validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
@@ -161,7 +161,7 @@ const TextFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.node.text.lineHeight',
+        label: 'panel.details.nodes.text.lineHeight',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).lineHeight,
         validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
@@ -175,7 +175,7 @@ const TextFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.node.text.textAnchor',
+        label: 'panel.details.nodes.text.textAnchor',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).textAnchor,
         options: { start: 'start', middle: 'middle', end: 'end' },
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
@@ -189,7 +189,7 @@ const TextFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.node.text.dominantBaseline',
+        label: 'panel.details.nodes.text.dominantBaseline',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).dominantBaseline,
         options: { auto: 'auto', middle: 'middle', hanging: 'hanging' },
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
@@ -203,7 +203,7 @@ const TextFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.node.text.language',
+        label: 'panel.details.nodes.text.language',
         value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).language,
         options: { zh: 'Chinese', en: 'English', mtr__zh: 'MTR Chinese', mtr__en: 'MTR English' },
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
@@ -217,7 +217,7 @@ const TextFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.node.text.rotate',
+        label: 'panel.details.nodes.text.rotate',
         value: (attrs?: TextAttributes) => attrs?.rotate ?? defaultTextAttributes.rotate,
         options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
         onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
@@ -231,7 +231,7 @@ const TextFields = [
     },
     {
         type: 'switch',
-        label: 'panel.details.node.text.italic',
+        label: 'panel.details.nodes.text.italic',
         isChecked: (attrs?: TextAttributes) => attrs?.italic ?? defaultTextAttributes.italic,
         onChange: (val: boolean, attrs_: TextAttributes | undefined) => {
             // set default value if switched from another type
@@ -264,7 +264,7 @@ const text: Node<TextAttributes> = {
     // @ts-ignore-error
     fields: TextFields,
     metadata: {
-        displayName: 'panel.details.node.text.displayName',
+        displayName: 'panel.details.nodes.text.displayName',
         tags: [],
     },
 };

@@ -37,14 +37,14 @@ export default function InterchangeCard(props: InterchangeCardProps) {
     const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
         {
             type: 'input',
-            label: t('panel.details.station.gzmtrInt.lineCode'),
+            label: t('panel.details.stations.gzmtrInt.lineCode'),
             value: it[4],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5]]),
         },
         {
             type: 'input',
-            label: t('panel.details.station.gzmtrInt.stationCode'),
+            label: t('panel.details.stations.gzmtrInt.stationCode'),
             value: it[5],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val]),
@@ -56,13 +56,13 @@ export default function InterchangeCard(props: InterchangeCardProps) {
             {interchangeList.length === 0 && (
                 <HStack spacing={0.5} data-testid={`interchange-card-stack`}>
                     <Text as="i" flex={1} align="center" fontSize="md" colorScheme="gray">
-                        {t('panel.details.station.interchange.noInterchanges')}
+                        {t('panel.details.stations.interchange.noInterchanges')}
                     </Text>
 
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label={t('panel.details.station.interchange.add')}
+                        aria-label={t('panel.details.stations.interchange.add')}
                         onClick={() => onAdd?.([CityCode.Shanghai, '', '#aaaaaa', MonoColour.white, '', ''])}
                         icon={<MdAdd />}
                     />
@@ -87,7 +87,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                         <IconButton
                             size="sm"
                             variant="ghost"
-                            aria-label={t('panel.details.station.interchange.copy')}
+                            aria-label={t('panel.details.stations.interchange.copy')}
                             onClick={() => onAdd?.(interchangeList.slice(-1)[0])} // duplicate last leg
                             icon={<MdContentCopy />}
                         />
@@ -99,7 +99,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                         <IconButton
                             size="sm"
                             variant="ghost"
-                            aria-label={t('panel.details.station.interchange.remove')}
+                            aria-label={t('panel.details.stations.interchange.remove')}
                             onClick={() => onDelete?.(i)}
                             icon={<MdDelete />}
                         />

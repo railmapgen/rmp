@@ -86,7 +86,7 @@ const defaultSuzhouRTNumLineBadgeAttributes: SuzhouRTNumLineBadgeAttributes = {
 const SuzhouRTNumLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.suzhouRTNumLineBadge.num',
+        label: 'panel.details.nodes.common.num',
         value: (attrs?: SuzhouRTNumLineBadgeAttributes) => (attrs ?? defaultSuzhouRTNumLineBadgeAttributes).num,
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: SuzhouRTNumLineBadgeAttributes | undefined) => {
@@ -102,7 +102,7 @@ const SuzhouRTNumLineBadgeFields = [
     },
     {
         type: 'switch',
-        label: 'panel.details.node.suzhouRTNumLineBadge.branch',
+        label: 'panel.details.nodes.suzhouRTNumLineBadge.branch',
         isChecked: (attrs?: SuzhouRTNumLineBadgeAttributes) =>
             attrs?.branch ?? defaultSuzhouRTNumLineBadgeAttributes.branch,
         onChange: (val: boolean, attrs_: SuzhouRTNumLineBadgeAttributes | undefined) => {
@@ -139,7 +139,7 @@ const suzhouRTNumLineBadge: Node<SuzhouRTNumLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: SuzhouRTNumLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.suzhouRTNumLineBadge.displayName',
+        displayName: 'panel.details.nodes.suzhouRTNumLineBadge.displayName',
         tags: [],
     },
 };

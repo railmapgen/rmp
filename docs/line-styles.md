@@ -86,7 +86,7 @@ Define input fields that allow users to edit the attributes of your line style. 
 ```tsx
 {
     type: 'textarea',
-    label: 'panel.details.line.myLineStyle.someAttribute',
+    label: 'panel.details.lines.myLineStyle.someAttribute',
     value: (attrs?: MyLineStyleAttributes) => (attrs ?? defaultMyLineStyleAttributes).someAttribute,
     onChange: (val: string | number, attrs_?: MyLineStyleAttributes | undefined) => {
         const attrs = attrs_ ?? defaultMyLineStyleAttributes;
@@ -99,7 +99,7 @@ Define input fields that allow users to edit the attributes of your line style. 
 ```tsx
 {
     type: 'select',
-    label: 'panel.details.line.myLineStyle.anotherAttribute',
+    label: 'panel.details.lines.myLineStyle.anotherAttribute',
     value: (attrs?: MyLineStyleAttributes) => (attrs ?? defaultMyLineStyleAttributes).anotherAttribute,
     options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
     onChange: (val: string | number, attrs_?: MyLineStyleAttributes | undefined) => {
@@ -140,7 +140,7 @@ const myLineStyle: LineStyle<MyLineStyleAttributes> = {
     // @ts-ignore-error The previous fields won't comply with type in Station. Will be fixed later.
     fields: myLineStyleFields,
     metadata: {
-        displayName: 'panel.details.line.myLineStyle.displayName',
+        displayName: 'panel.details.lines.myLineStyle.displayName',
         tags: [],
     },
 };
@@ -194,7 +194,7 @@ export const lineStyles = {
 
 ## Final Notes
 
-By following this guide, you should be able to create a new line style for Rail Map Painter. Make sure to adhere to the conventions outlined in this guide and refer to [single-color](../src/components/svgs/lines/styles/single-color.tsx) and [river](../src/components/svgs/lines/styles/river.tsx) for clarity.
+By following this guide, you should be able to create a new line style for Rail Map Painter. Make sure to adhere to the conventions outlined in [this guide](../CONTRIBUTING.md) and refer to [single-color](../src/components/svgs/lines/styles/single-color.tsx) and [river](../src/components/svgs/lines/styles/river.tsx) for clarity.
 
 Feel free to submit your line style as a pull request to the project repository, and the maintainers will review it. If your line style meets the project's standards, it will be merged and become part of the project.
 

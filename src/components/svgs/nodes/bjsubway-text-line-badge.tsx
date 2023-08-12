@@ -92,7 +92,7 @@ const defaultBjsubwayTextLineBadgeAttributes: BjsubwayTextLineBadgeAttributes = 
 const BjsubwayTextLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.bjsubwayTextLineBadge.nameZh',
+        label: 'panel.details.nodes.common.nameZh',
         value: (attrs?: BjsubwayTextLineBadgeAttributes) => (attrs ?? defaultBjsubwayTextLineBadgeAttributes).names[0],
         onChange: (val: string | number, attrs_: BjsubwayTextLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
@@ -105,7 +105,7 @@ const BjsubwayTextLineBadgeFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.node.bjsubwayTextLineBadge.nameEn',
+        label: 'panel.details.nodes.common.nameEn',
         value: (attrs?: BjsubwayTextLineBadgeAttributes) => (attrs ?? defaultBjsubwayTextLineBadgeAttributes).names[1],
         onChange: (val: string | number, attrs_: BjsubwayTextLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
@@ -148,7 +148,7 @@ const bjsubwayTextLineBadge: Node<BjsubwayTextLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: BjsubwayTextLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.bjsubwayTextLineBadge.displayName',
+        displayName: 'panel.details.nodes.bjsubwayTextLineBadge.displayName',
         tags: [],
     },
 };

@@ -60,7 +60,7 @@ const virtual: Node<VirtualAttributes> = {
     defaultAttrs: defaultVirtualAttributes,
     fields: [],
     metadata: {
-        displayName: 'panel.details.node.virtual.displayName',
+        displayName: 'panel.details.nodes.virtual.displayName',
         tags: [],
     },
 };

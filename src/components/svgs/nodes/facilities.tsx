@@ -334,7 +334,7 @@ const defaultFacilitiesAttributes: FacilitiesAttributes = {
 const FacilitiesFields = [
     {
         type: 'select',
-        label: 'panel.details.node.facilities.type',
+        label: 'panel.details.nodes.facilities.type',
         value: (attrs?: FacilitiesAttributes) => (attrs ?? defaultFacilitiesAttributes).type,
         options: {
             airport: 'airport',
@@ -387,7 +387,7 @@ const facilities: Node<FacilitiesAttributes> = {
     // @ts-ignore-error
     fields: FacilitiesFields,
     metadata: {
-        displayName: 'panel.details.node.facilities.displayName',
+        displayName: 'panel.details.nodes.facilities.displayName',
         tags: [],
     },
 };
