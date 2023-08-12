@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdExpandLess, MdExpandMore } from 'react-icons/md';
 import {
@@ -22,8 +22,8 @@ import { LinePathType } from '../../../constants/lines';
 import stations from '../../svgs/stations/stations';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import { linePaths } from '../../svgs/lines/lines';
-import ColourModal from '../colour-modal/colour-modal';
 import ThemeButton from '../theme-button';
+import AppRootContext from '../../app-root-context';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -49,8 +49,17 @@ const ToolsPanel = () => {
     const { mode, theme } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'gray.800');
 
+    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
+
     const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
-    const [isColourModalOpen, setIsColourModalOpen] = React.useState(false);
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
+
+    useEffect(() => {
+        if (isThemeRequested && nextTheme) {
+            dispatch(setTheme(nextTheme));
+            setIsThemeRequested(false);
+        }
+    }, [nextTheme?.toString()]);
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
@@ -95,17 +104,17 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             <Flex>
-                                <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
+                                <ThemeButton
+                                    theme={theme}
+                                    onClick={() => {
+                                        setIsThemeRequested(true);
+                                        setPrevTheme?.(theme);
+                                    }}
+                                />
                                 <Text fontWeight="600" pl="1" alignSelf="center">
                                     {isToolsExpanded ? t('color') : undefined}
                                 </Text>
                             </Flex>
-                            <ColourModal
-                                isOpen={isColourModalOpen}
-                                defaultTheme={theme}
-                                onClose={() => setIsColourModalOpen(false)}
-                                onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
-                            />
 
                             {Object.values(LinePathType)
                                 .filter(type => type !== LinePathType.Simple)

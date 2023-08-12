@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NodeType, Theme } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
+import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
-import ColourModal from '../colour-modal/colour-modal';
 import { StationType } from '../../../constants/stations';
 import { MiscNodeType } from '../../../constants/nodes';
 import { LineStyleType } from '../../../constants/lines';
+import AppRootContext from '../../app-root-context';
 
 /**
  * An Attributes that have a color field.
@@ -60,7 +60,9 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
           ];
 
     // TODO: fix bind this
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
+    const [isThemeRequested, setIsThemeRequested] = useState(false);
+
     const handleChangeColor = (color: Theme) => {
         if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
             const attrs =
@@ -71,6 +73,13 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
             hardRefresh();
         }
     };
+
+    useEffect(() => {
+        if (isThemeRequested && nextTheme) {
+            handleChangeColor(nextTheme);
+            setIsThemeRequested(false);
+        }
+    }, [nextTheme?.toString()]);
 
     const theme =
         selectedFirst &&
@@ -84,12 +93,12 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
 
     return (
         <>
-            <ThemeButton theme={theme} onClick={() => setIsModalOpen(true)} />
-            <ColourModal
-                isOpen={isModalOpen}
-                defaultTheme={theme}
-                onClose={() => setIsModalOpen(false)}
-                onUpdate={nextTheme => handleChangeColor(nextTheme)}
+            <ThemeButton
+                theme={theme}
+                onClick={() => {
+                    setIsThemeRequested(true);
+                    setPrevTheme?.(theme);
+                }}
             />
         </>
     );

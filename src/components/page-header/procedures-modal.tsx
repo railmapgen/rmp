@@ -1,28 +1,28 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+    Badge,
+    Button,
     Modal,
     ModalBody,
     ModalCloseButton,
     ModalContent,
+    ModalFooter,
     ModalHeader,
     ModalOverlay,
     Text,
-    Badge,
     Tooltip,
-    ModalFooter,
-    Button,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { StationType } from '../../constants/stations';
 import { LineStyleType } from '../../constants/lines';
-import { useRootSelector, useRootDispatch } from '../../redux';
-import { setRefreshNodes, setRefreshEdges } from '../../redux/runtime/runtime-slice';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/param/param-slice';
 import stations from '../svgs/stations/stations';
 import { changeStationsTypeInBatch } from '../../util/change-types';
-import ColourModal from '../panels/colour-modal/colour-modal';
 import ThemeButton from '../panels/theme-button';
+import AppRootContext from '../app-root-context';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -224,8 +224,16 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
+    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
     const [theme, setTheme] = React.useState(runtimeTheme);
-    const [isColourModalOpen, setIsColourModalOpen] = React.useState(false);
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
+
+    useEffect(() => {
+        if (isThemeRequested && nextTheme) {
+            setTheme(nextTheme);
+            setIsThemeRequested(false);
+        }
+    }, [nextTheme?.toString()]);
 
     const handleChange = () => {
         graph.current
@@ -249,12 +257,12 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
 
                 <ModalBody>
                     {t('header.settings.procedures.removeLines.content')}
-                    <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
-                    <ColourModal
-                        isOpen={isColourModalOpen}
-                        defaultTheme={theme}
-                        onClose={() => setIsColourModalOpen(false)}
-                        onUpdate={nextTheme => setTheme(nextTheme)}
+                    <ThemeButton
+                        theme={theme}
+                        onClick={() => {
+                            setIsThemeRequested(true);
+                            setPrevTheme?.(theme);
+                        }}
                     />
                 </ModalBody>
 

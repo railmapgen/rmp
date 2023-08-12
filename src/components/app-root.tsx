@@ -3,17 +3,21 @@ import { RmgErrorBoundary, RmgThemeProvider, RmgWindow } from '@railmapgen/rmg-c
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocalStorageKey } from '../constants/constants';
+import { LocalStorageKey, Theme } from '../constants/constants';
+import AppRootContext from './app-root-context';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
 const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
 const DetailsPanel = React.lazy(() => import('./panels/details/details'));
+const RmgPaletteAppClip = React.lazy(() => import('./panels/rmg-palette-app-clip'));
 
 export default function AppRoot() {
     const { t } = useTranslation();
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
+    const [prevTheme, setPrevTheme] = React.useState<Theme>();
+    const [nextTheme, setNextTheme] = React.useState<Theme>();
 
     React.useEffect(() => {
         if (rmgRuntime.isStandaloneWindow() && !window.localStorage.getItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG)) {
@@ -90,47 +94,59 @@ export default function AppRoot() {
                         </>
                     }
                 >
-                    <PageHeader />
+                    <AppRootContext.Provider value={{ prevTheme, setPrevTheme, nextTheme, setNextTheme }}>
+                        <PageHeader />
 
-                    {isShowRMTMessage && (
-                        <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
-                            <AlertIcon />
-                            <Text>
-                                <Link href="/?app=rmp" isExternal fontWeight="bold">
-                                    {t('rmtPromotion')}
-                                </Link>{' '}
-                                <Link
-                                    as="button"
-                                    ml="auto"
-                                    textDecoration="underline"
-                                    onClick={() => setIsShowRMTMessage(false)}
-                                >
-                                    {t('close')}
-                                </Link>
-                                {' | '}
-                                <Link
-                                    as="button"
-                                    textDecoration="underline"
-                                    onClick={() => {
-                                        setIsShowRMTMessage(false);
-                                        window.localStorage.setItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG, 'true');
-                                    }}
-                                >
-                                    {t('noShowAgain')}
-                                </Link>
-                            </Text>
-                        </Alert>
-                    )}
+                        {isShowRMTMessage && (
+                            <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
+                                <AlertIcon />
+                                <Text>
+                                    <Link href="/?app=rmp" isExternal fontWeight="bold">
+                                        {t('rmtPromotion')}
+                                    </Link>{' '}
+                                    <Link
+                                        as="button"
+                                        ml="auto"
+                                        textDecoration="underline"
+                                        onClick={() => setIsShowRMTMessage(false)}
+                                    >
+                                        {t('close')}
+                                    </Link>
+                                    {' | '}
+                                    <Link
+                                        as="button"
+                                        textDecoration="underline"
+                                        onClick={() => {
+                                            setIsShowRMTMessage(false);
+                                            window.localStorage.setItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG, 'true');
+                                        }}
+                                    >
+                                        {t('noShowAgain')}
+                                    </Link>
+                                </Text>
+                            </Alert>
+                        )}
 
-                    <RmgErrorBoundary allowReset>
-                        <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
-                            {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
+                        <RmgErrorBoundary allowReset>
+                            <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
+                                {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
                             have the right parent container for its `position: 'absolute'` calculation. */}
-                            <ToolsPanel />
-                            <SvgWrapper />
-                            <DetailsPanel />
-                        </Flex>
-                    </RmgErrorBoundary>
+                                <ToolsPanel />
+                                <SvgWrapper />
+                                <DetailsPanel />
+                            </Flex>
+                        </RmgErrorBoundary>
+                    </AppRootContext.Provider>
+
+                    <RmgPaletteAppClip
+                        isOpen={!!prevTheme}
+                        onClose={() => setPrevTheme(undefined)}
+                        defaultTheme={prevTheme}
+                        onSelect={nextTheme => {
+                            setNextTheme(nextTheme);
+                            setPrevTheme(undefined);
+                        }}
+                    />
                 </React.Suspense>
             </RmgWindow>
         </RmgThemeProvider>
