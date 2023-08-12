@@ -174,7 +174,7 @@ const defaultSuzhouRTIntStationAttributes: SuzhouRTIntStationAttributes = {
     transfer: [
         [
             [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white, '', ''],
-            [CityCode.Suzhou, 'sz2', '#ED3240', MonoColour.black, '', ''],
+            [CityCode.Suzhou, 'sz2', '#ED3240', MonoColour.white, '', ''],
         ],
     ],
 };
