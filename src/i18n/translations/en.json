@@ -8,21 +8,6 @@
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
 
-    "colorModal": {
-        "title": "Select a color",
-        "example": "Example",
-        "palette": "From palette",
-        "custom": "Customize",
-        "city": "City theme",
-        "line": "Line theme",
-        "bg": "Background color",
-        "fg": "Foreground color",
-        "white":"White",
-        "black": "Black",
-        "seeAll": "See full library in ",
-        "submit": "Submit"
-    },
-
     "panel": {
         "tools": {
             "showLess": "Show less",

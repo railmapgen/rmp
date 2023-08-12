@@ -8,21 +8,6 @@
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
 
-    "colorModal": {
-        "title": "色を選択",
-        "example": "例",
-        "palette": "パレットから",
-        "custom": "カスタマイズ",
-        "city": "都市テーマ",
-        "line": "路線テーマ",
-        "bg": "背景色",
-        "fg": "前景色",
-        "white": "白",
-        "black": "黒",
-        "seeAll": "ライブラリ全体を見る",
-        "submit": "送信"
-    },
-
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
