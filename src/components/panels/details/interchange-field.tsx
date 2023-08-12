@@ -115,10 +115,10 @@ export const InterchangeField = (props: {
                 <Fragment key={i}>
                     <FormLabel size="xs">
                         {i === 0
-                            ? t('panel.details.station.interchange.within')
+                            ? t('panel.details.stations.interchange.within')
                             : i === 1
-                            ? t('panel.details.station.interchange.outStation')
-                            : t('panel.details.station.interchange.outSystem')}
+                            ? t('panel.details.stations.interchange.outStation')
+                            : t('panel.details.stations.interchange.outSystem')}
                     </FormLabel>
 
                     <InterchangeCard
@@ -138,7 +138,7 @@ export const InterchangeField = (props: {
                     leftIcon={<MdAdd />}
                     onClick={handleAddInterchangeGroup}
                 >
-                    {t('panel.details.station.interchange.addGroup')}
+                    {t('panel.details.stations.interchange.addGroup')}
                 </Button>
             )}
         </VStack>

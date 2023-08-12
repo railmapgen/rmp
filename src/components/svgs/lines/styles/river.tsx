@@ -42,7 +42,7 @@ const defaultRiverAttributes: RiverAttributes = {
 const riverFields = [
     {
         type: 'input',
-        label: 'panel.details.line.river.width',
+        label: 'panel.details.lines.river.width',
         variant: 'number',
         value: (attrs?: RiverAttributes) => (attrs ?? defaultRiverAttributes).width,
         onChange: (val: string | number, attrs_: RiverAttributes | undefined) => {
@@ -63,7 +63,7 @@ const river: LineStyle<RiverAttributes> = {
     // @ts-ignore-error
     fields: riverFields,
     metadata: {
-        displayName: 'panel.details.line.river.displayName',
+        displayName: 'panel.details.lines.river.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
     },
 };

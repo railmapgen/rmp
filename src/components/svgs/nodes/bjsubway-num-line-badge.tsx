@@ -80,7 +80,7 @@ const defaultBjsubwayNumLineBadgeAttributes: BjsubwayNumLineBadgeAttributes = {
 const BjsubwayNumLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.bjsubwayNumLineBadge.num',
+        label: 'panel.details.nodes.common.num',
         value: (attrs?: BjsubwayNumLineBadgeAttributes) => (attrs ?? defaultBjsubwayNumLineBadgeAttributes).num,
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: BjsubwayNumLineBadgeAttributes | undefined) => {
@@ -125,7 +125,7 @@ const bjsubwayNumLineBadge: Node<BjsubwayNumLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: BjsubwayNumLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.bjsubwayNumLineBadge.displayName',
+        displayName: 'panel.details.nodes.bjsubwayNumLineBadge.displayName',
         tags: [],
     },
 };

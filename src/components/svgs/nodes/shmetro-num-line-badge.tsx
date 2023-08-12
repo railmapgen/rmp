@@ -76,7 +76,7 @@ const defaultShmetroNumLineBadgeAttributes: ShmetroNumLineBadgeAttributes = {
 const ShmetroNumLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.shmetroNumLineBadge.num',
+        label: 'panel.details.nodes.common.num',
         value: (attrs?: ShmetroNumLineBadgeAttributes) => (attrs ?? defaultShmetroNumLineBadgeAttributes).num,
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: ShmetroNumLineBadgeAttributes | undefined) => {
@@ -121,7 +121,7 @@ const shmetroNumLineBadge: Node<ShmetroNumLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: ShmetroNumLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.shmetroNumLineBadge.displayName',
+        displayName: 'panel.details.nodes.shmetroNumLineBadge.displayName',
         tags: [],
     },
 };

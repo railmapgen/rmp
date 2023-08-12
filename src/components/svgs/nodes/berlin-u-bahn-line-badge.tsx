@@ -71,7 +71,7 @@ const defaultBerlinUBahnLineBadgeAttributes: BerlinUBahnLineBadgeAttributes = {
 const BerlinUBahnLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.berlinUBahnLineBadge.num',
+        label: 'panel.details.nodes.common.num',
         value: (attrs?: BerlinUBahnLineBadgeAttributes) => (attrs ?? defaultBerlinUBahnLineBadgeAttributes).num,
         validator: (val: string) => !Number.isNaN(val),
         onChange: (val: string | number, attrs_: BerlinUBahnLineBadgeAttributes | undefined) => {
@@ -110,7 +110,7 @@ const berlinUBahnLineBadge: Node<BerlinUBahnLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: BerlinUBahnLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.berlinUBahnLineBadge.displayName',
+        displayName: 'panel.details.nodes.berlinUBahnLineBadge.displayName',
         tags: [],
     },
 };

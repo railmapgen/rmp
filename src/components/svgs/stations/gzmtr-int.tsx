@@ -315,7 +315,7 @@ const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
 const gzmtrIntStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.gzmtrInt.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: GzmtrIntStationAttributes) =>
             (attrs ?? defaultGzmtrIntStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
@@ -329,7 +329,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.gzmtrInt.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: GzmtrIntStationAttributes) =>
             (attrs ?? defaultGzmtrIntStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
@@ -343,7 +343,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.gzmtrInt.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: GzmtrIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
@@ -358,7 +358,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.gzmtrInt.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: GzmtrIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
@@ -373,7 +373,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'switch',
-        label: 'panel.details.station.gzmtrInt.open',
+        label: 'panel.details.stations.gzmtrInt.open',
         oneLine: true,
         isChecked: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).open,
         onChange: (val: boolean, attrs_: GzmtrIntStationAttributes | undefined) => {
@@ -387,7 +387,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.station.gzmtrInt.secondaryNameZh',
+        label: 'panel.details.stations.gzmtrInt.secondaryNameZh',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).secondaryNames[0],
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
@@ -400,7 +400,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.station.gzmtrInt.secondaryNameEn',
+        label: 'panel.details.stations.gzmtrInt.secondaryNameEn',
         value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).secondaryNames[1],
         onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
             // set default value if switched from another type
@@ -447,7 +447,7 @@ const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
     // @ts-ignore-error
     fields: gzmtrIntStationFields,
     metadata: {
-        displayName: 'panel.details.station.gzmtrInt.displayName',
+        displayName: 'panel.details.stations.gzmtrInt.displayName',
         cities: [CityCode.Guangzhou],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

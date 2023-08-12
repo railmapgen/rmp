@@ -181,7 +181,7 @@ const defaultMTRStationAttributes: MTRStationAttributes = {
 const mtrStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.mtr.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: MTRStationAttributes | undefined) => {
             // set default value if switched from another type
@@ -194,7 +194,7 @@ const mtrStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.mtr.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: MTRStationAttributes | undefined) => {
             // set default value if switched from another type
@@ -207,7 +207,7 @@ const mtrStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.mtr.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: MTRStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
@@ -222,7 +222,7 @@ const mtrStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.mtr.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: MTRStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
@@ -237,7 +237,7 @@ const mtrStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.mtr.rotate',
+        label: 'panel.details.stations.common.rotate',
         value: (attrs?: MTRStationAttributes) => attrs?.rotate ?? defaultMTRStationAttributes.rotate,
         hidden: (attrs?: MTRStationAttributes) => (attrs?.transfer?.flat()?.length ?? 0) === 0,
         options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
@@ -276,7 +276,7 @@ const mtrStation: Station<MTRStationAttributes> = {
     // @ts-ignore-error
     fields: mtrStationFields,
     metadata: {
-        displayName: 'panel.details.station.mtr.displayName',
+        displayName: 'panel.details.stations.mtr.displayName',
         cities: [CityCode.Hongkong],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

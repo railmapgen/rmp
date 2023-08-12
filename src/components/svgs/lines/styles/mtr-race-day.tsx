@@ -51,7 +51,7 @@ const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
     // @ts-ignore-error
     fields: mtrRaceDaysFields,
     metadata: {
-        displayName: 'panel.details.line.mtrRaceDays.displayName',
+        displayName: 'panel.details.lines.mtrRaceDays.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
     },
 };

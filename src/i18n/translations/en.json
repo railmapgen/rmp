@@ -62,44 +62,38 @@
                 "targetName": "Target Name"
             },
             "specificAttrsTitle": "Specific Attributes",
-            "node": {
+            "nodes": {
+                "common": {
+                    "nameZh": "Line name in Chinese",
+                    "nameEn": "Line name in English",
+                    "num": "Line Number"
+                },
                 "virtual": {
                     "displayName": "Virtual node"
                 },
                 "shmetroNumLineBadge": {
-                    "displayName": "Shanghai Metro num line badge",
-                    "num": "Line Number"
+                    "displayName": "Shanghai Metro num line badge"
                 },
                 "shmetroTextLineBadge": {
-                    "displayName": "Shanghai Metro text line badge",
-                    "nameZh": "Line name in Chinese",
-                    "nameEn": "Line name in English"
+                    "displayName": "Shanghai Metro text line badge"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "Guangzhou Metro line badge",
-                    "nameZh": "Line name in Chinese",
-                    "nameEn": "Line name in English"
+                    "displayName": "Guangzhou Metro line badge"
                 },
                 "bjsubwayNumLineBadge": {
-                    "displayName": "Beijing Subway num line badge",
-                    "num": "Line Number"
+                    "displayName": "Beijing Subway num line badge"
                 },
                 "bjsubwayTextLineBadge": {
-                    "displayName": "Beijing Subway text line badge",
-                    "nameZh": "Line name in Chinese",
-                    "nameEn": "Line name in English"
+                    "displayName": "Beijing Subway text line badge"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "Berlin S Bahn line badge",
-                    "num": "Line Number"
+                    "displayName": "Berlin S Bahn line badge"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "Berlin U Bahn line badge",
-                    "num": "Line Number"
+                    "displayName": "Berlin U Bahn line badge"
                 },
                 "suzhouRTNumLineBadge": {
                     "displayName": "Suzhou Rail Transit num line badge",
-                    "num": "Line Number",
                     "branch": "Is branch line"
                 },
                 "facilities": {
@@ -118,7 +112,14 @@
                     "italic": "Italic"
                 }
             },
-            "station": {
+            "stations": {
+                "common": {
+                    "nameZh": "Name in Chinese",
+                    "nameEn": "Name in English",
+                    "nameOffsetX": "Name offset X",
+                    "nameOffsetY": "Name offset Y",
+                    "rotate": "Icon rotation"
+                },
                 "interchange": {
                     "title": "Interchanges",
                     "within": "Within-station interchange",
@@ -133,41 +134,21 @@
                     "remove": "Remove interchange"
                 },
                 "shmetroBasic": {
-                    "displayName": "Shanghai Metro basic station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y"
+                    "displayName": "Shanghai Metro basic station"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "Shanghai Metro basic station (2020)",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "rotate": "Icon rotation"
+                    "displayName": "Shanghai Metro basic station (2020)"
                 },
                 "shmetroInt": {
                     "displayName": "Shanghai Metro interchange station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
                     "height": "Icon height",
-                    "width": "Icon width",
-                    "rotate": "Icon rotation"
+                    "width": "Icon width"
                 },
                 "shmetroOsysi": {
-                    "displayName": "Shanghai Metro out-of-system interchange station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y"
+                    "displayName": "Shanghai Metro out-of-system interchange station"
                 },
                 "gzmtrBasic": {
                     "displayName": "Guangzhou Metro basic station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
                     "lineCode": "Line code",
                     "stationCode": "Station code",
                     "open": "Is opened",
@@ -177,10 +158,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "Guangzhou Metro interchange station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
                     "lineCode": "Line code",
                     "stationCode": "Station code",
                     "open": "Is opened",
@@ -189,63 +166,40 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
                     "open": "Is opened"
                 },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
                     "outOfStation": "Out of station interchange"
                 },
                 "mtr": {
                     "displayName": "MTR station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
                     "rotate": "Icon rotation"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "Suzhou Rail Transit basic station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y"
+                    "displayName": "Suzhou Rail Transit basic station"
                 },
                 "suzhouRTInt": {
-                    "displayName": "Suzhou Rail Transit interchange station",
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
-                    "rotate": "Icon rotation"
+                    "displayName": "Suzhou Rail Transit interchange station"
                 }
             },
-            "line": {
+            "lines": {
                 "reconcileId": "Reconcile ID",
+                "common": {
+                    "offsetFrom": "Offset From",
+                    "offsetTo": "Offset To",
+                    "startFrom": "Start From",
+                    "roundCornerFactor": "Round Corner Factor"
+                },
                 "simple": {
                     "displayName": "Simple path",
                     "offset": "Offset"
                 },
                 "diagonal": {
-                    "displayName": "135° diagonal path",
-                    "offsetFrom": "Offset From",
-                    "offsetTo": "Offset To",
-                    "startFrom": "Start From",
-                    "roundCornerFactor": "Round Corner Factor"
+                    "displayName": "135° diagonal path"
                 },
                 "perpendicular": {
-                    "displayName": "90° perpendicular path",
-                    "offsetFrom": "Offset From",
-                    "offsetTo": "Offset To",
-                    "startFrom": "Start From",
-                    "roundCornerFactor": "Round Corner Factor"
+                    "displayName": "90° perpendicular path"
                 },
                 "singleColor": {
                     "displayName": "Single color style"
