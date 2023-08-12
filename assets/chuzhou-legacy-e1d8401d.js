@@ -1,1 +1,0 @@
-System.register(["./index-legacy-39fda732.js","./chakra-legacy-fe32153b.js","./react-legacy-9060605e.js"],(function(e,n){"use strict";var t;return{setters:[function(e){t=e.v},null,null],execute:function(){e("default",[{id:"ningchu",colour:"#ff631b",fg:t.white,name:{en:"Nanjing-Chuzhou Line","zh-Hans":"宁滁线","zh-Hant":"寧滁線"}}])}}}));
