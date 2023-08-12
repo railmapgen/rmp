@@ -34,7 +34,7 @@ const mtrPaidArea: LineStyle<MTRPaidAreaAttributes> = {
     defaultAttrs: defaultMTRPaidAreaAttributes,
     fields: [],
     metadata: {
-        displayName: 'panel.details.line.mtrPaidArea.displayName',
+        displayName: 'panel.details.lines.mtrPaidArea.displayName',
         supportLinePathType: [
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

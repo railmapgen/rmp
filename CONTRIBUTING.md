@@ -24,9 +24,9 @@ Please refer to the [Develop Guide](./docs/developer-guide.md) in the README for
 
 We provide tutorials for station, node, and line styles. Check out the one you want to contribute!
 
-- [Station Tutorial](./docs/stations.md)
-- [Node Tutorial](./docs/nodes.md)
-- [Line Style Tutorial](./docs/line-styles.md)
+- [Stations Tutorial](./docs/stations.md)
+- [Nodes Tutorial](./docs/nodes.md)
+- [Line Styles Tutorial](./docs/line-styles.md)
 
 ## Submitting an Issue
 

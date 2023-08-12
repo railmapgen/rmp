@@ -121,7 +121,7 @@ const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
 const bjsubwayBasicStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.bjsubwayBasic.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: BjsubwayBasicStationAttributes) =>
             (attrs ?? defaultBjsubwayBasicStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
@@ -135,7 +135,7 @@ const bjsubwayBasicStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.bjsubwayBasic.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: BjsubwayBasicStationAttributes) =>
             (attrs ?? defaultBjsubwayBasicStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
@@ -149,7 +149,7 @@ const bjsubwayBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.bjsubwayBasic.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: BjsubwayBasicStationAttributes) =>
@@ -165,7 +165,7 @@ const bjsubwayBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.bjsubwayBasic.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: BjsubwayBasicStationAttributes) =>
@@ -181,7 +181,7 @@ const bjsubwayBasicStationFields = [
     },
     {
         type: 'switch',
-        label: 'panel.details.station.bjsubwayBasic.open',
+        label: 'panel.details.stations.bjsubwayBasic.open',
         oneLine: true,
         isChecked: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).open,
         onChange: (val: boolean, attrs_: BjsubwayBasicStationAttributes | undefined) => {
@@ -209,7 +209,7 @@ const bjsubwayBasicStation: Station<BjsubwayBasicStationAttributes> = {
     // @ts-ignore-error
     fields: bjsubwayBasicStationFields,
     metadata: {
-        displayName: 'panel.details.station.bjsubwayBasic.displayName',
+        displayName: 'panel.details.stations.bjsubwayBasic.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

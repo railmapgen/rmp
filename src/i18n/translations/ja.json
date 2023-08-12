@@ -62,44 +62,38 @@
                 "targetName": "到着点名"
             },
             "specificAttrsTitle": "特定の属性",
-            "node": {
+            "nodes": {
+                "common": {
+                    "nameZh": "中国語の路線名",
+                    "nameEn": "英語の路線名",
+                    "num": "路線番号"
+                },
                 "virtual": {
                     "displayName": "仮想ノード"
                 },
                 "shmetroNumLineBadge": {
-                    "displayName": "上海地下鉄路線番号バッジ",
-                    "num": "路線番号"
+                    "displayName": "上海地下鉄路線番号バッジ"
                 },
                 "shmetroTextLineBadge": {
-                    "displayName": "上海地下鉄テキスト路線バッジ",
-                    "nameZh": "中国語の路線名",
-                    "nameEn": "英語の路線名"
+                    "displayName": "上海地下鉄テキスト路線バッジ"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "広州地下鉄路線バッジ",
-                    "nameZh": "中国語の路線名",
-                    "nameEn": "英語の路線名"
+                    "displayName": "広州地下鉄路線バッジ"
                 },
                 "bjsubwayNumLineBadge": {
-                    "displayName": "北京地下鉄路線番号バッジ",
-                    "num": "路線番号"
+                    "displayName": "北京地下鉄路線番号バッジ"
                 },
                 "bjsubwayTextLineBadge": {
-                    "displayName": "北京地下鉄テキスト路線バッジ",
-                    "nameZh": "中国語の路線名",
-                    "nameEn": "英語の路線名"
+                    "displayName": "北京地下鉄テキスト路線バッジ"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "ベルリン地下鉄番号バッジ",
-                    "num": "路線番号"
+                    "displayName": "ベルリン地下鉄番号バッジ"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "ベルリンSバーン番号バッジ",
-                    "num": "路線番号"
+                    "displayName": "ベルリンSバーン番号バッジ"
                 },
                 "suzhouRTNumLineBadge": {
                     "displayName": "蘇州軌道交通 線番号 バッジ",
-                    "num": "路線番号",
                     "branch": "支線です"
                 },
                 "facilities": {
@@ -118,7 +112,7 @@
                     "italic": "イタリック体"
                 }
             },
-            "station": {
+            "stations": {
                 "interchange": {
                     "title": "乗り換え",
                     "within": "駅構内の乗り換え",
@@ -132,42 +126,29 @@
                     "copy": "乗り換えをコピー",
                     "remove": "乗り換えを削除"
                 },
-                "shmetroBasic": {
-                    "displayName": "上海地下鉄基本駅",
+                "common": {
                     "nameZh": "中国語の駅名",
                     "nameEn": "英語の駅名",
                     "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY"
+                    "nameOffsetY": "駅名オフセットY",
+                    "rotate": "アイコンの回転"
+                },
+                "shmetroBasic": {
+                    "displayName": "上海地下鉄基本駅"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "上海地下鉄基本駅（2020年）",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "rotate": "アイコンの回転"
+                    "displayName": "上海地下鉄基本駅（2020年）"
                 },
                 "shmetroInt": {
                     "displayName": "上海地下鉄乗り換え駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
                     "height": "アイコンの高さ",
-                    "width": "アイコンの幅",
-                    "rotate": "アイコンの回転"
+                    "width": "アイコンの幅"
                 },
                 "shmetroOsysi": {
-                    "displayName": "上海地下鉄の系統外乗り換え駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY"
+                    "displayName": "上海地下鉄の系統外乗り換え駅"
                 },
                 "gzmtrBasic": {
                     "displayName": "広州地下鉄基本駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
                     "lineCode": "路線コード",
                     "stationCode": "駅コード",
                     "open": "開業済み",
@@ -177,10 +158,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "広州地下鉄乗り換え駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
                     "lineCode": "路線コード",
                     "stationCode": "駅コード",
                     "open": "開業済み",
@@ -189,63 +166,40 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
                     "open": "開業済み"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地下鉄乗り換え駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
                     "outOfStation": "駅外の乗り換え"
                 },
                 "mtr": {
                     "displayName": "MTR駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
                     "rotate": "アイコンの回転"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "蘇州軌道交通基本駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY"
+                    "displayName": "蘇州軌道交通基本駅"
                 },
                 "suzhouRTInt": {
-                    "displayName": "蘇州軌道交通乗り換え駅",
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
-                    "rotate": "アイコンの回転"
+                    "displayName": "蘇州軌道交通乗り換え駅"
                 }
             },
-            "line": {
+            "lines": {
                 "reconcileId": "調整ID",
+                "common": {
+                    "offsetFrom": "オフセット（From）",
+                    "offsetTo": "オフセット（To）",
+                    "startFrom": "開始位置",
+                    "roundCornerFactor": "角の丸め係数"
+                },
                 "simple": {
                     "displayName": "シンプルパス",
                     "offset": "オフセット"
                 },
                 "diagonal": {
-                    "displayName": "135°対角パス",
-                    "offsetFrom": "オフセット（From）",
-                    "offsetTo": "オフセット（To）",
-                    "startFrom": "開始位置",
-                    "roundCornerFactor": "角の丸め係数"
+                    "displayName": "135°対角パス"
                 },
                 "perpendicular": {
-                    "displayName": "90°垂直パス",
-                    "offsetFrom": "オフセット（From）",
-                    "offsetTo": "オフセット（To）",
-                    "startFrom": "開始位置",
-                    "roundCornerFactor": "角の丸め係数"
+                    "displayName": "90°垂直パス"
                 },
                 "singleColor": {
                     "displayName": "単色スタイル"
@@ -286,7 +240,7 @@
                     "displayName": "MTR有料エリアスタイル"
                 }
             },
-            "edge": {},
+            "edges": {},
             "footer": {
                 "duplicate": "複製",
                 "remove": "削除",

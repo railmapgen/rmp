@@ -62,44 +62,38 @@
             "changeStationTypeContent": "修改车站类型会移除所有独特属性除了名称。",
             "changeLineTypeContent": "修改线段类型会移除所有独特属性。",
             "changeType": "更改类型",
-            "node": {
+            "nodes": {
+                "common": {
+                    "nameZh": "中文线路名称",
+                    "nameEn": "英文线路名称",
+                    "num": "线路号"
+                },
                 "virtual": {
                     "displayName": "虚拟节点"
                 },
                 "shmetroNumLineBadge": {
-                    "displayName": "上海地铁数字线路标识",
-                    "num": "线路号"
+                    "displayName": "上海地铁数字线路标识"
                 },
                 "shmetroTextLineBadge": {
-                    "displayName": "上海地铁文字线路标识",
-                    "nameZh": "中文线路名称",
-                    "nameEn": "英文线路名称"
+                    "displayName": "上海地铁文字线路标识"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "广州地铁线路标识",
-                    "nameZh": "中文线路名称",
-                    "nameEn": "英文线路名称"
+                    "displayName": "广州地铁线路标识"
                 },
                 "bjsubwayNumLineBadge": {
-                    "displayName": "北京地铁数字线路标识",
-                    "num": "线路号"
+                    "displayName": "北京地铁数字线路标识"
                 },
                 "bjsubwayTextLineBadge": {
-                    "displayName": "北京地铁文字线路标识",
-                    "nameZh": "中文线路名称",
-                    "nameEn": "英文线路名称"
+                    "displayName": "北京地铁文字线路标识"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "柏林地铁",
-                    "num": "线路号"
+                    "displayName": "柏林地铁"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "柏林城市快铁",
-                    "num": "线路号"
+                    "displayName": "柏林城市快铁"
                 },
                 "suzhouRTNumLineBadge": {
                     "displayName": "苏州轨道交通文字线路标识",
-                    "num": "线路号",
                     "branch": "是否支线"
                 },
                 "facilities": {
@@ -118,7 +112,14 @@
                     "italic": "斜体"
                 }
             },
-            "station": {
+            "stations": {
+                "common": {
+                    "nameZh": "中文名称",
+                    "nameEn": "英文名称",
+                    "nameOffsetX": "名称横向偏移",
+                    "nameOffsetY": "名称纵向偏移",
+                    "rotate": "车站旋转角度"
+                },
                 "interchange": {
                     "title": "换乘",
                     "within": "同站换乘",
@@ -133,41 +134,21 @@
                     "remove": "删除换乘"
                 },
                 "shmetroBasic": {
-                    "displayName": "上海地铁基本车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移"
+                    "displayName": "上海地铁基本车站"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "上海地铁基本车站(2020)",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "rotate": "车站旋转角度"
+                    "displayName": "上海地铁基本车站(2020)"
                 },
                 "shmetroInt": {
                     "displayName": "上海地铁换乘车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
                     "height": "车站高度",
-                    "width": "车站宽度",
-                    "rotate": "车站旋转角度"
+                    "width": "车站宽度"
                 },
                 "shmetroOsysi": {
-                    "displayName": "上海地铁转乘车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移"
+                    "displayName": "上海地铁转乘车站"
                 },
                 "gzmtrBasic": {
                     "displayName": "广州地铁基本车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
                     "lineCode": "路线编号",
                     "stationCode": "车站编号",
                     "open": "是否开通",
@@ -177,10 +158,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "广州地铁换乘车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
                     "lineCode": "路线编号",
                     "stationCode": "车站编号",
                     "open": "是否开通",
@@ -189,63 +166,39 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
                     "open": "是否开通"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地铁换乘车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
                     "outOfStation": "出站换乘"
                 },
                 "mtr": {
-                    "displayName": "MTR车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
-                    "rotate": "车站旋转角度"
+                    "displayName": "MTR车站"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "苏州轨道交通基本车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移"
+                    "displayName": "苏州轨道交通基本车站"
                 },
                 "suzhouRTInt": {
-                    "displayName": "苏州轨道交通换乘车站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
-                    "nameOffsetX": "名称横向偏移",
-                    "nameOffsetY": "名称纵向偏移",
-                    "rotate": "车站旋转角度"
+                    "displayName": "苏州轨道交通换乘车站"
                 }
             },
-            "line": {
+            "lines": {
                 "reconcileId": "合并线段唯一标识符",
+                "common": {
+                    "offsetFrom": "起始点偏移",
+                    "offsetTo": "结束点偏移",
+                    "startFrom": "从这里开始",
+                    "roundCornerFactor": "转折圆角因子"
+                },
                 "simple": {
                     "displayName": "基本线段",
                     "offset": "偏移"
                 },
                 "diagonal": {
-                    "displayName": "135°折线线段",
-                    "offsetFrom": "起始点偏移",
-                    "offsetTo": "结束点偏移",
-                    "startFrom": "从这里开始",
-                    "roundCornerFactor": "转折圆角因子"
+                    "displayName": "135°折线线段"
                 },
                 "perpendicular": {
-                    "displayName": "90°垂直线段",
-                    "offsetFrom": "起始点偏移",
-                    "offsetTo": "结束点偏移",
-                    "startFrom": "从这里开始",
-                    "roundCornerFactor": "转折圆角因子"
+                    "displayName": "90°垂直线段"
                 },
                 "singleColor": {
                     "displayName": "纯色样式"
@@ -286,7 +239,7 @@
                     "displayName": "MTR付费区域样式"
                 }
             },
-            "edge": {},
+            "edges": {},
             "footer": {
                 "duplicate": "复制",
                 "remove": "移除",

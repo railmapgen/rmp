@@ -79,7 +79,7 @@ const defaultDiagonalPathAttributes: DiagonalPathAttributes = {
 const diagonalFields = [
     {
         type: 'select',
-        label: 'panel.details.line.diagonal.startFrom',
+        label: 'panel.details.lines.common.startFrom',
         value: (attrs?: DiagonalPathAttributes) => attrs?.startFrom ?? defaultDiagonalPathAttributes.startFrom,
         options: { from: 'from', to: 'to' },
         onChange: (val: string | number, attrs_: DiagonalPathAttributes | undefined) => {
@@ -93,7 +93,7 @@ const diagonalFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.diagonal.offsetFrom',
+        label: 'panel.details.lines.common.offsetFrom',
         value: (attrs?: DiagonalPathAttributes) =>
             (attrs?.offsetFrom ?? defaultDiagonalPathAttributes.offsetFrom).toString(),
         validator: (val: string) => !Number.isNaN(val),
@@ -110,7 +110,7 @@ const diagonalFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.diagonal.offsetTo',
+        label: 'panel.details.lines.common.offsetTo',
         value: (attrs?: DiagonalPathAttributes) =>
             (attrs?.offsetTo ?? defaultDiagonalPathAttributes.offsetTo).toString(),
         validator: (val: string) => !Number.isNaN(val),
@@ -127,7 +127,7 @@ const diagonalFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.diagonal.roundCornerFactor',
+        label: 'panel.details.lines.common.roundCornerFactor',
         value: (attrs?: DiagonalPathAttributes) =>
             (attrs?.roundCornerFactor ?? defaultDiagonalPathAttributes.roundCornerFactor).toString(),
         validator: (val: string) => !Number.isNaN(val) && Number(val) > 0,
@@ -157,7 +157,7 @@ const diagonalPath: LinePath<DiagonalPathAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: diagonalFields,
-    metadata: { displayName: 'panel.details.line.diagonal.displayName' },
+    metadata: { displayName: 'panel.details.lines.diagonal.displayName' },
 };
 
 export default diagonalPath;
