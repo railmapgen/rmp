@@ -201,6 +201,9 @@
                 "perpendicular": {
                     "displayName": "90° perpendicular path"
                 },
+                "rotatePerpendicular": {
+                    "displayName": "90° rotate perpendicular path"
+                },
                 "singleColor": {
                     "displayName": "Single color style"
                 },

@@ -89,7 +89,7 @@ const defaultRotatePerpendicularPathAttributes: RotatePerpendicularPathAttribute
 const rotatePerpendicularFields = [
     {
         type: 'select',
-        label: 'panel.details.line.rotatePerpendicular.startFrom',
+        label: 'panel.details.lines.common.startFrom',
         value: (attrs?: RotatePerpendicularPathAttributes) =>
             attrs?.startFrom ?? defaultRotatePerpendicularPathAttributes.startFrom,
         options: { from: 'from', to: 'to' },
@@ -104,7 +104,7 @@ const rotatePerpendicularFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.rotatePerpendicular.offsetFrom',
+        label: 'panel.details.lines.common.offsetFrom',
         value: (attrs?: RotatePerpendicularPathAttributes) =>
             (attrs?.offsetFrom ?? defaultRotatePerpendicularPathAttributes.offsetFrom).toString(),
         validator: (val: string) => !Number.isNaN(val),
@@ -121,7 +121,7 @@ const rotatePerpendicularFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.rotatePerpendicular.offsetTo',
+        label: 'panel.details.lines.common.offsetTo',
         value: (attrs?: RotatePerpendicularPathAttributes) =>
             (attrs?.offsetTo ?? defaultRotatePerpendicularPathAttributes.offsetTo).toString(),
         validator: (val: string) => !Number.isNaN(val),
@@ -138,7 +138,7 @@ const rotatePerpendicularFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.rotatePerpendicular.roundCornerFactor',
+        label: 'panel.details.lines.common.roundCornerFactor',
         value: (attrs?: RotatePerpendicularPathAttributes) =>
             (attrs?.roundCornerFactor ?? defaultRotatePerpendicularPathAttributes.roundCornerFactor).toString(),
         validator: (val: string) => !Number.isNaN(val) && Number(val) > 0,
@@ -157,7 +157,7 @@ const rotatePerpendicularFields = [
 
 const rotatePerpendicularIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <path d="M6,6H18V18" stroke="currentColor" fill="none" />
+        <path d="M9,6L15,12L9,18" stroke="currentColor" fill="none" />
     </svg>
 );
 
@@ -168,7 +168,7 @@ const rotatePerpendicularPath: LinePath<RotatePerpendicularPathAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: rotatePerpendicularFields,
-    metadata: { displayName: 'panel.details.line.rotatePerpendicular.displayName' },
+    metadata: { displayName: 'panel.details.lines.rotatePerpendicular.displayName' },
 };
 
 export default rotatePerpendicularPath;
