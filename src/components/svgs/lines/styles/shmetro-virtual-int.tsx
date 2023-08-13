@@ -41,7 +41,12 @@ const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
     fields: [],
     metadata: {
         displayName: 'panel.details.lines.shmetroVirtualInt.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+        supportLinePathType: [
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.Simple,
+        ],
     },
 };
 

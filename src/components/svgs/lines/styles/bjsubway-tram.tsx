@@ -59,7 +59,7 @@ const bjsubwayTram: LineStyle<BjsubwayTramAttributes> = {
     fields: bjsubwayTramFields,
     metadata: {
         displayName: 'panel.details.lines.bjsubwayTram.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 

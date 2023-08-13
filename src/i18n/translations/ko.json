@@ -200,6 +200,9 @@
                 "perpendicular": {
                     "displayName": "90° 수직 선분"
                 },
+                "rotatePerpendicular": {
+                    "displayName": "90° 수직 경로 회전"
+                },
                 "singleColor": {
                     "displayName": "단색 스타일"
                 },

@@ -2,6 +2,7 @@ import { LineStyleType, LinePathType } from '../../../constants/lines';
 import simplePath from './paths/simple';
 import diagonalPath from './paths/diagonal';
 import perpendicularPath from './paths/perpendicular';
+import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import singleColor from './styles/single-color';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
@@ -16,9 +17,10 @@ import mtrUnpaidArea from './styles/mtr-unpaid-area';
 import mtrPaidArea from './styles/mtr-paid-area';
 
 export const linePaths = {
-    [LinePathType.Simple]: simplePath,
     [LinePathType.Diagonal]: diagonalPath,
     [LinePathType.Perpendicular]: perpendicularPath,
+    [LinePathType.RotatePerpendicular]: rotatePerpendicularPath,
+    [LinePathType.Simple]: simplePath,
 };
 
 export const lineStyles = {

@@ -225,7 +225,7 @@ const dualColor: LineStyle<DualColorAttributes> = {
     fields: dualColorFields,
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 
