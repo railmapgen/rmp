@@ -19,7 +19,8 @@ const generateRotatePerpendicularPath: GeneratePathFunction<RotatePerpendicularP
     const [offset1, offset2] = startFrom === 'from' ? [offsetFrom, offsetTo] : [offsetTo, offsetFrom];
     const [dx1, dy1, dx2, dy2] = startFrom === 'from' ? [0, offset1, offset2, 0] : [offset1, 0, 0, offset2];
 
-    // rotate the coordinate system to 45°
+    // Rotate the coordinate system to 45° counter-clockwise.
+    // Everything else is the same as perpendicular, note to rotate the point before any calculation!
     // reference:
     //  https://zhuanlan.zhihu.com/p/283015520
     //  https://zhuanlan.zhihu.com/p/617145721
@@ -29,7 +30,7 @@ const generateRotatePerpendicularPath: GeneratePathFunction<RotatePerpendicularP
         x2 * Math.SQRT1_2 + y2 * Math.SQRT1_2,
         -x2 * Math.SQRT1_2 + y2 * Math.SQRT1_2,
     ];
-    // get the new x1', y1', x2', y2' with offset (d)
+    // get the new x1', y1', x2', y2' with offset (d) added
     const [rx1offset, ry1offset, rx2offset, ry2offset] = [rx1 + dx1, ry1 + dy1, rx2 + dx2, ry2 + dy2];
     // rotate the coordinate system back to 0°
     const [x1offset, y1offset, x2offset, y2offset] = [
