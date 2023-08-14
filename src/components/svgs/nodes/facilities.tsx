@@ -43,7 +43,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
             <g id={id} transform={`translate(${x - bBox.width / 2}, ${y - bBox.height / 2})`}>
                 <image
                     ref={imgEl}
-                    href={`/images/facilities/${type}.svg`}
+                    href={import.meta.env.BASE_URL + `/images/facilities/${type}.svg`}
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
