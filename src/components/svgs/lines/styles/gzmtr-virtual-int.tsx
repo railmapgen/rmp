@@ -34,8 +34,13 @@ const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
     defaultAttrs: defaultGzmtrVirtualIntAttributes,
     fields: [],
     metadata: {
-        displayName: 'panel.details.line.gzmtrVirtualInt.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.Simple],
+        displayName: 'panel.details.lines.gzmtrVirtualInt.displayName',
+        supportLinePathType: [
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.Simple,
+        ],
     },
 };
 

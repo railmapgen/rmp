@@ -142,7 +142,7 @@ const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
 const shmetroIntStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroInt.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: ShmetroIntStationAttributes) =>
             (attrs ?? defaultShmetroIntStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
@@ -156,7 +156,7 @@ const shmetroIntStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroInt.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: ShmetroIntStationAttributes) =>
             (attrs ?? defaultShmetroIntStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
@@ -170,7 +170,7 @@ const shmetroIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroInt.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
@@ -185,7 +185,7 @@ const shmetroIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroInt.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
@@ -200,7 +200,7 @@ const shmetroIntStationFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.station.shmetroInt.height',
+        label: 'panel.details.stations.shmetroInt.height',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).height,
         validator: (val: string) => Number.isInteger(val),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
@@ -214,7 +214,7 @@ const shmetroIntStationFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.station.shmetroInt.width',
+        label: 'panel.details.stations.shmetroInt.width',
         value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).width,
         validator: (val: string) => Number.isInteger(val),
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
@@ -228,7 +228,7 @@ const shmetroIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroInt.rotate',
+        label: 'panel.details.stations.common.rotate',
         value: (attrs?: ShmetroIntStationAttributes) => attrs?.rotate ?? defaultShmetroIntStationAttributes.rotate,
         options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
         onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
@@ -256,7 +256,7 @@ const shmetroIntStation: Station<ShmetroIntStationAttributes> = {
     // @ts-ignore-error
     fields: shmetroIntStationFields,
     metadata: {
-        displayName: 'panel.details.station.shmetroInt.displayName',
+        displayName: 'panel.details.stations.shmetroInt.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

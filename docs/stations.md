@@ -104,7 +104,7 @@ Define input fields that allow users to edit the attributes of your station. The
 ```tsx
 {
     type: 'textarea',
-    label: 'panel.details.station.myStation.someAttribute',
+    label: 'panel.details.stations.myStation.someAttribute',
     value: (attrs?: MyStationAttributes) => (attrs ?? defaultMyStationAttributes).someAttribute,
     onChange: (val: string | number, attrs_?: MyStationAttributes | undefined) => {
         const attrs = attrs_ ?? defaultMyStationAttributes;
@@ -117,7 +117,7 @@ Define input fields that allow users to edit the attributes of your station. The
 ```tsx
 {
     type: 'select',
-    label: 'panel.details.station.myStation.anotherAttribute',
+    label: 'panel.details.stations.myStation.anotherAttribute',
     value: (attrs?: MyStationAttributes) => (attrs ?? defaultMyStationAttributes).anotherAttribute,
     options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
     onChange: (val: string | number, attrs_?: MyStationAttributes | undefined) => {
@@ -175,7 +175,7 @@ const myStation: Station<MyStationAttributes> = {
     // @ts-ignore-error The previous fields won't comply with type in Station. Will be fixed later.
     fields: myStationFields,
     metadata: {
-        displayName: 'panel.details.station.myStation.displayName',
+        displayName: 'panel.details.stations.myStation.displayName',
         cities: [CityCode.YourCity],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -232,7 +232,7 @@ const stations = {
 
 ## Final Notes
 
-By following this guide, you should be able to create a new station for Rail Map Painter. Make sure to adhere to the conventions outlined in this guide and refer to [shmetro-basic](../src/components/svgs/stations/shmetro-basic.tsx) for clarity.
+By following this guide, you should be able to create a new station for Rail Map Painter. Make sure to adhere to the conventions outlined in [this guide](../CONTRIBUTING.md) and refer to [shmetro-basic](../src/components/svgs/stations/shmetro-basic.tsx) for clarity.
 
 Feel free to submit your station as a pull request to the project repository, and the maintainers will review it. If your station meets the project's standards, it will be merged and become part of the project.
 

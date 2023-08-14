@@ -205,7 +205,7 @@ const DualColorSwitch = () => {
                 dispatch(saveGraph(graph.current.export()));
             }}
         >
-            {t('panel.details.line.dualColor.swap')}
+            {t('panel.details.lines.dualColor.swap')}
         </Button>
     );
 };
@@ -224,8 +224,8 @@ const dualColor: LineStyle<DualColorAttributes> = {
     // @ts-ignore-error
     fields: dualColorFields,
     metadata: {
-        displayName: 'panel.details.line.dualColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        displayName: 'panel.details.lines.dualColor.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 

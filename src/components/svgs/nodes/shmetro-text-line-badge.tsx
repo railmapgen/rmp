@@ -88,7 +88,7 @@ const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
 const ShmetroTextLineBadgeFields = [
     {
         type: 'input',
-        label: 'panel.details.node.shmetroTextLineBadge.nameZh',
+        label: 'panel.details.nodes.common.nameZh',
         value: (attrs?: ShmetroTextLineBadgeAttributes) => (attrs ?? defaultShmetroTextLineBadgeAttributes).names[0],
         onChange: (val: string | number, attrs_: ShmetroTextLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
@@ -101,7 +101,7 @@ const ShmetroTextLineBadgeFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.node.shmetroTextLineBadge.nameEn',
+        label: 'panel.details.nodes.common.nameEn',
         value: (attrs?: ShmetroTextLineBadgeAttributes) => (attrs ?? defaultShmetroTextLineBadgeAttributes).names[1],
         onChange: (val: string | number, attrs_: ShmetroTextLineBadgeAttributes | undefined) => {
             // set default value if switched from another type
@@ -141,7 +141,7 @@ const shmetroTextLineBadge: Node<ShmetroTextLineBadgeAttributes> = {
     // @ts-ignore-error
     fields: ShmetroTextLineBadgeFields,
     metadata: {
-        displayName: 'panel.details.node.shmetroTextLineBadge.displayName',
+        displayName: 'panel.details.nodes.shmetroTextLineBadge.displayName',
         tags: [],
     },
 };

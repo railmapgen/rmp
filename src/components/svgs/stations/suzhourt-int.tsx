@@ -174,7 +174,7 @@ const defaultSuzhouRTIntStationAttributes: SuzhouRTIntStationAttributes = {
     transfer: [
         [
             [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white, '', ''],
-            [CityCode.Suzhou, 'sz2', '#ED3240', MonoColour.black, '', ''],
+            [CityCode.Suzhou, 'sz2', '#ED3240', MonoColour.white, '', ''],
         ],
     ],
 };
@@ -182,7 +182,7 @@ const defaultSuzhouRTIntStationAttributes: SuzhouRTIntStationAttributes = {
 const suzhouRTIntStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.suzhouRTInt.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: SuzhouRTIntStationAttributes) =>
             (attrs ?? defaultSuzhouRTIntStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: SuzhouRTIntStationAttributes | undefined) => {
@@ -196,7 +196,7 @@ const suzhouRTIntStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.suzhouRTInt.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: SuzhouRTIntStationAttributes) =>
             (attrs ?? defaultSuzhouRTIntStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: SuzhouRTIntStationAttributes | undefined) => {
@@ -210,7 +210,7 @@ const suzhouRTIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.suzhouRTInt.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: SuzhouRTIntStationAttributes) => (attrs ?? defaultSuzhouRTIntStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: SuzhouRTIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
@@ -225,7 +225,7 @@ const suzhouRTIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.suzhouRTInt.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: SuzhouRTIntStationAttributes) => (attrs ?? defaultSuzhouRTIntStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: SuzhouRTIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
@@ -240,7 +240,7 @@ const suzhouRTIntStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.suzhouRTInt.rotate',
+        label: 'panel.details.stations.common.rotate',
         value: (attrs?: SuzhouRTIntStationAttributes) => attrs?.rotate ?? defaultSuzhouRTIntStationAttributes.rotate,
         hidden: (attrs?: SuzhouRTIntStationAttributes) => (attrs?.transfer?.flat()?.length ?? 0) === 0,
         options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
@@ -281,7 +281,7 @@ const suzhouRTIntStation: Station<SuzhouRTIntStationAttributes> = {
     // @ts-ignore-error
     fields: suzhouRTIntStationFields,
     metadata: {
-        displayName: 'panel.details.station.suzhouRTInt.displayName',
+        displayName: 'panel.details.stations.suzhouRTInt.displayName',
         cities: [CityCode.Suzhou],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

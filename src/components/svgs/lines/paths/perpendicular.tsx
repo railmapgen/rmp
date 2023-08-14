@@ -1,4 +1,4 @@
-import { GeneratePathFunction, LinePathAttributes, LinePath, LinePathType } from '../../../../constants/lines';
+import { GeneratePathFunction, LinePathAttributes, LinePath } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttributes> = (
@@ -40,9 +40,9 @@ export interface PerpendicularPathAttributes extends LinePathAttributes {
      * e.g. from
      *        b
      *        |
-     *      a-
+     *      a-┘
      * e.g. to
-     *       -b
+     *      ┌-b
      *      |
      *      a
      */
@@ -62,7 +62,7 @@ const defaultPerpendicularPathAttributes: PerpendicularPathAttributes = {
 const perpendicularFields = [
     {
         type: 'select',
-        label: 'panel.details.line.perpendicular.startFrom',
+        label: 'panel.details.lines.common.startFrom',
         value: (attrs?: PerpendicularPathAttributes) =>
             attrs?.startFrom ?? defaultPerpendicularPathAttributes.startFrom,
         options: { from: 'from', to: 'to' },
@@ -77,7 +77,7 @@ const perpendicularFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.perpendicular.offsetFrom',
+        label: 'panel.details.lines.common.offsetFrom',
         value: (attrs?: PerpendicularPathAttributes) =>
             (attrs?.offsetFrom ?? defaultPerpendicularPathAttributes.offsetFrom).toString(),
         validator: (val: string) => !Number.isNaN(val),
@@ -94,7 +94,7 @@ const perpendicularFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.perpendicular.offsetTo',
+        label: 'panel.details.lines.common.offsetTo',
         value: (attrs?: PerpendicularPathAttributes) =>
             (attrs?.offsetTo ?? defaultPerpendicularPathAttributes.offsetTo).toString(),
         validator: (val: string) => !Number.isNaN(val),
@@ -111,7 +111,7 @@ const perpendicularFields = [
     },
     {
         type: 'input',
-        label: 'panel.details.line.perpendicular.roundCornerFactor',
+        label: 'panel.details.lines.common.roundCornerFactor',
         value: (attrs?: PerpendicularPathAttributes) =>
             (attrs?.roundCornerFactor ?? defaultPerpendicularPathAttributes.roundCornerFactor).toString(),
         validator: (val: string) => !Number.isNaN(val) && Number(val) > 0,
@@ -141,7 +141,7 @@ const perpendicularPath: LinePath<PerpendicularPathAttributes> = {
     // TODO: fix this
     // @ts-ignore-error
     fields: perpendicularFields,
-    metadata: { displayName: 'panel.details.line.perpendicular.displayName' },
+    metadata: { displayName: 'panel.details.lines.perpendicular.displayName' },
 };
 
 export default perpendicularPath;

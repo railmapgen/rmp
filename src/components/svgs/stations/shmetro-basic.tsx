@@ -111,7 +111,7 @@ const defaultShmetroBasicStationAttributes: ShmetroBasicStationAttributes = {
 const shmetroBasicStationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroBasic.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: ShmetroBasicStationAttributes) =>
             (attrs ?? defaultShmetroBasicStationAttributes).names[0].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
@@ -125,7 +125,7 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroBasic.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: ShmetroBasicStationAttributes) =>
             (attrs ?? defaultShmetroBasicStationAttributes).names[1].replaceAll('\\', '\n'),
         onChange: (val: string | number, attrs_: ShmetroBasicStationAttributes | undefined) => {
@@ -139,7 +139,7 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroBasic.nameOffsetX',
+        label: 'panel.details.stations.common.nameOffsetX',
         value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).nameOffsetX,
         options: { left: 'left', middle: 'middle', right: 'right' },
         disabledOptions: (attrs?: ShmetroBasicStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
@@ -154,7 +154,7 @@ const shmetroBasicStationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroBasic.nameOffsetY',
+        label: 'panel.details.stations.common.nameOffsetY',
         value: (attrs?: ShmetroBasicStationAttributes) => (attrs ?? defaultShmetroBasicStationAttributes).nameOffsetY,
         options: { top: 'top', middle: 'middle', bottom: 'bottom' },
         disabledOptions: (attrs?: ShmetroBasicStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
@@ -183,7 +183,7 @@ const shmetroBasicStation: Station<ShmetroBasicStationAttributes> = {
     // @ts-ignore-error
     fields: shmetroBasicStationFields,
     metadata: {
-        displayName: 'panel.details.station.shmetroBasic.displayName',
+        displayName: 'panel.details.stations.shmetroBasic.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

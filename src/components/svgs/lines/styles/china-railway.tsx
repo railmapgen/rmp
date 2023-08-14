@@ -41,8 +41,8 @@ const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
     // @ts-ignore-error
     fields: [],
     metadata: {
-        displayName: 'panel.details.line.chinaRailway.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        displayName: 'panel.details.lines.chinaRailway.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 

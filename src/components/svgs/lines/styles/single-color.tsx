@@ -51,8 +51,8 @@ const singleColor: LineStyle<SingleColorAttributes> = {
     // @ts-ignore-error
     fields: singleColorFields,
     metadata: {
-        displayName: 'panel.details.line.singleColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        displayName: 'panel.details.lines.singleColor.displayName',
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 

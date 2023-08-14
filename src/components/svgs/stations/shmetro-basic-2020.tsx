@@ -178,7 +178,7 @@ const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttribute
 const shmetroBasic2020StationFields = [
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroBasic2020.nameZh',
+        label: 'panel.details.stations.common.nameZh',
         value: (attrs?: ShmetroBasic2020StationAttributes) =>
             (attrs ?? defaultShmetroBasic2020StationAttributes).names[0].replaceAll('\\', '\n'),
         options: { left: 'left', middle: 'middle', right: 'right' },
@@ -193,7 +193,7 @@ const shmetroBasic2020StationFields = [
     },
     {
         type: 'textarea',
-        label: 'panel.details.station.shmetroBasic2020.nameEn',
+        label: 'panel.details.stations.common.nameEn',
         value: (attrs?: ShmetroBasic2020StationAttributes) =>
             (attrs ?? defaultShmetroBasic2020StationAttributes).names[1].replaceAll('\\', '\n'),
         options: { left: 'left', middle: 'middle', right: 'right' },
@@ -208,7 +208,7 @@ const shmetroBasic2020StationFields = [
     },
     {
         type: 'select',
-        label: 'panel.details.station.shmetroBasic2020.rotate',
+        label: 'panel.details.stations.common.rotate',
         value: (attrs?: ShmetroBasic2020StationAttributes) =>
             (attrs ?? defaultShmetroBasic2020StationAttributes).rotate,
         options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
@@ -243,7 +243,7 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
     // @ts-ignore-error
     fields: shmetroBasic2020StationFields,
     metadata: {
-        displayName: 'panel.details.station.shmetroBasic2020.displayName',
+        displayName: 'panel.details.stations.shmetroBasic2020.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
