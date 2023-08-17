@@ -52,7 +52,7 @@ const singleColor: LineStyle<SingleColorAttributes> = {
     fields: singleColorFields,
     metadata: {
         displayName: 'panel.details.lines.singleColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular],
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 

@@ -3,6 +3,7 @@ import { LineId } from './constants';
 import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
+import { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
@@ -19,6 +20,7 @@ import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-
 export enum LinePathType {
     Diagonal = 'diagonal',
     Perpendicular = 'perpendicular',
+    RotatePerpendicular = 'ro-perp',
     Simple = 'simple',
 }
 
@@ -26,6 +28,7 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Simple]?: SimplePathAttributes;
     [LinePathType.Diagonal]?: DiagonalPathAttributes;
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
+    [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
 }
 
 export enum LineStyleType {

@@ -185,6 +185,9 @@
                 "perpendicular": {
                     "displayName": "90°垂直線段"
                 },
+                "rotatePerpendicular": {
+                    "displayName": "90°旋轉垂直線段"
+                },
                 "singleColor": {
                     "displayName": "純色樣式"
                 },

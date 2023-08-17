@@ -186,6 +186,9 @@
                 "perpendicular": {
                     "displayName": "90°垂直パス"
                 },
+                "rotatePerpendicular": {
+                    "displayName": "90°回転する垂直パス"
+                },
                 "singleColor": {
                     "displayName": "単色スタイル"
                 },

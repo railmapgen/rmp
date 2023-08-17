@@ -1,4 +1,4 @@
-import { GeneratePathFunction, LinePathAttributes, LinePath, LinePathType } from '../../../../constants/lines';
+import { GeneratePathFunction, LinePathAttributes, LinePath } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttributes> = (
@@ -40,9 +40,9 @@ export interface PerpendicularPathAttributes extends LinePathAttributes {
      * e.g. from
      *        b
      *        |
-     *      a-
+     *      a-┘
      * e.g. to
-     *       -b
+     *      ┌-b
      *      |
      *      a
      */
