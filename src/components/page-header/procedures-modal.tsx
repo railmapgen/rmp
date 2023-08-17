@@ -248,8 +248,14 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
         onClose();
     };
 
+    /** FIXME: We shouldn't remove the focus trap as this breaks the accessibility.
+     *         However this seems to be the only workaround to prevent the focus
+     *         of Palette App Clip being stolen by this modal.
+     *         Instead of fixing the focus trap, we should avoid rendering modal/portal
+     *         one on top of another, as it's a bad UX design. :(
+     */
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{t('header.settings.procedures.removeLines.title')}</ModalHeader>

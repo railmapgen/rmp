@@ -68,7 +68,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{t('header.settings.title')}</ModalHeader>
