@@ -1,6 +1,3 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { MdExpandLess, MdExpandMore } from 'react-icons/md';
 import {
     Accordion,
     AccordionButton,
@@ -14,14 +11,17 @@ import {
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdExpandLess, MdExpandMore } from 'react-icons/md';
+import { LinePathType } from '../../../constants/lines';
+import { MiscNodeType } from '../../../constants/nodes';
+import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
-import { StationType } from '../../../constants/stations';
-import { MiscNodeType } from '../../../constants/nodes';
-import { LinePathType } from '../../../constants/lines';
-import stations from '../../svgs/stations/stations';
-import miscNodes from '../../svgs/nodes/misc-nodes';
 import { linePaths } from '../../svgs/lines/lines';
+import miscNodes from '../../svgs/nodes/misc-nodes';
+import stations from '../../svgs/stations/stations';
 import ColourModal from '../colour-modal/colour-modal';
 import ThemeButton from '../theme-button';
 
@@ -46,6 +46,9 @@ const accordionPanelStyle: SystemStyleObject = {
 const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const {
+        preference: { unlockSimplePathAttempts },
+    } = useRootSelector(state => state.app);
     const { mode, theme } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'gray.800');
 
@@ -108,7 +111,7 @@ const ToolsPanel = () => {
                             />
 
                             {Object.values(LinePathType)
-                                .filter(type => type !== LinePathType.Simple)
+                                .filter(type => !(type === LinePathType.Simple && unlockSimplePathAttempts >= 0))
                                 .map(type => (
                                     <Button
                                         key={type}

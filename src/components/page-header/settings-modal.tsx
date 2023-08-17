@@ -38,6 +38,7 @@ import {
     RemoveLinesWithSingleColorModal,
     ScaleNodesModal,
     TranslateNodesModal,
+    UnlockSimplePathModal,
 } from './procedures-modal';
 
 const procedureButtonStyle: SystemStyleObject = {
@@ -60,6 +61,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isScaleNodesOpen, setIsScaleNodesOpen] = React.useState(false);
     const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
+    const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
     const {
@@ -147,6 +149,18 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <RemoveLinesWithSingleColorModal
                                     isOpen={isRemoveLinesWithSingleColorOpen}
                                     onClose={() => setIsRemoveLinesWithSingleColorOpen(false)}
+                                />
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsUnlockSimplePathOpen(true)}
+                                >
+                                    {t('header.settings.procedures.unlockSimplePath.title')}
+                                </Button>
+                                <UnlockSimplePathModal
+                                    isOpen={isUnlockSimplePathOpen}
+                                    onClose={() => setIsUnlockSimplePathOpen(false)}
                                 />
                             </Box>
                         </Box>
