@@ -316,7 +316,7 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                     ],
                 },
                 {
-                    question: 'What is the main argument of the paragraph?',
+                    question: 'What is the main argument of the paragraph 4?',
                     choices: [
                         "Beck's original design was an isolated stroke of genius.",
                         "Schematic maps were not in use before Beck's design.",
@@ -341,15 +341,15 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                         "According to the passage, what is the significance of octolinearity in Beck's map design?",
                     choices: [
                         'It enhances the complexity of the network.',
-                        'It increases the disorientation for passengers.',
                         'It simplifies line trajectories and improves usability.',
-                        'It introduces unnecessary kinks in the route lines.',
+                        'It increases the disorientation for passengers.',
+                        'It offers the most effective solution.',
                     ],
                     answers: ['It simplifies line trajectories and improves usability.'],
                 },
                 {
                     question:
-                        "According to the paragraph, what aspect of Beck's map design helped create a perception of flow and ease of navigation?",
+                        "According to the paragraph 9, what aspect of Beck's map design helped create a perception of flow and ease of navigation?",
                     choices: [
                         'Use of angular joins',
                         'Inconsistent station spacing',
@@ -425,16 +425,16 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                     question:
                         "What aspects of Beck's map design contributed to its favorability during the 1930s and in the modern era? Choose all that apply.",
                     choices: [
-                        'The use of vibrant colors that reflected the Art Deco style.',
-                        "The map's intricate cartographic symbols and detailed topographic representation.",
-                        "The incorporation of chaotic design elements to match the city's character.",
-                        'The inclusion of historical Classicism elements.',
-                        'The alignment with the machine aesthetic and modern industrial functionalism.',
-                        "An emphasis on organic, flowing lines to represent the city's natural features.",
+                        'The use of vibrant colors that reflected the Art Deco style',
+                        "The map's intricate cartographic symbols and detailed topographic representation",
+                        "The incorporation of chaotic design elements to match the city's character",
+                        'The inclusion of historical Classicism elements',
+                        'The alignment with the machine aesthetic and modern industrial functionalism',
+                        "An emphasis on organic, flowing lines to represent the city's natural features",
                     ],
                     answers: [
-                        'The use of vibrant colors that reflected the Art Deco style.',
-                        'The alignment with the machine aesthetic and modern industrial functionalism.',
+                        'The use of vibrant colors that reflected the Art Deco style',
+                        'The alignment with the machine aesthetic and modern industrial functionalism',
                     ],
                 },
             ]).slice(0, 1);
@@ -471,17 +471,13 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                 <ModalCloseButton />
 
                 <ModalBody>
-                    <Text>{t('header.settings.procedures.unlockSimplePath.content')}</Text>
-                    <Text>RMP aims to provide an interactive canvas for drawing</Text>
-                    <Text>This convention, derived from</Text>
-                    <Text>
-                        Using simple path may break these convention so it is hidden by default. Also, the Rail Map
-                        Painter Gallery will reject any work that contains simple path with single color style.
-                    </Text>
-                    <Text>
-                        However we do believe the endless possibility created by you, so here it is. Several questions
-                        need to be answered before being recognized as a professional and unlock the simple path. Note
-                        even after unlocking, only single color style can be used with the simple path.
+                    <Text mb="2">{t('header.settings.procedures.unlockSimplePath.content1')}</Text>
+                    <Text mb="2">{t('header.settings.procedures.unlockSimplePath.content2')}</Text>
+                    <Text mb="2">{t('header.settings.procedures.unlockSimplePath.content3')}</Text>
+                    <Text mb="2">{t('header.settings.procedures.unlockSimplePath.content4')}</Text>
+                    <Text mb="2">
+                        {t('header.settings.procedures.unlockSimplePath.content5')}
+                        {unlockSimplePathAttempts >= 0 ? unlockSimplePathAttempts : ''}
                     </Text>
 
                     <Accordion defaultIndex={[]} allowMultiple>
@@ -495,7 +491,11 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                                 </AccordionButton>
                             </h2>
                             <AccordionPanel pb={4}>
-                                <Link color="teal.500" href="https://www.mtr.com.hk/" isExternal={true}>
+                                <Link
+                                    color="teal.500"
+                                    href="https://www.tandfonline.com/doi/full/10.1080/00087041.2021.1953765"
+                                    isExternal={true}
+                                >
                                     <Text as="b">
                                         When Topology Trumped Topography: Celebrating 90 Years of Beck’s Underground Map
                                     </Text>{' '}
@@ -720,61 +720,62 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                                 </AccordionButton>
                             </h2>
                             <AccordionPanel pb={4}>
-                                {questions.map((q, i) => (
-                                    <Box key={q.question}>
-                                        <Text mt="2" mb="2">
-                                            {q.question}
-                                        </Text>
-                                        {q.answers.length === 1 ? (
-                                            <RadioGroup
-                                                onChange={val => {
-                                                    const ans = structuredClone(answers);
-                                                    ans[i] = [val];
-                                                    setAnswers(ans);
-                                                }}
-                                                value={answers[i][0]}
-                                            >
-                                                <Stack direction="column">
-                                                    {q.choices.map(c => (
-                                                        <Radio key={c} value={c}>
-                                                            {c}
-                                                        </Radio>
-                                                    ))}
-                                                </Stack>
-                                            </RadioGroup>
-                                        ) : (
-                                            <CheckboxGroup
-                                                colorScheme="green"
-                                                onChange={val => {
-                                                    const ans = structuredClone(answers);
-                                                    ans[i] = val as string[];
-                                                    setAnswers(ans);
-                                                }}
-                                                value={answers[i]}
-                                            >
-                                                <Stack direction="column">
-                                                    {q.choices.map(c => (
-                                                        <Checkbox key={c} value={c}>
-                                                            {c}
-                                                        </Checkbox>
-                                                    ))}
-                                                </Stack>
-                                            </CheckboxGroup>
-                                        )}
-                                    </Box>
-                                ))}
+                                {unlockSimplePathAttempts > 0 &&
+                                    questions.map((q, i) => (
+                                        <Box key={q.question}>
+                                            <Text mt="2" mb="2">
+                                                {q.question}
+                                            </Text>
+                                            {q.answers.length === 1 ? (
+                                                <RadioGroup
+                                                    onChange={val => {
+                                                        const ans = structuredClone(answers);
+                                                        ans[i] = [val];
+                                                        setAnswers(ans);
+                                                    }}
+                                                    value={answers[i][0]}
+                                                >
+                                                    <Stack direction="column">
+                                                        {q.choices.map(c => (
+                                                            <Radio key={c} value={c}>
+                                                                {c}
+                                                            </Radio>
+                                                        ))}
+                                                    </Stack>
+                                                </RadioGroup>
+                                            ) : (
+                                                <CheckboxGroup
+                                                    colorScheme="green"
+                                                    onChange={val => {
+                                                        const ans = structuredClone(answers);
+                                                        ans[i] = val as string[];
+                                                        setAnswers(ans);
+                                                    }}
+                                                    value={answers[i]}
+                                                >
+                                                    <Stack direction="column">
+                                                        {q.choices.map(c => (
+                                                            <Checkbox key={c} value={c}>
+                                                                {c}
+                                                            </Checkbox>
+                                                        ))}
+                                                    </Stack>
+                                                </CheckboxGroup>
+                                            )}
+                                        </Box>
+                                    ))}
                             </AccordionPanel>
                         </AccordionItem>
                     </Accordion>
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button colorScheme="red" onClick={handleChange} isDisabled={unlockSimplePathAttempts === 0}>
+                    <Button onClick={handleChange} isDisabled={unlockSimplePathAttempts === 0}>
                         {unlockSimplePathAttempts < 0
-                            ? 'Already Unlocked'
+                            ? t('header.settings.procedures.unlockSimplePath.unlocked')
                             : unlockSimplePathAttempts === 0
-                            ? 'Maximum attempts exceed'
-                            : 'Checking answers and unlock simple path'}
+                            ? t('header.settings.procedures.unlockSimplePath.maximumAttemptsExceed')
+                            : t('header.settings.procedures.unlockSimplePath.check')}
                     </Button>
                 </ModalFooter>
             </ModalContent>
