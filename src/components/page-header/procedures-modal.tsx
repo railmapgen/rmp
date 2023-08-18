@@ -18,9 +18,8 @@ import { LineStyleType } from '../../constants/lines';
 import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes, setTheme } from '../../redux/runtime/runtime-slice';
 import { changeStationsTypeInBatch } from '../../util/change-types';
-import AppRootContext from '../app-root-context';
 import ThemeButton from '../panels/theme-button';
 import stations from '../svgs/stations/stations';
 
@@ -220,17 +219,17 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
 export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const dispatch = useRootDispatch();
-    const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
+    const {
+        theme,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
-    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
-    const [theme, setTheme] = React.useState(runtimeTheme);
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-
     React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
-            setTheme(nextTheme);
+            dispatch(setTheme(nextTheme));
             setIsThemeRequested(false);
         }
     }, [nextTheme?.toString()]);
@@ -267,7 +266,7 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
                         theme={theme}
                         onClick={() => {
                             setIsThemeRequested(true);
-                            setPrevTheme?.(theme);
+                            dispatch(setPalettePrevTheme(theme));
                         }}
                     />
                 </ModalBody>

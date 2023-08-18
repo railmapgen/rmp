@@ -18,8 +18,7 @@ import { LinePathType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
-import AppRootContext from '../../app-root-context';
+import { setMode, setPalettePrevTheme, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -46,14 +45,16 @@ const accordionPanelStyle: SystemStyleObject = {
 const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const { mode, theme } = useRootSelector(state => state.runtime);
+    const {
+        mode,
+        theme,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'gray.800');
 
-    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
-
     const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
 
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
             dispatch(setTheme(nextTheme));
@@ -108,7 +109,7 @@ const ToolsPanel = () => {
                                     theme={theme}
                                     onClick={() => {
                                         setIsThemeRequested(true);
-                                        setPrevTheme?.(theme);
+                                        dispatch(setPalettePrevTheme(theme));
                                     }}
                                 />
                                 <Text fontWeight="600" pl="1" alignSelf="center">

@@ -1,8 +1,8 @@
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { ExternalStationAttributes, StationType } from './stations';
+import { MiscEdgeType } from './edges';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
-import { MiscEdgeType } from './edges';
+import { ExternalStationAttributes, StationType } from './stations';
 
 /**
  * Attributes shared both in nodes and edges.
@@ -99,4 +99,10 @@ export enum LocalStorageKey {
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
+}
+
+export enum ThemeRequestedState {
+    CLOSED = 'closed',
+    OPENED = 'opened',
+    SUBMITTED = 'submitted',
 }

@@ -55,7 +55,7 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
             if (event === 'CLOSE') {
                 onClose();
             } else if (event === 'SELECT') {
-                onSelect(data);
+                onSelect(data as Theme);
             } else if (event === 'LOADED') {
                 // force trigger default theme update again when app clip first opened
                 setIsLoaded(true);
@@ -67,11 +67,10 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
         };
     }, []);
 
-    React.useEffect(() => {
-        if (defaultTheme) {
-            channelRef.current?.postMessage({ event: 'OPEN', data: defaultTheme });
-        }
-    }, [isLoaded, defaultTheme?.toString()]);
+    React.useEffect(
+        () => channelRef.current?.postMessage({ event: 'OPEN', data: defaultTheme }),
+        [isLoaded, defaultTheme?.toString()]
+    );
 
     return (
         <RmgAppClip size="md" isOpen={isOpen} onClose={onClose} sx={styles}>

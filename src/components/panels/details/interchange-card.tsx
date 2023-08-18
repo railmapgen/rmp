@@ -4,7 +4,8 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import AppRootContext from '../../app-root-context';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setPalettePrevTheme } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import { InterchangeInfo } from './interchange-field';
 
@@ -17,10 +18,14 @@ interface InterchangeCardProps {
 
 export default function InterchangeCard(props: InterchangeCardProps) {
     const { interchangeList, onAdd, onDelete, onUpdate } = props;
+    const dispatch = useRootDispatch();
+    const {
+        theme,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
 
     const { t } = useTranslation();
 
-    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
     const [indexRequestedTheme, setIndexRequestedTheme] = React.useState<number>();
 
     React.useEffect(() => {
@@ -76,7 +81,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                             theme={[it[0], it[1], it[2], it[3]]}
                             onClick={() => {
                                 setIndexRequestedTheme(i);
-                                setPrevTheme?.([it[0], it[1], it[2], it[3]]);
+                                dispatch(setPalettePrevTheme([it[0], it[1], it[2], it[3]]));
                             }}
                         />
                     </RmgLabel>

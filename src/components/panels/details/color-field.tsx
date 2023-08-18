@@ -5,8 +5,7 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import AppRootContext from '../../app-root-context';
+import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 
 /**
@@ -32,16 +31,18 @@ type GetNodeOrEdgeAttribute = (id: string, type: NodeType | LineStyleType) => At
  */
 export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs: AttributesWithColor }) => {
     const { type, defaultAttrs } = props;
-
     const dispatch = useRootDispatch();
+    const {
+        selected,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
+    const selectedFirst = selected.at(0);
 
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
         dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
-    const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
     const graph = React.useRef(window.graph);
 
     const [hasNodeOrEdge, getNodeOrEdgeAttribute, mergeNodeOrEdgeAttributes] = ([] as NodeType[])
@@ -59,11 +60,8 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
               graph.current.mergeEdgeAttributes,
           ];
 
-    // TODO: fix bind this
-    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-
     const handleChangeColor = (color: Theme) => {
+        // TODO: fix bind this
         if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
             const attrs =
                 (getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) as AttributesWithColor) ??
@@ -74,6 +72,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
         }
     };
 
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
             handleChangeColor(nextTheme);
@@ -97,7 +96,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
                 theme={theme}
                 onClick={() => {
                     setIsThemeRequested(true);
-                    setPrevTheme?.(theme);
+                    dispatch(setPalettePrevTheme(theme));
                 }}
             />
         </>
