@@ -1,6 +1,3 @@
-import React, { useContext, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { MdExpandLess, MdExpandMore } from 'react-icons/md';
 import {
     Accordion,
     AccordionButton,
@@ -14,16 +11,19 @@ import {
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdExpandLess, MdExpandMore } from 'react-icons/md';
+import { LinePathType } from '../../../constants/lines';
+import { MiscNodeType } from '../../../constants/nodes';
+import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
-import { StationType } from '../../../constants/stations';
-import { MiscNodeType } from '../../../constants/nodes';
-import { LinePathType } from '../../../constants/lines';
-import stations from '../../svgs/stations/stations';
-import miscNodes from '../../svgs/nodes/misc-nodes';
-import { linePaths } from '../../svgs/lines/lines';
-import ThemeButton from '../theme-button';
 import AppRootContext from '../../app-root-context';
+import { linePaths } from '../../svgs/lines/lines';
+import miscNodes from '../../svgs/nodes/misc-nodes';
+import stations from '../../svgs/stations/stations';
+import ThemeButton from '../theme-button';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -49,12 +49,12 @@ const ToolsPanel = () => {
     const { mode, theme } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'gray.800');
 
-    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
+    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
 
     const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
             dispatch(setTheme(nextTheme));
             setIsThemeRequested(false);

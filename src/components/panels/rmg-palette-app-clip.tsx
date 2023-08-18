@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import rmgRuntime from '@railmapgen/rmg-runtime';
-import { RmgAppClip } from '@railmapgen/rmg-components';
 import { CloseButton, SystemStyleObject } from '@chakra-ui/react';
+import { RmgAppClip } from '@railmapgen/rmg-components';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import React from 'react';
 import { Theme } from '../../constants/constants';
 
 const CHANNEL_PREFIX = 'rmg-palette-bridge--';
@@ -33,8 +33,8 @@ interface RmgPaletteAppClip {
 export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
     const { isOpen, onClose, defaultTheme, onSelect } = props;
 
-    const [appClipId] = useState(crypto.randomUUID());
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [appClipId] = React.useState(crypto.randomUUID());
+    const [isLoaded, setIsLoaded] = React.useState(false);
 
     const frameUrl =
         '/rmg-palette/#/picker?' +
@@ -43,9 +43,9 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
             parentId: appClipId,
         });
 
-    const channelRef = useRef<BroadcastChannel>();
+    const channelRef = React.useRef<BroadcastChannel>();
 
-    useEffect(() => {
+    React.useEffect(() => {
         const channel = new BroadcastChannel(CHANNEL_PREFIX + appClipId);
         channelRef.current = channel;
 
@@ -67,7 +67,7 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
         };
     }, []);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (defaultTheme) {
             channelRef.current?.postMessage({ event: 'OPEN', data: defaultTheme });
         }

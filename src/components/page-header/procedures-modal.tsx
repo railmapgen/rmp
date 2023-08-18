@@ -1,5 +1,3 @@
-import React, { useContext, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     Badge,
     Button,
@@ -14,15 +12,17 @@ import {
     Tooltip,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { StationType } from '../../constants/stations';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { LineStyleType } from '../../constants/lines';
+import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/param/param-slice';
-import stations from '../svgs/stations/stations';
+import { setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { changeStationsTypeInBatch } from '../../util/change-types';
-import ThemeButton from '../panels/theme-button';
 import AppRootContext from '../app-root-context';
+import ThemeButton from '../panels/theme-button';
+import stations from '../svgs/stations/stations';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -224,11 +224,11 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
-    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
+    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
     const [theme, setTheme] = React.useState(runtimeTheme);
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
             setTheme(nextTheme);
             setIsThemeRequested(false);

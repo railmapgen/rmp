@@ -1,12 +1,12 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Box, HStack, IconButton, Text } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { InterchangeInfo } from './interchange-field';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import ThemeButton from '../theme-button';
 import AppRootContext from '../../app-root-context';
+import ThemeButton from '../theme-button';
+import { InterchangeInfo } from './interchange-field';
 
 interface InterchangeCardProps {
     interchangeList: InterchangeInfo[];
@@ -20,10 +20,10 @@ export default function InterchangeCard(props: InterchangeCardProps) {
 
     const { t } = useTranslation();
 
-    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
-    const [indexRequestedTheme, setIndexRequestedTheme] = useState<number>();
+    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
+    const [indexRequestedTheme, setIndexRequestedTheme] = React.useState<number>();
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (indexRequestedTheme !== undefined && nextTheme) {
             onUpdate?.(indexRequestedTheme, [
                 ...nextTheme,

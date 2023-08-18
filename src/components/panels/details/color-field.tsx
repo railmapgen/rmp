@@ -1,13 +1,13 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import { NodeType, Theme } from '../../../constants/constants';
+import { LineStyleType } from '../../../constants/lines';
+import { MiscNodeType } from '../../../constants/nodes';
+import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import ThemeButton from '../theme-button';
-import { StationType } from '../../../constants/stations';
-import { MiscNodeType } from '../../../constants/nodes';
-import { LineStyleType } from '../../../constants/lines';
 import AppRootContext from '../../app-root-context';
+import ThemeButton from '../theme-button';
 
 /**
  * An Attributes that have a color field.
@@ -60,8 +60,8 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
           ];
 
     // TODO: fix bind this
-    const { setPrevTheme, nextTheme } = useContext(AppRootContext);
-    const [isThemeRequested, setIsThemeRequested] = useState(false);
+    const { setPrevTheme, nextTheme } = React.useContext(AppRootContext);
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
 
     const handleChangeColor = (color: Theme) => {
         if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
@@ -74,7 +74,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
         }
     };
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
             handleChangeColor(nextTheme);
             setIsThemeRequested(false);
