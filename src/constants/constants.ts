@@ -100,9 +100,3 @@ export enum LocalStorageKey {
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
 }
-
-export enum ThemeRequestedState {
-    CLOSED = 'closed',
-    OPENED = 'opened',
-    SUBMITTED = 'submitted',
-}
