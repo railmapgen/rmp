@@ -1,1 +1,0 @@
-System.register(["./index-legacy-25e17115.js","./chakra-legacy-87ae493d.js","./react-legacy-9060605e.js"],(function(e,n){"use strict";var t;return{setters:[function(e){t=e.v},null,null],execute:function(){e("default",[{id:"rl",colour:"#f84a39",fg:t.white,name:{en:"Red Line","zh-Hans":"红线","zh-Hant":"紅線",ru:"Красная линия"}}])}}}));
