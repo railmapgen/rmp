@@ -4,13 +4,20 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
+import { useRootDispatch, useRootSelector } from '../redux';
+import { setPaletteNextTheme, setPalettePrevTheme } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
 const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
 const DetailsPanel = React.lazy(() => import('./panels/details/details'));
+const RmgPaletteAppClip = React.lazy(() => import('./panels/rmg-palette-app-clip'));
 
 export default function AppRoot() {
+    const dispatch = useRootDispatch();
+    const {
+        paletteAppClip: { prevTheme },
+    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
@@ -131,6 +138,16 @@ export default function AppRoot() {
                             <DetailsPanel />
                         </Flex>
                     </RmgErrorBoundary>
+
+                    <RmgPaletteAppClip
+                        isOpen={!!prevTheme}
+                        onClose={() => dispatch(setPalettePrevTheme(undefined))}
+                        defaultTheme={prevTheme}
+                        onSelect={nextTheme => {
+                            dispatch(setPaletteNextTheme(nextTheme));
+                            dispatch(setPalettePrevTheme(undefined));
+                        }}
+                    />
                 </React.Suspense>
             </RmgWindow>
         </RmgThemeProvider>

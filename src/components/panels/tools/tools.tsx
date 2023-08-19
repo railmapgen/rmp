@@ -18,11 +18,10 @@ import { LinePathType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { setMode, setPalettePrevTheme, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
-import ColourModal from '../colour-modal/colour-modal';
 import ThemeButton from '../theme-button';
 
 const buttonStyle: SystemStyleObject = {
@@ -47,13 +46,24 @@ const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const {
+        mode,
+        theme,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
+    const {
         preference: { unlockSimplePathAttempts },
     } = useRootSelector(state => state.app);
-    const { mode, theme } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'gray.800');
 
     const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
-    const [isColourModalOpen, setIsColourModalOpen] = React.useState(false);
+
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
+    React.useEffect(() => {
+        if (isThemeRequested && nextTheme) {
+            dispatch(setTheme(nextTheme));
+            setIsThemeRequested(false);
+        }
+    }, [nextTheme?.toString()]);
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
@@ -98,17 +108,17 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             <Flex>
-                                <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
+                                <ThemeButton
+                                    theme={theme}
+                                    onClick={() => {
+                                        setIsThemeRequested(true);
+                                        dispatch(setPalettePrevTheme(theme));
+                                    }}
+                                />
                                 <Text fontWeight="600" pl="1" alignSelf="center">
                                     {isToolsExpanded ? t('color') : undefined}
                                 </Text>
                             </Flex>
-                            <ColourModal
-                                isOpen={isColourModalOpen}
-                                defaultTheme={theme}
-                                onClose={() => setIsColourModalOpen(false)}
-                                onUpdate={nextTheme => dispatch(setTheme(nextTheme))}
-                            />
 
                             {Object.values(LinePathType)
                                 .filter(type => !(type === LinePathType.Simple && unlockSimplePathAttempts >= 0))

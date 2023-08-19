@@ -31,12 +31,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '/rmg/': {
-                target: 'https://railmapgen.github.io',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/rmp-gallery/': {
+            '^/rmg/|/rmg-palette/|/rmp-gallery/': {
                 target: 'https://railmapgen.github.io',
                 changeOrigin: true,
                 secure: false,

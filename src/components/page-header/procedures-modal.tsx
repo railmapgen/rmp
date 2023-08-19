@@ -34,10 +34,9 @@ import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setUnlockSimplePath } from '../../redux/app/app-slice';
 import { saveGraph } from '../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { changeStationsTypeInBatch } from '../../util/change-types';
 import { shuffle } from '../../util/helpers';
-import ColourModal from '../panels/colour-modal/colour-modal';
 import ThemeButton from '../panels/theme-button';
 import stations from '../svgs/stations/stations';
 
@@ -237,12 +236,22 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
 export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const dispatch = useRootDispatch();
-    const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
+    const {
+        theme: runtimeTheme,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
     const [theme, setTheme] = React.useState(runtimeTheme);
-    const [isColourModalOpen, setIsColourModalOpen] = React.useState(false);
+
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
+    React.useEffect(() => {
+        if (isThemeRequested && nextTheme) {
+            setTheme(nextTheme);
+            setIsThemeRequested(false);
+        }
+    }, [nextTheme?.toString()]);
 
     const handleChange = () => {
         graph.current
@@ -257,8 +266,14 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
         onClose();
     };
 
+    /** FIXME: We shouldn't remove the focus trap as this breaks the accessibility.
+     *         However this seems to be the only workaround to prevent the focus
+     *         of Palette App Clip being stolen by this modal.
+     *         Instead of fixing the focus trap, we should avoid rendering modal/portal
+     *         one on top of another, as it's a bad UX design. :(
+     */
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{t('header.settings.procedures.removeLines.title')}</ModalHeader>
@@ -266,12 +281,12 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
 
                 <ModalBody>
                     {t('header.settings.procedures.removeLines.content')}
-                    <ThemeButton theme={theme} onClick={() => setIsColourModalOpen(true)} />
-                    <ColourModal
-                        isOpen={isColourModalOpen}
-                        defaultTheme={theme}
-                        onClose={() => setIsColourModalOpen(false)}
-                        onUpdate={nextTheme => setTheme(nextTheme)}
+                    <ThemeButton
+                        theme={theme}
+                        onClick={() => {
+                            setIsThemeRequested(true);
+                            dispatch(setPalettePrevTheme(theme));
+                        }}
                     />
                 </ModalBody>
 
