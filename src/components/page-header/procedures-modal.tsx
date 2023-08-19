@@ -23,7 +23,7 @@ import {
     Stack,
     Text,
     Tooltip,
-    useToast
+    useToast,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
@@ -34,7 +34,7 @@ import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setUnlockSimplePath } from '../../redux/app/app-slice';
 import { saveGraph } from '../../redux/param/param-slice';
-import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes, setTheme } from '../../redux/runtime/runtime-slice';
+import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { changeStationsTypeInBatch } from '../../util/change-types';
 import { shuffle } from '../../util/helpers';
 import ThemeButton from '../panels/theme-button';
@@ -237,16 +237,18 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
     const { isOpen, onClose } = props;
     const dispatch = useRootDispatch();
     const {
-        theme,
+        theme: runtimeTheme,
         paletteAppClip: { nextTheme },
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
+    const [theme, setTheme] = React.useState(runtimeTheme);
+
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
         if (isThemeRequested && nextTheme) {
-            dispatch(setTheme(nextTheme));
+            setTheme(nextTheme);
             setIsThemeRequested(false);
         }
     }, [nextTheme?.toString()]);
