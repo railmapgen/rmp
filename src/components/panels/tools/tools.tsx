@@ -50,6 +50,9 @@ const ToolsPanel = () => {
         theme,
         paletteAppClip: { nextTheme },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { unlockSimplePathAttempts },
+    } = useRootSelector(state => state.app);
     const bgColor = useColorModeValue('white', 'gray.800');
 
     const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
@@ -118,7 +121,7 @@ const ToolsPanel = () => {
                             </Flex>
 
                             {Object.values(LinePathType)
-                                .filter(type => type !== LinePathType.Simple)
+                                .filter(type => !(type === LinePathType.Simple && unlockSimplePathAttempts >= 0))
                                 .map(type => (
                                     <Button
                                         key={type}

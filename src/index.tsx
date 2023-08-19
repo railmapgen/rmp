@@ -1,17 +1,17 @@
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { Provider } from 'react-redux';
 import { I18nextProvider } from 'react-i18next';
-import { MultiDirectedGraph } from 'graphology';
+import { Provider } from 'react-redux';
 import AppRoot from './components/app-root';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from './constants/constants';
 import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
-import { setTelemetryApp } from './redux/app/app-slice';
+import { setTelemetryApp, setUnlockSimplePath } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
-import rmgRuntime from '@railmapgen/rmg-runtime';
 
 declare global {
     interface Window {
@@ -41,6 +41,10 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
 (() => {
     if ('telemetry' in app) {
         if ('app' in app.telemetry) store.dispatch(setTelemetryApp(app.telemetry.app));
+    }
+    if ('preference' in app) {
+        if ('unlockSimplePathAttempts' in app.preference)
+            store.dispatch(setUnlockSimplePath(app.preference.unlockSimplePathAttempts));
     }
 })();
 
