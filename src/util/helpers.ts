@@ -1,7 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { NodeAttributes, EdgeAttributes, GraphAttributes, NodeType } from '../constants/constants';
-import { StationType } from '../constants/stations';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
 
 export const getMousePosition = (e: React.MouseEvent) => {
     const bbox = e.currentTarget.getBoundingClientRect();
@@ -42,4 +42,12 @@ export const findNodesExist = (graph: MultiDirectedGraph<NodeAttributes, EdgeAtt
         nodesExist[type] = true;
     });
     return nodesExist;
+};
+
+export const shuffle = <T>(arr: T[]): T[] => {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
 };

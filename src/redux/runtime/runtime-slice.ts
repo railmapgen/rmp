@@ -1,9 +1,7 @@
 import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MiscNodeId, NodeType, RuntimeMode, StnId, Theme } from '../../constants/constants';
-import { MiscNodeType } from '../../constants/nodes';
-import { StationType } from '../../constants/stations';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { redoAction, undoAction } from '../param/param-slice';
 
 /**
@@ -38,6 +36,15 @@ interface RuntimeState {
      * The theme when users make single color lines and some stations.
      */
     theme: Theme;
+    /**
+     * The state for color picker modal from rmg-palette.
+     * prevTheme is used to save the temporary value and display in the app clip after clicking the theme button.
+     * nextTheme is used to save the temporary value and let the component decide how to do with the newly selected.
+     */
+    paletteAppClip: {
+        prevTheme: Theme | undefined;
+        nextTheme: Theme | undefined;
+    };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
 
@@ -52,6 +59,10 @@ const initialState: RuntimeState = {
     lastTool: undefined,
     keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
+    paletteAppClip: {
+        prevTheme: undefined,
+        nextTheme: undefined,
+    },
     globalAlerts: {},
 };
 
@@ -61,7 +72,7 @@ const runtimeSlice = createSlice({
     reducers: {
         addSelected: (state, action: PayloadAction<string>) => {
             if (!state.selected.includes(action.payload))
-                // only push if it is not already in selected
+                // no duplicates allowed
                 state.selected.push(action.payload);
         },
         removeSelected: (state, action: PayloadAction<string>) => {
@@ -88,6 +99,12 @@ const runtimeSlice = createSlice({
         },
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
+        },
+        setPalettePrevTheme: (state, action: PayloadAction<Theme | undefined>) => {
+            state.paletteAppClip.prevTheme = action.payload;
+        },
+        setPaletteNextTheme: (state, action: PayloadAction<Theme | undefined>) => {
+            state.paletteAppClip.nextTheme = action.payload;
         },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
@@ -128,6 +145,8 @@ export const {
     setMode,
     setKeepLastPath,
     setTheme,
+    setPalettePrevTheme,
+    setPaletteNextTheme,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

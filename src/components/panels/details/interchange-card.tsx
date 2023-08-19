@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Box, HStack, IconButton, Text } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Theme } from '../../../constants/constants';
-import { InterchangeInfo } from './interchange-field';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import ColourModal from '../colour-modal/colour-modal';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setPalettePrevTheme } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
+import { InterchangeInfo } from './interchange-field';
 
 interface InterchangeCardProps {
     interchangeList: InterchangeInfo[];
@@ -18,11 +18,26 @@ interface InterchangeCardProps {
 
 export default function InterchangeCard(props: InterchangeCardProps) {
     const { interchangeList, onAdd, onDelete, onUpdate } = props;
+    const dispatch = useRootDispatch();
+    const {
+        theme,
+        paletteAppClip: { nextTheme },
+    } = useRootSelector(state => state.runtime);
 
     const { t } = useTranslation();
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [indexRequestedTheme, setIndexRequestedTheme] = React.useState<number>();
+
+    React.useEffect(() => {
+        if (indexRequestedTheme !== undefined && nextTheme) {
+            onUpdate?.(indexRequestedTheme, [
+                ...nextTheme,
+                interchangeList[indexRequestedTheme][4],
+                interchangeList[indexRequestedTheme][5],
+            ]);
+            setIndexRequestedTheme(undefined);
+        }
+    }, [nextTheme?.toString()]);
 
     const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
         {
@@ -65,8 +80,8 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                         <ThemeButton
                             theme={[it[0], it[1], it[2], it[3]]}
                             onClick={() => {
-                                setIsModalOpen(true);
-                                setSelectedIndex(i);
+                                setIndexRequestedTheme(i);
+                                dispatch(setPalettePrevTheme([it[0], it[1], it[2], it[3]]));
                             }}
                         />
                     </RmgLabel>
@@ -96,19 +111,6 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                     )}
                 </HStack>
             ))}
-
-            <ColourModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                defaultTheme={interchangeList[selectedIndex]?.slice(0, 4) as Theme}
-                onUpdate={theme =>
-                    onUpdate?.(selectedIndex, [
-                        ...theme,
-                        interchangeList[selectedIndex][4],
-                        interchangeList[selectedIndex][5],
-                    ])
-                }
-            />
         </RmgCard>
     );
 }

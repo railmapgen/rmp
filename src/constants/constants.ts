@@ -1,8 +1,8 @@
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { ExternalStationAttributes, StationType } from './stations';
+import { MiscEdgeType } from './edges';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
-import { MiscEdgeType } from './edges';
+import { ExternalStationAttributes, StationType } from './stations';
 
 /**
  * Attributes shared both in nodes and edges.

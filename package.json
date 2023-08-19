@@ -10,7 +10,7 @@
         "@chakra-ui/react": "^2.7.1",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
-        "@railmapgen/rmg-components": "^7.1.6",
+        "@railmapgen/rmg-components": "^7.1.12",
         "@railmapgen/rmg-palette-resources": "^0.8.34",
         "@railmapgen/rmg-runtime": "^7.0.0",
         "@railmapgen/rmg-translate": "^3.0.1",
@@ -77,5 +77,5 @@
             "last 1 safari version"
         ]
     },
-    "version": "3.2.13"
+    "version": "3.2.14"
 }
