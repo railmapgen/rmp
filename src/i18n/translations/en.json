@@ -94,7 +94,8 @@
                     "dominantBaseline": "Dominant baseline",
                     "language": "Font family in which language",
                     "rotate": "Rotation",
-                    "italic": "Italic"
+                    "italic": "Italic",
+                    "bold": "Bold"
                 }
             },
             "stations": {

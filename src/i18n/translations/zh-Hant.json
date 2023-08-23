@@ -94,7 +94,8 @@
                     "dominantBaseline": "顯性基線",
                     "language": "哪個語言的字體系列",
                     "rotate": "旋轉",
-                    "italic": "斜體"
+                    "italic": "斜體",
+                    "bold": "粗體"
                 }
             },
             "stations": {

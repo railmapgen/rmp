@@ -18,6 +18,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         color = defaultTextAttributes.color,
         rotate = defaultTextAttributes.rotate,
         italic = defaultTextAttributes.italic,
+        bold = defaultTextAttributes.bold,
     } = attrs ?? defaultTextAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
@@ -64,7 +65,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                     textAnchor={textAnchor}
                     dominantBaseline={dominantBaseline}
                     fill={color[2]}
-                    fontStyle={italic ? 'italic' : 'normal'}
+                    fontStyle={italic}
+                    fontWeight={bold}
                 />
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
@@ -94,6 +96,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
             color,
             rotate,
             italic,
+            bold,
             bBox,
             onPointerDown,
             onPointerMove,
@@ -116,7 +119,8 @@ export interface TextAttributes extends AttributesWithColor {
      * 0 <= rotate <= 360
      */
     rotate: number;
-    italic: boolean;
+    italic: string | number;
+    bold: string | number;
 }
 
 const defaultTextAttributes: TextAttributes = {
@@ -128,7 +132,8 @@ const defaultTextAttributes: TextAttributes = {
     language: 'en',
     color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],
     rotate: 0,
-    italic: false,
+    italic: 'normal',
+    bold: 'normal',
 };
 
 const TextFields = [
@@ -232,12 +237,25 @@ const TextFields = [
     {
         type: 'switch',
         label: 'panel.details.nodes.text.italic',
-        isChecked: (attrs?: TextAttributes) => attrs?.italic ?? defaultTextAttributes.italic,
+        isChecked: (attrs?: TextAttributes) => (attrs?.italic ?? defaultTextAttributes.italic) === 'italic',
         onChange: (val: boolean, attrs_: TextAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultTextAttributes;
             // set value
-            attrs.italic = val;
+            attrs.italic = val ? 'italic' : 'normal';
+            // return modified attrs
+            return attrs;
+        },
+    },
+    {
+        type: 'switch',
+        label: 'panel.details.nodes.text.bold',
+        isChecked: (attrs?: TextAttributes) => (attrs?.bold ?? defaultTextAttributes.bold) === 'bold',
+        onChange: (val: boolean, attrs_: TextAttributes | undefined) => {
+            // set default value if switched from another type
+            const attrs = attrs_ ?? defaultTextAttributes;
+            // set value
+            attrs.bold = val ? 'bold' : 'normal';
             // return modified attrs
             return attrs;
         },
