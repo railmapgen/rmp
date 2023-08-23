@@ -7,6 +7,8 @@ import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { AttributesWithColor } from '../components/panels/details/color-field';
+import { theme } from '@chakra-ui/react';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -67,6 +69,22 @@ export const changeStationsTypeInBatch = (
         .filterNodes((node, attr) => node.startsWith('stn') && attr.type === currentStnType)
         .forEach(stnId => {
             changeStationType(graph, stnId, newStnType);
+        });
+
+export const changeLineStyleTypeInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    currentLineStyleType: LineStyleType,
+    newLineStyleType: LineStyleType
+) =>
+    graph
+        .filterEdges(edge => (graph.getEdgeAttribute(edge, 'style') as LineStyleType) === currentLineStyleType)
+        .forEach(edgeId => {
+            changeLineStyleType(graph, edgeId, newLineStyleType, [
+                CityCode.Beijing,
+                'bj1',
+                '#c23a30',
+                MonoColour.white,
+            ]);
         });
 
 /**
