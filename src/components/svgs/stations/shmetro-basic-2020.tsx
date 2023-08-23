@@ -1,15 +1,15 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
-    defaultStationAttributes,
     Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
+    defaultStationAttributes,
 } from '../../../constants/stations';
-import { ColorField, AttributesWithColor } from '../../panels/details/color-field';
+import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ROTATE_CONST: {
@@ -136,7 +136,8 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 <g
                     transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
                     textAnchor={ROTATE_CONST[rotate].textAnchor}
-                    className="rmp-name-station"
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
                 >
                     <MultilineText
                         text={names[0].split('\\')}

@@ -59,7 +59,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                     text={content.split('\n')}
                     lineHeight={lineHeight}
                     grow="down" // this will be ignored
-                    className={`rmp-name-station rmp-name__${language}`}
+                    className={`rmp-name__${language}`}
                     fontSize={fontSize}
                     textAnchor={textAnchor}
                     dominantBaseline={dominantBaseline}

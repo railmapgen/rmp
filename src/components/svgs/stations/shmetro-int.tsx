@@ -1,8 +1,7 @@
-import React from 'react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
-    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Rotate,
@@ -10,6 +9,7 @@ import {
     StationAttributes,
     StationComponentProps,
     StationType,
+    defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
@@ -90,7 +90,8 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 <g
                     transform={`translate(${x + textX}, ${y + textY})`}
                     textAnchor={textAnchor}
-                    className="rmp-name-station"
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
                 >
                     <MultilineText
                         text={names[0].split('\\')}

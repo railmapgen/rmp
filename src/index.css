@@ -42,10 +42,10 @@ div#root {
 }
 
 /* text outline: https://stackoverflow.com/a/26498819 */
-.rmp-name-station {
+.rmp-name-outline {
     paint-order: stroke;
     stroke: #FFFFFF;
-    stroke-width: 1.5px;
+    /* Do not forget to define stroke-width when using this class! */
     stroke-linejoin: round;
 }
 

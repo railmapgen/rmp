@@ -1,14 +1,14 @@
-import React from 'react';
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
-    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
+    defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
@@ -133,12 +133,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
                 <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
-                <g
-                    ref={textRef}
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
-                    className="rmp-name-station"
-                >
+                <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={16}
@@ -155,11 +150,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                     />
                 </g>
                 {secondaryNames.join('') !== '' && (
-                    <g
-                        transform={`translate(${textX + secondaryDx}, ${textY})`}
-                        textAnchor="middle"
-                        className="rmp-name-station"
-                    >
+                    <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
                         <text
                             fontSize="20"
                             dx={-(secondaryTextWidth + 5) / 2}
@@ -193,7 +184,6 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         transform={`translate(${textX + underConstructionDx}, ${textY})`}
                         textAnchor={nameOffsetX === 'middle' ? 'start' : textAnchor}
                         fill="red"
-                        className="rmp-name-station"
                     >
                         <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                             （未开通）

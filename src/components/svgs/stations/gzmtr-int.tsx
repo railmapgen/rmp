@@ -1,19 +1,19 @@
-import React from 'react';
 import { useColorMode, useColorModeValue } from '@chakra-ui/react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
-    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
+    defaultStationAttributes,
 } from '../../../constants/stations';
-import { StationNumber } from './gzmtr-basic';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { StationNumber } from './gzmtr-basic';
 
 const CODE_POS = [
     [[0, 0]],
@@ -196,12 +196,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
                 />
-                <g
-                    ref={textRef}
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
-                    className="rmp-name-station"
-                >
+                <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={16}
@@ -218,11 +213,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     />
                 </g>
                 {secondaryNames.join('') !== '' && (
-                    <g
-                        transform={`translate(${textX + secondaryDx}, ${textY})`}
-                        textAnchor="middle"
-                        className="rmp-name-station"
-                    >
+                    <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
                         <text
                             fontSize="20"
                             dx={-(secondaryTextWidth + 5) / 2}
@@ -256,7 +247,6 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                         transform={`translate(${textX + underConstructionDx}, ${textY})`}
                         textAnchor={textAnchor}
                         fill="red"
-                        className="rmp-name-station"
                     >
                         <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                             （未开通）
