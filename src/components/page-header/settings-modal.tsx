@@ -147,7 +147,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     onClick={() => setIsChangeLineStyleTypeOpen(true)}
                                 >
                                     <Box>
-                                        Change lineStyleType
+                                        {t('header.settings.procedures.changeLineStyleType.title')}
                                         <Tooltip label={t('header.settings.pro')}>
                                             <Badge
                                                 ml="1"

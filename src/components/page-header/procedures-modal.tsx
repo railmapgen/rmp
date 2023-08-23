@@ -239,6 +239,7 @@ export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () =
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
+    const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
 
     const availableLineTyleOptions = Object.fromEntries(
         Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
@@ -249,7 +250,7 @@ export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () =
     const fields: RmgFieldsField[] = [
         {
             type: 'select',
-            label: t('header.settings.procedures.changeType.changeFrom'),
+            label: t('header.settings.procedures.changeLineStyleType.changeFrom'),
             value: oldLineType as LineStyleType,
             options: availableLineTyleOptions,
             disabledOptions: [newLineType],
@@ -258,7 +259,7 @@ export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () =
         },
         {
             type: 'select',
-            label: t('header.settings.procedures.changeType.changeTo'),
+            label: t('header.settings.procedures.changeLineStyleType.changeTo'),
             value: newLineType as LineStyleType,
             options: availableLineTyleOptions,
             disabledOptions: [oldLineType],
@@ -268,7 +269,7 @@ export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () =
     ];
 
     const handleChange = () => {
-        changeLineStyleTypeInBatch(graph.current, oldLineType, newLineType);
+        changeLineStyleTypeInBatch(graph.current, oldLineType, newLineType, runtimeTheme);
         dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
         onClose();
@@ -280,7 +281,7 @@ export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () =
             <ModalContent>
                 <ModalHeader>
                     <Text as="b" fontSize="xl">
-                        {t('header.settings.procedures.changeType.title')}
+                        {t('header.settings.procedures.changeLineStyleType.title')}
                     </Text>
                     <Tooltip label={t('header.settings.pro')}>
                         <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
@@ -293,7 +294,7 @@ export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () =
                 <ModalBody>
                     <RmgFields fields={fields} />
                     <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
-                        {t('header.settings.procedures.changeType.info')}
+                        {t('header.settings.procedures.changeLineStyleType.info')}
                     </Text>
                 </ModalBody>
 

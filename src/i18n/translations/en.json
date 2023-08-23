@@ -325,6 +325,12 @@
                     "changeTo": "To this type:",
                     "info": "Changing stations' type will remove all specific attributes from stations except their position and names. SAVE BEFORE CHANGE!"
                 },
+                "changeLineStyleType": {
+                    "title": "Change lines type in batch",
+                    "changeFrom": "Change all lines from this type:",
+                    "changeTo": "To this type:",
+                    "info": "Changing lines' type will remove all specific attributes from lines except their connections. SAVE BEFORE CHANGE!"
+                },
                 "removeLines": {
                     "title": "Remove lines with single color",
                     "content": "Remove lines that have this color: "

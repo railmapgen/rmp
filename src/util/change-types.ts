@@ -9,6 +9,7 @@ import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/s
 import { AttributesWithColor } from '../components/panels/details/color-field';
 import { theme } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import runtimeSlice from '../redux/runtime/runtime-slice';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -71,20 +72,23 @@ export const changeStationsTypeInBatch = (
             changeStationType(graph, stnId, newStnType);
         });
 
+/**
+ * Change all the lines' style type of currentLineStyleType to newLineStyleType in batch.
+ * @param graph Graph.
+ * @param currentLineStyleType Current lines' type.
+ * @param newLineStyleType New lines' type.
+ * @returns Nothing.
+ */
 export const changeLineStyleTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentLineStyleType: LineStyleType,
-    newLineStyleType: LineStyleType
+    newLineStyleType: LineStyleType,
+    theme: Theme
 ) =>
     graph
         .filterEdges(edge => (graph.getEdgeAttribute(edge, 'style') as LineStyleType) === currentLineStyleType)
         .forEach(edgeId => {
-            changeLineStyleType(graph, edgeId, newLineStyleType, [
-                CityCode.Beijing,
-                'bj1',
-                '#c23a30',
-                MonoColour.white,
-            ]);
+            changeLineStyleType(graph, edgeId, newLineStyleType, theme);
         });
 
 /**
