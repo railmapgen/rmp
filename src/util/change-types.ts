@@ -7,9 +7,6 @@ import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { AttributesWithColor } from '../components/panels/details/color-field';
-import { theme } from '@chakra-ui/react';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import runtimeSlice from '../redux/runtime/runtime-slice';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
