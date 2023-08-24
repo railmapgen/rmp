@@ -67,10 +67,11 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
         };
     }, []);
 
-    React.useEffect(
-        () => channelRef.current?.postMessage({ event: 'OPEN', data: defaultTheme }),
-        [isLoaded, defaultTheme?.toString()]
-    );
+    React.useEffect(() => {
+        if (defaultTheme) {
+            channelRef.current?.postMessage({ event: 'OPEN', data: defaultTheme });
+        }
+    }, [isLoaded, defaultTheme?.toString()]);
 
     return (
         <RmgAppClip size="md" isOpen={isOpen} onClose={onClose} sx={styles}>
