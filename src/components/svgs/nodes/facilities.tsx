@@ -65,7 +65,7 @@ export interface FacilitiesAttributes {
 }
 
 const defaultFacilitiesAttributes: FacilitiesAttributes = {
-    type: FacilitiesType.Tiananmen,
+    type: FacilitiesType.Airport,
 };
 
 const FacilitiesFields = [
