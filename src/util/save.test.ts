@@ -232,4 +232,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_sbdkOMP9-R","attributes":{"visible":true,"zIndex":0,"x":600,"y":260,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal"}}}],"edges":[]},"version":16}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('16 -> 17', () => {
+        // Bump save version to update y of facilities node after directly using svg in #262.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_783VjcPU_Z","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"facilities","facilities":{"type":"airport"}}}],"edges":[]},"version":16}';
+        const newParam = UPGRADE_COLLECTION[16](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_783VjcPU_Z","attributes":{"visible":true,"zIndex":0,"x":0,"y":12.5,"type":"facilities","facilities":{"type":"airport"}}}],"edges":[]},"version":17}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
