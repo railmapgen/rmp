@@ -1,14 +1,14 @@
-import React from 'react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
-    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
+    defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
@@ -65,7 +65,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
                 />
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
+                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={LINE_HEIGHT.zh}

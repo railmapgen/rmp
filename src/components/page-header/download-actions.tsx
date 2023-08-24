@@ -103,7 +103,7 @@ export default function DownloadActions() {
     // disable some scale options that are too big for the current browser to generate
     React.useEffect(() => {
         if (isDownloadModalOpen) {
-            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current, param.svgViewBoxMin);
             const [width, height] = [xMax - xMin, yMax - yMin];
             const disabledScales = scales.filter(
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
@@ -128,7 +128,7 @@ export default function DownloadActions() {
             });
 
         // get the minimum and maximum of the graph
-        const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+        const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current, param.svgViewBoxMin);
         const [width, height] = [xMax - xMin, yMax - yMin];
 
         const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
@@ -155,7 +155,7 @@ export default function DownloadActions() {
             '.rmp-name__mtr__zh': ['font-family'],
             '.rmp-name__mtr__en': ['font-family'],
             '.rmp-name__berlin': ['font-family'],
-            '.rmp-name-station': ['paint-order', 'stroke', 'stroke-width'],
+            '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
         }).forEach(([className, styleSet]) => {
             const e = document.querySelector(className);
             if (e === null) return; // no element in the canvas uses this class

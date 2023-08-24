@@ -94,7 +94,8 @@
                     "dominantBaseline": "ドミナントベースライン",
                     "language": "言語でのフォントファミリー",
                     "rotate": "回転",
-                    "italic": "イタリック体"
+                    "italic": "イタリック体",
+                    "bold": "太字"
                 }
             },
             "stations": {

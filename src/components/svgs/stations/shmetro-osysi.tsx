@@ -1,14 +1,14 @@
-import React from 'react';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { CanvasType, CategoriesType } from '../../../constants/constants';
 import {
-    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
+    defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
@@ -57,7 +57,12 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
                 />
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-station">
+                <g
+                    transform={`translate(${textX}, ${textY})`}
+                    textAnchor={textAnchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                >
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={12.67}

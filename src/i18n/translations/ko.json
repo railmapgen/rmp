@@ -94,7 +94,8 @@
                     "dominantBaseline": "현성 바셀린",
                     "language": "언어로 된 글꼴 종류",
                     "rotate": "회전",
-                    "italic": "이탤릭체"
+                    "italic": "이탤릭체",
+                    "bold": "굵게"
                 }
             },
             "stations": {

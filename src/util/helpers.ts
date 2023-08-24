@@ -13,20 +13,33 @@ export const getMousePosition = (e: React.MouseEvent) => {
 
 export const roundToNearestN = (x: number, n: number) => Math.round(x / n) * n;
 
-export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+/**
+ * Calculate the canvas size from DOMRect of each node.
+ * @param graph The graph.
+ * @param svgViewBoxMin The viewport relative to each DOMRect.
+ * @returns The canvas size.
+ */
+export const calculateCanvasSize = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    svgViewBoxMin: { x: number; y: number }
+) => {
     let [xMin, yMin, xMax, yMax] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
 
-    graph.forEachNode((node, attr) => {
-        xMin = Math.min(attr.x, xMin);
-        yMin = Math.min(attr.y, yMin);
-        xMax = Math.max(attr.x, xMax);
-        yMax = Math.max(attr.y, yMax);
+    graph.forEachNode((node, _) => {
+        const nodeElm = document.getElementById(node);
+        const rect = nodeElm?.getBoundingClientRect();
+        if (rect) {
+            xMin = Math.min(svgViewBoxMin.x + rect.x, xMin);
+            yMin = Math.min(svgViewBoxMin.y + rect.y, yMin);
+            xMax = Math.max(svgViewBoxMin.x + rect.x + rect.width, xMax);
+            yMax = Math.max(svgViewBoxMin.y + rect.y + rect.height, yMax);
+        }
     });
 
     xMin -= 100;
     yMin -= 100;
-    xMax += 150;
-    yMax += 150;
+    xMax += 100;
+    yMax += 100;
 
     return { xMin, yMin, xMax, yMax };
 };
