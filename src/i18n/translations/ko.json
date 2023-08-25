@@ -326,10 +326,10 @@
                     "info": "역 유형을 변경하면 이름을 제외한 모든 고유한 속성이 제거됩니다.저장했다가 다시 실행!"
                 },
                 "changeLineStyleType": {
-                    "title": "역의 종류를 대량으로 수정",
-                    "changeFrom": "이 유형의 모든 역:",
-                    "changeTo": "이 유형에:",
-                    "info": "선 유형을 변경하면 연결을 제외한 선에서 모든 특정 속성이 제거됩니다. 변경하기 전에 저장하세요!"
+                    "title": "일괄적으로 선 스타일 변경",
+                    "changeFrom": "이 스타일의 모든 선을 변경하세요:",
+                    "changeTo": "이 스타일에:",
+                    "info": "선 스타일을 변경하면 연결을 제외한 선의 모든 특정 속성이 제거됩니다. 변경하기 전에 저장하세요!"
                 },
                 "removeLines": {
                     "title": "Remove lines with single color",
