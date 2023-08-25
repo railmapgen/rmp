@@ -83,7 +83,7 @@ export const changeLineStyleTypeInBatch = (
     theme: Theme
 ) =>
     graph
-        .filterEdges(edge => (graph.getEdgeAttribute(edge, 'style') as LineStyleType) === currentLineStyleType)
+        .filterEdges(edge => graph.getEdgeAttribute(edge, 'style') === currentLineStyleType)
         .forEach(edgeId => {
             changeLineStyleType(graph, edgeId, newLineStyleType, theme);
         });
