@@ -99,7 +99,7 @@ export const changeLinePathType = (
     selectedFirst: string,
     newLinePathType: LinePathType
 ) => {
-    const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type') as LinePathType;
+    const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
     const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
     graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
@@ -126,7 +126,7 @@ export const changeLineStyleType = (
     newLineStyleType: LineStyleType,
     theme: Theme
 ) => {
-    const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style') as LineStyleType;
+    const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
     const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
     graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
     const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
