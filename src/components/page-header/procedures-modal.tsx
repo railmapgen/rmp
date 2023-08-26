@@ -35,10 +35,11 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setUnlockSimplePath } from '../../redux/app/app-slice';
 import { saveGraph } from '../../redux/param/param-slice';
 import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
-import { changeStationsTypeInBatch } from '../../util/change-types';
+import { changeLineStyleTypeInBatch, changeStationsTypeInBatch } from '../../util/change-types';
 import { shuffle } from '../../util/helpers';
 import ThemeButton from '../panels/theme-button';
 import stations from '../svgs/stations/stations';
+import { lineStyles } from '../svgs/lines/lines';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -217,6 +218,83 @@ export const ChangeTypeModal = (props: { isOpen: boolean; onClose: () => void })
                     <RmgFields fields={fields} />
                     <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
                         {t('header.settings.procedures.changeType.info')}
+                    </Text>
+                </ModalBody>
+
+                <ModalFooter>
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
+                        {t('cancel')}
+                    </Button>
+                    <Button colorScheme="red" onClick={handleChange}>
+                        {t('apply')}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+};
+
+export const ChangeLineStyleTypeModal = (props: { isOpen: boolean; onClose: () => void }) => {
+    const { isOpen, onClose } = props;
+    const dispatch = useRootDispatch();
+    const { t } = useTranslation();
+    const graph = React.useRef(window.graph);
+    const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
+
+    const availableLineTyleOptions = Object.fromEntries(
+        Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+    ) as { [k in LineStyleType]: string };
+    const [oldLineType, setOldLineType] = React.useState(Object.keys(lineStyles).at(0)! as LineStyleType);
+    const [newLineType, setNewLineType] = React.useState(Object.keys(lineStyles).at(1)! as LineStyleType);
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'select',
+            label: t('header.settings.procedures.changeLineStyleType.changeFrom'),
+            value: oldLineType as LineStyleType,
+            options: availableLineTyleOptions,
+            disabledOptions: [newLineType],
+            onChange: (val: string | number) => setOldLineType(val as LineStyleType),
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('header.settings.procedures.changeLineStyleType.changeTo'),
+            value: newLineType as LineStyleType,
+            options: availableLineTyleOptions,
+            disabledOptions: [oldLineType],
+            onChange: (val: string | number) => setNewLineType(val as LineStyleType),
+            minW: 'full',
+        },
+    ];
+
+    const handleChange = () => {
+        changeLineStyleTypeInBatch(graph.current, oldLineType, newLineType, runtimeTheme);
+        dispatch(setRefreshEdges());
+        dispatch(saveGraph(graph.current.export()));
+        onClose();
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>
+                    <Text as="b" fontSize="xl">
+                        {t('header.settings.procedures.changeLineStyleType.title')}
+                    </Text>
+                    <Tooltip label={t('header.settings.pro')}>
+                        <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                            PRO
+                        </Badge>
+                    </Tooltip>
+                </ModalHeader>
+                <ModalCloseButton />
+
+                <ModalBody>
+                    <RmgFields fields={fields} />
+                    <Text fontSize="sm" mt="3" lineHeight="100%" color="red.500">
+                        {t('header.settings.procedures.changeLineStyleType.info')}
                     </Text>
                 </ModalBody>
 

@@ -70,6 +70,25 @@ export const changeStationsTypeInBatch = (
         });
 
 /**
+ * Change all the lines' style type of currentLineStyleType to newLineStyleType in batch.
+ * @param graph Graph.
+ * @param currentLineStyleType Current lines' type.
+ * @param newLineStyleType New lines' type.
+ * @returns Nothing.
+ */
+export const changeLineStyleTypeInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    currentLineStyleType: LineStyleType,
+    newLineStyleType: LineStyleType,
+    theme: Theme
+) =>
+    graph
+        .filterEdges(edge => graph.getEdgeAttribute(edge, 'style') === currentLineStyleType)
+        .forEach(edgeId => {
+            changeLineStyleType(graph, edgeId, newLineStyleType, theme);
+        });
+
+/**
  * Change a line's path type.
  * @param graph Graph.
  * @param selectedFirst Current line's id.
@@ -80,7 +99,7 @@ export const changeLinePathType = (
     selectedFirst: string,
     newLinePathType: LinePathType
 ) => {
-    const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type') as LinePathType;
+    const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
     const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
     graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
@@ -107,7 +126,7 @@ export const changeLineStyleType = (
     newLineStyleType: LineStyleType,
     theme: Theme
 ) => {
-    const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style') as LineStyleType;
+    const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
     const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
     graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
     const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
