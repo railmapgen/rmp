@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 16;
+export const CURRENT_VERSION = 17;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -289,5 +289,33 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 16, graph: graph.export() });
+    },
+    16: param => {
+        // Bump save version to update y of facilities node after directly using svg in #262.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.Facilities)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                let dy = 0;
+                switch (attr.type) {
+                    case 'airport':
+                    case 'maglev':
+                    case 'disney':
+                    case 'railway':
+                        dy += 25 / 2;
+                        break;
+                    case 'hsr':
+                    case 'airport_hk':
+                    case 'disney_hk':
+                        dy += 19 / 2;
+                        break;
+                }
+                graph.updateNodeAttribute(node, 'y', y => (y ?? 0) + dy);
+            });
+        return JSON.stringify({ ...p, version: 17, graph: graph.export() });
     },
 };
