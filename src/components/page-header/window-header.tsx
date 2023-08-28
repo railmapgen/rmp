@@ -71,7 +71,7 @@ export default function WindowHeader() {
                         variant="ghost"
                         aria-label="Undo"
                         icon={<MdUndo />}
-                        disabled={past.length === 0}
+                        isDisabled={past.length === 0}
                         onClick={() => dispatch(undoAction())}
                     />
                 </WrapItem>
@@ -81,7 +81,7 @@ export default function WindowHeader() {
                         variant="ghost"
                         aria-label="Redo"
                         icon={<MdRedo />}
-                        disabled={future.length === 0}
+                        isDisabled={future.length === 0}
                         onClick={() => dispatch(redoAction())}
                     />
                 </WrapItem>
