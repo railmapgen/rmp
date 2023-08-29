@@ -207,6 +207,9 @@
                 "bjsubwayTram": {
                     "displayName": "베이징 지하철 노면 전차 모습"
                 },
+                "bjsubwayDotted": {
+                    "displayName": "베이징 지하철 점선 스타일"
+                },
                 "dualColor": {
                     "displayName": "상하이 자기부상 모습",
                     "swap": "색을 바꾸기"

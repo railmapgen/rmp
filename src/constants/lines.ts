@@ -16,6 +16,7 @@ import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-
 import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
 import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
+import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -38,6 +39,7 @@ export enum LineStyleType {
     ChinaRailway = 'china-railway',
     BjsubwaySingleColor = 'bjsubway-single-color',
     BjsubwayTram = 'bjsubway-tram',
+    BjsubwayDotted = 'bjsubway-dotted',
     DualColor = 'dual-color',
     River = 'river',
     MTRRaceDays = 'mtr-race-days',
@@ -53,6 +55,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     [LineStyleType.BjsubwaySingleColor]?: BjsubwaySingleColorAttributes;
     [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
+    [LineStyleType.BjsubwayDotted]?: BjsubwayDottedAttributes;
     [LineStyleType.DualColor]?: DualColorAttributes;
     [LineStyleType.River]?: RiverAttributes;
     [LineStyleType.MTRRaceDays]?: MTRRaceDaysAttributes;

@@ -207,6 +207,9 @@
                 "bjsubwayTram": {
                     "displayName": "北京地鐵有軌電車樣式"
                 },
+                "bjsubwayDotted": {
+                    "displayName": "北京地鐵虛線樣式"
+                },
                 "dualColor": {
                     "displayName": "上海磁懸浮樣式",
                     "swap": "切換顏色"
