@@ -34,12 +34,12 @@ import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setUnlockSimplePath } from '../../redux/app/app-slice';
 import { saveGraph } from '../../redux/param/param-slice';
-import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { changeLineStyleTypeInBatch, changeStationsTypeInBatch } from '../../util/change-types';
 import { shuffle } from '../../util/helpers';
 import ThemeButton from '../panels/theme-button';
-import stations from '../svgs/stations/stations';
 import { lineStyles } from '../svgs/lines/lines';
+import stations from '../svgs/stations/stations';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -316,7 +316,7 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
     const dispatch = useRootDispatch();
     const {
         theme: runtimeTheme,
-        paletteAppClip: { nextTheme },
+        paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
@@ -325,11 +325,11 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
-        if (isThemeRequested && nextTheme) {
-            setTheme(nextTheme);
+        if (isThemeRequested && output) {
+            setTheme(output);
             setIsThemeRequested(false);
         }
-    }, [nextTheme?.toString()]);
+    }, [output?.toString()]);
 
     const handleChange = () => {
         graph.current
@@ -363,7 +363,7 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
                         theme={theme}
                         onClick={() => {
                             setIsThemeRequested(true);
-                            dispatch(setPalettePrevTheme(theme));
+                            dispatch(openPaletteAppClip(theme));
                         }}
                     />
                 </ModalBody>

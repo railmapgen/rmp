@@ -5,7 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { setPaletteNextTheme, setPalettePrevTheme } from '../redux/runtime/runtime-slice';
+import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
@@ -16,7 +16,7 @@ const RmgPaletteAppClip = React.lazy(() => import('./panels/rmg-palette-app-clip
 export default function AppRoot() {
     const dispatch = useRootDispatch();
     const {
-        paletteAppClip: { prevTheme },
+        paletteAppClip: { input },
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -140,13 +140,10 @@ export default function AppRoot() {
                     </RmgErrorBoundary>
 
                     <RmgPaletteAppClip
-                        isOpen={!!prevTheme}
-                        onClose={() => dispatch(setPalettePrevTheme(undefined))}
-                        defaultTheme={prevTheme}
-                        onSelect={nextTheme => {
-                            dispatch(setPaletteNextTheme(nextTheme));
-                            dispatch(setPalettePrevTheme(undefined));
-                        }}
+                        isOpen={!!input}
+                        onClose={() => dispatch(closePaletteAppClip())}
+                        defaultTheme={input}
+                        onSelect={nextTheme => dispatch(onPaletteAppClipEmit(nextTheme))}
                     />
                 </React.Suspense>
             </RmgWindow>

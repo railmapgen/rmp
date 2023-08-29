@@ -5,7 +5,7 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setPalettePrevTheme, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 
 /**
@@ -34,7 +34,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
     const dispatch = useRootDispatch();
     const {
         selected,
-        paletteAppClip: { nextTheme },
+        paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
     const selectedFirst = selected.at(0);
 
@@ -74,11 +74,11 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
-        if (isThemeRequested && nextTheme) {
-            handleChangeColor(nextTheme);
+        if (isThemeRequested && output) {
+            handleChangeColor(output);
             setIsThemeRequested(false);
         }
-    }, [nextTheme?.toString()]);
+    }, [output?.toString()]);
 
     const theme =
         selectedFirst &&
@@ -96,7 +96,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
                 theme={theme}
                 onClick={() => {
                     setIsThemeRequested(true);
-                    dispatch(setPalettePrevTheme(theme));
+                    dispatch(openPaletteAppClip(theme));
                 }}
             />
         </>

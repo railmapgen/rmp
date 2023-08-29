@@ -18,7 +18,7 @@ import { LinePathType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setMode, setPalettePrevTheme, setTheme } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -48,7 +48,7 @@ const ToolsPanel = () => {
     const {
         mode,
         theme,
-        paletteAppClip: { nextTheme },
+        paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
     const {
         preference: { unlockSimplePathAttempts },
@@ -59,11 +59,11 @@ const ToolsPanel = () => {
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
-        if (isThemeRequested && nextTheme) {
-            dispatch(setTheme(nextTheme));
+        if (isThemeRequested && output) {
+            dispatch(setTheme(output));
             setIsThemeRequested(false);
         }
-    }, [nextTheme?.toString()]);
+    }, [output?.toString()]);
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
@@ -112,7 +112,7 @@ const ToolsPanel = () => {
                                     theme={theme}
                                     onClick={() => {
                                         setIsThemeRequested(true);
-                                        dispatch(setPalettePrevTheme(theme));
+                                        dispatch(openPaletteAppClip(theme));
                                     }}
                                 />
                                 <Text fontWeight="600" pl="1" alignSelf="center">

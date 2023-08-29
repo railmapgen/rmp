@@ -5,7 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setPalettePrevTheme } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import { InterchangeInfo } from './interchange-field';
 
@@ -20,8 +20,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
     const { interchangeList, onAdd, onDelete, onUpdate } = props;
     const dispatch = useRootDispatch();
     const {
-        theme,
-        paletteAppClip: { nextTheme },
+        paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
 
     const { t } = useTranslation();
@@ -29,15 +28,15 @@ export default function InterchangeCard(props: InterchangeCardProps) {
     const [indexRequestedTheme, setIndexRequestedTheme] = React.useState<number>();
 
     React.useEffect(() => {
-        if (indexRequestedTheme !== undefined && nextTheme) {
+        if (indexRequestedTheme !== undefined && output) {
             onUpdate?.(indexRequestedTheme, [
-                ...nextTheme,
+                ...output,
                 interchangeList[indexRequestedTheme][4],
                 interchangeList[indexRequestedTheme][5],
             ]);
             setIndexRequestedTheme(undefined);
         }
-    }, [nextTheme?.toString()]);
+    }, [output?.toString()]);
 
     const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
         {
@@ -81,7 +80,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                             theme={[it[0], it[1], it[2], it[3]]}
                             onClick={() => {
                                 setIndexRequestedTheme(i);
-                                dispatch(setPalettePrevTheme([it[0], it[1], it[2], it[3]]));
+                                dispatch(openPaletteAppClip([it[0], it[1], it[2], it[3]]));
                             }}
                         />
                     </RmgLabel>

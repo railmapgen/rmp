@@ -42,8 +42,8 @@ interface RuntimeState {
      * nextTheme is used to save the temporary value and let the component decide how to do with the newly selected.
      */
     paletteAppClip: {
-        prevTheme: Theme | undefined;
-        nextTheme: Theme | undefined;
+        input: Theme | undefined;
+        output: Theme | undefined;
     };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
@@ -60,8 +60,8 @@ const initialState: RuntimeState = {
     keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
     paletteAppClip: {
-        prevTheme: undefined,
-        nextTheme: undefined,
+        input: undefined,
+        output: undefined,
     },
     globalAlerts: {},
 };
@@ -100,11 +100,16 @@ const runtimeSlice = createSlice({
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
         },
-        setPalettePrevTheme: (state, action: PayloadAction<Theme | undefined>) => {
-            state.paletteAppClip.prevTheme = action.payload;
+        openPaletteAppClip: (state, action: PayloadAction<Theme>) => {
+            state.paletteAppClip.input = action.payload;
+            state.paletteAppClip.output = undefined;
         },
-        setPaletteNextTheme: (state, action: PayloadAction<Theme | undefined>) => {
-            state.paletteAppClip.nextTheme = action.payload;
+        closePaletteAppClip: state => {
+            state.paletteAppClip.input = undefined;
+        },
+        onPaletteAppClipEmit: (state, action: PayloadAction<Theme>) => {
+            state.paletteAppClip.input = undefined;
+            state.paletteAppClip.output = action.payload;
         },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
@@ -145,8 +150,9 @@ export const {
     setMode,
     setKeepLastPath,
     setTheme,
-    setPalettePrevTheme,
-    setPaletteNextTheme,
+    openPaletteAppClip,
+    closePaletteAppClip,
+    onPaletteAppClipEmit,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;
