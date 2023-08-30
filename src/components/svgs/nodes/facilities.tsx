@@ -4,7 +4,7 @@ import { Node, NodeComponentProps } from '../../../constants/nodes';
 /**
  * Facilities type, note that the value should match the filename under public/images/facilities.
  */
-enum FacilitiesType {
+export enum FacilitiesType {
     Airport = 'airport',
     Maglev = 'maglev',
     Disney = 'disney',

@@ -26,13 +26,11 @@ import canvasSize from 'canvas-size';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
-import { Events, NodeType } from '../../constants/constants';
-import { MiscNodeType } from '../../constants/nodes';
+import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
-import { downloadAs, downloadBlobAs } from '../../util/download';
-import { FONTS_CSS, getBase64FontFace } from '../../util/fonts';
-import { calculateCanvasSize, findNodesExist } from '../../util/helpers';
+import { downloadAs, downloadBlobAs, makeImages } from '../../util/download';
+import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
@@ -53,8 +51,8 @@ export default function DownloadActions() {
         svg: t('header.download.svg'),
     };
     const [maxArea, setMaxArea] = React.useState({ width: 1, height: 1, benchmark: 0.001 });
-    const [scale, setScale] = React.useState(100);
-    const scales = [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500, 750, 1000];
+    const [scale, setScale] = React.useState(200);
+    const scales = [10, 25, 33, 50, 67, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500, 750, 1000];
     const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
     const [disabledScaleOptions, setDisabledScaleOptions] = React.useState<number[]>([]);
     const [isTransparent, setIsTransparent] = React.useState(false);
@@ -127,62 +125,7 @@ export default function DownloadActions() {
                 numberOfEdges: graph.current.size,
             });
 
-        // get the minimum and maximum of the graph
-        const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
-        const [width, height] = [xMax - xMin, yMax - yMin];
-
-        const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
-        // remove virtual nodes
-        [...elem.children]
-            .filter(
-                e =>
-                    graph.current.hasNode(e.id) && graph.current.getNodeAttribute(e.id, 'type') === MiscNodeType.Virtual
-            )
-            .forEach(e => elem.removeChild(e));
-        // append rmp info if user does not want to share rmp info
-        if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 400, yMax - 120));
-        // reset svg viewBox to display all the nodes in the graph
-        // otherwise the later drawImage won't be able to show all of them
-        elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
-        // Chrome will stretch the image if the following width and height are not set
-        elem.setAttribute('width', width.toString());
-        elem.setAttribute('height', height.toString());
-        // copy attributes from css to each elem in the newly cloned svg
-        // TODO: #274 copy all possible attributes using document.querySelectorAll('link'), this is hard to maintain
-        Object.entries({
-            '.rmp-name__zh': ['font-family'],
-            '.rmp-name__en': ['font-family'],
-            '.rmp-name__mtr__zh': ['font-family'],
-            '.rmp-name__mtr__en': ['font-family'],
-            '.rmp-name__berlin': ['font-family'],
-            '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
-        }).forEach(([className, styleSet]) => {
-            const e = document.querySelector(className);
-            if (e === null) return; // no element in the canvas uses this class
-            const style = window.getComputedStyle(e);
-            elem.querySelectorAll(className).forEach(el => {
-                styleSet.forEach(styleName => {
-                    el.setAttribute(styleName, style.getPropertyValue(styleName));
-                });
-                el.classList.remove(className);
-            });
-        });
-
-        const nodesExist = findNodesExist(graph.current);
-        for (const nodeType in FONTS_CSS) {
-            if (nodesExist[nodeType as NodeType]) {
-                try {
-                    const { className, cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
-                    const uris = await getBase64FontFace(elem, className, cssFont, cssName);
-                    const s = document.createElement('style');
-                    s.textContent = uris.join('\n');
-                    elem.prepend(s);
-                } catch (err) {
-                    alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
-                    console.error(err);
-                }
-            }
-        }
+        const { elem, width, height } = await makeImages(graph.current, isAttachSelected);
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);
@@ -191,18 +134,19 @@ export default function DownloadActions() {
 
         // append to document to render the svg
         document.body.appendChild(elem);
-        // convert it to blob
+        // convert it to an encoded string
         const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(elem.outerHTML)));
         // release after use
         document.body.removeChild(elem);
+        elem.remove();
 
-        // create canvas to be drawn on
+        // prepare a clean canvas to be drawn on
         const canvas = document.createElement('canvas');
         const [canvasWidth, canvasHeight] = [(width * scale) / 100, (height * scale) / 100];
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        // set background, respect to dark mode
+        // set background, with respect to dark mode
         if (!isTransparent) {
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
@@ -302,7 +246,7 @@ export default function DownloadActions() {
                                 colorScheme="teal"
                                 variant="outline"
                                 size="sm"
-                                isDisabled={!isTermsAndConditionsSelected}
+                                isDisabled={!isTermsAndConditionsSelected || disabledScaleOptions.includes(scale)}
                                 onClick={handleDownload}
                             >
                                 {t('header.download.confirm')}
@@ -321,34 +265,3 @@ export default function DownloadActions() {
         </Menu>
     );
 }
-
-const generateRmpInfo = (x: number, y: number) => {
-    const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    info.setAttribute('transform', `translate(${x}, ${y})scale(2)`);
-
-    const logo = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    // FIXME: return after image is loaded
-    // logo.setAttribute('href', 'https://uat-railmapgen.github.io/rmp/logo192.png');
-    // logo.setAttribute('href', logoImg);
-    logo.setAttribute('width', '40');
-    logo.setAttribute('height', '40');
-    logo.setAttribute('x', '-50');
-    logo.setAttribute('y', '-20');
-
-    const rmp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    rmp.setAttribute('font-family', 'Arial, sans-serif');
-    rmp.setAttribute('font-size', '16');
-    rmp.appendChild(document.createTextNode('Rail Map Painter'));
-
-    const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    link.setAttribute('font-family', 'Arial, sans-serif');
-    link.setAttribute('font-size', '10');
-    link.setAttribute('y', '10');
-    link.appendChild(document.createTextNode('https://railmapgen.github.io/rmp/'));
-
-    info.appendChild(logo);
-    info.appendChild(rmp);
-    info.appendChild(link);
-
-    return info;
-};
