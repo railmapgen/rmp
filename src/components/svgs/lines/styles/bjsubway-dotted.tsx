@@ -8,6 +8,7 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
+import { useColorModeValue } from '@chakra-ui/react';
 
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -18,10 +19,12 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
         [id, handleClick]
     );
 
+    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
+
     return (
         <g id={id}>
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="2 2" />
-            <path d={path} fill="none" stroke="white" strokeWidth="3.8" />
+            <path d={path} fill="none" stroke={bgColor} strokeWidth="3.8" />
             <path
                 d={path}
                 fill="none"
