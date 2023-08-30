@@ -5,12 +5,14 @@ Rail Map Painter is an open-source React project aimed at making the process of 
 ## Table of Contents
 
 - [Features](#features)
+- [Projects Selected](#works-selected)
 - [Getting Started](#getting-started)
   - [Online Website](#online-website)
   - [Offline Applications](#offline-applications)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
+- [One More Thing](#one-more-thing)
 
 ## Features
 
@@ -20,7 +22,9 @@ Rail Map Painter is an open-source React project aimed at making the process of 
 - Export your creations as SVG, PNG, or JSON files
 - Available as a web app hosted on GitHub Pages and as an offline applications
 
-## Projects selected
+## Works Selected
+
+Note all images are generated via the interactive web application where you can move, add, change, delete any stations and lines!
 
 ![shanghai](docs/imgs/shanghai.png)
 
@@ -37,6 +41,8 @@ Rail Map Painter is an open-source React project aimed at making the process of 
 ![hongkong](docs/imgs/hongkong.png)
 
 > Hong Kong
+
+More works can be found at [Rail Map Painter Gallery](https://railmapgen.github.io/?app=rmp-gallery) where contributors like you upload and update these great works!
 
 ## Getting Started
 

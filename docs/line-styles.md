@@ -26,10 +26,12 @@ Create a React component that generates the SVG using the provided attributes. T
 import React from 'react';
 import { LineStyleComponentProps, LineStyleType } from '../../../constants/lines';
 
-const MyLineStyleComponent = (props: LineStyleComponentProps) => {
+// MyLineStyleAttributes will be added in the next step
+const MyLineStyleComponent = (props: LineStyleComponentProps<MyLineStyleAttributes>) => {
     // destructure the props
     const { id, path, styleAttrs, handleClick } = props;
     // destructure the specific attributes of your line style
+    // defaultMyLineStyleAttributes will be added in the 4th step
     const {
         someAttribute = defaultMyLineStyleAttributes.someAttribute,
         anotherAttribute = defaultMyLineStyleAttributes.anotherAttribute,
@@ -191,6 +193,14 @@ export const lineStyles = {
     [LineStyleType.MyLineStyle]: myLineStyle, // register your line style here
 };
 ```
+
+### 9. Upgrade save version
+
+There is one more crucial step to undertake before opening your pull request. This step should be carried out once you have completed the design, coding, and testing phases of your line style.
+
+It involves upgrading the version of the saved project to signal the presence of new updates. By doing so, the previous version of Rail Map Painter will be able to recognize these changes and provide appropriate warnings to users.
+
+For more information, check out [Upgrade Save Version](./upgrade-save-version.md).
 
 ## Final Notes
 

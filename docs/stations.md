@@ -31,7 +31,8 @@ const MyStationComponent = (props: StationComponentProps) => {
     // destructure the props
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     // destructure the specific attributes of your station
-    // `StationType.MyStation` will be added in the final step
+    // `StationType.MyStation` will be added in the 8th step and it's ok to do that now,
+    // if you do not want to see any errors :)
     const { names = defaultStationAttributes.names } = attrs[StationType.MyStation] ?? defaultMyStationAttributes;
 
     // some boilerplate to cache a function between re-renders
@@ -229,6 +230,14 @@ const stations = {
     [StationType.MyStation]: myStation, // register your station here
 };
 ```
+
+### 9. Upgrade save version
+
+There is one more crucial step to undertake before opening your pull request. This step should be carried out once you have completed the design, coding, and testing phases of your station.
+
+It involves upgrading the version of the saved project to signal the presence of new updates. By doing so, the previous version of Rail Map Painter will be able to recognize these changes and provide appropriate warnings to users.
+
+For more information, check out [Upgrade Save Version](./upgrade-save-version.md).
 
 ## Final Notes
 
