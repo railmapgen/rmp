@@ -1,4 +1,4 @@
-import { GeneratePathFunction, LinePathAttributes, LinePath } from '../../../../constants/lines';
+import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateRotatePerpendicularPath: GeneratePathFunction<RotatePerpendicularPathAttributes> = (
@@ -142,12 +142,12 @@ const rotatePerpendicularFields = [
         label: 'panel.details.lines.common.roundCornerFactor',
         value: (attrs?: RotatePerpendicularPathAttributes) =>
             (attrs?.roundCornerFactor ?? defaultRotatePerpendicularPathAttributes.roundCornerFactor).toString(),
-        validator: (val: string) => !Number.isNaN(val) && Number(val) > 0,
+        validator: (val: string) => !Number.isNaN(val) && Number(val) >= 0,
         onChange: (val: string | number, attrs_: RotatePerpendicularPathAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultRotatePerpendicularPathAttributes;
             // return if invalid
-            if (Number.isNaN(val) || Number(val) <= 0) return attrs;
+            if (Number.isNaN(val) || Number(val) < 0) return attrs;
             // set value
             attrs.roundCornerFactor = Number(val);
             // return modified attrs
