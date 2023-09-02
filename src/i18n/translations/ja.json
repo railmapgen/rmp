@@ -14,7 +14,7 @@
             "section": {
                 "lineDrawing": "路線描画",
                 "stations": "駅",
-                "miscellaneousNodes": "その他のノード"
+                "miscellaneousNodes": "その他の節点"
             }
         },
         "details": {
@@ -33,7 +33,7 @@
             "changeLineTypeContent": "路線のタイプを変更すると、すべての属性が削除されます。",
             "changeType": "タイプを変更",
             "nodePosition": {
-                "title": "ノードの位置",
+                "title": "節点の位置",
                 "pos": {
                     "x": "X座標",
                     "y": "Y座標"
@@ -54,7 +54,7 @@
                     "num": "路線番号"
                 },
                 "virtual": {
-                    "displayName": "仮想ノード"
+                    "displayName": "仮想節点"
                 },
                 "shmetroNumLineBadge": {
                     "displayName": "上海地下鉄路線番号バッジ"
@@ -291,6 +291,22 @@
             "period": "。",
             "confirm": "ダウンロード"
         },
+        "donation": {
+            "title": "寄付",
+            "content": "あなたのサポートは私たちにとって非常に重要です！ 寄付することで、私たちは活動を続け、誰にでも無料で提供できるようになります。 エキサイティングなリワードオプションから選んで、今日違いをつけてください！",
+            "rewards": "リワード",
+            "gallery": "ギャラリー内のあなたの幻想作品",
+            "galleryContent": "あなたの幻想作品をアップロードして、ギャラリーに表示します。",
+            "nodes": "駅とその他の節点",
+            "nodesContent": "駅とその他の節点の追加をリクエストします。",
+            "features": "機能リクエスト",
+            "featuresContent": "新しい機能の追加をリクエストします。",
+            "methods": "寄付方法",
+            "openCollective": "Open Collective",
+            "viaUSD": "PaypalまたはVisaカードを使用してUSDで寄付する。",
+            "afdian": "爱发电",
+            "viaCNY": "AlipayまたはWechat Payを使用してCNYで寄付する。"
+        },
         "settings": {
             "title": "設定",
             "pro": "これはPROの機能であり、期間限定で無料です！",
@@ -314,14 +330,14 @@
             "procedures": {
                 "title": "手順",
                 "translate": {
-                    "title": "ノードの座標を変換",
-                    "content": "すべてのノードのX座標とY座標に次のオフセットを追加する：",
+                    "title": "節点の座標を変換",
+                    "content": "すべての節点のX座標とY座標に次のオフセットを追加する：",
                     "x": "X軸",
                     "y": "Y軸"
                 },
                 "scale": {
-                    "title": "ノードの座標をスケーリング",
-                    "content": "すべてのノードのX座標とY座標に次の値を乗算する：",
+                    "title": "節点の座標をスケーリング",
+                    "content": "すべての節点のX座標とY座標に次の値を乗算する：",
                     "factor": "スケールファクター"
                 },
                 "changeType": {

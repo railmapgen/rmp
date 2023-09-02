@@ -290,6 +290,22 @@
             "period": ".",
             "confirm": "Download"
         },
+        "donation": {
+            "title": "Donation",
+            "content": "Your support means the world to us! By donating, you enable us to continue our work and provide this free to everyone. Choose from our exciting reward options and make a difference today!",
+            "rewards": "Rewards",
+            "gallery": "Your fantasy works in Gallery",
+            "galleryContent": "Upload your fantasy works and display them in Gallery.",
+            "nodes": "Stations and miscellaneous nodes",
+            "nodesContent": "Request to add stations and miscellaneous nodes.",
+            "features": "Features requests",
+            "featuresContent": "Request to add new features.",
+            "methods": "Donation Methods",
+            "openCollective": "Open Collective",
+            "viaUSD": "Donate in USD via Paypal or Visa card.",
+            "afdian": "爱发电",
+            "viaCNY": "Donate in CNY via Alipay or Wechat Pay."
+        },
         "settings": {
             "title": "Settings",
             "pro": "This is PRO feature and is free for a limited time!",
