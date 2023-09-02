@@ -244,4 +244,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_783VjcPU_Z","attributes":{"visible":true,"zIndex":0,"x":0,"y":12.5,"type":"facilities","facilities":{"type":"airport"}}}],"edges":[]},"version":17}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('17 -> 18', () => {
+        // Bump save version to support Beijing Subway dotted line.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":17}';
+        const newParam = UPGRADE_COLLECTION[17](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":18}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

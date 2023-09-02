@@ -109,6 +109,7 @@ const LineStylesWithColor = [
     LineStyleType.SingleColor,
     LineStyleType.BjsubwaySingleColor,
     LineStyleType.BjsubwayTram,
+    LineStyleType.BjsubwayDotted,
     LineStyleType.MTRRaceDays,
     LineStyleType.MTRLightRail,
 ];

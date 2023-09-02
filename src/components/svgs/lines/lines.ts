@@ -15,6 +15,7 @@ import mtrRaceDays from './styles/mtr-race-day';
 import mtrLightRail from './styles/mtr-light-rail';
 import mtrUnpaidArea from './styles/mtr-unpaid-area';
 import mtrPaidArea from './styles/mtr-paid-area';
+import bjsubwayDotted from './styles/bjsubway-dotted';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -30,6 +31,7 @@ export const lineStyles = {
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwaySingleColor]: bjsubwaySingleColor,
     [LineStyleType.BjsubwayTram]: bjsubwayTram,
+    [LineStyleType.BjsubwayDotted]: bjsubwayDotted,
     [LineStyleType.DualColor]: dualColor,
     [LineStyleType.River]: river,
     [LineStyleType.MTRRaceDays]: mtrRaceDays,

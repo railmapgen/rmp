@@ -208,6 +208,9 @@
                 "bjsubwayTram": {
                     "displayName": "Beijing Subway tram style"
                 },
+                "bjsubwayDotted": {
+                    "displayName": "Beijing Subway dotted style"
+                },
                 "dualColor": {
                     "displayName": "Shanghai Maglev style",
                     "swap": "Swap color"

@@ -208,6 +208,9 @@
                 "bjsubwayTram": {
                     "displayName": "北京地下鉄トラムスタイル"
                 },
+                "bjsubwayDotted": {
+                    "displayName": "北京地下鉄の点線スタイル"
+                },
                 "dualColor": {
                     "displayName": "上海磁浮スタイル",
                     "swap": "色を交換"
