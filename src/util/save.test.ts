@@ -256,4 +256,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":18}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('18 -> 19', () => {
+        // Bump save version to support Beijing Subway dotted line.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":18}';
+        const newParam = UPGRADE_COLLECTION[18](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":19}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
