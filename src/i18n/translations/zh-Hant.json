@@ -81,8 +81,11 @@
                     "displayName": "蘇州軌道交通數字線路標識",
                     "branch": "是否支線"
                 },
-                "chongqingRTTextLineBadge": {
+                "chongqingRTNumLineBadge": {
                     "displayName": "重慶軌道交通數字線路標識"
+                },
+                "chongqingRTTextLineBadge": {
+                    "displayName": "重慶軌道交通文字線路標識"
                 },
                 "facilities": {
                     "displayName": "設施",

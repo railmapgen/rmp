@@ -81,8 +81,11 @@
                     "displayName": "수주 철도 번호 라인 배지",
                     "branch": "지선입니다"
                 },
-                "chongqingRTTextLineBadge": {
+                "chongqingRTNumLineBadge": {
                     "displayName": "충칭 철도 교통 디지털 노선 식별"
+                },
+                "chongqingRTTextLineBadge": {
+                    "displayName": "충칭 철도 교통 텍스트 라인 표시"
                 },
                 "facilities": {
                     "displayName": "시설",

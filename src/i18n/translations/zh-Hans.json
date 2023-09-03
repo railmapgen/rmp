@@ -81,8 +81,11 @@
                     "displayName": "苏州轨道交通文字线路标识",
                     "branch": "是否支线"
                 },
-                "chongqingRTTextLineBadge": {
+                "chongqingRTNumLineBadge": {
                     "displayName": "重庆轨道交通数字线路标识"
+                },
+                "chongqingRTTextLineBadge": {
+                    "displayName": "重庆轨道交通文字线路标识"
                 },
                 "facilities": {
                     "displayName": "设施",
