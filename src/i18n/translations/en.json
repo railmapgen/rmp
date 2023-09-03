@@ -81,6 +81,9 @@
                     "displayName": "Suzhou Rail Transit num line badge",
                     "branch": "Is branch line"
                 },
+                "chongqingRTTextLineBadge": {
+                    "displayName": "Chongqing Rail Transit num line badge"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"

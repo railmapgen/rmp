@@ -81,6 +81,9 @@
                     "displayName": "蘇州軌道交通 線番号 バッジ",
                     "branch": "支線です"
                 },
+                "chongqingRTTextLineBadge": {
+                    "displayName": "重慶鉄道交通デジタルライン識別"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "タイプ"
