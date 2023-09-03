@@ -104,7 +104,7 @@ const ChongqingRTNumLineBadgeFields = [
     },
 ];
 
-const BerlinUBahnLineBadgeIcon = (
+const ChongqingRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
         <text x="8" y="18" fill="white" fontSize="18">
@@ -115,7 +115,7 @@ const BerlinUBahnLineBadgeIcon = (
 
 const chongqingRTNumLineBadge: Node<ChongqingRTNumLineBadgeAttributes> = {
     component: ChongqingRTNumLineBadge,
-    icon: BerlinUBahnLineBadgeIcon,
+    icon: ChongqingRTNumLineBadgeIcon,
     defaultAttrs: defaultChongqingRTNumLineBadgeAttributes,
     // TODO: fix this
     // @ts-ignore-error

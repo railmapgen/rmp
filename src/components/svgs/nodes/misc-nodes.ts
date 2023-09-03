@@ -11,6 +11,7 @@ import text from './text';
 import berlinUBahnLineBadge from './berlin-u-bahn-line-badge';
 import berlinSBahnLineBadge from './berlin-s-bahn-line-badge';
 import chongqingRTNumLineBadge from './chongqingrt-num-line-badge';
+import chongqingRTTextLineBadge from './chongqingrt-text-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -23,6 +24,7 @@ const miscNodes = {
     [MiscNodeType.BerlinSBahnLineBadge]: berlinSBahnLineBadge,
     [MiscNodeType.BerlinUBahnLineBadge]: berlinUBahnLineBadge,
     [MiscNodeType.ChongqingRTNumLineBadge]: chongqingRTNumLineBadge,
+    [MiscNodeType.ChongqingRTTextLineBadge]: chongqingRTTextLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
 };
