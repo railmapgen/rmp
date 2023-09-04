@@ -116,7 +116,7 @@ export const makeImages = async (
         );
         // extract the svg element from the svg file and append it as symbol to elem
         facilitiesTypesExists.forEach((t, i) => {
-            const temp = document.createElementNS('http://www.w3.org/2000/svg', 'temp');
+            const temp = document.createElement('div');
             temp.innerHTML = svgs[i];
             const svg = temp.querySelector('svg')!;
 
@@ -135,6 +135,11 @@ export const makeImages = async (
                     facilitiesNodeInThisType!.removeChild(imageElem);
                     const useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
                     useElem.setAttribute('href', `#${t}`);
+                    // Safari needs width and height to be specified on the use element,
+                    // or the element will use 100% for width and height.
+                    // See issue #432 and https://stackoverflow.com/a/63671360
+                    useElem.setAttribute('height', symbol.getAttribute('height')!);
+                    useElem.setAttribute('width', symbol.getAttribute('width')!);
                     facilitiesNodeInThisType!.appendChild(useElem);
                 }
             });
