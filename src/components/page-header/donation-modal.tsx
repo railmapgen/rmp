@@ -37,6 +37,12 @@ const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
         }
     };
 
+    const issueTemplate = (requestType: string) =>
+        new URLSearchParams({
+            title: `Donation: New ${requestType} request for [city name]`,
+            body: `Hi, I'd like to have new ${requestType}, and here is my support.\n\n<!-- your donation entry -->\n\n<!-- reference (images or URLs) -->\n\n`,
+        }).toString();
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
             <ModalOverlay />
@@ -74,7 +80,12 @@ const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         <Tag
                             size="lg"
                             w="85%"
-                            onClick={() => window.open('https://github.com/railmapgen/rmp/issues/new', '_blank')}
+                            onClick={() =>
+                                window.open(
+                                    'https://github.com/railmapgen/rmp/issues/new?' + issueTemplate('stations/nodes'),
+                                    '_blank'
+                                )
+                            }
                             cursor="pointer"
                         >
                             <Avatar icon={<TbPlaystationCircle />} size="lg" my={2} ml={-1} mr={2} />
@@ -88,7 +99,12 @@ const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         <Tag
                             size="lg"
                             w="85%"
-                            onClick={() => window.open('https://github.com/railmapgen/rmp/issues/new', '_blank')}
+                            onClick={() =>
+                                window.open(
+                                    'https://github.com/railmapgen/rmp/issues/new?' + issueTemplate('features'),
+                                    '_blank'
+                                )
+                            }
                             cursor="pointer"
                         >
                             <Avatar icon={<MdOutlineWbIncandescent />} size="lg" my={2} ml={-1} mr={2} />
