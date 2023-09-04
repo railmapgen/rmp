@@ -63,7 +63,7 @@
         "test": "vitest",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
-        "priview": "vite preview"
+        "preview": "vite preview"
     },
     "browserslist": {
         "production": [

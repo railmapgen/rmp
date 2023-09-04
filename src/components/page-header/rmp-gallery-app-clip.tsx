@@ -62,9 +62,9 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                     fetch(`/rmp-gallery/resources/real_world/${id}.json`),
                     fetch(`/rmp-gallery/resources/fantasy/${id}.json`),
                 ])
-            ).filter(res => res.status === 'fulfilled') as PromiseFulfilledResult<Response>[]
+            ).filter(rep => rep.status === 'fulfilled') as PromiseFulfilledResult<Response>[]
         )
-            .find(res => res.value.status === 200)
+            .find(rep => rep.value.status === 200)
             ?.value.json()) as RMPSave | undefined;
         if (template) {
             handleOpenTemplate(template);

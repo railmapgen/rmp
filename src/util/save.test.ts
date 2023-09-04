@@ -174,7 +174,7 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('11 -> 12', () => {
-        // Bump save version to support MTR station style.
+        // Bump save version to support Shanghai Metro out-of-system interchange station.
         const oldParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":11}';
         const newParam = UPGRADE_COLLECTION[11](oldParam);
