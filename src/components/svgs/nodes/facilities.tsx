@@ -15,6 +15,8 @@ export enum FacilitiesType {
     NgongPing360 = 'ngong_ping_360',
     Tiananmen = 'tiananmen',
     AirportBJ = 'airport_bj',
+    BusTerminalSuzhou = 'bus_terminal_suzhou',
+    RailwaySuzhou = 'railway_suzhou',
 }
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
@@ -84,6 +86,8 @@ const FacilitiesFields = [
             [FacilitiesType.NgongPing360]: 'Ngong Ping 360',
             [FacilitiesType.Tiananmen]: 'Tiananmen',
             [FacilitiesType.AirportBJ]: 'Airport Beijing',
+            [FacilitiesType.BusTerminalSuzhou]: 'Bus Terminal Suzhou',
+            [FacilitiesType.RailwaySuzhou]: 'Railway Suzhou',
         },
         onChange: (val: string | number, attrs_: FacilitiesAttributes | undefined) => {
             // set default value if switched from another type
