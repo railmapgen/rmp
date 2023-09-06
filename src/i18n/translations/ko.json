@@ -7,6 +7,7 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
+    "acceptingDonations": "우리는 여러분의 판타지 작품을 받고 있습니다! 지원을 보여주고 갤러리에 제출하세요!",
 
     "panel": {
         "tools": {
@@ -295,6 +296,22 @@
             "termsAndConditionsInfo": "동의",
             "period": ".",
             "confirm": "다운로드"
+        },
+        "donation": {
+            "title": "기부",
+            "content": "귀하의 지원은 우리에게 큰 의미를 갖습니다! 기부함으로써 우리는 우리의 작업을 계속할 수 있고 모든 이에게 무료로 제공할 수 있습니다. 흥미로운 보상 옵션 중에서 선택하고 오늘 변화를 만들어보세요!",
+            "rewards": "보상",
+            "gallery": "갤러리에 여러분의 판타지 작품",
+            "galleryContent": "여러분의 판타지 작품을 업로드하고 갤러리에 표시하세요.",
+            "nodes": "역 및 기타 노드",
+            "nodesContent": "역 및 기타 노드 추가 요청.",
+            "features": "기능 요청",
+            "featuresContent": "새로운 기능 추가를 요청하세요.",
+            "methods": "기부 방법",
+            "openCollective": "Open Collective",
+            "viaUSD": "Paypal 또는 Visa 카드를 통해 USD로 기부하기.",
+            "afdian": "爱发电",
+            "viaCNY": "Alipay 또는 Wechat Pay를 통해 CNY로 기부하기."
         },
         "settings": {
             "title": "설정",

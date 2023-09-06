@@ -1,18 +1,21 @@
-import React from 'react';
 import { Heading, IconButton, Menu, MenuButton, MenuItem, MenuList, Wrap, WrapItem } from '@chakra-ui/react';
-import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
-import { Trans, useTranslation } from 'react-i18next';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
-import { LanguageCode, LANGUAGE_NAMES } from '@railmapgen/rmg-translate';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
+import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
+import React from 'react';
+import { Trans, useTranslation } from 'react-i18next';
+import { IoMdHeart } from 'react-icons/io';
+import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
-import OpenActions from './open-actions';
-import DownloadActions from './download-actions';
+import { setIsDonationModalOpen } from '../../redux/runtime/runtime-slice';
 import AboutModal from './about-modal';
-import { ZoomPopover } from './zoom-popover';
+import DonationModal from './donation-modal';
+import DownloadActions from './download-actions';
+import OpenActions from './open-actions';
 import SettingsModal from './settings-modal';
+import { ZoomPopover } from './zoom-popover';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -21,6 +24,7 @@ export default function WindowHeader() {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
     const { past, future } = useRootSelector(state => state.param);
+    const { isDonationModalOpen } = useRootSelector(state => state.runtime);
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -117,6 +121,17 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
+                        aria-label="Donation"
+                        color="red"
+                        icon={<IoMdHeart />}
+                        onClick={() => dispatch(setIsDonationModalOpen(true))}
+                    />
+                </WrapItem>
+
+                <WrapItem>
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
                         aria-label="Settings"
                         icon={<MdSettings />}
                         onClick={() => setIsSettingsModalOpen(true)}
@@ -134,6 +149,7 @@ export default function WindowHeader() {
                 </WrapItem>
             </Wrap>
 
+            <DonationModal isOpen={isDonationModalOpen} onClose={() => dispatch(setIsDonationModalOpen(false))} />
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
         </RmgWindowHeader>
