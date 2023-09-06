@@ -47,7 +47,7 @@
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
-            "node": {
+            "nodes": {
                 "common": {
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱",
