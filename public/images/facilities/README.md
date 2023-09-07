@@ -38,7 +38,13 @@ The task at hand is to inline all styles into the style attributes of elements f
       .st2{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-linecap:round;stroke-miterlimit:10;}
     </style>
     <!-- Some circle/line/path... elements that have class st0, st1... -->
-</symbol>
+    <circle class="st0" cx="12.5" cy="12.5" r="11.5"></circle>
+    <polyline class="st1" points="11.5,9.8 3.2,14.8 3.2,17.2 11.5,14.5 "></polyline>
+    <polyline class="st1" points="13.5,9.8 21.8,14.8 21.8,17.2 13.5,14.5 "></polyline>
+    <polyline class="st1" points="11.7,18.5 9.7,19.8 9.7,21.8 12.3,20.8 12.7,20.8 15.3,21.8 15.3,19.8 13.3,18.5 "></polyline>
+    <line class="st2" x1="12.5" y1="4.3" x2="12.5" y2="4"></line>
+    <path class="st1" d="M11.5,4.2l-0.2,8.3l0,0c0.1,1.6,0.2,3.1,0.2,4.7v1.7h2v-1.7c0-1.6,0.1-3.1,0.2-4.7l0,0l-0.2-8.3"></path>
+  </symbol>
   <symbol version="1.1" id="railway" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="25" height="25" viewBox="0 0 25 25" style="enable-background:new 0 0 25 25;" xml:space="preserve">
     <!-- This style also has a global effect and will conflict the one before! -->
     <style type="text/css">
@@ -48,7 +54,15 @@ The task at hand is to inline all styles into the style attributes of elements f
       .st3{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-miterlimit:10;}
     </style>
     <!-- Some circle/line/path... elements that have class st0, st1... -->
-</symbol>
+    <circle class="st0" cx="12.5" cy="12.5" r="11.5"></circle>
+    <line class="st1" x1="10.8" y1="3.8" x2="10.8" y2="4.8"></line>
+    <polyline class="st2" points="10.8,5 10.8,3.8 14.2,3.8 14.2,5 "></polyline>
+    <circle class="st3" cx="12.5" cy="12.5" r="6.7"></circle>
+    <polyline class="st0" points="10.2,17.3 8.8,20 12.5,21 16.2,19.7 14.8,17.3 "></polyline>
+    <path class="st2" d="M15.3,12.9c0,0.7-0.6,1.3-1.3,1.3h-3c-0.7,0-1.3-0.6-1.3-1.3v-0.5c0-0.7,0.6-1.3,1.3-1.3h3c0.7,0,1.3,0.6,1.3,1.3V12.9z"></path>
+    <path class="st2" d="M11.7,14.2"></path>
+    <path class="st2" d="M11.7,13.2v5.4c0,0.5-0.3,1-0.8,1.2l0,0l-3.7,0.4v1.2h10.7v-1.2l-3.7-0.4l0,0c-0.5-0.2-0.8-0.7-0.8-1.2v-5.4H11.7z"></path>
+  </symbol>
 </svg>
 ```
 
