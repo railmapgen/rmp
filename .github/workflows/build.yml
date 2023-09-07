@@ -34,6 +34,14 @@ jobs:
           node-version: '18'
       - run: npm i
 
+      - name: Optimize SVGs in public/images/facilities
+        working-directory: public/images/facilities
+        run: |
+          npm i -g svgo
+          svgo -v
+          svgo -f ./ --pretty --indent 2 --config ./svgo.config.js
+        # changes should be added and pushed in the build step
+
       - name: Build
         id: build
         run: ./scripts/build.sh
