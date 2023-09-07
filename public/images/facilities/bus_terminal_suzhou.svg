@@ -1,49 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-    xmlns:dc="http://purl.org/dc/elements/1.1/"
-    xmlns:cc="http://creativecommons.org/ns#"
-    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:svg="http://www.w3.org/2000/svg"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 13.333333 13.333333"
-    height="13.333333"
-    width="13.333333"
-    xml:space="preserve"
-    id="svg2"
-    version="1.1">
-    <metadata id="metadata8">
-        <rdf:RDF>
-            <cc:Work rdf:about="">
-                <dc:format>image/svg+xml</dc:format>
-                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-            </cc:Work>
-        </rdf:RDF>
-    </metadata>
-    <defs id="defs6">
-        <clipPath id="clipPath18" clipPathUnits="userSpaceOnUse">
-            <path id="path16" d="M 0,10 H 10 V 0 H 0 Z" />
-        </clipPath>
-    </defs>
-    <g transform="matrix(1.3333333,0,0,-1.3333333,0,13.333333)" id="g10">
-        <g id="g12">
-            <g clip-path="url(#clipPath18)" id="g14">
-                <g transform="translate(6.6355,4.9542)" id="g20">
-                    <path id="path22" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none"
-                        d="m 0,0 c 0,-0.903 -0.732,-1.636 -1.636,-1.636 -0.903,0 -1.635,0.733 -1.635,1.636 0,0.903 0.732,1.636 1.635,1.636 C -0.732,1.636 0,0.903 0,0" />
-                </g>
-                <g transform="translate(8.2767,8.8201)" id="g24">
-                    <path id="path26" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none"
-                        d="m 0,0 c -0.022,0.14 -2.574,0.287 -5.165,-1.033 -0.508,-0.259 -3.131,-1.595 -2.927,-2.927 0.096,-0.624 0.78,-1.026 1.378,-1.377 1.295,-0.761 2.698,-0.862 2.754,-0.689 0.038,0.115 -0.549,0.233 -1.033,0.861 -0.058,0.076 -0.518,0.689 -0.516,1.377 0.003,1.024 1.026,1.756 1.721,2.239 C -1.836,-0.194 0.019,-0.12 0,0" />
-                </g>
-                <g transform="translate(1.7233,1.0883)" id="g28">
-                    <path id="path30" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none"
-                        d="M 0,0 C 0.022,-0.14 2.574,-0.287 5.165,1.033 5.673,1.292 8.296,2.628 8.092,3.96 7.996,4.584 7.312,4.986 6.714,5.337 5.419,6.098 4.016,6.199 3.96,6.026 3.922,5.911 4.509,5.793 4.993,5.165 5.051,5.089 5.511,4.476 5.509,3.788 5.506,2.764 4.483,2.032 3.788,1.549 1.836,0.194 -0.019,0.12 0,0" />
-                </g>
-                <g transform="translate(3.4975,4.2866)" id="g32">
-                    <path id="path34" style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
-                        d="M 0,0 0.994,0.709 C 1.099,0.793 1.254,1.001 1.27,1.134 L 1.33,2.303 H 1.675 L 1.735,1.134 C 1.751,1 1.819,0.879 1.924,0.795 L 3.004,-0.001 2.832,-0.299 1.696,0.245 C 1.572,0.295 1.433,0.295 1.309,0.246 L 0.172,-0.298 Z" />
-                </g>
-            </g>
-        </g>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="13.333" height="13.333">
+  <defs>
+    <clipPath id="a" clipPathUnits="userSpaceOnUse">
+      <path d="M0 10h10V0H0Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#a)" transform="matrix(1.33333 0 0 -1.33333 0 13.333)">
+    <path d="M0 0a1.636 1.636 0 1 0-3.272 0A1.636 1.636 0 0 0 0 0" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(6.636 4.954)"/>
+    <path d="M0 0c-.022.14-2.574.287-5.165-1.033-.508-.259-3.131-1.595-2.927-2.927.096-.624.78-1.026 1.378-1.377 1.295-.761 2.698-.862 2.754-.689.038.115-.549.233-1.033.861-.058.076-.518.689-.516 1.377.003 1.024 1.026 1.756 1.721 2.239C-1.836-.194.019-.12 0 0" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(8.277 8.82)"/>
+    <path d="M0 0c.022-.14 2.574-.287 5.165 1.033.508.259 3.131 1.595 2.927 2.927-.096.624-.78 1.026-1.378 1.377-1.295.761-2.698.862-2.754.689-.038-.115.549-.233 1.033-.861.058-.076.518-.689.516-1.377-.003-1.024-1.026-1.756-1.721-2.239C1.836.194-.019.12 0 0" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(1.723 1.088)"/>
+    <path d="m0 0 .994.709c.105.084.26.292.276.425l.06 1.169h.345l.06-1.169a.511.511 0 0 1 .189-.339l1.08-.796-.172-.298-1.136.544a.523.523 0 0 1-.387.001L.172-.298Z" style="fill:#fff;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(3.498 4.287)"/>
+  </g>
 </svg>
