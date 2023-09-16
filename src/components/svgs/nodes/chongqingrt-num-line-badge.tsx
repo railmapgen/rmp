@@ -24,8 +24,8 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
     );
 
     const fgColor = color[3];
-    const sX = Number.isInteger(num) && Number(num) >= 10 ? 9 : 10.25;
-    const [fontSize, sY] = !Number.isInteger(num) ? [16, 16] : [19, 16.75];
+    const fontSize = !Number.isInteger(num) ? 15 : 17;
+    const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.5, 1.45] : [0, 5.45]) : [0, 2.55];
 
     return React.useMemo(
         () => (
@@ -33,12 +33,13 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
                 <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
                 <text
                     className="rmp-name__zh"
-                    textAnchor="middle"
+                    textAnchor="left"
                     x={sX}
-                    y={sY}
+                    y="10"
                     fill={fgColor}
                     fontSize={fontSize}
-                    letterSpacing="-2.8"
+                    letterSpacing={letterSpacing}
+                    dominantBaseline="central"
                 >
                     {num}
                 </text>
