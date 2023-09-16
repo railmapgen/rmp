@@ -24,8 +24,8 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
     );
 
     const fgColor = color[3];
-    const fontSize = !Number.isInteger(num) ? 15 : 17;
-    const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.5, 1.45] : [0, 5.45]) : [0, 2.55];
+    const fontSize = !Number.isInteger(num) ? 15 : 16;
+    const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.2, 1.5] : [0, 5.5]) : [0, 2.55];
 
     return React.useMemo(
         () => (
