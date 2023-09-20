@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="22.67" height="22.67">
   <path d="M23.84 22.43a1.41 1.41 0 0 1-1.41 1.4H2.57a1.41 1.41 0 0 1-1.41-1.4V2.57a1.41 1.41 0 0 1 1.41-1.4H22.4a1.4 1.4 0 0 1 1.4 1.4v19.86Z" style="fill:#0e7572" transform="translate(-1.16 -1.17)"/>
   <path d="m12.5 2.5-1 1.67-4.27.5a2.65 2.65 0 0 0-2.4 2.66v6.17a1.66 1.66 0 0 0 1.67 1.67h12a1.66 1.66 0 0 0 1.67-1.67V7.3a2.69 2.69 0 0 0-2.4-2.67l-4.27-.46" style="fill:#fff" transform="translate(-1.16 -1.17)"/>
-  <path d="M12 7.3v3.04h4.84V7H12M5.83 7.3v3.04h4.84V7H5.83" style="fill:#0e7572"/>
+  <path d="M12 7.3v3.04h4.84V7H12m-6.17.3v3.04h4.84V7H5.83" style="fill:#0e7572"/>
   <path d="M4.83 12.5v6.67a2 2 0 0 0 2 2h2V19.5H6.5v-2a.31.31 0 0 1 .33-.33h11.34a.31.31 0 0 1 .33.33v2h-2.33v1.67h2a2 2 0 0 0 2-2V12.5" style="fill:#fff" transform="translate(-1.16 -1.17)"/>
   <path d="M20.5 13.5a2 2 0 0 1-2 2h-12a2 2 0 0 1-2-2V3.83a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z" style="fill:none;stroke:#0e7572;stroke-miterlimit:10;stroke-width:.67px" transform="translate(-1.16 -1.17)"/>
 </svg>
