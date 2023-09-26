@@ -2,13 +2,15 @@ import { NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 
+const searchSrcRegex = /url\("([\S*]+)"\)/;
+
 const waitForMs = (ms: number) => {
     return new Promise<void>(resolve => {
         setTimeout(resolve, ms);
     });
 };
 
-const isSafari = () => {
+export const isSafari = () => {
     return navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
 };
 
@@ -49,7 +51,7 @@ const matchCssRuleByFontFace = (rules: CSSFontFaceRule[], font: FontFace): CSSFo
     return rules.find(rule => {
         const cssStyle = rule.style;
         return (
-            cssStyle.getPropertyValue('font-family') === font.family &&
+            cssStyle.getPropertyValue('font-family').replace(/^"(.+)"$/, '$1') === font.family &&
             cssStyle.getPropertyValue('unicode-range') === font.unicodeRange
         );
     });
@@ -59,7 +61,8 @@ export const getBase64FontFace = async (
     svgEl: SVGSVGElement,
     className: string[],
     cssFont: string[],
-    cssName: string
+    cssName: string,
+    baseUrl: string
 ): Promise<string[]> => {
     const uniqueCharacters = Array.from(
         new Set(
@@ -76,7 +79,9 @@ export const getBase64FontFace = async (
     const fontFaceList = await document.fonts.load(cssFont.join(', '), uniqueCharacters);
     const cssRules = document.querySelector<HTMLLinkElement>(`link#${cssName}`)?.sheet?.cssRules;
     if (!cssRules) return Promise.reject(new Error(`cssRules can not be found in link#${cssName}`));
-    const cssFontFaceRules = Array.from(cssRules).filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
+    const cssFontFaceRules = Array.from(cssRules)
+        .flatMap(rule => (rule instanceof CSSImportRule ? Array.from(rule.styleSheet.cssRules) : rule))
+        .filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
     const distinctCssRules = fontFaceList.reduce<CSSFontFaceRule[]>((acc, cur) => {
         const matchedRule = matchCssRuleByFontFace(cssFontFaceRules, cur);
         if (matchedRule) {
@@ -97,9 +102,9 @@ export const getBase64FontFace = async (
     return await Promise.all(
         distinctCssRules.map(async cssRule => {
             try {
-                const fontResp = await fetch(getAbsoluteUrl(cssRule));
+                const fontResp = await fetch(getAbsoluteUrl(baseUrl, cssRule));
                 const fontDataUri = await readBlobAsDataURL(await fontResp.blob());
-                return cssRule.cssText.replace(/src:[ \w('",\-:/.)]+;/g, `src: url('${fontDataUri}'); `);
+                return cssRule.cssText.replace(searchSrcRegex, `url('${fontDataUri}')`);
             } catch (err) {
                 console.error(err);
                 return '';
@@ -108,11 +113,9 @@ export const getBase64FontFace = async (
     );
 };
 
-export const getAbsoluteUrl = (cssRule: CSSFontFaceRule) => {
+export const getAbsoluteUrl = (baseUrl: string, cssRule: CSSFontFaceRule) => {
     const ruleStyleSrc = cssRule.style.getPropertyValue('src');
-    return isSafari()
-        ? ruleStyleSrc.replace(/^url\("(\S+)"\).*$/, '$1')
-        : import.meta.env.BASE_URL + '/styles/' + ruleStyleSrc.match(/^url\("([\S*]+)"\)/)?.[1];
+    return baseUrl + ruleStyleSrc.match(searchSrcRegex)?.[1];
 };
 
 /**
@@ -123,21 +126,25 @@ export const FONTS_CSS: {
         className: string[];
         cssFont: string[];
         cssName: string;
+        baseUrl: string;
     };
 } = {
     [StationType.MTR]: {
         className: ['.rmp-name__mtr__zh', '.rmp-name__mtr__en'],
         cssFont: ['80px GenYoMin TW', 'Vegur'],
         cssName: 'fonts_mtr',
+        baseUrl: '/styles/',
     },
     [MiscNodeType.BerlinSBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
         cssFont: ['16px Roboto'],
         cssName: 'fonts_berlin',
+        baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [MiscNodeType.BerlinUBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
         cssFont: ['16px Roboto'],
         cssName: 'fonts_berlin',
+        baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
 };

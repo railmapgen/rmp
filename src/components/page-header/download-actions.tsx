@@ -34,6 +34,7 @@ import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
+import { isSafari } from '../../util/fonts';
 
 export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'gray.800');
@@ -154,16 +155,21 @@ export default function DownloadActions() {
 
         const img = new Image();
         img.onload = () => {
-            ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-            canvas.toBlob(blob => {
-                if (!blob) {
-                    // The canvas size is bigger than the current browser can support.
-                    // See #301 for more discussion and more on https://github.com/jhildenbiddle/canvas-size#test-results
-                    // Possible solutions include RazrFalcon/resvg and yisibl/resvg-js.
-                    dispatch(setGlobalAlert({ status: 'error', message: t('header.download.imageTooBig') }));
-                }
-                downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!);
-            }, 'image/png');
+            setTimeout(
+                () => {
+                    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                    canvas.toBlob(blob => {
+                        if (!blob) {
+                            // The canvas size is bigger than the current browser can support.
+                            // See #301 for more discussion and more on https://github.com/jhildenbiddle/canvas-size#test-results
+                            // Possible solutions include RazrFalcon/resvg and yisibl/resvg-js.
+                            dispatch(setGlobalAlert({ status: 'error', message: t('header.download.imageTooBig') }));
+                        }
+                        downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!);
+                    }, 'image/png');
+                },
+                isSafari() ? 2000 : 0
+            );
         };
         img.src = src; // draw src on canvas
     };
