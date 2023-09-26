@@ -162,15 +162,24 @@ const newRMGStn: StationInfo = {
     int_padding: 355,
 };
 
+const colorLineStyle = [
+    LineStyleType.SingleColor,
+    LineStyleType.BjsubwayDotted,
+    LineStyleType.BjsubwaySingleColor,
+    LineStyleType.BjsubwayTram,
+    LineStyleType.MTRRaceDays,
+    LineStyleType.MTRLightRail,
+];
+
 // convert color['shanghai', 'sh1', ...] to a string (for compare)
 const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
 // verify the line whether is needed to add
-const isColorLine = (type: LineStyleType) => [LineStyleType.SingleColor, LineStyleType.MTRRaceDays].includes(type);
+const isColorLine = (type: LineStyleType) => [...colorLineStyle].includes(type);
 
 // get line color array
 const getColor = (attr: EdgeAttributes) => {
-    if ([LineStyleType.SingleColor, LineStyleType.MTRRaceDays].includes(attr.style)) {
+    if ([...colorLineStyle].includes(attr.style)) {
         return structuredClone((attr[attr.style] as AttributesWithColor).color);
     }
 };
