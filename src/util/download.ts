@@ -78,8 +78,8 @@ export const makeImages = async (
     for (const nodeType in FONTS_CSS) {
         if (nodesExist[nodeType as NodeType]) {
             try {
-                const { className, cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
-                const uris = await getBase64FontFace(elem, className, cssFont, cssName);
+                const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
+                const uris = await getBase64FontFace(elem, className, cssFont, cssName, baseUrl);
                 const s = document.createElement('style');
                 s.textContent = uris.join('\n');
                 elem.prepend(s);
