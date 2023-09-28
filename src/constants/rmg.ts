@@ -26,7 +26,7 @@ export enum BranchStyle {
  * @property 0 - branch type
  * @property 1 - ID of the first station of the branch (should also be one of the station's parents/children) or empty
  */
-export type BranchInfo = Record<Direction, [BranchStyle, string] | []>;
+export type BranchInfo = Partial<Record<Direction, [BranchStyle, string]>>;
 
 export enum Services {
     local = 'local',
@@ -42,7 +42,7 @@ export interface ExtendedInterchangeInfo {
 
 export interface InterchangeGroup {
     name?: Name;
-    lines: ExtendedInterchangeInfo[];
+    lines?: ExtendedInterchangeInfo[];
 }
 
 export interface StationTransfer {
@@ -58,7 +58,6 @@ export interface StationTransfer {
 }
 
 export const FACILITIES = {
-    '': 'None',
     airport: 'Airport',
     hsr: 'High speed rail',
     railway: 'National rail',
@@ -73,7 +72,7 @@ export interface StationInfo {
      * Station name in two languages.
      */
     name: Name;
-    secondaryName: false | Name;
+    secondaryName?: Name;
     /**
      * Station number. (GZMTR specific)
      */
@@ -81,7 +80,7 @@ export interface StationInfo {
     /**
      * Dictionary of the information of branch on the station's both side.
      */
-    branch: BranchInfo;
+    branch?: BranchInfo;
     /**
      * Array of parents' IDs.
      */
@@ -101,7 +100,7 @@ export interface StationInfo {
     /**
      * Facility near the station.
      */
-    facility: Facilities;
+    facility?: Facilities;
     /**
      * Is a pivot station in the loop.
      */
@@ -227,7 +226,7 @@ export interface RMGParam {
     line_num: string;
     psd_num: string;
     info_panel_type: PanelTypeGZMTR | PanelTypeShmetro;
-    notesGZMTR: Note[];
+    notesGZMTR?: Note[];
     direction_gz_x: number;
     direction_gz_y: number;
     coline: Record<string, ColineInfo>;
@@ -248,4 +247,5 @@ export interface RMGParam {
          */
         bottom_factor: number;
     };
+    version?: string;
 }
