@@ -4,7 +4,7 @@ import { AttributesWithColor } from '../components/panels/details/color-field';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { LineStyleType } from '../constants/lines';
+import { LineStyleType, LineStylesWithColor } from '../constants/lines';
 import {
     BranchStyle,
     Name,
@@ -131,20 +131,11 @@ const newRMGStn: StationInfo = {
     int_padding: 355,
 };
 
-const colorLineStyle = [
-    LineStyleType.SingleColor,
-    LineStyleType.BjsubwayDotted,
-    LineStyleType.BjsubwaySingleColor,
-    LineStyleType.BjsubwayTram,
-    LineStyleType.MTRRaceDays,
-    LineStyleType.MTRLightRail,
-];
-
 // convert color['shanghai', 'sh1', ...] to a string (for compare)
 const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
 // verify the line whether is needed to add
-const isColorLine = (type: LineStyleType) => colorLineStyle.includes(type);
+const isColorLine = (type: LineStyleType) => LineStylesWithColor.includes(type);
 
 // get line color array
 const getColor = (attr: EdgeAttributes) => {

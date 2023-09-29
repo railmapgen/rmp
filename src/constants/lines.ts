@@ -64,6 +64,15 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MTRPaidArea]?: MTRPaidAreaAttributes;
 }
 
+export const LineStylesWithColor = [
+    LineStyleType.SingleColor,
+    LineStyleType.BjsubwaySingleColor,
+    LineStyleType.BjsubwayTram,
+    LineStyleType.BjsubwayDotted,
+    LineStyleType.MTRRaceDays,
+    LineStyleType.MTRLightRail,
+];
+
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
 export interface LineWrapperComponentProps {
