@@ -175,11 +175,11 @@ const colorLineStyle = [
 const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
 // verify the line whether is needed to add
-const isColorLine = (type: LineStyleType) => [...colorLineStyle].includes(type);
+const isColorLine = (type: LineStyleType) => colorLineStyle.includes(type);
 
 // get line color array
 const getColor = (attr: EdgeAttributes) => {
-    if ([...colorLineStyle].includes(attr.style)) {
+    if (isColorLine(attr.style)) {
         return structuredClone((attr[attr.style] as AttributesWithColor).color);
     }
 };
