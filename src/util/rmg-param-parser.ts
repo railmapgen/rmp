@@ -12,17 +12,6 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { PanelTypeShmetro, RMGParam, RmgStyle } from '../constants/rmg';
 import { StationAttributes, StationType } from '../constants/stations';
 
-interface ExtendedInterchangeInfo {
-    theme?: Theme;
-    name: [string, string];
-    facility?: string;
-}
-
-interface InterchangeGroup {
-    name?: [string, string];
-    lines: ExtendedInterchangeInfo[];
-}
-
 export const parseRmgParam = (
     graph: Graph,
     { info_panel_type, line_num, stn_list: stnList, style, theme }: RMGParam
@@ -59,7 +48,7 @@ export const parseRmgParam = (
         .forEach(([id, stnInfo], i) => {
             // determine station type
             let type: StationType = StationType.ShmetroBasic;
-            const interchangeGroups: InterchangeGroup[] = (stnInfo as any).transfer.groups;
+            const interchangeGroups = stnInfo.transfer.groups;
             const interchangeLines = interchangeGroups.map(group => group.lines).flat();
             if (style === RmgStyle.SHMetro) {
                 if (interchangeLines.length > 0) type = StationType.ShmetroInt;
@@ -76,7 +65,7 @@ export const parseRmgParam = (
             const attr = {
                 // deep copy to prevent mutual reference
                 ...structuredClone(stations[type].defaultAttrs),
-                names: (stnInfo as any).name,
+                names: stnInfo.name,
             };
 
             // add style specific attrs from RMG save
@@ -84,27 +73,21 @@ export const parseRmgParam = (
             else if (type === StationType.GzmtrBasic) {
                 (attr as GzmtrBasicStationAttributes).color = theme;
                 (attr as GzmtrBasicStationAttributes).lineCode = line_num;
-                (attr as GzmtrBasicStationAttributes).stationCode = (stnInfo as any).num;
+                (attr as GzmtrBasicStationAttributes).stationCode = stnInfo.num;
             } else if (type === StationType.GzmtrInt) {
                 (attr as GzmtrIntStationAttributes).transfer = interchangeGroups.map((group, i) => {
                     // override line code and station code to default as they are not provided in RMG save
-                    const interchangeInfos: InterchangeInfo[] = group.lines.map(line => [
-                        ...(line.theme ?? (theme as Theme)),
-                        '1',
-                        '01',
-                    ]);
+                    const interchangeInfos: InterchangeInfo[] =
+                        group.lines?.map(line => [...(line.theme ?? (theme as Theme)), '1', '01']) ?? [];
                     // add current line and station code to transfer[0][0]
                     if (i === 0) {
-                        return [
-                            [...(theme as Theme), line_num, (stnInfo as any).num] as InterchangeInfo,
-                            ...interchangeInfos,
-                        ];
+                        return [[...(theme as Theme), line_num, stnInfo.num] as InterchangeInfo, ...interchangeInfos];
                     } else {
                         return interchangeInfos;
                     }
                 });
             } else if (type === StationType.MTR) {
-                if (interchangeGroups[0].lines.length) {
+                if (interchangeGroups[0].lines?.length) {
                     (attr as MTRStationAttributes).transfer = [
                         [
                             // add current theme to transfer[0][0] as MTR display all transfers including the current line
@@ -137,7 +120,7 @@ export const parseRmgParam = (
     Object.entries(stnList)
         .filter(([id, _]) => !['linestart', 'lineend'].includes(id))
         .forEach(([id, stnInfo]) => {
-            (stnInfo as any).children
+            stnInfo.children
                 .filter((child: string) => !['linestart', 'lineend'].includes(child))
                 .forEach((child: string) => {
                     graph.addDirectedEdgeWithKey(`line_${nanoid(10)}`, stnIdMap[id], stnIdMap[child], {

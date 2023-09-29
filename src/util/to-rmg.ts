@@ -43,25 +43,15 @@ interface RMGInterchange {
 
 const defRMGLeft: StationInfo = {
     name: ['LEFT END', 'LEFT END'],
-    secondaryName: false,
     num: '00',
     services: [Services.local],
     parents: [],
     children: ['lineend'],
-    branch: {
-        left: [],
-        right: [],
-    },
     transfer: {
-        groups: [
-            {
-                lines: [],
-            },
-        ],
+        groups: [{}],
         tick_direc: ShortDirection.right,
         paid_area: true,
     },
-    facility: '',
     loop_pivot: false,
     one_line: true,
     int_padding: 355,
@@ -69,25 +59,15 @@ const defRMGLeft: StationInfo = {
 
 const defRMGRight: StationInfo = {
     name: ['RIGHT END', 'RIGHT END'],
-    secondaryName: false,
     num: '00',
     services: [Services.local],
     parents: [],
     children: [],
-    branch: {
-        left: [],
-        right: [],
-    },
     transfer: {
-        groups: [
-            {
-                lines: [],
-            },
-        ],
+        groups: [{}],
         tick_direc: ShortDirection.right,
         paid_area: true,
     },
-    facility: '',
     loop_pivot: false,
     one_line: true,
     int_padding: 355,
@@ -124,7 +104,6 @@ export const newParamTemplate: RMGParam = {
     line_num: '1',
     psd_num: '1',
     info_panel_type: PanelTypeShmetro.sh,
-    notesGZMTR: [],
     direction_gz_x: 40,
     direction_gz_y: 70,
     coline: {},
@@ -138,25 +117,15 @@ export const newParamTemplate: RMGParam = {
 
 const newRMGStn: StationInfo = {
     name: ['', ''],
-    secondaryName: false,
     num: '',
     services: [Services.local],
     parents: [],
     children: [],
-    branch: {
-        left: [],
-        right: [],
-    },
     transfer: {
-        groups: [
-            {
-                lines: [],
-            },
-        ],
+        groups: [{}],
         tick_direc: ShortDirection.right,
         paid_area: true,
     },
-    facility: '',
     loop_pivot: false,
     one_line: true,
     int_padding: 355,
@@ -242,9 +211,10 @@ const editLineend = (newParam: RMGParam, u: string) => {
     const newParent: string[] = newParam.stn_list['lineend'].parents;
     newParent.push(u);
     newParam.stn_list['lineend'].parents = structuredClone(newParent).reverse();
-    if (newParam.stn_list['lineend'].parents.length == 2) {
-        newParam.stn_list['lineend'].branch.left = [BranchStyle.through, newParent[1]];
-    } else newParam.stn_list['lineend'].branch.left = [];
+    newParam.stn_list['lineend'].branch = {
+        ...newParam.stn_list['lineend'].branch,
+        left: newParam.stn_list['lineend'].parents.length == 2 ? [BranchStyle.through, newParent[1]] : undefined,
+    };
 };
 
 // Count children in same color
@@ -309,7 +279,7 @@ const generateNewStn = (
             newParent[1] = t;
         }
         newParam.stn_list[u].parents = structuredClone(newParent).reverse();
-        newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
+        newParam.stn_list[u].branch = { ...newParam.stn_list[u].branch, left: [BranchStyle.through, newParent[1]] };
         // delete f in u's children
         const newChild = [];
         for (const ch of newParam.stn_list[u].children) {
@@ -318,7 +288,7 @@ const generateNewStn = (
             }
         }
         newParam.stn_list[u].children = structuredClone(newChild);
-        newParam.stn_list[u].branch.right = [];
+        delete newParam.stn_list[u].branch?.right;
         const endParent: string[] = [];
         for (const p of newParam.stn_list['lineend'].parents) {
             if (p != u) {
@@ -326,9 +296,10 @@ const generateNewStn = (
             }
         }
         newParam.stn_list['lineend'].parents = structuredClone(endParent).reverse();
-        if (newParam.stn_list['lineend'].parents.length == 2) {
-            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
-        } else newParam.stn_list['lineend'].branch.left = [];
+        newParam.stn_list['lineend'].branch = {
+            ...newParam.stn_list['lineend'].branch,
+            left: newParam.stn_list['lineend'].parents.length == 2 ? [BranchStyle.through, endParent[1]] : undefined,
+        };
         if (newChild.length == 0) {
             newParam.stn_list[u].children = ['lineend'];
             editLineend(newParam, u);
@@ -396,9 +367,10 @@ const generateNewStn = (
             }
         }
         newParam.stn_list['lineend'].parents = structuredClone(endParent).reverse();
-        if (newParam.stn_list['lineend'].parents.length == 2) {
-            newParam.stn_list['lineend'].branch.left = [BranchStyle.through, endParent[1]];
-        } else newParam.stn_list['lineend'].branch.left = [];
+        newParam.stn_list['lineend'].branch = {
+            ...newParam.stn_list['lineend'].branch,
+            left: newParam.stn_list['lineend'].parents.length == 2 ? [BranchStyle.through, endParent[1]] : undefined,
+        };
         if (newChild.length == 0) {
             expandVirtualNodeVisStn.clear();
             newParent.push(...expandVirtualNode(u, f, color));
@@ -429,7 +401,10 @@ const generateNewStn = (
         if (newChild.length != 0) {
             newParam.stn_list[u].children = structuredClone(newChild).reverse();
             if (newChild.length == 2) {
-                newParam.stn_list[u].branch.right = [BranchStyle.through, newChild[1]];
+                newParam.stn_list[u].branch = {
+                    ...newParam.stn_list[u].branch,
+                    right: [BranchStyle.through, newChild[1]],
+                };
             }
         } else {
             newParam.stn_list[u].children = ['lineend'];
@@ -438,7 +413,7 @@ const generateNewStn = (
         newParent.push(f);
         newParam.stn_list[u].parents = structuredClone(newParent).reverse();
         if (newParent.length == 2) {
-            newParam.stn_list[u].branch.left = [BranchStyle.through, newParent[1]];
+            newParam.stn_list[u].branch = { ...newParam.stn_list[u].branch, left: [BranchStyle.through, newParent[1]] };
         }
         if (newInterchange.length != 0) {
             newParam.stn_list[u].transfer.groups[0].lines = structuredClone(newInterchange);
