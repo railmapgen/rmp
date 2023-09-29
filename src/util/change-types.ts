@@ -1,7 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { LinePathType, LineStyleType } from '../constants/lines';
+import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/lines';
 import stations from '../components/svgs/stations/stations';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
@@ -104,15 +104,6 @@ export const changeLinePathType = (
     const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
     graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
 };
-
-const LineStylesWithColor = [
-    LineStyleType.SingleColor,
-    LineStyleType.BjsubwaySingleColor,
-    LineStyleType.BjsubwayTram,
-    LineStyleType.BjsubwayDotted,
-    LineStyleType.MTRRaceDays,
-    LineStyleType.MTRLightRail,
-];
 
 /**
  * Change a line's style type.
