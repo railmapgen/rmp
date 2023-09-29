@@ -358,6 +358,11 @@
                     "changeTo": "To this style:",
                     "info": "Changing lines' style will remove all specific attributes from lines except their connections. SAVE BEFORE CHANGE!"
                 },
+                "changeLinesColor": {
+                    "title": "Change lines color in batch",
+                    "changeFrom": "Change all lines from this color:",
+                    "changeTo": "To this color:"
+                },
                 "removeLines": {
                     "title": "Remove lines with single color",
                     "content": "Remove lines that have this color: "

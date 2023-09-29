@@ -129,3 +129,23 @@ export const changeLineStyleType = (
     if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
     else graph.setEdgeAttribute(selectedFirst, 'zIndex', 0);
 };
+
+export const changeLinesColorInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    currentLineColor: Theme,
+    newLineColor: Theme
+) =>
+    graph
+        .filterEdges(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
+        .forEach(edge => {
+            const attr = graph.getEdgeAttributes(edge);
+            const color = (attr[attr.style] as AttributesWithColor).color;
+            if (
+                color[0] == currentLineColor[0] &&
+                color[1] == currentLineColor[1] &&
+                color[2] == currentLineColor[2] &&
+                color[3] == currentLineColor[3]
+            ) {
+                graph.mergeEdgeAttributes(edge, { [attr.style]: { color: newLineColor } });
+            }
+        });
