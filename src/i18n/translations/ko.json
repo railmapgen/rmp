@@ -358,6 +358,11 @@
                     "changeTo": "이 스타일에:",
                     "info": "선 스타일을 변경하면 연결을 제외한 선의 모든 특정 속성이 제거됩니다. 변경하기 전에 저장하세요!"
                 },
+                "changeLinesColor": {
+                    "title": "일괄적으로 선 색상 변경",
+                    "changeFrom": "이 색상의 모든 선을 변경합니다.",
+                    "changeTo": "이 색상에:"
+                },
                 "removeLines": {
                     "title": "Remove lines with single color",
                     "content": "Remove lines that have this color: "

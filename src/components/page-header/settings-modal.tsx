@@ -34,6 +34,7 @@ import { setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import {
+    ChangeLinesColorInBatchModal,
     ChangeLineStyleTypeModal,
     ChangeTypeModal,
     RemoveLinesWithSingleColorModal,
@@ -62,6 +63,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isScaleNodesOpen, setIsScaleNodesOpen] = React.useState(false);
     const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
     const [isChangeLineStyleTypeOpen, setIsChangeLineStyleTypeOpen] = React.useState(false);
+    const [isChangeLinesColorInBatchOpen, setIsChangeLinesColorInBatchOpen] = React.useState(false);
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
 
@@ -162,6 +164,18 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <ChangeLineStyleTypeModal
                                     isOpen={isChangeLineStyleTypeOpen}
                                     onClose={() => setIsChangeLineStyleTypeOpen(false)}
+                                />
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsChangeLinesColorInBatchOpen(true)}
+                                >
+                                    {t('header.settings.procedures.changeLinesColor.title')}
+                                </Button>
+                                <ChangeLinesColorInBatchModal
+                                    isOpen={isChangeLinesColorInBatchOpen}
+                                    onClose={() => setIsChangeLinesColorInBatchOpen(false)}
                                 />
 
                                 <Button
