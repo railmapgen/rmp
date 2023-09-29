@@ -171,7 +171,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     rightIcon={<MdReadMore />}
                                     onClick={() => setIsChangeLinesColorInBatchOpen(true)}
                                 >
-                                    Change Lines Color In Batch
+                                    {t('header.settings.procedures.changeLinesColor.title')}
                                 </Button>
                                 <ChangeLinesColorInBatchModal
                                     isOpen={isChangeLinesColorInBatchOpen}

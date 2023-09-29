@@ -358,6 +358,11 @@
                     "changeTo": "轉換為這個樣式的線段：",
                     "info": "修改線段樣式會移除所有獨特屬性除了連通性。保存再操作！"
                 },
+                "changeLinesColor": {
+                    "title": "批量修改線段顏色",
+                    "changeFrom": "將此顏色的所有線段：",
+                    "changeTo": "轉換為這個顏色的線段："
+                },
                 "removeLines": {
                     "title": "移除所有純色線段",
                     "content": "移除具有此顏色的所有線段： "
