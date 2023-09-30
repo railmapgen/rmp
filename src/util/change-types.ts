@@ -124,6 +124,7 @@ export const changeLineStyleType = (
     const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
     if (LineStylesWithColor.includes(currentLineStyleType) && LineStylesWithColor.includes(newLineStyleType))
         (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
+    else if (LineStylesWithColor.includes(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
     graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
     if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
     else graph.setEdgeAttribute(selectedFirst, 'zIndex', 0);
