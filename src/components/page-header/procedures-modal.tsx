@@ -44,6 +44,7 @@ import { shuffle } from '../../util/helpers';
 import ThemeButton from '../panels/theme-button';
 import { lineStyles } from '../svgs/lines/lines';
 import stations from '../svgs/stations/stations';
+import { AttributesWithColor } from '../panels/details/color-field';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -419,8 +420,8 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
         graph.current
             .filterEdges(
                 (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-                    attr.style === LineStyleType.SingleColor &&
-                    JSON.stringify(attr[LineStyleType.SingleColor]!.color) === JSON.stringify(theme)
+                    LineStylesWithColor.includes(attr.style) &&
+                    JSON.stringify((attr[attr.style] as AttributesWithColor)!.color) === JSON.stringify(theme)
             )
             .forEach(edge => graph.current.dropEdge(edge));
         dispatch(setRefreshEdges());
