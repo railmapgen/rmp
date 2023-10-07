@@ -133,7 +133,12 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
                 <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
-                <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <g
+                    ref={textRef}
+                    transform={`translate(${textX}, ${textY})`}
+                    textAnchor={textAnchor}
+                    fill={!open ? 'red' : ''}
+                >
                     <MultilineText
                         text={names[0].split('\\')}
                         fontSize={16}
