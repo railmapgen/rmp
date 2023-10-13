@@ -49,7 +49,10 @@ const bjsubwaySingleColorFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={LineStyleType.BjsubwaySingleColor} defaultAttrs={defaultBjsubwaySingleColorAttributes} />
+            <ColorField
+                type={LineStyleType.BjsubwaySingleColor}
+                defaultTheme={defaultBjsubwaySingleColorAttributes.color}
+            />
         ),
     },
 ];

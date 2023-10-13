@@ -99,7 +99,7 @@ const ChongqingRTNumLineBadgeFields = [
         component: (
             <ColorField
                 type={MiscNodeType.ChongqingRTNumLineBadge}
-                defaultAttrs={defaultChongqingRTNumLineBadgeAttributes}
+                defaultTheme={defaultChongqingRTNumLineBadgeAttributes.color}
             />
         ),
     },

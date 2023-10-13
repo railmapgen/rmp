@@ -39,7 +39,7 @@ const defaultMTRLightRailAttributes: MTRLightRailAttributes = {
 const mtrLightRailFields = [
     {
         type: 'custom',
-        component: <ColorField type={LineStyleType.MTRLightRail} defaultAttrs={defaultMTRLightRailAttributes} />,
+        component: <ColorField type={LineStyleType.MTRLightRail} defaultTheme={defaultMTRLightRailAttributes.color} />,
     },
 ];
 

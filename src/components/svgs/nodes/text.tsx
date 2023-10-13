@@ -262,7 +262,7 @@ const TextFields = [
     },
     {
         type: 'custom',
-        component: <ColorField type={MiscNodeType.Text} defaultAttrs={defaultTextAttributes} />,
+        component: <ColorField type={MiscNodeType.Text} defaultTheme={defaultTextAttributes.color} />,
     },
 ];
 

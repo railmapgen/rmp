@@ -225,7 +225,10 @@ const shmetroBasic2020StationFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={StationType.ShmetroBasic2020} defaultAttrs={defaultShmetroBasic2020StationAttributes} />
+            <ColorField
+                type={StationType.ShmetroBasic2020}
+                defaultTheme={defaultShmetroBasic2020StationAttributes.color}
+            />
         ),
     },
 ];

@@ -89,7 +89,9 @@ const GzmtrLineBadgeFields = [
     },
     {
         type: 'custom',
-        component: <ColorField type={MiscNodeType.GzmtrLineBadge} defaultAttrs={defaultGzmtrLineBadgeAttributes} />,
+        component: (
+            <ColorField type={MiscNodeType.GzmtrLineBadge} defaultTheme={defaultGzmtrLineBadgeAttributes.color} />
+        ),
     },
 ];
 

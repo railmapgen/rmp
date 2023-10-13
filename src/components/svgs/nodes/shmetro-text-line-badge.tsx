@@ -116,7 +116,10 @@ const ShmetroTextLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.ShmetroTextLineBadge} defaultAttrs={defaultShmetroTextLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.ShmetroTextLineBadge}
+                defaultTheme={defaultShmetroTextLineBadgeAttributes.color}
+            />
         ),
     },
 ];

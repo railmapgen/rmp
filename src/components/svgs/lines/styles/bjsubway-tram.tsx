@@ -47,7 +47,7 @@ const defaultBjsubwayTramAttributes: BjsubwayTramAttributes = {
 const bjsubwayTramFields = [
     {
         type: 'custom',
-        component: <ColorField type={LineStyleType.BjsubwayTram} defaultAttrs={defaultBjsubwayTramAttributes} />,
+        component: <ColorField type={LineStyleType.BjsubwayTram} defaultTheme={defaultBjsubwayTramAttributes.color} />,
     },
 ];
 
