@@ -92,6 +92,7 @@ export interface Station<T extends StationAttributes> {
         disabledOptions: (attrs?: T) => (string | number)[];
         onChange: (val: string | number, attrs_?: T) => T;
     })[];
+    attrsComponent?: () => JSX.Element;
     /**
      * Metadata for this station.
      */

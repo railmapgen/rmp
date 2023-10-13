@@ -73,11 +73,12 @@ export interface Node<T> {
      * In a slightly different RmgFieldsField format that hides some internal implementation.
      * Attrs should be obtained via this wrapper instead of window.graph or redux.
      */
-    fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
+    fields?: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
         value: (attrs?: T) => string;
         disabledOptions: (attrs?: T) => (string | number)[];
         onChange: (val: string | number, attrs_?: T) => T;
     })[];
+    attrsComponent?: () => JSX.Element;
     /**
      * Metadata for this node.
      */

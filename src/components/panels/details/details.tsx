@@ -1,25 +1,25 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Box, Button, Heading, HStack } from '@chakra-ui/react';
-import { nanoid } from 'nanoid';
 import {
     RmgFields,
     RmgFieldsField,
     RmgSidePanel,
-    RmgSidePanelHeader,
     RmgSidePanelBody,
     RmgSidePanelFooter,
+    RmgSidePanelHeader,
 } from '@railmapgen/rmg-components';
+import { nanoid } from 'nanoid';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { NodeAttributes } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { clearSelected, setGlobalAlert, setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
-import { NodeAttributes } from '../../../constants/constants';
-import stations from '../../svgs/stations/stations';
-import miscNodes from '../../svgs/nodes/misc-nodes';
+import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import miscNodes from '../../svgs/nodes/misc-nodes';
+import stations from '../../svgs/stations/stations';
 import InfoSection from './info-section';
-import NodePositionSection from './node-position-section';
 import LineExtremitiesSection from './line-extremities-section';
+import NodePositionSection from './node-position-section';
 
 const nodes = { ...stations, ...miscNodes };
 
@@ -37,7 +37,7 @@ const DetailsPanel = () => {
     const handleClose = () => dispatch(clearSelected());
     const handleDuplicate = (selectedFirst: string) => {
         const allAttr = structuredClone(graph.current.getNodeAttributes(selectedFirst));
-        allAttr.x += 50;
+        // allAttr.x += 50;
         allAttr.y += 50;
         const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;
         graph.current.addNode(id, allAttr);
@@ -71,48 +71,44 @@ const DetailsPanel = () => {
 
     if (selected.length === 1 && graph.current.hasNode(selectedFirst)) {
         const type = graph.current.getNodeAttribute(selectedFirst, 'type');
-        const attrs = graph.current.getNodeAttribute(selectedFirst, type);
+        const attrs = graph.current.getNodeAttribute(selectedFirst, type) as any;
         fields.push(
-            ...nodes[type].fields
-                // TODO: filter will complain the type
-                // @ts-expect-error
-                .filter(field => field.type !== 'custom')
-                .map(
-                    // @ts-expect-error
-                    field =>
-                        ({
-                            type: field.type,
-                            label: t(field.label),
-                            value: field.value?.(attrs),
-                            isChecked: field.isChecked?.(attrs),
-                            hidden: field.hidden?.(attrs),
-                            options: field.options,
-                            disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
-                            validator: field.validator,
-                            oneLine: field.oneLine,
-                            // TODO: val could be string | number | boolean or others in different types.
-                            onChange: (val: any) => {
-                                let updatedAttrs: NodeAttributes;
-                                try {
-                                    updatedAttrs = field.onChange(val, attrs);
-                                } catch (error) {
-                                    dispatch(
-                                        setGlobalAlert({
-                                            status: 'error',
-                                            message: t(`err-code.${error as string}`),
-                                        })
-                                    );
-                                    return;
-                                }
+            // @ts-expect-error
+            ...nodes[type]!.fields.filter(field => field.type !== 'custom').map(
+                (field: any) =>
+                    ({
+                        type: field.type,
+                        label: t(field.label),
+                        value: field.value?.(attrs),
+                        isChecked: field.isChecked?.(attrs),
+                        hidden: field.hidden?.(attrs),
+                        options: field.options,
+                        disabledOptions: field.disabledOptions && field.disabledOptions(attrs),
+                        validator: field.validator,
+                        oneLine: field.oneLine,
+                        // TODO: val could be string | number | boolean or others in different types.
+                        onChange: (val: any) => {
+                            let updatedAttrs: NodeAttributes;
+                            try {
+                                updatedAttrs = field.onChange(val, attrs);
+                            } catch (error) {
+                                dispatch(
+                                    setGlobalAlert({
+                                        status: 'error',
+                                        message: t(`err-code.${error as string}`),
+                                    })
+                                );
+                                return;
+                            }
 
-                                graph.current.mergeNodeAttributes(selectedFirst, {
-                                    [type]: updatedAttrs,
-                                });
-                                dispatch(setRefreshNodes());
-                                dispatch(saveGraph(graph.current.export()));
-                            },
-                        } as RmgFieldsField)
-                ),
+                            graph.current.mergeNodeAttributes(selectedFirst, {
+                                [type]: updatedAttrs,
+                            });
+                            dispatch(setRefreshNodes());
+                            dispatch(saveGraph(graph.current.export()));
+                        },
+                    } as RmgFieldsField)
+            ),
             // TODO: filter will complain the type
             // @ts-expect-error
             ...nodes[type].fields.filter(field => field.type === 'custom')
@@ -135,7 +131,7 @@ const DetailsPanel = () => {
         const attrs = graph.current.getEdgeAttribute(selectedFirst, type);
         fields.push(
             ...linePaths[type].fields.map(
-                field =>
+                (field: any) =>
                     ({
                         // TODO: fix this
                         type: field.type,
@@ -164,12 +160,10 @@ const DetailsPanel = () => {
         const styleAttrs = graph.current.getEdgeAttribute(selectedFirst, style);
         fields.push(
             ...lineStyles[style].fields
-                // TODO: filter will complain the type
                 // @ts-expect-error
                 .filter(field => field.type !== 'custom')
                 .map(
-                    // @ts-expect-error
-                    field =>
+                    (field: any) =>
                         ({
                             // TODO: fix this
                             type: field.type,
@@ -199,6 +193,17 @@ const DetailsPanel = () => {
         fields.push(...lineStyles[style].fields.filter(field => field.type === 'custom'));
     }
 
+    let AttrsComponent;
+    if (selected.length === 1 && graph.current.hasNode(selectedFirst)) {
+        const type = graph.current.getNodeAttribute(selectedFirst, 'type');
+        AttrsComponent = nodes[type].attrsComponent;
+    }
+    //  else if (selected.length === 1 && graph.current.hasEdge(selectedFirst)) {
+    //     const type = graph.current.getEdgeAttribute(selectedFirst, 'type');
+    //     attrsComponent = lineStyles[type].attrsComponent;
+    //     // const style = graph.current.getEdgeAttribute(selectedFirst, 'style');
+    // }
+
     return (
         <RmgSidePanel
             isOpen={selected.length > 0 && !mode.startsWith('line')}
@@ -221,6 +226,8 @@ const DetailsPanel = () => {
                         </Heading>
 
                         <RmgFields fields={fields} minW={276} />
+
+                        {AttrsComponent && <AttrsComponent />}
                     </Box>
                 )}
             </RmgSidePanelBody>
