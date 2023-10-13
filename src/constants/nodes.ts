@@ -13,6 +13,7 @@ import { MiscNodeId } from './constants';
 import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
+import { PolygonAttributes } from '../components/svgs/nodes/polygon';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -28,6 +29,7 @@ export enum MiscNodeType {
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
     Facilities = 'facilities',
     Text = 'text',
+    Polygon = 'polygon',
 }
 
 export interface MiscNodeAttributes {
@@ -44,6 +46,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
+    [MiscNodeType.Polygon]?: PolygonAttributes;
 }
 
 export interface NodeComponentProps<T> {
