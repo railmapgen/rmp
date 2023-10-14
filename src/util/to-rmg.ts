@@ -531,7 +531,6 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             const colorWithIndex: ThemeWithIndex = { theme: color, index: ++colorIndex };
             colorWithIndexList.add(colorWithIndex);
             colorStartWithIndexList.set(colorWithIndex, u);
-            console.log(u);
         }
     }
     for (const colorWithIndex of colorWithIndexList) {
