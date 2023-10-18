@@ -10,7 +10,7 @@ import ThemeButton from '../theme-button';
 
 /**
  * An Attributes that have a color field.
- * Extend this interface in your component's attributes if you want to use <ColorField />.
+ * Extend this interface in your component's attributes if you want to use ColorField.
  *
  * NOTE: Attribute with `color` key will be populated with user defined theme from
  * the _runtime_ redux store. See `handleBackgroundDown` in `SvgWrapper` for more info.
@@ -19,18 +19,17 @@ export interface AttributesWithColor {
     color: Theme;
 }
 
-type GetNodeOrEdgeAttribute = (id: string, type: NodeType | LineStyleType) => AttributesWithColor;
+type GetNodeOrEdgeAttribute = (id: string, type: NodeType | LineStyleType) => Record<string, any>;
 
 /**
  * This component provides an easy way to have a color input in the details panel.
- * It will read the first id in `selected` and change the `color` field in the related attrs.
+ * It will read the first id in `selected` and change the `colorKey` field in the related attrs.
  *
- * Make sure your component has a color field in the attributes.
- * You may extend AttributesWithColor interface.
- * Fail to do this will result in a redundant color field in your component's attributes.
+ * Make sure your component has a colorKey field in the attributes.
+ * You may extend AttributesWithColor interface so you do not need to pass the colorKey parameter.
  */
-export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs: AttributesWithColor }) => {
-    const { type, defaultAttrs } = props;
+export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: string; defaultTheme: Theme }) => {
+    const { type, colorKey = 'color', defaultTheme } = props;
     const dispatch = useRootDispatch();
     const {
         selected,
@@ -63,10 +62,8 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
     const handleChangeColor = (color: Theme) => {
         // TODO: fix bind this
         if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
-            const attrs =
-                (getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) as AttributesWithColor) ??
-                defaultAttrs;
-            attrs.color = color;
+            const attrs = getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type);
+            attrs[colorKey] = color;
             mergeNodeOrEdgeAttributes.bind(graph.current)(selectedFirst, { [type]: attrs });
             hardRefresh();
         }
@@ -80,15 +77,17 @@ export const ColorField = (props: { type: NodeType | LineStyleType; defaultAttrs
         }
     }, [output?.toString()]);
 
-    const theme =
+    const isCurrentSelectedValid =
         selectedFirst &&
         hasNodeOrEdge.bind(graph.current)(selectedFirst) &&
         (selectedFirst.startsWith('stn') || selectedFirst.startsWith('misc_node')
             ? graph.current.getNodeAttribute(selectedFirst, 'type') === type
-            : graph.current.getEdgeAttribute(selectedFirst, 'style') === type)
-            ? ((getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) as AttributesWithColor) ?? defaultAttrs)
-                  .color
-            : defaultAttrs.color;
+            : graph.current.getEdgeAttribute(selectedFirst, 'style') === type);
+    const theme = isCurrentSelectedValid
+        ? ((getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) ?? {
+              [colorKey]: defaultTheme,
+          })[colorKey] as Theme)
+        : defaultTheme;
 
     return (
         <>

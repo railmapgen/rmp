@@ -97,7 +97,10 @@ const BjsubwayNumLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.BjsubwayNumLineBadge} defaultAttrs={defaultBjsubwayNumLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.BjsubwayNumLineBadge}
+                defaultTheme={defaultBjsubwayNumLineBadgeAttributes.color}
+            />
         ),
     },
 ];

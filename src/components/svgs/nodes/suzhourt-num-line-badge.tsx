@@ -117,7 +117,10 @@ const SuzhouRTNumLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.SuzhouRTNumLineBadge} defaultAttrs={defaultSuzhouRTNumLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.SuzhouRTNumLineBadge}
+                defaultTheme={defaultSuzhouRTNumLineBadgeAttributes.color}
+            />
         ),
     },
 ];

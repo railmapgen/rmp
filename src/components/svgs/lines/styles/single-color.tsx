@@ -40,7 +40,7 @@ const defaultSingleColorAttributes: SingleColorAttributes = {
 const singleColorFields = [
     {
         type: 'custom',
-        component: <ColorField type={LineStyleType.SingleColor} defaultAttrs={defaultSingleColorAttributes} />,
+        component: <ColorField type={LineStyleType.SingleColor} defaultTheme={defaultSingleColorAttributes.color} />,
     },
 ];
 

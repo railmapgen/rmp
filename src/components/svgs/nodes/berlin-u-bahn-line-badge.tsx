@@ -88,7 +88,10 @@ const BerlinUBahnLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.BerlinUBahnLineBadge} defaultAttrs={defaultBerlinUBahnLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.BerlinUBahnLineBadge}
+                defaultTheme={defaultBerlinUBahnLineBadgeAttributes.color}
+            />
         ),
     },
 ];

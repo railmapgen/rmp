@@ -188,7 +188,9 @@ const suzhouRTBasicStationFields = [
     },
     {
         type: 'custom',
-        component: <ColorField type={StationType.SuzhouRTBasic} defaultAttrs={defaultSuzhouRTBasicStationAttributes} />,
+        component: (
+            <ColorField type={StationType.SuzhouRTBasic} defaultTheme={defaultSuzhouRTBasicStationAttributes.color} />
+        ),
     },
 ];
 

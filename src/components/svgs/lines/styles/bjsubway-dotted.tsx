@@ -51,7 +51,9 @@ const defaultBjsubwayDottedAttributes: BjsubwayDottedAttributes = {
 const bjsubwayDottedFields = [
     {
         type: 'custom',
-        component: <ColorField type={LineStyleType.BjsubwayDotted} defaultAttrs={defaultBjsubwayDottedAttributes} />,
+        component: (
+            <ColorField type={LineStyleType.BjsubwayDotted} defaultTheme={defaultBjsubwayDottedAttributes.color} />
+        ),
     },
 ];
 

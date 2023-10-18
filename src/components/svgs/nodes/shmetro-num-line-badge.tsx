@@ -93,7 +93,10 @@ const ShmetroNumLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.ShmetroNumLineBadge} defaultAttrs={defaultShmetroNumLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.ShmetroNumLineBadge}
+                defaultTheme={defaultShmetroNumLineBadgeAttributes.color}
+            />
         ),
     },
 ];

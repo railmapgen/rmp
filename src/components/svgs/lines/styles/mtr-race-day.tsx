@@ -40,7 +40,7 @@ const defaultMTRRaceDaysAttributes: MTRRaceDaysAttributes = {
 const mtrRaceDaysFields = [
     {
         type: 'custom',
-        component: <ColorField type={LineStyleType.MTRRaceDays} defaultAttrs={defaultMTRRaceDaysAttributes} />,
+        component: <ColorField type={LineStyleType.MTRRaceDays} defaultTheme={defaultMTRRaceDaysAttributes.color} />,
     },
 ];
 

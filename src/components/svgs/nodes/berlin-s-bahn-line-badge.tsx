@@ -101,7 +101,10 @@ const BerlinSBahnLineBadgeFields = [
     {
         type: 'custom',
         component: (
-            <ColorField type={MiscNodeType.BerlinSBahnLineBadge} defaultAttrs={defaultBerlinSBahnLineBadgeAttributes} />
+            <ColorField
+                type={MiscNodeType.BerlinSBahnLineBadge}
+                defaultTheme={defaultBerlinSBahnLineBadgeAttributes.color}
+            />
         ),
     },
 ];

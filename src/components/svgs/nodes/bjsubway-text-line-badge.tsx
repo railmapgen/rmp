@@ -122,7 +122,7 @@ const BjsubwayTextLineBadgeFields = [
         component: (
             <ColorField
                 type={MiscNodeType.BjsubwayTextLineBadge}
-                defaultAttrs={defaultBjsubwayTextLineBadgeAttributes}
+                defaultTheme={defaultBjsubwayTextLineBadgeAttributes.color}
             />
         ),
     },

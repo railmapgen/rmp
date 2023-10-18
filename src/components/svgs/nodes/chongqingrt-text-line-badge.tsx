@@ -123,7 +123,7 @@ const ChongqingRTTextLineBadgeFields = [
         component: (
             <ColorField
                 type={MiscNodeType.ChongqingRTTextLineBadge}
-                defaultAttrs={defaultChongqingRTTextLineBadgeAttributes}
+                defaultTheme={defaultChongqingRTTextLineBadgeAttributes.color}
             />
         ),
     },

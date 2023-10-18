@@ -324,7 +324,7 @@ const gzmtrBasicStationFields = [
     },
     {
         type: 'custom',
-        component: <ColorField type={StationType.GzmtrBasic} defaultAttrs={defaultGzmtrBasicStationAttributes} />,
+        component: <ColorField type={StationType.GzmtrBasic} defaultTheme={defaultGzmtrBasicStationAttributes.color} />,
     },
     {
         type: 'input',
