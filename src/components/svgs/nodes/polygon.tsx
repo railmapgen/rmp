@@ -5,11 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { MdContentCopy, MdDelete } from 'react-icons/md';
 
 import { RmgCard, RmgDebouncedInput, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { Theme } from '../../../constants/constants';
+import { AttrsProps, Theme } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { ColorField } from '../../panels/details/color-field';
 
 const Polygon = (props: NodeComponentProps<PolygonAttributes>) => {
@@ -75,50 +72,27 @@ const defaultPolygonAttributes: PolygonAttributes = {
     fill: [CityCode.Shanghai, 'white', '#fff', MonoColour.black],
 };
 
-const PolygonAttrs = () => {
-    const dispatch = useRootDispatch();
+const PolygonAttrs = (props: AttrsProps<PolygonAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
-
-    const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
-
-    let attrs: PolygonAttributes | undefined;
-    if (selected.length === 1 && window.graph.hasNode(selectedFirst)) {
-        const type = window.graph.getNodeAttribute(selectedFirst, 'type');
-        if (type === MiscNodeType.Polygon) {
-            attrs = structuredClone(window.graph.getNodeAttribute(selectedFirst, type));
-        }
-    }
-
-    const updateAndRefresh = React.useCallback(
-        (selectedFirst?: string, attrs?: PolygonAttributes) => {
-            if (!selectedFirst || !attrs) return;
-            const type = window.graph.getNodeAttribute(selectedFirst, 'type');
-            if (type !== MiscNodeType.Polygon) return;
-            window.graph.mergeNodeAttributes(selectedFirst, { [type]: attrs });
-            dispatch(setRefreshNodes());
-            dispatch(saveGraph(window.graph.export()));
-        },
-        [dispatch, setRefreshNodes, saveGraph]
-    );
 
     const handleStrokeWidthChange = (val: string) => {
         if (!isFinite(val as any)) return;
         attrs!.strokeWidth = Number(val);
-        updateAndRefresh(selectedFirst, attrs);
+        handleAttrsUpdate(id, attrs);
     };
 
     const onAdd = (dot: [number, number]) => {
         attrs?.dots.push(dot);
-        updateAndRefresh(selectedFirst, attrs);
+        handleAttrsUpdate(id, attrs);
     };
     const onUpdate = (i: number, dot: [number, number]) => {
         attrs!.dots[i] = dot;
-        updateAndRefresh(selectedFirst, attrs);
+        handleAttrsUpdate(id, attrs);
     };
     const onDelete = (i: number) => {
         attrs!.dots = attrs!.dots.filter((_, idx) => i !== idx);
-        updateAndRefresh(selectedFirst, attrs);
+        handleAttrsUpdate(id, attrs);
     };
 
     const dotsFields: RmgFieldsField[][] | undefined = attrs?.dots.map((dot, i) => [
