@@ -1,5 +1,9 @@
 import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
     propsx1: number,
@@ -144,6 +148,10 @@ const diagonalFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={diagonalFields as RmgFieldsFieldDetail<DiagonalPathAttributes>} />
+);
+
 const diagonalIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <path d="M9,18V12L15,6" stroke="currentColor" fill="none" />
@@ -154,9 +162,7 @@ const diagonalPath: LinePath<DiagonalPathAttributes> = {
     generatePath: generateDiagonalPath,
     icon: diagonalIcon,
     defaultAttrs: defaultDiagonalPathAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: diagonalFields,
+    attrsComponent,
     metadata: { displayName: 'panel.details.lines.diagonal.displayName' },
 };
 

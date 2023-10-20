@@ -1,3 +1,4 @@
+import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MiscEdgeType } from './edges';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
@@ -34,6 +35,16 @@ export type EdgeAttributes = BaseAttributes & {
 export type GraphAttributes = {
     name?: string;
 };
+
+/**
+ * A props interface for all specific attributes components
+ * that give users an input (UI) to change attributes.
+ */
+export interface AttrsProps<T> {
+    id: string;
+    attrs: T;
+    handleAttrsUpdate: (id: string, attrs: T) => void;
+}
 
 /**
  * Colour theme of line, derived from `LineEntry`.

@@ -1,11 +1,10 @@
+import { IconButton } from '@chakra-ui/react';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { Bezier } from 'bezier-js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdOutlineSwapVert } from 'react-icons/md';
-import { Bezier } from 'bezier-js';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { useRootDispatch, useRootSelector } from '../../../../redux';
-import { saveGraph } from '../../../../redux/param/param-slice';
-import { setRefreshEdges } from '../../../../redux/runtime/runtime-slice';
+import { Theme } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -13,8 +12,13 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { Theme } from '../../../../constants/constants';
-import { Button } from '@chakra-ui/button';
+import { useRootDispatch, useRootSelector } from '../../../../redux';
+import { saveGraph } from '../../../../redux/param/param-slice';
+import { setRefreshEdges } from '../../../../redux/runtime/runtime-slice';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 /**
  * Given the coordinates of point A, B, and C,
@@ -190,8 +194,9 @@ const DualColorSwitch = () => {
     const graph = React.useRef(window.graph);
 
     return (
-        <Button
-            leftIcon={<MdOutlineSwapVert />}
+        <IconButton
+            aria-label={t('panel.details.lines.dualColor.swap')}
+            icon={<MdOutlineSwapVert />}
             size="sm"
             onClick={() => {
                 const attrs =
@@ -204,25 +209,29 @@ const DualColorSwitch = () => {
                 dispatch(setRefreshEdges());
                 dispatch(saveGraph(graph.current.export()));
             }}
-        >
-            {t('panel.details.lines.dualColor.swap')}
-        </Button>
+        />
     );
 };
 
 const dualColorFields = [
     {
         type: 'custom',
+        label: 'panel.details.lines.dualColor.swap',
         component: <DualColorSwitch />,
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={dualColorFields as RmgFieldsFieldDetail<DualColorAttributes>}
+        type="style"
+    />
+);
+
 const dualColor: LineStyle<DualColorAttributes> = {
     component: DualColor,
     defaultAttrs: defaultDualColorAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: dualColorFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

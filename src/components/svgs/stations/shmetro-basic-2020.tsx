@@ -10,6 +10,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
 const ROTATE_CONST: {
@@ -224,6 +225,7 @@ const shmetroBasic2020StationFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={StationType.ShmetroBasic2020}
@@ -232,6 +234,12 @@ const shmetroBasic2020StationFields = [
         ),
     },
 ];
+
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={shmetroBasic2020StationFields as RmgFieldsFieldDetail<ShmetroBasic2020StationAttributes>}
+    />
+);
 
 const shmetroBasic2020StationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -243,9 +251,7 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
     component: ShmetroBasic2020Station,
     icon: shmetroBasic2020StationIcon,
     defaultAttrs: defaultShmetroBasic2020StationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: shmetroBasic2020StationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroBasic2020.displayName',
         cities: [CityCode.Shanghai],

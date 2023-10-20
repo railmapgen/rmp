@@ -11,6 +11,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const NAME_SZ_BASIC = {
@@ -188,11 +189,18 @@ const suzhouRTBasicStationFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField type={StationType.SuzhouRTBasic} defaultTheme={defaultSuzhouRTBasicStationAttributes.color} />
         ),
     },
 ];
+
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={suzhouRTBasicStationFields as RmgFieldsFieldDetail<SuzhouRTBasicStationAttributes>}
+    />
+);
 
 const suzhouRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
@@ -204,9 +212,7 @@ const suzhouRTBasicStation: Station<SuzhouRTBasicStationAttributes> = {
     component: SuzhouRTBasicStation,
     icon: suzhouRTBasicStationIcon,
     defaultAttrs: defaultSuzhouRTBasicStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: suzhouRTBasicStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.suzhouRTBasic.displayName',
         cities: [CityCode.Suzhou],

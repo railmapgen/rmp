@@ -16,6 +16,7 @@ import {
     InterchangeInfo,
     StationAttributesWithInterchange,
 } from '../../panels/details/interchange-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const LINE_WIDTH = 5;
@@ -257,6 +258,7 @@ const mtrStationFields = [
     },
     {
         type: 'custom',
+        label: 'panel.details.stations.interchange.title',
         component: (
             <InterchangeField
                 stationType={StationType.MTR}
@@ -266,6 +268,10 @@ const mtrStationFields = [
         ),
     },
 ];
+
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={mtrStationFields as RmgFieldsFieldDetail<MTRStationAttributes>} />
+);
 
 const mtrStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
@@ -277,9 +283,7 @@ const mtrStation: Station<MTRStationAttributes> = {
     component: MTRStation,
     icon: mtrStationIcon,
     defaultAttrs: defaultMTRStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: mtrStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.mtr.displayName',
         cities: [CityCode.Hongkong],

@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const MIN_WIDTH = 28.84375;
 
@@ -89,7 +90,7 @@ const defaultBjsubwayTextLineBadgeAttributes: BjsubwayTextLineBadgeAttributes = 
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const BjsubwayTextLineBadgeFields = [
+const bjSubwayTextLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.nameZh',
@@ -119,6 +120,7 @@ const BjsubwayTextLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.BjsubwayTextLineBadge}
@@ -128,7 +130,13 @@ const BjsubwayTextLineBadgeFields = [
     },
 ];
 
-const BjsubwayTextLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={bjSubwayTextLineBadgeFields as RmgFieldsFieldDetail<BjsubwayTextLineBadgeAttributes>}
+    />
+);
+
+const bjSubwayTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" width="20" height="12" rx="2" />
         <text x="3" y="12" fontSize="6" fill="white">
@@ -142,11 +150,9 @@ const BjsubwayTextLineBadgeIcon = (
 
 const bjsubwayTextLineBadge: Node<BjsubwayTextLineBadgeAttributes> = {
     component: BjsubwayTextLineBadge,
-    icon: BjsubwayTextLineBadgeIcon,
+    icon: bjSubwayTextLineBadgeIcon,
     defaultAttrs: defaultBjsubwayTextLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: BjsubwayTextLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.bjsubwayTextLineBadge.displayName',
         tags: [],

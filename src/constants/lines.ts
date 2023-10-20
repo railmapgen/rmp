@@ -1,5 +1,5 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { LineId } from './constants';
+import { AttrsProps, LineId } from './constants';
 import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
@@ -17,6 +17,7 @@ import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-ligh
 import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
 import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
+import React from 'react';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -129,15 +130,10 @@ interface LineBase<T extends LinePathAttributes> {
      */
     defaultAttrs: T;
     /**
-     * Changeable actions in the details panel.
-     * In a slightly different RmgFieldsField format that hides some internal implementation.
-     * Attrs should be obtained via this wrapper instead of window.graph or redux.
+     * A React component that allows user to change the attributes.
+     * Will be displayed in the details panel.
      */
-    fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
-        value: (attrs?: T) => string;
-        disabledOptions: (attrs?: T) => (string | number)[];
-        onChange: (val: string | number, attrs_?: T) => T;
-    })[];
+    attrsComponent: React.FC<AttrsProps<T>>;
 }
 
 export interface LinePathAttributes {}
@@ -168,7 +164,7 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
     /**
      * The line style component.
      */
-    component: (props: LineStyleComponentProps<T>) => JSX.Element;
+    component: React.FC<LineStyleComponentProps<T>>;
     /**
      * Metadata for this line style.
      */

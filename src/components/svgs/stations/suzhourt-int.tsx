@@ -12,6 +12,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const ICON_SIZE = 6;
@@ -255,6 +256,7 @@ const suzhouRTIntStationFields = [
     },
     {
         type: 'custom',
+        label: 'panel.details.stations.interchange.title',
         component: (
             <InterchangeField
                 stationType={StationType.SuzhouRTInt}
@@ -264,6 +266,12 @@ const suzhouRTIntStationFields = [
         ),
     },
 ];
+
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={suzhouRTIntStationFields as RmgFieldsFieldDetail<SuzhouRTIntStationAttributes>}
+    />
+);
 
 const suzhouRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
@@ -277,9 +285,7 @@ const suzhouRTIntStation: Station<SuzhouRTIntStationAttributes> = {
     component: SuzhouRTIntStation,
     icon: suzhouRTIntStationIcon,
     defaultAttrs: defaultSuzhouRTIntStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: suzhouRTIntStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.suzhouRTInt.displayName',
         cities: [CityCode.Suzhou],

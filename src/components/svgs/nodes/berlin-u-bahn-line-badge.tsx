@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinUBahnLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -68,7 +69,7 @@ const defaultBerlinUBahnLineBadgeAttributes: BerlinUBahnLineBadgeAttributes = {
     color: [CityCode.Berlin, 'bu1', '#62AD2D', MonoColour.white],
 };
 
-const BerlinUBahnLineBadgeFields = [
+const berlinUBahnLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.num',
@@ -87,6 +88,7 @@ const BerlinUBahnLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.BerlinUBahnLineBadge}
@@ -96,7 +98,13 @@ const BerlinUBahnLineBadgeFields = [
     },
 ];
 
-const BerlinUBahnLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={berlinUBahnLineBadgeFields as RmgFieldsFieldDetail<BerlinUBahnLineBadgeAttributes>}
+    />
+);
+
+const berlinUBahnLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="20" height="16" />
         <text x="4" y="17" fill="white" fontSize="14">
@@ -107,11 +115,9 @@ const BerlinUBahnLineBadgeIcon = (
 
 const berlinUBahnLineBadge: Node<BerlinUBahnLineBadgeAttributes> = {
     component: BerlinUBahnLineBadge,
-    icon: BerlinUBahnLineBadgeIcon,
+    icon: berlinUBahnLineBadgeIcon,
     defaultAttrs: defaultBerlinUBahnLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: BerlinUBahnLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.berlinUBahnLineBadge.displayName',
         tags: [],
