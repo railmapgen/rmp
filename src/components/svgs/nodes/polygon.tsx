@@ -9,7 +9,7 @@ import { Theme } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { ColorField } from '../../panels/details/color-field';
 
 const Polygon = (props: NodeComponentProps<PolygonAttributes>) => {
@@ -205,7 +205,6 @@ const polygon: Node<PolygonAttributes> = {
     component: Polygon,
     icon: PolygonIcon,
     defaultAttrs: defaultPolygonAttributes,
-    fields: [],
     attrsComponent: PolygonAttrs,
     metadata: {
         displayName: 'panel.details.nodes.polygon.displayName',
