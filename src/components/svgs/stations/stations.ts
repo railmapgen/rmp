@@ -10,6 +10,7 @@ import bjsubwayIntStation from './bjsubway-int';
 import mtrStation from './mtr';
 import suzhouRTBasicStation from './suzhourt-basic';
 import suzhouRTIntStation from './suzhourt-int';
+import kunmingRTIntStation from './kunmingrt-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -23,6 +24,7 @@ const stations = {
     [StationType.MTR]: mtrStation,
     [StationType.SuzhouRTBasic]: suzhouRTBasicStation,
     [StationType.SuzhouRTInt]: suzhouRTIntStation,
+    [StationType.KunmingRTInt]: kunmingRTIntStation,
 };
 
 export default stations;
