@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const NUM_WIDTH = 11.84375;
 
@@ -77,7 +78,7 @@ const defaultBjsubwayNumLineBadgeAttributes: BjsubwayNumLineBadgeAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const BjsubwayNumLineBadgeFields = [
+const bjSubwayNumLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.num',
@@ -96,6 +97,7 @@ const BjsubwayNumLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.BjsubwayNumLineBadge}
@@ -105,7 +107,13 @@ const BjsubwayNumLineBadgeFields = [
     },
 ];
 
-const BjsubwayNumLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={bjSubwayNumLineBadgeFields as RmgFieldsFieldDetail<BjsubwayNumLineBadgeAttributes>}
+    />
+);
+
+const bjSubwayNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="20" height="16" rx="2" />
         <text x="4" y="17" fill="white" fontSize="14">
@@ -122,11 +130,9 @@ const BjsubwayNumLineBadgeIcon = (
 
 const bjsubwayNumLineBadge: Node<BjsubwayNumLineBadgeAttributes> = {
     component: BjsubwayNumLineBadge,
-    icon: BjsubwayNumLineBadgeIcon,
+    icon: bjSubwayNumLineBadgeIcon,
     defaultAttrs: defaultBjsubwayNumLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: BjsubwayNumLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.bjsubwayNumLineBadge.displayName',
         tags: [],

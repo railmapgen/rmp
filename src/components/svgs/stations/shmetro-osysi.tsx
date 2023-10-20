@@ -10,6 +10,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
@@ -162,6 +163,12 @@ const shmetroOsysiStationFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={shmetroOsysiStationFields as RmgFieldsFieldDetail<ShmetroOsysiStationAttributes>}
+    />
+);
+
 const shmetroOsysiStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.67" fill="white" />
@@ -173,9 +180,7 @@ const shmetroOsysiStation: Station<ShmetroOsysiStationAttributes> = {
     component: ShmetroOsysiStation,
     icon: shmetroOsysiStationIcon,
     defaultAttrs: defaultShmetroOsysiStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: shmetroOsysiStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroOsysi.displayName',
         cities: [CityCode.Shanghai],

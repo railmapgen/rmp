@@ -4,6 +4,7 @@ import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { Rotate } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
@@ -45,7 +46,14 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})rotate(${rotate})`}>
+            <g
+                id={id}
+                transform={`translate(${x}, ${y})rotate(${rotate})`}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
                 {/* This hint rect is hard to remove in exporting. */}
                 {/* <rect
                     fill="gray"
@@ -67,19 +75,6 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                     fill={color[2]}
                     fontStyle={italic}
                     fontWeight={bold}
-                />
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x={bBox.x - 1.5}
-                    y={bBox.y - 1.5}
-                    width={bBox.width + 3}
-                    height={bBox.height + 3}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
                 />
             </g>
         ),
@@ -136,7 +131,7 @@ const defaultTextAttributes: TextAttributes = {
     bold: 'normal',
 };
 
-const TextFields = [
+const textFields = [
     {
         type: 'textarea',
         label: 'panel.details.nodes.text.content',
@@ -262,11 +257,16 @@ const TextFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: <ColorField type={MiscNodeType.Text} defaultTheme={defaultTextAttributes.color} />,
     },
 ];
 
-const TextIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={textFields as RmgFieldsFieldDetail<TextAttributes>} />
+);
+
+const textIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <text x="12" y="12" textAnchor="middle" dominantBaseline="middle" fontSize="10">
             Text
@@ -276,11 +276,9 @@ const TextIcon = (
 
 const text: Node<TextAttributes> = {
     component: Text,
-    icon: TextIcon,
+    icon: textIcon,
     defaultAttrs: defaultTextAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: TextFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.text.displayName',
         tags: [],

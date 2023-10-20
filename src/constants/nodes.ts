@@ -9,7 +9,7 @@ import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
-import { MiscNodeId } from './constants';
+import { AttrsProps, MiscNodeId } from './constants';
 import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
@@ -59,7 +59,7 @@ export interface Node<T> {
     /**
      * The core node component.
      */
-    component: (props: NodeComponentProps<T>) => JSX.Element;
+    component: React.FC<NodeComponentProps<T>>;
     /**
      * The icon displayed in the tools panel.
      */
@@ -69,16 +69,10 @@ export interface Node<T> {
      */
     defaultAttrs: T;
     /**
-     * Changeable actions in the details panel.
-     * In a slightly different RmgFieldsField format that hides some internal implementation.
-     * Attrs should be obtained via this wrapper instead of window.graph or redux.
+     * A React component that allows user to change the attributes.
+     * Will be displayed in the details panel.
      */
-    fields?: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
-        value: (attrs?: T) => string;
-        disabledOptions: (attrs?: T) => (string | number)[];
-        onChange: (val: string | number, attrs_?: T) => T;
-    })[];
-    attrsComponent?: () => JSX.Element;
+    attrsComponent: React.FC<AttrsProps<T>>;
     /**
      * Metadata for this node.
      */

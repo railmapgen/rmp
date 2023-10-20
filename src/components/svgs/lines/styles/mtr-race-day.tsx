@@ -1,8 +1,17 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
-import { LineStyleType } from '../../../../constants/lines';
+import React from 'react';
+import {
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+    LineStyleType,
+} from '../../../../constants/lines';
+import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -40,16 +49,22 @@ const defaultMTRRaceDaysAttributes: MTRRaceDaysAttributes = {
 const mtrRaceDaysFields = [
     {
         type: 'custom',
+        label: 'color',
         component: <ColorField type={LineStyleType.MTRRaceDays} defaultTheme={defaultMTRRaceDaysAttributes.color} />,
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={mtrRaceDaysFields as RmgFieldsFieldDetail<MTRRaceDaysAttributes>}
+        type="style"
+    />
+);
+
 const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
     component: MTRRaceDays,
     defaultAttrs: defaultMTRRaceDaysAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: mtrRaceDaysFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mtrRaceDays.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

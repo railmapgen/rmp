@@ -34,7 +34,7 @@ export const parseRmgParam = (
             if (nodes.length !== 0) stnIdMap[id] = nodes[0];
         });
 
-    // only import stations that don't appear in the graph
+    // only import stations that does not exist in the graph, filter by name[0]
     Object.entries(stnList)
         .filter(([id, _]) => !['linestart', 'lineend'].includes(id))
         .filter(

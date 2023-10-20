@@ -1,5 +1,5 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import {
     LinePathAttributes,
     LinePathType,
@@ -7,7 +7,11 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
+import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -47,16 +51,22 @@ const defaultBjsubwayTramAttributes: BjsubwayTramAttributes = {
 const bjsubwayTramFields = [
     {
         type: 'custom',
+        label: 'color',
         component: <ColorField type={LineStyleType.BjsubwayTram} defaultTheme={defaultBjsubwayTramAttributes.color} />,
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={bjsubwayTramFields as RmgFieldsFieldDetail<BjsubwayTramAttributes>}
+        type="style"
+    />
+);
+
 const bjsubwayTram: LineStyle<BjsubwayTramAttributes> = {
     component: BjsubwayTram,
     defaultAttrs: defaultBjsubwayTramAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: bjsubwayTramFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwayTram.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

@@ -1,8 +1,17 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
-import { LineStyleType } from '../../../../constants/lines';
+import React from 'react';
+import {
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+    LineStyleType,
+} from '../../../../constants/lines';
+import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handleClick } = props;
@@ -40,16 +49,22 @@ const defaultSingleColorAttributes: SingleColorAttributes = {
 const singleColorFields = [
     {
         type: 'custom',
+        label: 'color',
         component: <ColorField type={LineStyleType.SingleColor} defaultTheme={defaultSingleColorAttributes.color} />,
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={singleColorFields as RmgFieldsFieldDetail<SingleColorAttributes>}
+        type="style"
+    />
+);
+
 const singleColor: LineStyle<SingleColorAttributes> = {
     component: SingleColor,
     defaultAttrs: defaultSingleColorAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: singleColorFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.singleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

@@ -10,6 +10,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const NAME_DY_SH_BASIC = {
@@ -174,6 +175,12 @@ const shmetroBasicStationFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={shmetroBasicStationFields as RmgFieldsFieldDetail<ShmetroBasicStationAttributes>}
+    />
+);
+
 const shmetroBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <circle cx="12" cy="12" r="5" stroke="currentColor" fill="none" />
@@ -184,9 +191,7 @@ const shmetroBasicStation: Station<ShmetroBasicStationAttributes> = {
     component: ShmetroBasicStation,
     icon: shmetroBasicStationIcon,
     defaultAttrs: defaultShmetroBasicStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: shmetroBasicStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroBasic.displayName',
         cities: [CityCode.Shanghai],

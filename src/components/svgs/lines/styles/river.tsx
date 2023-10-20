@@ -1,7 +1,11 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 import { AttributesWithColor } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const River = (props: LineStyleComponentProps<RiverAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -56,12 +60,14 @@ const riverFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={riverFields as RmgFieldsFieldDetail<RiverAttributes>} type="style" />
+);
+
 const river: LineStyle<RiverAttributes> = {
     component: River,
     defaultAttrs: defaultRiverAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: riverFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.river.displayName',
         supportLinePathType: [

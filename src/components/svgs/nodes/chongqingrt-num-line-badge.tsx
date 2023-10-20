@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -75,7 +76,7 @@ const defaultChongqingRTNumLineBadgeAttributes: ChongqingRTNumLineBadgeAttribute
     color: [CityCode.Chongqing, 'cq1', '#e4002b', MonoColour.white],
 };
 
-const ChongqingRTNumLineBadgeFields = [
+const chongqingRTNumLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.num',
@@ -96,6 +97,7 @@ const ChongqingRTNumLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.ChongqingRTNumLineBadge}
@@ -105,7 +107,13 @@ const ChongqingRTNumLineBadgeFields = [
     },
 ];
 
-const ChongqingRTNumLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={chongqingRTNumLineBadgeFields as RmgFieldsFieldDetail<ChongqingRTNumLineBadgeAttributes>}
+    />
+);
+
+const chongqingRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
         <text x="8" y="18" fill="white" fontSize="18">
@@ -116,11 +124,9 @@ const ChongqingRTNumLineBadgeIcon = (
 
 const chongqingRTNumLineBadge: Node<ChongqingRTNumLineBadgeAttributes> = {
     component: ChongqingRTNumLineBadge,
-    icon: ChongqingRTNumLineBadgeIcon,
+    icon: chongqingRTNumLineBadgeIcon,
     defaultAttrs: defaultChongqingRTNumLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: ChongqingRTNumLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.chongqingRTNumLineBadge.displayName',
         tags: [],

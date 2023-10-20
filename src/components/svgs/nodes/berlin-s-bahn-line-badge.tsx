@@ -1,6 +1,7 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
 const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttributes>) => {
@@ -81,7 +82,7 @@ const defaultBerlinSBahnLineBadgeAttributes: BerlinSBahnLineBadgeAttributes = {
     color: [CityCode.Berlin, 'bs1', '#DD6CA6', MonoColour.white],
 };
 
-const BerlinSBahnLineBadgeFields = [
+const berlinSBahnLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.num',
@@ -100,6 +101,7 @@ const BerlinSBahnLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.BerlinSBahnLineBadge}
@@ -109,7 +111,13 @@ const BerlinSBahnLineBadgeFields = [
     },
 ];
 
-const BerlinSBahnLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={berlinSBahnLineBadgeFields as RmgFieldsFieldDetail<BerlinSBahnLineBadgeAttributes>}
+    />
+);
+
+const berlinSBahnLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="20" height="16" rx="8" />
         <text x="4.5" y="16.5" fill="white" fontSize="14">
@@ -120,11 +128,9 @@ const BerlinSBahnLineBadgeIcon = (
 
 const berlinSBahnLineBadge: Node<BerlinSBahnLineBadgeAttributes> = {
     component: BerlinUBahnLineBadge,
-    icon: BerlinSBahnLineBadgeIcon,
+    icon: berlinSBahnLineBadgeIcon,
     defaultAttrs: defaultBerlinSBahnLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: BerlinSBahnLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.berlinSBahnLineBadge.displayName',
         tags: [],
