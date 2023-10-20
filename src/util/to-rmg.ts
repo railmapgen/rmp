@@ -24,11 +24,19 @@ interface edgeVector {
     color: Theme;
 }
 
+interface ThemeWithIndex {
+    theme: Theme;
+    index: number;
+}
+
 const visStn: Set<string> = new Set<string>();
 const visVir: Set<string> = new Set<string>();
 const colorList: Set<Theme> = new Set<Theme>();
 const colorSet: Set<string> = new Set<string>(); // color visit
 const colorStart: Map<Theme, string> = new Map<Theme, string>(); // starting stn of each color
+const colorStnList: Map<string, Set<string>> = new Map<string, Set<string>>(); // list all stns in a color
+const colorWithIndexList: Set<ThemeWithIndex> = new Set<ThemeWithIndex>();
+const colorStartWithIndexList: Map<ThemeWithIndex, string> = new Map<ThemeWithIndex, string>(); // starting stn of each color
 const headGraph: Map<string, number> = new Map<string, number>(); // head[]
 let edgeGraph: edgeVector[] = []; // e[]
 let countGraph = 0; // nn
@@ -157,7 +165,10 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
             colorList.add(nowColor);
             colorSet.add(colorToString(nowColor));
             colorStart.set(nowColor, u);
+            colorStnList.set(colorToString(nowColor), new Set<string>());
         }
+        colorStnList.get(colorToString(nowColor))!.add(u);
+        colorStnList.get(colorToString(nowColor))!.add(v);
         // do add edge (u-v)
         if (!headGraph.has(u)) {
             edgeGraph.push({ target: v, next: -1, color: nowColor });
@@ -174,6 +185,20 @@ const addEdge = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Graph
         }
         headGraph.set(v, countGraph);
         countGraph++;
+    }
+};
+
+// Handling of disconnected lines
+const separateDfs = (u: string, f: string, color: Theme) => {
+    if (!colorStnList.get(colorToString(color))!.has(u)) {
+        return;
+    }
+    colorStnList.get(colorToString(color))!.delete(u);
+    for (let i: number = headGraph.get(u)!; i != -1; i = edgeGraph[i].next) {
+        const v = edgeGraph[i].target;
+        const col = edgeGraph[i].color;
+        if (colorToString(col) != colorToString(color)) continue;
+        separateDfs(v, u, color);
     }
 };
 
@@ -472,6 +497,9 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     colorList.clear();
     colorSet.clear();
     colorStart.clear();
+    colorStnList.clear();
+    colorWithIndexList.clear();
+    colorStartWithIndexList.clear();
     headGraph.clear();
     edgeGraph = [];
     countGraph = 0;
@@ -493,9 +521,23 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     nodeIndex.set('lineend', ++index);
     const resultList: ToRmg[] = [];
     for (const color of colorList) {
+        let colorIndex = 0;
+        while (colorStnList.get(colorToString(color))!.size != 0) {
+            let u = 'line_root';
+            colorStnList.get(colorToString(color))!.forEach(stnId => {
+                if (u == 'line_root') u = stnId;
+            });
+            separateDfs(u, 'line_root', color);
+            const colorWithIndex: ThemeWithIndex = { theme: color, index: ++colorIndex };
+            colorWithIndexList.add(colorWithIndex);
+            colorStartWithIndexList.set(colorWithIndex, u);
+        }
+    }
+    for (const colorWithIndex of colorWithIndexList) {
+        const { theme: color } = colorWithIndex;
         visStn.clear();
         outDegree.clear();
-        edgeDfs(colorStart.get(color)!, 'line_root', color);
+        edgeDfs(colorStartWithIndexList.get(colorWithIndex)!, 'line_root', color);
         let branchErrorFlag = true;
         let typeInfo: 'LINE' | 'BRANCH' | 'LOOP' = 'LINE';
         const entrance: string[] = [];
