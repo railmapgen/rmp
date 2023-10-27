@@ -72,7 +72,7 @@ const defaultPolygonAttributes: PolygonAttributes = {
     fill: [CityCode.Shanghai, 'white', '#fff', MonoColour.black],
 };
 
-const PolygonAttrs = (props: AttrsProps<PolygonAttributes>) => {
+const polygonAttrs = (props: AttrsProps<PolygonAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -174,7 +174,7 @@ const PolygonAttrs = (props: AttrsProps<PolygonAttributes>) => {
     );
 };
 
-const PolygonIcon = (
+const polygonIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <polygon transform="translate(12,12)rotate(20)" points="0,-5.19 -6,6 6,6" fill="currentColor" />
     </svg>
@@ -182,9 +182,9 @@ const PolygonIcon = (
 
 const polygon: Node<PolygonAttributes> = {
     component: Polygon,
-    icon: PolygonIcon,
+    icon: polygonIcon,
     defaultAttrs: defaultPolygonAttributes,
-    attrsComponent: PolygonAttrs,
+    attrsComponent: polygonAttrs,
     metadata: {
         displayName: 'panel.details.nodes.polygon.displayName',
         tags: [],
