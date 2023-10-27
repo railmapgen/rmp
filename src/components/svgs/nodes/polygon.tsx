@@ -1,10 +1,10 @@
-import { Box, HStack, IconButton } from '@chakra-ui/react';
+import { Box, HStack, IconButton, Input } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdContentCopy, MdDelete } from 'react-icons/md';
 
-import { RmgCard, RmgDebouncedInput, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
+import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { AttrsProps, Theme } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { ColorField } from '../../panels/details/color-field';
@@ -76,22 +76,24 @@ const PolygonAttrs = (props: AttrsProps<PolygonAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const [strokeWidth, setStrokeWidth] = React.useState(attrs.strokeWidth.toString());
+    React.useEffect(() => setStrokeWidth(attrs.strokeWidth.toString()), [attrs.strokeWidth]);
     const handleStrokeWidthChange = (val: string) => {
-        if (!isFinite(val as any)) return;
-        attrs!.strokeWidth = Number(val);
+        if (!isFinite(val as any)) val = '0';
+        attrs.strokeWidth = Number(val);
         handleAttrsUpdate(id, attrs);
     };
 
     const onAdd = (dot: [number, number]) => {
-        attrs?.dots.push(dot);
+        attrs.dots.push(dot);
         handleAttrsUpdate(id, attrs);
     };
     const onUpdate = (i: number, dot: [number, number]) => {
-        attrs!.dots[i] = dot;
+        attrs.dots[i] = dot;
         handleAttrsUpdate(id, attrs);
     };
     const onDelete = (i: number) => {
-        attrs!.dots = attrs!.dots.filter((_, idx) => i !== idx);
+        attrs.dots = attrs!.dots.filter((_, idx) => i !== idx);
         handleAttrsUpdate(id, attrs);
     };
 
@@ -118,10 +120,13 @@ const PolygonAttrs = (props: AttrsProps<PolygonAttributes>) => {
                 <ColorField type={MiscNodeType.Polygon} colorKey="fill" defaultTheme={defaultPolygonAttributes.fill} />
             </RmgLabel>
             <RmgLabel label={t('panel.details.nodes.polygon.strokeWidth')}>
-                <RmgDebouncedInput
-                    value={attrs?.strokeWidth.toString()}
-                    onDebouncedChange={val => handleStrokeWidthChange(val)}
-                    delay={1000}
+                <Input
+                    value={strokeWidth}
+                    onChange={e => setStrokeWidth(e.target.value)}
+                    onBlur={e => handleStrokeWidthChange(e.target.value)}
+                    variant="flushed"
+                    size="sm"
+                    h={6}
                 />
             </RmgLabel>
             <RmgLabel label={t('panel.details.nodes.polygon.stroke')}>
