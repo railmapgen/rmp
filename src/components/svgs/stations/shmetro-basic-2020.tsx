@@ -1,6 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     Rotate,
     Station,
@@ -10,7 +12,6 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
 const ROTATE_CONST: {
@@ -177,69 +178,56 @@ const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttribute
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
-const shmetroBasic2020StationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: ShmetroBasic2020StationAttributes) =>
-            (attrs ?? defaultShmetroBasic2020StationAttributes).names[0].replaceAll('\\', '\n'),
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        onChange: (val: string | number, attrs_: ShmetroBasic2020StationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasic2020StationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: ShmetroBasic2020StationAttributes) =>
-            (attrs ?? defaultShmetroBasic2020StationAttributes).names[1].replaceAll('\\', '\n'),
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        onChange: (val: string | number, attrs_: ShmetroBasic2020StationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasic2020StationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.rotate',
-        value: (attrs?: ShmetroBasic2020StationAttributes) =>
-            (attrs ?? defaultShmetroBasic2020StationAttributes).rotate,
-        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-        onChange: (val: string | number, attrs_: ShmetroBasic2020StationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroBasic2020StationAttributes;
-            // set value
-            attrs.rotate = Number(val) as Rotate;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={StationType.ShmetroBasic2020}
-                defaultTheme={defaultShmetroBasic2020StationAttributes.color}
-            />
-        ),
-    },
-];
+const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020StationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={shmetroBasic2020StationFields as RmgFieldsFieldDetail<ShmetroBasic2020StationAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.rotate'),
+            value: attrs.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={StationType.ShmetroBasic2020}
+                    defaultTheme={defaultShmetroBasic2020StationAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const shmetroBasic2020StationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -251,7 +239,7 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
     component: ShmetroBasic2020Station,
     icon: shmetroBasic2020StationIcon,
     defaultAttrs: defaultShmetroBasic2020StationAttributes,
-    attrsComponent,
+    attrsComponent: shmetroBasic2020AttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroBasic2020.displayName',
         cities: [CityCode.Shanghai],
