@@ -41,8 +41,15 @@ export type GraphAttributes = {
  * that give users an input (UI) to change attributes.
  */
 export interface AttrsProps<T> {
+    /**
+     * Type should be StnId | LineId | MiscNodeId, need another generic parameter.
+     */
     id: string;
     attrs: T;
+    /**
+     * Update the modified attrs with this helper method.
+     * It will take care of all the update and refresh things.
+     */
     handleAttrsUpdate: (id: string, attrs: T) => void;
 }
 
@@ -58,6 +65,9 @@ export type Theme = [CityCode, string, ColourHex, MonoColour];
 export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
+/**
+ * @deprecated
+ */
 export type MiscEdgeId = `misc_edge_${string}`;
 
 /**

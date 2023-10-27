@@ -1,6 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -11,7 +13,6 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const NAME_DY_SH_INT = {
@@ -141,114 +142,92 @@ const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
     width: 13,
 };
 
-const shmetroIntStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: ShmetroIntStationAttributes) =>
-            (attrs ?? defaultShmetroIntStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: ShmetroIntStationAttributes) =>
-            (attrs ?? defaultShmetroIntStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as NameOffsetX;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: ShmetroIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as NameOffsetY;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.shmetroInt.height',
-        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).height,
-        validator: (val: string) => Number.isInteger(val),
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.height = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.shmetroInt.width',
-        value: (attrs?: ShmetroIntStationAttributes) => (attrs ?? defaultShmetroIntStationAttributes).width,
-        validator: (val: string) => Number.isInteger(val),
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.width = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.rotate',
-        value: (attrs?: ShmetroIntStationAttributes) => attrs?.rotate ?? defaultShmetroIntStationAttributes.rotate,
-        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-        onChange: (val: string | number, attrs_: ShmetroIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroIntStationAttributes;
-            // set value
-            attrs.rotate = Number(val) as Rotate;
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const shmetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={shmetroIntStationFields as RmgFieldsFieldDetail<ShmetroIntStationAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as NameOffsetX;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.shmetroInt.height'),
+            value: attrs.height.toString(),
+            validator: val => Number.isInteger(val),
+            onChange: val => {
+                attrs.height = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.shmetroInt.width'),
+            value: attrs.width.toString(),
+            validator: val => Number.isInteger(val),
+            onChange: val => {
+                attrs.width = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.rotate'),
+            value: attrs.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const shmetroIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -260,7 +239,7 @@ const shmetroIntStation: Station<ShmetroIntStationAttributes> = {
     component: ShmetroIntStation,
     icon: shmetroIntStationIcon,
     defaultAttrs: defaultShmetroIntStationAttributes,
-    attrsComponent,
+    attrsComponent: shmetroIntAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroInt.displayName',
         cities: [CityCode.Shanghai],
