@@ -175,6 +175,8 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
 
 > For more details on how to use the `RmgFields` component, please refer to [this informative guide](https://railmapgen.github.io/rmg-components/?path=/story/rmgfields--basic).
 
+We also provide common input components like color. Feel free to checkout them in `single-color.tsx` for more reference.
+
 ### 6. Create the line style object and export
 
 Now you have completed the steps for creating a line style. Don't forget to export your line style component, default attributes, attributes component, and metadata in the final object.
