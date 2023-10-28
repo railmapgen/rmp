@@ -1,5 +1,6 @@
 import React from 'react';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
     const { id, x, y, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -46,6 +47,8 @@ export interface VirtualAttributes {}
 
 const defaultVirtualAttributes: VirtualAttributes = {};
 
+const attrsComponent = () => <RmgFieldsFieldSpecificAttributes fields={[]} />;
+
 const virtualIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} transform="rotate(45)" focusable={false}>
         <circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" />
@@ -58,7 +61,7 @@ const virtual: Node<VirtualAttributes> = {
     component: Virtual,
     icon: virtualIcon,
     defaultAttrs: defaultVirtualAttributes,
-    fields: [],
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.virtual.displayName',
         tags: [],

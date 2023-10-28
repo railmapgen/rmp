@@ -9,7 +9,7 @@ A line style consists of:
 * A React component that generates the SVG
 * A TypeScript interface for the attributes of the component
 * Default attributes
-* Input fields that use `RmgFieldsField` derived from Chakra UI
+* A React component that modify station attributes
 * An object containing all the things mentioned before and metadata
 
 ## Steps to create a line style
@@ -18,7 +18,7 @@ A line style consists of:
 
 First, create a new TypeScript file (`.tsx`) under the `src/components/svgs/lines/styles` directory. This file will contain the implementation of your line style.
 
-### 2. Create the React component
+### 2. Create the React component to generate the SVG of your station
 
 Create a React component that generates the SVG using the provided attributes. The component should accept a `LineStyleComponentProps` prop which includes the id, type, path, mouse event handler, and your line style specific attributes.
 
@@ -81,54 +81,109 @@ const defaultMyLineStyleAttributes: MyLineStyleAttributes = {
 };
 ```
 
-### 5. Create input fields for the line style
+### 5. Create the React component to modify station attributes
 
-Define input fields that allow users to edit the attributes of your line style. These fields will be used in the details panel. You can create fields for different types, such as textarea and select.
-
-```tsx
-{
-    type: 'textarea',
-    label: 'panel.details.lines.myLineStyle.someAttribute',
-    value: (attrs?: MyLineStyleAttributes) => (attrs ?? defaultMyLineStyleAttributes).someAttribute,
-    onChange: (val: string | number, attrs_?: MyLineStyleAttributes | undefined) => {
-        const attrs = attrs_ ?? defaultMyLineStyleAttributes;
-        attrs.someAttribute = val.toString();
-        return attrs;
-    },
-}
-```
+In this section, we will guide you on creating a React component that enables users to modify the attributes of a station. This component will be integrated into the details panel and can be customized using various input elements like `<input />`, `<textarea />`, or `<select />` to offer a user-friendly interface for attribute modification.
 
 ```tsx
-{
-    type: 'select',
-    label: 'panel.details.lines.myLineStyle.anotherAttribute',
-    value: (attrs?: MyLineStyleAttributes) => (attrs ?? defaultMyLineStyleAttributes).anotherAttribute,
-    options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
-    onChange: (val: string | number, attrs_?: MyLineStyleAttributes | undefined) => {
-        const attrs = attrs_ ?? defaultMyLineStyleAttributes;
+import { Input, Select } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../../constants/constants';
+
+const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+
+    const [someAttribute, setSomeAttribute] = React.useState(attrs.someAttribute);
+    React.useEffect(() => setSomeAttribute(attrs.someAttribute), [attrs.someAttribute]);
+    const handleSomeAttributeChange = (val: string) => {
+        attrs.someAttribute = val;
+        handleAttrsUpdate(id, attrs);
+    };
+
+    const [anotherAttribute, setAnotherAttribute] = React.useState(attrs.anotherAttribute);
+    React.useEffect(() => setAnotherAttribute(attrs.anotherAttribute), [attrs.anotherAttribute]);
+    const handleAnotherAttributeChange = (val: string) => {
         attrs.anotherAttribute = Number(val);
-        return attrs;
-    },
-}
+        handleAttrsUpdate(id, attrs);
+    };
+
+    return (
+        <>
+            <Input
+                value={someAttribute}
+                onChange={e => setSomeAttribute(e.target.value)}
+                onBlur={e => handleSomeAttributeChange(e.target.value)}
+                variant="flushed"
+                size="sm"
+                h={6}
+            />
+            <Select
+                value={anotherAttribute}
+                onChange={e => handleAnotherAttributeChange(e.target.value)}
+                variant="flushed"
+                size="sm"
+                h={6}
+            >
+                <option value={1}>Option 1</option>
+                <option value={2}>Option 2</option>
+                <option value={3}>Option 3</option>
+            </Select>
+        </>
+    );
+};
 ```
 
-Once you have created the input fields, add them to an array named `myLineStyleFields`.
+Additionally, we provide a simplified approach for defining common input fields using the `RmgFields` component. These fields can be automatically translated into real input elements, saving you time and effort. You can create fields for different input types, such as textarea and select.
 
 ```tsx
-const myLineStyleFields = [
-    // Add your input fields here
-];
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../../constants/constants';
+
+const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.myLineStyle.someAttribute'),
+            value: attrs.someAttribute,
+            onChange: val => {
+                attrs.someAttribute = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.myLineStyle.anotherAttribute'),
+            value: attrs.anotherAttribute,
+            options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
+            onChange: val => {
+                attrs.anotherAttribute = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 ```
 
-For more information of the `RmgFieldsField`, checkout [this vivid story](https://railmapgen.github.io/rmg-components/?path=/story/rmgfields--basic).
+> For more details on how to use the `RmgFields` component, please refer to [this informative guide](https://railmapgen.github.io/rmg-components/?path=/story/rmgfields--basic).
+
+We also provide common input components like color. Feel free to checkout them in `single-color.tsx` for more reference.
 
 ### 6. Create the line style object and export
 
-Now you have completed the steps for creating a line style. Don't forget to export your line style component, default attributes, fields, and metadata in the final object.
+Now you have completed the steps for creating a line style. Don't forget to export your line style component, default attributes, attributes component, and metadata in the final object.
 
 * The React component
 * The default attributes
-* The input fields
+* The React component to modify station attributes
 * Metadata, including:
   * Display name
   * Tags
@@ -139,8 +194,7 @@ import { LineStyle } from '../../../constants/lines';
 const myLineStyle: LineStyle<MyLineStyleAttributes> = {
     component: MyLineStyleComponent,
     defaultAttrs: defaultMyLineStyleAttributes,
-    // @ts-ignore-error The previous fields won't comply with type in Station. Will be fixed later.
-    fields: myLineStyleFields,
+    attrsComponent: myLineStyleAttrs,
     metadata: {
         displayName: 'panel.details.lines.myLineStyle.displayName',
         tags: [],
@@ -194,7 +248,13 @@ export const lineStyles = {
 };
 ```
 
-### 9. Upgrade save version
+### 9. Implementing internationalization translation
+
+In this section, we'll guide you on how to provide translations for your application, ensuring that it can be presented in different languages. Internationalization is a critical aspect of creating a global-ready application. You may have encountered lengthy strings like `panel.details.stations.myLineStyle.displayName`. These strings are internationalization keys that inform `react-i18next` which translation to fetch and display. To make your application multilingual, it's important to ensure that all defined keys have at least an English translation. This ensures that, when a translation is missing, the English version of the text will be displayed as a fallback.
+
+For a comprehensive guide on creating or updating translations, please refer to our [Translation Guide](./i18n-translation.md).
+
+### 10. Upgrade save version
 
 There is one more crucial step to undertake before opening your pull request. This step should be carried out once you have completed the design, coding, and testing phases of your line style.
 

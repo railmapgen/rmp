@@ -1,5 +1,6 @@
 import React from 'react';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 /**
  * Facilities type, note that the value should match the filename under public/images/facilities.
@@ -70,7 +71,7 @@ const defaultFacilitiesAttributes: FacilitiesAttributes = {
     type: FacilitiesType.Airport,
 };
 
-const FacilitiesFields = [
+const facilitiesFields = [
     {
         type: 'select',
         label: 'panel.details.nodes.facilities.type',
@@ -100,7 +101,11 @@ const FacilitiesFields = [
     },
 ];
 
-const FacilitiesIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={facilitiesFields as RmgFieldsFieldDetail<FacilitiesAttributes>} />
+);
+
+const facilitiesIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <g transform="translate(12, 0)scale(0.4)">
             <circle cx="0" cy="29.33899" r="29.33899" fill="currentColor" />
@@ -116,11 +121,9 @@ const FacilitiesIcon = (
 
 const facilities: Node<FacilitiesAttributes> = {
     component: Facilities,
-    icon: FacilitiesIcon,
+    icon: facilitiesIcon,
     defaultAttrs: defaultFacilitiesAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: FacilitiesFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.facilities.displayName',
         tags: [],

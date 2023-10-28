@@ -10,6 +10,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
@@ -195,6 +196,12 @@ const bjsubwayBasicStationFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={bjsubwayBasicStationFields as RmgFieldsFieldDetail<BjsubwayBasicStationAttributes>}
+    />
+);
+
 const bjsubwayBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="0.5" fill="none" />
@@ -205,9 +212,7 @@ const bjsubwayBasicStation: Station<BjsubwayBasicStationAttributes> = {
     component: BjsubwayBasicStation,
     icon: bjsubwayBasicStationIcon,
     defaultAttrs: defaultBjsubwayBasicStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: bjsubwayBasicStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.bjsubwayBasic.displayName',
         cities: [CityCode.Shanghai],

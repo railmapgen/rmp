@@ -1,5 +1,6 @@
 import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import { RmgFieldsFieldSpecificAttributes } from '../../../panels/details/rmg-field-specific-attrs';
 
 const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) => {
     const { id, path, handleClick } = props;
@@ -34,12 +35,12 @@ export interface ChinaRailwayAttributes extends LinePathAttributes {}
 
 const defaultChinaRailwayAttributes: ChinaRailwayAttributes = {};
 
+const attrsComponent = () => <RmgFieldsFieldSpecificAttributes fields={[]} type="style" />;
+
 const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
     component: ChinaRailway,
     defaultAttrs: defaultChinaRailwayAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: [],
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.chinaRailway.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

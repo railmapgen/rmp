@@ -1,5 +1,6 @@
-import React from 'react';
+import { useColorModeValue } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import {
     LinePathAttributes,
     LinePathType,
@@ -7,8 +8,11 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
-import { useColorModeValue } from '@chakra-ui/react';
+import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -51,18 +55,24 @@ const defaultBjsubwayDottedAttributes: BjsubwayDottedAttributes = {
 const bjsubwayDottedFields = [
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField type={LineStyleType.BjsubwayDotted} defaultTheme={defaultBjsubwayDottedAttributes.color} />
         ),
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={bjsubwayDottedFields as RmgFieldsFieldDetail<BjsubwayDottedAttributes>}
+        type="style"
+    />
+);
+
 const bjsubwayDotted: LineStyle<BjsubwayDottedAttributes> = {
     component: BjsubwayDotted,
     defaultAttrs: defaultBjsubwayDottedAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: bjsubwayDottedFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwayDotted.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

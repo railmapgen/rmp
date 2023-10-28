@@ -1,8 +1,17 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
-import { LineStyleType } from '../../../../constants/lines';
+import React from 'react';
+import {
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+    LineStyleType,
+} from '../../../../constants/lines';
+import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handleClick } = props;
@@ -48,6 +57,7 @@ const defaultBjsubwaySingleColorAttributes: BjsubwaySingleColorAttributes = {
 const bjsubwaySingleColorFields = [
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={LineStyleType.BjsubwaySingleColor}
@@ -57,12 +67,17 @@ const bjsubwaySingleColorFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={bjsubwaySingleColorFields as RmgFieldsFieldDetail<BjsubwaySingleColorAttributes>}
+        type="style"
+    />
+);
+
 const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
     component: BjsubwaySingleColor,
     defaultAttrs: defaultBjsubwaySingleColorAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: bjsubwaySingleColorFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwaySingleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

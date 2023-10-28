@@ -1,6 +1,5 @@
-import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { CanvasType, StnId, CategoriesType } from './constants';
+import { CanvasType, StnId, CategoriesType, AttrsProps } from './constants';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
@@ -73,7 +72,7 @@ export interface Station<T extends StationAttributes> {
     /**
      * The core station component.
      */
-    component: (props: StationComponentProps) => JSX.Element;
+    component: React.FC<StationComponentProps>;
     /**
      * The icon displayed in the tools panel.
      */
@@ -83,15 +82,10 @@ export interface Station<T extends StationAttributes> {
      */
     defaultAttrs: T;
     /**
-     * Changeable actions in the details panel.
-     * In a slightly different RmgFieldsField format that hides some internal implementation.
-     * Attrs should be obtained via this wrapper instead of window.graph or redux.
+     * A React component that allows user to change the attributes.
+     * Will be displayed in the details panel.
      */
-    fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
-        value: (attrs?: T) => string;
-        disabledOptions: (attrs?: T) => (string | number)[];
-        onChange: (val: string | number, attrs_?: T) => T;
-    })[];
+    attrsComponent: React.FC<AttrsProps<T>>;
     /**
      * Metadata for this station.
      */

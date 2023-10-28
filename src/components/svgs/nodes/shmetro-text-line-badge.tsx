@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -85,7 +86,7 @@ const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
     color: [CityCode.Shanghai, 'pjl', '#B5B5B6', MonoColour.white],
 };
 
-const ShmetroTextLineBadgeFields = [
+const shmetroTextLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.nameZh',
@@ -115,6 +116,7 @@ const ShmetroTextLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.ShmetroTextLineBadge}
@@ -124,7 +126,13 @@ const ShmetroTextLineBadgeFields = [
     },
 ];
 
-const ShmetroTextLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={shmetroTextLineBadgeFields as RmgFieldsFieldDetail<ShmetroTextLineBadgeAttributes>}
+    />
+);
+
+const shmetroTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" width="20" height="12" />
         <text x="5" y="11" fontSize="5" fill="white">
@@ -138,11 +146,9 @@ const ShmetroTextLineBadgeIcon = (
 
 const shmetroTextLineBadge: Node<ShmetroTextLineBadgeAttributes> = {
     component: ShmetroTextLineBadge,
-    icon: ShmetroTextLineBadgeIcon,
+    icon: shmetroTextLineBadgeIcon,
     defaultAttrs: defaultShmetroTextLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: ShmetroTextLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.shmetroTextLineBadge.displayName',
         tags: [],
