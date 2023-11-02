@@ -70,7 +70,7 @@ export const InterchangeField = (props: {
         newTransferInfo[setIndex].push(interchangeInfo);
 
         attr.transfer = newTransferInfo;
-        graph.current.mergeNodeAttributes(selected, { [stationType]: attr });
+        graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
         hardRefresh();
     };
 
@@ -81,7 +81,7 @@ export const InterchangeField = (props: {
             );
 
             attr.transfer = newTransferInfo;
-            graph.current.mergeNodeAttributes(selected, { [stationType]: attr });
+            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
             hardRefresh();
         }
     };
@@ -101,7 +101,7 @@ export const InterchangeField = (props: {
             );
 
             attr.transfer = newTransferInfo;
-            graph.current.mergeNodeAttributes(selected, { [stationType]: attr });
+            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
             hardRefresh();
         }
     };

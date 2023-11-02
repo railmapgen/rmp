@@ -1,5 +1,6 @@
 import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import { RmgFieldsFieldSpecificAttributes } from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRPaidArea = (props: LineStyleComponentProps<MTRPaidAreaAttributes>) => {
     const { id, path, handleClick } = props;
@@ -29,10 +30,12 @@ export interface MTRPaidAreaAttributes extends LinePathAttributes {}
 
 const defaultMTRPaidAreaAttributes: MTRPaidAreaAttributes = {};
 
+const attrsComponent = () => <RmgFieldsFieldSpecificAttributes fields={[]} type="style" />;
+
 const mtrPaidArea: LineStyle<MTRPaidAreaAttributes> = {
     component: MTRPaidArea,
     defaultAttrs: defaultMTRPaidAreaAttributes,
-    fields: [],
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mtrPaidArea.displayName',
         supportLinePathType: [

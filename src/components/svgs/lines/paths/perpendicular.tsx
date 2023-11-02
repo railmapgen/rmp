@@ -1,5 +1,9 @@
 import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttributes> = (
     x1: number,
@@ -128,6 +132,12 @@ const perpendicularFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={perpendicularFields as RmgFieldsFieldDetail<PerpendicularPathAttributes>}
+    />
+);
+
 const perpendicularIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <path d="M6,6H18V18" stroke="currentColor" fill="none" />
@@ -138,9 +148,7 @@ const perpendicularPath: LinePath<PerpendicularPathAttributes> = {
     generatePath: generatePerpendicularPath,
     icon: perpendicularIcon,
     defaultAttrs: defaultPerpendicularPathAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: perpendicularFields,
+    attrsComponent,
     metadata: { displayName: 'panel.details.lines.perpendicular.displayName' },
 };
 

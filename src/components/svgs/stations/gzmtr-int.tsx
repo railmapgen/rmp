@@ -12,6 +12,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { StationNumber } from './gzmtr-basic';
 
@@ -403,6 +404,7 @@ const gzmtrIntStationFields = [
     },
     {
         type: 'custom',
+        label: 'panel.details.stations.interchange.title',
         component: (
             <InterchangeField
                 stationType={StationType.GzmtrInt}
@@ -412,6 +414,12 @@ const gzmtrIntStationFields = [
         ),
     },
 ];
+
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={gzmtrIntStationFields as RmgFieldsFieldDetail<GzmtrIntStationAttributes>}
+    />
+);
 
 const gzmtrIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -433,9 +441,7 @@ const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
     component: GzmtrIntStation,
     icon: gzmtrIntStationIcon,
     defaultAttrs: defaultGzmtrIntStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: gzmtrIntStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.gzmtrInt.displayName',
         cities: [CityCode.Guangzhou],

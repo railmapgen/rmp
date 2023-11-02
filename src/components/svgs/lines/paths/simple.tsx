@@ -1,4 +1,8 @@
-import { GeneratePathFunction, LinePathAttributes, LinePath } from '../../../../constants/lines';
+import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const generateSimplePath: GeneratePathFunction<SimplePathAttributes> = (
     x1: number,
@@ -32,7 +36,7 @@ const defaultSimplePathAttributes = {
     offset: 0,
 };
 
-const diagonalFields = [
+const simpleFields = [
     {
         type: 'input',
         label: 'panel.details.lines.simple.offset',
@@ -51,6 +55,10 @@ const diagonalFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={simpleFields as RmgFieldsFieldDetail<SimplePathAttributes>} />
+);
+
 const simpleLineIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <path d="M6,18L18,6" stroke="currentColor" fill="none" />
@@ -61,9 +69,7 @@ const simplePath: LinePath<SimplePathAttributes> = {
     generatePath: generateSimplePath,
     icon: simpleLineIcon,
     defaultAttrs: defaultSimplePathAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: diagonalFields,
+    attrsComponent,
     metadata: { displayName: 'panel.details.lines.simple.displayName' },
 };
 

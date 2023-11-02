@@ -1,10 +1,19 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { MiscEdgeId } from './constants';
+import { AttrsProps, MiscEdgeId } from './constants';
 
+/**
+ * @deprecated Previous miscellaneous edge types should be upgraded to LineStyleType.
+ */
 export enum MiscEdgeType {}
 
+/**
+ * @deprecated Previous miscellaneous edge attributes should be upgraded to LinePathAttributes.
+ */
 export interface MiscEdgeAttributes {}
 
+/**
+ * @deprecated Previous miscellaneous edge props should be upgraded to LineStyleComponentProps.
+ */
 export interface EdgeComponentProps<T> {
     id: MiscEdgeId;
     attrs: T;
@@ -21,6 +30,10 @@ export interface EdgeComponentProps<T> {
     newLine: boolean;
     handleClick: (edge: MiscEdgeId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
 }
+
+/**
+ * @deprecated Previous miscellaneous edge should be upgraded to LineStyle.
+ */
 export interface Edge<T> {
     /**
      * The core edge component.
@@ -35,17 +48,31 @@ export interface Edge<T> {
      */
     defaultAttrs: T;
     /**
+     * @deprecated Compose the attributes' editor UI as a React component and
+     * set it in `attrsComponent`. Directly passing `RmgFieldsField` is not straightforward
+     * and has several limitations such as i18n translation and dynamic UI that
+     * changed on attributes updated.
+     *
      * Changeable actions in the details panel.
      * In a slightly different RmgFieldsField format that hides some internal implementation.
      * Attrs should be obtained via this wrapper instead of window.graph or redux.
+     *
+     * If `attrsComponent` is set, this will be ignored.
      */
-    fields: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
+    fields?: (Omit<RmgFieldsField, 'value' | 'onChange'> & {
         value: (attrs?: T) => string;
         disabledOptions: (attrs?: T) => (string | number)[];
         onChange: (val: string | number, attrs_?: T) => T;
     })[];
     /**
-     * Metadata for this node.
+     * A React component that allows user to change the attributes.
+     * Will be displayed in the details panel.
+     *
+     * Deprecated `fields` will be ignored if this is set.
+     */
+    attrsComponent?: React.FC<AttrsProps<T>>;
+    /**
+     * Metadata for this edge.
      */
     metadata: {
         /**

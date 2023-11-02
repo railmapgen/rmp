@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const SuzhouRTNumLineBadge = (props: NodeComponentProps<SuzhouRTNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -83,7 +84,7 @@ const defaultSuzhouRTNumLineBadgeAttributes: SuzhouRTNumLineBadgeAttributes = {
     color: [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white],
 };
 
-const SuzhouRTNumLineBadgeFields = [
+const suzhouRTNumLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.num',
@@ -116,6 +117,7 @@ const SuzhouRTNumLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.SuzhouRTNumLineBadge}
@@ -125,7 +127,13 @@ const SuzhouRTNumLineBadgeFields = [
     },
 ];
 
-const SuzhouRTNumLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={suzhouRTNumLineBadgeFields as RmgFieldsFieldDetail<SuzhouRTNumLineBadgeAttributes>}
+    />
+);
+
+const suzhouRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="4" y="4" width="16" height="16" rx="3" ry="3" />
         <text x="12" y="13.4" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="14">
@@ -136,11 +144,9 @@ const SuzhouRTNumLineBadgeIcon = (
 
 const suzhouRTNumLineBadge: Node<SuzhouRTNumLineBadgeAttributes> = {
     component: SuzhouRTNumLineBadge,
-    icon: SuzhouRTNumLineBadgeIcon,
+    icon: suzhouRTNumLineBadgeIcon,
     defaultAttrs: defaultSuzhouRTNumLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: SuzhouRTNumLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.suzhouRTNumLineBadge.displayName',
         tags: [],

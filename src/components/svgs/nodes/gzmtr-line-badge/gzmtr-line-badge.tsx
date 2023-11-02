@@ -1,8 +1,12 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { Theme } from '../../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../../constants/nodes';
 import { ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 import { LineIcon } from './line-icon';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
@@ -47,7 +51,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
 };
 
 /**
- * <GzmtrLineBadge /> specific props.
+ * GzmtrLineBadge specific props.
  */
 export interface GzmtrLineBadgeAttributes {
     names: [string, string];
@@ -59,7 +63,7 @@ const defaultGzmtrLineBadgeAttributes: GzmtrLineBadgeAttributes = {
     color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
 };
 
-const GzmtrLineBadgeFields = [
+const gzmtrLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.nameZh',
@@ -89,13 +93,18 @@ const GzmtrLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField type={MiscNodeType.GzmtrLineBadge} defaultTheme={defaultGzmtrLineBadgeAttributes.color} />
         ),
     },
 ];
 
-const GzmtrLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes fields={gzmtrLineBadgeFields as RmgFieldsFieldDetail<GzmtrLineBadgeAttributes>} />
+);
+
+const gzmtrLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="5" width="20" height="14" rx="1" />
         <text x="12" y="12" textAnchor="middle" fontSize="6" fill="white">
@@ -109,11 +118,9 @@ const GzmtrLineBadgeIcon = (
 
 const gzmtrLineBadge: Node<GzmtrLineBadgeAttributes> = {
     component: GzmtrLineBadge,
-    icon: GzmtrLineBadgeIcon,
+    icon: gzmtrLineBadgeIcon,
     defaultAttrs: defaultGzmtrLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: GzmtrLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.gzmtrLineBadge.displayName',
         tags: [],

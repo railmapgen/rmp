@@ -1,7 +1,8 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -73,7 +74,7 @@ const defaultShmetroNumLineBadgeAttributes: ShmetroNumLineBadgeAttributes = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
-const ShmetroNumLineBadgeFields = [
+const shmetroNumLineBadgeFields = [
     {
         type: 'input',
         label: 'panel.details.nodes.common.num',
@@ -92,6 +93,7 @@ const ShmetroNumLineBadgeFields = [
     },
     {
         type: 'custom',
+        label: 'color',
         component: (
             <ColorField
                 type={MiscNodeType.ShmetroNumLineBadge}
@@ -101,7 +103,13 @@ const ShmetroNumLineBadgeFields = [
     },
 ];
 
-const ShmetroNumLineBadgeIcon = (
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={shmetroNumLineBadgeFields as RmgFieldsFieldDetail<ShmetroNumLineBadgeAttributes>}
+    />
+);
+
+const shmetroNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="10" height="16" />
         <text x="4" y="18" fill="white">
@@ -118,11 +126,9 @@ const ShmetroNumLineBadgeIcon = (
 
 const shmetroNumLineBadge: Node<ShmetroNumLineBadgeAttributes> = {
     component: ShmetroNumLineBadge,
-    icon: ShmetroNumLineBadgeIcon,
+    icon: shmetroNumLineBadgeIcon,
     defaultAttrs: defaultShmetroNumLineBadgeAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: ShmetroNumLineBadgeFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.shmetroNumLineBadge.displayName',
         tags: [],

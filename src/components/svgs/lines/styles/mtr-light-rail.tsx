@@ -1,8 +1,17 @@
-import React from 'react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { ColorField, AttributesWithColor } from '../../../panels/details/color-field';
-import { LineStyleType } from '../../../../constants/lines';
+import React from 'react';
+import {
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+    LineStyleType,
+} from '../../../../constants/lines';
+import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -39,16 +48,22 @@ const defaultMTRLightRailAttributes: MTRLightRailAttributes = {
 const mtrLightRailFields = [
     {
         type: 'custom',
+        label: 'color',
         component: <ColorField type={LineStyleType.MTRLightRail} defaultTheme={defaultMTRLightRailAttributes.color} />,
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={mtrLightRailFields as RmgFieldsFieldDetail<MTRLightRailAttributes>}
+        type="style"
+    />
+);
+
 const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
     component: MTRLightRail,
     defaultAttrs: defaultMTRLightRailAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: mtrLightRailFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mtrLightRail.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

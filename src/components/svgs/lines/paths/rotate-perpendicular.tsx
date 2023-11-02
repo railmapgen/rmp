@@ -1,5 +1,9 @@
 import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import {
+    RmgFieldsFieldDetail,
+    RmgFieldsFieldSpecificAttributes,
+} from '../../../panels/details/rmg-field-specific-attrs';
 
 const generateRotatePerpendicularPath: GeneratePathFunction<RotatePerpendicularPathAttributes> = (
     x1: number,
@@ -156,6 +160,12 @@ const rotatePerpendicularFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={rotatePerpendicularFields as RmgFieldsFieldDetail<RotatePerpendicularPathAttributes>}
+    />
+);
+
 const rotatePerpendicularIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <path d="M9,6L15,12L9,18" stroke="currentColor" fill="none" />
@@ -166,9 +176,7 @@ const rotatePerpendicularPath: LinePath<RotatePerpendicularPathAttributes> = {
     generatePath: generateRotatePerpendicularPath,
     icon: rotatePerpendicularIcon,
     defaultAttrs: defaultRotatePerpendicularPathAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: rotatePerpendicularFields,
+    attrsComponent,
     metadata: { displayName: 'panel.details.lines.rotatePerpendicular.displayName' },
 };
 

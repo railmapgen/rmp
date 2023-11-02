@@ -11,6 +11,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
@@ -408,6 +409,12 @@ const gzmtrBasicStationFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={gzmtrBasicStationFields as RmgFieldsFieldDetail<GzmtrBasicStationAttributes>}
+    />
+);
+
 const gzmtrBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <g transform="translate(12,12)scale(0.6)">
@@ -420,9 +427,7 @@ const gzmtrBasicStation: Station<GzmtrBasicStationAttributes> = {
     component: GzmtrBasicStation,
     icon: gzmtrBasicStationIcon,
     defaultAttrs: defaultGzmtrBasicStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: gzmtrBasicStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.gzmtrBasic.displayName',
         cities: [CityCode.Guangzhou],

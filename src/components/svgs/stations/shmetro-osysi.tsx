@@ -1,6 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -101,66 +103,59 @@ const defaultShmetroOsysiStationAttributes: ShmetroOsysiStationAttributes = {
     nameOffsetY: 'top',
 };
 
-const shmetroOsysiStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: ShmetroOsysiStationAttributes) =>
-            (attrs ?? defaultShmetroOsysiStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
+const shmetroOsysiAttrsComponent = (props: AttrsProps<ShmetroOsysiStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: ShmetroOsysiStationAttributes) =>
-            (attrs ?? defaultShmetroOsysiStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: ShmetroOsysiStationAttributes) => (attrs ?? defaultShmetroOsysiStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: ShmetroOsysiStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as NameOffsetX;
-            // return modified attrs
-            return attrs;
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as NameOffsetX;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: ShmetroOsysiStationAttributes) => (attrs ?? defaultShmetroOsysiStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: ShmetroOsysiStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: ShmetroOsysiStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroOsysiStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as NameOffsetY;
-            // return modified attrs
-            return attrs;
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-];
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const shmetroOsysiStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
@@ -173,9 +168,7 @@ const shmetroOsysiStation: Station<ShmetroOsysiStationAttributes> = {
     component: ShmetroOsysiStation,
     icon: shmetroOsysiStationIcon,
     defaultAttrs: defaultShmetroOsysiStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: shmetroOsysiStationFields,
+    attrsComponent: shmetroOsysiAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroOsysi.displayName',
         cities: [CityCode.Shanghai],
