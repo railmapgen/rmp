@@ -11,8 +11,9 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const [WIDTH, HEIGHT] = [15, 9];
 const NAME_DY_KM_INT = {
@@ -79,7 +80,7 @@ const KunmingRTIntStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 >
                     {transfer.at(0)!.length <= 2 ? (
-                        <>
+                        <g transform="translate(-7.5,-4.5)">
                             <rect
                                 id={`stn_core_${id}`}
                                 height="9"
@@ -101,9 +102,9 @@ const KunmingRTIntStation = (props: StationComponentProps) => {
                                 stroke="none"
                                 d="M 11.166667 2.625 C 12.179187 2.625 13 3.464468 13 4.5 C 13 5.535532 12.179187 6.375 11.166667 6.375 L 10.555555 6.375 L 10.555555 7 L 8.111111 6.0625 L 10.555555 5.125 L 10.555555 5.75 L 11.166667 5.75 C 11.841679 5.75 12.388889 5.190353 12.388889 4.5 C 12.388889 3.809647 11.841679 3.25 11.166667 3.25 L 7.5 3.25 L 7.5 2.625 L 11.166667 2.625 Z"
                             />
-                        </>
+                        </g>
                     ) : (
-                        <>
+                        <g transform="translate(-8.5,-8.5)">
                             <circle
                                 id={`stn_core_${id}`}
                                 r="8.5"
@@ -131,7 +132,7 @@ const KunmingRTIntStation = (props: StationComponentProps) => {
                                 stroke="none"
                                 d="M 12.68764 6.50351 L 10.588492 5.178213 L 11.35608 4.753726 C 10.531951 4.143034 9.498575 3.778666 8.375084 3.778666 C 6.644794 3.778666 5.125485 4.640751 4.260284 5.940329 L 3.718284 5.421978 C 4.730131 3.997121 6.438381 3.061381 8.375084 3.061381 C 9.781034 3.061381 11.063435 3.556896 12.04896 4.372667 L 12.536759 4.102285 L 12.68764 6.50351 Z"
                             />
-                        </>
+                        </g>
                     )}
                 </g>
                 <g
@@ -285,6 +286,12 @@ const kunmingRTIntStationFields = [
     },
 ];
 
+const attrsComponent = () => (
+    <RmgFieldsFieldSpecificAttributes
+        fields={kunmingRTIntStationFields as RmgFieldsFieldDetail<KunmingRTIntStationAttributes>}
+    />
+);
+
 const kunmingRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect x="4.5" y="7" height="10" width="15" ry="5" stroke="currentColor" fill="none" />
@@ -295,9 +302,7 @@ const kunmingRTIntStation: Station<KunmingRTIntStationAttributes> = {
     component: KunmingRTIntStation,
     icon: kunmingRTIntStationIcon,
     defaultAttrs: defaultKunmingRTIntStationAttributes,
-    // TODO: fix this
-    // @ts-ignore-error
-    fields: kunmingRTIntStationFields,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.kunmingRT.displayName',
         cities: [CityCode.Shanghai],
