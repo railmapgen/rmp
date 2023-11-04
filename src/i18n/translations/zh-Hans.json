@@ -172,6 +172,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "苏州轨道交通换乘车站"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "昆明轨道交通基本车站"
+                },
+                "kunmingRTInt": {
+                    "displayName": "昆明轨道交通换乘车站"
                 }
             },
             "lines": {

@@ -11,6 +11,7 @@ import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubw
 import { MTRStationAttributes } from '../components/svgs/stations/mtr';
 import { SuzhouRTBasicStationAttributes } from '../components/svgs/stations/suzhourt-basic';
 import { SuzhouRTIntStationAttributes } from '../components/svgs/stations/suzhourt-int';
+import { KunmingRTBasicStationAttributes } from '../components/svgs/stations/kunmingrt-basic';
 import { KunmingRTIntStationAttributes } from '../components/svgs/stations/kunmingrt-int';
 
 export enum StationType {
@@ -25,6 +26,7 @@ export enum StationType {
     MTR = 'mtr',
     SuzhouRTBasic = 'suzhourt-basic',
     SuzhouRTInt = 'suzhourt-int',
+    KunmingRTBasic = 'kunmingrt-basic',
     KunmingRTInt = 'kunmingrt-int',
 }
 
@@ -40,6 +42,7 @@ export interface ExternalStationAttributes {
     [StationType.MTR]?: MTRStationAttributes;
     [StationType.SuzhouRTBasic]?: SuzhouRTBasicStationAttributes;
     [StationType.SuzhouRTInt]?: SuzhouRTIntStationAttributes;
+    [StationType.KunmingRTBasic]?: KunmingRTBasicStationAttributes;
     [StationType.KunmingRTInt]?: KunmingRTIntStationAttributes;
 }
 

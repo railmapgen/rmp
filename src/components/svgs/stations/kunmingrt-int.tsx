@@ -1,6 +1,6 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -14,6 +14,8 @@ import {
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { useTranslation } from 'react-i18next';
 
 const [WIDTH, HEIGHT] = [15, 9];
 const NAME_DY_KM_INT = {
@@ -195,102 +197,88 @@ const defaultKunmingRTIntStationAttributes: KunmingRTIntStationAttributes = {
     rotate: 0,
     transfer: [
         [
-            [CityCode.Suzhou, 'km1', '#ea3222', MonoColour.white, '', ''],
-            [CityCode.Suzhou, 'km2', '#03619e', MonoColour.white, '', ''],
+            [CityCode.Kunming, 'km1', '#ea3222', MonoColour.white, '', ''],
+            [CityCode.Kunming, 'km2', '#03619e', MonoColour.white, '', ''],
+            [CityCode.Kunming, 'km3', '#a13187', MonoColour.white, '', ''],
         ],
     ],
 };
 
-const kunmingRTIntStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: KunmingRTIntStationAttributes) =>
-            (attrs ?? defaultKunmingRTIntStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: KunmingRTIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultKunmingRTIntStationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: KunmingRTIntStationAttributes) =>
-            (attrs ?? defaultKunmingRTIntStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: KunmingRTIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultKunmingRTIntStationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: KunmingRTIntStationAttributes) => (attrs ?? defaultKunmingRTIntStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: KunmingRTIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: KunmingRTIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultKunmingRTIntStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as NameOffsetX;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: KunmingRTIntStationAttributes) => (attrs ?? defaultKunmingRTIntStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: KunmingRTIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: KunmingRTIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultKunmingRTIntStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as NameOffsetY;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.rotate',
-        value: (attrs?: KunmingRTIntStationAttributes) => attrs?.rotate ?? defaultKunmingRTIntStationAttributes.rotate,
-        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-        onChange: (val: string | number, attrs_: KunmingRTIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultKunmingRTIntStationAttributes;
-            // set value
-            attrs.rotate = Number(val) as Rotate;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        component: (
-            <InterchangeField
-                stationType={StationType.KunmingRTInt}
-                defaultAttrs={defaultKunmingRTIntStationAttributes}
-                maximumTransfers={[3, 0, 0]}
-            />
-        ),
-    },
-];
+const KunmingRTIntAttrsComponent = (props: AttrsProps<KunmingRTIntStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={kunmingRTIntStationFields as RmgFieldsFieldDetail<KunmingRTIntStationAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as NameOffsetX;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.rotate'),
+            value: attrs.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('panel.details.stations.interchange.title'),
+            component: (
+                <InterchangeField
+                    stationType={StationType.KunmingRTInt}
+                    defaultAttrs={defaultKunmingRTIntStationAttributes}
+                    maximumTransfers={[3, 0, 0]}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const kunmingRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -302,10 +290,10 @@ const kunmingRTIntStation: Station<KunmingRTIntStationAttributes> = {
     component: KunmingRTIntStation,
     icon: kunmingRTIntStationIcon,
     defaultAttrs: defaultKunmingRTIntStationAttributes,
-    attrsComponent,
+    attrsComponent: KunmingRTIntAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.kunmingRT.displayName',
-        cities: [CityCode.Shanghai],
+        displayName: 'panel.details.stations.kunmingRTInt.displayName',
+        cities: [CityCode.Kunming],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: ['interchange'],
