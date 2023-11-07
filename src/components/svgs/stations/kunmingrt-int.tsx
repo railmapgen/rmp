@@ -282,7 +282,27 @@ const KunmingRTIntAttrsComponent = (props: AttrsProps<KunmingRTIntStationAttribu
 
 const kunmingRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect x="4.5" y="7" height="10" width="15" ry="5" stroke="currentColor" fill="none" />
+        <g transform="translate(3.5, 3.5)">
+            <circle r="8.5" cx="8.5" cy="8.5" stroke="currentColor" strokeWidth="1" fill="none"></circle>
+            <path
+                fill="currentColor"
+                fillRule="evenodd"
+                stroke="none"
+                d="M 8.900812 14 L 10.286572 11.992442 L 10.63521 12.569632 C 12.188999 11.790696 13.24999 10.23524 13.24999 8.441039 C 13.24999 8.070708 13.203481 7.710487 13.118152 7.365112 L 13.887206 7.365112 C 13.960998 7.712721 14 8.072591 14 8.441039 C 14 10.500518 12.789013 12.288074 11.01168 13.191653 L 11.411587 13.855702 L 8.900812 14 Z"
+            />
+            <path
+                fill="currentColor"
+                fillRule="evenodd"
+                stroke="none"
+                d="M 8 13.974609 C 5.462755 13.73554 3.426537 11.698185 3.0625 9.090137 L 2.5 9.090137 L 3.5 7 L 4.5 9.090137 L 4.074219 9.090137 C 4.422903 11.120208 6.015293 12.696354 8 12.925459 L 8 13.974609 Z"
+            />
+            <path
+                fill="currentColor"
+                fillRule="evenodd"
+                stroke="none"
+                d="M 12.68764 6.50351 L 10.588492 5.178213 L 11.35608 4.753726 C 10.531951 4.143034 9.498575 3.778666 8.375084 3.778666 C 6.644794 3.778666 5.125485 4.640751 4.260284 5.940329 L 3.718284 5.421978 C 4.730131 3.997121 6.438381 3.061381 8.375084 3.061381 C 9.781034 3.061381 11.063435 3.556896 12.04896 4.372667 L 12.536759 4.102285 L 12.68764 6.50351 Z"
+            />
+        </g>
     </svg>
 );
 

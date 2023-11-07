@@ -181,7 +181,7 @@ const KunmingRTBasicAttrsComponent = (props: AttrsProps<KunmingRTBasicStationAtt
 
 const kunmingRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect x="4.5" y="7" height="10" width="15" ry="5" stroke="currentColor" fill="none" />
+        <circle r="5" cx="12" cy="12" stroke="currentColor" strokeWidth="1.33" fill="none" />
     </svg>
 );
 
