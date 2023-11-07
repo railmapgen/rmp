@@ -172,6 +172,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "쑤저우 궤도교통 환승역"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "쿤밍 궤도교통 기본역"
+                },
+                "kunmingRTInt": {
+                    "displayName": "쿤밍 궤도교통 환승역"
                 }
             },
             "lines": {

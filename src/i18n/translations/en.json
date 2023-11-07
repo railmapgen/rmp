@@ -173,6 +173,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "Suzhou Rail Transit interchange station"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "Kunming Rail Transit basic station"
+                },
+                "kunmingRTInt": {
+                    "displayName": "Kunming Rail Transit interchange station"
                 }
             },
             "lines": {
