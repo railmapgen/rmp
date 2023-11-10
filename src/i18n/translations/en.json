@@ -335,6 +335,8 @@
                 "shift": "Multiple selection.",
                 "alt": "Precise movement.",
                 "delete": "Delete the selected station(s).",
+                "copy": "Copy.",
+                "paste": "Paste.",
                 "undo": "Undo.",
                 "redo": "Redo."
             },
