@@ -170,6 +170,7 @@ const KunmingRTIntStation = (props: StationComponentProps) => {
             ...names,
             nameOffsetX,
             nameOffsetY,
+            rotate,
             JSON.stringify(transfer),
             onPointerDown,
             onPointerMove,
