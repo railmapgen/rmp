@@ -245,9 +245,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "复制",
-                "remove": "移除",
-                "removeEntireLine": "移除所有当前颜色的线段"
+                "duplicate": "重复",
+                "copy": "复制",
+                "remove": "移除"
             }
         }
     },

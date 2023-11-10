@@ -246,9 +246,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "複製",
-                "remove": "削除",
-                "removeEntireLine": "この色のすべての路線を削除する"
+                "duplicate": "重複",
+                "copy": "複製",
+                "remove": "削除"
             }
         }
     },

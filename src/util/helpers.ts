@@ -1,7 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
-import { MiscNodeType } from '../constants/nodes';
-import { StationType } from '../constants/stations';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 
 export const getMousePosition = (e: React.MouseEvent) => {
     const bbox = e.currentTarget.getBoundingClientRect();
@@ -101,17 +99,6 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
-
-export const findNodesExist = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    const nodesExist: { [key in NodeType]: boolean } = Object.fromEntries(
-        [...Object.values(StationType), Object.values(MiscNodeType)].map(type => [type, false])
-    );
-    graph.forEachNode(node => {
-        const type = graph.getNodeAttribute(node, 'type');
-        nodesExist[type] = true;
-    });
-    return nodesExist;
-};
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {

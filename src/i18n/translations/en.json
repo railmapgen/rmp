@@ -247,8 +247,8 @@
             "edge": {},
             "footer": {
                 "duplicate": "Duplicate",
-                "remove": "Remove",
-                "removeEntireLine": "Remove all lines in this color"
+                "copy": "Copy",
+                "remove": "Remove"
             }
         }
     },

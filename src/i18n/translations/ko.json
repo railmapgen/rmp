@@ -246,8 +246,8 @@
             "edges": {},
             "footer": {
                 "duplicate": "복사",
-                "remove": "삭제",
-                "removeEntireLine": "현재 색상의 모든 선분을 삭제"
+                "copy": "복사",
+                "remove": "삭제"
             }
         }
     },

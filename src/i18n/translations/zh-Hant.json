@@ -245,9 +245,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "複製",
-                "remove": "移除",
-                "removeEntireLine": "移除所有當前顏色的線段"
+                "duplicate": "重複",
+                "copy": "複製",
+                "remove": "移除"
             }
         }
     },
