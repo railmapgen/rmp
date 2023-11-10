@@ -28,8 +28,10 @@ const SzmetroNumLineBadge = (props: NodeComponentProps<SzmetroNumLineBadgeAttrib
     );
 
     const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
-    const chWidth = isBranch ? 10 : NUM_WIDTH + (num > 9 ? 5.5 : 2);
-    const enWidth = isBranch ? 10 : NUM_WIDTH + (num > 9 ? 6 : 2.5);
+    const chX = isBranch ? 10 : NUM_WIDTH + (num > 9 ? 6.5 : 3);
+    const chLetSp = isBranch ? -1 : 0;
+    const enX = isBranch ? 11 : NUM_WIDTH + (num > 9 ? 7 : 3.5);
+    const numX = isBranch ? 6 : NUM_WIDTH / 2 + 4;
 
     return React.useMemo(
         () => (
@@ -38,7 +40,7 @@ const SzmetroNumLineBadge = (props: NodeComponentProps<SzmetroNumLineBadgeAttrib
                 <text
                     className="rmp-name__zh"
                     textAnchor="middle"
-                    x={NUM_WIDTH / 2 + 3}
+                    x={numX}
                     y="13.5"
                     fill={fgColor}
                     fontSize="15"
@@ -46,11 +48,11 @@ const SzmetroNumLineBadge = (props: NodeComponentProps<SzmetroNumLineBadgeAttrib
                 >
                     {num}
                 </text>
-                <text className="rmp-name__zh" x={chWidth} y="10" fontSize="6.5" fill={fgColor}>
-                    号线
+                <text className="rmp-name__zh" x={chX} y="9.5" fontSize="6" fill={fgColor} letterSpacing={chLetSp}>
+                    号线{isBranch ? '支线' : ''}
                 </text>
-                <text className="rmp-name__en" x={enWidth} y="13.5" fontSize="3" fill={fgColor}>
-                    Line {num}
+                <text className="rmp-name__en" x={enX} y="13.5" fontSize="3" fill={fgColor}>
+                    {isBranch ? 'Branch' : ''} Line {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
@@ -67,7 +69,7 @@ const SzmetroNumLineBadge = (props: NodeComponentProps<SzmetroNumLineBadgeAttrib
                 />
             </g>
         ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+        [id, x, y, num, ...color, isBranch, onPointerDown, onPointerMove, onPointerUp]
     );
 };
 
