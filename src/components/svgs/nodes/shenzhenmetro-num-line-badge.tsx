@@ -1,11 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
-import { AttrsProps } from '../../../constants/constants';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useTranslation } from 'react-i18next';
 
 const NUM_WIDTH = 11.84375;
 
@@ -38,7 +37,14 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
+            <g
+                id={id}
+                transform={`translate(${x}, ${y})`}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
                 <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
                 <text
                     className="rmp-name__zh"
@@ -57,19 +63,6 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
                 <text className="rmp-name__en" x={enX} y="13.5" fontSize="3" fill={fgColor}>
                     {isBranch ? 'Branch' : ''} Line {num}
                 </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width={NUM_WIDTH + 23}
-                    height="16"
-                    rx="2"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
             </g>
         ),
         [id, x, y, num, ...color, isBranch, onPointerDown, onPointerMove, onPointerUp]
@@ -101,11 +94,7 @@ const shenzhenMetroNumLineBadgeAttrsComponent = (props: AttrsProps<ShenzhenMetro
             value: String(attrs.num),
             validator: (val: string) => !Number.isNaN(val),
             onChange: (val: string | number) => {
-                // return if invalid
-                if (Number.isNaN(val)) handleAttrsUpdate(id, attrs);
-                // set value
                 attrs.num = Number(val);
-                // update modified attrs
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -127,9 +116,7 @@ const shenzhenMetroNumLineBadgeAttrsComponent = (props: AttrsProps<ShenzhenMetro
             oneLine: true,
             isChecked: attrs.isBranch,
             onChange: (val: boolean) => {
-                // set value
                 attrs.isBranch = val;
-                // update modified attrs
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

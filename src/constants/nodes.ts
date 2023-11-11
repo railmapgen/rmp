@@ -13,7 +13,7 @@ import { AttrsProps, MiscNodeId } from './constants';
 import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
-import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/szmetro-num-line-badge';
+import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
