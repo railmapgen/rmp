@@ -107,6 +107,22 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
+                            <Button
+                                aria-label={MiscNodeType.Virtual}
+                                leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                                onClick={() => {
+                                    if (mode === 'select') {
+                                        dispatch(setMode('free'));
+                                    } else {
+                                        console.log('SEL');
+                                        dispatch(setMode('select'));
+                                    }
+                                }}
+                                variant={mode === 'select' ? 'solid' : 'outline'}
+                                sx={buttonStyle}
+                            >
+                                {isToolsExpanded ? t('Select') : undefined}
+                            </Button>
                             <Flex>
                                 <ThemeButton
                                     theme={theme}

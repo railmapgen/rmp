@@ -8,12 +8,15 @@ import { MiscNodeType } from '../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
+    addSelected,
     clearSelected,
     setActive,
     setKeepLastPath,
     setMode,
     setRefreshEdges,
     setRefreshNodes,
+    setSelectStart,
+    setSelectMoving,
 } from '../redux/runtime/runtime-slice';
 import SvgCanvas from './svg-canvas-graph';
 import stations from './svgs/stations/stations';
@@ -21,6 +24,7 @@ import miscNodes from './svgs/nodes/misc-nodes';
 import { findNodesExist, getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import { FONTS_CSS } from '../util/fonts';
+import { HandleSelectTool } from '../util/select-tools';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -42,6 +46,7 @@ const SvgWrapper = () => {
         selected,
         keepLastPath,
         theme,
+        selectStart,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
 
@@ -127,10 +132,38 @@ const SvgWrapper = () => {
                 dispatch(clearSelected());
             }
             // console.log(x, y, svgViewBoxMin);
+        } else if (mode === 'select') {
+            dispatch(
+                setSelectStart({
+                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+                })
+            );
+            dispatch(
+                setSelectMoving({
+                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+                })
+            );
         }
     });
     const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
-        if (active === 'background') {
+        if (mode === 'select') {
+            if (selectStart.x != 0 && selectStart.y != 0) {
+                const { x, y } = getMousePosition(e);
+                console.log(
+                    'MV: ',
+                    (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                    (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+                );
+                dispatch(
+                    setSelectMoving({
+                        x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                        y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+                    })
+                );
+            }
+        } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
             dispatch(
                 setSvgViewBoxMin({
@@ -144,6 +177,26 @@ const SvgWrapper = () => {
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         // when user holding the shift key and mis-click the background
         // preserve the current selection
+        if (mode === 'select') {
+            const { x, y } = getMousePosition(e);
+            console.info(
+                selectStart,
+                (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+            );
+            HandleSelectTool(
+                graph.current,
+                selectStart.x,
+                selectStart.y,
+                (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+            ).forEach(node => {
+                dispatch(addSelected(node));
+            });
+            dispatch(setMode('free'));
+            dispatch(setSelectStart({ x: 0, y: 0 }));
+            dispatch(setSelectMoving({ x: 0, y: 0 }));
+        }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
             // console.log('up', active);

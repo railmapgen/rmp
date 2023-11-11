@@ -37,6 +37,20 @@ interface RuntimeState {
      */
     theme: Theme;
     /**
+     * Record start point of Select Tool.
+     */
+    selectStart: {
+        x: number;
+        y: number;
+    };
+    /**
+     * Record the point while moving pointer for select tools.
+     */
+    selectMoving: {
+        x: number;
+        y: number;
+    };
+    /**
      * The state for color picker modal from rmg-palette.
      * prevTheme is used to save the temporary value and display in the app clip after clicking the theme button.
      * nextTheme is used to save the temporary value and let the component decide how to do with the newly selected.
@@ -59,6 +73,14 @@ const initialState: RuntimeState = {
     lastTool: undefined,
     keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
+    selectStart: {
+        x: 0,
+        y: 0,
+    },
+    selectMoving: {
+        x: 0,
+        y: 0,
+    },
     paletteAppClip: {
         input: undefined,
         output: undefined,
@@ -99,6 +121,12 @@ const runtimeSlice = createSlice({
         },
         setTheme: (state, action: PayloadAction<Theme>) => {
             state.theme = action.payload;
+        },
+        setSelectStart: (state, action: PayloadAction<{ x: number; y: number }>) => {
+            state.selectStart = action.payload;
+        },
+        setSelectMoving: (state, action: PayloadAction<{ x: number; y: number }>) => {
+            state.selectMoving = action.payload;
         },
         openPaletteAppClip: (state, action: PayloadAction<Theme>) => {
             state.paletteAppClip.input = action.payload;
@@ -150,6 +178,8 @@ export const {
     setMode,
     setKeepLastPath,
     setTheme,
+    setSelectStart,
+    setSelectMoving,
     openPaletteAppClip,
     closePaletteAppClip,
     onPaletteAppClipEmit,
