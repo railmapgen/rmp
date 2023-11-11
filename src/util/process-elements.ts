@@ -1,13 +1,13 @@
 import { MultiDirectedGraph } from 'graphology';
-import { StnId, LineId, MiscNodeId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
-import { StationType } from '../constants/stations';
-import { MiscNodeType } from '../constants/nodes';
+import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
 import {
     ExternalLinePathAttributes,
     ExternalLineStyleAttributes,
-    LineStyleType,
     LinePathType,
+    LineStyleType,
 } from '../constants/lines';
+import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
 
 /**
  * This file contains helper methods to extract stations/miscNodes/lines
