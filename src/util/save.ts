@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 20;
+export const CURRENT_VERSION = 21;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -327,4 +327,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     19: param =>
         // Bump save version to support Kunming Rail Transit stations.
         JSON.stringify({ ...JSON.parse(param), version: 20 }),
+    20: param =>
+        // Bump save version to support Shenzhen Metro num line badge.
+        JSON.stringify({ ...JSON.parse(param), version: 21 }),
 };
