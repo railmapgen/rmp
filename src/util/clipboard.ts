@@ -84,4 +84,9 @@ export const importSelectedNodesAndEdges = (
     Object.entries(edgesWithAttrs).forEach(([edge, { attr, source, target }]) =>
         graph.addDirectedEdgeWithKey(edge, source, target, attr)
     );
+
+    return {
+        nodes: Object.keys(nodesWithAttrs) as (StnId | MiscNodeId)[],
+        edges: Object.keys(edgesWithAttrs) as LineId[],
+    };
 };

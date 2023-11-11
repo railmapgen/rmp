@@ -14,6 +14,7 @@ import {
     setMode,
     setRefreshEdges,
     setRefreshNodes,
+    setSelected,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
@@ -230,13 +231,16 @@ const SvgWrapper = () => {
             // to true in about:config will remove such restrictions.
             // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
             const s = await navigator.clipboard.readText();
-            importSelectedNodesAndEdges(
+            const { nodes } = importSelectedNodesAndEdges(
                 s,
                 graph.current,
                 (width * svgViewBoxZoom) / 200 + svgViewBoxMin.x,
                 (height * svgViewBoxZoom) / 200 + svgViewBoxMin.y
             );
             refreshAndSave();
+            // select copied nodes automatically
+            dispatch(clearSelected());
+            dispatch(setSelected(nodes));
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)

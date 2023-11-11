@@ -70,6 +70,9 @@ const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
     reducers: {
+        setSelected: (state, action: PayloadAction<string[]>) => {
+            state.selected = action.payload;
+        },
         addSelected: (state, action: PayloadAction<string>) => {
             if (!state.selected.includes(action.payload))
                 // no duplicates allowed
@@ -141,6 +144,7 @@ const runtimeSlice = createSlice({
 });
 
 export const {
+    setSelected,
     addSelected,
     removeSelected,
     clearSelected,
