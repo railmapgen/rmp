@@ -87,6 +87,10 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "Chongqing Rail Transit text line badge"
                 },
+                "shenzhenMetroNumLineBadge": {
+                    "displayName": "Shenzhen Metro num line badge",
+                    "branch": "Is branch line"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"

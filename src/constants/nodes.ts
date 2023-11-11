@@ -13,7 +13,7 @@ import { AttrsProps, MiscNodeId } from './constants';
 import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
-import { SzmetroNumLineBadgeAttributes } from '../components/svgs/nodes/szmetro-num-line-badge';
+import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/szmetro-num-line-badge';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -27,7 +27,7 @@ export enum MiscNodeType {
     BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     ChongqingRTNumLineBadge = 'chongqingrt-num-line-badge',
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
-    SzmetroNumLineBadge = 'szmetro-num-line-badge',
+    ShenzhenMetroNumLineBadge = 'shenzhen-metro-num-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -44,7 +44,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.ChongqingRTNumLineBadge]?: ChongqingRTNumLineBadgeAttributes;
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
-    [MiscNodeType.SzmetroNumLineBadge]?: SzmetroNumLineBadgeAttributes;
+    [MiscNodeType.ShenzhenMetroNumLineBadge]?: ShenzhenMetroNumLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }
