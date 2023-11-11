@@ -97,6 +97,21 @@ const ToolsPanel = () => {
 
             <Flex className="tools" overflow="auto">
                 <Accordion width="100%" allowMultiple defaultIndex={[0, 1, 2]}>
+                    <Button
+                        aria-label="select"
+                        leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                        onClick={() => {
+                            if (mode === 'select') {
+                                dispatch(setMode('free'));
+                            } else {
+                                dispatch(setMode('select'));
+                            }
+                        }}
+                        variant={mode === 'select' ? 'solid' : 'outline'}
+                        sx={buttonStyle}
+                    >
+                        {isToolsExpanded ? t('Select') : undefined}
+                    </Button>
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
                             {isToolsExpanded && (
@@ -107,22 +122,6 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            <Button
-                                aria-label={MiscNodeType.Virtual}
-                                leftIcon={miscNodes[MiscNodeType.Virtual].icon}
-                                onClick={() => {
-                                    if (mode === 'select') {
-                                        dispatch(setMode('free'));
-                                    } else {
-                                        console.log('SEL');
-                                        dispatch(setMode('select'));
-                                    }
-                                }}
-                                variant={mode === 'select' ? 'solid' : 'outline'}
-                                sx={buttonStyle}
-                            >
-                                {isToolsExpanded ? t('Select') : undefined}
-                            </Button>
                             <Flex>
                                 <ThemeButton
                                     theme={theme}
