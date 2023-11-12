@@ -295,14 +295,20 @@ const SvgWrapper = () => {
         }
     });
 
-    const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
+    const selectColor = '#b5b5b6';
+    const selectAreaOpacity = 0.75;
+    const selectBorderOpacity = 0.4;
+
+    const [selectSX, setSelectSX] = React.useState(0.0);
+    const [selectSY, setSelectSY] = React.useState(0.0);
+    const [selectEX, setSelectEX] = React.useState(0.0);
+    const [selectEY, setSelectEY] = React.useState(0.0);
+
     React.useEffect(() => {
-        setSelectCoord({
-            sx: selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x,
-            sy: selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x,
-            ex: selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y,
-            ey: selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y,
-        });
+        setSelectSX(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x);
+        setSelectEX(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x);
+        setSelectSY(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y);
+        setSelectEY(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y);
     }, [selectMoving.x, selectMoving.y]);
 
     return (
@@ -324,18 +330,18 @@ const SvgWrapper = () => {
         >
             <SvgCanvas />
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <rect
-                    x={selectCoord.sx}
-                    y={selectCoord.sy}
-                    width={selectCoord.ex - selectCoord.sx}
-                    height={selectCoord.ey - selectCoord.sy}
-                    rx="2"
-                    stroke="#b5b5b6"
-                    strokeWidth="2"
-                    strokeOpacity="0.4"
-                    fill="#b5b5b6"
-                    opacity="0.75"
-                />
+                <g transform={`translate(${selectSX}, ${selectSY})`}>
+                    <rect
+                        width={selectEX - selectSX}
+                        height={selectEY - selectSY}
+                        rx="2"
+                        stroke={selectColor}
+                        strokeWidth="2"
+                        strokeOpacity={selectBorderOpacity}
+                        fill={selectColor}
+                        opacity={selectAreaOpacity}
+                    />
+                </g>
             )}
         </svg>
     );
