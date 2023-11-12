@@ -47,6 +47,7 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         selectStart,
+        selectMoving,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
 
@@ -151,11 +152,11 @@ const SvgWrapper = () => {
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 const { x, y } = getMousePosition(e);
-                console.log(
-                    'MV: ',
-                    (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                    (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-                );
+                // console.log(
+                //     'MV: ',
+                //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+                // );
                 dispatch(
                     setSelectMoving({
                         x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
@@ -179,11 +180,11 @@ const SvgWrapper = () => {
         // preserve the current selection
         if (mode === 'select') {
             const { x, y } = getMousePosition(e);
-            console.info(
-                selectStart,
-                (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            );
+            // console.info(
+            //     selectStart,
+            //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+            //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+            // );
             HandleSelectTool(
                 graph.current,
                 selectStart.x,
@@ -278,6 +279,14 @@ const SvgWrapper = () => {
     const height = (size.height ?? 1280) - 40;
     const width = (size.width ?? 720) - 40;
 
+    const calcSelectSX = () => roundToNearestN(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x, 1);
+    const calcSelectEX = () => roundToNearestN(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x, 1);
+    const calcSelectSY = () => roundToNearestN(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y, 1);
+    const calcSelectEY = () => roundToNearestN(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y, 1);
+    const selectColor = () => '#b5b5b6';
+    const selectAreaOpacity = 0.75;
+    const selectBorderOpacity = 0.4;
+
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -296,6 +305,55 @@ const SvgWrapper = () => {
             onKeyDown={handleKeyDown}
         >
             <SvgCanvas />
+            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                <g id="select_in_progress___no_use" transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={0}
+                        width={calcSelectEX() - calcSelectSX() + 2}
+                        height="2"
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={0}
+                        width="2"
+                        height={calcSelectEY() - calcSelectSY() + 2}
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={calcSelectEX() - calcSelectSX()}
+                        y={0}
+                        width="2"
+                        height={calcSelectEY() - calcSelectSY() + 2}
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={calcSelectEY() - calcSelectSY()}
+                        width={calcSelectEX() - calcSelectSX() + 2}
+                        height="2"
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={0}
+                        width={calcSelectEX() - calcSelectSX() + 2}
+                        height={calcSelectEY() - calcSelectSY() + 2}
+                        rx="1"
+                        opacity={selectBorderOpacity}
+                    />
+                </g>
+            )}
         </svg>
     );
 };

@@ -25,8 +25,6 @@ import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 import { getStations, getMiscNodes, getLines } from '../util/process-elements';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
-import { HandleSelectTool } from '../util/select-tools';
-import { color, useColorModeValue } from '@chakra-ui/react';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -34,7 +32,7 @@ const SvgCanvas = () => {
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const {
         selected,
         refresh: { nodes: refreshNodes, edges: refreshEdges },
@@ -43,7 +41,6 @@ const SvgCanvas = () => {
         keepLastPath,
         theme,
         selectStart,
-        selectMoving,
     } = useRootSelector(state => state.runtime);
 
     // the position of pointer down
@@ -55,9 +52,10 @@ const SvgCanvas = () => {
         e.stopPropagation();
 
         if (mode === 'select') {
-            const { x, y } = getMousePosition(e);
-            dispatch(setSelectStart({ x: x, y: y }));
-            return;
+            // const { x, y } = getMousePosition(e);
+            // dispatch(setSelectStart({ x: x, y: y }));
+            // return;
+            dispatch(setMode('free'));
         }
 
         const el = e.currentTarget;
@@ -93,14 +91,13 @@ const SvgCanvas = () => {
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
             });
-            console.log('???', ((offset.x - x) * svgViewBoxZoom) / 100, ((offset.y - y) * svgViewBoxZoom) / 100);
         } else if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
-                console.log(
-                    'Move',
-                    graph.current.getNodeAttributes(node).x + x,
-                    graph.current.getNodeAttributes(node).y + y
-                );
+                // console.log(
+                //     'Move',
+                //     graph.current.getNodeAttributes(node).x + x,
+                //     graph.current.getNodeAttributes(node).y + y
+                // );
                 dispatch(
                     setSelectMoving({
                         x: graph.current.getNodeAttributes(node).x + x,
@@ -163,17 +160,6 @@ const SvgCanvas = () => {
                 dispatch(addSelected(node));
             }
         } else if (mode === 'select') {
-            // const { x, y } = getMousePosition(e);
-            // console.info('!!', selectStart, x, y);
-            // HandleSelectTool(
-            //     graph.current,
-            //     roundToNearestN((selectStart.x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
-            //     roundToNearestN((selectStart.y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
-            //     roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
-            //     roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10)
-            // ).forEach(node => {
-            //     dispatch(addSelected(node));
-            // });
             dispatch(setMode('free'));
             dispatch(setSelectStart({ x: 0, y: 0 }));
             dispatch(setSelectMoving({ x: 0, y: 0 }));
@@ -209,14 +195,6 @@ const SvgCanvas = () => {
         setReconciledLines(allReconciledLines);
         setDanglingLines(danglingLines);
     }, [refreshEdges]);
-
-    const calcSelectSX = () => roundToNearestN(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x, 1);
-    const calcSelectEX = () => roundToNearestN(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x, 1);
-    const calcSelectSY = () => roundToNearestN(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y, 1);
-    const calcSelectEY = () => roundToNearestN(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y, 1);
-    const selectColor = () => '#b5b5b6';
-    const selectAreaOpacity = 0.75;
-    const selectBorderOpacity = 0.4;
 
     return (
         <>
@@ -334,55 +312,6 @@ const SvgCanvas = () => {
                     styleType={LineStyleType.SingleColor}
                     styleAttrs={{ color: theme }}
                 />
-            )}
-            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <g id="select_in_progress___no_use" transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height="2"
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width="2"
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={calcSelectEX() - calcSelectSX()}
-                        y={0}
-                        width="2"
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={calcSelectEY() - calcSelectSY()}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height="2"
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectBorderOpacity}
-                    />
-                </g>
             )}
         </>
     );
