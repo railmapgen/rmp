@@ -158,11 +158,6 @@ const SvgWrapper = () => {
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 const { x, y } = getMousePosition(e);
-                // console.log(
-                //     'MV: ',
-                //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-                // );
                 dispatch(
                     setSelectMoving({
                         x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
@@ -186,11 +181,6 @@ const SvgWrapper = () => {
         // preserve the current selection
         if (mode === 'select') {
             const { x, y } = getMousePosition(e);
-            // console.info(
-            //     selectStart,
-            //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-            //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            // );
             if (!e.shiftKey) {
                 dispatch(clearSelected());
             }
@@ -205,7 +195,7 @@ const SvgWrapper = () => {
             });
             dispatch(setMode('free'));
             dispatch(setSelectStart({ x: 0, y: 0 }));
-            // dispatch(setSelectMoving({ x: 0, y: 0 }));
+            dispatch(setSelectMoving({ x: 0, y: 0 }));
         }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
@@ -305,19 +295,21 @@ const SvgWrapper = () => {
         }
     });
 
-    const calcSelectSX = () => roundToNearestN(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x, 1);
-    const calcSelectEX = () => roundToNearestN(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x, 1);
-    const calcSelectSY = () => roundToNearestN(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y, 1);
-    const calcSelectEY = () => roundToNearestN(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y, 1);
-    const selectColor = () => '#b5b5b6';
+    const selectColor = '#b5b5b6';
     const selectAreaOpacity = 0.75;
     const selectBorderOpacity = 0.4;
 
-    /*
+    const [selectSX, setSelectSX] = React.useState(0.0);
+    const [selectSY, setSelectSY] = React.useState(0.0);
+    const [selectEX, setSelectEX] = React.useState(0.0);
+    const [selectEY, setSelectEY] = React.useState(0.0);
+
     React.useEffect(() => {
-        const SX = 0;
+        setSelectSX(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x);
+        setSelectEX(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x);
+        setSelectSY(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y);
+        setSelectEY(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y);
     }, [selectMoving.x, selectMoving.y]);
-    */
 
     return (
         <svg
@@ -338,7 +330,7 @@ const SvgWrapper = () => {
         >
             <SvgCanvas />
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <g transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
+                <g transform={`translate(${selectSX}, ${selectSY})`}>
                     {/*<rect
                         fill={selectColor()}
                         x={0}
@@ -385,13 +377,13 @@ const SvgWrapper = () => {
                         opacity={selectBorderOpacity}
             />*/}
                     <rect
-                        width={calcSelectEX() - calcSelectSX()}
-                        height={calcSelectEY() - calcSelectSY()}
+                        width={selectEX - selectSX}
+                        height={selectEY - selectSY}
                         rx="2"
-                        stroke={selectColor()}
+                        stroke={selectColor}
                         strokeWidth="2"
                         strokeOpacity={selectBorderOpacity}
-                        fill={selectColor()}
+                        fill={selectColor}
                         opacity={selectAreaOpacity}
                     />
                 </g>

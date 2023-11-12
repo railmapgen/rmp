@@ -40,7 +40,6 @@ const SvgCanvas = () => {
         active,
         keepLastPath,
         theme,
-        selectStart,
     } = useRootSelector(state => state.runtime);
 
     // the position of pointer down
@@ -52,9 +51,6 @@ const SvgCanvas = () => {
         e.stopPropagation();
 
         if (mode === 'select') {
-            // const { x, y } = getMousePosition(e);
-            // dispatch(setSelectStart({ x: x, y: y }));
-            // return;
             dispatch(setMode('free'));
         }
 
@@ -71,7 +67,7 @@ const SvgCanvas = () => {
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.stopPropagation();
+        // e.stopPropagation();
 
         const { x, y } = getMousePosition(e);
 
@@ -91,20 +87,6 @@ const SvgCanvas = () => {
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
             });
-        } else if (mode === 'select') {
-            if (selectStart.x != 0 && selectStart.y != 0) {
-                // console.log(
-                //     'Move',
-                //     graph.current.getNodeAttributes(node).x + x,
-                //     graph.current.getNodeAttributes(node).y + y
-                // );
-                dispatch(
-                    setSelectMoving({
-                        x: graph.current.getNodeAttributes(node).x + x,
-                        y: graph.current.getNodeAttributes(node).y + y,
-                    })
-                );
-            }
         }
     });
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
