@@ -42,9 +42,9 @@ const inRange = (x1: number, y1: number, x2: number, y2: number, xq: number, yq:
 };
 
 /**
- * Add nodes that is in the range
+ * Add nodes that are in the rectangle top-left (x1, y1) and bottom-right (x2, y2).
  */
-export const handleSelectTool = (
+export const findNodesInRectangle = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     x1: number,
     y1: number,
@@ -55,13 +55,5 @@ export const handleSelectTool = (
     const sY = y1 <= y2 ? y1 : y2;
     const eX = x1 <= x2 ? x2 : x1;
     const eY = y1 <= y2 ? y2 : y1;
-    const result: string[] = [];
-    graph.forEachNode(node => {
-        // console.log(graph.getNodeAttributes(node));
-        if (inRange(sX, sY, eX, eY, graph.getNodeAttributes(node).x, graph.getNodeAttributes(node).y)) {
-            console.log(node);
-            result.push(node);
-        }
-    });
-    return result;
+    return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y));
 };
