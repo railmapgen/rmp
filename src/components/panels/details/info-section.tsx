@@ -7,8 +7,8 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import StationTypeSection from './station-type-section';
 import LineTypeSection from './line-type-section';
-import { MiscNodeType } from '../../../constants/nodes';
 import { StationAttributes } from '../../../constants/stations';
+import InfoMultipleSection from './info-multiple-selection';
 
 export default function InfoSection() {
     const { t } = useTranslation();
@@ -101,14 +101,7 @@ export default function InfoSection() {
                 <LineTypeSection />
             )}
 
-            {selected.length > 1 && (
-                <>
-                    <Heading as="h5" size="sm">
-                        {t('Selected Objects')} ({selected.length})
-                    </Heading>
-                    <RmgFields fields={selectField} minW={130} />
-                </>
-            )}
+            {selected.length > 1 && <InfoMultipleSection />}
         </Box>
     );
 }
