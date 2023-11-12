@@ -21,12 +21,11 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
-import { findEdgesConnectedByNodes, findNodesExist } from '../util/graph';
+import { findEdgesConnectedByNodes, findNodesExist, handleSelectTool } from '../util/graph';
 import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { HandleSelectTool } from '../util/select-tools';
 import stations from './svgs/stations/stations';
 
 const SvgWrapper = () => {
@@ -192,7 +191,7 @@ const SvgWrapper = () => {
             //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
             //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
             // );
-            HandleSelectTool(
+            handleSelectTool(
                 graph.current,
                 selectStart.x,
                 selectStart.y,
