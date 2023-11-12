@@ -201,7 +201,7 @@ const SvgWrapper = () => {
                 dispatch(addSelected(node));
             });
             dispatch(setMode('free'));
-            // dispatch(setSelectStart({ x: 0, y: 0 }));
+            dispatch(setSelectStart({ x: 0, y: 0 }));
             // dispatch(setSelectMoving({ x: 0, y: 0 }));
         }
         if (active === 'background' && !e.shiftKey) {
