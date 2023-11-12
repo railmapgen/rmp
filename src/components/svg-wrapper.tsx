@@ -331,51 +331,6 @@ const SvgWrapper = () => {
             <SvgCanvas />
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
                 <g transform={`translate(${selectSX}, ${selectSY})`}>
-                    {/*<rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height="2"
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width="2"
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={calcSelectEX() - calcSelectSX()}
-                        y={0}
-                        width="2"
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={calcSelectEY() - calcSelectSY()}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height="2"
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectBorderOpacity}
-            />*/}
                     <rect
                         width={selectEX - selectSX}
                         height={selectEY - selectSY}
