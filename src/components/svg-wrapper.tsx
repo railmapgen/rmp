@@ -26,9 +26,6 @@ import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers'
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { findNodesExist, getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
-import { Size, useWindowSize } from '../util/hooks';
-import { FONTS_CSS } from '../util/fonts';
 import { HandleSelectTool } from '../util/select-tools';
 import stations from './svgs/stations/stations';
 
