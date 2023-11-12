@@ -246,9 +246,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "複製",
-                "remove": "削除",
-                "removeEntireLine": "この色のすべての路線を削除する"
+                "duplicate": "重複",
+                "copy": "複製",
+                "remove": "削除"
             }
         }
     },
@@ -336,8 +336,10 @@
                 "shift": "複数選択。",
                 "alt": "正確な移動。",
                 "delete": "選択した駅を削除します。",
-                "undo": "元に戻す",
-                "redo": "やり直す"
+                "copy": "複製する。",
+                "paste": "貼り付ける。",
+                "undo": "元に戻す。",
+                "redo": "やり直す。"
             },
             "procedures": {
                 "title": "手順",

@@ -245,9 +245,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "複製",
-                "remove": "移除",
-                "removeEntireLine": "移除所有當前顏色的線段"
+                "duplicate": "重複",
+                "copy": "複製",
+                "remove": "移除"
             }
         }
     },
@@ -335,6 +335,8 @@
                 "shift": "多選。",
                 "alt": "精確移動。",
                 "delete": "刪除所選站點。",
+                "copy": "複製。",
+                "paste": "貼上。",
                 "undo": "撤銷。",
                 "redo": "重做。"
             },

@@ -1,4 +1,3 @@
-import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { AttrsProps, LineId } from './constants';
 import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
