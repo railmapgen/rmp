@@ -247,8 +247,8 @@
             "edge": {},
             "footer": {
                 "duplicate": "Duplicate",
-                "remove": "Remove",
-                "removeEntireLine": "Remove all lines in this color"
+                "copy": "Copy",
+                "remove": "Remove"
             }
         }
     },
@@ -335,6 +335,8 @@
                 "shift": "Multiple selection.",
                 "alt": "Precise movement.",
                 "delete": "Delete the selected station(s).",
+                "copy": "Copy.",
+                "paste": "Paste.",
                 "undo": "Undo.",
                 "redo": "Redo."
             },

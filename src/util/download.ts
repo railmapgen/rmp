@@ -3,7 +3,8 @@ import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { FONTS_CSS, getBase64FontFace } from './fonts';
-import { calculateCanvasSize, findNodesExist } from './helpers';
+import { findNodesExist } from './graph';
+import { calculateCanvasSize } from './helpers';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });

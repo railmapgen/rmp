@@ -267,6 +267,22 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             <Td>
                                                 {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
                                                 {' + '}
+                                                <Kbd>c</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.copy')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
+                                                <Kbd>v</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.paste')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
                                                 <Kbd>z</Kbd>
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.undo')}</Td>

@@ -1,10 +1,10 @@
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { nanoid } from 'nanoid';
-import rmgRuntime from '@railmapgen/rmg-runtime';
-import { Events, NodeType, RuntimeMode } from '../constants/constants';
-import { StationType } from '../constants/stations';
+import { Events, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
@@ -15,16 +15,19 @@ import {
     setMode,
     setRefreshEdges,
     setRefreshNodes,
+    setSelected,
     setSelectStart,
     setSelectMoving,
 } from '../redux/runtime/runtime-slice';
-import SvgCanvas from './svg-canvas-graph';
-import stations from './svgs/stations/stations';
-import miscNodes from './svgs/nodes/misc-nodes';
-import { findNodesExist, getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
-import { Size, useWindowSize } from '../util/hooks';
+import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
+import { findEdgesConnectedByNodes, findNodesExist } from '../util/graph';
+import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
+import { Size, useWindowSize } from '../util/hooks';
+import SvgCanvas from './svg-canvas-graph';
+import miscNodes from './svgs/nodes/misc-nodes';
 import { HandleSelectTool } from '../util/select-tools';
+import stations from './svgs/stations/stations';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -47,8 +50,13 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         selectStart,
+        selectMoving,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
+
+    const size: Size = useWindowSize();
+    const height = (size.height ?? 1280) - 40;
+    const width = (size.width ?? 720) - 40;
 
     // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
@@ -151,11 +159,11 @@ const SvgWrapper = () => {
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 const { x, y } = getMousePosition(e);
-                console.log(
-                    'MV: ',
-                    (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                    (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-                );
+                // console.log(
+                //     'MV: ',
+                //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+                // );
                 dispatch(
                     setSelectMoving({
                         x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
@@ -179,11 +187,11 @@ const SvgWrapper = () => {
         // preserve the current selection
         if (mode === 'select') {
             const { x, y } = getMousePosition(e);
-            console.info(
-                selectStart,
-                (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            );
+            // console.info(
+            //     selectStart,
+            //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+            //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
+            // );
             HandleSelectTool(
                 graph.current,
                 selectStart.x,
@@ -224,7 +232,7 @@ const SvgWrapper = () => {
         );
     });
 
-    const handleKeyDown = useEvent((e: React.KeyboardEvent<SVGSVGElement>) => {
+    const handleKeyDown = useEvent(async (e: React.KeyboardEvent<SVGSVGElement>) => {
         // tabIndex need to be on the element to make onKeyDown worked
         // https://www.delftstack.com/howto/react/onkeydown-react/
         if (isMacClient ? e.key === 'Backspace' : e.key === 'Delete') {
@@ -266,6 +274,27 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
+        } else if (e.key === 'c' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+            const nodes = new Set(selected as (StnId | MiscNodeId)[]);
+            const edges = findEdgesConnectedByNodes(graph.current, nodes);
+            const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
+            navigator.clipboard.writeText(s);
+        } else if (e.key === 'v' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+            // Firefox does not allow JavaScript to read the clipboard for privacy reasons.
+            // Set dom.events.testing.asyncClipboard and dom.events.asyncClipboard.readText
+            // to true in about:config will remove such restrictions.
+            // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
+            const s = await navigator.clipboard.readText();
+            const { nodes } = importSelectedNodesAndEdges(
+                s,
+                graph.current,
+                (width * svgViewBoxZoom) / 200 + svgViewBoxMin.x,
+                (height * svgViewBoxZoom) / 200 + svgViewBoxMin.y
+            );
+            refreshAndSave();
+            // select copied nodes automatically
+            dispatch(clearSelected());
+            dispatch(setSelected(nodes));
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)
@@ -274,9 +303,13 @@ const SvgWrapper = () => {
         }
     });
 
-    const size: Size = useWindowSize();
-    const height = (size.height ?? 1280) - 40;
-    const width = (size.width ?? 720) - 40;
+    const calcSelectSX = () => roundToNearestN(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x, 1);
+    const calcSelectEX = () => roundToNearestN(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x, 1);
+    const calcSelectSY = () => roundToNearestN(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y, 1);
+    const calcSelectEY = () => roundToNearestN(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y, 1);
+    const selectColor = () => '#b5b5b6';
+    const selectAreaOpacity = 0.75;
+    const selectBorderOpacity = 0.4;
 
     return (
         <svg
@@ -296,6 +329,55 @@ const SvgWrapper = () => {
             onKeyDown={handleKeyDown}
         >
             <SvgCanvas />
+            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                <g id="select_in_progress___no_use" transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={0}
+                        width={calcSelectEX() - calcSelectSX() + 2}
+                        height="2"
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={0}
+                        width="2"
+                        height={calcSelectEY() - calcSelectSY() + 2}
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={calcSelectEX() - calcSelectSX()}
+                        y={0}
+                        width="2"
+                        height={calcSelectEY() - calcSelectSY() + 2}
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={calcSelectEY() - calcSelectSY()}
+                        width={calcSelectEX() - calcSelectSX() + 2}
+                        height="2"
+                        rx="1"
+                        opacity={selectAreaOpacity}
+                    />
+                    <rect
+                        fill={selectColor()}
+                        x={0}
+                        y={0}
+                        width={calcSelectEX() - calcSelectSX() + 2}
+                        height={calcSelectEY() - calcSelectSY() + 2}
+                        rx="1"
+                        opacity={selectBorderOpacity}
+                    />
+                </g>
+            )}
         </svg>
     );
 };

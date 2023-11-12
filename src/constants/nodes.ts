@@ -1,4 +1,3 @@
-import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { BerlinUBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-u-bahn-line-badge';
 import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-s-bahn-line-badge';
 import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
