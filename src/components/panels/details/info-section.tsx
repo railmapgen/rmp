@@ -7,6 +7,8 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
 import StationTypeSection from './station-type-section';
 import LineTypeSection from './line-type-section';
+import { MiscNodeType } from '../../../constants/nodes';
+import { StationAttributes } from '../../../constants/stations';
 
 export default function InfoSection() {
     const { t } = useTranslation();
@@ -49,6 +51,7 @@ export default function InfoSection() {
             onChange: val => handleZIndexChange(Number(val)),
         },
     ];
+    const selectField: RmgFieldsField[] = [];
 
     // deal with undefined and multiple selection
     if (selected.length === 0) {
@@ -59,6 +62,26 @@ export default function InfoSection() {
             label: t('panel.details.info.type'),
             value: 'multiple selection',
             minW: 276,
+        });
+        selected.forEach(node => {
+            const value = node.startsWith('stn')
+                ? (
+                      graph.current.getNodeAttributes(node)[
+                          graph.current.getNodeAttributes(node).type
+                      ] as StationAttributes
+                  ).names[0] +
+                  '/' +
+                  (
+                      graph.current.getNodeAttributes(node)[
+                          graph.current.getNodeAttributes(node).type
+                      ] as StationAttributes
+                  ).names[1]
+                : graph.current.getNodeAttributes(node).type;
+            selectField.push({
+                type: 'input',
+                label: node,
+                value: value,
+            });
         });
     }
 
@@ -76,6 +99,15 @@ export default function InfoSection() {
 
             {selected.length === 1 && selectedFirst!.startsWith('line') && graph.current.hasEdge(selectedFirst) && (
                 <LineTypeSection />
+            )}
+
+            {selected.length > 1 && (
+                <>
+                    <Heading as="h5" size="sm">
+                        {t('Selected Objects')}
+                    </Heading>
+                    <RmgFields fields={selectField} minW={130} />
+                </>
             )}
         </Box>
     );
