@@ -104,7 +104,7 @@ export default function InfoSection() {
             {selected.length > 1 && (
                 <>
                     <Heading as="h5" size="sm">
-                        {t('Selected Objects')}
+                        {t('Selected Objects')} ({selected.length})
                     </Heading>
                     <RmgFields fields={selectField} minW={130} />
                 </>
