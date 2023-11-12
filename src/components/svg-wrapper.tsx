@@ -201,8 +201,8 @@ const SvgWrapper = () => {
                 dispatch(addSelected(node));
             });
             dispatch(setMode('free'));
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
+            // dispatch(setSelectStart({ x: 0, y: 0 }));
+            // dispatch(setSelectMoving({ x: 0, y: 0 }));
         }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
@@ -310,6 +310,12 @@ const SvgWrapper = () => {
     const selectAreaOpacity = 0.75;
     const selectBorderOpacity = 0.4;
 
+    /*
+    React.useEffect(() => {
+        const SX = 0;
+    }, [selectMoving.x, selectMoving.y]);
+    */
+
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -329,8 +335,8 @@ const SvgWrapper = () => {
         >
             <SvgCanvas />
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <g id="select_in_progress___no_use" transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
-                    <rect
+                <g transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
+                    {/*<rect
                         fill={selectColor()}
                         x={0}
                         y={0}
@@ -374,6 +380,16 @@ const SvgWrapper = () => {
                         height={calcSelectEY() - calcSelectSY() + 2}
                         rx="1"
                         opacity={selectBorderOpacity}
+            />*/}
+                    <rect
+                        width={calcSelectEX() - calcSelectSX()}
+                        height={calcSelectEY() - calcSelectSY()}
+                        rx="2"
+                        stroke={selectColor()}
+                        strokeWidth="2"
+                        strokeOpacity={selectBorderOpacity}
+                        fill={selectColor()}
+                        opacity={selectAreaOpacity}
                     />
                 </g>
             )}
