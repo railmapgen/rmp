@@ -191,6 +191,9 @@ const SvgWrapper = () => {
             //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
             //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
             // );
+            if (!e.shiftKey) {
+                dispatch(clearSelected());
+            }
             handleSelectTool(
                 graph.current,
                 selectStart.x,
