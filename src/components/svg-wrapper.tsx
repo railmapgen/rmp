@@ -16,8 +16,6 @@ import {
     setRefreshEdges,
     setRefreshNodes,
     setSelected,
-    setSelectStart,
-    setSelectMoving,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
@@ -48,8 +46,6 @@ const SvgWrapper = () => {
         selected,
         keepLastPath,
         theme,
-        selectStart,
-        selectMoving,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
 
@@ -80,6 +76,9 @@ const SvgWrapper = () => {
                 document.head.append(link);
             });
     }, [refreshNodes]);
+
+    const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 });
+    const [selectMoving, setSelectMoving] = React.useState({ x: 0, y: 0 });
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
@@ -140,30 +139,24 @@ const SvgWrapper = () => {
             }
             // console.log(x, y, svgViewBoxMin);
         } else if (mode === 'select') {
-            dispatch(
-                setSelectStart({
-                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-                })
-            );
-            dispatch(
-                setSelectMoving({
-                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-                })
-            );
+            setSelectStart({
+                x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+            });
+            setSelectMoving({
+                x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+            });
         }
     });
     const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 const { x, y } = getMousePosition(e);
-                dispatch(
-                    setSelectMoving({
-                        x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                        y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-                    })
-                );
+                setSelectMoving({
+                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+                });
             }
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
@@ -194,8 +187,8 @@ const SvgWrapper = () => {
                 dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
             }
             dispatch(setMode('free'));
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
+            setSelectStart({ x: 0, y: 0 });
+            setSelectMoving({ x: 0, y: 0 });
         }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
