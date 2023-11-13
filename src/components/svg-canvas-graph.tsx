@@ -11,8 +11,6 @@ import {
     setRefreshEdges,
     setMode,
     clearSelected,
-    setSelectStart,
-    setSelectMoving,
 } from '../redux/runtime/runtime-slice';
 import { StnId, LineId, MiscNodeId, Events } from '../constants/constants';
 import { LineStyleType, LinePathType, ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
@@ -143,8 +141,8 @@ const SvgCanvas = () => {
             }
         } else if (mode === 'select') {
             dispatch(setMode('free'));
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
+            // dispatch(setSelectStart({ x: 0, y: 0 }));
+            // dispatch(setSelectMoving({ x: 0, y: 0 }));
         }
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));

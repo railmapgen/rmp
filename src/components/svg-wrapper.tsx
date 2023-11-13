@@ -194,8 +194,9 @@ const SvgWrapper = () => {
                 dispatch(addSelected(node));
             });
             dispatch(setMode('free'));
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
+            // They were commented as adding React.useEffect() below.
+            // dispatch(setSelectStart({ x: 0, y: 0 }));
+            // dispatch(setSelectMoving({ x: 0, y: 0 }));
         }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
@@ -304,6 +305,12 @@ const SvgWrapper = () => {
             ey: selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y,
         });
     }, [selectMoving.x, selectMoving.y]);
+    React.useEffect(() => {
+        if (mode === 'free') {
+            dispatch(setSelectStart({ x: 0, y: 0 }));
+            dispatch(setSelectMoving({ x: 0, y: 0 }));
+        }
+    }, [mode === 'select']);
 
     return (
         <svg
