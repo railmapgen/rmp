@@ -181,22 +181,21 @@ const SvgWrapper = () => {
         // preserve the current selection
         if (mode === 'select') {
             const { x, y } = getMousePosition(e);
-            if (!e.shiftKey) {
-                dispatch(clearSelected());
-            }
-            findNodesInRectangle(
+            const nodesInRectangle = findNodesInRectangle(
                 graph.current,
                 selectStart.x,
                 selectStart.y,
                 (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
                 (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            ).forEach(node => {
-                dispatch(addSelected(node));
-            });
+            );
+            if (!e.shiftKey) {
+                dispatch(setSelected(nodesInRectangle));
+            } else {
+                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
+            }
             dispatch(setMode('free'));
-            // They were commented as adding React.useEffect() below.
-            // dispatch(setSelectStart({ x: 0, y: 0 }));
-            // dispatch(setSelectMoving({ x: 0, y: 0 }));
+            dispatch(setSelectStart({ x: 0, y: 0 }));
+            dispatch(setSelectMoving({ x: 0, y: 0 }));
         }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
@@ -305,12 +304,6 @@ const SvgWrapper = () => {
             ey: selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y,
         });
     }, [selectMoving.x, selectMoving.y]);
-    React.useEffect(() => {
-        if (mode === 'free') {
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
-        }
-    }, [mode === 'select']);
 
     return (
         <svg

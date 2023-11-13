@@ -88,7 +88,7 @@ const SvgCanvas = () => {
         }
     });
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.stopPropagation();
+        // e.stopPropagation();
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
@@ -139,11 +139,11 @@ const SvgCanvas = () => {
                 // the node is just placed and should not trigger any save, only display the details
                 dispatch(addSelected(node));
             }
-        } else if (mode === 'select') {
+        } /*else if (mode === 'select') {
             dispatch(setMode('free'));
             // dispatch(setSelectStart({ x: 0, y: 0 }));
             // dispatch(setSelectMoving({ x: 0, y: 0 }));
-        }
+        }*/
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
