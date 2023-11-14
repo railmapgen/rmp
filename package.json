@@ -14,6 +14,7 @@
         "@railmapgen/rmg-palette-resources": "^0.8.34",
         "@railmapgen/rmg-runtime": "^7.0.0",
         "@railmapgen/rmg-translate": "^3.0.1",
+        "@railmapgen/svg-assets": "^1.0.0",
         "@reduxjs/toolkit": "^1.9.5",
         "bezier-js": "^6.1.3",
         "canvas-size": "^1.2.6",

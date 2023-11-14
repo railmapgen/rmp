@@ -1,6 +1,9 @@
-import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -11,64 +14,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
-
-const PATH = 'M0,9.25 V-9.25 H-9.25 a9.25,9.25 0 0,0 0,18.5 h18.5 a9.25,9.25 0 0,0 0,-18.5 H0';
-const TEXT_MAX_WIDTH = 12.5;
-
-/**
- * A StationNumber sub component for both gzmtr-basic and gzmtr-int station.
- * It draws the code of the line and the station with a capsule icon outside it.
- */
-export const StationNumber = (props: { strokeColor: ColourHex; lineCode: string; stationCode: string }) => {
-    const { strokeColor, lineCode, stationCode } = props;
-
-    const lineCodeEl = React.useRef<SVGTextElement | null>(null);
-    const stnCodeEl = React.useRef<SVGTextElement | null>(null);
-
-    const [lineCodeBBox, setlineCodeBBox] = React.useState({ width: 0 } as DOMRect);
-    const [stnCodeBBox, setstnCodeBBox] = React.useState({ width: 0 } as DOMRect);
-
-    React.useEffect(() => {
-        setlineCodeBBox(lineCodeEl.current!.getBBox());
-        setstnCodeBBox(stnCodeEl.current!.getBBox());
-    }, [lineCode, stationCode]);
-
-    const lineCodeScale = TEXT_MAX_WIDTH / Math.max(TEXT_MAX_WIDTH, lineCodeBBox.width);
-    const stnCodeScale =
-        lineCode.length === 2 && stationCode.length === 2
-            ? lineCodeScale
-            : TEXT_MAX_WIDTH / Math.max(TEXT_MAX_WIDTH, stnCodeBBox.width);
-
-    return (
-        <g>
-            <path d={PATH} strokeWidth="2" stroke={strokeColor} fill="white" transform="scale(0.75)" />
-            <g textAnchor="middle" dominantBaseline="middle" fontSize="8">
-                <g transform={`translate(-6,0)scale(${lineCodeScale})`}>
-                    <text
-                        ref={lineCodeEl}
-                        className="rmp-name__zh"
-                        // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
-                        dominantBaseline="central"
-                    >
-                        {lineCode}
-                    </text>
-                </g>
-                <g transform={`translate(6,0)scale(${stnCodeScale})`}>
-                    <text
-                        ref={stnCodeEl}
-                        className="rmp-name__zh"
-                        // dominantBaseline is specified in rmg-name__zh but missing in rmp-name__zh
-                        dominantBaseline="central"
-                    >
-                        {stationCode}
-                    </text>
-                </g>
-            </g>
-        </g>
-    );
-};
 
 const GzmtrBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -133,7 +79,15 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     return React.useMemo(
         () => (
             <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
-                <StationNumber strokeColor={color[2]} lineCode={lineCode} stationCode={stationCode} />
+                <g
+                    transform="scale(0.75)"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                >
+                    <StationNumber strokeColour={color[2]} lineNum={lineCode} stnNum={stationCode} />
+                </g>
                 <g
                     ref={textRef}
                     transform={`translate(${textX}, ${textY})`}
@@ -199,18 +153,6 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         </text>
                     </g>
                 )}
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <path
-                    id={`stn_core_${id}`}
-                    d={PATH}
-                    fill="white"
-                    fillOpacity="0"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                    transform="scale(0.75)"
-                />
             </g>
         ),
         [
@@ -264,161 +206,133 @@ const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     tram: false,
 };
 
-const gzmtrBasicStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: GzmtrBasicStationAttributes) =>
-            (attrs ?? defaultGzmtrBasicStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: GzmtrBasicStationAttributes) =>
-            (attrs ?? defaultGzmtrBasicStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: GzmtrBasicStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as NameOffsetX;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: GzmtrBasicStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as NameOffsetY;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        component: <ColorField type={StationType.GzmtrBasic} defaultTheme={defaultGzmtrBasicStationAttributes.color} />,
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.gzmtrBasic.lineCode',
-        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).lineCode,
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.lineCode = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.gzmtrBasic.stationCode',
-        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).stationCode,
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.stationCode = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.stations.gzmtrBasic.open',
-        oneLine: true,
-        isChecked: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).open,
-        onChange: (val: boolean, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.open = val;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.gzmtrBasic.secondaryNameZh',
-        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).secondaryNames[0],
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.secondaryNames[0] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.gzmtrBasic.secondaryNameEn',
-        value: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).secondaryNames[1],
-        onChange: (val: string | number, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.secondaryNames[1] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.stations.gzmtrBasic.tram',
-        oneLine: true,
-        isChecked: (attrs?: GzmtrBasicStationAttributes) => (attrs ?? defaultGzmtrBasicStationAttributes).tram,
-        onChange: (val: boolean, attrs_: GzmtrBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrBasicStationAttributes;
-            // set value
-            attrs.tram = val;
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={gzmtrBasicStationFields as RmgFieldsFieldDetail<GzmtrBasicStationAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[1] = val.replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as NameOffsetX;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField type={StationType.GzmtrBasic} defaultTheme={defaultGzmtrBasicStationAttributes.color} />
+            ),
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.gzmtrBasic.lineCode'),
+            value: attrs.lineCode,
+            onChange: val => {
+                attrs.lineCode = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.gzmtrBasic.stationCode'),
+            value: attrs.stationCode,
+            onChange: val => {
+                attrs.stationCode = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrBasic.open'),
+            oneLine: true,
+            isChecked: attrs.open,
+            onChange: val => {
+                attrs.open = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.gzmtrBasic.secondaryNameZh'),
+            value: attrs.secondaryNames[0],
+            onChange: val => {
+                attrs.secondaryNames[0] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.gzmtrBasic.secondaryNameEn'),
+            value: attrs.secondaryNames[1],
+            onChange: val => {
+                attrs.secondaryNames[1] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrBasic.tram'),
+            oneLine: true,
+            isChecked: attrs.tram,
+            onChange: val => {
+                attrs.tram = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const gzmtrBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <g transform="translate(12,12)scale(0.6)">
-            <StationNumber strokeColor="#000" lineCode="1" stationCode="01" />
+        <g transform="translate(12,12)scale(0.45)">
+            <StationNumber strokeColour="#000" lineNum="1" stnNum="01" />
         </g>
     </svg>
 );
@@ -427,7 +341,7 @@ const gzmtrBasicStation: Station<GzmtrBasicStationAttributes> = {
     component: GzmtrBasicStation,
     icon: gzmtrBasicStationIcon,
     defaultAttrs: defaultGzmtrBasicStationAttributes,
-    attrsComponent,
+    attrsComponent: gzmtrBasicStationAttrsComponents,
     metadata: {
         displayName: 'panel.details.stations.gzmtrBasic.displayName',
         cities: [CityCode.Guangzhou],
