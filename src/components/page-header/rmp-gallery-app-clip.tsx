@@ -1,9 +1,10 @@
-import { Box, CloseButton, IconButton, SystemStyleObject, useToast } from '@chakra-ui/react';
+import { CloseButton, SystemStyleObject, useToast } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdClose } from 'react-icons/md';
-import { useRootDispatch } from '../../redux';
+import { Events } from '../../constants/constants';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
 import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { RMPSave, upgrade } from '../../util/save';
@@ -32,6 +33,9 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const toast = useToast();
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const {
+        telemetry: { project: isAllowAppTelemetry },
+    } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
 
@@ -67,6 +71,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             .find(rep => rep.value.status === 200)
             ?.value.json()) as RMPSave | undefined;
         if (template) {
+            if (isAllowAppTelemetry) rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, { id });
             handleOpenTemplate(template);
             toast({
                 title: t('header.open.importFromRMPGallery', { id }),

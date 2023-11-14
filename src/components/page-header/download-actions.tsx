@@ -40,7 +40,7 @@ export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'gray.800');
     const dispatch = useRootDispatch();
     const {
-        telemetry: { project: isAllowProjectTelemetry },
+        telemetry: { app: isAllowAppTelemetry, project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
     const param = useRootSelector(state => state.param);
     const { t } = useTranslation();
@@ -112,19 +112,22 @@ export default function DownloadActions() {
     }, [isDownloadModalOpen]);
 
     const handleDownloadJson = () => {
-        if (isAllowProjectTelemetry)
-            rmgRuntime.event(Events.DOWNLOAD_PARAM, { '#nodes': graph.current.order, '#edges': graph.current.size });
+        if (isAllowAppTelemetry)
+            rmgRuntime.event(
+                Events.DOWNLOAD_PARAM,
+                isAllowProjectTelemetry ? { '#nodes': graph.current.order, '#edges': graph.current.size } : {}
+            );
         downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(param));
     };
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = async () => {
         setIsDownloadModalOpen(false);
-        if (isAllowProjectTelemetry)
-            rmgRuntime.event(Events.DOWNLOAD_IMAGES, {
-                numberOfNodes: graph.current.order,
-                numberOfEdges: graph.current.size,
-            });
+        if (isAllowAppTelemetry)
+            rmgRuntime.event(
+                Events.DOWNLOAD_IMAGES,
+                isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
+            );
 
         const { elem, width, height } = await makeImages(graph.current, isAttachSelected);
 
