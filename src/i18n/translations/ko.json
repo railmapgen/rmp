@@ -15,7 +15,8 @@
                 "lineDrawing": "선 그리기",
                 "stations": "역",
                 "miscellaneousNodes": "기타 노드"
-            }
+            },
+            "select": "선택하다"
         },
         "details": {
             "header": "상세한 상황",

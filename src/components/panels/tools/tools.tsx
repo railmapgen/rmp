@@ -106,17 +106,11 @@ const ToolsPanel = () => {
                     <Button
                         aria-label="select"
                         leftIcon={selectIcon}
-                        onClick={() => {
-                            if (mode === 'select') {
-                                dispatch(setMode('free'));
-                            } else {
-                                dispatch(setMode('select'));
-                            }
-                        }}
+                        onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
                         variant={mode === 'select' ? 'solid' : 'outline'}
                         sx={buttonStyle}
                     >
-                        {isToolsExpanded ? t('Select') : undefined}
+                        {isToolsExpanded ? t('panel.tools.select') : undefined}
                     </Button>
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
