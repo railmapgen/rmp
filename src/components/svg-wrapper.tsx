@@ -16,17 +16,14 @@ import {
     setRefreshEdges,
     setRefreshNodes,
     setSelected,
-    setSelectStart,
-    setSelectMoving,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
-import { findEdgesConnectedByNodes, findNodesExist } from '../util/graph';
+import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
 import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { HandleSelectTool } from '../util/select-tools';
 import stations from './svgs/stations/stations';
 
 const SvgWrapper = () => {
@@ -49,8 +46,6 @@ const SvgWrapper = () => {
         selected,
         keepLastPath,
         theme,
-        selectStart,
-        selectMoving,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
 
@@ -81,6 +76,9 @@ const SvgWrapper = () => {
                 document.head.append(link);
             });
     }, [refreshNodes]);
+
+    const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 });
+    const [selectMoving, setSelectMoving] = React.useState({ x: 0, y: 0 });
 
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
@@ -141,35 +139,24 @@ const SvgWrapper = () => {
             }
             // console.log(x, y, svgViewBoxMin);
         } else if (mode === 'select') {
-            dispatch(
-                setSelectStart({
-                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-                })
-            );
-            dispatch(
-                setSelectMoving({
-                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-                })
-            );
+            setSelectStart({
+                x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+            });
+            setSelectMoving({
+                x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+            });
         }
     });
     const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 const { x, y } = getMousePosition(e);
-                // console.log(
-                //     'MV: ',
-                //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-                // );
-                dispatch(
-                    setSelectMoving({
-                        x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                        y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-                    })
-                );
+                setSelectMoving({
+                    x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+                    y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+                });
             }
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
@@ -187,23 +174,21 @@ const SvgWrapper = () => {
         // preserve the current selection
         if (mode === 'select') {
             const { x, y } = getMousePosition(e);
-            // console.info(
-            //     selectStart,
-            //     (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-            //     (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            // );
-            HandleSelectTool(
+            const nodesInRectangle = findNodesInRectangle(
                 graph.current,
                 selectStart.x,
                 selectStart.y,
                 (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
                 (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            ).forEach(node => {
-                dispatch(addSelected(node));
-            });
+            );
+            if (!e.shiftKey) {
+                dispatch(setSelected(nodesInRectangle));
+            } else {
+                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
+            }
             dispatch(setMode('free'));
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
+            setSelectStart({ x: 0, y: 0 });
+            setSelectMoving({ x: 0, y: 0 });
         }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
@@ -303,13 +288,15 @@ const SvgWrapper = () => {
         }
     });
 
-    const calcSelectSX = () => roundToNearestN(selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x, 1);
-    const calcSelectEX = () => roundToNearestN(selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x, 1);
-    const calcSelectSY = () => roundToNearestN(selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y, 1);
-    const calcSelectEY = () => roundToNearestN(selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y, 1);
-    const selectColor = () => '#b5b5b6';
-    const selectAreaOpacity = 0.75;
-    const selectBorderOpacity = 0.4;
+    const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
+    React.useEffect(() => {
+        setSelectCoord({
+            sx: selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x,
+            ex: selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x,
+            sy: selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y,
+            ey: selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y,
+        });
+    }, [selectMoving.x, selectMoving.y]);
 
     return (
         <svg
@@ -330,53 +317,18 @@ const SvgWrapper = () => {
         >
             <SvgCanvas />
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <g id="select_in_progress___no_use" transform={`translate(${calcSelectSX()}, ${calcSelectSY()})`}>
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height="2"
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width="2"
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={calcSelectEX() - calcSelectSX()}
-                        y={0}
-                        width="2"
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={calcSelectEY() - calcSelectSY()}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height="2"
-                        rx="1"
-                        opacity={selectAreaOpacity}
-                    />
-                    <rect
-                        fill={selectColor()}
-                        x={0}
-                        y={0}
-                        width={calcSelectEX() - calcSelectSX() + 2}
-                        height={calcSelectEY() - calcSelectSY() + 2}
-                        rx="1"
-                        opacity={selectBorderOpacity}
-                    />
-                </g>
+                <rect
+                    x={selectCoord.sx}
+                    y={selectCoord.sy}
+                    width={selectCoord.ex - selectCoord.sx}
+                    height={selectCoord.ey - selectCoord.sy}
+                    rx="2"
+                    stroke="#b5b5b6"
+                    strokeWidth="2"
+                    strokeOpacity="0.4"
+                    fill="#b5b5b6"
+                    opacity="0.75"
+                />
             )}
         </svg>
     );

@@ -11,8 +11,6 @@ import {
     setRefreshEdges,
     setMode,
     clearSelected,
-    setSelectStart,
-    setSelectMoving,
 } from '../redux/runtime/runtime-slice';
 import { StnId, LineId, MiscNodeId, Events } from '../constants/constants';
 import { LineStyleType, LinePathType, ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
@@ -40,7 +38,6 @@ const SvgCanvas = () => {
         active,
         keepLastPath,
         theme,
-        selectStart,
     } = useRootSelector(state => state.runtime);
 
     // the position of pointer down
@@ -52,9 +49,6 @@ const SvgCanvas = () => {
         e.stopPropagation();
 
         if (mode === 'select') {
-            // const { x, y } = getMousePosition(e);
-            // dispatch(setSelectStart({ x: x, y: y }));
-            // return;
             dispatch(setMode('free'));
         }
 
@@ -71,7 +65,7 @@ const SvgCanvas = () => {
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.stopPropagation();
+        // e.stopPropagation();
 
         const { x, y } = getMousePosition(e);
 
@@ -91,24 +85,10 @@ const SvgCanvas = () => {
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
                 y: ((offset.y - y) * svgViewBoxZoom) / 100,
             });
-        } else if (mode === 'select') {
-            if (selectStart.x != 0 && selectStart.y != 0) {
-                // console.log(
-                //     'Move',
-                //     graph.current.getNodeAttributes(node).x + x,
-                //     graph.current.getNodeAttributes(node).y + y
-                // );
-                dispatch(
-                    setSelectMoving({
-                        x: graph.current.getNodeAttributes(node).x + x,
-                        y: graph.current.getNodeAttributes(node).y + y,
-                    })
-                );
-            }
         }
     });
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.stopPropagation();
+        // e.stopPropagation();
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
@@ -159,11 +139,11 @@ const SvgCanvas = () => {
                 // the node is just placed and should not trigger any save, only display the details
                 dispatch(addSelected(node));
             }
-        } else if (mode === 'select') {
+        } /*else if (mode === 'select') {
             dispatch(setMode('free'));
-            dispatch(setSelectStart({ x: 0, y: 0 }));
-            dispatch(setSelectMoving({ x: 0, y: 0 }));
-        }
+            // dispatch(setSelectStart({ x: 0, y: 0 }));
+            // dispatch(setSelectMoving({ x: 0, y: 0 }));
+        }*/
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });

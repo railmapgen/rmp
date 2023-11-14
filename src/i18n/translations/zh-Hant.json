@@ -15,7 +15,8 @@
                 "lineDrawing": "線段繪製",
                 "stations": "車站",
                 "miscellaneousNodes": "雜項節點"
-            }
+            },
+            "select": "多選"
         },
         "details": {
             "header": "詳情",

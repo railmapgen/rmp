@@ -15,7 +15,8 @@
                 "lineDrawing": "Line drawing",
                 "stations": "Stations",
                 "miscellaneousNodes": "Miscellaneous nodes"
-            }
+            },
+            "select": "Select"
         },
         "details": {
             "header": "Details",
