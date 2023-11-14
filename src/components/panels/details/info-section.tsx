@@ -51,7 +51,6 @@ export default function InfoSection() {
             onChange: val => handleZIndexChange(Number(val)),
         },
     ];
-    const selectField: RmgFieldsField[] = [];
 
     // deal with undefined and multiple selection
     if (selected.length === 0) {
@@ -62,26 +61,6 @@ export default function InfoSection() {
             label: t('panel.details.info.type'),
             value: 'multiple selection',
             minW: 276,
-        });
-        selected.forEach(node => {
-            const value = node.startsWith('stn')
-                ? (
-                      graph.current.getNodeAttributes(node)[
-                          graph.current.getNodeAttributes(node).type
-                      ] as StationAttributes
-                  ).names[0] +
-                  '/' +
-                  (
-                      graph.current.getNodeAttributes(node)[
-                          graph.current.getNodeAttributes(node).type
-                      ] as StationAttributes
-                  ).names[1]
-                : graph.current.getNodeAttributes(node).type;
-            selectField.push({
-                type: 'input',
-                label: node,
-                value: value,
-            });
         });
     }
 
