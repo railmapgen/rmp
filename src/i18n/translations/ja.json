@@ -87,6 +87,10 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "重慶鉄道交通のテキストライン標識"
                 },
+                "shenzhenMetroNumLineBadge": {
+                    "displayName": "深セン地下鉄番号ラインバッジ",
+                    "branch": "支線です"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "タイプ"
