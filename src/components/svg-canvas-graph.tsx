@@ -1,28 +1,28 @@
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { nanoid } from 'nanoid';
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import { Events, LineId, MiscNodeId, StnId } from '../constants/constants';
+import { ExternalLineStyleAttributes, LinePathType, LineStyleComponentProps, LineStyleType } from '../constants/lines';
+import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import {
-    setActive,
     addSelected,
-    setRefreshNodes,
-    setRefreshEdges,
-    setMode,
     clearSelected,
+    setActive,
+    setMode,
+    setRefreshEdges,
+    setRefreshNodes,
 } from '../redux/runtime/runtime-slice';
-import { StnId, LineId, MiscNodeId, Events } from '../constants/constants';
-import { LineStyleType, LinePathType, ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
-import allStations from './svgs/stations/stations';
-import { linePaths, lineStyles } from './svgs/lines/lines';
-import LineWrapper from './svgs/lines/line-wrapper';
-import miscNodes from './svgs/nodes/misc-nodes';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
+import { getLines, getMiscNodes, getStations } from '../util/process-elements';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
-import { getStations, getMiscNodes, getLines } from '../util/process-elements';
-import { StationType } from '../constants/stations';
-import { MiscNodeType } from '../constants/nodes';
+import LineWrapper from './svgs/lines/line-wrapper';
+import { linePaths, lineStyles } from './svgs/lines/lines';
+import miscNodes from './svgs/nodes/misc-nodes';
+import allStations from './svgs/stations/stations';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -48,9 +48,7 @@ const SvgCanvas = () => {
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
-        if (mode === 'select') {
-            dispatch(setMode('free'));
-        }
+        if (mode === 'select') dispatch(setMode('free'));
 
         const el = e.currentTarget;
         const { x, y } = getMousePosition(e);
@@ -155,12 +153,6 @@ const SvgCanvas = () => {
         setStations(getStations(graph.current));
         setNodes(getMiscNodes(graph.current));
     }, [refreshNodes]);
-    React.useEffect(() => {
-        setLines(getLines(graph.current));
-        const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
-        setReconciledLines(allReconciledLines);
-        setDanglingLines(danglingLines);
-    }, []);
     React.useEffect(() => {
         setLines(getLines(graph.current));
         const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
