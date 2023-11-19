@@ -19,7 +19,7 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import { getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import { getMousePosition, isMacClient, pointerPosToRoundSVGCoord, pointerPosToSVGCoord } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -96,7 +96,7 @@ const SvgWrapper = () => {
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
 
-            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+            const { x: svgX, y: svgY } = pointerPosToRoundSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
@@ -255,7 +255,7 @@ const SvgWrapper = () => {
             // to true in about:config will remove such restrictions.
             // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
             const s = await navigator.clipboard.readText();
-            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
+            const { x: svgMidX, y: svgMidY } = pointerPosToRoundSVGCoord(
                 width / 2,
                 height / 2,
                 svgViewBoxZoom,

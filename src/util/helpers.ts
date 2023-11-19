@@ -26,6 +26,16 @@ export const pointerPosToSVGCoord = (
 
 export const roundToNearestN = (x: number, n: number) => Math.round(x / n) * n;
 
+export const pointerPosToRoundSVGCoord = (
+    x: number,
+    y: number,
+    svgViewBoxZoom: number,
+    svgViewBoxMin: { x: number; y: number }
+) => {
+    const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+    return { x: roundToNearestN(svgX, 5), y: roundToNearestN(svgY, 5) };
+};
+
 /**
  * Calculate the canvas size from DOMRect of each node.
  * @param graph The graph.
