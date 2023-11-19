@@ -19,7 +19,7 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import { getMousePosition, isMacClient, pointerPosToRoundSVGCoord, pointerPosToSVGCoord } from '../util/helpers';
+import { getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -96,12 +96,12 @@ const SvgWrapper = () => {
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
 
-            const { x: svgX, y: svgY } = pointerPosToRoundSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: svgX,
-                y: svgY,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
                 type,
                 [type]: attr,
             });
@@ -116,8 +116,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`misc_node_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: svgX,
-                y: svgY,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
                 type,
                 // deep copy to prevent mutual reference
                 [type]: structuredClone(miscNodes[type].defaultAttrs),
@@ -255,13 +255,18 @@ const SvgWrapper = () => {
             // to true in about:config will remove such restrictions.
             // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
             const s = await navigator.clipboard.readText();
-            const { x: svgMidX, y: svgMidY } = pointerPosToRoundSVGCoord(
+            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
                 width / 2,
                 height / 2,
                 svgViewBoxZoom,
                 svgViewBoxMin
             );
-            const { nodes } = importSelectedNodesAndEdges(s, graph.current, svgMidX, svgMidY);
+            const { nodes } = importSelectedNodesAndEdges(
+                s,
+                graph.current,
+                roundToNearestN(svgMidX, 5),
+                roundToNearestN(svgMidY, 5)
+            );
             refreshAndSave();
             // select copied nodes automatically
             dispatch(clearSelected());
