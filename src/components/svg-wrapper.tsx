@@ -100,8 +100,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: svgX,
-                y: svgY,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
                 type,
                 [type]: attr,
             });
@@ -116,8 +116,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`misc_node_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: svgX,
-                y: svgY,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
                 type,
                 // deep copy to prevent mutual reference
                 [type]: structuredClone(miscNodes[type].defaultAttrs),
@@ -261,7 +261,12 @@ const SvgWrapper = () => {
                 svgViewBoxZoom,
                 svgViewBoxMin
             );
-            const { nodes } = importSelectedNodesAndEdges(s, graph.current, svgMidX, svgMidY);
+            const { nodes } = importSelectedNodesAndEdges(
+                s,
+                graph.current,
+                roundToNearestN(svgMidX, 5),
+                roundToNearestN(svgMidY, 5)
+            );
             refreshAndSave();
             // select copied nodes automatically
             dispatch(clearSelected());
