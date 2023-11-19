@@ -181,24 +181,6 @@ const SvgWrapper = () => {
         }
         // when user holding the shift key and mis-click the background
         // preserve the current selection
-        if (mode === 'select') {
-            const { x, y } = getMousePosition(e);
-            const nodesInRectangle = findNodesInRectangle(
-                graph.current,
-                selectStart.x,
-                selectStart.y,
-                (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-                (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y
-            );
-            if (!e.shiftKey) {
-                dispatch(setSelected(nodesInRectangle));
-            } else {
-                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
-            }
-            dispatch(setMode('free'));
-            setSelectStart({ x: 0, y: 0 });
-            setSelectMoving({ x: 0, y: 0 });
-        }
         if (active === 'background' && !e.shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
             // console.log('up', active);
