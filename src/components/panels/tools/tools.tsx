@@ -18,6 +18,7 @@ import { LinePathType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
 import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
@@ -57,11 +58,12 @@ const ToolsPanel = () => {
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
     const {
-        preference: { unlockSimplePathAttempts },
+        preference: {
+            unlockSimplePathAttempts,
+            toolsPanel: { expand: isToolsExpanded },
+        },
     } = useRootSelector(state => state.app);
     const bgColor = useColorModeValue('white', 'gray.800');
-
-    const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
@@ -95,7 +97,7 @@ const ToolsPanel = () => {
                         <MdExpandLess size={40} transform="rotate(90)" />
                     )
                 }
-                onClick={() => setIsToolsExpanded(!isToolsExpanded)}
+                onClick={() => dispatch(setToolsPanelExpansion(!isToolsExpanded))}
                 sx={buttonStyle}
             >
                 {isToolsExpanded ? t('panel.tools.showLess') : undefined}

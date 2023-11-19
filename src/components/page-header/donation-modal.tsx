@@ -22,12 +22,17 @@ import { IoMdHeart } from 'react-icons/io';
 import { MdOutlineWbIncandescent } from 'react-icons/md';
 import { TbPlaystationCircle } from 'react-icons/tb';
 import { TfiGallery } from 'react-icons/tfi';
+import { Events } from '../../constants/constants';
 import AfdianIcon from '../../images/afdian.png';
 import OpenCollectiveIcon from '../../images/opencollective-icon.webp';
+import { useRootSelector } from '../../redux';
 
 const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
+    const {
+        telemetry: { project: isAllowAppTelemetry },
+    } = useRootSelector(state => state.app);
 
     const handleGalleryDonationOpen = () => {
         if (rmgRuntime.isStandaloneWindow()) {
@@ -42,6 +47,10 @@ const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
             title: `Donation: New ${requestType} request for [city name]`,
             body: `Hi, I'd like to have new ${requestType}, and here is my support.\n\n<!-- your donation entry -->\n\n<!-- reference (images or URLs) -->\n\n`,
         }).toString();
+
+    React.useEffect(() => {
+        if (isOpen && isAllowAppTelemetry) rmgRuntime.event(Events.OPEN_DONATION, {});
+    }, [isOpen]);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
