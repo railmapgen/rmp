@@ -19,7 +19,7 @@ export default function InfoMultipleSection() {
     return (
         <Box p={1}>
             <Heading as="h5" size="sm">
-                {t('Selected Objects: ')} {selected.length}
+                {t('panel.details.selected')} {selected.length}
             </Heading>
             <VStack m="var(--chakra-space-1)">
                 {selected.map(node => {

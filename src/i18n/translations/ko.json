@@ -44,6 +44,7 @@
                 "targetName": "종말점 명칭"
             },
             "specificAttrsTitle": "독특 속성",
+            "selected": "선택한 개체:",
             "multipleSelection": "다중 선택",
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
