@@ -8,7 +8,6 @@ import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
-    addSelected,
     clearSelected,
     setActive,
     setKeepLastPath,

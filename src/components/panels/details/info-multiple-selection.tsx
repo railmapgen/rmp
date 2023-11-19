@@ -1,8 +1,8 @@
+import { Box, Button, Heading, VStack } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Heading, VStack } from '@chakra-ui/react';
-import { useRootSelector, useRootDispatch } from '../../../redux';
 import { StationAttributes } from '../../../constants/stations';
+import { useRootDispatch, useRootSelector } from '../../../redux';
 import { addSelected, clearSelected } from '../../../redux/runtime/runtime-slice';
 
 export default function InfoMultipleSection() {
