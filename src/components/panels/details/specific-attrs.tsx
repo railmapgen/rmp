@@ -1,5 +1,5 @@
+import { Text } from '@chakra-ui/react';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
@@ -15,7 +15,7 @@ export const NodeSpecificAttributes = () => {
     const id = selected.at(0)!;
 
     const type = window.graph.getNodeAttribute(id, 'type');
-    const AttrsComponent = nodes[type].attrsComponent;
+    const AttrsComponent = type in nodes && nodes[type].attrsComponent;
     const attrs = (window.graph.getNodeAttribute(id, type) ?? {}) as any;
 
     const handleAttrsUpdate = (selectedFirst: string, attrs: any) => {
@@ -25,7 +25,13 @@ export const NodeSpecificAttributes = () => {
         dispatch(saveGraph(window.graph.export()));
     };
 
-    return AttrsComponent && <AttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />;
+    return AttrsComponent ? (
+        <AttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />
+    ) : (
+        <Text fontSize="xs" m="var(--chakra-space-1)">
+            Oops :( We can&apos;t recognize this node. Maybe it is created in a newer version?
+        </Text>
+    );
 };
 
 export const LineSpecificAttributes = () => {
@@ -35,10 +41,10 @@ export const LineSpecificAttributes = () => {
 
     const type = window.graph.getEdgeAttribute(id, 'type');
     const attrs = (window.graph.getEdgeAttribute(id, type) ?? {}) as any;
-    const PathAttrsComponent = linePaths[type].attrsComponent;
+    const PathAttrsComponent = type in linePaths && linePaths[type].attrsComponent;
     const style = window.graph.getEdgeAttribute(id, 'style');
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
-    const StyleAttrsComponent = lineStyles[style].attrsComponent;
+    const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
 
     const handlePathAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
@@ -54,11 +60,19 @@ export const LineSpecificAttributes = () => {
 
     return (
         <>
-            {PathAttrsComponent && (
+            {PathAttrsComponent ? (
                 <PathAttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handlePathAttrsUpdate} />
+            ) : (
+                <Text fontSize="xs" m="var(--chakra-space-1)">
+                    Oops :( We can&apos;t recognize this line type. Maybe it is created in a newer version?
+                </Text>
             )}
-            {StyleAttrsComponent && (
+            {StyleAttrsComponent ? (
                 <StyleAttrsComponent id={id} attrs={styleAttrs} handleAttrsUpdate={handleStyleAttrsUpdate} />
+            ) : (
+                <Text fontSize="xs" m="var(--chakra-space-1)">
+                    Oops :( We can&apos;t recognize this line style. Maybe it is created in a newer version?
+                </Text>
             )}
         </>
     );

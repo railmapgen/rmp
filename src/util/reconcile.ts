@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
-import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { linePaths } from '../components/svgs/lines/lines';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../constants/constants';
 
 /**
  * Only lines have a reconcileId will be considered.
@@ -127,8 +127,11 @@ export const generateReconciledPath = (
         const targetAttr = graph.getNodeAttributes(target);
         const type = graph.getEdgeAttribute(line, 'type');
         const attr = graph.getEdgeAttribute(line, type) ?? linePaths[type].defaultAttrs;
-        // @ts-ignore-error
-        return linePaths[type].generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr);
+        return (
+            // @ts-ignore-error
+            linePaths[type]?.generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr) ??
+            `M ${sourceAttr.x},${sourceAttr.y} L ${targetAttr.x},${targetAttr.y}`
+        );
     });
 
     // merge paths to one
