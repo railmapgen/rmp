@@ -1,1 +1,0 @@
-import{S as d,e as c}from"./index-895ba9b4.js";const p=(t,e)=>t.filterEdges((s,o,r,a,n,i,f)=>e.has(r)&&e.has(a)),E=t=>{const e=Object.fromEntries([...Object.values(d),Object.values(c)].map(s=>[s,!1]));return t.forEachNode(s=>{const o=t.getNodeAttribute(s,"type");e[o]=!0}),e};export{p as a,E as f};
