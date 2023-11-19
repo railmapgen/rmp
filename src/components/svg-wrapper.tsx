@@ -18,8 +18,8 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
-import { findEdgesConnectedByNodes, findNodesExist } from '../util/graph';
-import { getMousePosition, isMacClient, roundToNearestN } from '../util/helpers';
+import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
+import { getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -76,8 +76,14 @@ const SvgWrapper = () => {
             });
     }, [refreshNodes]);
 
-    const [offset, setOffset] = React.useState({ x: 0, y: 0 });
-    const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 });
+    // select related
+    const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
+    const [selectMoving, setSelectMoving] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
+
+    // background moving related
+    const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
+    const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
+
     const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station')) {
@@ -90,11 +96,12 @@ const SvgWrapper = () => {
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
 
+            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
-                y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
+                x: svgX,
+                y: svgY,
                 type,
                 [type]: attr,
             });
@@ -105,11 +112,12 @@ const SvgWrapper = () => {
             dispatch(setMode('free'));
             const rand = nanoid(10);
             const type = mode.slice(10) as MiscNodeType;
+            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(`misc_node_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: roundToNearestN((x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, 10),
-                y: roundToNearestN((y * svgViewBoxZoom) / 100 + svgViewBoxMin.y, 10),
+                x: svgX,
+                y: svgY,
                 type,
                 // deep copy to prevent mutual reference
                 [type]: structuredClone(miscNodes[type].defaultAttrs),
@@ -134,10 +142,18 @@ const SvgWrapper = () => {
                 dispatch(clearSelected());
             }
             // console.log(x, y, svgViewBoxMin);
+        } else if (mode === 'select') {
+            setSelectStart(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
+            setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
         }
     });
     const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
-        if (active === 'background') {
+        if (mode === 'select') {
+            if (selectStart.x != 0 && selectStart.y != 0) {
+                const { x, y } = getMousePosition(e);
+                setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
+            }
+        } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
             dispatch(
                 setSvgViewBoxMin({
@@ -149,6 +165,19 @@ const SvgWrapper = () => {
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+        if (mode === 'select') {
+            const { x, y } = getMousePosition(e);
+            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+            const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
+            if (!e.shiftKey) {
+                dispatch(setSelected(nodesInRectangle));
+            } else {
+                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
+            }
+            dispatch(setMode('free'));
+            setSelectStart({ x: 0, y: 0 });
+            setSelectMoving({ x: 0, y: 0 });
+        }
         // when user holding the shift key and mis-click the background
         // preserve the current selection
         if (active === 'background' && !e.shiftKey) {
@@ -196,12 +225,7 @@ const SvgWrapper = () => {
             const d = 100;
             const x_factor = e.key.endsWith('Left') ? -1 : e.key.endsWith('Right') ? 1 : 0;
             const y_factor = e.key.endsWith('Up') ? -1 : e.key.endsWith('Down') ? 1 : 0;
-            dispatch(
-                setSvgViewBoxMin({
-                    x: svgViewBoxMin.x + ((d * svgViewBoxZoom) / 100) * x_factor,
-                    y: svgViewBoxMin.y + ((d * svgViewBoxZoom) / 100) * y_factor,
-                })
-            );
+            dispatch(setSvgViewBoxMin(pointerPosToSVGCoord(d * x_factor, d * y_factor, svgViewBoxZoom, svgViewBoxMin)));
         } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
             const d = 10;
             const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * d;
@@ -231,12 +255,13 @@ const SvgWrapper = () => {
             // to true in about:config will remove such restrictions.
             // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
             const s = await navigator.clipboard.readText();
-            const { nodes } = importSelectedNodesAndEdges(
-                s,
-                graph.current,
-                (width * svgViewBoxZoom) / 200 + svgViewBoxMin.x,
-                (height * svgViewBoxZoom) / 200 + svgViewBoxMin.y
+            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
+                width / 2,
+                height / 2,
+                svgViewBoxZoom,
+                svgViewBoxMin
             );
+            const { nodes } = importSelectedNodesAndEdges(s, graph.current, svgMidX, svgMidY);
             refreshAndSave();
             // select copied nodes automatically
             dispatch(clearSelected());
@@ -248,6 +273,16 @@ const SvgWrapper = () => {
             dispatch(redoAction());
         }
     });
+
+    const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
+    React.useEffect(() => {
+        setSelectCoord({
+            sx: selectStart.x <= selectMoving.x ? selectStart.x : selectMoving.x,
+            ex: selectStart.x > selectMoving.x ? selectStart.x : selectMoving.x,
+            sy: selectStart.y <= selectMoving.y ? selectStart.y : selectMoving.y,
+            ey: selectStart.y > selectMoving.y ? selectStart.y : selectMoving.y,
+        });
+    }, [selectMoving.x, selectMoving.y]);
 
     return (
         <svg
@@ -267,6 +302,20 @@ const SvgWrapper = () => {
             onKeyDown={handleKeyDown}
         >
             <SvgCanvas />
+            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                <rect
+                    x={selectCoord.sx}
+                    y={selectCoord.sy}
+                    width={selectCoord.ex - selectCoord.sx}
+                    height={selectCoord.ey - selectCoord.sy}
+                    rx="2"
+                    stroke="#b5b5b6"
+                    strokeWidth="2"
+                    strokeOpacity="0.4"
+                    fill="#b5b5b6"
+                    opacity="0.75"
+                />
+            )}
         </svg>
     );
 };

@@ -15,7 +15,8 @@
                 "lineDrawing": "路線描画",
                 "stations": "駅",
                 "miscellaneousNodes": "その他の節点"
-            }
+            },
+            "select": "選択する"
         },
         "details": {
             "header": "詳細",

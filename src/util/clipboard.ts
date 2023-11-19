@@ -48,6 +48,14 @@ export const exportSelectedNodesAndEdges = (
     return JSON.stringify(data);
 };
 
+/**
+ * Import nodes and edges from the clipboard data.
+ * @param s The text from the clipboard.
+ * @param graph The graph.
+ * @param x The central x of the svg canvas. Nodes and edges added will repositioned around this point.
+ * @param y The central y of the svg canvas. Nodes and edges added will repositioned around this point.
+ * @returns The nodes and edges added to the graph.
+ */
 export const importSelectedNodesAndEdges = (
     s: string,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,

@@ -9,6 +9,21 @@ export const getMousePosition = (e: React.MouseEvent) => {
     return { x, y };
 };
 
+/**
+ * Translate the position relative to the viewport to the svg user coordinate system.
+ * @param x The x of the pointer.
+ * @param y The y of the pointer.
+ * @param svgViewBoxZoom The zoom level of the svg view box.
+ * @param svgViewBoxMin The top-left coordinate of the svg view box.
+ * @returns The coordinate of the svg canvas.
+ */
+export const pointerPosToSVGCoord = (
+    x: number,
+    y: number,
+    svgViewBoxZoom: number,
+    svgViewBoxMin: { x: number; y: number }
+) => ({ x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y });
+
 export const roundToNearestN = (x: number, n: number) => Math.round(x / n) * n;
 
 /**

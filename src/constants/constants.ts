@@ -79,6 +79,7 @@ export type ActiveType = StnId | LineId | MiscNodeId | MiscEdgeId | 'background'
  */
 export type RuntimeMode =
     | 'free'
+    | 'select'
     | `line-${LinePathType}`
     | `station-${StationType}`
     | `misc-node-${MiscNodeType}`

@@ -15,7 +15,8 @@
                 "lineDrawing": "线段绘制",
                 "stations": "车站",
                 "miscellaneousNodes": "杂项节点"
-            }
+            },
+            "select": "多选"
         },
         "details": {
             "header": "详情",

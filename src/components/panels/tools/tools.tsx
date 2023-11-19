@@ -43,6 +43,12 @@ const accordionPanelStyle: SystemStyleObject = {
     flexDirection: 'column',
 };
 
+const selectIcon = (
+    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+        <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeDasharray="2" fill="none" />
+    </svg>
+);
+
 const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -99,6 +105,15 @@ const ToolsPanel = () => {
 
             <Flex className="tools" overflow="auto">
                 <Accordion width="100%" allowMultiple defaultIndex={[0, 1, 2]}>
+                    <Button
+                        aria-label="select"
+                        leftIcon={selectIcon}
+                        onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
+                        variant={mode === 'select' ? 'solid' : 'outline'}
+                        sx={buttonStyle}
+                    >
+                        {isToolsExpanded ? t('panel.tools.select') : undefined}
+                    </Button>
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
                             {isToolsExpanded && (
