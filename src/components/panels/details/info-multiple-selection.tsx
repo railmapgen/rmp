@@ -17,7 +17,7 @@ export default function InfoMultipleSection() {
     };
 
     return (
-        <Box p={1}>
+        <Box>
             <Heading as="h5" size="sm">
                 {t('panel.details.selected')} {selected.length}
             </Heading>
