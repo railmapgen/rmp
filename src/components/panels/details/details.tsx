@@ -45,15 +45,10 @@ const DetailsPanel = () => {
     const handleRemove = (selected: string[]) => {
         dispatch(clearSelected());
         selected.forEach(s => {
-            if (graph.current.hasNode(s)) {
-                graph.current.dropNode(s);
-                hardRefresh();
-            } else if (graph.current.hasEdge(s)) {
-                graph.current.dropEdge(s);
-                dispatch(setRefreshEdges());
-                dispatch(saveGraph(graph.current.export()));
-            }
+            if (graph.current.hasNode(s)) graph.current.dropNode(s);
+            else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
         });
+        hardRefresh();
     };
 
     return (
