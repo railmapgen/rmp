@@ -31,14 +31,18 @@ export default function InfoSection() {
         hardRefresh();
     };
 
-    const fields: RmgFieldsField[] = [
-        {
+    const fields: RmgFieldsField[] = [];
+    // deal with undefined, single and multiple selection
+    if (selected.length === 0) {
+        // add nothing as the details panel will be closed
+    } else if (selected.length === 1) {
+        fields.push({
             type: 'input',
             label: t('panel.details.info.id'),
             value: selected.length > 0 ? selected.join(', ') : 'undefined',
             minW: 276,
-        },
-        {
+        });
+        fields.push({
             type: 'select',
             label: t('panel.details.info.zIndex'),
             value: selectedFirst
@@ -50,13 +54,7 @@ export default function InfoSection() {
                 : 0,
             options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
             onChange: val => handleZIndexChange(Number(val)),
-            hidden: selected.length !== 1,
-        },
-    ];
-
-    // deal with undefined and multiple selection
-    if (selected.length === 0) {
-        // do nothing as the details panel will be closed
+        });
     } else if (selected.length > 1) {
         fields.push({
             type: 'input',
