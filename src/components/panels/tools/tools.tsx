@@ -57,7 +57,7 @@ const ToolsPanel = () => {
             toolsPanel: { expand: isToolsExpanded },
         },
     } = useRootSelector(state => state.app);
-    const bgColor = useColorModeValue('white', 'gray.800');
+    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {

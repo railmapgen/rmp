@@ -37,7 +37,7 @@ import TermsAndConditionsModal from './terms-and-conditions';
 import { isSafari } from '../../util/fonts';
 
 export default function DownloadActions() {
-    const bgColor = useColorModeValue('white', 'gray.800');
+    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
     const {
         telemetry: { app: isAllowAppTelemetry, project: isAllowProjectTelemetry },

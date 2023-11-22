@@ -56,7 +56,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     );
 
     const { colorMode } = useColorMode();
-    const bgColor = useColorModeValue('white', 'gray.800');
+    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const textX =
         (nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0) * (nameOffsetY === 'middle' ? 1.8 : 1);
