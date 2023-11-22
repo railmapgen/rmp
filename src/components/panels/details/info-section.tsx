@@ -83,6 +83,10 @@ export default function InfoSection() {
                 graph.current.getEdgeAttribute(selectedFirst, 'type') in linePaths &&
                 graph.current.getEdgeAttribute(selectedFirst, 'style') in lineStyles && <LineTypeSection />}
 
+            {selected.length === 1 && selectedFirst!.startsWith('line') && graph.current.hasEdge(selectedFirst) && (
+                <LineTypeSection />
+            )}
+
             {selected.length > 1 && <InfoMultipleSection />}
         </Box>
     );

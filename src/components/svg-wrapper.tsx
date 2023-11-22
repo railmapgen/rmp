@@ -100,8 +100,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`stn_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: svgX,
-                y: svgY,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
                 type,
                 [type]: attr,
             });
@@ -116,8 +116,8 @@ const SvgWrapper = () => {
             graph.current.addNode(`misc_node_${rand}`, {
                 visible: true,
                 zIndex: 0,
-                x: svgX,
-                y: svgY,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
                 type,
                 // deep copy to prevent mutual reference
                 [type]: structuredClone(miscNodes[type].defaultAttrs),
@@ -244,11 +244,21 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
-        } else if (e.key === 'c' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+        } else if (e.key === 's') {
+            dispatch(setMode('select'));
+        } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             const nodes = new Set(selected as (StnId | MiscNodeId)[]);
             const edges = findEdgesConnectedByNodes(graph.current, nodes);
             const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
             navigator.clipboard.writeText(s);
+            if (e.key === 'x') {
+                dispatch(clearSelected());
+                selected.forEach(s => {
+                    if (graph.current.hasNode(s)) graph.current.dropNode(s);
+                    else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+                });
+                refreshAndSave();
+            }
         } else if (e.key === 'v' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             // Firefox does not allow JavaScript to read the clipboard for privacy reasons.
             // Set dom.events.testing.asyncClipboard and dom.events.asyncClipboard.readText
@@ -261,7 +271,12 @@ const SvgWrapper = () => {
                 svgViewBoxZoom,
                 svgViewBoxMin
             );
-            const { nodes } = importSelectedNodesAndEdges(s, graph.current, svgMidX, svgMidY);
+            const { nodes } = importSelectedNodesAndEdges(
+                s,
+                graph.current,
+                roundToNearestN(svgMidX, 5),
+                roundToNearestN(svgMidY, 5)
+            );
             refreshAndSave();
             // select copied nodes automatically
             dispatch(clearSelected());
