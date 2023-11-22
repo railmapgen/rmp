@@ -1,12 +1,13 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useRootSelector, useRootDispatch } from '../../../redux';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshNodes, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
-import StationTypeSection from './station-type-section';
+import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import InfoMultipleSection from './info-multiple-selection';
 import LineTypeSection from './line-type-section';
+import StationTypeSection from './station-type-section';
 
 export default function InfoSection() {
     const { t } = useTranslation();
@@ -77,6 +78,8 @@ export default function InfoSection() {
             {selected.length === 1 && selectedFirst!.startsWith('line') && graph.current.hasEdge(selectedFirst) && (
                 <LineTypeSection />
             )}
+
+            {selected.length > 1 && <InfoMultipleSection />}
         </Box>
     );
 }

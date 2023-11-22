@@ -45,6 +45,7 @@
             },
             "specificAttrsTitle": "獨特屬性",
             "multipleSelection": "多重选取",
+            "selected": "選取的對象:",
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",

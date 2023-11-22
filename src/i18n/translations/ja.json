@@ -30,6 +30,7 @@
                 "type": "タイプ"
             },
             "multipleSelection": "複数選択",
+            "selected": "選択したオブジェクト:",
             "changeStationTypeContent": "駅のタイプを変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線のタイプを変更すると、すべての属性が削除されます。",
             "changeType": "タイプを変更",
