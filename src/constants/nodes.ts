@@ -1,10 +1,9 @@
-import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { BerlinUBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-u-bahn-line-badge';
 import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-s-bahn-line-badge';
 import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
 import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
-import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge/gzmtr-line-badge';
+import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
 import { TextAttributes } from '../components/svgs/nodes/text';
@@ -13,6 +12,7 @@ import { AttrsProps, MiscNodeId } from './constants';
 import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
+import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
 import { PolygonAttributes } from '../components/svgs/nodes/polygon';
 
 export enum MiscNodeType {
@@ -27,6 +27,7 @@ export enum MiscNodeType {
     BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     ChongqingRTNumLineBadge = 'chongqingrt-num-line-badge',
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
+    ShenzhenMetroNumLineBadge = 'shenzhen-metro-num-line-badge',
     Facilities = 'facilities',
     Text = 'text',
     Polygon = 'polygon',
@@ -44,6 +45,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.ChongqingRTNumLineBadge]?: ChongqingRTNumLineBadgeAttributes;
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
+    [MiscNodeType.ShenzhenMetroNumLineBadge]?: ShenzhenMetroNumLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.Polygon]?: PolygonAttributes;

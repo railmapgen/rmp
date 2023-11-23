@@ -7,7 +7,6 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
-    "acceptingDonations": "우리는 여러분의 판타지 작품을 받고 있습니다! 지원을 보여주고 갤러리에 제출하세요!",
 
     "panel": {
         "tools": {
@@ -16,7 +15,8 @@
                 "lineDrawing": "선 그리기",
                 "stations": "역",
                 "miscellaneousNodes": "기타 노드"
-            }
+            },
+            "select": "선택하다"
         },
         "details": {
             "header": "상세한 상황",
@@ -44,6 +44,7 @@
                 "targetName": "종말점 명칭"
             },
             "specificAttrsTitle": "독특 속성",
+            "selected": "선택한 개체:",
             "multipleSelection": "다중 선택",
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
@@ -87,6 +88,10 @@
                 },
                 "chongqingRTTextLineBadge": {
                     "displayName": "충칭 철도 교통 텍스트 라인 표시"
+                },
+                "shenzhenMetroNumLineBadge": {
+                    "displayName": "심천 지하철 번호 라인 배지",
+                    "branch": "지선입니다"
                 },
                 "facilities": {
                     "displayName": "시설",
@@ -173,6 +178,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "쑤저우 궤도교통 환승역"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "쿤밍 궤도교통 기본역"
+                },
+                "kunmingRTInt": {
+                    "displayName": "쿤밍 궤도교통 환승역"
                 }
             },
             "lines": {
@@ -241,8 +252,8 @@
             "edges": {},
             "footer": {
                 "duplicate": "복사",
-                "remove": "삭제",
-                "removeEntireLine": "현재 색상의 모든 선분을 삭제"
+                "copy": "복사",
+                "remove": "삭제"
             }
         }
     },
@@ -324,14 +335,18 @@
                 "title": "바로 가기",
                 "keys": "키",
                 "description": "설명",
-                "f": "마지막 도구 사용",
+                "f": "마지막 도구 사용.",
+                "s": "선택하다.",
                 "arrows": "캔버스를 약간 이동합니다.",
                 "ijkl": "선택한 역을 약간 이동합니다.",
                 "shift": "여러 항목 선택.",
                 "alt": "정밀한 이동.",
                 "delete": "선택한 역을 삭제합니다.",
-                "undo": "Undo.",
-                "redo": "Redo."
+                "cut": "잘라내기.",
+                "copy": "복사하다.",
+                "paste": "붙여넣다.",
+                "undo": "취소하다.",
+                "redo": "다시 하다."
             },
             "procedures":{
                 "title": "절차",

@@ -7,7 +7,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-    "acceptingDonations": "私たちはあなたの幻想作品を受け付けています！応援を示し、ギャラリーに提出してください！",
 
     "panel": {
         "tools": {
@@ -16,7 +15,8 @@
                 "lineDrawing": "路線描画",
                 "stations": "駅",
                 "miscellaneousNodes": "その他の節点"
-            }
+            },
+            "select": "選択する"
         },
         "details": {
             "header": "詳細",
@@ -30,6 +30,7 @@
                 "type": "タイプ"
             },
             "multipleSelection": "複数選択",
+            "selected": "選択したオブジェクト:",
             "changeStationTypeContent": "駅のタイプを変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線のタイプを変更すると、すべての属性が削除されます。",
             "changeType": "タイプを変更",
@@ -87,6 +88,10 @@
                 },
                 "chongqingRTTextLineBadge": {
                     "displayName": "重慶鉄道交通のテキストライン標識"
+                },
+                "shenzhenMetroNumLineBadge": {
+                    "displayName": "深セン地下鉄番号ラインバッジ",
+                    "branch": "支線です"
                 },
                 "facilities": {
                     "displayName": "施設",
@@ -174,6 +179,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "蘇州軌道交通乗り換え駅"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "昆明軌道交通基本駅"
+                },
+                "kunmingRTInt": {
+                    "displayName": "昆明軌道交通乗り換え駅"
                 }
             },
             "lines": {
@@ -241,9 +252,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "複製",
-                "remove": "削除",
-                "removeEntireLine": "この色のすべての路線を削除する"
+                "duplicate": "重複",
+                "copy": "複製",
+                "remove": "削除"
             }
         }
     },
@@ -325,14 +336,18 @@
                 "title": "ショートカット",
                 "keys": "キー",
                 "description": "説明",
-                "f": "最後のツールを使用する",
+                "f": "最後のツールを使用する。",
+                "s": "選択する。",
                 "arrows": "キャンバスを少し移動します。",
                 "ijkl": "選択した駅を少し移動します。",
                 "shift": "複数選択。",
                 "alt": "正確な移動。",
                 "delete": "選択した駅を削除します。",
-                "undo": "元に戻す",
-                "redo": "やり直す"
+                "cut": "切り取る。",
+                "copy": "複製する。",
+                "paste": "貼り付ける。",
+                "undo": "元に戻す。",
+                "redo": "やり直す。"
             },
             "procedures": {
                 "title": "手順",

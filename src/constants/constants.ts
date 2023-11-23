@@ -80,6 +80,7 @@ export type ActiveType = StnId | LineId | MiscNodeId | MiscEdgeId | 'background'
  */
 export type RuntimeMode =
     | 'free'
+    | 'select'
     | `line-${LinePathType}`
     | `station-${StationType}`
     | `misc-node-${MiscNodeType}`
@@ -111,8 +112,11 @@ export enum Events {
     APP_LOAD = 'APP_LOAD',
     ADD_STATION = 'ADD_STATION',
     ADD_LINE = 'ADD_LINE',
+    IMPORT_RMG_PARAM = 'IMPORT_RMG_PARAM',
+    IMPORT_WORK_FROM_GALLERY = 'IMPORT_WORK_FROM_GALLERY',
     DOWNLOAD_PARAM = 'DOWNLOAD_PARAM',
     DOWNLOAD_IMAGES = 'DOWNLOAD_IMAGES',
+    OPEN_DONATION = 'OPEN_DONATION',
 }
 
 export enum LocalStorageKey {

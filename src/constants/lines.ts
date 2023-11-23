@@ -1,23 +1,22 @@
-import { RmgFieldsField } from '@railmapgen/rmg-components';
-import { AttrsProps, LineId } from './constants';
-import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
+import React from 'react';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
-import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
-import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
-import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
-import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
+import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
+import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
 import { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
 import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
+import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
-import { RiverAttributes } from '../components/svgs/lines/styles/river';
-import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
+import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
 import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
-import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
-import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
-import React from 'react';
+import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
+import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
+import { RiverAttributes } from '../components/svgs/lines/styles/river';
+import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
+import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
+import { AttrsProps, LineId } from './constants';
 
 export enum LinePathType {
     Diagonal = 'diagonal',

@@ -9,7 +9,12 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
-import { setTelemetryApp, setUnlockSimplePath } from './redux/app/app-slice';
+import {
+    setTelemetryApp,
+    setTelemetryProject,
+    setToolsPanelExpansion,
+    setUnlockSimplePath,
+} from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { RMPSave, upgrade } from './util/save';
 
@@ -41,10 +46,13 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
 (() => {
     if ('telemetry' in app) {
         if ('app' in app.telemetry) store.dispatch(setTelemetryApp(app.telemetry.app));
+        if ('project' in app.telemetry) store.dispatch(setTelemetryProject(app.telemetry.project));
     }
     if ('preference' in app) {
         if ('unlockSimplePathAttempts' in app.preference)
             store.dispatch(setUnlockSimplePath(app.preference.unlockSimplePathAttempts));
+        if ('toolsPanel' in app.preference && 'expand' in app.preference.toolsPanel)
+            store.dispatch(setToolsPanelExpansion(app.preference.toolsPanel.expand));
     }
 })();
 

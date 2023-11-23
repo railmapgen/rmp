@@ -7,7 +7,6 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-    "acceptingDonations": "我們正在接受您的幻想作品！支持我們並提交其到畫廊！",
 
     "panel": {
         "tools": {
@@ -16,7 +15,8 @@
                 "lineDrawing": "線段繪製",
                 "stations": "車站",
                 "miscellaneousNodes": "雜項節點"
-            }
+            },
+            "select": "多選"
         },
         "details": {
             "header": "詳情",
@@ -45,6 +45,7 @@
             },
             "specificAttrsTitle": "獨特屬性",
             "multipleSelection": "多重选取",
+            "selected": "選取的對象:",
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
@@ -87,6 +88,10 @@
                 },
                 "chongqingRTTextLineBadge": {
                     "displayName": "重慶軌道交通文字線路標識"
+                },
+                "shenzhenMetroNumLineBadge": {
+                    "displayName": "深圳地鐵數字線路標識",
+                    "branch": "是否支線"
                 },
                 "facilities": {
                     "displayName": "設施",
@@ -173,6 +178,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "蘇州軌道交通換乘車站"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "昆明軌道交通基本車站"
+                },
+                "kunmingRTInt": {
+                    "displayName": "昆明軌道交通基本車站"
                 }
             },
             "lines": {
@@ -240,9 +251,9 @@
             },
             "edges": {},
             "footer": {
-                "duplicate": "複製",
-                "remove": "移除",
-                "removeEntireLine": "移除所有當前顏色的線段"
+                "duplicate": "重複",
+                "copy": "複製",
+                "remove": "移除"
             }
         }
     },
@@ -325,11 +336,15 @@
                 "keys": "按鍵",
                 "description": "描述",
                 "f": "使用上一個工具。",
+                "s": "多選。",
                 "arrows": "稍微移動畫布。",
                 "ijkl": "稍微移動所選站點。",
                 "shift": "多選。",
                 "alt": "精確移動。",
                 "delete": "刪除所選站點。",
+                "cut": "剪切。",
+                "copy": "複製。",
+                "paste": "貼上。",
                 "undo": "撤銷。",
                 "redo": "重做。"
             },

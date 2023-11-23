@@ -5,7 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { closePaletteAppClip, onPaletteAppClipEmit, setIsDonationModalOpen } from '../redux/runtime/runtime-slice';
+import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
@@ -128,15 +128,6 @@ export default function AppRoot() {
                             </Text>
                         </Alert>
                     )}
-
-                    <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
-                        <AlertIcon />
-                        <Text>
-                            <Link onClick={() => dispatch(setIsDonationModalOpen(true))}>
-                                {t('acceptingDonations')}
-                            </Link>
-                        </Text>
-                    </Alert>
 
                     <RmgErrorBoundary allowReset>
                         <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>

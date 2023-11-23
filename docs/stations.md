@@ -192,6 +192,8 @@ const myStationAttrs = (props: AttrsProps<MyStationAttributes>) => {
 
 > For more details on how to use the `RmgFields` component, please refer to [this informative guide](https://railmapgen.github.io/rmg-components/?path=/story/rmgfields--basic).
 
+We also provide common input components including color and interchange. Feel free to checkout them in `shmetro-basic-2020.tsx` and `mtr.tsx` for more reference.
+
 ### 6. Create a icon
 
 Create an SVG icon that will represent your station in the tools panel. This should be a simple, recognizable design that conveys the unique appearance of your station. The icon must be a React component that returns an SVG element.

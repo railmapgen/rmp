@@ -9,7 +9,6 @@ import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md'
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
-import { setIsDonationModalOpen } from '../../redux/runtime/runtime-slice';
 import AboutModal from './about-modal';
 import DonationModal from './donation-modal';
 import DownloadActions from './download-actions';
@@ -24,8 +23,8 @@ export default function WindowHeader() {
         telemetry: { app: isAllowAppTelemetry },
     } = useRootSelector(state => state.app);
     const { past, future } = useRootSelector(state => state.param);
-    const { isDonationModalOpen } = useRootSelector(state => state.runtime);
 
+    const [isDonationModalOpen, setIsDonationModalOpen] = React.useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
 
@@ -124,7 +123,7 @@ export default function WindowHeader() {
                         aria-label="Donation"
                         color="red"
                         icon={<IoMdHeart />}
-                        onClick={() => dispatch(setIsDonationModalOpen(true))}
+                        onClick={() => setIsDonationModalOpen(true)}
                     />
                 </WrapItem>
 
@@ -149,7 +148,7 @@ export default function WindowHeader() {
                 </WrapItem>
             </Wrap>
 
-            <DonationModal isOpen={isDonationModalOpen} onClose={() => dispatch(setIsDonationModalOpen(false))} />
+            <DonationModal isOpen={isDonationModalOpen} onClose={() => setIsDonationModalOpen(false)} />
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
         </RmgWindowHeader>

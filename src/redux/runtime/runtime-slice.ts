@@ -46,7 +46,6 @@ interface RuntimeState {
         output: Theme | undefined;
     };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
-    isDonationModalOpen: boolean;
 }
 
 const initialState: RuntimeState = {
@@ -65,13 +64,15 @@ const initialState: RuntimeState = {
         output: undefined,
     },
     globalAlerts: {},
-    isDonationModalOpen: false,
 };
 
 const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
     reducers: {
+        setSelected: (state, action: PayloadAction<string[]>) => {
+            state.selected = action.payload;
+        },
         addSelected: (state, action: PayloadAction<string>) => {
             if (!state.selected.includes(action.payload))
                 // no duplicates allowed
@@ -128,9 +129,6 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
-        setIsDonationModalOpen: (state, action: PayloadAction<boolean>) => {
-            state.isDonationModalOpen = action.payload;
-        },
     },
     extraReducers: builder => {
         builder
@@ -146,6 +144,7 @@ const runtimeSlice = createSlice({
 });
 
 export const {
+    setSelected,
     addSelected,
     removeSelected,
     clearSelected,
@@ -160,6 +159,5 @@ export const {
     onPaletteAppClipEmit,
     setGlobalAlert,
     closeGlobalAlert,
-    setIsDonationModalOpen,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

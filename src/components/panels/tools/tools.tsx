@@ -18,6 +18,7 @@ import { LinePathType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
 import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
@@ -42,6 +43,12 @@ const accordionPanelStyle: SystemStyleObject = {
     flexDirection: 'column',
 };
 
+const selectIcon = (
+    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+        <rect x="6" y="6" width="12" height="12" rx="2" stroke="currentColor" strokeDasharray="2" fill="none" />
+    </svg>
+);
+
 const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -51,11 +58,12 @@ const ToolsPanel = () => {
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
     const {
-        preference: { unlockSimplePathAttempts },
+        preference: {
+            unlockSimplePathAttempts,
+            toolsPanel: { expand: isToolsExpanded },
+        },
     } = useRootSelector(state => state.app);
-    const bgColor = useColorModeValue('white', 'gray.800');
-
-    const [isToolsExpanded, setIsToolsExpanded] = React.useState(true);
+    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
@@ -89,7 +97,7 @@ const ToolsPanel = () => {
                         <MdExpandLess size={40} transform="rotate(90)" />
                     )
                 }
-                onClick={() => setIsToolsExpanded(!isToolsExpanded)}
+                onClick={() => dispatch(setToolsPanelExpansion(!isToolsExpanded))}
                 sx={buttonStyle}
             >
                 {isToolsExpanded ? t('panel.tools.showLess') : undefined}
@@ -97,6 +105,15 @@ const ToolsPanel = () => {
 
             <Flex className="tools" overflow="auto">
                 <Accordion width="100%" allowMultiple defaultIndex={[0, 1, 2]}>
+                    <Button
+                        aria-label="select"
+                        leftIcon={selectIcon}
+                        onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
+                        variant={mode === 'select' ? 'solid' : 'outline'}
+                        sx={buttonStyle}
+                    >
+                        {isToolsExpanded ? t('panel.tools.select') : undefined}
+                    </Button>
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
                             {isToolsExpanded && (

@@ -7,7 +7,6 @@
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
-    "acceptingDonations": "We are accepting your fantasy works! Show your support and submit them to the Gallery!",
 
     "panel": {
         "tools": {
@@ -16,7 +15,8 @@
                 "lineDrawing": "Line drawing",
                 "stations": "Stations",
                 "miscellaneousNodes": "Miscellaneous nodes"
-            }
+            },
+            "select": "Select"
         },
         "details": {
             "header": "Details",
@@ -30,6 +30,7 @@
                 "type": "Type"
             },
             "multipleSelection": "Multiple Selection",
+            "selected": "Selected Objects:",
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
             "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
             "changeType": "Change Type",
@@ -87,6 +88,10 @@
                 },
                 "chongqingRTTextLineBadge": {
                     "displayName": "Chongqing Rail Transit text line badge"
+                },
+                "shenzhenMetroNumLineBadge": {
+                    "displayName": "Shenzhen Metro num line badge",
+                    "branch": "Is branch line"
                 },
                 "facilities": {
                     "displayName": "Facilities",
@@ -174,6 +179,12 @@
                 },
                 "suzhouRTInt": {
                     "displayName": "Suzhou Rail Transit interchange station"
+                },
+                "kunmingRTBasic": {
+                    "displayName": "Kunming Rail Transit basic station"
+                },
+                "kunmingRTInt": {
+                    "displayName": "Kunming Rail Transit interchange station"
                 }
             },
             "lines": {
@@ -242,8 +253,8 @@
             "edge": {},
             "footer": {
                 "duplicate": "Duplicate",
-                "remove": "Remove",
-                "removeEntireLine": "Remove all lines in this color"
+                "copy": "Copy",
+                "remove": "Remove"
             }
         }
     },
@@ -325,11 +336,15 @@
                 "keys": "Keys",
                 "description": "Description",
                 "f": "Use the last tool.",
+                "s": "Select.",
                 "arrows": "Move the canvas a little bit.",
                 "ijkl": "Move the selected station(s) a little bit.",
                 "shift": "Multiple selection.",
                 "alt": "Precise movement.",
                 "delete": "Delete the selected station(s).",
+                "cut": "Cut.",
+                "copy": "Copy.",
+                "paste": "Paste.",
                 "undo": "Undo.",
                 "redo": "Redo."
             },

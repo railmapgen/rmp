@@ -21,6 +21,15 @@ export interface AppState {
          * Default to 3, unlocked when -1, disabled on 0.
          */
         unlockSimplePathAttempts: number;
+        /**
+         * Settings for the tools panel.
+         */
+        toolsPanel: {
+            /**
+             * Whether to expand the tools panel. Remembered for next run.
+             */
+            expand: boolean;
+        };
     };
 }
 
@@ -31,6 +40,9 @@ export const initialState: AppState = {
     },
     preference: {
         unlockSimplePathAttempts: 3,
+        toolsPanel: {
+            expand: true,
+        },
     },
 };
 
@@ -47,8 +59,11 @@ const appSlice = createSlice({
         setUnlockSimplePath: (state, action: PayloadAction<number>) => {
             state.preference.unlockSimplePathAttempts = action.payload;
         },
+        setToolsPanelExpansion: (state, action: PayloadAction<boolean>) => {
+            state.preference.toolsPanel.expand = action.payload;
+        },
     },
 });
 
-export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath } = appSlice.actions;
+export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath, setToolsPanelExpansion } = appSlice.actions;
 export default appSlice.reducer;

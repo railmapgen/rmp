@@ -1,9 +1,11 @@
 import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdUpload } from 'react-icons/md';
+import { Events } from '../../constants/constants';
 import { RMGParam } from '../../constants/rmg';
-import { useRootDispatch } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { parseRmgParam } from '../../util/rmg-param-parser';
@@ -14,6 +16,9 @@ import RmpGalleryAppClip from './rmp-gallery-app-clip';
 export default function OpenActions() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const {
+        telemetry: { project: isAllowAppTelemetry },
+    } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -37,6 +42,7 @@ export default function OpenActions() {
 
     const handleImportRMGProject = (param: RMGParam) => {
         try {
+            if (isAllowAppTelemetry) rmgRuntime.event(Events.IMPORT_RMG_PARAM, {});
             parseRmgParam(graph.current, param);
             refreshAndSave();
         } catch (err) {

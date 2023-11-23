@@ -1,7 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
-import { MiscNodeType } from '../constants/nodes';
-import { StationType } from '../constants/stations';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 
 export const getMousePosition = (e: React.MouseEvent) => {
     const bbox = e.currentTarget.getBoundingClientRect();
@@ -10,6 +8,21 @@ export const getMousePosition = (e: React.MouseEvent) => {
     // console.log(e.clientX, bbox.left, e.clientY, bbox.top, x, y);
     return { x, y };
 };
+
+/**
+ * Translate the position relative to the viewport to the svg user coordinate system.
+ * @param x The x of the pointer.
+ * @param y The y of the pointer.
+ * @param svgViewBoxZoom The zoom level of the svg view box.
+ * @param svgViewBoxMin The top-left coordinate of the svg view box.
+ * @returns The coordinate of the svg canvas.
+ */
+export const pointerPosToSVGCoord = (
+    x: number,
+    y: number,
+    svgViewBoxZoom: number,
+    svgViewBoxMin: { x: number; y: number }
+) => ({ x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y });
 
 export const roundToNearestN = (x: number, n: number) => Math.round(x / n) * n;
 
@@ -101,17 +114,6 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
-
-export const findNodesExist = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    const nodesExist: { [key in NodeType]: boolean } = Object.fromEntries(
-        [...Object.values(StationType), Object.values(MiscNodeType)].map(type => [type, false])
-    );
-    graph.forEachNode(node => {
-        const type = graph.getNodeAttribute(node, 'type');
-        nodesExist[type] = true;
-    });
-    return nodesExist;
-};
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {

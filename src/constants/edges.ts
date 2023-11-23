@@ -49,9 +49,9 @@ export interface Edge<T> {
     defaultAttrs: T;
     /**
      * @deprecated Compose the attributes' editor UI as a React component and
-     * set it in `attrsComponent`. Directly pass `RmgFieldsField` is not straightforward
-     * and have several limitations such as i18n translation and dynamic UI changed
-     * on attributes updated.
+     * set it in `attrsComponent`. Directly passing `RmgFieldsField` is not straightforward
+     * and has several limitations such as i18n translation and dynamic UI that
+     * changed on attributes updated.
      *
      * Changeable actions in the details panel.
      * In a slightly different RmgFieldsField format that hides some internal implementation.

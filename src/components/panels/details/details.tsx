@@ -3,9 +3,12 @@ import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader 
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
+import { findEdgesConnectedByNodes } from '../../../util/graph';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -33,18 +36,19 @@ const DetailsPanel = () => {
         dispatch(setRefreshNodes());
         dispatch(saveGraph(graph.current.export()));
     };
+    const handleCopy = (selected: string[]) => {
+        const nodes = new Set(selected as (StnId | MiscNodeId)[]);
+        const edges = findEdgesConnectedByNodes(graph.current, nodes);
+        const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
+        navigator.clipboard.writeText(s);
+    };
     const handleRemove = (selected: string[]) => {
         dispatch(clearSelected());
         selected.forEach(s => {
-            if (graph.current.hasNode(s)) {
-                graph.current.dropNode(s);
-                hardRefresh();
-            } else if (graph.current.hasEdge(s)) {
-                graph.current.dropEdge(s);
-                dispatch(setRefreshEdges());
-                dispatch(saveGraph(graph.current.export()));
-            }
+            if (graph.current.hasNode(s)) graph.current.dropNode(s);
+            else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
         });
+        hardRefresh();
     };
 
     return (
@@ -79,6 +83,9 @@ const DetailsPanel = () => {
                             {t('panel.details.footer.duplicate')}
                         </Button>
                     )}
+                    <Button size="sm" variant="outline" onClick={() => handleCopy(selected)}>
+                        {t('panel.details.footer.copy')}
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
                         {t('panel.details.footer.remove')}
                     </Button>

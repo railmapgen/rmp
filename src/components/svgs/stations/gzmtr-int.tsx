@@ -1,7 +1,10 @@
 import { useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode } from '@railmapgen/rmg-palette-resources';
+import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -14,7 +17,6 @@ import {
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
-import { StationNumber } from './gzmtr-basic';
 
 const CODE_POS = [
     [[0, 0]],
@@ -55,7 +57,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     );
 
     const { colorMode } = useColorMode();
-    const bgColor = useColorModeValue('white', 'gray.800');
+    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const textX =
         (nameOffsetX === 'left' ? -20 : nameOffsetX === 'right' ? 20 : 0) * (nameOffsetY === 'middle' ? 1.8 : 1);
@@ -180,9 +182,9 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                 {transfer[0]?.map((info, i, arr) => (
                     <g
                         key={`gzmtr_int_${id}_stn_${i}`}
-                        transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})`}
+                        transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})scale(0.75)`}
                     >
-                        <StationNumber strokeColor={info[2]} lineCode={info[4]} stationCode={info[5]} />
+                        <StationNumber strokeColour={info[2]} lineNum={info[4]} stnNum={info[5]} />
                     </g>
                 ))}
 
@@ -303,117 +305,102 @@ const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
     secondaryNames: ['', ''],
 };
 
-const gzmtrIntStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: GzmtrIntStationAttributes) =>
-            (attrs ?? defaultGzmtrIntStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
+const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: GzmtrIntStationAttributes) =>
-            (attrs ?? defaultGzmtrIntStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[1] = val.replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: GzmtrIntStationAttributes) => (attrs?.nameOffsetY === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as Exclude<NameOffsetX, 'middle'>;
-            // return modified attrs
-            return attrs;
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as Exclude<NameOffsetX, 'middle'>;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: GzmtrIntStationAttributes) => (attrs?.nameOffsetX === 'middle' ? ['middle'] : []),
-        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as Exclude<NameOffsetY, 'middle'>;
-            // return modified attrs
-            return attrs;
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as Exclude<NameOffsetY, 'middle'>;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.stations.gzmtrInt.open',
-        oneLine: true,
-        isChecked: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).open,
-        onChange: (val: boolean, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.open = val;
-            // return modified attrs
-            return attrs;
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrInt.open'),
+            oneLine: true,
+            isChecked: attrs.open,
+            onChange: val => {
+                attrs.open = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.gzmtrInt.secondaryNameZh',
-        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).secondaryNames[0],
-        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.secondaryNames[0] = val.toString();
-            // return modified attrs
-            return attrs;
+        {
+            type: 'input',
+            label: t('panel.details.stations.gzmtrInt.secondaryNameZh'),
+            value: attrs.secondaryNames[0],
+            onChange: val => {
+                attrs.secondaryNames[0] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.stations.gzmtrInt.secondaryNameEn',
-        value: (attrs?: GzmtrIntStationAttributes) => (attrs ?? defaultGzmtrIntStationAttributes).secondaryNames[1],
-        onChange: (val: string | number, attrs_: GzmtrIntStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultGzmtrIntStationAttributes;
-            // set value
-            attrs.secondaryNames[1] = val.toString();
-            // return modified attrs
-            return attrs;
+        {
+            type: 'input',
+            label: t('panel.details.stations.gzmtrInt.secondaryNameEn'),
+            value: attrs.secondaryNames[1],
+            onChange: val => {
+                attrs.secondaryNames[1] = val.toString();
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'custom',
-        label: 'panel.details.stations.interchange.title',
-        component: (
-            <InterchangeField
-                stationType={StationType.GzmtrInt}
-                defaultAttrs={defaultGzmtrIntStationAttributes}
-                maximumTransfers={[3, 3, 0]}
-            />
-        ),
-    },
-];
+        {
+            type: 'custom',
+            label: t('panel.details.stations.interchange.title'),
+            component: (
+                <InterchangeField
+                    stationType={StationType.GzmtrInt}
+                    defaultAttrs={defaultGzmtrIntStationAttributes}
+                    maximumTransfers={[3, 3, 0]}
+                />
+            ),
+            minW: 'full',
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const attrsComponent = () => (
     <RmgFieldsFieldSpecificAttributes
@@ -423,11 +410,11 @@ const attrsComponent = () => (
 
 const gzmtrIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <g transform="translate(6,12)scale(0.4)">
-            <StationNumber strokeColor="#000" lineCode="1" stationCode="09" />
+        <g transform="translate(6,12)scale(0.3)">
+            <StationNumber strokeColour="#000" lineNum="1" stnNum="09" />
         </g>
-        <g transform="translate(18,12)scale(0.4)">
-            <StationNumber strokeColor="#000" lineCode="2" stationCode="13" />
+        <g transform="translate(18,12)scale(0.3)">
+            <StationNumber strokeColour="#000" lineNum="2" stnNum="13" />
         </g>
         <marker id="arrow" markerWidth="5" markerHeight="5" refX="1" refY="1.25" orient="auto">
             <polygon points="0,0 0,3 2,1.5" />
@@ -441,7 +428,7 @@ const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
     component: GzmtrIntStation,
     icon: gzmtrIntStationIcon,
     defaultAttrs: defaultGzmtrIntStationAttributes,
-    attrsComponent,
+    attrsComponent: gzmtrIntStationAttrsComponents,
     metadata: {
         displayName: 'panel.details.stations.gzmtrInt.displayName',
         cities: [CityCode.Guangzhou],

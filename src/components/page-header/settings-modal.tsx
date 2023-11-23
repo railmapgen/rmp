@@ -225,6 +225,12 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tr>
                                         <Tr>
                                             <Td>
+                                                <Kbd>s</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.s')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
                                                 <Box display="flex" flexDirection="row">
                                                     <MdArrowUpward />
                                                     <MdArrowBack />
@@ -262,6 +268,30 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                                 {isMacClient ? <Kbd sx={macKeyStyle}>&#9003;</Kbd> : <Kbd>delete</Kbd>}
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.delete')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
+                                                <Kbd>x</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.cut')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
+                                                <Kbd>c</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.copy')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
+                                                {' + '}
+                                                <Kbd>v</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.paste')}</Td>
                                         </Tr>
                                         <Tr>
                                             <Td>
