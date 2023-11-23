@@ -3,7 +3,7 @@ import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-
 import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
 import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
-import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge/gzmtr-line-badge';
+import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
 import { TextAttributes } from '../components/svgs/nodes/text';
