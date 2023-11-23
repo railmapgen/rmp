@@ -330,12 +330,6 @@ const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAtt
     return <RmgFields fields={fields} />;
 };
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={gzmtrBasicStationFields as RmgFieldsFieldDetail<GzmtrBasicStationAttributes>}
-    />
-);
-
 const gzmtrBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <g transform="translate(12,12)scale(0.45)">
