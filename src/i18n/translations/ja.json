@@ -49,6 +49,12 @@
                 "targetName": "到着点名"
             },
             "specificAttrsTitle": "特定の属性",
+            "unknown": {
+                "error": "おっと :( これは{{category}}を認識できません。おそらくそれは新しいバージョンで作成されました。",
+                "node": "節点",
+                "linePath": "路線経路",
+                "lineStyle": "路線風格"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "中国語の路線名",

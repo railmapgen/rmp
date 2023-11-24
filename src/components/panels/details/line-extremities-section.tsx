@@ -68,6 +68,13 @@ export default function LineExtremitiesSection() {
                     {source}
                 </Button>
             ),
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lineExtremities.sourceName'),
+            value: sourceName,
+            minW: 'full',
         },
         {
             type: 'custom',
@@ -77,16 +84,13 @@ export default function LineExtremitiesSection() {
                     {target}
                 </Button>
             ),
-        },
-        {
-            type: 'input',
-            label: t('panel.details.lineExtremities.sourceName'),
-            value: sourceName,
+            minW: 'full',
         },
         {
             type: 'input',
             label: t('panel.details.lineExtremities.targetName'),
             value: targetName,
+            minW: 'full',
         },
     ];
 

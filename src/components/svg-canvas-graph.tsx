@@ -19,6 +19,7 @@ import {
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
+import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import LineWrapper from './svgs/lines/line-wrapper';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -193,7 +194,7 @@ const SvgCanvas = () => {
                 const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
-                const StyleComponent = lineStyles[style].component as <
+                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as <
                     T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
                 >(
                     props: LineStyleComponentProps<T>
@@ -231,7 +232,7 @@ const SvgCanvas = () => {
             })}
             {nodes.map(n => {
                 const { node, x, y, type } = n;
-                const MiscNodeComponent = miscNodes[type].component;
+                const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 return (
                     <MiscNodeComponent
                         id={node}
@@ -248,7 +249,7 @@ const SvgCanvas = () => {
             })}
             {stations.map(station => {
                 const { node, x, y, type } = station;
-                const StationComponent = allStations[type].component;
+                const StationComponent = allStations[type]?.component ?? UnknownNode;
                 return (
                     <StationComponent
                         id={node}
