@@ -29,6 +29,11 @@
                 "lineStyleType": "선분 스타일 유형",
                 "type": "유형"
             },
+            "selected": "선택한 개체:",
+            "multipleSelection": "다중 선택",
+            "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
+            "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
+            "changeType": "종류 변경",
             "nodePosition": {
                 "title": "노드 위치",
                 "pos": {
@@ -44,11 +49,12 @@
                 "targetName": "종말점 명칭"
             },
             "specificAttrsTitle": "독특 속성",
-            "selected": "선택한 개체:",
-            "multipleSelection": "다중 선택",
-            "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
-            "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
-            "changeType": "종류 변경",
+            "unknown": {
+                "error": "이런 :( 우리는 이 {{category}}를 인식할 수 없습니다. 아마도 더 최근 버전에서 생성되었을 것입니다.",
+                "node": "노드",
+                "lineType": "선분 경로",
+                "lineStyle": "선분 스타일"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "한자 노선명칭",

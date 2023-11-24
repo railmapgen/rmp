@@ -1,5 +1,6 @@
 import { Text } from '@chakra-ui/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
@@ -12,6 +13,7 @@ const nodes = { ...stations, ...miscNodes };
 export const NodeSpecificAttributes = () => {
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
+    const { t } = useTranslation();
     const id = selected.at(0)!;
 
     const type = window.graph.getNodeAttribute(id, 'type');
@@ -29,7 +31,7 @@ export const NodeSpecificAttributes = () => {
         <AttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />
     ) : (
         <Text fontSize="xs" m="var(--chakra-space-1)">
-            Oops :( We can&apos;t recognize this node. Maybe it is created in a newer version?
+            {t('panel.details.unknown.error', { category: t('panel.details.unknown.node') })}
         </Text>
     );
 };
@@ -37,6 +39,7 @@ export const NodeSpecificAttributes = () => {
 export const LineSpecificAttributes = () => {
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
+    const { t } = useTranslation();
     const id = selected.at(0)!;
 
     const type = window.graph.getEdgeAttribute(id, 'type');
@@ -64,14 +67,14 @@ export const LineSpecificAttributes = () => {
                 <PathAttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handlePathAttrsUpdate} />
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">
-                    Oops :( We can&apos;t recognize this line type. Maybe it is created in a newer version?
+                    {t('panel.details.unknown.error', { category: t('panel.details.unknown.linePath') })}
                 </Text>
             )}
             {StyleAttrsComponent ? (
                 <StyleAttrsComponent id={id} attrs={styleAttrs} handleAttrsUpdate={handleStyleAttrsUpdate} />
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">
-                    Oops :( We can&apos;t recognize this line style. Maybe it is created in a newer version?
+                    {t('panel.details.unknown.error', { category: t('panel.details.unknown.lineStyle') })}
                 </Text>
             )}
         </>

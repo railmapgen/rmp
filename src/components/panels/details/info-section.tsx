@@ -39,7 +39,7 @@ export default function InfoSection() {
         fields.push({
             type: 'input',
             label: t('panel.details.info.id'),
-            value: selected.length > 0 ? selected.join(', ') : 'undefined',
+            value: selectedFirst!,
             minW: 276,
         });
         fields.push({
@@ -82,10 +82,6 @@ export default function InfoSection() {
                 graph.current.hasEdge(selectedFirst) &&
                 graph.current.getEdgeAttribute(selectedFirst, 'type') in linePaths &&
                 graph.current.getEdgeAttribute(selectedFirst, 'style') in lineStyles && <LineTypeSection />}
-
-            {selected.length === 1 && selectedFirst!.startsWith('line') && graph.current.hasEdge(selectedFirst) && (
-                <LineTypeSection />
-            )}
 
             {selected.length > 1 && <InfoMultipleSection />}
         </Box>

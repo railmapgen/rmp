@@ -49,6 +49,12 @@
                 "targetName": "Target Name"
             },
             "specificAttrsTitle": "Specific Attributes",
+            "unknown": {
+                "error": "Oops :( We can't recognize this {{category}}. Maybe it is created in a newer version.",
+                "node": "node",
+                "linePath": "line path",
+                "lineStyle": "line style"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "Line name in Chinese",

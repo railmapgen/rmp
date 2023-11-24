@@ -29,6 +29,11 @@
                 "lineStyleType": "线段样式类型",
                 "type": "类型"
             },
+            "multipleSelection": "多重选取",
+            "selected": "选中的对象:",
+            "changeStationTypeContent": "修改车站类型会移除所有独特属性除了名称。",
+            "changeLineTypeContent": "修改线段类型会移除所有独特属性。",
+            "changeType": "更改类型",
             "nodePosition": {
                 "title": "节点位置",
                 "pos": {
@@ -44,11 +49,12 @@
                 "targetName": "终点名称"
             },
             "specificAttrsTitle": "独特属性",
-            "multipleSelection": "多重选取",
-            "selected": "选中的对象:",
-            "changeStationTypeContent": "修改车站类型会移除所有独特属性除了名称。",
-            "changeLineTypeContent": "修改线段类型会移除所有独特属性。",
-            "changeType": "更改类型",
+            "unknown": {
+                "error": "哎呀 :( 我们无法识别此{{category}}。也许它是在更新版本中创建的。",
+                "node": "节点",
+                "linePath": "线段路径",
+                "lineStyle": "线段样式"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "中文线路名称",
