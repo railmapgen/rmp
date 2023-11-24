@@ -57,8 +57,8 @@ export const makeImages = async (
     Object.entries({
         '.rmp-name__zh': ['font-family'],
         '.rmp-name__en': ['font-family'],
-        '.rmp-name__mtr__zh': ['font-family'],
-        '.rmp-name__mtr__en': ['font-family'],
+        '.rmp-name__mtr__zh': ['font-family', 'fill'],
+        '.rmp-name__mtr__en': ['font-family', 'fill'],
         '.rmp-name__berlin': ['font-family'],
         '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
     }).forEach(([className, styleSet]) => {
