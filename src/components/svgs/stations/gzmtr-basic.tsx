@@ -43,6 +43,10 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    // temporary fix for the missing id on the top element of the station
+    const iconEl = React.useRef<SVGGElement | null>(null);
+    iconEl.current?.querySelector('path')?.setAttribute('id', `stn_core_${id}`);
+
     const textX = nameOffsetX === 'left' ? -18 : nameOffsetX === 'right' ? 18 : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 11) *
@@ -85,8 +89,14 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    ref={iconEl}
                 >
-                    <StationNumber strokeColour={color[2]} lineNum={lineCode} stnNum={stationCode} />
+                    <StationNumber
+                        id={`stn_core_${id}`}
+                        strokeColour={color[2]}
+                        lineNum={lineCode}
+                        stnNum={stationCode}
+                    />
                 </g>
                 <g
                     ref={textRef}
