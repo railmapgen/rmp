@@ -94,7 +94,6 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 >
                     <rect
-                        id={`stn_core_${id}`}
                         x={-width / 2}
                         y={-ICON_SIZE / 2}
                         width={width}
@@ -111,6 +110,16 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                             .map((color, i) => (
                                 <circle key={`${i}_${color}`} r={2} cx={-width / 2 + 3 + i * 5} fill={color} />
                             ))}
+                    <rect
+                        id={`stn_core_${id}`}
+                        x={-width / 2 - 0.5}
+                        y={-ICON_SIZE / 2 - 0.5}
+                        width={width + 1}
+                        height={ICON_SIZE + 1}
+                        ry={ICON_SIZE / 2}
+                        fill="white"
+                        opacity="0"
+                    />
                 </g>
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
