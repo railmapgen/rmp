@@ -49,7 +49,7 @@ export const parseRmgParam = (
             // determine station type
             let type: StationType = StationType.ShmetroBasic;
             const interchangeGroups = stnInfo.transfer.groups;
-            const interchangeLines = interchangeGroups.map(group => group.lines ?? []).flat();
+            const interchangeLines = interchangeGroups.filter(group => group.lines).flat();
             if (style === RmgStyle.SHMetro) {
                 if (interchangeLines.length > 0) type = StationType.ShmetroInt;
                 else if (info_panel_type === PanelTypeShmetro.sh2020) type = StationType.ShmetroBasic2020;
