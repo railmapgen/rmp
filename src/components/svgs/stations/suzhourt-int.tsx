@@ -94,6 +94,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 >
                     <rect
+                        id={`stn_core_${id}`}
                         x={-width / 2}
                         y={-ICON_SIZE / 2}
                         width={width}
