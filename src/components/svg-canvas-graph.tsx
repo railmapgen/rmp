@@ -11,6 +11,7 @@ import { saveGraph } from '../redux/param/param-slice';
 import {
     addSelected,
     clearSelected,
+    removeSelected,
     setActive,
     setMode,
     setRefreshEdges,
@@ -60,7 +61,8 @@ const SvgCanvas = () => {
         dispatch(setActive(node));
         // details panel only, remove all if this is not a multiple selection
         if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
-        dispatch(addSelected(node)); // details panel only
+        if (selected.includes(node)) dispatch(removeSelected(node));
+        else dispatch(addSelected(node)); // details panel only
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -68,11 +70,12 @@ const SvgCanvas = () => {
 
         if (mode === 'free' && active === node) {
             selected.forEach(s => {
-                graph.current.updateNodeAttributes(s, attr => ({
-                    ...attr,
-                    x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                    y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                }));
+                if (s.startsWith('stn') || s.startsWith('misc_node'))
+                    graph.current.updateNodeAttributes(s, attr => ({
+                        ...attr,
+                        x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                        y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                    }));
             });
             dispatch(setRefreshNodes());
             dispatch(setRefreshEdges());
@@ -125,7 +128,8 @@ const SvgCanvas = () => {
                 const { x, y } = getMousePosition(e);
                 if (offset.x - x === 0 && offset.y - y === 0) {
                     // display the details of current node on click
-                    dispatch(addSelected(node));
+                    // if (selected.includes(node)) dispatch(removeSelected(node));
+                    // else dispatch(addSelected(node));
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));

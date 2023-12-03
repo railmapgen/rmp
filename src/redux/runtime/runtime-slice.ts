@@ -79,7 +79,7 @@ const runtimeSlice = createSlice({
                 state.selected.push(action.payload);
         },
         removeSelected: (state, action: PayloadAction<string>) => {
-            state.selected.filter(_ => _ !== action.payload);
+            state.selected = state.selected.filter(_ => _ !== action.payload);
         },
         clearSelected: state => {
             state.selected = [];
