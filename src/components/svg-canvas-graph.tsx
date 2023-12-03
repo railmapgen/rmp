@@ -60,8 +60,8 @@ const SvgCanvas = () => {
 
         dispatch(setActive(node));
         // details panel only, remove all if this is not a multiple selection
-        if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
-        if (selected.includes(node)) dispatch(removeSelected(node));
+        if (!e.shiftKey) dispatch(clearSelected());
+        if (e.shiftKey && selected.includes(node)) dispatch(removeSelected(node));
         else dispatch(addSelected(node)); // details panel only
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
@@ -143,8 +143,9 @@ const SvgCanvas = () => {
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
-        dispatch(clearSelected());
-        dispatch(addSelected(edge));
+        if (!e.shiftKey) dispatch(clearSelected());
+        if (e.shiftKey && selected.includes(edge)) dispatch(removeSelected(edge));
+        else dispatch(addSelected(edge));
     });
 
     // These are elements that the svg draws from.
