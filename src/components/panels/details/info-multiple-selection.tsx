@@ -23,6 +23,7 @@ export default function InfoMultipleSection() {
             </Heading>
             <VStack m="var(--chakra-space-1)">
                 {selected.map(node => {
+                    if (!node.startsWith('stn') && !node.startsWith('misc_node')) return;
                     const attr = graph.current.getNodeAttributes(node);
                     const type = attr.type;
                     const value = node.startsWith('stn') ? (attr[type] as StationAttributes).names.join('/') : type;
