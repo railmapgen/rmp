@@ -136,6 +136,7 @@ const MTRStation = (props: StationComponentProps) => {
                         lineHeight={10}
                         grow="up"
                         baseOffset={1}
+                        fill="#001f50"
                         className="rmp-name__mtr__zh"
                     />
                     <MultilineText
@@ -144,6 +145,7 @@ const MTRStation = (props: StationComponentProps) => {
                         lineHeight={7.5}
                         grow="down"
                         baseOffset={1}
+                        fill="#001f50"
                         className="rmp-name__mtr__en"
                     />
                 </g>
