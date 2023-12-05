@@ -18,7 +18,7 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
-import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
+import { findEdgesConnectedByNodes, findEdgesInRectangle, findNodesExist, findNodesInRectangle } from '../util/graph';
 import { getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { Size, useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
@@ -169,10 +169,11 @@ const SvgWrapper = () => {
             const { x, y } = getMousePosition(e);
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
+            const edgesInRectangle = findEdgesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
             if (!e.shiftKey) {
-                dispatch(setSelected(nodesInRectangle));
+                dispatch(setSelected([...nodesInRectangle, ...edgesInRectangle]));
             } else {
-                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
+                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle, ...edgesInRectangle])]));
             }
             dispatch(setMode('free'));
             setSelectStart({ x: 0, y: 0 });

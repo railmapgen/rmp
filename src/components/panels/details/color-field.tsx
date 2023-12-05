@@ -60,13 +60,31 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
           ];
 
     const handleChangeColor = (color: Theme) => {
+        selected.forEach(id => {
+            if (id && (graph.current.hasNodeAttribute.bind(id) || graph.current.hasEdgeAttribute.bind(id))) {
+                if (id.startsWith('line')) {
+                    const thisType = graph.current.getEdgeAttributes(id).style;
+                    const attrs = graph.current.getEdgeAttribute.bind(graph.current)(id, thisType);
+                    if (thisType !== LineStyleType.River) {
+                        (attrs as AttributesWithColor)['color'] = color;
+                    }
+                    graph.current.mergeEdgeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+                } else {
+                    const thisType = graph.current.getNodeAttributes(id).type;
+                    const attrs = graph.current.getNodeAttribute.bind(graph.current)(id, thisType);
+                    (attrs as AttributesWithColor)['color'] = color;
+                    graph.current.mergeNodeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+                }
+            }
+        });
+        hardRefresh();
         // TODO: fix bind this
-        if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
-            const attrs = getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type);
-            attrs[colorKey] = color;
-            mergeNodeOrEdgeAttributes.bind(graph.current)(selectedFirst, { [type]: attrs });
-            hardRefresh();
-        }
+        // if (selectedFirst && hasNodeOrEdge.bind(graph.current)(selectedFirst)) {
+        //     const attrs = getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type);
+        //     attrs[colorKey] = color;
+        //     mergeNodeOrEdgeAttributes.bind(graph.current)(selectedFirst, { [type]: attrs });
+        //     hardRefresh();
+        // }
     };
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);

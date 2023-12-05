@@ -57,3 +57,21 @@ export const findNodesInRectangle = (
     const eY = y1 <= y2 ? y2 : y1;
     return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y));
 };
+
+export const findEdgesInRectangle = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+) => {
+    const sX = x1 <= x2 ? x1 : x2;
+    const sY = y1 <= y2 ? y1 : y2;
+    const eX = x1 <= x2 ? x2 : x1;
+    const eY = y1 <= y2 ? y2 : y1;
+    return graph.filterEdges((id, attr) => {
+        const source = graph.getSourceAttributes(id);
+        const target = graph.getTargetAttributes(id);
+        return inRange(sX, sY, eX, eY, source.x, source.y) && inRange(sX, sY, eX, eY, target.x, target.y);
+    });
+};
