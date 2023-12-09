@@ -16,6 +16,7 @@ import {
     setMode,
     setRefreshEdges,
     setRefreshNodes,
+    setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
@@ -59,10 +60,25 @@ const SvgCanvas = () => {
         setOffset({ x, y });
 
         dispatch(setActive(node));
-        if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected()); // remove all if this is not a multiple selection
-        if (e.shiftKey && selected.includes(node))
-            dispatch(removeSelected(node)); // remove current if it is already in the multiple selection
-        else dispatch(addSelected(node)); // add current in the multiple selection
+
+        if (!e.shiftKey) {
+            // no shift key -> non multiple selection case
+            if (!selected.includes(node)) {
+                // set the current as the only one no matter what the previous selected were
+                dispatch(setSelected([node]));
+            } else {
+                // no-op for clicking on the previously selected node
+            }
+        } else {
+            // shift key pressed -> multiple selection case
+            if (selected.includes(node)) {
+                // remove current if it is already in the multiple selection
+                dispatch(removeSelected(node));
+            } else {
+                // add current in the multiple selection
+                dispatch(addSelected(node));
+            }
+        }
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
