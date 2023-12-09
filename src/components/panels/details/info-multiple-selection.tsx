@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { addSelected, clearSelected } from '../../../redux/runtime/runtime-slice';
+import { setSelected } from '../../../redux/runtime/runtime-slice';
 import { ColorField } from './color-field';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineStyleType } from '../../../constants/lines';
@@ -16,8 +16,7 @@ export default function InfoMultipleSection() {
     const graph = React.useRef(window.graph);
 
     const handleChange = (id: string) => {
-        dispatch(clearSelected());
-        dispatch(addSelected(id));
+        dispatch(setSelected([id]));
     };
 
     const getName = (id: string) => {
