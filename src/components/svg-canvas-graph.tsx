@@ -11,10 +11,12 @@ import { saveGraph } from '../redux/param/param-slice';
 import {
     addSelected,
     clearSelected,
+    removeSelected,
     setActive,
     setMode,
     setRefreshEdges,
     setRefreshNodes,
+    setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
@@ -58,22 +60,40 @@ const SvgCanvas = () => {
         setOffset({ x, y });
 
         dispatch(setActive(node));
-        // details panel only, remove all if this is not a multiple selection
-        if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
-        dispatch(addSelected(node)); // details panel only
+
+        if (!e.shiftKey) {
+            // no shift key -> non multiple selection case
+            if (!selected.includes(node)) {
+                // set the current as the only one no matter what the previous selected were
+                dispatch(setSelected([node]));
+            } else {
+                // no-op for clicking on the previously selected node
+            }
+        } else {
+            // shift key pressed -> multiple selection case
+            if (selected.includes(node)) {
+                // remove current if it is already in the multiple selection
+                dispatch(removeSelected(node));
+            } else {
+                // add current in the multiple selection
+                dispatch(addSelected(node));
+            }
+        }
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            selected.forEach(s => {
-                graph.current.updateNodeAttributes(s, attr => ({
-                    ...attr,
-                    x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                    y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                }));
-            });
+            selected
+                .filter(s => graph.current.hasNode(s))
+                .forEach(s => {
+                    graph.current.updateNodeAttributes(s, attr => ({
+                        ...attr,
+                        x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                        y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                    }));
+                });
             dispatch(setRefreshNodes());
             dispatch(setRefreshEdges());
             // console.log('move ', graph.current.getNodeAttributes(node));
@@ -124,8 +144,7 @@ const SvgCanvas = () => {
                 // check the offset and if it's not 0, it must be a click not move
                 const { x, y } = getMousePosition(e);
                 if (offset.x - x === 0 && offset.y - y === 0) {
-                    // display the details of current node on click
-                    dispatch(addSelected(node));
+                    // no-op for click as the node is already added in pointer down
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));
@@ -139,8 +158,9 @@ const SvgCanvas = () => {
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
-        dispatch(clearSelected());
-        dispatch(addSelected(edge));
+        if (!e.shiftKey) dispatch(clearSelected());
+        if (e.shiftKey && selected.includes(edge)) dispatch(removeSelected(edge));
+        else dispatch(addSelected(edge));
     });
 
     // These are elements that the svg draws from.
