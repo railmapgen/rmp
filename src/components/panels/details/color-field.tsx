@@ -61,20 +61,19 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
 
     const handleChangeColor = (color: Theme) => {
         selected.forEach(id => {
-            if (id && (graph.current.hasNodeAttribute.bind(id) || graph.current.hasEdgeAttribute.bind(id))) {
-                if (id.startsWith('line')) {
-                    const thisType = graph.current.getEdgeAttributes(id).style;
-                    const attrs = graph.current.getEdgeAttribute.bind(graph.current)(id, thisType);
-                    if (thisType !== LineStyleType.River) {
-                        (attrs as AttributesWithColor)['color'] = color;
-                    }
-                    graph.current.mergeEdgeAttributes.bind(graph.current)(id, { [thisType]: attrs });
-                } else {
-                    const thisType = graph.current.getNodeAttributes(id).type;
-                    const attrs = graph.current.getNodeAttribute.bind(graph.current)(id, thisType);
+            if (graph.current.hasEdge(id)) {
+                const thisType = graph.current.getEdgeAttributes(id).style;
+                const attrs = graph.current.getEdgeAttribute.bind(graph.current)(id, thisType);
+                if (thisType !== LineStyleType.River && (attrs as AttributesWithColor)['color'] !== undefined) {
                     (attrs as AttributesWithColor)['color'] = color;
-                    graph.current.mergeNodeAttributes.bind(graph.current)(id, { [thisType]: attrs });
                 }
+                graph.current.mergeEdgeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+            } else if (graph.current.hasNode(id)) {
+                const thisType = graph.current.getNodeAttributes(id).type;
+                const attrs = graph.current.getNodeAttribute.bind(graph.current)(id, thisType);
+                if ((attrs as AttributesWithColor)['color'] !== undefined)
+                    (attrs as AttributesWithColor)['color'] = color;
+                graph.current.mergeNodeAttributes.bind(graph.current)(id, { [thisType]: attrs });
             }
         });
         hardRefresh();
