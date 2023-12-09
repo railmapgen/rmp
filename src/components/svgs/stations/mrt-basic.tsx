@@ -12,7 +12,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor } from '../../panels/details/color-field';
+import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const STATION_CODE_FONT_SIZE = 5.2;
@@ -226,6 +226,11 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: <ColorField type={StationType.MRTBasic} defaultTheme={defaultMRTBasicStationAttributes.color} />,
         },
     ];
 
