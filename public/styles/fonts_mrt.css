@@ -1,3 +1,11 @@
+/* 
+ * IdentityFont comes from https://github.com/jglim/IdentityFont
+ * Special thanks to @jglim :)
+ * For licensing, see discussion at https://github.com/jglim/IdentityFont/pull/2
+ * We believe an open Internet but if the project changes its license or there
+ * is a direct request from LTA, we need to pull this down from out site.
+*/
+
 @font-face {
     font-family: 'IdentityFont';
     font-display: swap;
