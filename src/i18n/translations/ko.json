@@ -122,7 +122,9 @@
                     "nameEn": "영문 명칭",
                     "nameOffsetX": "명칭 가로 이동",
                     "nameOffsetY": "명칭 세로 이동",
-                    "rotate": "역회전각도"
+                    "rotate": "역회전각도",
+                    "lineCode": "노선 번호",
+                    "stationCode": "역 번호"
                 },
                 "interchange": {
                     "title": "환승",
@@ -153,8 +155,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
-                    "lineCode": "노선 번호",
-                    "stationCode": "역 번호",
                     "open": "개통여부",
                     "secondaryNameZh": "한자 제2명칭",
                     "secondaryNameEn": "영문 제2명칭",
@@ -177,7 +177,7 @@
                     "outOfStation": "역을 나가 환승"
                 },
                 "mtr": {
-                    "displayName": "MTR 역"
+                    "displayName": "홍콩 MTR 역"
                 },
                 "suzhouRTBasic": {
                     "displayName": "쑤저우 궤도교통 기본역"
@@ -190,6 +190,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "쿤밍 궤도교통 환승역"
+                },
+                "MRTBasic": {
+                    "displayName": "싱가포르MRT기본역"
+                },
+                "MRTInt": {
+                    "displayName": "싱가포르MRT환승역"
                 }
             },
             "lines": {

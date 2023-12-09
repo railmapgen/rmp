@@ -122,7 +122,9 @@
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",
                     "nameOffsetY": "名稱縱向偏移",
-                    "rotate": "車站旋轉角度"
+                    "rotate": "車站旋轉角度",
+                    "lineCode": "路綫編碼",
+                    "stationCode": "車站編碼"
                 },
                 "interchange": {
                     "title": "換乘",
@@ -153,8 +155,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "廣州地鐵基本車站",
-                    "lineCode": "路綫編碼",
-                    "stationCode": "車站編碼",
                     "open": "是否開通",
                     "secondaryNameZh": "中文第二名稱",
                     "secondaryNameEn": "英文第二名稱",
@@ -177,7 +177,7 @@
                     "outOfStation": "出站轉車"
                 },
                 "mtr": {
-                    "displayName": "MTR車站"
+                    "displayName": "香港MTR車站"
                 },
                 "suzhouRTBasic": {
                     "displayName": "蘇州軌道交通基本車站"
@@ -190,6 +190,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "昆明軌道交通基本車站"
+                },
+                "MRTBasic": {
+                    "displayName": "新加坡MRT基本車站"
+                },
+                "MRTInt": {
+                    "displayName": "新加坡MRT換乘車站"
                 }
             },
             "lines": {
