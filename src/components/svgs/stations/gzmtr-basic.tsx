@@ -274,7 +274,7 @@ const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAtt
         },
         {
             type: 'input',
-            label: t('panel.details.stations.gzmtrBasic.lineCode'),
+            label: t('panel.details.stations.common.lineCode'),
             value: attrs.lineCode,
             onChange: val => {
                 attrs.lineCode = val;
@@ -284,7 +284,7 @@ const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAtt
         },
         {
             type: 'input',
-            label: t('panel.details.stations.gzmtrBasic.stationCode'),
+            label: t('panel.details.stations.common.stationCode'),
             value: attrs.stationCode,
             onChange: val => {
                 attrs.stationCode = val;

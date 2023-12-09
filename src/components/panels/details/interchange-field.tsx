@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd } from 'react-icons/md';
 import { Button, FormLabel, VStack } from '@chakra-ui/react';
@@ -112,7 +112,7 @@ export const InterchangeField = (props: {
     return (
         <VStack align="flex-start">
             {attr.transfer.map((infoList, i) => (
-                <Fragment key={i}>
+                <React.Fragment key={i}>
                     <FormLabel size="xs">
                         {i === 0
                             ? t('panel.details.stations.interchange.within')
@@ -127,7 +127,7 @@ export const InterchangeField = (props: {
                         onDelete={handleDelete(i)}
                         onUpdate={handleUpdate(i)}
                     />
-                </Fragment>
+                </React.Fragment>
             ))}
 
             {maximumTransfers[attr.transfer.length] > 0 && (

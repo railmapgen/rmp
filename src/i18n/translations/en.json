@@ -122,7 +122,9 @@
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
                     "nameOffsetY": "Name offset Y",
-                    "rotate": "Icon rotation"
+                    "rotate": "Icon rotation",
+                    "lineCode": "Line code",
+                    "stationCode": "Station code"
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -153,8 +155,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "Guangzhou Metro basic station",
-                    "lineCode": "Line code",
-                    "stationCode": "Station code",
                     "open": "Is opened",
                     "secondaryNameZh": "Secondary name in Chinese",
                     "secondaryNameEn": "Secondary name in English",
@@ -177,7 +177,7 @@
                     "outOfStation": "Out of station interchange"
                 },
                 "mtr": {
-                    "displayName": "MTR station",
+                    "displayName": "Hongkong MTR station",
                     "rotate": "Icon rotation"
                 },
                 "suzhouRTBasic": {
@@ -191,6 +191,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "Kunming Rail Transit interchange station"
+                },
+                "MRTBasic": {
+                    "displayName": "Singapore MRT basic station"
+                },
+                "MRTInt": {
+                    "displayName": "Singapore MRT interchange station"
                 }
             },
             "lines": {

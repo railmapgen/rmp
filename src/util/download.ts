@@ -60,6 +60,7 @@ export const makeImages = async (
         '.rmp-name__mtr__zh': ['font-family'],
         '.rmp-name__mtr__en': ['font-family', 'font-weight'],
         '.rmp-name__berlin': ['font-family'],
+        '.rmp-name__mrt': ['font-family'],
         '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
     }).forEach(([className, styleSet]) => {
         const e = document.querySelector(className);
