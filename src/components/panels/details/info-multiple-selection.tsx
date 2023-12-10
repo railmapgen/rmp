@@ -5,14 +5,13 @@ import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setSelected } from '../../../redux/runtime/runtime-slice';
 import { ColorField } from './color-field';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineStyleType } from '../../../constants/lines';
 import { RmgFields } from '@railmapgen/rmg-components';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const { selected } = useRootSelector(state => state.runtime);
+    const { selected, theme } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     const handleChange = (id: string) => {
@@ -48,12 +47,7 @@ export default function InfoMultipleSection() {
                     {
                         type: 'custom',
                         label: t("Change selected objects' color to:"),
-                        component: (
-                            <ColorField
-                                type={LineStyleType.SingleColor}
-                                defaultTheme={[CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white]}
-                            />
-                        ),
+                        component: <ColorField type={LineStyleType.SingleColor} defaultTheme={theme} />,
                         minW: 'full',
                     },
                 ]}
