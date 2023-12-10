@@ -15,11 +15,11 @@ import {
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText } from '../common/multiline-text';
 
-const STATION_CODE_FONT_SIZE = 8;
+const STATION_CODE_FONT_SIZE = 6.9;
 const STATION_NAME_FONT_SIZE = 8.2628;
 const BASE_TEXT_OFFSET = 2.5;
 
-const NAME_DY_SZ_BASIC = {
+const NAME_DY_SG_BASIC = {
     top: {
         offset: STATION_NAME_FONT_SIZE + BASE_TEXT_OFFSET, // offset + baseOffset
         polarity: -1,
@@ -57,15 +57,15 @@ const MRTIntStation = (props: StationComponentProps) => {
     );
 
     const transfer0 = transfer.at(0)!;
-    const width = (transfer0.length - 2) * 29.625 + 57.8; // TODO: sum up width for all transfer groups
+    const width = (transfer0.length - 2) * 29.625 + 57.8;
     const height = 16.77;
 
-    const dividingIndex: number[] = [];
+    const dividingIndex: number[] = []; // the index of transfer line that has the same color as the previous one
     for (let i = 1; i < transfer0.length; i++) if (transfer0[i][2] == transfer0[i - 1][2]) dividingIndex.push(i);
 
     const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
     const textX = (width / 2 + 5) * textPolarity;
-    const textY = NAME_DY_SZ_BASIC[nameOffsetY].offset * NAME_DY_SZ_BASIC[nameOffsetY].polarity;
+    const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(

@@ -19,7 +19,7 @@ const STATION_CODE_FONT_SIZE = 5.2;
 const STATION_NAME_FONT_SIZE = 8.2628;
 const BASE_TEXT_OFFSET = 0;
 
-const NAME_DY_SZ_BASIC = {
+const NAME_DY_SG_BASIC = {
     top: {
         offset: STATION_NAME_FONT_SIZE + BASE_TEXT_OFFSET, // offset + baseOffset
         polarity: -1,
@@ -63,7 +63,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
 
     const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
     const textX = (width / 2 + 5) * textPolarity;
-    const textY = NAME_DY_SZ_BASIC[nameOffsetY].offset * NAME_DY_SZ_BASIC[nameOffsetY].polarity;
+    const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
