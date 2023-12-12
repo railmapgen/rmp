@@ -7,8 +7,8 @@
     font-display: swap;
     src: url('../fonts/Roboto-Bold.ttf');
     /*
-     * This obvious as the font only support ascii letters,
-     * but required in getBase64FontFace and matchCssRuleByFontFace.
+     * This is obvious as the font only support ascii letters,
+     * but added here as getBase64FontFace and matchCssRuleByFontFace require this value.
     */
     unicode-range: U+0-7F;
 }
