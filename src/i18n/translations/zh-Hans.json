@@ -122,7 +122,9 @@
                     "nameEn": "英文名称",
                     "nameOffsetX": "名称横向偏移",
                     "nameOffsetY": "名称纵向偏移",
-                    "rotate": "车站旋转角度"
+                    "rotate": "车站旋转角度",
+                    "lineCode": "路线编号",
+                    "stationCode": "车站编号"
                 },
                 "interchange": {
                     "title": "换乘",
@@ -153,8 +155,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "广州地铁基本车站",
-                    "lineCode": "路线编号",
-                    "stationCode": "车站编号",
                     "open": "是否开通",
                     "secondaryNameZh": "中文第二名称",
                     "secondaryNameEn": "英文第二名称",
@@ -177,7 +177,7 @@
                     "outOfStation": "出站换乘"
                 },
                 "mtr": {
-                    "displayName": "MTR车站"
+                    "displayName": "香港MTR车站"
                 },
                 "suzhouRTBasic": {
                     "displayName": "苏州轨道交通基本车站"
@@ -190,6 +190,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "昆明轨道交通换乘车站"
+                },
+                "MRTBasic": {
+                    "displayName": "新加坡MRT基本车站"
+                },
+                "MRTInt": {
+                    "displayName": "新加坡MRT换乘车站"
                 }
             },
             "lines": {

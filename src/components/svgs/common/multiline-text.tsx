@@ -4,7 +4,7 @@ import { NameOffsetY } from '../../../constants/stations';
 interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
     text: string[];
     lineHeight: number;
-    grow: 'up' | 'down';
+    grow: 'up' | 'down' | 'bidirectional';
     baseOffset?: number;
 }
 
@@ -14,27 +14,27 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
         lineHeight,
         grow,
         // if dominantBaseline is defined, use it, or we calculate the dominantBaseline for you
-        dominantBaseline = grow === 'up' ? 'auto' : 'hanging',
+        dominantBaseline = grow === 'up' ? 'auto' : grow === 'down' ? 'hanging' : 'middle',
         baseOffset = 2, // default dy offset
         ...otherSvgTextProps
     } = props;
 
-    return React.useMemo(
-        () => (
-            <g ref={ref}>
-                {(grow === 'up' ? [...text].reverse() : text).map((t, i) => (
-                    <text
-                        key={t}
-                        dy={(i * lineHeight + baseOffset) * (grow === 'up' ? -1 : 1)}
-                        dominantBaseline={dominantBaseline}
-                        {...otherSvgTextProps}
-                    >
-                        {t}
-                    </text>
-                ))}
-            </g>
-        ),
-        [text.join('+'), lineHeight, grow, dominantBaseline, JSON.stringify(otherSvgTextProps)]
+    // additional offset for bidirectional, shift a global upward for half the whole height
+    const offset = grow === 'bidirectional' ? -((text.length - 1) * lineHeight) / 2 : 0;
+
+    return (
+        <g ref={ref}>
+            {(grow === 'up' ? [...text].reverse() : text).map((t, i) => (
+                <text
+                    key={t}
+                    dy={(i * lineHeight + baseOffset) * (grow === 'up' ? -1 : 1) + offset}
+                    dominantBaseline={dominantBaseline}
+                    {...otherSvgTextProps}
+                >
+                    {t}
+                </text>
+            ))}
+        </g>
     );
 });
 

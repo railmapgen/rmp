@@ -135,7 +135,9 @@
                     "nameEn": "英語の駅名",
                     "nameOffsetX": "駅名オフセットX",
                     "nameOffsetY": "駅名オフセットY",
-                    "rotate": "アイコンの回転"
+                    "rotate": "アイコンの回転",
+                    "lineCode": "路線番号",
+                    "stationCode": "駅番号"
                 },
                 "shmetroBasic": {
                     "displayName": "上海地下鉄基本駅"
@@ -153,8 +155,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "広州地下鉄基本駅",
-                    "lineCode": "路線コード",
-                    "stationCode": "駅コード",
                     "open": "開業済み",
                     "secondaryNameZh": "中国語の補助駅名",
                     "secondaryNameEn": "英語の補助駅名",
@@ -177,7 +177,7 @@
                     "outOfStation": "駅外の乗り換え"
                 },
                 "mtr": {
-                    "displayName": "MTR駅",
+                    "displayName": "香港MTR駅",
                     "rotate": "アイコンの回転"
                 },
                 "suzhouRTBasic": {
@@ -191,6 +191,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "昆明軌道交通乗り換え駅"
+                },
+                "MRTBasic": {
+                    "displayName": "シンガポールMRT基本駅"
+                },
+                "MRTInt": {
+                    "displayName": "シンガポールMRT乗り換え駅"
                 }
             },
             "lines": {
