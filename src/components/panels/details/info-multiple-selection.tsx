@@ -1,4 +1,5 @@
 import { Box, Button, Heading, VStack } from '@chakra-ui/react';
+import { RmgLabel } from '@railmapgen/rmg-components';
 import React from 'react';
 import { Theme } from '../../../constants/constants';
 import { LineStyleType } from '../../../constants/lines';
@@ -13,7 +14,6 @@ import {
     setSelected,
 } from '../../../redux/runtime/runtime-slice';
 import { AttributesWithColor } from './color-field';
-import { RmgFields } from '@railmapgen/rmg-components';
 import ThemeButton from '../theme-button';
 
 export default function InfoMultipleSection() {
@@ -32,16 +32,12 @@ export default function InfoMultipleSection() {
     }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const graph = React.useRef(window.graph);
 
-    const handleChange = (id: string) => {
-        dispatch(setSelected([id]));
-    };
-
     const getName = (id: string) => {
-        if (id.startsWith('stn') || id.startsWith('misc_node')) {
+        if (graph.current.hasNode(id)) {
             const attr = graph.current.getNodeAttributes(id);
             const type = attr.type;
             return id.startsWith('stn') ? (attr[type] as StationAttributes).names.join('/') : type;
-        } else if (id.startsWith('line')) {
+        } else if (graph.current.hasEdge(id)) {
             const [s, t] = graph.current.extremities(id);
             const source = graph.current.getSourceAttributes(id);
             const target = graph.current.getTargetAttributes(id);
@@ -59,17 +55,17 @@ export default function InfoMultipleSection() {
         selected.forEach(id => {
             if (graph.current.hasEdge(id)) {
                 const thisType = graph.current.getEdgeAttributes(id).style;
-                const attrs = graph.current.getEdgeAttribute.bind(graph.current)(id, thisType);
+                const attrs = graph.current.getEdgeAttribute(id, thisType);
                 if (thisType !== LineStyleType.River && (attrs as AttributesWithColor)['color'] !== undefined) {
                     (attrs as AttributesWithColor)['color'] = color;
                 }
-                graph.current.mergeEdgeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+                graph.current.mergeEdgeAttributes(id, { [thisType]: attrs });
             } else if (graph.current.hasNode(id)) {
                 const thisType = graph.current.getNodeAttributes(id).type;
-                const attrs = graph.current.getNodeAttribute.bind(graph.current)(id, thisType);
+                const attrs = graph.current.getNodeAttribute(id, thisType);
                 if ((attrs as AttributesWithColor)['color'] !== undefined)
                     (attrs as AttributesWithColor)['color'] = color;
-                graph.current.mergeNodeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+                graph.current.mergeNodeAttributes(id, { [thisType]: attrs });
             }
         });
         hardRefresh();
@@ -88,43 +84,32 @@ export default function InfoMultipleSection() {
             <Heading as="h5" size="sm">
                 {t('panel.details.selected')} {selected.length}
             </Heading>
-            <RmgFields
-                fields={[
-                    {
-                        type: 'custom',
-                        label: t("Change selected objects' color to:"),
-                        component: (
-                            <ThemeButton
-                                theme={theme}
-                                onClick={() => {
-                                    setIsThemeRequested(true);
-                                    dispatch(openPaletteAppClip(theme));
-                                }}
-                            />
-                        ),
-                        minW: 'full',
-                    },
-                ]}
-            />
+            <RmgLabel label={t('panel.details.multipleChangeColor')}>
+                <ThemeButton
+                    theme={theme}
+                    onClick={() => {
+                        setIsThemeRequested(true);
+                        dispatch(openPaletteAppClip(theme));
+                    }}
+                />
+            </RmgLabel>
             <VStack m="var(--chakra-space-1)">
-                {selected.map(id => {
-                    return (
-                        <Button
-                            key={id}
-                            width="100%"
-                            size="sm"
-                            variant="solid"
-                            onClick={() => handleChange(id)}
-                            overflow="hidden"
-                            maxW="270"
-                            textOverflow="ellipsis"
-                            whiteSpace="nowrap"
-                            display="ruby"
-                        >
-                            {getName(id)?.replaceAll('\\', '⏎')}
-                        </Button>
-                    );
-                })}
+                {selected.map(id => (
+                    <Button
+                        key={id}
+                        width="100%"
+                        size="sm"
+                        variant="solid"
+                        onClick={() => dispatch(setSelected([id]))}
+                        overflow="hidden"
+                        maxW="270"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap"
+                        display="ruby"
+                    >
+                        {getName(id)?.replaceAll('\\', '⏎')}
+                    </Button>
+                ))}
             </VStack>
         </Box>
     );

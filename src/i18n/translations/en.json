@@ -30,6 +30,7 @@
                 "type": "Type"
             },
             "multipleSelection": "Multiple Selection",
+            "multipleChangeColor": "Change selected objects' color to:",
             "selected": "Selected Objects:",
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
             "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
