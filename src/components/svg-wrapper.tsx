@@ -169,11 +169,10 @@ const SvgWrapper = () => {
             const { x, y } = getMousePosition(e);
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
-            if (!e.shiftKey) {
-                dispatch(setSelected(nodesInRectangle));
-            } else {
-                dispatch(setSelected([...new Set([...selected, ...nodesInRectangle])]));
-            }
+            const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
+            dispatch(
+                setSelected([...new Set([...(e.shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle])])
+            );
             dispatch(setMode('free'));
             setSelectStart({ x: 0, y: 0 });
             setSelectMoving({ x: 0, y: 0 });

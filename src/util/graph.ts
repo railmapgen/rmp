@@ -37,9 +37,8 @@ export const findNodesExist = (graph: MultiDirectedGraph<NodeAttributes, EdgeAtt
     return nodesExist;
 };
 
-const inRange = (x1: number, y1: number, x2: number, y2: number, xq: number, yq: number) => {
-    return x1 <= xq && xq <= x2 && y1 <= yq && yq <= y2;
-};
+const inRange = (x1: number, y1: number, x2: number, y2: number, xq: number, yq: number) =>
+    x1 <= xq && xq <= x2 && y1 <= yq && yq <= y2;
 
 /**
  * Add nodes that are in the rectangle top-left (x1, y1) and bottom-right (x2, y2).
@@ -55,5 +54,5 @@ export const findNodesInRectangle = (
     const sY = y1 <= y2 ? y1 : y2;
     const eX = x1 <= x2 ? x2 : x1;
     const eY = y1 <= y2 ? y2 : y1;
-    return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y));
+    return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y)) as (StnId | MiscNodeId)[];
 };
