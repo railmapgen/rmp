@@ -39,7 +39,7 @@ const DetailsPanel = () => {
         const s = exportSelectedNodesAndEdges(graph.current, selected);
         navigator.clipboard.writeText(s);
     };
-    const handleRemove = (selected: Set<string>) => {
+    const handleRemove = (selected: Set<Id>) => {
         dispatch(clearSelected());
         selected.forEach(s => {
             if (graph.current.hasNode(s)) graph.current.dropNode(s);
