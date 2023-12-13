@@ -6,6 +6,9 @@ import appReducer from './app/app-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
 
+import { enableMapSet } from 'immer';
+enableMapSet();
+
 const store = configureStore({
     reducer: {
         app: appReducer,

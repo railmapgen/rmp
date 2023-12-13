@@ -1,7 +1,7 @@
 import { Box, Button, Heading, VStack } from '@chakra-ui/react';
 import { RmgLabel } from '@railmapgen/rmg-components';
 import React from 'react';
-import { Theme } from '../../../constants/constants';
+import { LineId, MiscNodeId, StnId, Theme } from '../../../constants/constants';
 import { LineStyleType } from '../../../constants/lines';
 import { StationAttributes } from '../../../constants/stations';
 import { useTranslation } from 'react-i18next';
@@ -100,7 +100,7 @@ export default function InfoMultipleSection() {
                         width="100%"
                         size="sm"
                         variant="solid"
-                        onClick={() => dispatch(setSelected(new Set(id)))}
+                        onClick={() => dispatch(setSelected(new Set<StnId | MiscNodeId | LineId>([id])))}
                         overflow="hidden"
                         maxW="270"
                         textOverflow="ellipsis"

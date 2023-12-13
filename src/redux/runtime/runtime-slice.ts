@@ -1,7 +1,8 @@
 import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { produce } from 'immer';
+import { LineId, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { redoAction, undoAction } from '../param/param-slice';
 
 /**
@@ -12,7 +13,7 @@ interface RuntimeState {
     /**
      * Current selection (nodes and edges id, possible multiple selection).
      */
-    selected: Set<string>;
+    selected: Set<StnId | MiscNodeId | LineId>;
     active: StnId | MiscNodeId | 'background' | undefined;
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
@@ -49,7 +50,7 @@ interface RuntimeState {
 }
 
 const initialState: RuntimeState = {
-    selected: new Set<string>(),
+    selected: new Set<StnId | MiscNodeId | LineId>(),
     active: undefined,
     refresh: {
         nodes: Date.now(),
@@ -70,17 +71,21 @@ const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
     reducers: {
-        setSelected: (state, action: PayloadAction<Set<string>>) => {
-            state.selected = new Set<string>(action.payload);
+        setSelected: (state, action: PayloadAction<Set<StnId | MiscNodeId | LineId>>) => {
+            state.selected = new Set<StnId | MiscNodeId | LineId>(action.payload);
         },
-        addSelected: (state, action: PayloadAction<string>) => {
-            state.selected.add(action.payload);
+        addSelected: (state, action: PayloadAction<StnId | MiscNodeId | LineId>) => {
+            state.selected = produce(state.selected, draft => {
+                draft.add(action.payload);
+            });
         },
-        removeSelected: (state, action: PayloadAction<string>) => {
-            state.selected.delete(action.payload);
+        removeSelected: (state, action: PayloadAction<StnId | MiscNodeId | LineId>) => {
+            state.selected = produce(state.selected, draft => {
+                draft.delete(action.payload);
+            });
         },
         clearSelected: state => {
-            state.selected = new Set<string>();
+            state.selected = new Set<StnId | MiscNodeId | LineId>();
         },
         setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;

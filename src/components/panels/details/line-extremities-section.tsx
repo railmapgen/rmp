@@ -5,6 +5,7 @@ import { Box, Button, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { ExternalStationAttributes } from '../../../constants/stations';
+import { StnId, MiscNodeId, LineId } from '../../../constants/constants';
 import { addSelected, clearSelected } from '../../../redux/runtime/runtime-slice';
 
 export default function LineExtremitiesSection() {
@@ -52,11 +53,11 @@ export default function LineExtremitiesSection() {
 
     const handleSource = useEvent(() => {
         dispatch(clearSelected());
-        dispatch(addSelected(source));
+        dispatch(addSelected(source as StnId | MiscNodeId | LineId));
     });
     const handleTarget = useEvent(() => {
         dispatch(clearSelected());
-        dispatch(addSelected(target));
+        dispatch(addSelected(target as StnId | MiscNodeId | LineId));
     });
 
     const fields: RmgFieldsField[] = [

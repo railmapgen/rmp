@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { Events, LineId, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -172,7 +172,11 @@ const SvgWrapper = () => {
             const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
             dispatch(
                 setSelected(
-                    new Set<string>([...(e.shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle])
+                    new Set<StnId | MiscNodeId | LineId>([
+                        ...(e.shiftKey ? selected : []),
+                        ...nodesInRectangle,
+                        ...edgesInRectangle,
+                    ])
                 )
             );
             dispatch(setMode('free'));
@@ -281,7 +285,7 @@ const SvgWrapper = () => {
             refreshAndSave();
             // select copied nodes automatically
             dispatch(clearSelected());
-            dispatch(setSelected(new Set<string>(nodes)));
+            dispatch(setSelected(new Set<StnId | MiscNodeId | LineId>(nodes)));
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)
