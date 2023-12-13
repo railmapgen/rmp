@@ -37,7 +37,7 @@ const MRTNumLineBadge = (props: NodeComponentProps<MRTNumLineBadgeAttributes>) =
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             >
-                <rect fill={bgColor} x="-6" y="-6" width="12" height="12" rx="6" ry="6" />
+                <circle r="6" fill={bgColor}></circle>
                 <text
                     className="rmp-name__mrt"
                     textAnchor="middle"
@@ -52,8 +52,6 @@ const MRTNumLineBadge = (props: NodeComponentProps<MRTNumLineBadgeAttributes>) =
                 >
                     {num}
                 </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect fill="white" fillOpacity="0" x="-6" y="-6" width="12" height="12" rx="6" ry="6" />
             </g>
         ),
         [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
