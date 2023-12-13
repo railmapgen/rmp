@@ -64,7 +64,7 @@ const MRTIntStation = (props: StationComponentProps) => {
     for (let i = 1; i < transfer0.length; i++) if (transfer0[i][2] == transfer0[i - 1][2]) dividingIndex.push(i);
 
     const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
-    const textX = (width / 2 + 5) * textPolarity;
+    const textX = 10 * textPolarity;
     const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
@@ -198,13 +198,13 @@ export interface MRTIntStationAttributes extends StationAttributes, StationAttri
 }
 
 const defaultMRTIntStationAttributes: MRTIntStationAttributes = {
-    names: ['Marina South Pier'],
+    names: ['Chinatown'],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     transfer: [
         [
-            [CityCode.Singapore, 'nsl', '#DA291C', MonoColour.white, 'NS', '21'],
-            [CityCode.Singapore, 'dtl', '#0057B7', MonoColour.white, 'DT', '11'],
+            [CityCode.Singapore, 'nel', '#9B26B6', MonoColour.white, 'NE', '4'],
+            [CityCode.Singapore, 'dtl', '#0057B7', MonoColour.white, 'DT', '19'],
         ],
     ],
 };
@@ -266,12 +266,18 @@ const MRTIntAttrsComponent = (props: AttrsProps<MRTIntStationAttributes>) => {
 
 const mrtIntStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <rect x="3" y="6" rx="3" ry="6" width="18" height="12" fill="currentColor" />
-        <text fontSize="5" dx="9" dy="13.5" className="rmp-name__en" fill="white" textAnchor="middle">
-            NS
+        <rect x="2" y="9.0985" rx="1.038" ry="2.076" width="20" height="5.803" fill="currentColor" />
+        <text fontSize="3" dx="5" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+            NE
         </text>
-        <text fontSize="5" dx="16" dy="13.5" className="rmp-name__en" fill="white" textAnchor="middle">
-            28
+        <text fontSize="3" dx="9.5" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+            4
+        </text>
+        <text fontSize="3" dx="14.5" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+            DT
+        </text>
+        <text fontSize="3" dx="19" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+            19
         </text>
     </svg>
 );
@@ -282,7 +288,7 @@ const mrtIntStation: Station<MRTIntStationAttributes> = {
     defaultAttrs: defaultMRTIntStationAttributes,
     attrsComponent: MRTIntAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.mrt.displayName',
+        displayName: 'panel.details.stations.MRTInt.displayName',
         cities: [CityCode.Singapore],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

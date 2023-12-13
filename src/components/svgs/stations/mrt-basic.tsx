@@ -239,11 +239,11 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
 
 const mrtBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <rect x="3" y="6" rx="3" ry="6" width="18" height="12" fill="currentColor" />
-        <text fontSize="5" dx="9" dy="13.5" className="rmp-name__en" fill="white" textAnchor="middle">
+        <rect x="6" y="8.6035" rx="1.575" ry="3.151" width="12" height="6.793" fill="currentColor" />
+        <text fontSize="3.5" dx="10" dy="13" className="rmp-name__en" fill="white" textAnchor="middle">
             NS
         </text>
-        <text fontSize="5" dx="16" dy="13.5" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3.5" dx="15" dy="13" className="rmp-name__en" fill="white" textAnchor="middle">
             28
         </text>
     </svg>
@@ -255,7 +255,7 @@ const mrtBasicStation: Station<MRTBasicStationAttributes> = {
     defaultAttrs: defaultMRTBasicStationAttributes,
     attrsComponent: MRTBasicAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.mrt.displayName',
+        displayName: 'panel.details.stations.MRTBasic.displayName',
         cities: [CityCode.Singapore],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
