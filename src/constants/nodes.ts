@@ -13,6 +13,7 @@ import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhour
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
 import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
+import { MRTBasicStationAttributes } from '../components/svgs/stations/mrt-basic';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -27,6 +28,7 @@ export enum MiscNodeType {
     ChongqingRTNumLineBadge = 'chongqingrt-num-line-badge',
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
     ShenzhenMetroNumLineBadge = 'shenzhen-metro-num-line-badge',
+    MRTNumLineBadge = 'mrt-num-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -44,6 +46,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.ChongqingRTNumLineBadge]?: ChongqingRTNumLineBadgeAttributes;
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
     [MiscNodeType.ShenzhenMetroNumLineBadge]?: ShenzhenMetroNumLineBadgeAttributes;
+    [MiscNodeType.MRTNumLineBadge]?: MRTBasicStationAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }
