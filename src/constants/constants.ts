@@ -1,5 +1,4 @@
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { MiscEdgeType } from './edges';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
 import { ExternalStationAttributes, StationType } from './stations';
@@ -69,10 +68,12 @@ export type MiscNodeId = `misc_node_${string}`;
  */
 export type MiscEdgeId = `misc_edge_${string}`;
 
+export type Id = StnId | MiscNodeId | LineId;
+
 /**
  * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)
  */
-export type ActiveType = StnId | LineId | MiscNodeId | MiscEdgeId | 'background';
+export type ActiveType = Id | 'background';
 
 /**
  * Indicate which element will be placed by next click. (Runtime only)
@@ -82,8 +83,7 @@ export type RuntimeMode =
     | 'select'
     | `line-${LinePathType}`
     | `station-${StationType}`
-    | `misc-node-${MiscNodeType}`
-    | `misc-edge-${MiscEdgeType}`;
+    | `misc-node-${MiscNodeType}`;
 
 /**
  * Stations and lines may be in different displaying format.

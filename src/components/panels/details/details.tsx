@@ -3,16 +3,15 @@ import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader 
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineId, MiscNodeId, StnId } from '../../../constants/constants';
+import { Id } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import { findEdgesConnectedByNodes } from '../../../util/graph';
+import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
 import { LineSpecificAttributes, NodeSpecificAttributes } from './specific-attrs';
-import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 
 const DetailsPanel = () => {
     const { t } = useTranslation();
@@ -36,7 +35,7 @@ const DetailsPanel = () => {
         dispatch(setRefreshNodes());
         dispatch(saveGraph(graph.current.export()));
     };
-    const handleCopy = (selected: Set<StnId | MiscNodeId | LineId>) => {
+    const handleCopy = (selected: Set<Id>) => {
         const s = exportSelectedNodesAndEdges(graph.current, selected);
         navigator.clipboard.writeText(s);
     };

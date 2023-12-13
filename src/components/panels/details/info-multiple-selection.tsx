@@ -1,20 +1,20 @@
 import { Box, Button, Heading, VStack } from '@chakra-ui/react';
 import { RmgLabel } from '@railmapgen/rmg-components';
 import React from 'react';
-import { LineId, MiscNodeId, StnId, Theme } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { Theme } from '../../../constants/constants';
 import { LineStyleType } from '../../../constants/lines';
 import { StationAttributes } from '../../../constants/stations';
-import { useTranslation } from 'react-i18next';
-import { saveGraph } from '../../../redux/param/param-slice';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/param/param-slice';
 import {
     openPaletteAppClip,
     setRefreshEdges,
     setRefreshNodes,
     setSelected,
 } from '../../../redux/runtime/runtime-slice';
-import { AttributesWithColor } from './color-field';
 import ThemeButton from '../theme-button';
+import { AttributesWithColor } from './color-field';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
@@ -100,7 +100,7 @@ export default function InfoMultipleSection() {
                         width="100%"
                         size="sm"
                         variant="solid"
-                        onClick={() => dispatch(setSelected(new Set<StnId | MiscNodeId | LineId>([id])))}
+                        onClick={() => dispatch(setSelected(new Set([id])))}
                         overflow="hidden"
                         maxW="270"
                         textOverflow="ellipsis"

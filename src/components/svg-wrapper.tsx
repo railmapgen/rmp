@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -171,13 +171,7 @@ const SvgWrapper = () => {
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
             const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
             dispatch(
-                setSelected(
-                    new Set<StnId | MiscNodeId | LineId>([
-                        ...(e.shiftKey ? selected : []),
-                        ...nodesInRectangle,
-                        ...edgesInRectangle,
-                    ])
-                )
+                setSelected(new Set<Id>([...(e.shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle]))
             );
             dispatch(setMode('free'));
             setSelectStart({ x: 0, y: 0 });
@@ -274,7 +268,7 @@ const SvgWrapper = () => {
                 svgViewBoxZoom,
                 svgViewBoxMin
             );
-            const { nodes } = importSelectedNodesAndEdges(
+            const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
                 graph.current,
                 roundToNearestN(svgMidX, 5),
@@ -282,8 +276,9 @@ const SvgWrapper = () => {
             );
             refreshAndSave();
             // select copied nodes automatically
-            dispatch(clearSelected());
-            dispatch(setSelected(new Set<StnId | MiscNodeId | LineId>(nodes)));
+            const allElements = structuredClone(nodes) as Set<Id>;
+            edges.forEach(s => allElements.add(s));
+            dispatch(setSelected(allElements));
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)

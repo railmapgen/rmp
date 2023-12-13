@@ -67,7 +67,7 @@ const SvgCanvas = () => {
                 // set the current as the only one no matter what the previous selected were
                 dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
             } else {
-                // no-op for clicking on the previously selected node
+                // no-op as users may drag the previously selected node(s) for the current selected
             }
         } else {
             // shift key pressed -> multiple selection case

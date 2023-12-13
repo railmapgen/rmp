@@ -98,7 +98,7 @@ export const importSelectedNodesAndEdges = (
     );
 
     return {
-        nodes: Object.keys(nodesWithAttrs) as (StnId | MiscNodeId)[],
-        edges: Object.keys(edgesWithAttrs) as LineId[],
+        nodes: new Set(Object.keys(nodesWithAttrs)) as Set<StnId | MiscNodeId>,
+        edges: new Set(Object.keys(edgesWithAttrs)) as Set<LineId>,
     };
 };

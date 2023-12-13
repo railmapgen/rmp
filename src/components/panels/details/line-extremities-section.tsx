@@ -1,11 +1,11 @@
-import React from 'react';
-import useEvent from 'react-use-event-hook';
-import { useTranslation } from 'react-i18next';
 import { Box, Button, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useRootDispatch, useRootSelector } from '../../../redux';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import useEvent from 'react-use-event-hook';
+import { MiscNodeId, StnId } from '../../../constants/constants';
 import { ExternalStationAttributes } from '../../../constants/stations';
-import { StnId, MiscNodeId, LineId } from '../../../constants/constants';
+import { useRootDispatch, useRootSelector } from '../../../redux';
 import { addSelected, clearSelected } from '../../../redux/runtime/runtime-slice';
 
 export default function LineExtremitiesSection() {
@@ -53,11 +53,11 @@ export default function LineExtremitiesSection() {
 
     const handleSource = useEvent(() => {
         dispatch(clearSelected());
-        dispatch(addSelected(source as StnId | MiscNodeId | LineId));
+        dispatch(addSelected(source as StnId | MiscNodeId));
     });
     const handleTarget = useEvent(() => {
         dispatch(clearSelected());
-        dispatch(addSelected(target as StnId | MiscNodeId | LineId));
+        dispatch(addSelected(target as StnId | MiscNodeId));
     });
 
     const fields: RmgFieldsField[] = [
