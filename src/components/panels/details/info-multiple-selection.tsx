@@ -1,17 +1,35 @@
 import { Box, Button, Heading, VStack } from '@chakra-ui/react';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { StationAttributes } from '../../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setSelected } from '../../../redux/runtime/runtime-slice';
-import { ColorField } from './color-field';
+import { Theme } from '../../../constants/constants';
 import { LineStyleType } from '../../../constants/lines';
+import { StationAttributes } from '../../../constants/stations';
+import { useTranslation } from 'react-i18next';
+import { saveGraph } from '../../../redux/param/param-slice';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import {
+    openPaletteAppClip,
+    setRefreshEdges,
+    setRefreshNodes,
+    setSelected,
+} from '../../../redux/runtime/runtime-slice';
+import { AttributesWithColor } from './color-field';
 import { RmgFields } from '@railmapgen/rmg-components';
+import ThemeButton from '../theme-button';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const { selected, theme } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        theme,
+        paletteAppClip: { output },
+    } = useRootSelector(state => state.runtime);
+
+    const hardRefresh = React.useCallback(() => {
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
+        dispatch(saveGraph(graph.current.export()));
+    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const handleChange = (id: string) => {
@@ -37,6 +55,34 @@ export default function InfoMultipleSection() {
         }
     };
 
+    const handleChangeColor = (color: Theme) => {
+        selected.forEach(id => {
+            if (graph.current.hasEdge(id)) {
+                const thisType = graph.current.getEdgeAttributes(id).style;
+                const attrs = graph.current.getEdgeAttribute.bind(graph.current)(id, thisType);
+                if (thisType !== LineStyleType.River && (attrs as AttributesWithColor)['color'] !== undefined) {
+                    (attrs as AttributesWithColor)['color'] = color;
+                }
+                graph.current.mergeEdgeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+            } else if (graph.current.hasNode(id)) {
+                const thisType = graph.current.getNodeAttributes(id).type;
+                const attrs = graph.current.getNodeAttribute.bind(graph.current)(id, thisType);
+                if ((attrs as AttributesWithColor)['color'] !== undefined)
+                    (attrs as AttributesWithColor)['color'] = color;
+                graph.current.mergeNodeAttributes.bind(graph.current)(id, { [thisType]: attrs });
+            }
+        });
+        hardRefresh();
+    };
+
+    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
+    React.useEffect(() => {
+        if (isThemeRequested && output) {
+            handleChangeColor(output);
+            setIsThemeRequested(false);
+        }
+    }, [output?.toString()]);
+
     return (
         <Box>
             <Heading as="h5" size="sm">
@@ -47,7 +93,15 @@ export default function InfoMultipleSection() {
                     {
                         type: 'custom',
                         label: t("Change selected objects' color to:"),
-                        component: <ColorField type={LineStyleType.SingleColor} defaultTheme={theme} />,
+                        component: (
+                            <ThemeButton
+                                theme={theme}
+                                onClick={() => {
+                                    setIsThemeRequested(true);
+                                    dispatch(openPaletteAppClip(theme));
+                                }}
+                            />
+                        ),
                         minW: 'full',
                     },
                 ]}
