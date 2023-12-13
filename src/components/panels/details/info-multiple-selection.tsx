@@ -82,7 +82,7 @@ export default function InfoMultipleSection() {
     return (
         <Box>
             <Heading as="h5" size="sm">
-                {t('panel.details.selected')} {selected.length}
+                {t('panel.details.selected')} {selected.size}
             </Heading>
             <RmgLabel label={t('panel.details.multipleChangeColor')}>
                 <ThemeButton
@@ -94,13 +94,13 @@ export default function InfoMultipleSection() {
                 />
             </RmgLabel>
             <VStack m="var(--chakra-space-1)">
-                {selected.map(id => (
+                {[...selected].map(id => (
                     <Button
                         key={id}
                         width="100%"
                         size="sm"
                         variant="solid"
-                        onClick={() => dispatch(setSelected([id]))}
+                        onClick={() => dispatch(setSelected(new Set(id)))}
                         overflow="hidden"
                         maxW="270"
                         textOverflow="ellipsis"

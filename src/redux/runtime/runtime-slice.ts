@@ -12,7 +12,7 @@ interface RuntimeState {
     /**
      * Current selection (nodes and edges id, possible multiple selection).
      */
-    selected: string[];
+    selected: Set<string>;
     active: StnId | MiscNodeId | 'background' | undefined;
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
@@ -49,7 +49,7 @@ interface RuntimeState {
 }
 
 const initialState: RuntimeState = {
-    selected: [],
+    selected: new Set<string>(),
     active: undefined,
     refresh: {
         nodes: Date.now(),
@@ -70,19 +70,17 @@ const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
     reducers: {
-        setSelected: (state, action: PayloadAction<string[]>) => {
-            state.selected = action.payload;
+        setSelected: (state, action: PayloadAction<Set<string>>) => {
+            state.selected = new Set<string>(action.payload);
         },
         addSelected: (state, action: PayloadAction<string>) => {
-            if (!state.selected.includes(action.payload))
-                // no duplicates allowed
-                state.selected.push(action.payload);
+            state.selected.add(action.payload);
         },
         removeSelected: (state, action: PayloadAction<string>) => {
-            state.selected = state.selected.filter(_ => _ !== action.payload);
+            state.selected.delete(action.payload);
         },
         clearSelected: state => {
-            state.selected = [];
+            state.selected = new Set<string>();
         },
         setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;

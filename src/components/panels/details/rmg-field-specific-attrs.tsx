@@ -31,12 +31,12 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0)!;
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const fields: RmgFieldsField[] = [];
 
-    if (selected.length === 1 && graph.current.hasNode(selectedFirst)) {
+    if (selected.size === 1 && graph.current.hasNode(selectedFirst)) {
         const type = graph.current.getNodeAttribute(selectedFirst, 'type');
         const attrs = graph.current.getNodeAttribute(selectedFirst, type) as any;
         fields.push(
@@ -82,7 +82,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
         );
     }
 
-    if (selected.length === 1 && graph.current.hasEdge(selectedFirst) && props.type !== 'style') {
+    if (selected.size === 1 && graph.current.hasEdge(selectedFirst) && props.type !== 'style') {
         const type = graph.current.getEdgeAttribute(selectedFirst, 'type');
         const attrs = graph.current.getEdgeAttribute(selectedFirst, type);
         fields.push(
@@ -113,7 +113,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
             )
         );
     }
-    if (selected.length === 1 && graph.current.hasEdge(selectedFirst) && props.type === 'style') {
+    if (selected.size === 1 && graph.current.hasEdge(selectedFirst) && props.type === 'style') {
         const style = graph.current.getEdgeAttribute(selectedFirst, 'style');
         const styleAttrs = graph.current.getEdgeAttribute(selectedFirst, style);
         console.log(props.fields.map(x => x.label).map(x => [x, t(x)]));

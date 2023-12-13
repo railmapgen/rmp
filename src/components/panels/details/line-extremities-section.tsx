@@ -11,7 +11,7 @@ export default function LineExtremitiesSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const [source, setSource] = React.useState('undefined');

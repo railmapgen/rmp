@@ -18,7 +18,7 @@ export default function NodePositionSection() {
         selected,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const [pos, setPos] = React.useState({ x: 0, y: 0 });

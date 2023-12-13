@@ -190,7 +190,7 @@ const DualColorSwitch = () => {
     const dispatch = useRootDispatch();
 
     const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     return (

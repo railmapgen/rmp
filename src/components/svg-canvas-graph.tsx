@@ -63,15 +63,15 @@ const SvgCanvas = () => {
 
         if (!e.shiftKey) {
             // no shift key -> non multiple selection case
-            if (!selected.includes(node)) {
+            if (!selected.has(node)) {
                 // set the current as the only one no matter what the previous selected were
-                dispatch(setSelected([node]));
+                dispatch(setSelected(new Set<string>(node)));
             } else {
                 // no-op for clicking on the previously selected node
             }
         } else {
             // shift key pressed -> multiple selection case
-            if (selected.includes(node)) {
+            if (selected.has(node)) {
                 // remove current if it is already in the multiple selection
                 dispatch(removeSelected(node));
             } else {
@@ -85,7 +85,7 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            selected
+            [...selected]
                 .filter(s => graph.current.hasNode(s))
                 .forEach(s => {
                     graph.current.updateNodeAttributes(s, attr => ({
@@ -159,7 +159,7 @@ const SvgCanvas = () => {
     });
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
         if (!e.shiftKey) dispatch(clearSelected());
-        if (e.shiftKey && selected.includes(edge)) dispatch(removeSelected(edge));
+        if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));
     });
 
