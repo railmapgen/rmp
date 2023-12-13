@@ -99,6 +99,9 @@
                     "displayName": "深セン地下鉄番号ラインバッジ",
                     "branch": "支線です"
                 },
+                "mrtNumLineBadge": {
+                    "displayName": "シンガポール MRT 番号ラインバッジ"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "種類"

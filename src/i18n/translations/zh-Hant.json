@@ -99,6 +99,9 @@
                     "displayName": "深圳地鐵數字線路標識",
                     "branch": "是否支線"
                 },
+                "mrtNumLineBadge": {
+                    "displayName": "新加坡MRT數位線路標識"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"

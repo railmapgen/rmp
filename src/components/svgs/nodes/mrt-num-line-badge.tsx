@@ -122,7 +122,7 @@ const mrtNumLineBadge: Node<MRTNumLineBadgeAttributes> = {
     defaultAttrs: defaultMRTNumLineBadgeAttributes,
     attrsComponent: mrtNumLineBadgeAttrsComponent,
     metadata: {
-        displayName: 'panel.details.nodes.MRTNumLineBadge.displayName',
+        displayName: 'panel.details.nodes.mrtNumLineBadge.displayName',
         tags: [],
     },
 };
