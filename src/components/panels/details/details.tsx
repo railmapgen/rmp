@@ -3,7 +3,7 @@ import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader 
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MiscNodeId, StnId } from '../../../constants/constants';
+import { LineId, MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
@@ -36,10 +36,8 @@ const DetailsPanel = () => {
         dispatch(setRefreshNodes());
         dispatch(saveGraph(graph.current.export()));
     };
-    const handleCopy = (selected: Set<string>) => {
-        const nodes = selected as Set<StnId | MiscNodeId>;
-        const edges = findEdgesConnectedByNodes(graph.current, nodes);
-        const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
+    const handleCopy = (selected: Set<StnId | MiscNodeId | LineId>) => {
+        const s = exportSelectedNodesAndEdges(graph.current, selected);
         navigator.clipboard.writeText(s);
     };
     const handleRemove = (selected: Set<string>) => {

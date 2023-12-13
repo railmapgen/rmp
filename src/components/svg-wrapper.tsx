@@ -252,9 +252,7 @@ const SvgWrapper = () => {
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
-            const nodes = selected as Set<StnId | MiscNodeId>;
-            const edges = findEdgesConnectedByNodes(graph.current, nodes);
-            const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
+            const s = exportSelectedNodesAndEdges(graph.current, selected);
             navigator.clipboard.writeText(s);
             if (e.key === 'x') {
                 dispatch(clearSelected());
