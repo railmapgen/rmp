@@ -29,7 +29,14 @@ const MRTNumLineBadge = (props: NodeComponentProps<MRTNumLineBadgeAttributes>) =
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
+            <g
+                id={id}
+                transform={`translate(${x}, ${y})`}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
                 <rect fill={bgColor} x="-6" y="-6" width="12" height="12" rx="6" ry="6" />
                 <text
                     className="rmp-name__mrt"
@@ -46,20 +53,7 @@ const MRTNumLineBadge = (props: NodeComponentProps<MRTNumLineBadgeAttributes>) =
                     {num}
                 </text>
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="-6"
-                    y="-6"
-                    width="12"
-                    height="12"
-                    rx="6"
-                    ry="6"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+                <rect fill="white" fillOpacity="0" x="-6" y="-6" width="12" height="12" rx="6" ry="6" />
             </g>
         ),
         [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
