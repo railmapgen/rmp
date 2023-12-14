@@ -99,8 +99,8 @@
                     "displayName": "Shenzhen Metro num line badge",
                     "branch": "Is branch line"
                 },
-                "mrtNumLineBadge": {
-                    "displayName": "Singapore MRT num line badge"
+                "mrtDestinationNumbers": {
+                    "displayName": "Singapore MRT Destination Numbers"
                 },
                 "facilities": {
                     "displayName": "Facilities",

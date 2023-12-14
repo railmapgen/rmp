@@ -99,8 +99,8 @@
                     "displayName": "深圳地铁数字线路标识",
                     "branch": "是否为支线"
                 },
-                "mrtNumLineBadge": {
-                    "displayName": "新加坡MRT数字线路标识"
+                "mrtDestinationNumbers": {
+                    "displayName": "新加坡MRT终点数字"
                 },
                 "facilities": {
                     "displayName": "设施",

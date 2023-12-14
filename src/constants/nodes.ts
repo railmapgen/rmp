@@ -28,7 +28,7 @@ export enum MiscNodeType {
     ChongqingRTNumLineBadge = 'chongqingrt-num-line-badge',
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
     ShenzhenMetroNumLineBadge = 'shenzhen-metro-num-line-badge',
-    MRTNumLineBadge = 'mrt-num-line-badge',
+    MRTDestinationNumbers = 'mrt-num-line-badge',
     Facilities = 'facilities',
     Text = 'text',
 }
@@ -46,7 +46,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.ChongqingRTNumLineBadge]?: ChongqingRTNumLineBadgeAttributes;
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
     [MiscNodeType.ShenzhenMetroNumLineBadge]?: ShenzhenMetroNumLineBadgeAttributes;
-    [MiscNodeType.MRTNumLineBadge]?: MRTBasicStationAttributes;
+    [MiscNodeType.MRTDestinationNumbers]?: MRTBasicStationAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
 }

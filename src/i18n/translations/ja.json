@@ -99,8 +99,8 @@
                     "displayName": "深セン地下鉄番号ラインバッジ",
                     "branch": "支線です"
                 },
-                "mrtNumLineBadge": {
-                    "displayName": "シンガポール MRT 番号ラインバッジ"
+                "mrtDestinationNumbers": {
+                    "displayName": "シンガポール MRT の目的地番号"
                 },
                 "facilities": {
                     "displayName": "施設",

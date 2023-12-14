@@ -6,10 +6,10 @@ import { AttrsProps } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
-const MRTNumLineBadge = (props: NodeComponentProps<MRTNumLineBadgeAttributes>) => {
+const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { num = defaultMRTNumLineBadgeAttributes.num, color = defaultMRTNumLineBadgeAttributes.color } =
-        attrs ?? defaultMRTNumLineBadgeAttributes;
+    const { num = defaultMRTDestinationNumbersAttributes.num, color = defaultMRTDestinationNumbersAttributes.color } =
+        attrs ?? defaultMRTDestinationNumbersAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -59,18 +59,18 @@ const MRTNumLineBadge = (props: NodeComponentProps<MRTNumLineBadgeAttributes>) =
 };
 
 /**
- * MRTNumLineBadge specific props.
+ * MRTDestinationNumbers specific props.
  */
-export interface MRTNumLineBadgeAttributes extends AttributesWithColor {
+export interface MRTDestinationNumbersAttributes extends AttributesWithColor {
     num: number;
 }
 
-const defaultMRTNumLineBadgeAttributes: MRTNumLineBadgeAttributes = {
+const defaultMRTDestinationNumbersAttributes: MRTDestinationNumbersAttributes = {
     num: 1,
     color: [CityCode.Singapore, 'ewl', '#009739', MonoColour.white],
 };
 
-const mrtNumLineBadgeAttrsComponent = (props: AttrsProps<MRTNumLineBadgeAttributes>) => {
+const mrtDestinationNumbersAttrsComponent = (props: AttrsProps<MRTDestinationNumbersAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -90,7 +90,10 @@ const mrtNumLineBadgeAttrsComponent = (props: AttrsProps<MRTNumLineBadgeAttribut
             type: 'custom',
             label: t('color'),
             component: (
-                <ColorField type={MiscNodeType.MRTNumLineBadge} defaultTheme={defaultMRTNumLineBadgeAttributes.color} />
+                <ColorField
+                    type={MiscNodeType.MRTDestinationNumbers}
+                    defaultTheme={defaultMRTDestinationNumbersAttributes.color}
+                />
             ),
             minW: 'full',
         },
@@ -99,7 +102,7 @@ const mrtNumLineBadgeAttrsComponent = (props: AttrsProps<MRTNumLineBadgeAttribut
     return <RmgFields fields={fields} />;
 };
 
-const mrtNumLineBadgeIcon = (
+const mrtDestinationNumbersIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
         <text x="9" y="17" fill="white" fontSize="14">
@@ -108,15 +111,15 @@ const mrtNumLineBadgeIcon = (
     </svg>
 );
 
-const mrtNumLineBadge: Node<MRTNumLineBadgeAttributes> = {
-    component: MRTNumLineBadge,
-    icon: mrtNumLineBadgeIcon,
-    defaultAttrs: defaultMRTNumLineBadgeAttributes,
-    attrsComponent: mrtNumLineBadgeAttrsComponent,
+const mrtDestinationNumbers: Node<MRTDestinationNumbersAttributes> = {
+    component: MRTDestinationNumbers,
+    icon: mrtDestinationNumbersIcon,
+    defaultAttrs: defaultMRTDestinationNumbersAttributes,
+    attrsComponent: mrtDestinationNumbersAttrsComponent,
     metadata: {
-        displayName: 'panel.details.nodes.mrtNumLineBadge.displayName',
+        displayName: 'panel.details.nodes.mrtDestinationNumbers.displayName',
         tags: [],
     },
 };
 
-export default mrtNumLineBadge;
+export default mrtDestinationNumbers;
