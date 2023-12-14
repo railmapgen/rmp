@@ -100,6 +100,9 @@
                     "displayName": "深圳地铁数字线路标识",
                     "branch": "是否为支线"
                 },
+                "mrtDestinationNumbers": {
+                    "displayName": "新加坡MRT终点数字"
+                },
                 "facilities": {
                     "displayName": "设施",
                     "type": "类型"

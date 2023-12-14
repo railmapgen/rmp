@@ -100,6 +100,9 @@
                     "displayName": "심천 지하철 번호 라인 배지",
                     "branch": "지선입니다"
                 },
+                "mrtDestinationNumbers": {
+                    "displayName": "싱가포르 MRT 목적지 번호"
+                },
                 "facilities": {
                     "displayName": "시설",
                     "type": "Type"
