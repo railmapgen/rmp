@@ -72,7 +72,7 @@ const runtimeSlice = createSlice({
     initialState,
     reducers: {
         setSelected: (state, action: PayloadAction<Set<Id>>) => {
-            state.selected = new Set<Id>(action.payload);
+            state.selected = action.payload;
         },
         addSelected: (state, action: PayloadAction<Id>) => {
             state.selected.add(action.payload);

@@ -212,13 +212,15 @@ const SvgWrapper = () => {
         if (isMacClient ? e.key === 'Backspace' : e.key === 'Delete') {
             // remove all the selected nodes and edges
             if (selected.size > 0) {
-                [...selected]
-                    .filter(s => graph.current.hasNode(s) || graph.current.hasEdge(s))
-                    .forEach(s => {
-                        dispatch(clearSelected());
-                        graph.current.hasNode(s) ? graph.current.dropNode(s) : graph.current.dropEdge(s);
-                        refreshAndSave();
-                    });
+                selected.forEach(s => {
+                    if (graph.current.hasNode(s)) {
+                        graph.current.dropNode(s);
+                    } else if (graph.current.hasEdge(s)) {
+                        graph.current.dropEdge(s);
+                    }
+                });
+                dispatch(clearSelected());
+                refreshAndSave();
             }
         } else if (e.key.startsWith('Arrow')) {
             const d = 100;
