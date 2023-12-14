@@ -151,7 +151,7 @@ const SvgCanvas = () => {
                 }
             } else {
                 // the node is just placed and should not trigger any save, only display the details
-                dispatch(addSelected(node));
+                // dispatch(addSelected(node));
             }
         }
         dispatch(setActive(undefined));
