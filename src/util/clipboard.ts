@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
 
 type NodesWithAttrs = { [key in StnId | MiscNodeId]: NodeAttributes };
 type EdgesWithAttrs = {
@@ -17,7 +17,7 @@ interface ClipboardData {
 
 export const exportSelectedNodesAndEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    selected: Set<StnId | MiscNodeId | LineId>
+    selected: Set<Id>
 ) => {
     const nodesWithAttrs: NodesWithAttrs = {};
     const edgesWithAttrs: EdgesWithAttrs = {};
