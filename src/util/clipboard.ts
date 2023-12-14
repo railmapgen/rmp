@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
 
 type NodesWithAttrs = { [key in StnId | MiscNodeId]: NodeAttributes };
 type EdgesWithAttrs = {
@@ -17,33 +17,37 @@ interface ClipboardData {
 
 export const exportSelectedNodesAndEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: Set<StnId | MiscNodeId>,
-    edges: Set<LineId>
+    selected: Set<Id>
 ) => {
     const nodesWithAttrs: NodesWithAttrs = {};
-    let [sumX, sumY] = [0, 0];
-    nodes.forEach(node => {
-        const attr = graph.getNodeAttributes(node);
-        nodesWithAttrs[node] = attr;
-        sumX += attr.x;
-        sumY += attr.y;
-    });
     const edgesWithAttrs: EdgesWithAttrs = {};
-    edges.forEach(edge => {
-        const [source, target] = graph.extremities(edge) as [StnId | MiscNodeId, StnId | MiscNodeId];
-        edgesWithAttrs[edge] = {
-            attr: graph.getEdgeAttributes(edge),
-            source,
-            target,
-        };
+    let [sumX, sumY] = [0, 0];
+    let countNode = 0;
+    selected.forEach(id => {
+        if (graph.hasNode(id)) {
+            const node = id as StnId | MiscNodeId;
+            const attr = graph.getNodeAttributes(node);
+            nodesWithAttrs[node] = attr;
+            sumX += attr.x;
+            sumY += attr.y;
+            countNode++;
+        } else if (graph.hasEdge(id)) {
+            const edge = id as LineId;
+            const [source, target] = graph.extremities(edge) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            edgesWithAttrs[edge] = {
+                attr: graph.getEdgeAttributes(edge),
+                source,
+                target,
+            };
+        }
     });
     const data: ClipboardData = {
         app: 'rmp',
         version: 1,
         nodesWithAttrs,
         edgesWithAttrs,
-        avgX: sumX / nodes.size,
-        avgY: sumY / nodes.size,
+        avgX: sumX / countNode,
+        avgY: sumY / countNode,
     };
     return JSON.stringify(data);
 };
@@ -94,7 +98,7 @@ export const importSelectedNodesAndEdges = (
     );
 
     return {
-        nodes: Object.keys(nodesWithAttrs) as (StnId | MiscNodeId)[],
-        edges: Object.keys(edgesWithAttrs) as LineId[],
+        nodes: new Set(Object.keys(nodesWithAttrs)) as Set<StnId | MiscNodeId>,
+        edges: new Set(Object.keys(edgesWithAttrs)) as Set<LineId>,
     };
 };

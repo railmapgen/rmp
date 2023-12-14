@@ -26,7 +26,7 @@ export default function LineTypeSection() {
     }, [dispatch, setRefreshEdges, saveGraph]);
 
     const { selected, theme } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const [isChangeTypeWarningOpen, setIsChangeTypeWarningOpen] = React.useState(false);

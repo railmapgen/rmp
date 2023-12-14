@@ -1,20 +1,20 @@
 import { Box, Button, Heading, VStack } from '@chakra-ui/react';
 import { RmgLabel } from '@railmapgen/rmg-components';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Theme } from '../../../constants/constants';
 import { LineStyleType } from '../../../constants/lines';
 import { StationAttributes } from '../../../constants/stations';
-import { useTranslation } from 'react-i18next';
-import { saveGraph } from '../../../redux/param/param-slice';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/param/param-slice';
 import {
     openPaletteAppClip,
     setRefreshEdges,
     setRefreshNodes,
     setSelected,
 } from '../../../redux/runtime/runtime-slice';
-import { AttributesWithColor } from './color-field';
 import ThemeButton from '../theme-button';
+import { AttributesWithColor } from './color-field';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
@@ -82,7 +82,7 @@ export default function InfoMultipleSection() {
     return (
         <Box>
             <Heading as="h5" size="sm">
-                {t('panel.details.selected')} {selected.length}
+                {t('panel.details.selected')} {selected.size}
             </Heading>
             <RmgLabel label={t('panel.details.multipleChangeColor')}>
                 <ThemeButton
@@ -94,13 +94,13 @@ export default function InfoMultipleSection() {
                 />
             </RmgLabel>
             <VStack m="var(--chakra-space-1)">
-                {selected.map(id => (
+                {[...selected].map(id => (
                     <Button
                         key={id}
                         width="100%"
                         size="sm"
                         variant="solid"
-                        onClick={() => dispatch(setSelected([id]))}
+                        onClick={() => dispatch(setSelected(new Set([id])))}
                         overflow="hidden"
                         maxW="270"
                         textOverflow="ellipsis"

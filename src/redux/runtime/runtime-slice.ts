@@ -1,7 +1,8 @@
 import { AlertStatus } from '@chakra-ui/react';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { produce } from 'immer';
+import { Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { redoAction, undoAction } from '../param/param-slice';
 
 /**
@@ -12,7 +13,7 @@ interface RuntimeState {
     /**
      * Current selection (nodes and edges id, possible multiple selection).
      */
-    selected: string[];
+    selected: Set<Id>;
     active: StnId | MiscNodeId | 'background' | undefined;
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
@@ -49,7 +50,7 @@ interface RuntimeState {
 }
 
 const initialState: RuntimeState = {
-    selected: [],
+    selected: new Set<Id>(),
     active: undefined,
     refresh: {
         nodes: Date.now(),
@@ -70,19 +71,17 @@ const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
     reducers: {
-        setSelected: (state, action: PayloadAction<string[]>) => {
+        setSelected: (state, action: PayloadAction<Set<Id>>) => {
             state.selected = action.payload;
         },
-        addSelected: (state, action: PayloadAction<string>) => {
-            if (!state.selected.includes(action.payload))
-                // no duplicates allowed
-                state.selected.push(action.payload);
+        addSelected: (state, action: PayloadAction<Id>) => {
+            state.selected.add(action.payload);
         },
-        removeSelected: (state, action: PayloadAction<string>) => {
-            state.selected = state.selected.filter(_ => _ !== action.payload);
+        removeSelected: (state, action: PayloadAction<Id>) => {
+            state.selected.delete(action.payload);
         },
         clearSelected: state => {
-            state.selected = [];
+            state.selected = new Set<Id>();
         },
         setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;

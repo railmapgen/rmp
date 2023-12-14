@@ -14,7 +14,7 @@ export const NodeSpecificAttributes = () => {
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
-    const id = selected.at(0)!;
+    const [id] = selected;
 
     const type = window.graph.getNodeAttribute(id, 'type');
     const AttrsComponent = type in nodes && nodes[type].attrsComponent;
@@ -40,7 +40,7 @@ export const LineSpecificAttributes = () => {
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
-    const id = selected.at(0)!;
+    const [id] = selected;
 
     const type = window.graph.getEdgeAttribute(id, 'type');
     const attrs = (window.graph.getEdgeAttribute(id, type) ?? {}) as any;

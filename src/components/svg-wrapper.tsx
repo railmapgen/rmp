@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -171,7 +171,7 @@ const SvgWrapper = () => {
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
             const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
             dispatch(
-                setSelected([...new Set([...(e.shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle])])
+                setSelected(new Set<Id>([...(e.shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle]))
             );
             dispatch(setMode('free'));
             setSelectStart({ x: 0, y: 0 });
@@ -211,14 +211,16 @@ const SvgWrapper = () => {
         // https://www.delftstack.com/howto/react/onkeydown-react/
         if (isMacClient ? e.key === 'Backspace' : e.key === 'Delete') {
             // remove all the selected nodes and edges
-            if (selected.length > 0) {
-                selected
-                    .filter(s => graph.current.hasNode(s) || graph.current.hasEdge(s))
-                    .forEach(s => {
-                        dispatch(clearSelected());
-                        graph.current.hasNode(s) ? graph.current.dropNode(s) : graph.current.dropEdge(s);
-                        refreshAndSave();
-                    });
+            if (selected.size > 0) {
+                selected.forEach(s => {
+                    if (graph.current.hasNode(s)) {
+                        graph.current.dropNode(s);
+                    } else if (graph.current.hasEdge(s)) {
+                        graph.current.dropEdge(s);
+                    }
+                });
+                dispatch(clearSelected());
+                refreshAndSave();
             }
         } else if (e.key.startsWith('Arrow')) {
             const d = 100;
@@ -229,14 +231,14 @@ const SvgWrapper = () => {
             const d = 10;
             const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * d;
             const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * d;
-            if (selected.length > 0) {
-                selected
-                    .filter(s => graph.current.hasNode(s))
-                    .forEach(s => {
+            if (selected.size > 0) {
+                selected.forEach(s => {
+                    if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttribute(s, 'x', x => (x ?? 0) + x_factor);
                         graph.current.updateNodeAttribute(s, 'y', y => (y ?? 0) + y_factor);
                         refreshAndSave();
-                    });
+                    }
+                });
             }
         } else if (e.key === 'f' && lastTool) {
             dispatch(setMode(lastTool as RuntimeMode));
@@ -246,9 +248,7 @@ const SvgWrapper = () => {
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
-            const nodes = new Set(selected as (StnId | MiscNodeId)[]);
-            const edges = findEdgesConnectedByNodes(graph.current, nodes);
-            const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
+            const s = exportSelectedNodesAndEdges(graph.current, selected);
             navigator.clipboard.writeText(s);
             if (e.key === 'x') {
                 dispatch(clearSelected());
@@ -270,7 +270,7 @@ const SvgWrapper = () => {
                 svgViewBoxZoom,
                 svgViewBoxMin
             );
-            const { nodes } = importSelectedNodesAndEdges(
+            const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
                 graph.current,
                 roundToNearestN(svgMidX, 5),
@@ -278,8 +278,9 @@ const SvgWrapper = () => {
             );
             refreshAndSave();
             // select copied nodes automatically
-            dispatch(clearSelected());
-            dispatch(setSelected(nodes));
+            const allElements = structuredClone(nodes) as Set<Id>;
+            edges.forEach(s => allElements.add(s));
+            dispatch(setSelected(allElements));
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)

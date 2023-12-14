@@ -49,7 +49,7 @@ export const InterchangeField = (props: {
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefreshNodes, saveGraph]);
     const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const attr =

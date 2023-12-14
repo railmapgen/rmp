@@ -26,7 +26,7 @@ export default function StationTypeSection() {
     }, [dispatch, setRefreshNodes, saveGraph]);
 
     const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const [isChangeTypeWarningOpen, setIsChangeTypeWarningOpen] = React.useState(false);
