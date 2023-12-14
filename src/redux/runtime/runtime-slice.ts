@@ -75,14 +75,10 @@ const runtimeSlice = createSlice({
             state.selected = new Set<Id>(action.payload);
         },
         addSelected: (state, action: PayloadAction<Id>) => {
-            state.selected = produce(state.selected, draft => {
-                draft.add(action.payload);
-            });
+            state.selected.add(action.payload);
         },
         removeSelected: (state, action: PayloadAction<Id>) => {
-            state.selected = produce(state.selected, draft => {
-                draft.delete(action.payload);
-            });
+            state.selected.delete(action.payload);
         },
         clearSelected: state => {
             state.selected = new Set<Id>();
