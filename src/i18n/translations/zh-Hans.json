@@ -253,16 +253,22 @@
                     "width": "宽度"
                 },
                 "mtrRaceDays": {
-                    "displayName": "MTR赛马日样式"
+                    "displayName": "香港MTR赛马日样式"
                 },
                 "mtrLightRail": {
-                    "displayName": "MTR轻轨样式"
+                    "displayName": "香港MTR轻轨样式"
                 },
                 "mtrUnpaidArea": {
-                    "displayName": "MTR未付费区域样式"
+                    "displayName": "香港MTR未付费区域样式"
                 },
                 "mtrPaidArea": {
-                    "displayName": "MTR付费区域样式"
+                    "displayName": "香港MTR付费区域样式"
+                },
+                "mrtUnderConstruction": {
+                    "displayName": "新加坡MRT在建样式"
+                },
+                "mrtSentosaExpress": {
+                    "displayName": "新加坡MRT圣淘沙捷运样式"
                 }
             },
             "edges": {},

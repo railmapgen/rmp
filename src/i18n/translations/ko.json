@@ -253,16 +253,22 @@
                     "width": "폭"
                 },
                 "mtrRaceDays": {
-                    "displayName": "MTR 경마일 스타일"
+                    "displayName": "홍콩 MTR 경마일 스타일"
                 },
                 "mtrLightRail": {
-                    "displayName": "MTR 경전철 스타일"
+                    "displayName": "홍콩 MTR 경전철 스타일"
                 },
                 "mtrUnpaidArea": {
-                    "displayName": "MTR 미결제 구역 스타일"
+                    "displayName": "홍콩 MTR 미결제 구역 스타일"
                 },
                 "mtrPaidArea": {
-                    "displayName": "MTR 결제완료 구역 스타일"
+                    "displayName": "홍콩 MTR 결제완료 구역 스타일"
+                },
+                "mrtUnderConstruction": {
+                    "displayName": "싱가포르 MRT 공사중 스타일"
+                },
+                "mrtSentosaExpress": {
+                    "displayName": "싱가포르 MRT 센토사 익스프레스 스타일"
                 }
             },
             "edges": {},
