@@ -43,7 +43,7 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
 export interface MRTUnderConstructionAttributes extends LinePathAttributes, AttributesWithColor {}
 
 const defaultMRTUnderConstructionAttributes: MRTUnderConstructionAttributes = {
-    color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
+    color: [CityCode.Singapore, 'ewl', '#009739', MonoColour.white],
 };
 
 const attrsComponent = (props: AttrsProps<MRTUnderConstructionAttributes>) => {
