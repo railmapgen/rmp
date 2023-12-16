@@ -26,7 +26,7 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
         if (!(type in linePaths)) p = `M ${x1},${y1} L ${x2},${y2}`;
         // TODO: Remove `attrs as any`.
         // Automatically use the simple path under these conditions:
-        //   1. offsetFrom and offsetTo are defined, numbers and equal AND
+        //   1. offsetFrom and offsetTo are defined, numbers are equal AND
         //   2. The combination of slope (k) and type is one of the following cases:
         //     2.1. k = 0 or ∞ and type is Diagonal or Perpendicular OR
         //     2.2. k = 1 or -1 and type is Diagonal or RotatePerpendicular
@@ -48,11 +48,9 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
     }, [type, JSON.stringify(attrs), x1, x2, y1, y2]);
 
     // HELP NEEDED: Why component is not this type?
-    const StyleComponent = (lineStyles[styleType]?.component ?? UnknownLineStyle) as <
-        T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
-    >(
-        props: LineStyleComponentProps<T>
-    ) => JSX.Element;
+    const StyleComponent = (lineStyles[styleType]?.component ?? UnknownLineStyle) as React.FC<
+        LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
+    >;
 
     return React.useMemo(
         () => (
