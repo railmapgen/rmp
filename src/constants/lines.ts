@@ -10,13 +10,13 @@ import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
 import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
+import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
 import { RiverAttributes } from '../components/svgs/lines/styles/river';
 import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
 import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
 import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
-import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
 import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
 import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
 
