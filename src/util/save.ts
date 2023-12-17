@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 24;
+export const CURRENT_VERSION = 25;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -339,4 +339,19 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     23: param =>
         // Bump save version to support Singapore MRT under construction and Sentosa Express line.
         JSON.stringify({ ...JSON.parse(param), version: 24 }),
+    24: param => {
+        // Bump save version to add tram in gzmtr-int station's attributes.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GzmtrInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.tram = false;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 25, graph: graph.export() });
+    },
 };
