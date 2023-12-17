@@ -41,9 +41,13 @@ describe('Unit tests for to rmg function', () => {
         });
 
         const toRmgRes = toRmg(graph);
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
 
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -255,8 +259,14 @@ describe('Unit tests for to rmg function', () => {
         });
 
         const toRmgRes = toRmg(graph);
+
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -414,8 +424,13 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -788,8 +803,13 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -1068,8 +1088,13 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -1224,6 +1249,7 @@ describe('Unit tests for to rmg function', () => {
                 type: 'LINE',
             },
             {
+                id: '',
                 theme: color,
                 param: [
                     [
