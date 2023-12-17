@@ -64,7 +64,7 @@ const MRTIntStation = (props: StationComponentProps) => {
     for (let i = 1; i < transfer0.length; i++) if (transfer0[i][2] == transfer0[i - 1][2]) dividingIndex.push(i);
 
     const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
-    const textX = 10 * textPolarity;
+    const textX = (nameOffsetY === 'middle' ? width / 2 + 5 : 10) * textPolarity;
     const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 

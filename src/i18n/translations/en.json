@@ -254,16 +254,22 @@
                     "width": "Width"
                 },
                 "mtrRaceDays": {
-                    "displayName": "MTR race days style"
+                    "displayName": "Hongkong MTR race days style"
                 },
                 "mtrLightRail": {
-                    "displayName": "MTR light rail style"
+                    "displayName": "Hongkong MTR light rail style"
                 },
                 "mtrUnpaidArea": {
-                    "displayName": "MTR unpaid area style"
+                    "displayName": "Hongkong MTR unpaid area style"
                 },
                 "mtrPaidArea": {
-                    "displayName": "MTR paid area style"
+                    "displayName": "Hongkong MTR paid area style"
+                },
+                "mrtUnderConstruction": {
+                    "displayName": "Singapore MRT under construction style"
+                },
+                "mrtSentosaExpress": {
+                    "displayName": "Singapore MRT Sentosa Express style"
                 }
             },
             "edge": {},

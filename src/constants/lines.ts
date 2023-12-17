@@ -1,3 +1,4 @@
+import React from 'react';
 import { AttrsProps, LineId } from './constants';
 import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
@@ -16,7 +17,8 @@ import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-ligh
 import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
 import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
-import React from 'react';
+import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
+import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -46,6 +48,8 @@ export enum LineStyleType {
     MTRLightRail = 'mtr-light-rail',
     MTRUnpaidArea = 'mtr-unpaid-area',
     MTRPaidArea = 'mtr-paid-area',
+    MRTUnderConstruction = 'mrt-under-constr',
+    MRTSentosaExpress = 'mrt-sentosa-express',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -62,6 +66,8 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MTRLightRail]?: MTRLightRailAttributes;
     [LineStyleType.MTRUnpaidArea]?: MTRUnpaidAreaAttributes;
     [LineStyleType.MTRPaidArea]?: MTRPaidAreaAttributes;
+    [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
+    [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -71,6 +77,7 @@ export const LineStylesWithColor = [
     LineStyleType.BjsubwayDotted,
     LineStyleType.MTRRaceDays,
     LineStyleType.MTRLightRail,
+    LineStyleType.MRTUnderConstruction,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
