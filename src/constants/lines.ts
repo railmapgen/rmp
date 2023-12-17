@@ -9,6 +9,8 @@ import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
+import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
+import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
 import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
 import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
@@ -46,6 +48,8 @@ export enum LineStyleType {
     MTRLightRail = 'mtr-light-rail',
     MTRUnpaidArea = 'mtr-unpaid-area',
     MTRPaidArea = 'mtr-paid-area',
+    MRTUnderConstruction = 'mrt-under-constr',
+    MRTSentosaExpress = 'mrt-sentosa-express',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -62,6 +66,8 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MTRLightRail]?: MTRLightRailAttributes;
     [LineStyleType.MTRUnpaidArea]?: MTRUnpaidAreaAttributes;
     [LineStyleType.MTRPaidArea]?: MTRPaidAreaAttributes;
+    [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
+    [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -71,6 +77,7 @@ export const LineStylesWithColor = [
     LineStyleType.BjsubwayDotted,
     LineStyleType.MTRRaceDays,
     LineStyleType.MTRLightRail,
+    LineStyleType.MRTUnderConstruction,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */

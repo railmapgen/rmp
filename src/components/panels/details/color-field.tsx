@@ -35,7 +35,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
         selected,
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
 
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());

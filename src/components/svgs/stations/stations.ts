@@ -12,6 +12,8 @@ import suzhouRTBasicStation from './suzhourt-basic';
 import suzhouRTIntStation from './suzhourt-int';
 import kunmingRTBasicStation from './kunmingrt-basic';
 import kunmingRTIntStation from './kunmingrt-int';
+import mrtBasicStation from './mrt-basic';
+import mrtIntStation from './mrt-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -27,6 +29,8 @@ const stations = {
     [StationType.SuzhouRTInt]: suzhouRTIntStation,
     [StationType.KunmingRTBasic]: kunmingRTBasicStation,
     [StationType.KunmingRTInt]: kunmingRTIntStation,
+    [StationType.MRTBasic]: mrtBasicStation,
+    [StationType.MRTInt]: mrtIntStation,
 };
 
 export default stations;

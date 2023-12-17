@@ -188,8 +188,13 @@ export const ToRmgEndSelectModal = (props: {
                                 onClick={() => {
                                     exportToRmg(newParam, [nameList[0], nameList[1]], nameList[2]);
                                 }}
+                                overflow="hidden"
+                                size="md"
+                                textOverflow="ellipsis"
+                                whiteSpace="nowrap"
+                                display="ruby"
                             >
-                                {name1}/{name2}
+                                {name1.replaceAll('\\', '⏎')}/{name2.replaceAll('\\', '⏎')}
                             </Button>
                         ))}
                     </Stack>

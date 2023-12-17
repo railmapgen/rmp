@@ -135,6 +135,18 @@ export const FONTS_CSS: {
         cssName: 'fonts_mtr',
         baseUrl: '/styles/',
     },
+    [StationType.MRTBasic]: {
+        className: ['.rmp-name__mrt'],
+        cssFont: ['IdentityFont'],
+        cssName: 'fonts_mrt',
+        baseUrl: import.meta.env.BASE_URL + 'styles/',
+    },
+    [StationType.MRTInt]: {
+        className: ['.rmp-name__mrt'],
+        cssFont: ['IdentityFont'],
+        cssName: 'fonts_mrt',
+        baseUrl: import.meta.env.BASE_URL + 'styles/',
+    },
     [MiscNodeType.BerlinSBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
         cssFont: ['16px Roboto'],

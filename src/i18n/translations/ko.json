@@ -29,6 +29,12 @@
                 "lineStyleType": "선분 스타일 유형",
                 "type": "유형"
             },
+            "selected": "선택한 개체:",
+            "multipleSelection": "다중 선택",
+            "multipleChangeColor": "선택한 개체의 색상을 다음으로 변경:",
+            "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
+            "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
+            "changeType": "종류 변경",
             "nodePosition": {
                 "title": "노드 위치",
                 "pos": {
@@ -44,11 +50,12 @@
                 "targetName": "종말점 명칭"
             },
             "specificAttrsTitle": "독특 속성",
-            "selected": "선택한 개체:",
-            "multipleSelection": "다중 선택",
-            "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
-            "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
-            "changeType": "종류 변경",
+            "unknown": {
+                "error": "이런 :( 우리는 이 {{category}}를 인식할 수 없습니다. 아마도 더 최근 버전에서 생성되었을 것입니다.",
+                "node": "노드",
+                "lineType": "선분 경로",
+                "lineStyle": "선분 스타일"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "한자 노선명칭",
@@ -93,6 +100,9 @@
                     "displayName": "심천 지하철 번호 라인 배지",
                     "branch": "지선입니다"
                 },
+                "mrtDestinationNumbers": {
+                    "displayName": "싱가포르 MRT 목적지 번호"
+                },
                 "facilities": {
                     "displayName": "시설",
                     "type": "Type"
@@ -116,7 +126,9 @@
                     "nameEn": "영문 명칭",
                     "nameOffsetX": "명칭 가로 이동",
                     "nameOffsetY": "명칭 세로 이동",
-                    "rotate": "역회전각도"
+                    "rotate": "역회전각도",
+                    "lineCode": "노선 번호",
+                    "stationCode": "역 번호"
                 },
                 "interchange": {
                     "title": "환승",
@@ -147,8 +159,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
-                    "lineCode": "노선 번호",
-                    "stationCode": "역 번호",
                     "open": "개통여부",
                     "secondaryNameZh": "한자 제2명칭",
                     "secondaryNameEn": "영문 제2명칭",
@@ -171,7 +181,7 @@
                     "outOfStation": "역을 나가 환승"
                 },
                 "mtr": {
-                    "displayName": "MTR 역"
+                    "displayName": "홍콩 MTR 역"
                 },
                 "suzhouRTBasic": {
                     "displayName": "쑤저우 궤도교통 기본역"
@@ -184,6 +194,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "쿤밍 궤도교통 환승역"
+                },
+                "MRTBasic": {
+                    "displayName": "싱가포르MRT기본역"
+                },
+                "MRTInt": {
+                    "displayName": "싱가포르MRT환승역"
                 }
             },
             "lines": {
@@ -237,16 +253,22 @@
                     "width": "폭"
                 },
                 "mtrRaceDays": {
-                    "displayName": "MTR 경마일 스타일"
+                    "displayName": "홍콩 MTR 경마일 스타일"
                 },
                 "mtrLightRail": {
-                    "displayName": "MTR 경전철 스타일"
+                    "displayName": "홍콩 MTR 경전철 스타일"
                 },
                 "mtrUnpaidArea": {
-                    "displayName": "MTR 미결제 구역 스타일"
+                    "displayName": "홍콩 MTR 미결제 구역 스타일"
                 },
                 "mtrPaidArea": {
-                    "displayName": "MTR 결제완료 구역 스타일"
+                    "displayName": "홍콩 MTR 결제완료 구역 스타일"
+                },
+                "mrtUnderConstruction": {
+                    "displayName": "싱가포르 MRT 공사중 스타일"
+                },
+                "mrtSentosaExpress": {
+                    "displayName": "싱가포르 MRT 센토사 익스프레스 스타일"
                 }
             },
             "edges": {},

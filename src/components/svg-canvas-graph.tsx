@@ -11,14 +11,17 @@ import { saveGraph } from '../redux/param/param-slice';
 import {
     addSelected,
     clearSelected,
+    removeSelected,
     setActive,
     setMode,
     setRefreshEdges,
     setRefreshNodes,
+    setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
+import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import LineWrapper from './svgs/lines/line-wrapper';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -57,9 +60,25 @@ const SvgCanvas = () => {
         setOffset({ x, y });
 
         dispatch(setActive(node));
-        // details panel only, remove all if this is not a multiple selection
-        if (!e.shiftKey && selected.length <= 1) dispatch(clearSelected());
-        dispatch(addSelected(node)); // details panel only
+
+        if (!e.shiftKey) {
+            // no shift key -> non multiple selection case
+            if (!selected.has(node)) {
+                // set the current as the only one no matter what the previous selected were
+                dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+            } else {
+                // no-op as users may drag the previously selected node(s) for the current selected
+            }
+        } else {
+            // shift key pressed -> multiple selection case
+            if (selected.has(node)) {
+                // remove current if it is already in the multiple selection
+                dispatch(removeSelected(node));
+            } else {
+                // add current in the multiple selection
+                dispatch(addSelected(node));
+            }
+        }
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -67,11 +86,13 @@ const SvgCanvas = () => {
 
         if (mode === 'free' && active === node) {
             selected.forEach(s => {
-                graph.current.updateNodeAttributes(s, attr => ({
-                    ...attr,
-                    x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                    y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                }));
+                if (graph.current.hasNode(s)) {
+                    graph.current.updateNodeAttributes(s, attr => ({
+                        ...attr,
+                        x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                        y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                    }));
+                }
             });
             dispatch(setRefreshNodes());
             dispatch(setRefreshEdges());
@@ -123,8 +144,7 @@ const SvgCanvas = () => {
                 // check the offset and if it's not 0, it must be a click not move
                 const { x, y } = getMousePosition(e);
                 if (offset.x - x === 0 && offset.y - y === 0) {
-                    // display the details of current node on click
-                    dispatch(addSelected(node));
+                    // no-op for click as the node is already added in pointer down
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));
@@ -138,8 +158,9 @@ const SvgCanvas = () => {
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
-        dispatch(clearSelected());
-        dispatch(addSelected(edge));
+        if (!e.shiftKey) dispatch(clearSelected());
+        if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
+        else dispatch(addSelected(edge));
     });
 
     // These are elements that the svg draws from.
@@ -193,7 +214,7 @@ const SvgCanvas = () => {
                 const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
-                const StyleComponent = lineStyles[style].component as <
+                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as <
                     T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
                 >(
                     props: LineStyleComponentProps<T>
@@ -231,7 +252,7 @@ const SvgCanvas = () => {
             })}
             {nodes.map(n => {
                 const { node, x, y, type } = n;
-                const MiscNodeComponent = miscNodes[type].component;
+                const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 return (
                     <MiscNodeComponent
                         id={node}
@@ -248,7 +269,7 @@ const SvgCanvas = () => {
             })}
             {stations.map(station => {
                 const { node, x, y, type } = station;
-                const StationComponent = allStations[type].component;
+                const StationComponent = allStations[type]?.component ?? UnknownNode;
                 return (
                     <StationComponent
                         id={node}

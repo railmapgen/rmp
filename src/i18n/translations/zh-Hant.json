@@ -29,6 +29,12 @@
                 "lineStyleType": "線段樣式類型",
                 "type": "類型"
             },
+            "multipleSelection": "多重選取",
+            "multipleChangeColor": "變更所選物件的顏色為：",
+            "selected": "選取的對象:",
+            "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
+            "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
+            "changeType": "更改類型",
             "nodePosition": {
                 "title": "節點位置",
                 "pos": {
@@ -44,11 +50,12 @@
                 "targetName": "終點名稱"
             },
             "specificAttrsTitle": "獨特屬性",
-            "multipleSelection": "多重选取",
-            "selected": "選取的對象:",
-            "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
-            "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
-            "changeType": "更改類型",
+            "unknown": {
+                "error": "哎呀 :( 我們無法識別此{{category}}。也許它是在更新版本中創建的。",
+                "node": "節點",
+                "linePath": "線段路徑",
+                "lineStyle": "線段樣式"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "中文線路名稱",
@@ -93,6 +100,9 @@
                     "displayName": "深圳地鐵數字線路標識",
                     "branch": "是否支線"
                 },
+                "mrtDestinationNumbers": {
+                    "displayName": "新加坡MRT終點數字"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"
@@ -116,7 +126,9 @@
                     "nameEn": "英文名稱",
                     "nameOffsetX": "名稱橫向偏移",
                     "nameOffsetY": "名稱縱向偏移",
-                    "rotate": "車站旋轉角度"
+                    "rotate": "車站旋轉角度",
+                    "lineCode": "路綫編碼",
+                    "stationCode": "車站編碼"
                 },
                 "interchange": {
                     "title": "換乘",
@@ -147,8 +159,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "廣州地鐵基本車站",
-                    "lineCode": "路綫編碼",
-                    "stationCode": "車站編碼",
                     "open": "是否開通",
                     "secondaryNameZh": "中文第二名稱",
                     "secondaryNameEn": "英文第二名稱",
@@ -171,7 +181,7 @@
                     "outOfStation": "出站轉車"
                 },
                 "mtr": {
-                    "displayName": "MTR車站"
+                    "displayName": "香港MTR車站"
                 },
                 "suzhouRTBasic": {
                     "displayName": "蘇州軌道交通基本車站"
@@ -184,6 +194,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "昆明軌道交通基本車站"
+                },
+                "MRTBasic": {
+                    "displayName": "新加坡MRT基本車站"
+                },
+                "MRTInt": {
+                    "displayName": "新加坡MRT換乘車站"
                 }
             },
             "lines": {
@@ -237,16 +253,22 @@
                     "width": "寬度"
                 },
                 "mtrRaceDays": {
-                    "displayName": "MTR賽馬日樣式"
+                    "displayName": "香港MTR賽馬日樣式"
                 },
                 "mtrLightRail": {
-                    "displayName": "MTR輕軌樣式"
+                    "displayName": "香港MTR輕軌樣式"
                 },
                 "mtrUnpaidArea": {
-                    "displayName": "MTR未付費區域樣式"
+                    "displayName": "香港MTR未付費區域樣式"
                 },
                 "mtrPaidArea": {
-                    "displayName": "MTR付費區域樣式"
+                    "displayName": "香港MTR付費區域樣式"
+                },
+                "mrtUnderConstruction": {
+                    "displayName": "新加坡MRT在建樣式"
+                },
+                "mrtSentosaExpress": {
+                    "displayName": "新加坡MRT聖淘沙捷運樣式"
                 }
             },
             "edges": {},

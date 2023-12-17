@@ -3,12 +3,11 @@ import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader 
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MiscNodeId, StnId } from '../../../constants/constants';
+import { Id } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
-import { findEdgesConnectedByNodes } from '../../../util/graph';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -24,7 +23,7 @@ const DetailsPanel = () => {
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const { selected, mode } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
 
     const handleClose = () => dispatch(clearSelected());
     const handleDuplicate = (selectedFirst: string) => {
@@ -36,13 +35,11 @@ const DetailsPanel = () => {
         dispatch(setRefreshNodes());
         dispatch(saveGraph(graph.current.export()));
     };
-    const handleCopy = (selected: string[]) => {
-        const nodes = new Set(selected as (StnId | MiscNodeId)[]);
-        const edges = findEdgesConnectedByNodes(graph.current, nodes);
-        const s = exportSelectedNodesAndEdges(graph.current, nodes, new Set(edges));
+    const handleCopy = (selected: Set<Id>) => {
+        const s = exportSelectedNodesAndEdges(graph.current, selected);
         navigator.clipboard.writeText(s);
     };
-    const handleRemove = (selected: string[]) => {
+    const handleRemove = (selected: Set<Id>) => {
         dispatch(clearSelected());
         selected.forEach(s => {
             if (graph.current.hasNode(s)) graph.current.dropNode(s);
@@ -53,7 +50,7 @@ const DetailsPanel = () => {
 
     return (
         <RmgSidePanel
-            isOpen={selected.length > 0 && !mode.startsWith('line')}
+            isOpen={selected.size > 0 && !mode.startsWith('line')}
             width={300}
             header="Dummy header"
             alwaysOverlay
@@ -62,10 +59,10 @@ const DetailsPanel = () => {
             <RmgSidePanelBody>
                 <InfoSection />
 
-                {selected.length === 1 && graph.current.hasNode(selectedFirst) && <NodePositionSection />}
-                {selected.length === 1 && graph.current.hasEdge(selectedFirst) && <LineExtremitiesSection />}
+                {selected.size === 1 && graph.current.hasNode(selectedFirst) && <NodePositionSection />}
+                {selected.size === 1 && graph.current.hasEdge(selectedFirst) && <LineExtremitiesSection />}
 
-                {selected.length === 1 && (
+                {selected.size === 1 && (
                     <Box p={1}>
                         <Heading as="h5" size="sm">
                             {t('panel.details.specificAttrsTitle')}
@@ -78,8 +75,8 @@ const DetailsPanel = () => {
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
                 <HStack>
-                    {selected.length === 1 && graph.current.hasNode(selected.at(0)) && (
-                        <Button size="sm" variant="outline" onClick={() => handleDuplicate(selected.at(0)!)}>
+                    {selected.size === 1 && graph.current.hasNode([...selected].at(0)) && (
+                        <Button size="sm" variant="outline" onClick={() => handleDuplicate([...selected].at(0)!)}>
                             {t('panel.details.footer.duplicate')}
                         </Button>
                     )}

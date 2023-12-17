@@ -30,6 +30,7 @@
                 "type": "Type"
             },
             "multipleSelection": "Multiple Selection",
+            "multipleChangeColor": "Change selected objects' color to:",
             "selected": "Selected Objects:",
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
             "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
@@ -49,6 +50,12 @@
                 "targetName": "Target Name"
             },
             "specificAttrsTitle": "Specific Attributes",
+            "unknown": {
+                "error": "Oops :( We can't recognize this {{category}}. Maybe it is created in a newer version.",
+                "node": "node",
+                "linePath": "line path",
+                "lineStyle": "line style"
+            },
             "nodes": {
                 "common": {
                     "nameZh": "Line name in Chinese",
@@ -93,6 +100,9 @@
                     "displayName": "Shenzhen Metro num line badge",
                     "branch": "Is branch line"
                 },
+                "mrtDestinationNumbers": {
+                    "displayName": "Singapore MRT Destination Numbers"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"
@@ -116,7 +126,9 @@
                     "nameEn": "Name in English",
                     "nameOffsetX": "Name offset X",
                     "nameOffsetY": "Name offset Y",
-                    "rotate": "Icon rotation"
+                    "rotate": "Icon rotation",
+                    "lineCode": "Line code",
+                    "stationCode": "Station code"
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -147,8 +159,6 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "Guangzhou Metro basic station",
-                    "lineCode": "Line code",
-                    "stationCode": "Station code",
                     "open": "Is opened",
                     "secondaryNameZh": "Secondary name in Chinese",
                     "secondaryNameEn": "Secondary name in English",
@@ -171,7 +181,7 @@
                     "outOfStation": "Out of station interchange"
                 },
                 "mtr": {
-                    "displayName": "MTR station",
+                    "displayName": "Hongkong MTR station",
                     "rotate": "Icon rotation"
                 },
                 "suzhouRTBasic": {
@@ -185,6 +195,12 @@
                 },
                 "kunmingRTInt": {
                     "displayName": "Kunming Rail Transit interchange station"
+                },
+                "MRTBasic": {
+                    "displayName": "Singapore MRT basic station"
+                },
+                "MRTInt": {
+                    "displayName": "Singapore MRT interchange station"
                 }
             },
             "lines": {
@@ -238,16 +254,22 @@
                     "width": "Width"
                 },
                 "mtrRaceDays": {
-                    "displayName": "MTR race days style"
+                    "displayName": "Hongkong MTR race days style"
                 },
                 "mtrLightRail": {
-                    "displayName": "MTR light rail style"
+                    "displayName": "Hongkong MTR light rail style"
                 },
                 "mtrUnpaidArea": {
-                    "displayName": "MTR unpaid area style"
+                    "displayName": "Hongkong MTR unpaid area style"
                 },
                 "mtrPaidArea": {
-                    "displayName": "MTR paid area style"
+                    "displayName": "Hongkong MTR paid area style"
+                },
+                "mrtUnderConstruction": {
+                    "displayName": "Singapore MRT under construction style"
+                },
+                "mrtSentosaExpress": {
+                    "displayName": "Singapore MRT Sentosa Express style"
                 }
             },
             "edge": {},

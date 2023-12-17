@@ -16,6 +16,8 @@ import mtrLightRail from './styles/mtr-light-rail';
 import mtrUnpaidArea from './styles/mtr-unpaid-area';
 import mtrPaidArea from './styles/mtr-paid-area';
 import bjsubwayDotted from './styles/bjsubway-dotted';
+import mrtUnderConstruction from './styles/mrt-under-construction';
+import mrtSentosaExpress from './styles/mrt-sentosa-express';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -38,4 +40,6 @@ export const lineStyles = {
     [LineStyleType.MTRLightRail]: mtrLightRail,
     [LineStyleType.MTRUnpaidArea]: mtrUnpaidArea,
     [LineStyleType.MTRPaidArea]: mtrPaidArea,
+    [LineStyleType.MRTUnderConstruction]: mrtUnderConstruction,
+    [LineStyleType.MRTSentosaExpress]: mrtSentosaExpress,
 };

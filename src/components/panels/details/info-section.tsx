@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import stations from '../../svgs/stations/stations';
 import InfoMultipleSection from './info-multiple-selection';
 import LineTypeSection from './line-type-section';
 import StationTypeSection from './station-type-section';
@@ -19,7 +21,7 @@ export default function InfoSection() {
     }, [dispatch, setRefreshEdges, saveGraph]);
 
     const { selected } = useRootSelector(state => state.runtime);
-    const selectedFirst = selected.at(0);
+    const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
     const handleZIndexChange = (val: number) => {
@@ -29,14 +31,18 @@ export default function InfoSection() {
         hardRefresh();
     };
 
-    const fields: RmgFieldsField[] = [
-        {
+    const fields: RmgFieldsField[] = [];
+    // deal with undefined, single and multiple selection
+    if (selected.size === 0) {
+        // add nothing as the details panel will be closed
+    } else if (selected.size === 1) {
+        fields.push({
             type: 'input',
             label: t('panel.details.info.id'),
-            value: selected.length > 0 ? selected.join(', ') : 'undefined',
+            value: selectedFirst!,
             minW: 276,
-        },
-        {
+        });
+        fields.push({
             type: 'select',
             label: t('panel.details.info.zIndex'),
             value: selectedFirst
@@ -48,13 +54,8 @@ export default function InfoSection() {
                 : 0,
             options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
             onChange: val => handleZIndexChange(Number(val)),
-        },
-    ];
-
-    // deal with undefined and multiple selection
-    if (selected.length === 0) {
-        // do nothing as the details panel will be closed
-    } else if (selected.length > 1) {
+        });
+    } else if (selected.size > 1) {
         fields.push({
             type: 'input',
             label: t('panel.details.info.type'),
@@ -71,15 +72,18 @@ export default function InfoSection() {
 
             <RmgFields fields={fields} minW={130} />
 
-            {selected.length === 1 && selectedFirst!.startsWith('stn') && graph.current.hasNode(selectedFirst) && (
-                <StationTypeSection />
-            )}
+            {selected.size === 1 &&
+                selectedFirst!.startsWith('stn') &&
+                graph.current.hasNode(selectedFirst) &&
+                graph.current.getNodeAttribute(selectedFirst, 'type') in stations && <StationTypeSection />}
 
-            {selected.length === 1 && selectedFirst!.startsWith('line') && graph.current.hasEdge(selectedFirst) && (
-                <LineTypeSection />
-            )}
+            {selected.size === 1 &&
+                selectedFirst!.startsWith('line') &&
+                graph.current.hasEdge(selectedFirst) &&
+                graph.current.getEdgeAttribute(selectedFirst, 'type') in linePaths &&
+                graph.current.getEdgeAttribute(selectedFirst, 'style') in lineStyles && <LineTypeSection />}
 
-            {selected.length > 1 && <InfoMultipleSection />}
+            {selected.size > 1 && <InfoMultipleSection />}
         </Box>
     );
 }

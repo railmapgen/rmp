@@ -58,14 +58,21 @@ export const makeImages = async (
         '.rmp-name__zh': ['font-family'],
         '.rmp-name__en': ['font-family'],
         '.rmp-name__mtr__zh': ['font-family'],
-        '.rmp-name__mtr__en': ['font-family'],
+        '.rmp-name__mtr__en': ['font-family', 'font-weight'],
         '.rmp-name__berlin': ['font-family'],
+        '.rmp-name__mrt': ['font-family'],
         '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
     }).forEach(([className, styleSet]) => {
         const e = document.querySelector(className);
         if (e === null) return; // no element in the canvas uses this class
         const style = window.getComputedStyle(e);
         elem.querySelectorAll(className).forEach(el => {
+            // Polyfill paint-order used in .rmp-name-outline for Adobe Illustrator.
+            // This is an SVG 2 specification and SVG 2 is not finalized or released yet.
+            // https://www.w3.org/TR/SVG2/painting.html#PaintOrder
+            if (className === '.rmp-name-outline')
+                el.insertAdjacentElement('afterend', el.cloneNode(true) as SVGElement);
+
             styleSet.forEach(styleName => {
                 el.setAttribute(styleName, style.getPropertyValue(styleName));
             });

@@ -13,6 +13,8 @@ import { SuzhouRTBasicStationAttributes } from '../components/svgs/stations/suzh
 import { SuzhouRTIntStationAttributes } from '../components/svgs/stations/suzhourt-int';
 import { KunmingRTBasicStationAttributes } from '../components/svgs/stations/kunmingrt-basic';
 import { KunmingRTIntStationAttributes } from '../components/svgs/stations/kunmingrt-int';
+import { MRTBasicStationAttributes } from '../components/svgs/stations/mrt-basic';
+import { MRTIntStationAttributes } from '../components/svgs/stations/mrt-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -28,6 +30,8 @@ export enum StationType {
     SuzhouRTInt = 'suzhourt-int',
     KunmingRTBasic = 'kunmingrt-basic',
     KunmingRTInt = 'kunmingrt-int',
+    MRTBasic = 'mrt-basic',
+    MRTInt = 'mrt-int',
 }
 
 export interface ExternalStationAttributes {
@@ -44,6 +48,8 @@ export interface ExternalStationAttributes {
     [StationType.SuzhouRTInt]?: SuzhouRTIntStationAttributes;
     [StationType.KunmingRTBasic]?: KunmingRTBasicStationAttributes;
     [StationType.KunmingRTInt]?: KunmingRTIntStationAttributes;
+    [StationType.MRTBasic]?: MRTBasicStationAttributes;
+    [StationType.MRTInt]?: MRTIntStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
