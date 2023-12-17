@@ -1,11 +1,11 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { LineIcon } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, Theme } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { ColorField } from '../../panels/details/color-field';
-import { LineIcon } from './gzmtr-line-badge/line-icon';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -25,20 +25,17 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g
-                id={id}
-                transform={`translate(${x}, ${y})`}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
-            >
-                <LineIcon lineName={names} foregroundColour={color[3]} backgroundColour={color[2]} />
-            </g>
-        ),
-        [id, x, y, ...names, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <LineIcon lineName={names} foregroundColour={color[3]} backgroundColour={color[2]} spanDigits />
+        </g>
     );
 };
 

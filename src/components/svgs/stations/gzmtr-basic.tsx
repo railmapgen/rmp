@@ -28,7 +28,6 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         open = defaultGzmtrBasicStationAttributes.open,
         secondaryNames = defaultGzmtrBasicStationAttributes.secondaryNames,
         tram = defaultGzmtrBasicStationAttributes.tram,
-        solid = defaultGzmtrBasicStationAttributes.solid,
     } = attrs[StationType.GzmtrBasic] ?? defaultGzmtrBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -94,9 +93,8 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                 <StationNumber
                     id={`stn_core_${id}`}
                     strokeColour={color[2]}
-                    lineNum={lineCode}
-                    stnNum={stationCode}
-                    fill={solid ? color[2] : undefined}
+                    lineNum={lineCode === '' ? undefined : lineCode}
+                    stnNum={stationCode === '' ? undefined : stationCode}
                 />
             </g>
             <g
@@ -181,7 +179,6 @@ export interface GzmtrBasicStationAttributes extends StationAttributes, Attribut
     open: boolean;
     secondaryNames: [string, string];
     tram: boolean;
-    solid: boolean;
 }
 
 const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
@@ -194,7 +191,6 @@ const defaultGzmtrBasicStationAttributes: GzmtrBasicStationAttributes = {
     open: true,
     secondaryNames: ['', ''],
     tram: false,
-    solid: false,
 };
 
 const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAttributes>) => {
@@ -311,17 +307,6 @@ const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAtt
             isChecked: attrs.tram,
             onChange: val => {
                 attrs.tram = val;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'switch',
-            label: t('panel.details.stations.gzmtrBasic.solid'),
-            oneLine: true,
-            isChecked: attrs.solid,
-            onChange: val => {
-                attrs.solid = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
