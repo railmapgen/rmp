@@ -183,6 +183,7 @@ export const ToRmgEndSelectModal = (props: {
         if (nameList[0] != '' && nameList[1] != '') setTitle(nameList[0] + '/' + nameList[1]);
         else if (nameList[0] != '') setTitle(nameList[0]);
         else if (nameList[1] != '') setTitle(nameList[1]);
+        else setTitle('');
     }, [...nameList]);
 
     return (
