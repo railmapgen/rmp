@@ -89,6 +89,7 @@ const SvgWrapper = () => {
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
+            const id: StnId = `stn_${rand}`;
             const type = mode.slice(8) as StationType;
 
             // deep copy to prevent mutual reference
@@ -97,7 +98,7 @@ const SvgWrapper = () => {
             if ('color' in attr) attr.color = theme;
 
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            graph.current.addNode(`stn_${rand}`, {
+            graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
                 x: roundToNearestN(svgX, 5),
@@ -108,12 +109,14 @@ const SvgWrapper = () => {
             // console.log('down', active, offset);
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+            dispatch(setSelected(new Set([id])));
         } else if (mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
+            const id: MiscNodeId = `misc_node_${rand}`;
             const type = mode.slice(10) as MiscNodeType;
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            graph.current.addNode(`misc_node_${rand}`, {
+            graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
                 x: roundToNearestN(svgX, 5),
@@ -124,6 +127,7 @@ const SvgWrapper = () => {
             });
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+            dispatch(setSelected(new Set([id])));
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
             if (mode.startsWith('line')) {
