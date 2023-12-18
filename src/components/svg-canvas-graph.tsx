@@ -150,8 +150,7 @@ const SvgCanvas = () => {
                     dispatch(saveGraph(graph.current.export()));
                 }
             } else {
-                // the node is just placed and should not trigger any save, only display the details
-                dispatch(setSelected(new Set([node])));
+                // no-op for a new node is just placed, already added to selected in pointer down
             }
         }
         dispatch(setActive(undefined));
