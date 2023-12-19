@@ -97,12 +97,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                     stnNum={stationCode === '' ? undefined : stationCode}
                 />
             </g>
-            <g
-                ref={textRef}
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
-                fill={!open ? 'red' : ''}
-            >
+            <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\\')}
                     fontSize={16}
