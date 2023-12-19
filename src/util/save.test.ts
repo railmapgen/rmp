@@ -330,14 +330,14 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('24 -> 25', () => {
-        // Bump save version to add tram in gzmtr-int station's attributes.
+        // Bump save version to add tram in gzmtr-int stations' and gzmtr-line-badge attributes.
         const oldParam =
-            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_oWAjSji8Cm","attributes":{"visible":true,"zIndex":0,"x":140,"y":110,"type":"virtual","virtual":{}}},{"key":"stn_4ZZM2FLx7l","attributes":{"visible":true,"zIndex":0,"x":220,"y":110,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":24}';
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_oWAjSji8Cm","attributes":{"visible":true,"zIndex":0,"x":140,"y":110,"type":"virtual","virtual":{}}},{"key":"stn_4ZZM2FLx7l","attributes":{"visible":true,"zIndex":0,"x":220,"y":110,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""]}}},{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":255,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":24}';
         const newParam = UPGRADE_COLLECTION[24](oldParam);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
-            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_oWAjSji8Cm","attributes":{"visible":true,"zIndex":0,"x":140,"y":110,"type":"virtual","virtual":{}}},{"key":"stn_4ZZM2FLx7l","attributes":{"visible":true,"zIndex":0,"x":220,"y":110,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""],"tram":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":25}';
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_oWAjSji8Cm","attributes":{"visible":true,"zIndex":0,"x":140,"y":110,"type":"virtual","virtual":{}}},{"key":"stn_4ZZM2FLx7l","attributes":{"visible":true,"zIndex":0,"x":220,"y":110,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""],"tram":false}}},{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":255,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"],"tram":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":25}';
         expect(newParam).toEqual(expectParam);
     });
 });

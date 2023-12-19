@@ -3,14 +3,17 @@ import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineIcon } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, Theme } from '../../../constants/constants';
+import { AttrsProps } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { ColorField } from '../../panels/details/color-field';
+import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { names = defaultGzmtrLineBadgeAttributes.names, color = defaultGzmtrLineBadgeAttributes.color } =
-        attrs ?? defaultGzmtrLineBadgeAttributes;
+    const {
+        names = defaultGzmtrLineBadgeAttributes.names,
+        color = defaultGzmtrLineBadgeAttributes.color,
+        tram = defaultGzmtrLineBadgeAttributes.tram,
+    } = attrs ?? defaultGzmtrLineBadgeAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -28,7 +31,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
     return (
         <g
             id={id}
-            transform={`translate(${x}, ${y})`}
+            transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -48,14 +51,15 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
 /**
  * GzmtrLineBadge specific props.
  */
-export interface GzmtrLineBadgeAttributes {
+export interface GzmtrLineBadgeAttributes extends AttributesWithColor {
     names: [string, string];
-    color: Theme;
+    tram: boolean;
 }
 
 const defaultGzmtrLineBadgeAttributes: GzmtrLineBadgeAttributes = {
     names: ['1号线', 'Line 1'],
     color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
+    tram: false,
 };
 
 const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttributes>) => {
@@ -79,6 +83,17 @@ const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttribute
             value: attrs.names[1],
             onChange: val => {
                 attrs.names[1] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrLineBadge.tram'),
+            oneLine: true,
+            isChecked: attrs.tram,
+            onChange: val => {
+                attrs.tram = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

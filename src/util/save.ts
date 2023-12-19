@@ -340,12 +340,16 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         // Bump save version to support Singapore MRT under construction and Sentosa Express line.
         JSON.stringify({ ...JSON.parse(param), version: 24 }),
     24: param => {
-        // Bump save version to add tram in gzmtr-int station's attributes.
+        // Bump save version to add tram in gzmtr-int stations' and gzmtr-line-badge attributes.
         const p = JSON.parse(param);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         graph.import(p.graph);
         graph
-            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GzmtrInt)
+            .filterNodes(
+                (node, attr) =>
+                    (node.startsWith('stn') && attr.type === StationType.GzmtrInt) ||
+                    (node.startsWith('misc_node') && attr.type === MiscNodeType.GzmtrLineBadge)
+            )
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
                 const attr = graph.getNodeAttribute(node, type) as any;

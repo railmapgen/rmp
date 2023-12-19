@@ -72,7 +72,8 @@
                     "displayName": "上海地鐵文字線路標識"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "廣州地鐵線路標識"
+                    "displayName": "廣州地鐵線路標識",
+                    "tram": "輕軌"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "北京地鐵數字線路標識"
@@ -166,8 +167,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "廣州地鐵換乘車站",
-                    "lineCode": "路綫編碼",
-                    "stationCode": "車站編碼",
                     "open": "是否開通",
                     "secondaryNameZh": "中文第二名稱",
                     "secondaryNameEn": "英文第二名稱"
@@ -286,7 +285,6 @@
         "open": {
             "new": "新項目",
             "config": "讀入項目",
-            "configRMG": "從RMG存檔中讀入",
             "projectRMG": "從RMG專案中讀入",
             "invalidType": "無效的文件類型！僅接受JSON格式的文件。",
             "unknownError": "解析上傳文件時發生未知錯誤！請重試。",

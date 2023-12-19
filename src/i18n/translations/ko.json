@@ -72,7 +72,8 @@
                     "displayName": "상해 지하철 문자 노선 표지"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "광저우 지하철 노선 표지"
+                    "displayName": "광저우 지하철 노선 표지",
+                    "tram": "시가 전차"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "베이징 지하철 노선 배지"
@@ -105,7 +106,7 @@
                 },
                 "facilities": {
                     "displayName": "시설",
-                    "type": "Type"
+                    "type": "유형"
                 },
                 "text": {
                     "displayName": "임의 글자",
@@ -162,12 +163,10 @@
                     "open": "개통여부",
                     "secondaryNameZh": "한자 제2명칭",
                     "secondaryNameEn": "영문 제2명칭",
-                    "tram": "Tram"
+                    "tram": "시가 전차"
                 },
                 "gzmtrInt": {
                     "displayName": "광저우 지하철 환승역",
-                    "lineCode": "노선 번호",
-                    "stationCode": "역 번호",
                     "open": "개통여부",
                     "secondaryNameZh": "한자 제2명칭",
                     "secondaryNameEn": "영문 제2명칭"
@@ -286,7 +285,6 @@
         "open": {
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",
-            "configRMG": "RMG 파일에서 가져오기",
             "projectRMG": "RMG 프로젝트에서 가져오기",
             "invalidType": "잘못된 파일 형식입니다! JSON 형식의 파일만 허용됩니다.",
             "unknownError": "업로드된 파일의 파싱 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",

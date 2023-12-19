@@ -72,7 +72,8 @@
                     "displayName": "Shanghai Metro text line badge"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "Guangzhou Metro line badge"
+                    "displayName": "Guangzhou Metro line badge",
+                    "tram": "Tram"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "Beijing Subway num line badge"

@@ -72,7 +72,8 @@
                     "displayName": "上海地铁文字线路标识"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "广州地铁线路标识"
+                    "displayName": "广州地铁线路标识",
+                    "tram": "有轨电车"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "北京地铁数字线路标识"
@@ -166,8 +167,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "广州地铁换乘车站",
-                    "lineCode": "路线编号",
-                    "stationCode": "车站编号",
                     "open": "是否开通",
                     "secondaryNameZh": "中文第二名称",
                     "secondaryNameEn": "英文第二名称"
@@ -286,7 +285,6 @@
         "open": {
             "new": "新项目",
             "config": "导入项目",
-            "configRMG": "从RMG存档中导入",
             "projectRMG": "从RMG项目中导入",
             "invalidType": "无效的文件类型！仅接受JSON格式的文件。",
             "unknownError": "解析上传文件时发生未知错误！请重试。",
