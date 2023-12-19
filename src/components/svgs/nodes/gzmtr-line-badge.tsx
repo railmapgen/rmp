@@ -34,7 +34,13 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
         >
-            <LineIcon lineName={names} foregroundColour={color[3]} backgroundColour={color[2]} spanDigits />
+            <LineIcon
+                zhName={names.at(0) ?? ''}
+                enName={names.at(1) ?? ''}
+                foregroundColour={color[3]}
+                backgroundColour={color[2]}
+                spanDigits
+            />
         </g>
     );
 };
