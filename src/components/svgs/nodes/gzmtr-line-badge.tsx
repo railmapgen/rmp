@@ -89,7 +89,7 @@ const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttribute
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.gzmtrLineBadge.tram'),
+            label: t('panel.details.nodes.gzmtrLineBadge.tram'),
             oneLine: true,
             isChecked: attrs.tram,
             onChange: val => {
@@ -113,10 +113,13 @@ const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttribute
 const gzmtrLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="5" width="20" height="14" rx="1" />
-        <text x="12" y="12" textAnchor="middle" fontSize="6" fill="white">
-            1号线
+        <text x="6" y="15" textAnchor="middle" fontSize="10" fill="white">
+            1
         </text>
-        <text x="12" y="17" textAnchor="middle" fontSize="5" fill="white">
+        <text x="15" y="12" textAnchor="middle" fontSize="6" fill="white">
+            号线
+        </text>
+        <text x="14.5" y="17" textAnchor="middle" fontSize="4" fill="white">
             Line 1
         </text>
     </svg>
