@@ -68,12 +68,12 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         nameOffsetX === 'left'
             ? 'end'
             : nameOffsetX === 'right'
-            ? 'start'
-            : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
-            ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
-              'end'
-            : // Default to middle when nameOffsetX === 'middle'.
-              'middle';
+              ? 'start'
+              : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
+                ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
+                  'end'
+                : // Default to middle when nameOffsetX === 'middle'.
+                  'middle';
 
     const transferAll = transfer.flat().slice(0, 3); // slice to make sure at most 3 transfers
     const arrowColor = [

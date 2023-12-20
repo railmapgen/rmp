@@ -80,7 +80,7 @@ export const getBase64FontFace = async (
     const cssRules = document.querySelector<HTMLLinkElement>(`link#${cssName}`)?.sheet?.cssRules;
     if (!cssRules) return Promise.reject(new Error(`cssRules can not be found in link#${cssName}`));
     const cssFontFaceRules = Array.from(cssRules)
-        .flatMap(rule => (rule instanceof CSSImportRule ? Array.from(rule.styleSheet.cssRules) : rule))
+        .flatMap(rule => (rule instanceof CSSImportRule ? Array.from(rule.styleSheet!.cssRules) : rule))
         .filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
     const distinctCssRules = fontFaceList.reduce<CSSFontFaceRule[]>((acc, cur) => {
         const matchedRule = matchCssRuleByFontFace(cssFontFaceRules, cur);

@@ -1,5 +1,6 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
+import { describe, expect, it } from 'vitest';
 import { linePaths } from '../components/svgs/lines/lines';
 import miscNodes from '../components/svgs/nodes/misc-nodes';
 import stations from '../components/svgs/stations/stations';

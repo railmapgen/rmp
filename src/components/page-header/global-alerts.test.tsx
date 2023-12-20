@@ -1,13 +1,13 @@
 import { screen, within } from '@testing-library/react';
 import React from 'react';
+import configureStore from 'redux-mock-store';
 import { describe, expect, it } from 'vitest';
 import rootReducer from '../../redux';
-import { createMockRootStore } from '../../setupTests';
 import { render } from '../../test-utils';
 import GlobalAlerts from './global-alerts';
 
 const realStore = rootReducer.getState();
-const mockStore = createMockRootStore({
+const mockStore = configureStore()({
     ...realStore,
     runtime: {
         ...realStore.runtime,

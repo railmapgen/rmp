@@ -55,12 +55,12 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
         nameOffsetX === 'left'
             ? 'end'
             : nameOffsetX === 'right'
-            ? 'start'
-            : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
-            ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
-              'end'
-            : // Default to middle when nameOffsetX === 'middle'.
-              'middle';
+              ? 'start'
+              : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
+                ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
+                  'end'
+                : // Default to middle when nameOffsetX === 'middle'.
+                  'middle';
 
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);

@@ -213,11 +213,9 @@ const SvgCanvas = () => {
                 const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
-                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as <
-                    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
-                >(
-                    props: LineStyleComponentProps<T>
-                ) => JSX.Element;
+                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as React.FC<
+                    LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
+                >;
 
                 return (
                     <StyleComponent

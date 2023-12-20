@@ -103,7 +103,7 @@ export interface LineWrapperComponentProps {
 }
 
 export interface LineStyleComponentProps<
-    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
+    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>,
 > {
     id: LineId;
     /**
