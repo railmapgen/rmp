@@ -80,111 +80,83 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
             : (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) *
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
-                <g
-                    transform="scale(0.75)"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                    ref={iconEl}
-                >
-                    <StationNumber
-                        id={`stn_core_${id}`}
-                        strokeColour={color[2]}
-                        lineNum={lineCode}
-                        stnNum={stationCode}
-                    />
-                </g>
-                <g
-                    ref={textRef}
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
-                    fill={!open ? 'red' : ''}
-                >
-                    <MultilineText
-                        text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
-                        grow="up"
-                        className="rmp-name__zh"
-                    />
-                    <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={10}
-                        lineHeight={10}
-                        grow="down"
-                        className="rmp-name__en"
-                    />
-                </g>
-                {secondaryNames.join('') !== '' && (
-                    <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
-                        <text
-                            fontSize="20"
-                            dx={-(secondaryTextWidth + 5) / 2}
-                            textAnchor="end"
-                            dominantBaseline="middle"
-                            className="rmp-name__zh"
-                        >
-                            （
-                        </text>
-                        <text
-                            fontSize="20"
-                            dx={(secondaryTextWidth + 5) / 2}
-                            textAnchor="start"
-                            dominantBaseline="middle"
-                            className="rmp-name__zh"
-                        >
-                            ）
-                        </text>
-                        <g ref={secondaryTextRef}>
-                            <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
-                                {secondaryNames[0]}
-                            </text>
-                            <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
-                                {secondaryNames[1]}
-                            </text>
-                        </g>
-                    </g>
-                )}
-                {!open && (
-                    <g
-                        transform={`translate(${textX + underConstructionDx}, ${textY})`}
-                        textAnchor={nameOffsetX === 'middle' ? 'start' : textAnchor}
-                        fill="red"
-                    >
-                        <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
-                            （未开通）
-                        </text>
-                        <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
-                            (Under Construction)
-                        </text>
-                    </g>
-                )}
+    return (
+        <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
+            <g
+                transform="scale(0.75)"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+                ref={iconEl}
+            >
+                <StationNumber
+                    id={`stn_core_${id}`}
+                    strokeColour={color[2]}
+                    lineNum={lineCode === '' ? undefined : lineCode}
+                    stnNum={stationCode === '' ? undefined : stationCode}
+                />
             </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            ...names,
-            nameOffsetX,
-            nameOffsetY,
-            color,
-            lineCode,
-            stationCode,
-            open,
-            ...secondaryNames,
-            tram,
-            // bbox will only be computed after first render and won't cause this to update another time
-            textWidth,
-            secondaryTextWidth,
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+            <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\\')}
+                    fontSize={16}
+                    lineHeight={16}
+                    grow="up"
+                    className="rmp-name__zh"
+                />
+                <MultilineText
+                    text={names[1].split('\\')}
+                    fontSize={10}
+                    lineHeight={10}
+                    grow="down"
+                    className="rmp-name__en"
+                />
+            </g>
+            {secondaryNames.join('') !== '' && (
+                <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
+                    <text
+                        fontSize="20"
+                        dx={-(secondaryTextWidth + 5) / 2}
+                        textAnchor="end"
+                        dominantBaseline="middle"
+                        className="rmp-name__zh"
+                    >
+                        （
+                    </text>
+                    <text
+                        fontSize="20"
+                        dx={(secondaryTextWidth + 5) / 2}
+                        textAnchor="start"
+                        dominantBaseline="middle"
+                        className="rmp-name__zh"
+                    >
+                        ）
+                    </text>
+                    <g ref={secondaryTextRef}>
+                        <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                            {secondaryNames[0]}
+                        </text>
+                        <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                            {secondaryNames[1]}
+                        </text>
+                    </g>
+                </g>
+            )}
+            {!open && (
+                <g
+                    transform={`translate(${textX + underConstructionDx}, ${textY})`}
+                    textAnchor={nameOffsetX === 'middle' ? 'start' : textAnchor}
+                >
+                    <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        （未开通）
+                    </text>
+                    <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                        (Under Construction)
+                    </text>
+                </g>
+            )}
+        </g>
     );
 };
 
