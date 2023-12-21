@@ -31,7 +31,7 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '^/styles/|/fonts/|/rmg/|/rmg-palette/|/rmp-gallery/': {
+            '^(/styles/|/fonts/|/rmg/|/rmg-palette/|/rmp-gallery/)': {
                 target: 'https://railmapgen.github.io',
                 changeOrigin: true,
                 secure: false,
@@ -42,8 +42,10 @@ export default defineConfig({
         globals: true,
         environment: 'jsdom',
         setupFiles: './src/setupTests.ts',
-        deps: {
-            fallbackCJS: true,
+        server: {
+            deps: {
+                fallbackCJS: true,
+            },
         },
         watch: false,
     },

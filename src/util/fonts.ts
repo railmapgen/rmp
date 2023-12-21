@@ -80,7 +80,7 @@ export const getBase64FontFace = async (
     const cssRules = document.querySelector<HTMLLinkElement>(`link#${cssName}`)?.sheet?.cssRules;
     if (!cssRules) return Promise.reject(new Error(`cssRules can not be found in link#${cssName}`));
     const cssFontFaceRules = Array.from(cssRules)
-        .flatMap(rule => (rule instanceof CSSImportRule ? Array.from(rule.styleSheet.cssRules) : rule))
+        .flatMap(rule => (rule instanceof CSSImportRule ? Array.from(rule.styleSheet!.cssRules) : rule))
         .filter(rule => rule instanceof CSSFontFaceRule) as CSSFontFaceRule[];
     const distinctCssRules = fontFaceList.reduce<CSSFontFaceRule[]>((acc, cur) => {
         const matchedRule = matchCssRuleByFontFace(cssFontFaceRules, cur);
@@ -137,25 +137,25 @@ export const FONTS_CSS: {
     },
     [StationType.MRTBasic]: {
         className: ['.rmp-name__mrt'],
-        cssFont: ['IdentityFont'],
+        cssFont: ['100% IdentityFont'],
         cssName: 'fonts_mrt',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [StationType.MRTInt]: {
         className: ['.rmp-name__mrt'],
-        cssFont: ['IdentityFont'],
+        cssFont: ['100% IdentityFont'],
         cssName: 'fonts_mrt',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [MiscNodeType.BerlinSBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
-        cssFont: ['16px Roboto'],
+        cssFont: ['100% Roboto'],
         cssName: 'fonts_berlin',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [MiscNodeType.BerlinUBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
-        cssFont: ['16px Roboto'],
+        cssFont: ['100% Roboto'],
         cssName: 'fonts_berlin',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },

@@ -952,8 +952,8 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                         {unlockSimplePathAttempts < 0
                             ? t('header.settings.procedures.unlockSimplePath.unlocked')
                             : unlockSimplePathAttempts === 0
-                            ? t('header.settings.procedures.unlockSimplePath.maximumAttemptsExceed')
-                            : t('header.settings.procedures.unlockSimplePath.check')}
+                              ? t('header.settings.procedures.unlockSimplePath.maximumAttemptsExceed')
+                              : t('header.settings.procedures.unlockSimplePath.check')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

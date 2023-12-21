@@ -1,5 +1,6 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
+import { nanoid } from 'nanoid';
 import { AttributesWithColor } from '../components/panels/details/color-field';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
@@ -140,7 +141,7 @@ const newRMGStn: StationInfo = {
 };
 
 // convert color['shanghai', 'sh1', ...] to a string (for compare)
-const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
+export const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
 // verify the line whether is needed to add
 const isColorLine = (type: LineStyleType) => LineStylesWithColor.includes(type);
@@ -354,7 +355,7 @@ const generateNewStn = (
             newInterchangeSet.add(colorToString(col));
             const tmpInterchange: RMGInterchange = {
                 theme: col,
-                name: [col[1], col[1]],
+                name: [`ch_${colorToString(col)}`, `en_${colorToString(col)}`],
             };
             newInterchange.push(tmpInterchange);
         }
@@ -483,6 +484,7 @@ const generateParam = (
  * The return type of `toRmg`.
  */
 export interface ToRmg {
+    id: string;
     theme: Theme;
     param: [RMGParam, ...Name][];
     type: 'LINE' | 'BRANCH' | 'LOOP';
@@ -571,7 +573,7 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             }
         }
         if (nowResult.length != 0) {
-            resultList.push({ theme: color, param: structuredClone(nowResult), type: typeInfo });
+            resultList.push({ id: nanoid(10), theme: color, param: structuredClone(nowResult), type: typeInfo });
         }
     }
     return resultList;
@@ -584,15 +586,34 @@ const getFileName = (nameList: string[]) => {
     else return `${new Date().valueOf()}`;
 };
 
+const replaceInterchange = (inputString: string, replacements: Map<string, [string, string]>) => {
+    let resultString = inputString;
+    replacements.forEach((value, key) => {
+        const regexCh = new RegExp(`ch_${key}`, 'g');
+        const regexEn = new RegExp(`en_${key}`, 'g');
+        resultString = resultString.replace(regexCh, value[0]);
+        resultString = resultString.replace(regexEn, value[1]);
+    });
+    return resultString;
+};
+
 /**
  * Export RMG json
  * @param param RMG json object.
  * @param lineName Line name array: [Chinese, English]
  * @param lineCode Line code string e.g. '1'
  */
-export const exportToRmg = (param: RMGParam, lineName: Name, lineCode: string) => {
+export const exportToRmg = (
+    param: RMGParam,
+    lineName: Name,
+    lineCode: string,
+    interchange: Map<string, [string, string]>
+) => {
     param['line_name'] = lineName;
     param['line_num'] = String(lineCode);
-    console.log(param);
-    downloadAs(`RMG_${getFileName(lineName)}.json`, 'application/json', JSON.stringify(param));
+    downloadAs(
+        `RMG_${getFileName(lineName)}.json`,
+        'application/json',
+        replaceInterchange(JSON.stringify(param), interchange)
+    );
 };

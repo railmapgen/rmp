@@ -75,7 +75,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 dispatch(setRefreshNodes());
                                 dispatch(saveGraph(graph.current.export()));
                             },
-                        } as RmgFieldsField)
+                        }) as RmgFieldsField
                 ),
             // @ts-expect-error
             ...props.fields.filter(field => field.type === 'custom').map(field => ({ ...field, label: t(field.label) }))
@@ -109,7 +109,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                             dispatch(setRefreshEdges());
                             dispatch(saveGraph(graph.current.export()));
                         },
-                    } as RmgFieldsField)
+                    }) as RmgFieldsField
             )
         );
     }
@@ -143,7 +143,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 dispatch(setRefreshEdges());
                                 dispatch(saveGraph(graph.current.export()));
                             },
-                        } as RmgFieldsField)
+                        }) as RmgFieldsField
                 ),
             // @ts-expect-error
             ...props.fields.filter(field => field.type === 'custom').map(field => ({ ...field, label: t(field.label) }))

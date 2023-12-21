@@ -7,7 +7,7 @@
 */
 
 @font-face {
-    font-family: 'IdentityFont';
+    font-family: IdentityFont;
     font-display: swap;
     src: url('../fonts/LTAIdentity-Medium.woff');
     /*
@@ -18,5 +18,5 @@
 }
 
 .rmp-name__mrt {
-    font-family: 'IdentityFont', sans-serif;
+    font-family: IdentityFont, sans-serif;
 }
