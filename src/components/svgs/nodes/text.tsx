@@ -44,18 +44,17 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g
-                id={id}
-                transform={`translate(${x}, ${y})rotate(${rotate})`}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
-            >
-                {/* This hint rect is hard to remove in exporting. */}
-                {/* <rect
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})rotate(${rotate})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            {/* This hint rect is hard to remove in exporting. */}
+            {/* <rect
                     fill="gray"
                     fillOpacity="0.1"
                     x={bBox.x - 1.5}
@@ -63,40 +62,20 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                     width={bBox.width + 3}
                     height={bBox.height + 3}
                 /> */}
-                <MultilineText
-                    ref={textLineEl}
-                    text={content.split('\n')}
-                    lineHeight={lineHeight}
-                    grow="down" // this will be ignored
-                    className={`rmp-name__${language}`}
-                    fontSize={fontSize}
-                    textAnchor={textAnchor}
-                    dominantBaseline={dominantBaseline}
-                    fill={color[2]}
-                    fontStyle={italic}
-                    fontWeight={bold}
-                />
-            </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            content,
-            fontSize,
-            lineHeight,
-            textAnchor,
-            dominantBaseline,
-            language,
-            color,
-            rotate,
-            italic,
-            bold,
-            bBox,
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+            <MultilineText
+                ref={textLineEl}
+                text={content.split('\n')}
+                lineHeight={lineHeight}
+                grow="down" // this will be ignored
+                className={`rmp-name__${language}`}
+                fontSize={fontSize}
+                textAnchor={textAnchor}
+                dominantBaseline={dominantBaseline}
+                fill={color[2]}
+                fontStyle={italic}
+                fontWeight={bold}
+            />
+        </g>
     );
 };
 

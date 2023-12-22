@@ -26,43 +26,34 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
 
     const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
-                <text
-                    className="rmp-name__zh"
-                    textAnchor="middle"
-                    x={NUM_WIDTH / 2 + 2}
-                    y="13.5"
-                    fill={fgColor}
-                    fontSize="15"
-                    letterSpacing="-1.5"
-                >
-                    {num}
-                </text>
-                <text className="rmp-name__zh" x={NUM_WIDTH + (num > 9 ? 5.5 : 3)} y="8.5" fontSize="7" fill={fgColor}>
-                    号线
-                </text>
-                <text className="rmp-name__en" x={NUM_WIDTH + (num > 9 ? 6 : 4.5)} y="13.5" fontSize="4" fill={fgColor}>
-                    Line {num}
-                </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width={NUM_WIDTH + 23}
-                    height="16"
-                    rx="2"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
+            <text
+                className="rmp-name__zh"
+                textAnchor="middle"
+                x={NUM_WIDTH / 2 + 2}
+                y="13.5"
+                fill={fgColor}
+                fontSize="15"
+                letterSpacing="-1.5"
+            >
+                {num}
+            </text>
+            <text className="rmp-name__zh" x={NUM_WIDTH + (num > 9 ? 5.5 : 3)} y="8.5" fontSize="7" fill={fgColor}>
+                号线
+            </text>
+            <text className="rmp-name__en" x={NUM_WIDTH + (num > 9 ? 6 : 4.5)} y="13.5" fontSize="4" fill={fgColor}>
+                Line {num}
+            </text>
+        </g>
     );
 };
 

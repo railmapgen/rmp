@@ -33,48 +33,39 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
     const width = Math.max(MIN_WIDTH, bBox.width);
     const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width={width + 4} height="16" rx="2" />
-                <g ref={textLineEl}>
-                    <text
-                        className="rmp-name__zh"
-                        textAnchor="middle"
-                        x={(width + 4) / 2}
-                        y="8"
-                        fontSize="7"
-                        fill={fgColor}
-                    >
-                        {names[0]}
-                    </text>
-                    <text
-                        className="rmp-name__en"
-                        textAnchor="middle"
-                        x={(width + 4) / 2}
-                        y="13.5"
-                        fontSize="4"
-                        fill={fgColor}
-                    >
-                        {names[1]}
-                    </text>
-                </g>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width={width + 3}
-                    height="16"
-                    rx="2"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width={width + 4} height="16" rx="2" />
+            <g ref={textLineEl}>
+                <text
+                    className="rmp-name__zh"
+                    textAnchor="middle"
+                    x={(width + 4) / 2}
+                    y="8"
+                    fontSize="7"
+                    fill={fgColor}
+                >
+                    {names[0]}
+                </text>
+                <text
+                    className="rmp-name__en"
+                    textAnchor="middle"
+                    x={(width + 4) / 2}
+                    y="13.5"
+                    fontSize="4"
+                    fill={fgColor}
+                >
+                    {names[1]}
+                </text>
             </g>
-        ),
-        [id, x, y, ...names, bBox, ...color, onPointerDown, onPointerMove, onPointerUp]
+        </g>
     );
 };
 

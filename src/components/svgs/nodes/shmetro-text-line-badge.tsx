@@ -26,51 +26,43 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width={bBox.width + 7} height="21" />
-                <g ref={textLineEl}>
-                    <text
-                        className="rmp-name__zh"
-                        textAnchor="middle"
-                        dominantBaseline="hanging"
-                        x={(bBox.width + 7) / 2}
-                        y="4"
-                        fontSize="10"
-                        fill={color[3]}
-                        letterSpacing="-0.25"
-                    >
-                        {names[0]}
-                    </text>
-                    <text
-                        className="rmp-name__en"
-                        textAnchor="middle"
-                        dominantBaseline="hanging"
-                        x={(bBox.width + 7) / 2}
-                        y="13"
-                        fontSize="5"
-                        fill={color[3]}
-                        letterSpacing="-0.25"
-                    >
-                        {names[1]}
-                    </text>
-                </g>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width={bBox.width + 7}
-                    height="21"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width={bBox.width + 7} height="21" />
+            <g ref={textLineEl}>
+                <text
+                    className="rmp-name__zh"
+                    textAnchor="middle"
+                    dominantBaseline="hanging"
+                    x={(bBox.width + 7) / 2}
+                    y="4"
+                    fontSize="10"
+                    fill={color[3]}
+                    letterSpacing="-0.25"
+                >
+                    {names[0]}
+                </text>
+                <text
+                    className="rmp-name__en"
+                    textAnchor="middle"
+                    dominantBaseline="hanging"
+                    x={(bBox.width + 7) / 2}
+                    y="13"
+                    fontSize="5"
+                    fill={color[3]}
+                    letterSpacing="-0.25"
+                >
+                    {names[1]}
+                </text>
             </g>
-        ),
-        [id, x, y, ...names, bBox, ...color, onPointerDown, onPointerMove, onPointerUp]
+        </g>
     );
 };
 

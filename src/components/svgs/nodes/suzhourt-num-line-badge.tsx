@@ -25,48 +25,39 @@ const SuzhouRTNumLineBadge = (props: NodeComponentProps<SuzhouRTNumLineBadgeAttr
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} width="20" height="20" rx="2" ry="2" />
-                <text
-                    className="rmp-name__zh"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    x="10"
-                    y="11.4" // TODO: why? even both textAnchor and dominantBaseline are set to middle
-                    fill={color[3]}
-                    fontSize="15"
-                    letterSpacing="-1"
-                >
-                    {num}
-                </text>
-                {branch && (
-                    <>
-                        <text className="rmp-name__zh" x={20 + 2.5} y="10" fontSize="10">
-                            支线
-                        </text>
-                        <text className="rmp-name__en" x={20 + 2.5} y="18" fontSize="5" fill="gray">
-                            Branch line
-                        </text>
-                    </>
-                )}
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    width="20"
-                    height="20"
-                    rx="2"
-                    ry="2"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, num, branch, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} width="20" height="20" rx="2" ry="2" />
+            <text
+                className="rmp-name__zh"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                x="10"
+                y="11.4" // TODO: why? even both textAnchor and dominantBaseline are set to middle
+                fill={color[3]}
+                fontSize="15"
+                letterSpacing="-1"
+            >
+                {num}
+            </text>
+            {branch && (
+                <>
+                    <text className="rmp-name__zh" x={20 + 2.5} y="10" fontSize="10">
+                        支线
+                    </text>
+                    <text className="rmp-name__en" x={20 + 2.5} y="18" fontSize="5" fill="gray">
+                        Branch line
+                    </text>
+                </>
+            )}
+        </g>
     );
 };
 
