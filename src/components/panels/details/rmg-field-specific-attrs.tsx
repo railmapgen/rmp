@@ -116,7 +116,6 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
     if (selected.size === 1 && graph.current.hasEdge(selectedFirst) && props.type === 'style') {
         const style = graph.current.getEdgeAttribute(selectedFirst, 'style');
         const styleAttrs = graph.current.getEdgeAttribute(selectedFirst, style);
-        console.log(props.fields.map(x => x.label).map(x => [x, t(x)]));
         fields.push(
             ...props.fields
                 .filter(field => field.type !== 'custom')
