@@ -76,23 +76,23 @@ export default function AppRoot() {
                                 .
                                 <br />
                                 <br />
-                                Offline applications via ghproxy.com{' '}
+                                Offline applications also available via mirror.ghproxy.com{' '}
                                 <a
-                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
+                                    href={`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
                                 >
                                     Windows
                                 </a>{' '}
                                 <a
-                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64.dmg`}
+                                    href={`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64.dmg`}
                                 >
                                     MacOS
                                 </a>{' '}
                                 <a
-                                    href={`https://ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
+                                    href={`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
                                 >
                                     Linux
                                 </a>{' '}
-                                if you are in mainland China :)
+                                if you are blocked by GFW :)
                             </p>
                         </>
                     }
