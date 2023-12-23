@@ -114,7 +114,8 @@ const checkSimplePathAvailability = (
     //      This should be considered feature instead of bug and suggest user to slightly move the dot.
     const [offset1, offset2] = [attrs['offsetFrom'], attrs['offsetTo']];
     for (let rad1 = 0; rad1 < Math.PI; rad1 += Math.PI / 8) {
-        for (let rad2 = rad1, i = 0; i < 2; i++, rad2 += Math.PI / 2) {
+        // here is some optimization that only make the target dot in the same or the opposite direction of the origin dot
+        for (let rad2 = rad1, i = 0; i < 2; i++, rad2 += Math.PI) {
             const [dx1, dy1, dx2, dy2] = [
                 Math.sin(rad1) * offset1,
                 Math.cos(rad1) * offset1,
