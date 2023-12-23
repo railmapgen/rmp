@@ -1,4 +1,5 @@
 import React from 'react';
+import { LineId } from '../../../constants/constants';
 import {
     ExternalLinePathAttributes,
     ExternalLineStyleAttributes,
@@ -8,7 +9,6 @@ import {
 } from '../../../constants/lines';
 import { UnknownLineStyle } from '../common/unknown';
 import { linePaths, lineStyles } from './lines';
-import { LineId } from '../../../constants/constants';
 
 const LineWrapper = (props: LineWrapperComponentProps) => {
     const {
