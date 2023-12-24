@@ -14,6 +14,7 @@ import kunmingRTBasicStation from './kunmingrt-basic';
 import kunmingRTIntStation from './kunmingrt-int';
 import mrtBasicStation from './mrt-basic';
 import mrtIntStation from './mrt-int';
+import jrEastBasicStation from './jr-east-basic';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -31,6 +32,7 @@ const stations = {
     [StationType.KunmingRTInt]: kunmingRTIntStation,
     [StationType.MRTBasic]: mrtBasicStation,
     [StationType.MRTInt]: mrtIntStation,
+    [StationType.JREastBasic]: jrEastBasicStation,
 };
 
 export default stations;

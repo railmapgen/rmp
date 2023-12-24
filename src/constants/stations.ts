@@ -15,6 +15,7 @@ import { KunmingRTBasicStationAttributes } from '../components/svgs/stations/kun
 import { KunmingRTIntStationAttributes } from '../components/svgs/stations/kunmingrt-int';
 import { MRTBasicStationAttributes } from '../components/svgs/stations/mrt-basic';
 import { MRTIntStationAttributes } from '../components/svgs/stations/mrt-int';
+import { JREastBasicStationAttributes } from '../components/svgs/stations/jr-east-basic';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -32,6 +33,7 @@ export enum StationType {
     KunmingRTInt = 'kunmingrt-int',
     MRTBasic = 'mrt-basic',
     MRTInt = 'mrt-int',
+    JREastBasic = 'jr-east-basic',
 }
 
 export interface ExternalStationAttributes {
@@ -50,6 +52,7 @@ export interface ExternalStationAttributes {
     [StationType.KunmingRTInt]?: KunmingRTIntStationAttributes;
     [StationType.MRTBasic]?: MRTBasicStationAttributes;
     [StationType.MRTInt]?: MRTIntStationAttributes;
+    [StationType.JREastBasic]?: JREastBasicStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */

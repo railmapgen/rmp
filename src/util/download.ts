@@ -79,6 +79,11 @@ export const makeImages = async (
             el.classList.remove(className);
         });
     });
+    // remove invisible mask
+    elem.querySelectorAll('[fill="url(#opaque)"]').forEach(el => {
+        el.setAttribute('fill', 'white');
+        el.setAttribute('fill-opacity', '0');
+    });
 
     const nodesExist = findNodesExist(graph);
 
