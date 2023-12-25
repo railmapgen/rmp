@@ -97,7 +97,8 @@ const checkSimplePathAvailability = (
     if (!('offsetFrom' in attrs) || !('offsetTo' in attrs)) return;
     if (Number.isNaN(attrs['offsetFrom']) || Number.isNaN(attrs['offsetTo'])) return;
 
-    // Normal traditional cases where several lines goes from one dot to another.
+    // offsetFrom === offsetTo can always be checked as offset = 0.
+    // It is just parallel to the line from (x1,y1) to (x2,y2).
     if (attrs['offsetFrom'] === attrs['offsetTo']) {
         if (checkKAndType(type, x1, y1, x2, y2)) {
             return { x1, y1, x2, y2, offset: attrs['offsetFrom'] };
@@ -110,8 +111,8 @@ const checkSimplePathAvailability = (
     // To find, simply generate all 8 possible radian and radius(offset) combination for both origin and target.
     // Note this may find the first valid case which might not be the one desired in some corner case.
     // E.g. dot1(0,0) dot2(10,10) with offsetFrom=10 and offsetTo=0 result in multiple valid origin and
-    //      target combination for simple path such as dot1(10,0) dot2(10,10) or dot1(0,10) dot2(10,10).
-    //      This should be considered a feature instead of a bug and suggest user to slightly move the dot.
+    //      target combination for simple path such as dot1'(10,0) dot2(10,10) or dot1'(0,10) dot2(10,10).
+    // This should be considered a feature instead of a bug and suggest user to slightly move the dot.
     const [offset1, offset2] = [attrs['offsetFrom'], attrs['offsetTo']];
     for (let rad1 = 0; rad1 < Math.PI; rad1 += Math.PI / 8) {
         // here is some optimization that only make the target dot in the same or the opposite direction of the origin dot
