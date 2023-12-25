@@ -17,7 +17,7 @@ import {
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const NAME_SZ_BASIC = {
-    zh: {
+    ja: {
         size: 10,
         baseOffset: 1,
     },
@@ -36,6 +36,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
         nameOffsetX = defaultJREastBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultJREastBasicStationAttributes.nameOffsetY,
         rotate = defaultJREastBasicStationAttributes.rotate,
+        textOneLine = defaultJREastBasicStationAttributes.textOneLine,
+        textVertical = defaultJREastBasicStationAttributes.textVertical,
         lines = defaultJREastBasicStationAttributes.lines,
     } = attrs[StationType.JREastBasic] ?? defaultJREastBasicStationAttributes;
 
@@ -62,14 +64,33 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
     const textLngNearIconHeight =
         names[nameOffsetY === 'top' ? 0 : nameOffsetY === 'bottom' ? 1 : 0].split('\\').length *
-        (nameOffsetY === 'middle' ? 0 : NAME_SZ_BASIC.zh.size);
+        (nameOffsetY === 'middle' ? 0 : NAME_SZ_BASIC.ja.size);
     const textLngNearIconOffset =
-        (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_SZ_BASIC.zh.baseOffset;
+        (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_SZ_BASIC.ja.baseOffset;
     const textDY =
         (textLngNearIconHeight + textLngNearIconOffset) * NAME_DY[nameOffsetY].polarity +
         (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? iconRotateDY1 : iconRotateDY2);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     // if (id === 'stn_1E-TrvL1SL') console.log(textLngNearIconHeight + textLngNearIconOffset, iconRotateDY2);
+
+    const textGrow: { ja: 'down' | 'up' | 'bidirectional'; en: 'down' | 'up' | 'bidirectional' } = {
+        ja: nameOffsetY === 'top' ? 'down' : nameOffsetY === 'bottom' ? 'up' : 'bidirectional',
+        en: nameOffsetY === 'top' || textOneLine ? 'up' : 'down',
+    };
+    const textBaseOffset: { ja: number; en: number } = {
+        ja: NAME_SZ_BASIC.ja.baseOffset,
+        en:
+            (nameOffsetY === 'middle'
+                ? textOneLine
+                    ? (-names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2 - 1
+                    : (names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2
+                : 0) + NAME_SZ_BASIC.en.baseOffset,
+    };
+
+    const textJAEl = React.useRef<SVGGElement | null>(null);
+    const [bBox, setBBox] = React.useState({ width: 0 } as DOMRect);
+    React.useEffect(() => setBBox(textJAEl.current!.getBBox()), [names[0], setBBox, textJAEl]);
+    const textENDX = textOneLine ? (bBox.width + 1) * (nameOffsetX === 'left' ? -1 : 1) : 0;
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -111,19 +132,21 @@ const JREastBasicStation = (props: StationComponentProps) => {
             </g>
             <g transform={`translate(${textDX}, ${textDY})`} textAnchor={textAnchor}>
                 <MultilineText
+                    ref={textJAEl}
                     text={names[0].split('\\')}
-                    fontSize={NAME_SZ_BASIC.zh.size}
-                    lineHeight={NAME_SZ_BASIC.zh.size}
-                    grow={nameOffsetY === 'top' ? 'down' : nameOffsetY === 'bottom' ? 'up' : 'bidirectional'}
-                    baseOffset={NAME_SZ_BASIC.zh.baseOffset}
+                    fontSize={NAME_SZ_BASIC.ja.size}
+                    lineHeight={NAME_SZ_BASIC.ja.size}
+                    grow={textGrow.ja}
+                    baseOffset={textBaseOffset.ja}
                     className="rmp-name__jreast"
                 />
                 <MultilineText
                     text={names[1].split('\\')}
+                    dx={textENDX}
                     fontSize={NAME_SZ_BASIC.en.size}
                     lineHeight={NAME_SZ_BASIC.en.size}
-                    grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'bottom' ? 'down' : 'bidirectional'}
-                    baseOffset={NAME_SZ_BASIC.en.baseOffset}
+                    grow={textGrow.en}
+                    baseOffset={textBaseOffset.en}
                     className="rmp-name__en"
                 />
             </g>
@@ -138,6 +161,8 @@ export interface JREastBasicStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     rotate: Rotate;
+    textOneLine: boolean;
+    textVertical: boolean;
     lines: number[];
 }
 
@@ -146,6 +171,8 @@ const defaultJREastBasicStationAttributes: JREastBasicStationAttributes = {
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     rotate: 0,
+    textOneLine: false,
+    textVertical: false,
     lines: [-2, 1],
 };
 
@@ -182,6 +209,9 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                if (attrs.nameOffsetX !== 'middle') {
+                    attrs.nameOffsetY = 'middle';
+                }
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -191,9 +221,13 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             label: t('panel.details.stations.common.nameOffsetY'),
             value: attrs.nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            disabledOptions: attrs.nameOffsetX !== 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                if (attrs.nameOffsetY !== 'middle') {
+                    attrs.nameOffsetX = 'middle';
+                    attrs.textOneLine = false;
+                }
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -212,8 +246,12 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         {
             type: 'switch',
             label: t('panel.details.stations.jrEastBasic.textOneLine'),
-            isChecked: false,
-            isDisabled: true,
+            isChecked: attrs.textOneLine,
+            isDisabled: attrs.nameOffsetY !== 'middle',
+            onChange: (val: boolean) => {
+                attrs.textOneLine = val;
+                handleAttrsUpdate(id, attrs);
+            },
             oneLine: true,
             minW: 'full',
         },
@@ -227,17 +265,27 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         },
     ];
 
-    const handleLinesAdd = (v: string) => {
-        attrs.lines.push(v === '-' ? -1 : Number(v));
+    const handleLinesAdd = (s: string) => {
+        const v = s === '-' ? -1 : Number(s);
+        if (Number.isNaN(v)) return;
+        attrs.lines.push(v);
         handleAttrsUpdate(id, attrs);
     };
-    const handleLinesChange = (v: string, i: number) => {
-        if (v === '' && attrs.lines.length > 1) {
+    const handleLinesChange = (s: string, i: number) => {
+        if ((s === '' || s === '-') && attrs.lines.length > 1) {
             attrs.lines.splice(i, 1);
         } else {
-            attrs.lines[i] = Number(v);
+            const v = Number(s);
+            if (Number.isNaN(v)) return;
+            attrs.lines[i] = v;
         }
         handleAttrsUpdate(id, attrs);
+    };
+    const handleLinesKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Backspace' && attrs.lines.length > 1) {
+            attrs.lines.pop();
+            handleAttrsUpdate(id, attrs);
+        }
     };
 
     return (
@@ -265,6 +313,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
                         mb="2"
                         value=""
                         onChange={v => handleLinesAdd(v)}
+                        onKeyDown={e => handleLinesKeyDown(e)}
                     >
                         <NumberInputField />
                     </NumberInput>
