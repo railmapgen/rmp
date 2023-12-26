@@ -28,7 +28,7 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
 
     const path = React.useMemo(
         () => makePath(id, type, x1, y1, x2, y2, attrs),
-        [type, (attrs as any)['offsetFrom'], (attrs as any)['offsetTo'], x1, x2, y1, y2]
+        [type, JSON.stringify(attrs), x1, x2, y1, y2]
     );
 
     // HELP NEEDED: Why component is not this type?
