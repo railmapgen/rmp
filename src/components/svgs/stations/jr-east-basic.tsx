@@ -15,6 +15,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
 const NAME_SZ_BASIC = {
     ja: {
@@ -62,16 +63,26 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const iconRotateDY2 = Math.sin((rotate * Math.PI) / 180) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
 
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
-    const textLngNearIconHeight =
+    const textJAHeight =
         names[nameOffsetY === 'top' ? 0 : nameOffsetY === 'bottom' ? 1 : 0].split('\\').length *
         (nameOffsetY === 'middle' ? 0 : NAME_SZ_BASIC.ja.size);
-    const textLngNearIconOffset =
-        (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_SZ_BASIC.ja.baseOffset;
+    const textJAOffset = (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_SZ_BASIC.ja.baseOffset;
     const textDY =
-        (textLngNearIconHeight + textLngNearIconOffset) * NAME_DY[nameOffsetY].polarity +
+        (textJAHeight + textJAOffset) * NAME_DY[nameOffsetY].polarity +
         (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? iconRotateDY1 : iconRotateDY2);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     // if (id === 'stn_1E-TrvL1SL') console.log(textLngNearIconHeight + textLngNearIconOffset, iconRotateDY2);
+
+    const textVerticalDY =
+        nameOffsetY === 'top'
+            ? iconRotateDY1 - NAME_SZ_BASIC.en.baseOffset
+            : iconRotateDY2 + NAME_SZ_BASIC.en.baseOffset;
+    const textVerticalAnchor = {
+        ja: nameOffsetY === 'top' ? 'end' : 'start',
+        en: nameOffsetY === 'top' ? 'start' : 'end',
+    };
+    const textVerticalENBaseOffset =
+        (names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
 
     const textGrow: { ja: 'down' | 'up' | 'bidirectional'; en: 'down' | 'up' | 'bidirectional' } = {
         ja: nameOffsetY === 'top' ? 'down' : nameOffsetY === 'bottom' ? 'up' : 'bidirectional',
@@ -130,26 +141,52 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 />
             </g>
-            <g transform={`translate(${textDX}, ${textDY})`} textAnchor={textAnchor}>
-                <MultilineText
-                    ref={textJAEl}
-                    text={names[0].split('\\')}
-                    fontSize={NAME_SZ_BASIC.ja.size}
-                    lineHeight={NAME_SZ_BASIC.ja.size}
-                    grow={textGrow.ja}
-                    baseOffset={textBaseOffset.ja}
-                    className="rmp-name__jreast"
-                />
-                <MultilineText
-                    text={names[1].split('\\')}
-                    dx={textENDX}
-                    fontSize={NAME_SZ_BASIC.en.size}
-                    lineHeight={NAME_SZ_BASIC.en.size}
-                    grow={textGrow.en}
-                    baseOffset={textBaseOffset.en}
-                    className="rmp-name__en"
-                />
-            </g>
+            {!textVertical ? (
+                <g transform={`translate(${textDX}, ${textDY})`} textAnchor={textAnchor}>
+                    <MultilineText
+                        ref={textJAEl}
+                        text={names[0].split('\\')}
+                        fontSize={NAME_SZ_BASIC.ja.size}
+                        lineHeight={NAME_SZ_BASIC.ja.size}
+                        grow={textGrow.ja}
+                        baseOffset={textBaseOffset.ja}
+                        className="rmp-name__jreast"
+                    />
+                    <MultilineText
+                        text={names[1].split('\\')}
+                        dx={textENDX}
+                        fontSize={NAME_SZ_BASIC.en.size}
+                        lineHeight={NAME_SZ_BASIC.en.size}
+                        grow={textGrow.en}
+                        baseOffset={textBaseOffset.en}
+                        className="rmp-name__en"
+                    />
+                </g>
+            ) : (
+                <>
+                    <g transform={`translate(0, ${textVerticalDY})`} textAnchor={textVerticalAnchor.ja}>
+                        <MultilineTextVertical
+                            ref={textJAEl}
+                            text={names[0].split('\\')}
+                            fontSize={NAME_SZ_BASIC.ja.size}
+                            lineWidth={NAME_SZ_BASIC.ja.size}
+                            grow="bidirectional"
+                            baseOffset={0}
+                            className="rmp-name__jreast"
+                        />
+                    </g>
+                    <g transform={`translate(0, ${textVerticalDY})rotate(270)`} textAnchor={textVerticalAnchor.en}>
+                        <MultilineText
+                            text={names[1].split('\\')}
+                            fontSize={NAME_SZ_BASIC.en.size}
+                            lineHeight={NAME_SZ_BASIC.en.size}
+                            grow={nameOffsetY === 'top' ? 'down' : 'up'}
+                            baseOffset={textVerticalENBaseOffset}
+                            className="rmp-name__en"
+                        />
+                    </g>
+                </>
+            )}
         </g>
     );
 };
@@ -183,7 +220,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
-            label: t('panel.details.stations.common.nameZh'),
+            label: t('panel.details.stations.common.nameJa'),
             value: attrs.names[0].replaceAll('\\', '\n'),
             onChange: val => {
                 attrs.names[0] = val.toString().replaceAll('\n', '\\');
@@ -246,8 +283,12 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         {
             type: 'switch',
             label: t('panel.details.stations.jrEastBasic.textVertical'),
-            isChecked: false,
-            isDisabled: true,
+            isChecked: attrs.textVertical,
+            isDisabled: attrs.nameOffsetX !== 'middle',
+            onChange: (val: boolean) => {
+                attrs.textVertical = val;
+                handleAttrsUpdate(id, attrs);
+            },
             oneLine: true,
             minW: 'full',
         },
