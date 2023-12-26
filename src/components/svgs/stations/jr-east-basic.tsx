@@ -173,7 +173,7 @@ const defaultJREastBasicStationAttributes: JREastBasicStationAttributes = {
     rotate: 0,
     textOneLine: false,
     textVertical: false,
-    lines: [-2, 1],
+    lines: [-1, 0, 1],
 };
 
 const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttributes>) => {
@@ -203,29 +203,17 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         },
         {
             type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            label: t('panel.details.stations.jrEastBasic.nameOffset'),
+            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
+            options: { top: 'top', bottom: 'bottom', left: 'left', right: 'right' },
             onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                if (attrs.nameOffsetX !== 'middle') {
+                if (val === 'left' || val === 'right') {
+                    attrs.nameOffsetX = val as NameOffsetX;
                     attrs.nameOffsetY = 'middle';
-                }
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs.nameOffsetX !== 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                if (attrs.nameOffsetY !== 'middle') {
+                    attrs.textVertical = false;
+                } else {
                     attrs.nameOffsetX = 'middle';
+                    attrs.nameOffsetY = val as NameOffsetY;
                     attrs.textOneLine = false;
                 }
                 handleAttrsUpdate(id, attrs);
