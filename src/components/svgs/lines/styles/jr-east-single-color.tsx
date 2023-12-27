@@ -14,10 +14,7 @@ import { AttributesWithColor, ColorField } from '../../../panels/details/color-f
 
 const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handleClick } = props;
-    const {
-        color = defaultJREastSingleColorAttributes.color,
-        crosshatchPatternFill = defaultJREastSingleColorAttributes.crosshatchPatternFill,
-    } = styleAttrs ?? defaultJREastSingleColorAttributes;
+    const { color = defaultJREastSingleColorAttributes.color } = styleAttrs ?? defaultJREastSingleColorAttributes;
 
     const onClick = React.useCallback(
         (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
@@ -26,19 +23,13 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
 
     return (
         <g id={id}>
-            <defs>
-                <pattern id="fill" width="5" height="5" patternUnits="userSpaceOnUse">
-                    <line x1="0" y1="0" x2="5" y2="5" stroke="white" strokeOpacity="50%" />
-                    <line x1="5" y1="0" x2="0" y2="5" stroke="white" strokeOpacity="50%" />
-                </pattern>
-            </defs>
             <path d={path} fill="none" stroke="black" strokeWidth="5.1" />
-            <path d={path} fill={crosshatchPatternFill ? 'white' : 'none'} stroke={color[2]} strokeWidth="4.9" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth="4.9" />
             <path
                 d={path}
                 fill="none"
                 stroke="white"
-                strokeWidth="5"
+                strokeWidth="5.1"
                 strokeOpacity="0"
                 cursor="pointer"
                 onClick={newLine ? undefined : onClick}
@@ -51,13 +42,10 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
 /**
  * JREastSingleColor specific props.
  */
-export interface JREastSingleColorAttributes extends LinePathAttributes, AttributesWithColor {
-    crosshatchPatternFill: boolean;
-}
+export interface JREastSingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
 
 const defaultJREastSingleColorAttributes: JREastSingleColorAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
-    crosshatchPatternFill: false,
 };
 
 const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttributes>) => {
@@ -65,17 +53,6 @@ const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttr
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
-        {
-            type: 'switch',
-            label: t('panel.details.lines.jrEastSingleColor.crosshatchPatternFill'),
-            oneLine: true,
-            isChecked: attrs.crosshatchPatternFill,
-            onChange: val => {
-                attrs.crosshatchPatternFill = val;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
         {
             type: 'custom',
             label: 'color',
