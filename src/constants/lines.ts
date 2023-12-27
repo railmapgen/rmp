@@ -19,6 +19,7 @@ import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unp
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
 import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
 import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
+import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -50,6 +51,7 @@ export enum LineStyleType {
     MTRPaidArea = 'mtr-paid-area',
     MRTUnderConstruction = 'mrt-under-constr',
     MRTSentosaExpress = 'mrt-sentosa-express',
+    JREastSingleColor = 'jr-east-single-color',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -68,6 +70,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MTRPaidArea]?: MTRPaidAreaAttributes;
     [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
+    [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
 }
 
 export const LineStylesWithColor = [

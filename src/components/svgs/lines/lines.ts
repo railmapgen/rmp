@@ -18,6 +18,7 @@ import mtrPaidArea from './styles/mtr-paid-area';
 import bjsubwayDotted from './styles/bjsubway-dotted';
 import mrtUnderConstruction from './styles/mrt-under-construction';
 import mrtSentosaExpress from './styles/mrt-sentosa-express';
+import jrEastSingleColor from './styles/jr-east-single-color';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -42,4 +43,5 @@ export const lineStyles = {
     [LineStyleType.MTRPaidArea]: mtrPaidArea,
     [LineStyleType.MRTUnderConstruction]: mrtUnderConstruction,
     [LineStyleType.MRTSentosaExpress]: mrtSentosaExpress,
+    [LineStyleType.JREastSingleColor]: jrEastSingleColor,
 };
