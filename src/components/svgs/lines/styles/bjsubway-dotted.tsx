@@ -1,6 +1,9 @@
 import { useColorModeValue } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -9,10 +12,6 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
 
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -44,7 +43,7 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
 };
 
 /**
- * BjsubwayTram specific props.
+ * BjsubwayDotted specific props.
  */
 export interface BjsubwayDottedAttributes extends LinePathAttributes, AttributesWithColor {}
 
@@ -52,22 +51,22 @@ const defaultBjsubwayDottedAttributes: BjsubwayDottedAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const bjsubwayDottedFields = [
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField type={LineStyleType.BjsubwayDotted} defaultTheme={defaultBjsubwayDottedAttributes.color} />
-        ),
-    },
-];
+const attrsComponent = (props: AttrsProps<BjsubwayDottedAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={bjsubwayDottedFields as RmgFieldsFieldDetail<BjsubwayDottedAttributes>}
-        type="style"
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'custom',
+            label: 'color',
+            component: (
+                <ColorField type={LineStyleType.BjsubwayDotted} defaultTheme={defaultBjsubwayDottedAttributes.color} />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const bjsubwayDotted: LineStyle<BjsubwayDottedAttributes> = {
     component: BjsubwayDotted,

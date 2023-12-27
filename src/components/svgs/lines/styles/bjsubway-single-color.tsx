@@ -1,5 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -8,10 +11,6 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
 
 const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handleClick } = props;
@@ -22,26 +21,22 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
         [id, handleClick]
     );
 
-    return React.useMemo(
-        () => (
-            <>
-                <path d={path} fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" />
-                <path id={id} d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
-                <path
-                    id={id}
-                    d={path}
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="6"
-                    strokeLinecap="round"
-                    strokeOpacity="0"
-                    cursor="pointer"
-                    onClick={newLine ? undefined : onClick}
-                    pointerEvents={newLine ? 'none' : undefined}
-                />
-            </>
-        ),
-        [id, path, styleAttrs.color[2], newLine]
+    return (
+        <g id={id}>
+            <path d={path} fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
+            <path
+                d={path}
+                fill="none"
+                stroke="white"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeOpacity="0"
+                cursor="pointer"
+                onClick={newLine ? undefined : onClick}
+                pointerEvents={newLine ? 'none' : undefined}
+            />
+        </g>
     );
 };
 
@@ -54,30 +49,30 @@ const defaultBjsubwaySingleColorAttributes: BjsubwaySingleColorAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const bjsubwaySingleColorFields = [
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={LineStyleType.BjsubwaySingleColor}
-                defaultTheme={defaultBjsubwaySingleColorAttributes.color}
-            />
-        ),
-    },
-];
+const bjsubwaySingleColorAttrsComponent = (props: AttrsProps<BjsubwaySingleColorAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={bjsubwaySingleColorFields as RmgFieldsFieldDetail<BjsubwaySingleColorAttributes>}
-        type="style"
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'custom',
+            label: 'color',
+            component: (
+                <ColorField
+                    type={LineStyleType.BjsubwaySingleColor}
+                    defaultTheme={defaultBjsubwaySingleColorAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
     component: BjsubwaySingleColor,
     defaultAttrs: defaultBjsubwaySingleColorAttributes,
-    attrsComponent,
+    attrsComponent: bjsubwaySingleColorAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwaySingleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
