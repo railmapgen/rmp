@@ -22,7 +22,7 @@ export const UnknownNode = (props: StationComponentProps | NodeComponentProps<ob
     return (
         <g
             id={id}
-            transform={`translate(${x - 6.4},${y - 6.4})scale(0.025)`}
+            transform={`translate(${x - 6.4} ${y - 6.4})scale(0.025)`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

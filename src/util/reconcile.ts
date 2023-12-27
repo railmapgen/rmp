@@ -130,7 +130,7 @@ export const generateReconciledPath = (
         return (
             // @ts-ignore-error
             linePaths[type]?.generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr) ??
-            `M ${sourceAttr.x},${sourceAttr.y} L ${targetAttr.x},${targetAttr.y}`
+            `M ${sourceAttr.x} ${sourceAttr.y} L ${targetAttr.x} ${targetAttr.y}`
         );
     });
 

@@ -47,7 +47,7 @@ const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
     const [x1, y1, x2, y2] = startFrom === 'from' ? [x1b, y1b, x2b, y2b] : [x2b, y2b, x1b, y1b];
 
     // Round the path with corners.
-    const path = roundPathCorners(`M ${x1},${y1} L ${x},${y} L ${x2},${y2}`, roundCornerFactor, false) as `M ${string}`;
+    const path = roundPathCorners(`M ${x1} ${y1} L ${x} ${y} L ${x2} ${y2}`, roundCornerFactor, false) as `M ${string}`;
 
     return path;
 };

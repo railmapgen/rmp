@@ -61,7 +61,7 @@ const makePath = (
 ): `${'m' | 'M'}${string}` => {
     if (!(type in linePaths)) {
         // unknown line path type
-        return `M ${x1},${y1} L ${x2},${y2}`;
+        return `M ${x1} ${y1} L ${x2} ${y2}`;
     }
 
     const simplePathAvailability = checkSimplePathAvailability(id, type, x1, y1, x2, y2, attrs);
