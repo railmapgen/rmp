@@ -13,6 +13,11 @@ import {
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
+const LINE_WIDTH = 5;
+const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
+const PATTERN_WIDTH = 0.25;
+const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
+
 const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
     const { id, type, path, styleAttrs, newLine, handleClick } = props;
     const { color = defaultJREastSingleColorPatternAttributes.color } =
@@ -33,13 +38,43 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
     return (
         <g id={id}>
             <defs>
-                <pattern id="fill" width="5" height="5" patternUnits="userSpaceOnUse">
-                    <rect width="5" height="5" fill={color[2]} />
-                    <line x1="0" y1="0" x2="5" y2="5" stroke="white" strokeOpacity="50%" />
-                    <line x1="5" y1="0" x2="0" y2="5" stroke="white" strokeOpacity="50%" />
+                <clipPath id="jr_east_fill_pattern_clip_path" patternUnits="userSpaceOnUse">
+                    <polygon points={`0,0 0,${PATTERN_CLIP_PATH_D} ${PATTERN_CLIP_PATH_D},0`} />
+                    <polygon
+                        points={`${PATTERN_LEN},${PATTERN_LEN} ${
+                            PATTERN_LEN - PATTERN_CLIP_PATH_D
+                        },${PATTERN_LEN} ${PATTERN_LEN},${PATTERN_LEN - PATTERN_CLIP_PATH_D}`}
+                    />
+                </clipPath>
+                <pattern
+                    id={`jr_east_${id}_fill_pattern_${color[2]}`}
+                    width={PATTERN_LEN}
+                    height={PATTERN_LEN}
+                    patternUnits="userSpaceOnUse"
+                >
+                    <rect width={PATTERN_LEN} height={PATTERN_LEN} fill={color[2]} />
+                    <line
+                        x1="0"
+                        y1="0"
+                        x2={PATTERN_LEN}
+                        y2={PATTERN_LEN}
+                        stroke="white"
+                        strokeWidth={PATTERN_WIDTH}
+                        strokeOpacity="50%"
+                        clipPath={`url(#jr_east_fill_pattern_clip_path)`}
+                    />
+                    <line
+                        x1={PATTERN_LEN}
+                        y1="0"
+                        x2="0"
+                        y2={PATTERN_LEN}
+                        stroke="white"
+                        strokeWidth={PATTERN_WIDTH}
+                        strokeOpacity="50%"
+                    />
                 </pattern>
             </defs>
-            <path d={paths.outline} fill="url(#fill)" />
+            <path d={paths.outline} fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`} />
             <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
             <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
             <path
