@@ -49,12 +49,9 @@ const JREastImportantStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const iconWidth = textVertical
-        ? NAME_SZ_BASIC.ja.size + ICON_SAFE_D
-        : (names[0].length + 0.7) * NAME_SZ_BASIC.ja.size;
-    const iconHeight = textVertical
-        ? (names[0].length + 0.7) * NAME_SZ_BASIC.ja.size
-        : NAME_SZ_BASIC.ja.size + ICON_SAFE_D;
+    const iconLength = Math.max((names[0].length + 0.7) * NAME_SZ_BASIC.ja.size, length);
+    const iconWidth = textVertical ? NAME_SZ_BASIC.ja.size + ICON_SAFE_D : iconLength;
+    const iconHeight = textVertical ? iconLength : NAME_SZ_BASIC.ja.size + ICON_SAFE_D;
 
     const textENDX = nameOffsetY !== 'middle' ? 0 : nameOffsetX === 'left' ? -iconWidth / 2 - 1 : iconWidth / 2 + 1;
     const textENDY = nameOffsetX !== 'middle' ? 0 : nameOffsetY === 'top' ? -iconHeight / 2 - 1 : iconHeight / 2 + 1;
