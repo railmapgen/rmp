@@ -37,41 +37,14 @@ export const makeShortPathParallel = (
     // Make the parallel Bezier curves.
     const [bA, bB] = [b.scale(d1), b.scale(d2)];
 
-    // Connect the curve with the first half of the linear line.
-    // Find the start point of the new curve path.
-    const cStartingA = [bA.points.at(0)!.x, bA.points.at(0)!.y];
-    // Find the start point of the new curve path.
-    const cStartingB = [bB.points.at(0)!.x, bB.points.at(0)!.y];
-    if (!m) return;
-    // Get the start point of the new path.
-    const [mxA, myA] = find4thVertexOfAParallelogram(m[0], l[0], cStartingA[0], m[1], l[1], cStartingA[1]);
-    const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
-
-    // Connect the curve with the second half of the linear line.
-    // Find the end point of the new curve path.
-    const bEndingA = [bA.points.at(-1)!.x, bA.points.at(-1)!.y];
-    // Find the end point of the new curve path.
-    const bEndingB = [bB.points.at(-1)!.x, bB.points.at(-1)!.y];
-    // Find the end point of the original curve path.
-    const bEnding = [b.points.at(-1)!.x, b.points.at(-1)!.y];
-    if (!end) return;
-    // Get the end point of the new path.
-    const [endXA, endYA] = find4thVertexOfAParallelogram(
-        bEndingA[0],
-        bEnding[0],
-        end[0],
-        bEndingA[1],
-        bEnding[1],
-        end[1]
-    );
-    const [endXB, endYB] = find4thVertexOfAParallelogram(
-        bEndingB[0],
-        bEnding[0],
-        end[0],
-        bEndingB[1],
-        bEnding[1],
-        end[1]
-    );
+    const _ = makeStartingAndEndingPointsOfParallelShortPaths(m, l, end, b, bA, bB);
+    if (!_) return;
+    const {
+        mA: [mxA, myA],
+        mB: [mxB, myB],
+        endA: [endXA, endYA],
+        endB: [endXB, endYB],
+    } = _;
 
     return [
         `M ${mxA} ${myA} ${bA.toSVG().replace('M', 'L')} L ${endXA} ${endYA}`,
@@ -111,41 +84,14 @@ export const makeShortPathOutline = (
     // Make the parallel Bezier curves.
     const [bA, bB] = [b.scale(d1), b.scale(d2)];
 
-    // Connect the curve with the first half of the linear line.
-    // Find the start point of the new curve path.
-    const cStartingA = [bA.points.at(0)!.x, bA.points.at(0)!.y];
-    // Find the start point of the new curve path.
-    const cStartingB = [bB.points.at(0)!.x, bB.points.at(0)!.y];
-    if (!m) return;
-    // Get the start point of the new path.
-    const [mxA, myA] = find4thVertexOfAParallelogram(m[0], l[0], cStartingA[0], m[1], l[1], cStartingA[1]);
-    const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
-
-    // Connect the curve with the second half of the linear line.
-    // Find the end point of the new curve path.
-    const bEndingA = [bA.points.at(-1)!.x, bA.points.at(-1)!.y];
-    // Find the end point of the new curve path.
-    const bEndingB = [bB.points.at(-1)!.x, bB.points.at(-1)!.y];
-    // Find the end point of the original curve path.
-    const bEnding = [b.points.at(-1)!.x, b.points.at(-1)!.y];
-    if (!end) return;
-    // Get the end point of the new path.
-    const [endXA, endYA] = find4thVertexOfAParallelogram(
-        bEndingA[0],
-        bEnding[0],
-        end[0],
-        bEndingA[1],
-        bEnding[1],
-        end[1]
-    );
-    const [endXB, endYB] = find4thVertexOfAParallelogram(
-        bEndingB[0],
-        bEnding[0],
-        end[0],
-        bEndingB[1],
-        bEnding[1],
-        end[1]
-    );
+    const _ = makeStartingAndEndingPointsOfParallelShortPaths(m, l, end, b, bA, bB);
+    if (!_) return;
+    const {
+        mA: [mxA, myA],
+        mB: [mxB, myB],
+        endA: [endXA, endYA],
+        endB: [endXB, endYB],
+    } = _;
 
     const [lB, cB] = findBezierCurve(bB.toSVG().replace('M', 'L') as Path);
     const [rlB, rcB] = reverseBezierCurve(lB, cB);
@@ -239,6 +185,53 @@ const reverseBezierCurve = (l: Point, c: [...Point, ...Point, ...Point]) => [
     [c[4], c[5]],
     [c[2], c[3], c[0], c[1], l[0], l[1]],
 ];
+
+const makeStartingAndEndingPointsOfParallelShortPaths = (
+    m: Point,
+    l: Point,
+    end: Point,
+    b: Bezier,
+    bA: Bezier,
+    bB: Bezier
+): { mA: Point; mB: Point; endA: Point; endB: Point } | undefined => {
+    // Connect the curve with the first half of the linear line.
+    // Find the start point of the new curve path.
+    const cStartingA = [bA.points.at(0)!.x, bA.points.at(0)!.y];
+    // Find the start point of the new curve path.
+    const cStartingB = [bB.points.at(0)!.x, bB.points.at(0)!.y];
+    if (!m) return;
+    // Get the start point of the new path.
+    const [mxA, myA] = find4thVertexOfAParallelogram(m[0], l[0], cStartingA[0], m[1], l[1], cStartingA[1]);
+    const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
+
+    // Connect the curve with the second half of the linear line.
+    // Find the end point of the new curve path.
+    const bEndingA = [bA.points.at(-1)!.x, bA.points.at(-1)!.y];
+    // Find the end point of the new curve path.
+    const bEndingB = [bB.points.at(-1)!.x, bB.points.at(-1)!.y];
+    // Find the end point of the original curve path.
+    const bEnding = [b.points.at(-1)!.x, b.points.at(-1)!.y];
+    if (!end) return;
+    // Get the end point of the new path.
+    const [endXA, endYA] = find4thVertexOfAParallelogram(
+        bEndingA[0],
+        bEnding[0],
+        end[0],
+        bEndingA[1],
+        bEnding[1],
+        end[1]
+    );
+    const [endXB, endYB] = find4thVertexOfAParallelogram(
+        bEndingB[0],
+        bEnding[0],
+        end[0],
+        bEndingB[1],
+        bEnding[1],
+        end[1]
+    );
+
+    return { mA: [mxA, myA], mB: [mxB, myB], endA: [endXA, endYA], endB: [endXB, endYB] };
+};
 
 /**
  * Given the coordinates of point A, B, and C,
