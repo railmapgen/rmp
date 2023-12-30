@@ -2,7 +2,7 @@ import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components'
 import { CityCode } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, StnId } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -52,10 +52,14 @@ const JREastImportantStation = (props: StationComponentProps) => {
 
     const textJAEl = React.useRef<SVGTextElement | null>(null);
     const [bBox, setBBox] = React.useState({ height: 0, width: 0 } as DOMRect);
-    React.useEffect(() => setBBox(textJAEl.current!.getBBox()), [names[0], setBBox, textJAEl]);
+    React.useEffect(() => setBBox(textJAEl.current!.getBBox()), [names[0], textVertical, setBBox, textJAEl]);
 
-    const textLength = bBox.width;
-    const textSafeD = (textVertical ? 1 : 0.7) * NAME_SZ_BASIC.ja.size;
+    // Looks like the width of the bbox has some relation to the writing-mode on first render.
+    // writing-mode = horizontal-tb -> the length of the text = bBox.width
+    // writing-mode = vertical-rl -> the length of the text = bBox.height
+    // Might due to the use of ref in two components, but anyway this Math.max should be a workaround.
+    const textLength = Math.max(bBox.width, bBox.height);
+    const textSafeD = (textVertical ? 0.1 : 0.7) * NAME_SZ_BASIC.ja.size;
     const iconLength = Math.max(textLength + textSafeD, minLength);
     const iconWidth = textVertical ? NAME_SZ_BASIC.ja.size + ICON_SAFE_D : iconLength;
     const iconHeight = textVertical ? iconLength : NAME_SZ_BASIC.ja.size + ICON_SAFE_D;
@@ -95,6 +99,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                 ) : (
                     <text
                         ref={textJAEl}
+                        x="1.25"
                         className="rmp-name__jreast"
                         textAnchor="middle"
                         writingMode="vertical-rl"
@@ -162,11 +167,11 @@ const jrEastImportantAttrsComponent = (props: AttrsProps<JREastImportantStationA
 
     const fields: RmgFieldsField[] = [
         {
-            type: 'textarea',
+            type: 'input',
             label: t('panel.details.stations.common.nameJa'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -183,17 +188,24 @@ const jrEastImportantAttrsComponent = (props: AttrsProps<JREastImportantStationA
         },
         {
             type: 'select',
-            label: t('panel.details.stations.jrEastImportant.nameOffset'),
-            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: { top: 'top', bottom: 'bottom', left: 'left', right: 'right' },
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
-                if (val === 'left' || val === 'right') {
-                    attrs.nameOffsetX = val as NameOffsetX;
-                    attrs.nameOffsetY = 'middle';
-                } else {
-                    attrs.nameOffsetX = 'middle';
-                    attrs.nameOffsetY = val as NameOffsetY;
-                }
+                attrs.nameOffsetX = val as NameOffsetX;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
