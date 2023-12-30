@@ -33,7 +33,8 @@ const JREastImportantStation = (props: StationComponentProps) => {
         nameOffsetX = defaultJREastImportantStationAttributes.nameOffsetX,
         nameOffsetY = defaultJREastImportantStationAttributes.nameOffsetY,
         textVertical = defaultJREastImportantStationAttributes.textVertical,
-        length = defaultJREastImportantStationAttributes.length,
+        mostImportant = defaultJREastImportantStationAttributes.mostImportant,
+        minLength = defaultJREastImportantStationAttributes.minLength,
     } = attrs[StationType.JREastImportant] ?? defaultJREastImportantStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -49,7 +50,13 @@ const JREastImportantStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const iconLength = Math.max((names[0].length + 0.7) * NAME_SZ_BASIC.ja.size, length);
+    const textJAEl = React.useRef<SVGTextElement | null>(null);
+    const [bBox, setBBox] = React.useState({ height: 0, width: 0 } as DOMRect);
+    React.useEffect(() => setBBox(textJAEl.current!.getBBox()), [names[0], setBBox, textJAEl]);
+
+    const textLength = bBox.width;
+    const textSafeD = (textVertical ? 1 : 0.7) * NAME_SZ_BASIC.ja.size;
+    const iconLength = Math.max(textLength + textSafeD, minLength);
     const iconWidth = textVertical ? NAME_SZ_BASIC.ja.size + ICON_SAFE_D : iconLength;
     const iconHeight = textVertical ? iconLength : NAME_SZ_BASIC.ja.size + ICON_SAFE_D;
 
@@ -57,59 +64,65 @@ const JREastImportantStation = (props: StationComponentProps) => {
     const textENDY = nameOffsetX !== 'middle' ? 0 : nameOffsetY === 'top' ? -iconHeight / 2 - 1 : iconHeight / 2 + 1;
     const textENAnchor = nameOffsetY !== 'middle' ? 'middle' : nameOffsetX === 'left' ? 'end' : 'start';
 
+    const scale = mostImportant ? 1.5 : 1;
+
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            <rect
-                id={`stn_core_${id}`}
-                fill="black"
-                x={-iconWidth / 2}
-                y={-iconHeight / 2}
-                rx={textVertical ? undefined : iconHeight / 2}
-                ry={textVertical ? iconWidth / 2 : undefined}
-                width={iconWidth}
-                height={iconHeight}
-            />
+            <g transform={`scale(${scale})`}>
+                <rect
+                    id={`stn_core_${id}`}
+                    fill="black"
+                    x={-iconWidth / 2}
+                    y={-iconHeight / 2}
+                    rx={textVertical ? undefined : iconHeight / 2}
+                    ry={textVertical ? iconWidth / 2 : undefined}
+                    width={iconWidth}
+                    height={iconHeight}
+                />
 
-            {!textVertical ? (
-                <text
-                    y="-0.525"
-                    className="rmp-name__jreast"
-                    textAnchor="middle"
-                    fontSize={NAME_SZ_BASIC.ja.size}
-                    fill="white"
-                    dominantBaseline="central"
-                >
-                    {names[0]}
-                </text>
-            ) : (
-                <text
-                    className="rmp-name__jreast"
-                    textAnchor="middle"
-                    writingMode="vertical-rl"
-                    fontSize={NAME_SZ_BASIC.ja.size}
-                    fill="white"
-                    dominantBaseline="central"
-                >
-                    {names[0]}
-                </text>
-            )}
+                {!textVertical ? (
+                    <text
+                        ref={textJAEl}
+                        y="-0.525"
+                        className="rmp-name__jreast"
+                        textAnchor="middle"
+                        fontSize={NAME_SZ_BASIC.ja.size}
+                        fill="white"
+                        dominantBaseline="central"
+                    >
+                        {names[0]}
+                    </text>
+                ) : (
+                    <text
+                        ref={textJAEl}
+                        className="rmp-name__jreast"
+                        textAnchor="middle"
+                        writingMode="vertical-rl"
+                        fontSize={NAME_SZ_BASIC.ja.size}
+                        fill="white"
+                        dominantBaseline="central"
+                    >
+                        {names[0]}
+                    </text>
+                )}
 
-            <rect
-                fill="black"
-                fillOpacity="0"
-                x={-iconWidth / 2}
-                y={-iconHeight / 2}
-                rx={textVertical ? undefined : iconWidth / 2}
-                ry={textVertical ? iconHeight / 2 : undefined}
-                width={iconWidth}
-                height={iconHeight}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
-            />
+                <rect
+                    fill="black"
+                    fillOpacity="0"
+                    x={-iconWidth / 2}
+                    y={-iconHeight / 2}
+                    rx={textVertical ? undefined : iconWidth / 2}
+                    ry={textVertical ? iconHeight / 2 : undefined}
+                    width={iconWidth}
+                    height={iconHeight}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                />
+            </g>
 
-            <g transform={`translate(${textENDX}, ${textENDY})`} textAnchor={textENAnchor}>
+            <g transform={`translate(${textENDX * scale}, ${textENDY * scale})`} textAnchor={textENAnchor}>
                 <MultilineText
                     text={names[1].split('\\')}
                     fontSize={NAME_SZ_BASIC.en.size}
@@ -130,7 +143,8 @@ export interface JREastImportantStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     textVertical: boolean;
-    length: number;
+    mostImportant: boolean;
+    minLength: number;
 }
 
 const defaultJREastImportantStationAttributes: JREastImportantStationAttributes = {
@@ -138,7 +152,8 @@ const defaultJREastImportantStationAttributes: JREastImportantStationAttributes 
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     textVertical: false,
-    length: 0,
+    mostImportant: false,
+    minLength: 0,
 };
 
 const jrEastImportantAttrsComponent = (props: AttrsProps<JREastImportantStationAttributes>) => {
@@ -195,12 +210,23 @@ const jrEastImportantAttrsComponent = (props: AttrsProps<JREastImportantStationA
             minW: 'full',
         },
         {
+            type: 'switch',
+            label: t('panel.details.stations.jrEastImportant.mostImportant'),
+            isChecked: attrs.mostImportant,
+            onChange: (val: boolean) => {
+                attrs.mostImportant = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            oneLine: true,
+            minW: 'full',
+        },
+        {
             type: 'input',
-            label: t('panel.details.stations.jrEastImportant.length'),
-            value: attrs.length.toString(),
+            label: t('panel.details.stations.jrEastImportant.minLength'),
+            value: attrs.minLength.toString(),
             onChange: val => {
-                if (Number.isNaN(val)) attrs.length = 0;
-                else attrs.length = Number(val);
+                if (Number.isNaN(val)) attrs.minLength = 0;
+                else attrs.minLength = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
