@@ -95,13 +95,10 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
 /**
  * JREastSingleColorPattern specific props.
  */
-export interface JREastSingleColorPatternAttributes extends LinePathAttributes, AttributesWithColor {
-    crosshatchPatternFill: boolean;
-}
+export interface JREastSingleColorPatternAttributes extends LinePathAttributes, AttributesWithColor {}
 
 const defaultJREastSingleColorPatternAttributes: JREastSingleColorPatternAttributes = {
-    color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
-    crosshatchPatternFill: false,
+    color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
 };
 
 const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleColorPatternAttributes>) => {
@@ -110,19 +107,8 @@ const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleCo
 
     const fields: RmgFieldsField[] = [
         {
-            type: 'switch',
-            label: t('panel.details.lines.jrEastSingleColorPattern.crosshatchPatternFill'),
-            oneLine: true,
-            isChecked: attrs.crosshatchPatternFill,
-            onChange: val => {
-                attrs.crosshatchPatternFill = val;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField
                     type={LineStyleType.JREastSingleColorPattern}

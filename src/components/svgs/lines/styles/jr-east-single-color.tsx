@@ -45,7 +45,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
 export interface JREastSingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
 
 const defaultJREastSingleColorAttributes: JREastSingleColorAttributes = {
-    color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
+    color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
 };
 
 const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttributes>) => {
@@ -55,7 +55,7 @@ const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttr
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField
                     type={LineStyleType.JREastSingleColor}
