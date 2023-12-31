@@ -410,7 +410,9 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
 
 const jrEastBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect x="6" y="9" width="12" height="6" stroke="currentColor" fill="currentColor" />
+        <circle cx="6" cy="12" r="2" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <circle cx="12" cy="12" r="2" stroke="currentColor" strokeWidth="0.5" fill="none" />
+        <circle cx="18" cy="12" r="2" stroke="currentColor" strokeWidth="0.5" fill="none" />
     </svg>
 );
 

@@ -250,7 +250,13 @@ const jrEastImportantAttrsComponent = (props: AttrsProps<JREastImportantStationA
 
 const jrEastImportantStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect x="6" y="9" width="12" height="6" stroke="currentColor" fill="currentColor" />
+        <rect x="3" y="7.5" rx="4.5" width="18" height="9" stroke="currentColor" fill="currentColor" />
+        <text x="12" y="12" textAnchor="middle" dominantBaseline="middle" fontSize="6" fill="white">
+            東京
+        </text>
+        <text x="12" y="20.25" textAnchor="middle" dominantBaseline="middle" fontSize="3">
+            Tōkyō
+        </text>
     </svg>
 );
 
