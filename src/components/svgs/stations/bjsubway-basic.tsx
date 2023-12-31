@@ -11,14 +11,14 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
-    zh: 10,
+    zh: 9,
     en: 6.2,
     top: 6.2 + 1,
     middle: 0,
-    bottom: 10 + 1,
+    bottom: 9 + 1,
 };
 
 const BjsubwayBasicStation = (props: StationComponentProps) => {
@@ -43,12 +43,27 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
-    const textY =
-        ((names[NAME_DY[nameOffsetY].namesPos].split('\\').length + (nameOffsetY === 'top' && !open ? 1 : 0)) *
-            LINE_HEIGHT[nameOffsetY] +
-            8) *
-        NAME_DY[nameOffsetY].polarity;
+    const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
+        if (oX === 'left' && oY === 'top') {
+            return [-4, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+        } else if (oX === 'middle' && oY === 'top') {
+            return [0, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
+        } else if (oX === 'right' && oY === 'top') {
+            return [4, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+        } else if (oX === 'left' && oY === 'bottom') {
+            return [-4, names[0].split('\\').length * LINE_HEIGHT[oY] + 1];
+        } else if (oX === 'middle' && oY === 'bottom') {
+            return [0, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+        } else if (oX === 'right' && oY === 'bottom') {
+            return [4, names[0].split('\\').length * LINE_HEIGHT[oY] + 1];
+        } else if (oX === 'left' && oY === 'middle') {
+            return [-5, 0];
+        } else if (oX === 'right' && oY === 'middle') {
+            return [5, 0];
+        } else return [0, 0];
+    };
+
+    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(

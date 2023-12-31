@@ -11,7 +11,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineText } from '../common/multiline-text';
 import { LINE_HEIGHT } from './bjsubway-basic';
 
 const PATH_ARROW =
@@ -39,10 +39,26 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
-    const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * LINE_HEIGHT[nameOffsetY] + 8) *
-        NAME_DY[nameOffsetY].polarity;
+    const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
+        if (oX === 'left' && oY === 'top') {
+            return [-5, -names[1].split('\\').length * LINE_HEIGHT[oY] - 4];
+        } else if (oX === 'middle' && oY === 'top') {
+            return [0, -names[1].split('\\').length * LINE_HEIGHT[oY] - 7];
+        } else if (oX === 'right' && oY === 'top') {
+            return [5, -names[1].split('\\').length * LINE_HEIGHT[oY] - 4];
+        } else if (oX === 'left' && oY === 'bottom') {
+            return [-5, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+        } else if (oX === 'middle' && oY === 'bottom') {
+            return [0, names[0].split('\\').length * LINE_HEIGHT[oY] + 7];
+        } else if (oX === 'right' && oY === 'bottom') {
+            return [5, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+        } else if (oX === 'left' && oY === 'middle') {
+            return [-8, 0];
+        } else if (oX === 'right' && oY === 'middle') {
+            return [8, 0];
+        } else return [0, 0];
+    };
+    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return React.useMemo(
