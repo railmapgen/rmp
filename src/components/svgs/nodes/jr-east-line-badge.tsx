@@ -114,6 +114,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 dominantBaseline="middle"
                 fill={color[3] === '#000' ? 'white' : color[2]}
                 fontSize={num > 9 ? 7 : 8}
+                className="rmp-name__jreast_en"
             >
                 {num}
             </text>
@@ -126,6 +127,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 fontSize={FONT_SIZE_JA}
                 lineHeight={FONT_SIZE_JA}
                 grow="down"
+                className="rmp-name__jreast_ja"
             />
             <MultilineText
                 text={names[1].split('\\')}
@@ -137,6 +139,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 lineHeight={FONT_SIZE_EN}
                 baseOffset={0}
                 grow="down"
+                className="rmp-name__jreast_en"
             />
         </g>
     );

@@ -148,14 +148,14 @@ export const FONTS_CSS: {
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [StationType.JREastBasic]: {
-        className: ['.rmp-name__jreast'],
-        cssFont: ['100% Noto Sans JP'],
+        className: ['.rmp-name__jreast_ja'],
+        cssFont: ['100% Noto Sans JP Medium'],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [StationType.JREastImportant]: {
-        className: ['.rmp-name__jreast'],
-        cssFont: ['100% Noto Sans JP'],
+        className: ['.rmp-name__jreast_ja'],
+        cssFont: ['100% Noto Sans JP Medium'],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
@@ -169,6 +169,12 @@ export const FONTS_CSS: {
         className: ['.rmp-name__berlin'],
         cssFont: ['100% Roboto'],
         cssName: 'fonts_berlin',
+        baseUrl: import.meta.env.BASE_URL + 'styles/',
+    },
+    [MiscNodeType.JREastLineBadge]: {
+        className: ['.rmp-name__jreast_ja'],
+        cssFont: ['100% Noto Sans JP Medium'],
+        cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
 };
