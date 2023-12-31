@@ -21,6 +21,7 @@ import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/
 import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
 import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
 import { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
+import { JREastShinkansenAttributes } from '../components/svgs/lines/styles/jr-east-shinkansen';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -54,6 +55,7 @@ export enum LineStyleType {
     MRTSentosaExpress = 'mrt-sentosa-express',
     JREastSingleColor = 'jr-east-single-color',
     JREastSingleColorPattern = 'jr-east-single-color-pattern',
+    JREastShinkansen = 'jr-east-shinkansen',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -74,6 +76,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
     [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
     [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
+    [LineStyleType.JREastShinkansen]?: JREastShinkansenAttributes;
 }
 
 export const LineStylesWithColor = [
