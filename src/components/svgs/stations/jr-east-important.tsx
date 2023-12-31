@@ -74,7 +74,6 @@ const JREastImportantStation = (props: StationComponentProps) => {
         <g id={id} transform={`translate(${x}, ${y})`}>
             <g transform={`scale(${scale})`}>
                 <rect
-                    id={`stn_core_${id}`}
                     fill="black"
                     x={-iconWidth / 2}
                     y={-iconHeight / 2}
@@ -99,7 +98,6 @@ const JREastImportantStation = (props: StationComponentProps) => {
                 ) : (
                     <text
                         ref={textJAEl}
-                        x="1.25"
                         className="rmp-name__jreast_ja"
                         textAnchor="middle"
                         writingMode="vertical-rl"
@@ -112,6 +110,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                 )}
 
                 <rect
+                    id={`stn_core_${id}`}
                     fill="black"
                     fillOpacity="0"
                     x={-iconWidth / 2}
