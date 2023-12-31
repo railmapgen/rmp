@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "中文线路名称",
                     "nameEn": "英文线路名称",
+                    "nameJa": "日语线路名称",
                     "num": "线路号"
                 },
                 "virtual": {
@@ -104,6 +105,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT终点数字"
                 },
+                "jrEastLineBadge": {
+                  "displayName": "JR东日本线路标识",
+                  "crosshatchPatternFill": "用网状图案填充"
+                },
                 "facilities": {
                     "displayName": "设施",
                     "type": "类型"
@@ -125,6 +130,7 @@
                 "common": {
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
+                    "nameJa": "日语名称",
                     "nameOffsetX": "名称横向偏移",
                     "nameOffsetY": "名称纵向偏移",
                     "rotate": "车站旋转角度",
@@ -199,6 +205,20 @@
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT换乘车站"
+                },
+                "jrEastBasic": {
+                  "displayName": "JR东日本基本车站",
+                  "nameOffset": "名称偏移",
+                  "textOneLine": "名称在一行中",
+                  "textVertical": "垂直名称",
+                  "important": "重要车站",
+                  "lines": "换乘线偏移"
+                },
+                "jrEastImportant": {
+                  "displayName": "JR东日本重要车站",
+                  "textVertical": "垂直名称",
+                  "mostImportant": "最重要车站",
+                  "minLength": "车站的最小长度"
                 }
             },
             "lines": {

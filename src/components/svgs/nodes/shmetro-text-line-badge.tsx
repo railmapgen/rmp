@@ -1,8 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -78,51 +80,45 @@ const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
     color: [CityCode.Shanghai, 'pjl', '#B5B5B6', MonoColour.white],
 };
 
-const shmetroTextLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.nameZh',
-        value: (attrs?: ShmetroTextLineBadgeAttributes) => (attrs ?? defaultShmetroTextLineBadgeAttributes).names[0],
-        onChange: (val: string | number, attrs_: ShmetroTextLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroTextLineBadgeAttributes;
-            // set value
-            attrs.names[0] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.nameEn',
-        value: (attrs?: ShmetroTextLineBadgeAttributes) => (attrs ?? defaultShmetroTextLineBadgeAttributes).names[1],
-        onChange: (val: string | number, attrs_: ShmetroTextLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroTextLineBadgeAttributes;
-            // return if invalid
-            // set value
-            attrs.names[1] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.ShmetroTextLineBadge}
-                defaultTheme={defaultShmetroTextLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const shmetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={shmetroTextLineBadgeFields as RmgFieldsFieldDetail<ShmetroTextLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.nodes.common.nameZh'),
+            value: attrs.names[0],
+            onChange: val => {
+                attrs.names[0] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.nameEn'),
+            value: attrs.names[1],
+            onChange: val => {
+                attrs.names[1] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.ShmetroTextLineBadge}
+                    defaultTheme={defaultShmetroTextLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const shmetroTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -140,7 +136,7 @@ const shmetroTextLineBadge: Node<ShmetroTextLineBadgeAttributes> = {
     component: ShmetroTextLineBadge,
     icon: shmetroTextLineBadgeIcon,
     defaultAttrs: defaultShmetroTextLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: shmetroTextLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.shmetroTextLineBadge.displayName',
         tags: [],

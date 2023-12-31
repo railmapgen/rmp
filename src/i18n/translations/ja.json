@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "中国語の路線名",
                     "nameEn": "英語の路線名",
+                    "nameJa": "日本語の路線名",
                     "num": "路線番号"
                 },
                 "virtual": {
@@ -98,11 +99,15 @@
                     "displayName": "重慶鉄道交通テキスト路線徽章"
                 },
                 "shenzhenMetroNumLineBadge": {
-                    "displayName": "深セン地下鉄番号路線徽章",
+                    "displayName": "深セン地下鉄路線番号徽章",
                     "branch": "支線"
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "シンガポールMRTの目的地番号"
+                },
+                "jrEastLineBadge": {
+                  "displayName": "JR東日本路線番号徽章",
+                  "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
                 "facilities": {
                     "displayName": "施設",
@@ -138,8 +143,9 @@
                 "common": {
                     "nameZh": "中国語の駅名",
                     "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
+                    "nameJa": "日本語の駅名",
+                    "nameOffsetX": "駅名補正値X",
+                    "nameOffsetY": "駅名補正値Y",
                     "rotate": "アイコンの回転",
                     "lineCode": "路線番号",
                     "stationCode": "駅番号"
@@ -200,19 +206,33 @@
                 },
                 "MRTInt": {
                     "displayName": "シンガポールMRT乗り換え駅"
+                },
+                "jrEastBasic": {
+                  "displayName": "JR東日本基本駅",
+                  "nameOffset": "名前の補正値",
+                  "textOneLine": "1行での名前",
+                  "textVertical": "垂直の名前",
+                  "important": "重要な駅",
+                  "lines": "乗り換え線の補正値"
+                },
+                "jrEastImportant": {
+                  "displayName": "JR東日本重要駅",
+                  "textVertical": "垂直の名前",
+                  "mostImportant": "最も重要な駅",
+                  "minLength": "駅の最小長"
                 }
             },
             "lines": {
                 "reconcileId": "調整ID",
                 "common": {
-                    "offsetFrom": "オフセット（From）",
-                    "offsetTo": "オフセット（To）",
+                    "offsetFrom": "補正値（From）",
+                    "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
                     "roundCornerFactor": "角の丸め係数"
                 },
                 "simple": {
                     "displayName": "簡単な経路",
-                    "offset": "オフセット"
+                    "offset": "補正値"
                 },
                 "diagonal": {
                     "displayName": "135°対角経路"
@@ -379,7 +399,7 @@
                 "title": "手順",
                 "translate": {
                     "title": "節点の座標を変換",
-                    "content": "すべての節点のX座標とY座標に次のオフセットを追加する：",
+                    "content": "すべての節点のX座標とY座標に次の補正値を追加する：",
                     "x": "X軸",
                     "y": "Y軸"
                 },

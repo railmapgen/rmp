@@ -31,7 +31,7 @@ const NAME_SZ_BASIC = {
 
 const NAME_DY_SZ_BASIC = {
     top: {
-        lineHeight: 5,
+        lineHeight: NAME_SZ_BASIC.en.size,
         offset: 0 + NAME_SZ_BASIC.en.baseOffset + 3, // offset + baseOffset + iconRadius
         polarity: -1,
     },
@@ -41,7 +41,7 @@ const NAME_DY_SZ_BASIC = {
         polarity: 1,
     },
     bottom: {
-        lineHeight: 10,
+        lineHeight: NAME_SZ_BASIC.zh.size,
         offset: 0 + NAME_SZ_BASIC.zh.baseOffset + 3, // offset + baseOffset + iconRadius
         polarity: 1,
     },
