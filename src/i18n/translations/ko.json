@@ -130,6 +130,7 @@
                 "common": {
                     "nameZh": "한자 명칭",
                     "nameEn": "영문 명칭",
+                    "nameJa": "일본 명칭",
                     "nameOffsetX": "명칭 가로 이동",
                     "nameOffsetY": "명칭 세로 이동",
                     "rotate": "역회전각도",
@@ -204,6 +205,20 @@
                 },
                 "MRTInt": {
                     "displayName": "싱가포르MRT환승역"
+                },
+                "jrEastBasic": {
+                  "displayName": "JR 동일본 기본 역",
+                  "nameOffset": "이름 오프셋",
+                  "textOneLine": "한 줄로 표시된 이름",
+                  "textVertical": "수직 이름",
+                  "important": "중요한 역",
+                  "lines": "환승 노선 오프셋"
+                },
+                "jrEastImportant": {
+                  "displayName": "JR 동일본 중요 역",
+                  "textVertical": "수직 이름",
+                  "mostImportant": "가장 중요한 역",
+                  "minLength": "스테이션의 최소 길이"
                 }
             },
             "lines": {

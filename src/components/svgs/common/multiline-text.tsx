@@ -26,7 +26,7 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
         <g ref={ref}>
             {(grow === 'up' ? [...text].reverse() : text).map((t, i) => (
                 <text
-                    key={t}
+                    key={`${t}${i}`}
                     dy={(i * lineHeight + baseOffset) * (grow === 'up' ? -1 : 1) + offset}
                     dominantBaseline={dominantBaseline}
                     {...otherSvgTextProps}
