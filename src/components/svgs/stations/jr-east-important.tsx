@@ -153,9 +153,9 @@ export interface JREastImportantStationAttributes extends StationAttributes {
 }
 
 const defaultJREastImportantStationAttributes: JREastImportantStationAttributes = {
-    names: ['東京', 'Tokyo'],
-    nameOffsetX: 'right',
-    nameOffsetY: 'top',
+    names: ['東京', 'Tōkyō'],
+    nameOffsetX: 'left',
+    nameOffsetY: 'middle',
     textVertical: false,
     mostImportant: false,
     minLength: 0,

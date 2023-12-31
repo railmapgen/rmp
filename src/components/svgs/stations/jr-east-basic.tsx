@@ -248,9 +248,9 @@ export interface JREastBasicStationAttributes extends StationAttributes {
 }
 
 const defaultJREastBasicStationAttributes: JREastBasicStationAttributes = {
-    names: ['東京', 'Tokyo'],
-    nameOffsetX: 'middle',
-    nameOffsetY: 'top',
+    names: ['渋谷', 'Shibuya'],
+    nameOffsetX: 'left',
+    nameOffsetY: 'middle',
     rotate: 0,
     textOneLine: false,
     textVertical: false,
