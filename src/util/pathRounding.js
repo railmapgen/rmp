@@ -21,6 +21,9 @@
 // Special thanks to Yona Appletree who shared this amazing rounding snippets.
 // https://stackoverflow.com/a/27031874
 
+export const roundPathCorners = (pathString, radius, useFractionalRadius) =>
+    radius === 0 ? pathString : _roundPathCorners(pathString, radius, useFractionalRadius);
+
 /**
  * SVG Path rounding function. Takes an input path string and outputs a path
  * string where all line-line corners have been rounded. Only supports absolute
@@ -35,7 +38,7 @@
  *               the previous and next points.
  * @returns A new SVG path string with the rounding
  */
-export function roundPathCorners(pathString, radius, useFractionalRadius) {
+function _roundPathCorners(pathString, radius, useFractionalRadius) {
     function moveTowardsLength(movingPoint, targetPoint, amount) {
         var width = targetPoint.x - movingPoint.x;
         var height = targetPoint.y - movingPoint.y;

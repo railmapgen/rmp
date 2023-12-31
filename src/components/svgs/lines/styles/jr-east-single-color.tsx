@@ -12,9 +12,9 @@ import {
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
-const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorAttributes>) => {
+const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handleClick } = props;
-    const { color = defaultBjsubwaySingleColorAttributes.color } = styleAttrs ?? defaultBjsubwaySingleColorAttributes;
+    const { color = defaultJREastSingleColorAttributes.color } = styleAttrs ?? defaultJREastSingleColorAttributes;
 
     const onClick = React.useCallback(
         (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
@@ -23,14 +23,13 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
 
     return (
         <g id={id}>
-            <path d={path} fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" />
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
+            <path d={path} fill="none" stroke="black" strokeWidth="5.1" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth="4.9" />
             <path
                 d={path}
                 fill="none"
                 stroke="white"
-                strokeWidth="6"
-                strokeLinecap="round"
+                strokeWidth="5.1"
                 strokeOpacity="0"
                 cursor="pointer"
                 onClick={newLine ? undefined : onClick}
@@ -41,26 +40,26 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
 };
 
 /**
- * BjsubwaySingleColor specific props.
+ * JREastSingleColor specific props.
  */
-export interface BjsubwaySingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface JREastSingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
 
-const defaultBjsubwaySingleColorAttributes: BjsubwaySingleColorAttributes = {
-    color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
+const defaultJREastSingleColorAttributes: JREastSingleColorAttributes = {
+    color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
 };
 
-const bjsubwaySingleColorAttrsComponent = (props: AttrsProps<BjsubwaySingleColorAttributes>) => {
+const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField
-                    type={LineStyleType.BjsubwaySingleColor}
-                    defaultTheme={defaultBjsubwaySingleColorAttributes.color}
+                    type={LineStyleType.JREastSingleColor}
+                    defaultTheme={defaultJREastSingleColorAttributes.color}
                 />
             ),
         },
@@ -69,14 +68,14 @@ const bjsubwaySingleColorAttrsComponent = (props: AttrsProps<BjsubwaySingleColor
     return <RmgFields fields={fields} />;
 };
 
-const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
-    component: BjsubwaySingleColor,
-    defaultAttrs: defaultBjsubwaySingleColorAttributes,
-    attrsComponent: bjsubwaySingleColorAttrsComponent,
+const jrEastSingleColor: LineStyle<JREastSingleColorAttributes> = {
+    component: JREastSingleColor,
+    defaultAttrs: defaultJREastSingleColorAttributes,
+    attrsComponent: jrEastSingleColorAttrsComponent,
     metadata: {
-        displayName: 'panel.details.lines.bjsubwaySingleColor.displayName',
+        displayName: 'panel.details.lines.jrEastSingleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 
-export default bjsubwaySingleColor;
+export default jrEastSingleColor;

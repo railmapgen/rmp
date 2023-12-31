@@ -19,6 +19,7 @@ import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
+import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 
 /**
  * Given the coordinates of point A, B, and C,
@@ -47,111 +48,11 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     const [pathA, setPathA] = React.useState(path);
     const [pathB, setPathB] = React.useState(path);
     React.useEffect(() => {
-        // Note this is not reconcile ready meaning it only handles short path.
+        const _ = makeShortPathParallel(path, type, -1.25, 1.25);
+        if (!_) return;
 
-        // Find the start point of the original path.
-        const m = path
-            .match(/M\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-            ?.at(0)
-            ?.replace(/M\s*/, '')
-            .split(' ')
-            .map(n => Number(n));
-        // Find the end point of the original path.
-        const end = path
-            .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*$/)
-            ?.at(0)
-            ?.replace(/L\s*/, '')
-            .split(' ')
-            .map(n => Number(n));
-        if (!m || !end) return;
-
-        // Check whether it is a linear line and process it specifically.
-        if (
-            m[0] === end[0] ||
-            m[1] === end[1] ||
-            (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
-        ) {
-            const [x1, y1, x2, y2] = [m[0], m[1], end[0], end[1]];
-            const k = Math.abs((y2 - y1) / (x2 - x1));
-            if (k === Infinity) {
-                // Vertical line
-                setPathA(`M ${x1 + 1.25},${y1} L ${x2 + 1.25},${y2}`);
-                setPathB(`M ${x1 - 1.25},${y1} L ${x2 - 1.25},${y2}`);
-            } else if (k === 0) {
-                // Horizontal line
-                setPathA(`M ${x1},${y1 + 1.25} L ${x2},${y2 + 1.25}`);
-                setPathB(`M ${x1},${y1 - 1.25} L ${x2},${y2 - 1.25}`);
-            } else {
-                const kk = 1 / k;
-                const dx = 1.25 / Math.sqrt(kk * kk + 1);
-                const dy = dx * kk * -Math.sign((x2 - x1) * (y2 - y1));
-                setPathA(`M ${x1 + dx},${y1 + dy} L ${x2 + dx},${y2 + dy}`);
-                setPathB(`M ${x1 - dx},${y1 - dy} L ${x2 - dx},${y2 - dy}`);
-            }
-            return;
-        }
-
-        // Deal with complex Bezier curve.
-        // Find the start point of the Bezier curve.
-        const l = path
-            .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-            ?.at(0)
-            ?.replace(/L\s*/, '')
-            .split(' ')
-            .map(n => Number(n));
-        // Find the end point and control points of the Bezier curve.
-        const c = path
-            .match(
-                /C\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/g
-            )
-            ?.at(0)
-            ?.replace(/C\s*/, '')
-            .split(' ')
-            .map(n => Number(n));
-        if (!l || !c) return;
-        // Construct the Bezier curve in bezier-js.
-        const b = new Bezier([...l, ...c]);
-        // Make the parallel Bezier curves.
-        const [cA, cB] = [b.scale(-1.25), b.scale(1.25)];
-
-        // Connect the curve with the first half of the linear line.
-        // Find the start point of the new curve path.
-        const cStartingA = [cA.points.at(0)!.x, cA.points.at(0)!.y];
-        // Find the start point of the new curve path.
-        const cStartingB = [cB.points.at(0)!.x, cB.points.at(0)!.y];
-        if (!m) return;
-        // Get the start point of the new path.
-        const [mxA, myA] = find4thVertexOfAParallelogram(m[0], l[0], cStartingA[0], m[1], l[1], cStartingA[1]);
-        const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
-
-        // Connect the curve with the second half of the linear line.
-        // Find the end point of the new curve path.
-        const cEndingA = [cA.points.at(-1)!.x, cA.points.at(-1)!.y];
-        // Find the end point of the new curve path.
-        const cEndingB = [cB.points.at(-1)!.x, cB.points.at(-1)!.y];
-        // Find the end point of the original curve path.
-        const cEnding = [b.points.at(-1)!.x, b.points.at(-1)!.y];
-        if (!end) return;
-        // Get the end point of the new path.
-        const [endXA, endYA] = find4thVertexOfAParallelogram(
-            cEndingA[0],
-            cEnding[0],
-            end[0],
-            cEndingA[1],
-            cEnding[1],
-            end[1]
-        );
-        const [endXB, endYB] = find4thVertexOfAParallelogram(
-            cEndingB[0],
-            cEnding[0],
-            end[0],
-            cEndingB[1],
-            cEnding[1],
-            end[1]
-        );
-
-        setPathA(`M ${mxA},${myA} ${cA.toSVG().replace('M', 'L')} L ${endXA},${endYA}`);
-        setPathB(`M ${mxB},${myB} ${cB.toSVG().replace('M', 'L')} L ${endXB},${endYB}`);
+        setPathA(_[0]);
+        setPathB(_[1]);
     }, [path]);
 
     return (
