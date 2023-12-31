@@ -61,56 +61,53 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
     const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id}>
-                <g transform={`translate(${x - 6}, ${y - 6})`}>
-                    <circle cx="6" cy="6" r="6" stroke="black" strokeWidth="1" fill="white" />
-                    <path
-                        d={PATH_ARROW}
-                        fill={outOfStation ? '#898989' : 'black'}
-                        stroke={outOfStation ? '#898989' : 'black'}
-                        strokeWidth="0.533618"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                    <circle
-                        id={`stn_core_${id}`}
-                        cx="6"
-                        cy="6"
-                        r="6"
-                        stroke="black"
-                        strokeWidth="1"
-                        strokeOpacity="0"
-                        fill="white"
-                        fillOpacity="0"
-                        onPointerDown={onPointerDown}
-                        onPointerMove={onPointerMove}
-                        onPointerUp={onPointerUp}
-                        style={{ cursor: 'move' }}
-                    />
-                </g>
-                <g transform={`translate(${x + textX}, ${y + textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\\')}
-                        fontSize={LINE_HEIGHT.zh}
-                        lineHeight={LINE_HEIGHT.zh}
-                        grow="up"
-                        className="rmp-name__zh"
-                        baseOffset={1}
-                    />
-                    <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={LINE_HEIGHT.en}
-                        lineHeight={LINE_HEIGHT.en}
-                        grow="down"
-                        className="rmp-name__en"
-                        baseOffset={1}
-                    />
-                </g>
+    return (
+        <g id={id}>
+            <g transform={`translate(${x - 6}, ${y - 6})`}>
+                <circle cx="6" cy="6" r="6" stroke="black" strokeWidth="1" fill="white" />
+                <path
+                    d={PATH_ARROW}
+                    fill={outOfStation ? '#898989' : 'black'}
+                    stroke={outOfStation ? '#898989' : 'black'}
+                    strokeWidth="0.533618"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+                <circle
+                    id={`stn_core_${id}`}
+                    cx="6"
+                    cy="6"
+                    r="6"
+                    stroke="black"
+                    strokeWidth="1"
+                    strokeOpacity="0"
+                    fill="white"
+                    fillOpacity="0"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                />
             </g>
-        ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, outOfStation, onPointerDown, onPointerMove, onPointerUp]
+            <g transform={`translate(${x + textX}, ${y + textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\\')}
+                    fontSize={LINE_HEIGHT.zh}
+                    lineHeight={LINE_HEIGHT.zh}
+                    grow="up"
+                    className="rmp-name__zh"
+                    baseOffset={1}
+                />
+                <MultilineText
+                    text={names[1].split('\\')}
+                    fontSize={LINE_HEIGHT.en}
+                    lineHeight={LINE_HEIGHT.en}
+                    grow="down"
+                    className="rmp-name__en"
+                    baseOffset={1}
+                />
+            </g>
+        </g>
     );
 };
 

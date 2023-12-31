@@ -66,52 +66,49 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
     const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <circle
-                    id={`stn_core_${id}`}
-                    r="4"
-                    stroke="black"
-                    strokeWidth="0.5"
-                    strokeDasharray={open ? undefined : '1.5'}
-                    fill="white"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <circle
+                id={`stn_core_${id}`}
+                r="4"
+                stroke="black"
+                strokeWidth="0.5"
+                strokeDasharray={open ? undefined : '1.5'}
+                fill="white"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\\')}
+                    fontSize={LINE_HEIGHT.zh}
+                    lineHeight={LINE_HEIGHT.zh}
+                    grow="up"
+                    className="rmp-name__zh"
+                    baseOffset={1}
                 />
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\\')}
-                        fontSize={LINE_HEIGHT.zh}
-                        lineHeight={LINE_HEIGHT.zh}
-                        grow="up"
-                        className="rmp-name__zh"
-                        baseOffset={1}
-                    />
-                    <MultilineText
-                        text={names[1].split('\\')}
+                <MultilineText
+                    text={names[1].split('\\')}
+                    fontSize={LINE_HEIGHT.en}
+                    lineHeight={LINE_HEIGHT.en}
+                    grow="down"
+                    className="rmp-name__en"
+                    baseOffset={1}
+                />
+                {!open && (
+                    <text
+                        dy={names[1].split('\\').length * LINE_HEIGHT.en + 2}
                         fontSize={LINE_HEIGHT.en}
-                        lineHeight={LINE_HEIGHT.en}
-                        grow="down"
-                        className="rmp-name__en"
-                        baseOffset={1}
-                    />
-                    {!open && (
-                        <text
-                            dy={names[1].split('\\').length * LINE_HEIGHT.en + 2}
-                            fontSize={LINE_HEIGHT.en}
-                            dominantBaseline="hanging"
-                            className="rmp-name__zh"
-                        >
-                            (暂缓开通)
-                        </text>
-                    )}
-                </g>
+                        dominantBaseline="hanging"
+                        className="rmp-name__zh"
+                    >
+                        (暂缓开通)
+                    </text>
+                )}
             </g>
-        ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, open, onPointerDown, onPointerMove, onPointerUp]
+        </g>
     );
 };
 
