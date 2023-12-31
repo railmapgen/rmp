@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱",
+                    "nameJa": "日語線路名稱",
                     "num": "線路號"
                 },
                 "virtual": {
@@ -103,6 +104,10 @@
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT終點數字"
+                },
+                "jrEastLineBadge": {
+                  "displayName": "JR東日本線路標識",
+                  "crosshatchPatternFill": "用網狀圖案填充"
                 },
                 "facilities": {
                     "displayName": "設施",

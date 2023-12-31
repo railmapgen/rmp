@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "한자 노선명칭",
                     "nameEn": "영문 노선명칭",
+                    "nameJa": "일본 노선명칭",
                     "num": "노선 번호"
                 },
                 "virtual": {
@@ -103,6 +104,10 @@
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "싱가포르 MRT 목적지 번호"
+                },
+                "jrEastLineBadge": {
+                  "displayName": "JR 동일본 라인 배지",
+                  "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
                 },
                 "facilities": {
                     "displayName": "시설",
