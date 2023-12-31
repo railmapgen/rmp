@@ -153,6 +153,12 @@ export const FONTS_CSS: {
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
+    [StationType.JREastImportant]: {
+        className: ['.rmp-name__jreast'],
+        cssFont: ['100% Noto Sans JP'],
+        cssName: 'fonts_jreast',
+        baseUrl: import.meta.env.BASE_URL + 'styles/',
+    },
     [MiscNodeType.BerlinSBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
         cssFont: ['100% Roboto'],

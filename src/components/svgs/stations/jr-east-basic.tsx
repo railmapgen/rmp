@@ -179,7 +179,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         lineHeight={NAME_SZ_BASIC.ja.size}
                         grow={textGrow.ja}
                         baseOffset={textBaseOffset.ja}
-                        className="rmp-name__jreast"
+                        className="rmp-name__jreast_ja"
                         fill={important ? 'white' : 'black'}
                     />
                     <MultilineText
@@ -190,7 +190,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         lineHeight={NAME_SZ_BASIC.en.size}
                         grow={textGrow.en}
                         baseOffset={textBaseOffset.en}
-                        className="rmp-name__en"
+                        className="rmp-name__jreast_en"
                     />
                 </g>
             ) : (
@@ -213,7 +213,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             lineWidth={NAME_SZ_BASIC.ja.size}
                             grow="bidirectional"
                             baseOffset={0}
-                            className="rmp-name__jreast"
+                            className="rmp-name__jreast_ja"
                             fill={important ? 'white' : 'black'}
                         />
                     </g>
@@ -225,7 +225,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             lineHeight={NAME_SZ_BASIC.en.size}
                             grow={nameOffsetY === 'top' ? 'down' : 'up'}
                             baseOffset={textVerticalENBaseOffset}
-                            className="rmp-name__en"
+                            className="rmp-name__jreast_en"
                         />
                     </g>
                 </>

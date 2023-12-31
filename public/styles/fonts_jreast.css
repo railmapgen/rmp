@@ -7,6 +7,10 @@
     unicode-range: U+4E00–U+9FBF U+3040–U+309F U+30A0–U+30FF;
 }
 
-.rmp-name__jreast {
+.rmp-name__jreast_ja {
     font-family: 'Noto Sans JP Medium', sans-serif;
+}
+
+.rmp-name__jreast_en {
+    font-family: helvetica, Arial, sans-serif;
 }

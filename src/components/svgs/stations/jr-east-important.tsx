@@ -88,7 +88,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     <text
                         ref={textJAEl}
                         y="-0.525"
-                        className="rmp-name__jreast"
+                        className="rmp-name__jreast_ja"
                         textAnchor="middle"
                         fontSize={NAME_SZ_BASIC.ja.size}
                         fill="white"
@@ -100,7 +100,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     <text
                         ref={textJAEl}
                         x="1.25"
-                        className="rmp-name__jreast"
+                        className="rmp-name__jreast_ja"
                         textAnchor="middle"
                         writingMode="vertical-rl"
                         fontSize={NAME_SZ_BASIC.ja.size}
@@ -134,7 +134,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     lineHeight={NAME_SZ_BASIC.en.size}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
                     baseOffset={0}
-                    className="rmp-name__en"
+                    className="rmp-name__jreast_en"
                 />
             </g>
         </g>
