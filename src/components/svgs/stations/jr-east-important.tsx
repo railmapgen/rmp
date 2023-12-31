@@ -64,9 +64,9 @@ const JREastImportantStation = (props: StationComponentProps) => {
     const iconWidth = textVertical ? NAME_SZ_BASIC.ja.size + ICON_SAFE_D : iconLength;
     const iconHeight = textVertical ? iconLength : NAME_SZ_BASIC.ja.size + ICON_SAFE_D;
 
-    const textENDX = nameOffsetY !== 'middle' ? 0 : nameOffsetX === 'left' ? -iconWidth / 2 - 1 : iconWidth / 2 + 1;
-    const textENDY = nameOffsetX !== 'middle' ? 0 : nameOffsetY === 'top' ? -iconHeight / 2 - 1 : iconHeight / 2 + 1;
-    const textENAnchor = nameOffsetY !== 'middle' ? 'middle' : nameOffsetX === 'left' ? 'end' : 'start';
+    const textENDX = { left: -iconWidth / 2 - 1, middle: 0, right: iconWidth / 2 + 1 }[nameOffsetX];
+    const textENDY = { top: -iconHeight / 2 - 1, middle: 0, bottom: iconHeight / 2 + 1 }[nameOffsetY];
+    const textENAnchor = { left: 'end', middle: 'middle', right: 'start' }[nameOffsetX];
 
     const scale = mostImportant ? 1.5 : 1;
 
@@ -153,7 +153,7 @@ export interface JREastImportantStationAttributes extends StationAttributes {
 }
 
 const defaultJREastImportantStationAttributes: JREastImportantStationAttributes = {
-    ...defaultStationAttributes,
+    names: ['東京', 'Tokyo'],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     textVertical: false,
