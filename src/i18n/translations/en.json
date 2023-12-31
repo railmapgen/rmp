@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English",
+                    "nameJa": "Line name in Japanese",
                     "num": "Line Number"
                 },
                 "virtual": {
@@ -103,6 +104,10 @@
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "Singapore MRT Destination Numbers"
+                },
+                "jrEastLineBadge": {
+                    "displayName": "JR East line badge",
+                    "crosshatchPatternFill": "Fill with crosshatch pattern"
                 },
                 "facilities": {
                     "displayName": "Facilities",
