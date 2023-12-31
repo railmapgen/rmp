@@ -125,6 +125,7 @@
                 "common": {
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
+                    "nameJa": "日語名稱",
                     "nameOffsetX": "名稱橫向偏移",
                     "nameOffsetY": "名稱縱向偏移",
                     "rotate": "車站旋轉角度",
@@ -199,6 +200,20 @@
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT換乘車站"
+                },
+                "jrEastBasic": {
+                  "displayName": "JR東日本基本車站",
+                  "nameOffset": "名稱偏移",
+                  "textOneLine": "名稱在一行中",
+                  "textVertical": "垂直名稱",
+                  "important": "重要車站",
+                  "lines": "轉乘線偏移"
+                },
+                "jrEastImportant": {
+                  "displayName": "JR東日本重要車站",
+                  "textVertical": "垂直名稱",
+                  "mostImportant": "最重要車站",
+                  "minLength": "車站的最小長度"
                 }
             },
             "lines": {
