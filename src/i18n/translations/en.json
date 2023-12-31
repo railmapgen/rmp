@@ -271,6 +271,12 @@
                 },
                 "mrtSentosaExpress": {
                     "displayName": "Singapore MRT Sentosa Express style"
+                },
+                "jrEastSingleColor": {
+                    "displayName": "JR East single color style"
+                },
+                "jrEastSingleColorPattern": {
+                    "displayName": "JR East single color filled with crosshatch pattern style"
                 }
             },
             "edge": {},

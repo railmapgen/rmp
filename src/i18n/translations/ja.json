@@ -269,6 +269,12 @@
                 },
                 "mrtSentosaExpress": {
                     "displayName": "シンガポール MRT セントーサ・エクスプレス風格"
+                },
+                "jrEastSingleColor": {
+                    "displayName": "JR東日本単色風格"
+                },
+                "jrEastSingleColorPattern": {
+                    "displayName": "JR東日本単色網目模様風格"
                 }
             },
             "edges": {},

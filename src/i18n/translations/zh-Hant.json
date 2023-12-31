@@ -199,6 +199,12 @@
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT換乘車站"
+                },
+                "jrEastSingleColor": {
+                    "displayName": "JR東日本單色風格"
+                },
+                "jrEastSingleColorPattern": {
+                    "displayName": "JR東日本單色網狀圖案風格"
                 }
             },
             "lines": {
