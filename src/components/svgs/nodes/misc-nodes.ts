@@ -15,6 +15,7 @@ import chongqingRTTextLineBadge from './chongqingrt-text-line-badge';
 import shenzhenMetroNumLineBadge from './shenzhenmetro-num-line-badge';
 import mrtDestinationNumbers from './mrt-dest-num';
 import jrEastLineBadge from './jr-east-line-badge';
+import polygon from './polygon';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -33,6 +34,7 @@ const miscNodes = {
     [MiscNodeType.JREastLineBadge]: jrEastLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
+    [MiscNodeType.Polygon]: polygon,
 };
 
 export default miscNodes;

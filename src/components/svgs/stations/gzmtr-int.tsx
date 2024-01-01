@@ -15,6 +15,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const CODE_POS = [

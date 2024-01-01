@@ -12,9 +12,10 @@ import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chon
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
 import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
 import { MRTDestinationNumbersAttributes } from '../components/svgs/nodes/mrt-dest-num';
+import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
-import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
+import { PolygonAttributes } from '../components/svgs/nodes/polygon';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -33,6 +34,7 @@ export enum MiscNodeType {
     JREastLineBadge = 'jr-east-line-badge',
     Facilities = 'facilities',
     Text = 'text',
+    Polygon = 'polygon',
 }
 
 export interface MiscNodeAttributes {
@@ -52,6 +54,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.JREastLineBadge]?: JREastLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
+    [MiscNodeType.Polygon]?: PolygonAttributes;
 }
 
 export interface NodeComponentProps<T> {

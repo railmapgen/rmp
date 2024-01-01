@@ -1,3 +1,4 @@
+import { RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
