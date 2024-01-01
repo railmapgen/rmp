@@ -75,7 +75,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 dispatch(setRefreshNodes());
                                 dispatch(saveGraph(graph.current.export()));
                             },
-                        } as RmgFieldsField)
+                        }) as RmgFieldsField
                 ),
             // @ts-expect-error
             ...props.fields.filter(field => field.type === 'custom').map(field => ({ ...field, label: t(field.label) }))
@@ -109,14 +109,13 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                             dispatch(setRefreshEdges());
                             dispatch(saveGraph(graph.current.export()));
                         },
-                    } as RmgFieldsField)
+                    }) as RmgFieldsField
             )
         );
     }
     if (selected.size === 1 && graph.current.hasEdge(selectedFirst) && props.type === 'style') {
         const style = graph.current.getEdgeAttribute(selectedFirst, 'style');
         const styleAttrs = graph.current.getEdgeAttribute(selectedFirst, style);
-        console.log(props.fields.map(x => x.label).map(x => [x, t(x)]));
         fields.push(
             ...props.fields
                 .filter(field => field.type !== 'custom')
@@ -143,7 +142,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 dispatch(setRefreshEdges());
                                 dispatch(saveGraph(graph.current.export()));
                             },
-                        } as RmgFieldsField)
+                        }) as RmgFieldsField
                 ),
             // @ts-expect-error
             ...props.fields.filter(field => field.type === 'custom').map(field => ({ ...field, label: t(field.label) }))

@@ -1,19 +1,20 @@
-import { BerlinUBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-u-bahn-line-badge';
-import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-s-bahn-line-badge';
-import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
-import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
-import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
-import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge';
+import { AttrsProps, MiscNodeId } from './constants';
+import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
-import { TextAttributes } from '../components/svgs/nodes/text';
-import { VirtualAttributes } from '../components/svgs/nodes/virtual';
-import { AttrsProps, MiscNodeId } from './constants';
+import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge';
+import { BjsubwayNumLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-num-line-badge';
+import { BjsubwayTextLineBadgeAttributes } from '../components/svgs/nodes/bjsubway-text-line-badge';
 import { SuzhouRTNumLineBadgeAttributes } from '../components/svgs/nodes/suzhourt-num-line-badge';
+import { BerlinUBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-u-bahn-line-badge';
+import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-s-bahn-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
 import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
-import { MRTBasicStationAttributes } from '../components/svgs/stations/mrt-basic';
+import { MRTDestinationNumbersAttributes } from '../components/svgs/nodes/mrt-dest-num';
+import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
+import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
+import { TextAttributes } from '../components/svgs/nodes/text';
 import { PolygonAttributes } from '../components/svgs/nodes/polygon';
 
 export enum MiscNodeType {
@@ -30,6 +31,7 @@ export enum MiscNodeType {
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
     ShenzhenMetroNumLineBadge = 'shenzhen-metro-num-line-badge',
     MRTDestinationNumbers = 'mrt-num-line-badge',
+    JREastLineBadge = 'jr-east-line-badge',
     Facilities = 'facilities',
     Text = 'text',
     Polygon = 'polygon',
@@ -48,7 +50,8 @@ export interface MiscNodeAttributes {
     [MiscNodeType.ChongqingRTNumLineBadge]?: ChongqingRTNumLineBadgeAttributes;
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
     [MiscNodeType.ShenzhenMetroNumLineBadge]?: ShenzhenMetroNumLineBadgeAttributes;
-    [MiscNodeType.MRTDestinationNumbers]?: MRTBasicStationAttributes;
+    [MiscNodeType.MRTDestinationNumbers]?: MRTDestinationNumbersAttributes;
+    [MiscNodeType.JREastLineBadge]?: JREastLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.Polygon]?: PolygonAttributes;

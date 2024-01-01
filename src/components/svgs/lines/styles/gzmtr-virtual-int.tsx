@@ -1,6 +1,5 @@
 import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { RmgFieldsFieldSpecificAttributes } from '../../../panels/details/rmg-field-specific-attrs';
 
 const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttributes>) => {
     const { id, path, handleClick } = props;
@@ -14,7 +13,7 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
         <path
             d={path}
             fill="none"
-            stroke="black"
+            stroke="#565656"
             strokeWidth="3"
             strokeDasharray="3"
             cursor="pointer"
@@ -24,13 +23,13 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
 };
 
 /**
- * GzmtrVirtualInt specific props.
+ * GzmtrVirtualInt has no specific props.
  */
 export interface GzmtrVirtualIntAttributes extends LinePathAttributes {}
 
 const defaultGzmtrVirtualIntAttributes: GzmtrVirtualIntAttributes = {};
 
-const attrsComponent = () => <RmgFieldsFieldSpecificAttributes fields={[]} type="style" />;
+const attrsComponent = () => null;
 
 const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
     component: GzmtrVirtualInt,

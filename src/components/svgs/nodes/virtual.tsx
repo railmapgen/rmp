@@ -18,30 +18,24 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})rotate(45)`}>
-                <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
-                <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />
-                <circle
-                    id={`virtual_circle_${id}`}
-                    r={5}
-                    stroke="black"
-                    fill="white"
-                    fillOpacity="0"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})rotate(45)`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
+            <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />
+            <circle id={`virtual_circle_${id}`} r={5} stroke="black" fill="white" fillOpacity="0" />
+        </g>
     );
 };
 
 /**
- * Virtual specific props.
+ * Virtual has no specific props.
  */
 export interface VirtualAttributes {}
 

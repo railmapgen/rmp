@@ -41,22 +41,22 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x - bBox.width / 2}, ${y - bBox.height / 2})`}>
-                <image
-                    ref={imgEl}
-                    href={import.meta.env.BASE_URL + `images/facilities/${type}.svg`}
-                    // eslint-disable-next-line react/no-unknown-property
-                    onLoad={() => setBBox(imgEl.current!.getBBox())}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, type, bBox, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x - bBox.width / 2}, ${y - bBox.height / 2})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <image
+                ref={imgEl}
+                href={import.meta.env.BASE_URL + `images/facilities/${type}.svg`}
+                // eslint-disable-next-line react/no-unknown-property
+                onLoad={() => setBBox(imgEl.current!.getBBox())}
+            />
+        </g>
     );
 };
 

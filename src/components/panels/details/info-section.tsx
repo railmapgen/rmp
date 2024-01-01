@@ -49,8 +49,8 @@ export default function InfoSection() {
                 ? graph.current.hasNode(selectedFirst)
                     ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
                     : graph.current.hasEdge(selectedFirst)
-                    ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
-                    : 0
+                      ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
+                      : 0
                 : 0,
             options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
             onChange: val => handleZIndexChange(Number(val)),

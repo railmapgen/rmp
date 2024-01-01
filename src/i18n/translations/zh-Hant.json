@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "中文線路名稱",
                     "nameEn": "英文線路名稱",
+                    "nameJa": "日語線路名稱",
                     "num": "線路號"
                 },
                 "virtual": {
@@ -72,7 +73,8 @@
                     "displayName": "上海地鐵文字線路標識"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "廣州地鐵線路標識"
+                    "displayName": "廣州地鐵線路標識",
+                    "tram": "輕軌"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "北京地鐵數字線路標識"
@@ -103,6 +105,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT終點數字"
                 },
+                "jrEastLineBadge": {
+                  "displayName": "JR東日本線路標識",
+                  "crosshatchPatternFill": "用網狀圖案填充"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"
@@ -124,6 +130,7 @@
                 "common": {
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
+                    "nameJa": "日語名稱",
                     "nameOffsetX": "名稱橫向偏移",
                     "nameOffsetY": "名稱縱向偏移",
                     "rotate": "車站旋轉角度",
@@ -166,8 +173,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "廣州地鐵換乘車站",
-                    "lineCode": "路綫編碼",
-                    "stationCode": "車站編碼",
                     "open": "是否開通",
                     "secondaryNameZh": "中文第二名稱",
                     "secondaryNameEn": "英文第二名稱"
@@ -200,6 +205,20 @@
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT換乘車站"
+                },
+                "jrEastBasic": {
+                  "displayName": "JR東日本基本車站",
+                  "nameOffset": "名稱偏移",
+                  "textOneLine": "名稱在一行中",
+                  "textVertical": "垂直名稱",
+                  "important": "重要車站",
+                  "lines": "轉乘線偏移"
+                },
+                "jrEastImportant": {
+                  "displayName": "JR東日本重要車站",
+                  "textVertical": "垂直名稱",
+                  "mostImportant": "最重要車站",
+                  "minLength": "車站的最小長度"
                 }
             },
             "lines": {
@@ -269,6 +288,12 @@
                 },
                 "mrtSentosaExpress": {
                     "displayName": "新加坡MRT聖淘沙捷運樣式"
+                },
+                "jrEastSingleColor": {
+                    "displayName": "JR東日本單色風格"
+                },
+                "jrEastSingleColorPattern": {
+                    "displayName": "JR東日本單色網狀圖案風格"
                 }
             },
             "edges": {},
@@ -286,7 +311,6 @@
         "open": {
             "new": "新項目",
             "config": "讀入項目",
-            "configRMG": "從RMG存檔中讀入",
             "projectRMG": "從RMG專案中讀入",
             "invalidType": "無效的文件類型！僅接受JSON格式的文件。",
             "unknownError": "解析上傳文件時發生未知錯誤！請重試。",

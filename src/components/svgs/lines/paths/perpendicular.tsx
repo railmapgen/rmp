@@ -27,7 +27,7 @@ const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttribute
     const y = startFrom === 'from' ? y1 + dy1 : y2 + dy2;
 
     const path = roundPathCorners(
-        `M ${x1 + dx1},${y1 + dy1} L ${x},${y} L ${x2 + dx2},${y2 + dy2}`,
+        `M ${x1 + dx1} ${y1 + dy1} L ${x} ${y} L ${x2 + dx2} ${y2 + dy2}`,
         roundCornerFactor,
         false
     ) as `M ${string}`;

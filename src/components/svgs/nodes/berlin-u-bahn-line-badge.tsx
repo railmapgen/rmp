@@ -24,36 +24,28 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinUBahnLineBadgeAttr
 
     const fgColor = color[3];
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width="25" height="15" />
-                <text
-                    className="rmp-name__berlin"
-                    textAnchor="middle"
-                    x="12.5"
-                    y="12.5"
-                    fill={fgColor}
-                    fontSize="14"
-                    letterSpacing="1"
-                >
-                    U{num}
-                </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width="25"
-                    height="15"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width="25" height="15" />
+            <text
+                className="rmp-name__berlin"
+                textAnchor="middle"
+                x="12.5"
+                y="12.5"
+                fill={fgColor}
+                fontSize="14"
+                letterSpacing="1"
+            >
+                U{num}
+            </text>
+        </g>
     );
 };
 

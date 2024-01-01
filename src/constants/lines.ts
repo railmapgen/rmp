@@ -6,19 +6,14 @@ import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
 import { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
 import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
-import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
-import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
-import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
 import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
-import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
-import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
-import { RiverAttributes } from '../components/svgs/lines/styles/river';
-import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
-import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
-import { AttrsProps, LineId } from './constants';
+import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
+import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
+import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
+import { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -50,6 +45,8 @@ export enum LineStyleType {
     MTRPaidArea = 'mtr-paid-area',
     MRTUnderConstruction = 'mrt-under-constr',
     MRTSentosaExpress = 'mrt-sentosa-express',
+    JREastSingleColor = 'jr-east-single-color',
+    JREastSingleColorPattern = 'jr-east-single-color-pattern',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -68,6 +65,8 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MTRPaidArea]?: MTRPaidAreaAttributes;
     [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
+    [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
+    [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -103,7 +102,7 @@ export interface LineWrapperComponentProps {
 }
 
 export interface LineStyleComponentProps<
-    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
+    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>,
 > {
     id: LineId;
     /**

@@ -35,37 +35,34 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
     const enX = isBranch ? 11 : NUM_WIDTH + (num > 9 ? 7 : 3.5);
     const numX = isBranch ? 6 : NUM_WIDTH / 2 + 4;
 
-    return React.useMemo(
-        () => (
-            <g
-                id={id}
-                transform={`translate(${x}, ${y})`}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
+            <text
+                className="rmp-name__zh"
+                textAnchor="middle"
+                x={numX}
+                y="13.5"
+                fill={fgColor}
+                fontSize="15"
+                letterSpacing="-1"
             >
-                <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
-                <text
-                    className="rmp-name__zh"
-                    textAnchor="middle"
-                    x={numX}
-                    y="13.5"
-                    fill={fgColor}
-                    fontSize="15"
-                    letterSpacing="-1"
-                >
-                    {num}
-                </text>
-                <text className="rmp-name__zh" x={chX} y="9.5" fontSize="6" fill={fgColor} letterSpacing={chLetSp}>
-                    号线{isBranch ? '支线' : ''}
-                </text>
-                <text className="rmp-name__en" x={enX} y="13.5" fontSize="3" fill={fgColor}>
-                    {isBranch ? 'Branch' : ''} Line {num}
-                </text>
-            </g>
-        ),
-        [id, x, y, num, ...color, isBranch, onPointerDown, onPointerMove, onPointerUp]
+                {num}
+            </text>
+            <text className="rmp-name__zh" x={chX} y="9.5" fontSize="6" fill={fgColor} letterSpacing={chLetSp}>
+                号线{isBranch ? '支线' : ''}
+            </text>
+            <text className="rmp-name__en" x={enX} y="13.5" fontSize="3" fill={fgColor}>
+                {isBranch ? 'Branch' : ''} Line {num}
+            </text>
+        </g>
     );
 };
 

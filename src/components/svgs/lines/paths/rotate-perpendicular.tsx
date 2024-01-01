@@ -51,7 +51,7 @@ const generateRotatePerpendicularPath: GeneratePathFunction<RotatePerpendicularP
     const [x, y] = [rx * Math.SQRT1_2 - ry * Math.SQRT1_2, rx * Math.SQRT1_2 + ry * Math.SQRT1_2];
 
     const path = roundPathCorners(
-        `M ${x1offset},${y1offset} L ${x},${y} L ${x2offset},${y2offset}`,
+        `M ${x1offset} ${y1offset} L ${x} ${y} L ${x2offset} ${y2offset}`,
         roundCornerFactor,
         false
     ) as `M ${string}`;

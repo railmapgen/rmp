@@ -29,51 +29,41 @@ const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineB
 
     const fgColor = color[3];
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
-                <text
-                    className="rmp-name__zh"
-                    textAnchor="middle"
-                    x="10"
-                    y="10.5"
-                    fill={fgColor}
-                    fontSize="6"
-                    letterSpacing="0"
-                >
-                    {names[0]}
-                </text>
-                <MultilineText
-                    ref={textLineEl}
-                    text={names[1].split('\n')}
-                    className="rmp-name__en"
-                    textAnchor="middle"
-                    x="10"
-                    y="9.25"
-                    fill={fgColor}
-                    fontSize="2.5"
-                    letterSpacing="0"
-                    lineHeight={2.25}
-                    grow={'down'}
-                />
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width="20"
-                    height="20"
-                    rx="10"
-                    ry="10"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, ...names, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
+            <text
+                className="rmp-name__zh"
+                textAnchor="middle"
+                x="10"
+                y="10.5"
+                fill={fgColor}
+                fontSize="6"
+                letterSpacing="0"
+            >
+                {names[0]}
+            </text>
+            <MultilineText
+                ref={textLineEl}
+                text={names[1].split('\n')}
+                className="rmp-name__en"
+                textAnchor="middle"
+                x="10"
+                y="9.25"
+                fill={fgColor}
+                fontSize="2.5"
+                letterSpacing="0"
+                lineHeight={2.25}
+                grow={'down'}
+            />
+        </g>
     );
 };
 

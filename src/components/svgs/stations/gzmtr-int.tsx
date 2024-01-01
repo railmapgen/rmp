@@ -41,6 +41,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         transfer = defaultGzmtrIntStationAttributes.transfer,
         open = defaultGzmtrIntStationAttributes.open,
         secondaryNames = defaultGzmtrIntStationAttributes.secondaryNames,
+        tram = defaultGzmtrIntStationAttributes.tram,
     } = attrs[StationType.GzmtrInt] ?? defaultGzmtrIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -69,12 +70,12 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         nameOffsetX === 'left'
             ? 'end'
             : nameOffsetX === 'right'
-            ? 'start'
-            : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
-            ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
-              'end'
-            : // Default to middle when nameOffsetX === 'middle'.
-              'middle';
+              ? 'start'
+              : !open && nameOffsetX === 'middle' && secondaryNames.join('') === ''
+                ? // Special hook to align station name and (Under Construction) when there are no secondaryNames.
+                  'end'
+                : // Default to middle when nameOffsetX === 'middle'.
+                  'middle';
 
     const transferAll = transfer.flat().slice(0, 3); // slice to make sure at most 3 transfers
     const arrowColor = [
@@ -96,190 +97,165 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     const underConstructionDx =
         (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) * (nameOffsetX === 'left' ? -1 : 1);
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                {transferAll
-                    .map(info => info[2])
-                    .filter((color, i, arr) => arr.indexOf(color) === i)
-                    .map(color => (
-                        <marker
-                            key={`gzmtr_int_arrow_${color}`}
-                            id={`gzmtr_int_arrow_${color}`}
-                            markerWidth="5"
-                            markerHeight="5"
-                            refX="1"
-                            refY="1.25"
-                            orient="auto"
-                        >
-                            <polygon points="0,0 0,3 2,1.5" fill={color} />
-                        </marker>
-                    ))}
-                {transferAll.length <= 2 && (
-                    <g>
-                        {/* A simple mask to hide all underlying lines. */}
-                        <path d="M -18,-12 A 24 24 0 0 1 18,-12 L 18,12 A 24 24 0 0 1 -18,12 Z" fill={bgColor} />
-                        <path
-                            d="M -18,-12 A 24 24 0 0 1 18,-12"
-                            fill="none"
-                            stroke={arrowColor[transferAll.length][0]}
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                        />
-                        <path
-                            d="M 18,12 A 24 24 0 0 1 -18,12"
-                            fill="none"
-                            stroke={arrowColor[transferAll.length][1]}
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                        />
-                    </g>
-                )}
-                {transferAll.length >= 3 && (
-                    <g>
-                        <circle r="22.395" fill={bgColor} />
-                        <path
-                            d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
-                            fill="none"
-                            stroke={arrowColor[transferAll.length][0]}
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                        />
-                        <path
-                            d="M 0,-22.395 A 22.395 22.395 0 0 1 19.3948,11.1976"
-                            fill="none"
-                            stroke={arrowColor[transferAll.length][1]}
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                        />
-                        <path
-                            d="M 19.3948,11.1976 A 22.395 22.395 0 0 1 -19.3948,11.1976"
-                            fill="none"
-                            stroke={arrowColor[transferAll.length][2]}
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][2]})`}
-                        />
-                        {/* Add another 2 transparent arrows with marker to cover bottom arrows */}
-                        <path
-                            d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
-                            fill="none"
-                            strokeOpacity="0"
-                            stroke="white"
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                        />
-                        <path
-                            d="M 0,-22.395 A 22.395 22.395 0 0 1 19.3948,11.1976"
-                            fill="none"
-                            strokeOpacity="0"
-                            stroke="white"
-                            strokeWidth="5"
-                            markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                        />
-                    </g>
-                )}
-
-                {transfer[0]?.map((info, i, arr) => (
-                    <g
-                        key={`gzmtr_int_${id}_stn_${i}`}
-                        transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})scale(0.75)`}
+    return (
+        <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
+            {transferAll
+                .map(info => info[2])
+                .filter((color, i, arr) => arr.indexOf(color) === i)
+                .map(color => (
+                    <marker
+                        key={`gzmtr_int_arrow_${color}`}
+                        id={`gzmtr_int_arrow_${color}`}
+                        markerWidth="5"
+                        markerHeight="5"
+                        refX="1"
+                        refY="1.25"
+                        orient="auto"
                     >
-                        <StationNumber strokeColour={info[2]} lineNum={info[4]} stnNum={info[5]} />
-                    </g>
+                        <polygon points="0,0 0,3 2,1.5" fill={color} />
+                    </marker>
                 ))}
-
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <circle
-                    id={`stn_core_${id}`}
-                    r={transferAll.length === 3 ? 22.395 : 18}
-                    fill="white"
-                    fillOpacity="0"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-                <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\\')}
-                        fontSize={16}
-                        lineHeight={16}
-                        grow="up"
-                        className="rmp-name__zh"
+            {transferAll.length <= 2 && (
+                <g>
+                    {/* A simple mask to hide all underlying lines. */}
+                    <path d="M -18,-12 A 24 24 0 0 1 18,-12 L 18,12 A 24 24 0 0 1 -18,12 Z" fill={bgColor} />
+                    <path
+                        d="M -18,-12 A 24 24 0 0 1 18,-12"
+                        fill="none"
+                        stroke={arrowColor[transferAll.length][0]}
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
                     />
-                    <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={10}
-                        lineHeight={10}
-                        grow="down"
-                        className="rmp-name__en"
+                    <path
+                        d="M 18,12 A 24 24 0 0 1 -18,12"
+                        fill="none"
+                        stroke={arrowColor[transferAll.length][1]}
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
                     />
                 </g>
-                {secondaryNames.join('') !== '' && (
-                    <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
-                        <text
-                            fontSize="20"
-                            dx={-(secondaryTextWidth + 5) / 2}
-                            textAnchor="end"
-                            dominantBaseline="middle"
-                            className="rmp-name__zh"
-                        >
-                            （
-                        </text>
-                        <text
-                            fontSize="20"
-                            dx={(secondaryTextWidth + 5) / 2}
-                            textAnchor="start"
-                            dominantBaseline="middle"
-                            className="rmp-name__zh"
-                        >
-                            ）
-                        </text>
-                        <g ref={secondaryTextRef}>
-                            <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
-                                {secondaryNames[0]}
-                            </text>
-                            <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
-                                {secondaryNames[1]}
-                            </text>
-                        </g>
-                    </g>
-                )}
-                {!open && (
-                    <g
-                        transform={`translate(${textX + underConstructionDx}, ${textY})`}
-                        textAnchor={textAnchor}
-                        fill="red"
-                    >
-                        <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
-                            （未开通）
-                        </text>
-                        <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
-                            (Under Construction)
-                        </text>
-                    </g>
-                )}
+            )}
+            {transferAll.length >= 3 && (
+                <g>
+                    <circle r="22.395" fill={bgColor} />
+                    <path
+                        d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
+                        fill="none"
+                        stroke={arrowColor[transferAll.length][0]}
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
+                    />
+                    <path
+                        d="M 0,-22.395 A 22.395 22.395 0 0 1 19.3948,11.1976"
+                        fill="none"
+                        stroke={arrowColor[transferAll.length][1]}
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
+                    />
+                    <path
+                        d="M 19.3948,11.1976 A 22.395 22.395 0 0 1 -19.3948,11.1976"
+                        fill="none"
+                        stroke={arrowColor[transferAll.length][2]}
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][2]})`}
+                    />
+                    {/* Add another 2 transparent arrows with marker to cover bottom arrows */}
+                    <path
+                        d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
+                        fill="none"
+                        strokeOpacity="0"
+                        stroke="white"
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
+                    />
+                    <path
+                        d="M 0,-22.395 A 22.395 22.395 0 0 1 19.3948,11.1976"
+                        fill="none"
+                        strokeOpacity="0"
+                        stroke="white"
+                        strokeWidth="5"
+                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
+                    />
+                </g>
+            )}
+
+            {transfer[0]?.map((info, i, arr) => (
+                <g
+                    key={`gzmtr_int_${id}_stn_${i}`}
+                    transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})scale(0.75)`}
+                >
+                    <StationNumber strokeColour={info[2]} lineNum={info[4]} stnNum={info[5]} />
+                </g>
+            ))}
+
+            {/* Below is an overlay element that has all event hooks but can not be seen. */}
+            <circle
+                id={`stn_core_${id}`}
+                r={transferAll.length === 3 ? 22.395 : 18}
+                fill="white"
+                fillOpacity="0"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
+            <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\\')}
+                    fontSize={16}
+                    lineHeight={16}
+                    grow="up"
+                    className="rmp-name__zh"
+                />
+                <MultilineText
+                    text={names[1].split('\\')}
+                    fontSize={10}
+                    lineHeight={10}
+                    grow="down"
+                    className="rmp-name__en"
+                />
             </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            ...names,
-            nameOffsetX,
-            nameOffsetY,
-            JSON.stringify(transferAll),
-            open,
-            ...secondaryNames,
-            // Update the mask on dark mode changes.
-            colorMode,
-            // BBox will only be computed after first render and won't cause this to update another time.
-            textWidth,
-            secondaryTextWidth,
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+            {secondaryNames.join('') !== '' && (
+                <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
+                    <text
+                        fontSize="20"
+                        dx={-(secondaryTextWidth + 5) / 2}
+                        textAnchor="end"
+                        dominantBaseline="middle"
+                        className="rmp-name__zh"
+                    >
+                        （
+                    </text>
+                    <text
+                        fontSize="20"
+                        dx={(secondaryTextWidth + 5) / 2}
+                        textAnchor="start"
+                        dominantBaseline="middle"
+                        className="rmp-name__zh"
+                    >
+                        ）
+                    </text>
+                    <g ref={secondaryTextRef}>
+                        <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                            {secondaryNames[0]}
+                        </text>
+                        <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                            {secondaryNames[1]}
+                        </text>
+                    </g>
+                </g>
+            )}
+            {!open && (
+                <g transform={`translate(${textX + underConstructionDx}, ${textY})`} textAnchor={textAnchor}>
+                    <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        （未开通）
+                    </text>
+                    <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                        (Under Construction)
+                    </text>
+                </g>
+            )}
+        </g>
     );
 };
 
@@ -294,6 +270,7 @@ export interface GzmtrIntStationAttributes extends StationAttributes, StationAtt
      */
     open: boolean;
     secondaryNames: [string, string];
+    tram: boolean;
 }
 
 const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
@@ -303,6 +280,7 @@ const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
     transfer: [[], []],
     open: true,
     secondaryNames: ['', ''],
+    tram: false,
 };
 
 const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttributes>) => {
@@ -381,6 +359,17 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
             value: attrs.secondaryNames[1],
             onChange: val => {
                 attrs.secondaryNames[1] = val.toString();
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrBasic.tram'),
+            oneLine: true,
+            isChecked: attrs.tram,
+            onChange: val => {
+                attrs.tram = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

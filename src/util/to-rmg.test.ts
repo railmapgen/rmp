@@ -1,5 +1,6 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
+import { describe, expect, it } from 'vitest';
 import { linePaths } from '../components/svgs/lines/lines';
 import miscNodes from '../components/svgs/nodes/misc-nodes';
 import stations from '../components/svgs/stations/stations';
@@ -41,9 +42,13 @@ describe('Unit tests for to rmg function', () => {
         });
 
         const toRmgRes = toRmg(graph);
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
 
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -255,8 +260,14 @@ describe('Unit tests for to rmg function', () => {
         });
 
         const toRmgRes = toRmg(graph);
+
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -414,8 +425,13 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -788,8 +804,13 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -1068,8 +1089,13 @@ describe('Unit tests for to rmg function', () => {
 
         const toRmgRes = toRmg(graph);
 
+        for (let i = 0; i < toRmgRes.length; i++) {
+            toRmgRes[i].id = '';
+        }
+
         expect(toRmgRes).toEqual([
             {
+                id: '',
                 theme: color,
                 param: [
                     [
@@ -1224,6 +1250,7 @@ describe('Unit tests for to rmg function', () => {
                 type: 'LINE',
             },
             {
+                id: '',
                 theme: color,
                 param: [
                     [

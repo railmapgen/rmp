@@ -1,8 +1,8 @@
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -26,47 +26,39 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttr
 
     const fgColor = color[3];
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width="30" height="15" rx="8" />
-                <text
-                    className="rmp-name__berlin"
-                    textAnchor="middle"
-                    x={sX}
-                    y="12.5"
-                    fill={fgColor}
-                    fontSize="14"
-                    letterSpacing="0"
-                >
-                    S
-                </text>
-                <text
-                    className="rmp-name__berlin"
-                    textAnchor="middle"
-                    x={numX}
-                    y="12.5"
-                    fill={fgColor}
-                    fontSize="14"
-                    letterSpacing="-0.2"
-                >
-                    {num}
-                </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width="30"
-                    height="15"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width="30" height="15" rx="8" />
+            <text
+                className="rmp-name__berlin"
+                textAnchor="middle"
+                x={sX}
+                y="12.5"
+                fill={fgColor}
+                fontSize="14"
+                letterSpacing="0"
+            >
+                S
+            </text>
+            <text
+                className="rmp-name__berlin"
+                textAnchor="middle"
+                x={numX}
+                y="12.5"
+                fill={fgColor}
+                fontSize="14"
+                letterSpacing="-0.2"
+            >
+                {num}
+            </text>
+        </g>
     );
 };
 

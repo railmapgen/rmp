@@ -24,41 +24,34 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} width={width} height="22.67" />
-                <text
-                    className="rmp-name__zh"
-                    textAnchor="middle"
-                    x={numX}
-                    y="19"
-                    fill={color[3]}
-                    fontSize="21.33"
-                    letterSpacing="-1.75"
-                >
-                    {num}
-                </text>
-                <text className="rmp-name__zh" x={width + 2} y="12" fontSize="14.67">
-                    号线
-                </text>
-                <text className="rmp-name__en" x={width + 4} y="21.5" fontSize="8">
-                    Line {num}
-                </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    width={width}
-                    height="22.67"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} width={width} height="22.67" />
+            <text
+                className="rmp-name__zh"
+                textAnchor="middle"
+                x={numX}
+                y="19"
+                fill={color[3]}
+                fontSize="21.33"
+                letterSpacing="-1.75"
+            >
+                {num}
+            </text>
+            <text className="rmp-name__zh" x={width + 2} y="12" fontSize="14.67">
+                号线
+            </text>
+            <text className="rmp-name__en" x={width + 4} y="21.5" fontSize="8">
+                Line {num}
+            </text>
+        </g>
     );
 };
 

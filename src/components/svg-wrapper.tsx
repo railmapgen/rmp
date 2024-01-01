@@ -89,6 +89,7 @@ const SvgWrapper = () => {
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
+            const id: StnId = `stn_${rand}`;
             const type = mode.slice(8) as StationType;
 
             // deep copy to prevent mutual reference
@@ -97,7 +98,7 @@ const SvgWrapper = () => {
             if ('color' in attr) attr.color = theme;
 
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            graph.current.addNode(`stn_${rand}`, {
+            graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
                 x: roundToNearestN(svgX, 5),
@@ -108,12 +109,14 @@ const SvgWrapper = () => {
             // console.log('down', active, offset);
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+            dispatch(setSelected(new Set([id])));
         } else if (mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
+            const id: MiscNodeId = `misc_node_${rand}`;
             const type = mode.slice(10) as MiscNodeType;
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            graph.current.addNode(`misc_node_${rand}`, {
+            graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
                 x: roundToNearestN(svgX, 5),
@@ -124,6 +127,7 @@ const SvgWrapper = () => {
             });
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+            dispatch(setSelected(new Set([id])));
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
             if (mode.startsWith('line')) {
@@ -331,6 +335,12 @@ const SvgWrapper = () => {
                     opacity="0.75"
                 />
             )}
+            <defs>
+                <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
+                    <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                    <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                </pattern>
+            </defs>
         </svg>
     );
 };

@@ -60,48 +60,54 @@
                 "common": {
                     "nameZh": "中国語の路線名",
                     "nameEn": "英語の路線名",
+                    "nameJa": "日本語の路線名",
                     "num": "路線番号"
                 },
                 "virtual": {
                     "displayName": "仮想節点"
                 },
                 "shmetroNumLineBadge": {
-                    "displayName": "上海地下鉄路線番号バッジ"
+                    "displayName": "上海地下鉄路線番号徽章"
                 },
                 "shmetroTextLineBadge": {
-                    "displayName": "上海地下鉄テキスト路線バッジ"
+                    "displayName": "上海地下鉄テキスト路線徽章"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "広州地下鉄路線バッジ"
+                    "displayName": "広州地下鉄路線徽章",
+                    "tram": "路面電車"
                 },
                 "bjsubwayNumLineBadge": {
-                    "displayName": "北京地下鉄路線番号バッジ"
+                    "displayName": "北京地下鉄路線番号徽章"
                 },
                 "bjsubwayTextLineBadge": {
-                    "displayName": "北京地下鉄テキスト路線バッジ"
+                    "displayName": "北京地下鉄テキスト路線徽章"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "ベルリン地下鉄番号バッジ"
+                    "displayName": "ベルリン地下鉄番号徽章"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "ベルリンSバーン番号バッジ"
+                    "displayName": "ベルリンSバーン番号徽章"
                 },
                 "suzhouRTNumLineBadge": {
-                    "displayName": "蘇州軌道交通 線番号 バッジ",
-                    "branch": "支線です"
+                    "displayName": "蘇州軌道交通路線番号徽章",
+                    "branch": "支線"
                 },
                 "chongqingRTNumLineBadge": {
-                    "displayName": "重慶鉄道交通デジタルライン識別"
+                    "displayName": "重慶鉄道交通路線番号徽章"
                 },
                 "chongqingRTTextLineBadge": {
-                    "displayName": "重慶鉄道交通のテキストライン標識"
+                    "displayName": "重慶鉄道交通テキスト路線徽章"
                 },
                 "shenzhenMetroNumLineBadge": {
-                    "displayName": "深セン地下鉄番号ラインバッジ",
-                    "branch": "支線です"
+                    "displayName": "深セン地下鉄路線番号徽章",
+                    "branch": "支線"
                 },
                 "mrtDestinationNumbers": {
-                    "displayName": "シンガポール MRT の目的地番号"
+                    "displayName": "シンガポールMRTの目的地番号"
+                },
+                "jrEastLineBadge": {
+                  "displayName": "JR東日本路線番号徽章",
+                  "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
                 "facilities": {
                     "displayName": "施設",
@@ -137,8 +143,9 @@
                 "common": {
                     "nameZh": "中国語の駅名",
                     "nameEn": "英語の駅名",
-                    "nameOffsetX": "駅名オフセットX",
-                    "nameOffsetY": "駅名オフセットY",
+                    "nameJa": "日本語の駅名",
+                    "nameOffsetX": "駅名補正値X",
+                    "nameOffsetY": "駅名補正値Y",
                     "rotate": "アイコンの回転",
                     "lineCode": "路線番号",
                     "stationCode": "駅番号"
@@ -147,7 +154,7 @@
                     "displayName": "上海地下鉄基本駅"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "上海地下鉄基本駅（2020年）"
+                    "displayName": "上海地下鉄基本駅（令和2年）"
                 },
                 "shmetroInt": {
                     "displayName": "上海地下鉄乗り換え駅",
@@ -162,12 +169,10 @@
                     "open": "開業済み",
                     "secondaryNameZh": "中国語の補助駅名",
                     "secondaryNameEn": "英語の補助駅名",
-                    "tram": "トラム"
+                    "tram": "路面電車"
                 },
                 "gzmtrInt": {
                     "displayName": "広州地下鉄乗り換え駅",
-                    "lineCode": "路線コード",
-                    "stationCode": "駅コード",
                     "open": "開業済み",
                     "secondaryNameZh": "中国語の補助駅名",
                     "secondaryNameEn": "英語の補助駅名"
@@ -201,19 +206,33 @@
                 },
                 "MRTInt": {
                     "displayName": "シンガポールMRT乗り換え駅"
+                },
+                "jrEastBasic": {
+                  "displayName": "JR東日本基本駅",
+                  "nameOffset": "名前の補正値",
+                  "textOneLine": "1行での名前",
+                  "textVertical": "垂直の名前",
+                  "important": "重要な駅",
+                  "lines": "乗り換え線の補正値"
+                },
+                "jrEastImportant": {
+                  "displayName": "JR東日本重要駅",
+                  "textVertical": "垂直の名前",
+                  "mostImportant": "最も重要な駅",
+                  "minLength": "駅の最小長"
                 }
             },
             "lines": {
                 "reconcileId": "調整ID",
                 "common": {
-                    "offsetFrom": "オフセット（From）",
-                    "offsetTo": "オフセット（To）",
+                    "offsetFrom": "補正値（From）",
+                    "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
                     "roundCornerFactor": "角の丸め係数"
                 },
                 "simple": {
                     "displayName": "簡単な経路",
-                    "offset": "オフセット"
+                    "offset": "補正値"
                 },
                 "diagonal": {
                     "displayName": "135°対角経路"
@@ -240,7 +259,7 @@
                     "displayName": "北京地下鉄単色風格"
                 },
                 "bjsubwayTram": {
-                    "displayName": "北京地下鉄トラム風格"
+                    "displayName": "北京地下鉄路面電車風格"
                 },
                 "bjsubwayDotted": {
                     "displayName": "北京地下鉄の点線風格"
@@ -270,6 +289,12 @@
                 },
                 "mrtSentosaExpress": {
                     "displayName": "シンガポール MRT セントーサ・エクスプレス風格"
+                },
+                "jrEastSingleColor": {
+                    "displayName": "JR東日本単色風格"
+                },
+                "jrEastSingleColorPattern": {
+                    "displayName": "JR東日本単色網目模様風格"
                 }
             },
             "edges": {},
@@ -285,10 +310,9 @@
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "open": {
-            "new": "新しいプロジェクト",
-            "config": "プロジェクトをインポート",
-            "configRMG": "RMG保存からインポート",
-            "projectRMG": "RMGプロジェクトからインポート",
+            "new": "新しい作品",
+            "config": "作品をインポート",
+            "projectRMG": "RMG作品からインポート",
             "invalidType": "無効なファイルタイプです！JSON形式のファイルのみが受け付けられます。",
             "unknownError": "アップロードされたファイルの解析中に不明なエラーが発生しました。もう一度お試しください。",
             "gallery": "ギャラリーからインポート",
@@ -296,13 +320,13 @@
             "failToImportFromRMPGallery": "ギャラリーから{{id}}のインポートに失敗しました。ファイルが見つかりませんでした。"
         },
         "download": {
-            "config": "プロジェクトをエクスポート",
+            "config": "作品をエクスポート",
             "image": "画像をエクスポート",
             "2rmg": {
-                "title": "RMGプロジェクトへエクスポート",
+                "title": "RMG作品へエクスポート",
                 "type": {
                     "line": "直線",
-                    "loop": "ループ",
+                    "loop": "環状線",
                     "branch": "支線"
                 },
                 "placeholder": {
@@ -310,8 +334,8 @@
                     "english": "英語の路線名",
                     "lineCode": "路線番号"
                 },
-                "info1": "この機能は、RMPプロジェクトをRMGプロジェクトに変換するために設計されています。",
-                "info2": "以下のリストの行は、変換用に利用できます。左側のテキストボックスに中国語の行名、中央に英語の行名、右側に（広州メトロ風格用の）行コードを入力し、ダウンロードボタンをクリックしてRMGプロジェクトを保存できます。",
+                "info1": "この機能は、RMP作品をRMG作品に変換するために設計されています。",
+                "info2": "以下のリストの行は、変換用に利用できます。左側のテキストボックスに中国語の行名、中央に英語の行名、右側に（広州メトロ風格用の）行コードを入力し、ダウンロードボタンをクリックしてRMG作品を保存できます。",
                 "noline": "利用可能な回線が見つかりません。",
                 "download": "ダウンロード",
                 "downloadInfo": "出発駅を選択してクリックしてください。"
@@ -375,7 +399,7 @@
                 "title": "手順",
                 "translate": {
                     "title": "節点の座標を変換",
-                    "content": "すべての節点のX座標とY座標に次のオフセットを追加する：",
+                    "content": "すべての節点のX座標とY座標に次の補正値を追加する：",
                     "x": "X軸",
                     "y": "Y軸"
                 },
@@ -424,7 +448,7 @@
                 "essentialInfo": "Rail Map Painterでは、Google Analyticsを使用してデータを収集し、貢献者がユーザーがこのプロジェクトを訪れる方法やタイミングを知るのに役立ちます。Rail Map Painterにはユーザー登録やバックエンドサービスがないため、これが貢献者がフィードバックを得てプロジェクトを更新し続けることにつながる唯一の手段です。転送されるすべてのデータには、個人を特定できる情報やプロジェクトのデータは含まれませんので、安心してください。",
                 "essentialLink": "Google Analyticsが収集する詳細なフィールドを確認するには、このリンクをクリックしてください。",
                 "additional": "追加",
-                "additionalInfo": "Rail Map Painterでは、マウスやキーボードとのやり取り（プロジェクトの作成や駅の追加など）時に、追加のイベントも送信されます。これらのイベントも個人を特定できる情報は含まれず、統計目的にのみ使用されます。"
+                "additionalInfo": "Rail Map Painterでは、マウスやキーボードとのやり取り（作品の作成や駅の追加など）時に、追加のイベントも送信されます。これらのイベントも個人を特定できる情報は含まれず、統計目的にのみ使用されます。"
             }
         },
         "about": {

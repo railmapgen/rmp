@@ -11,14 +11,14 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
-    zh: 10,
+    zh: 9,
     en: 6.2,
     top: 6.2 + 1,
     middle: 0,
-    bottom: 10 + 1,
+    bottom: 9 + 1,
 };
 
 const BjsubwayBasicStation = (props: StationComponentProps) => {
@@ -43,60 +43,72 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
-    const textY =
-        ((names[NAME_DY[nameOffsetY].namesPos].split('\\').length + (nameOffsetY === 'top' && !open ? 1 : 0)) *
-            LINE_HEIGHT[nameOffsetY] +
-            8) *
-        NAME_DY[nameOffsetY].polarity;
+    const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
+        if (oX === 'left' && oY === 'top') {
+            return [-4, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+        } else if (oX === 'middle' && oY === 'top') {
+            return [0, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
+        } else if (oX === 'right' && oY === 'top') {
+            return [4, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+        } else if (oX === 'left' && oY === 'bottom') {
+            return [-4, names[0].split('\\').length * LINE_HEIGHT[oY] + 1];
+        } else if (oX === 'middle' && oY === 'bottom') {
+            return [0, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+        } else if (oX === 'right' && oY === 'bottom') {
+            return [4, names[0].split('\\').length * LINE_HEIGHT[oY] + 1];
+        } else if (oX === 'left' && oY === 'middle') {
+            return [-5, 0];
+        } else if (oX === 'right' && oY === 'middle') {
+            return [5, 0];
+        } else return [0, 0];
+    };
+
+    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <circle
-                    id={`stn_core_${id}`}
-                    r="4"
-                    stroke="black"
-                    strokeWidth="0.5"
-                    strokeDasharray={open ? undefined : '1.5'}
-                    fill="white"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <circle
+                id={`stn_core_${id}`}
+                r="4"
+                stroke="black"
+                strokeWidth="0.5"
+                strokeDasharray={open ? undefined : '1.5'}
+                fill="white"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\\')}
+                    fontSize={LINE_HEIGHT.zh}
+                    lineHeight={LINE_HEIGHT.zh}
+                    grow="up"
+                    className="rmp-name__zh"
+                    baseOffset={1}
                 />
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\\')}
-                        fontSize={LINE_HEIGHT.zh}
-                        lineHeight={LINE_HEIGHT.zh}
-                        grow="up"
-                        className="rmp-name__zh"
-                        baseOffset={1}
-                    />
-                    <MultilineText
-                        text={names[1].split('\\')}
+                <MultilineText
+                    text={names[1].split('\\')}
+                    fontSize={LINE_HEIGHT.en}
+                    lineHeight={LINE_HEIGHT.en}
+                    grow="down"
+                    className="rmp-name__en"
+                    baseOffset={1}
+                />
+                {!open && (
+                    <text
+                        dy={names[1].split('\\').length * LINE_HEIGHT.en + 2}
                         fontSize={LINE_HEIGHT.en}
-                        lineHeight={LINE_HEIGHT.en}
-                        grow="down"
-                        className="rmp-name__en"
-                        baseOffset={1}
-                    />
-                    {!open && (
-                        <text
-                            dy={names[1].split('\\').length * LINE_HEIGHT.en + 2}
-                            fontSize={LINE_HEIGHT.en}
-                            dominantBaseline="hanging"
-                            className="rmp-name__zh"
-                        >
-                            (暂缓开通)
-                        </text>
-                    )}
-                </g>
+                        dominantBaseline="hanging"
+                        className="rmp-name__zh"
+                    >
+                        (暂缓开通)
+                    </text>
+                )}
             </g>
-        ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, open, onPointerDown, onPointerMove, onPointerUp]
+        </g>
     );
 };
 

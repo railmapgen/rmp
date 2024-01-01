@@ -28,39 +28,29 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
     const fontSize = !Number.isInteger(num) ? 15 : 16;
     const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.2, 1.5] : [0, 5.5]) : [0, 2.55];
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
-                <text
-                    className="rmp-name__zh"
-                    textAnchor="left"
-                    x={sX}
-                    y="10"
-                    fill={fgColor}
-                    fontSize={fontSize}
-                    letterSpacing={letterSpacing}
-                    dominantBaseline="central"
-                >
-                    {num}
-                </text>
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <rect
-                    fill="white"
-                    fillOpacity="0"
-                    x="0"
-                    width="20"
-                    height="20"
-                    rx="10"
-                    ry="10"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-            </g>
-        ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
+            <text
+                className="rmp-name__zh"
+                textAnchor="left"
+                x={sX}
+                y="10"
+                fill={fgColor}
+                fontSize={fontSize}
+                letterSpacing={letterSpacing}
+                dominantBaseline="central"
+            >
+                {num}
+            </text>
+        </g>
     );
 };
 

@@ -150,8 +150,7 @@ const SvgCanvas = () => {
                     dispatch(saveGraph(graph.current.export()));
                 }
             } else {
-                // the node is just placed and should not trigger any save, only display the details
-                dispatch(addSelected(node));
+                // no-op for a new node is just placed, already added to selected in pointer down
             }
         }
         dispatch(setActive(undefined));
@@ -214,11 +213,9 @@ const SvgCanvas = () => {
                 const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
-                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as <
-                    T extends NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
-                >(
-                    props: LineStyleComponentProps<T>
-                ) => JSX.Element;
+                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as React.FC<
+                    LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
+                >;
 
                 return (
                     <StyleComponent

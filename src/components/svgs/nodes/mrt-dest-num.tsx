@@ -27,34 +27,31 @@ const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAt
     const fgColor = color[3];
     const bgColor = color[2];
 
-    return React.useMemo(
-        () => (
-            <g
-                id={id}
-                transform={`translate(${x}, ${y})`}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
+    return (
+        <g
+            id={id}
+            transform={`translate(${x}, ${y})`}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            style={{ cursor: 'move' }}
+        >
+            <circle r="6" fill={bgColor}></circle>
+            <text
+                className="rmp-name__mrt"
+                textAnchor="middle"
+                x="0"
+                y="0"
+                width="12"
+                height="12"
+                fill={fgColor}
+                fontSize="9"
+                dominantBaseline="central"
+                letterSpacing="-0.2"
             >
-                <circle r="6" fill={bgColor}></circle>
-                <text
-                    className="rmp-name__mrt"
-                    textAnchor="middle"
-                    x="0"
-                    y="0"
-                    width="12"
-                    height="12"
-                    fill={fgColor}
-                    fontSize="9"
-                    dominantBaseline="central"
-                    letterSpacing="-0.2"
-                >
-                    {num}
-                </text>
-            </g>
-        ),
-        [id, x, y, num, ...color, onPointerDown, onPointerMove, onPointerUp]
+                {num}
+            </text>
+        </g>
     );
 };
 
