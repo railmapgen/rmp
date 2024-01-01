@@ -335,6 +335,12 @@ const SvgWrapper = () => {
                     opacity="0.75"
                 />
             )}
+            <defs>
+                <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
+                    <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                    <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                </pattern>
+            </defs>
         </svg>
     );
 };

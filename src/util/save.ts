@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 25;
+export const CURRENT_VERSION = 26;
 
 /**
  * Load Shanghai template only if the param is missing or invalid.
@@ -358,4 +358,8 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 25, graph: graph.export() });
     },
+    25: param =>
+        // Bump save version to support JR East basic station, important station,
+        // line badge, single color line style, and single color pattern style.
+        JSON.stringify({ ...JSON.parse(param), version: 26 }),
 };

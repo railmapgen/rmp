@@ -60,6 +60,7 @@
                 "common": {
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English",
+                    "nameJa": "Line name in Japanese",
                     "num": "Line Number"
                 },
                 "virtual": {
@@ -104,6 +105,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "Singapore MRT Destination Numbers"
                 },
+                "jrEastLineBadge": {
+                    "displayName": "JR East line badge",
+                    "crosshatchPatternFill": "Fill with crosshatch pattern"
+                },
                 "facilities": {
                     "displayName": "Facilities",
                     "type": "Type"
@@ -123,10 +128,11 @@
             },
             "stations": {
                 "common": {
-                    "nameZh": "Name in Chinese",
-                    "nameEn": "Name in English",
-                    "nameOffsetX": "Name offset X",
-                    "nameOffsetY": "Name offset Y",
+                    "nameZh": "Names in Chinese",
+                    "nameEn": "Names in English",
+                    "nameJa": "Names in Japanese",
+                    "nameOffsetX": "Names offset X",
+                    "nameOffsetY": "Names offset Y",
                     "rotate": "Icon rotation",
                     "lineCode": "Line code",
                     "stationCode": "Station code"
@@ -202,6 +208,20 @@
                 },
                 "MRTInt": {
                     "displayName": "Singapore MRT interchange station"
+                },
+                "jrEastBasic": {
+                    "displayName": "JR East basic station",
+                    "nameOffset": "Names offset",
+                    "textOneLine": "Names in one line",
+                    "textVertical": "Vertical names",
+                    "important": "Important station",
+                    "lines": "Interchange lines offset"
+                },
+                "jrEastImportant": {
+                    "displayName": "JR East important station",
+                    "textVertical": "Vertical names",
+                    "mostImportant": "Most important station",
+                    "minLength": "Minimal length of the station"
                 }
             },
             "lines": {
