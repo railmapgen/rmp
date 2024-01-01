@@ -1,11 +1,11 @@
-import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
+import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
 import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
 
-const generateDiagonalPath: GeneratePathFunction<DiagonalPathAttributes> = (
+const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
     propsx1: number,
     propsx2: number,
     propsy1: number,

@@ -1,10 +1,10 @@
-import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
+import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
 import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
 
-const generateSimplePath: GeneratePathFunction<SimplePathAttributes> = (
+const generateSimplePath: PathGenerator<SimplePathAttributes> = (
     x1: number,
     x2: number,
     y1: number,

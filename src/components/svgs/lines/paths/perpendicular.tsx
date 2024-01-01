@@ -1,11 +1,11 @@
-import { GeneratePathFunction, LinePath, LinePathAttributes } from '../../../../constants/lines';
+import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
 import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
 
-const generatePerpendicularPath: GeneratePathFunction<PerpendicularPathAttributes> = (
+const generatePerpendicularPath: PathGenerator<PerpendicularPathAttributes> = (
     x1: number,
     x2: number,
     y1: number,

@@ -156,7 +156,7 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
     /**
      * The line path component.
      */
-    generatePath: GeneratePathFunction<T>;
+    generatePath: PathGenerator<T>;
     /**
      * Metadata for this line path.
      */
@@ -195,4 +195,4 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
 /**
  * The generator type of a line path.
  */
-export type GeneratePathFunction<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => `M ${string}`;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => `M ${string}`;
