@@ -1,10 +1,12 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { Rotate } from '../../../constants/stations';
+import { Rotate, StationType } from '../../../constants/stations';
+import { FONTS_CSS } from '../../../util/fonts';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
@@ -30,6 +32,26 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         // Watch textAnchor and dominantBaseline to get update of bBox's x and y.
         [content, textAnchor, dominantBaseline, setBBox, textLineEl]
     );
+
+    // Add fonts css to the document for the language selected.
+    React.useEffect(() => {
+        const type = {
+            mtr__zh: StationType.MTR,
+            mtr__en: StationType.MTR,
+            berlin: MiscNodeType.BerlinSBahnLineBadge,
+            mrt: StationType.MRTBasic,
+            jreast_ja: StationType.JREastBasic,
+            jreast_en: StationType.JREastBasic,
+        }[language];
+        if (type && document.getElementById(FONTS_CSS[type]!.cssName) === null) {
+            const css = FONTS_CSS[type]!.cssName;
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.id = css;
+            link.href = import.meta.env.BASE_URL + `styles/${css!}.css`;
+            document.head.append(link);
+        }
+    }, [language]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -89,10 +111,7 @@ export interface TextAttributes extends AttributesWithColor {
     textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
     dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
     language: string;
-    /**
-     * 0 <= rotate <= 360
-     */
-    rotate: number;
+    rotate: Rotate;
     italic: string | number;
     bold: string | number;
 }
@@ -110,140 +129,125 @@ const defaultTextAttributes: TextAttributes = {
     bold: 'normal',
 };
 
-const textFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.nodes.text.content',
-        value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).content,
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.content = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.nodes.text.fontSize',
-        value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).fontSize,
-        validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.fontSize = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.nodes.text.lineHeight',
-        value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).lineHeight,
-        validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.lineHeight = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.nodes.text.textAnchor',
-        value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).textAnchor,
-        options: { start: 'start', middle: 'middle', end: 'end' },
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.textAnchor = val as React.SVGProps<SVGTextElement>['textAnchor'];
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.nodes.text.dominantBaseline',
-        value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).dominantBaseline,
-        options: { auto: 'auto', middle: 'middle', hanging: 'hanging' },
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.dominantBaseline = val as React.SVGProps<SVGTextElement>['dominantBaseline'];
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.nodes.text.language',
-        value: (attrs?: TextAttributes) => (attrs ?? defaultTextAttributes).language,
-        options: { zh: 'Chinese', en: 'English', mtr__zh: 'MTR Chinese', mtr__en: 'MTR English' },
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.language = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.nodes.text.rotate',
-        value: (attrs?: TextAttributes) => attrs?.rotate ?? defaultTextAttributes.rotate,
-        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-        onChange: (val: string | number, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.rotate = Number(val) as Rotate;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.nodes.text.italic',
-        isChecked: (attrs?: TextAttributes) => (attrs?.italic ?? defaultTextAttributes.italic) === 'italic',
-        onChange: (val: boolean, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.italic = val ? 'italic' : 'normal';
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.nodes.text.bold',
-        isChecked: (attrs?: TextAttributes) => (attrs?.bold ?? defaultTextAttributes.bold) === 'bold',
-        onChange: (val: boolean, attrs_: TextAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultTextAttributes;
-            // set value
-            attrs.bold = val ? 'bold' : 'normal';
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: <ColorField type={MiscNodeType.Text} defaultTheme={defaultTextAttributes.color} />,
-    },
-];
+const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes fields={textFields as RmgFieldsFieldDetail<TextAttributes>} />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.nodes.text.content'),
+            value: attrs.content ?? defaultTextAttributes.content,
+            onChange: val => {
+                attrs.content = val.toString();
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.nodes.text.fontSize'),
+            value: (attrs.fontSize ?? defaultTextAttributes.fontSize).toString(),
+            validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
+            onChange: val => {
+                attrs.fontSize = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.nodes.text.lineHeight'),
+            value: (attrs.lineHeight ?? defaultTextAttributes.lineHeight).toString(),
+            validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
+            onChange: val => {
+                attrs.lineHeight = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.nodes.text.textAnchor'),
+            value: attrs.textAnchor ?? defaultTextAttributes.textAnchor,
+            options: { start: 'start', middle: 'middle', end: 'end' },
+            onChange: val => {
+                attrs.textAnchor = val as React.SVGProps<SVGTextElement>['textAnchor'];
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.nodes.text.dominantBaseline'),
+            value: attrs.dominantBaseline ?? defaultTextAttributes.dominantBaseline,
+            options: { auto: 'auto', middle: 'middle', hanging: 'hanging' },
+            onChange: val => {
+                attrs.dominantBaseline = val as React.SVGProps<SVGTextElement>['dominantBaseline'];
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.nodes.text.language'),
+            value: attrs.language ?? defaultTextAttributes.language,
+            options: {
+                zh: 'Chinese',
+                en: 'English',
+                mtr__zh: 'MTR Chinese',
+                mtr__en: 'MTR English',
+                berlin: 'Berlin S/U Bahn',
+                mrt: 'MRT',
+                jreast_ja: 'JR East Japanese',
+                jreast_en: 'JR East English',
+            },
+            onChange: val => {
+                attrs.language = val.toString();
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.nodes.text.rotate'),
+            value: attrs.rotate ?? defaultTextAttributes.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.nodes.text.italic'),
+            isChecked: attrs.italic === 'italic',
+            onChange: val => {
+                attrs.italic = val ? 'italic' : 'normal';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.nodes.text.bold'),
+            isChecked: attrs.bold === 'bold',
+            onChange: val => {
+                attrs.bold = val ? 'bold' : 'normal';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: <ColorField type={MiscNodeType.Text} defaultTheme={defaultTextAttributes.color} />,
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const textIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -257,7 +261,7 @@ const text: Node<TextAttributes> = {
     component: Text,
     icon: textIcon,
     defaultAttrs: defaultTextAttributes,
-    attrsComponent,
+    attrsComponent: textAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.text.displayName',
         tags: [],
