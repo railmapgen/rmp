@@ -1,14 +1,22 @@
+/*
+ * Special thanks to these blogs for recommending M+ as an alternative to 新ゴ.
+ * https://google-sensei.com/it/font-shinmgo/
+ * https://mocotan-e.hatenablog.com/entry/2023/01/10/003337
+ * Although there are some discussion on the difference, it is still the closest and free.
+ * http://fumomit.blogstation.jp/archives/4112965.html
+ *
+ * https://github.com/coz-m/MPLUS_FONTS
+ * This is a free font with SIL OPEN FONT LICENSE.
+ */
 @font-face {
-    font-family: 'Noto Sans JP Medium';
+    font-family: 'M PLUS 2';
     font-display: swap;
-    src: url('../fonts/NotoSansJP-Medium.ttf');
-    /* https://stackoverflow.com/a/30200250/7418806 */
-    /* unicode-range: U+3000-303F, U+3040-309F, U+30A0-30FF, U+FF00-FFEF, U+4E00-9FAF; */
-    unicode-range: U+4E00–U+9FBF U+3040–U+309F U+30A0–U+30FF;
+    src: url('../fonts/Mplus2-Medium.otf');
+    unicode-range: U+0-10FFFF;
 }
 
 .rmp-name__jreast_ja {
-    font-family: 'Noto Sans JP Medium', sans-serif;
+    font-family: a-otf-ud-shin-go-pr6n, 'M PLUS 2', sans-serif;
 }
 
 .rmp-name__jreast_en {
