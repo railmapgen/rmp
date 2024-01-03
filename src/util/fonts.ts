@@ -51,7 +51,8 @@ const matchCssRuleByFontFace = (rules: CSSFontFaceRule[], font: FontFace): CSSFo
     return rules.find(rule => {
         const cssStyle = rule.style;
         return (
-            cssStyle.getPropertyValue('font-family').replace(/^"(.+)"$/, '$1') === font.family &&
+            cssStyle.getPropertyValue('font-family').replace(/^"(.+)"$/, '$1') ===
+                font.family.replace(/^"(.+)"$/, '$1') &&
             cssStyle.getPropertyValue('unicode-range') === font.unicodeRange
         );
     });
@@ -149,13 +150,13 @@ export const FONTS_CSS: {
     },
     [StationType.JREastBasic]: {
         className: ['.rmp-name__jreast_ja'],
-        cssFont: ['100% Noto Sans JP Medium'],
+        cssFont: ["100% 'M PLUS 1'"],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [StationType.JREastImportant]: {
         className: ['.rmp-name__jreast_ja'],
-        cssFont: ['100% Noto Sans JP Medium'],
+        cssFont: ["100% 'M PLUS 1'"],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
@@ -173,7 +174,7 @@ export const FONTS_CSS: {
     },
     [MiscNodeType.JREastLineBadge]: {
         className: ['.rmp-name__jreast_ja'],
-        cssFont: ['100% Noto Sans JP Medium'],
+        cssFont: ["100% 'M PLUS 1'"],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
