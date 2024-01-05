@@ -347,6 +347,7 @@
             "disabledScaleOptions": "브라우저의 캔버스 제한으로 인해 일부 스케일 옵션이 비활성화되었습니다.",
             "disabledScaleOptionsWorkarounds": "가능한 해결 방법으로는 이 CLI 도구를 사용하여 SVG에서 이미지를 생성하는 것이 있습니다:",
             "imageTooBig": "이미지가 너무 크기 때문에 브라우저에서 생성할 수 없습니다!",
+            "useSystemFonts": "캔버스에서 미리보기된 글꼴 대신 시스템 글꼴 사용",
             "shareInfo1": "이 사진을 공유할 때",
             "shareInfo2": "링크를 첨부할 것입니다.",
             "termsAndConditions": "약관 및 세칙",

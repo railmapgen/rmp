@@ -28,12 +28,14 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * Clone the svg element and add fonts & missing external svg to it.
  * The returned svg should be opened and displayed correctly in any svg viewer.
  * @param graph The graph.
- * @param isAttachSelected Whether to call `generateRmpInfo`
+ * @param isAttachSelected Whether to call `generateRmpInfo`.
+ * @param isUseSystemFontsSelected Whether to add font-family to elements with fonts classes.
  * @returns The all in one SVGSVGElement and the size of canvas.
  */
 export const makeImages = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    isAttachSelected: boolean
+    isAttachSelected: boolean,
+    isUseSystemFontsSelected: boolean
 ) => {
     // get the minimum and maximum of the graph
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
@@ -82,31 +84,33 @@ export const makeImages = async (
     const nodesExist = findNodesExist(graph);
 
     // load fonts
-    const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use the same fonts css
-    for (const nodeType in FONTS_CSS) {
-        if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
-            try {
-                const s = document.createElement('style');
-                const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
+    if (!isUseSystemFontsSelected) {
+        const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use the same fonts css
+        for (const nodeType in FONTS_CSS) {
+            if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
+                try {
+                    const s = document.createElement('style');
+                    const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
 
-                for (let i = 0; i < document.styleSheets.length; i = i + 1) {
-                    if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
-                        s.textContent = [...document.styleSheets[i].cssRules]
-                            .map(_ => _.cssText)
-                            .filter(_ => !_.startsWith('@font-face'))
-                            .join('\n');
+                    for (let i = 0; i < document.styleSheets.length; i = i + 1) {
+                        if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
+                            s.textContent = [...document.styleSheets[i].cssRules]
+                                .map(_ => _.cssText)
+                                .filter(_ => !_.startsWith('@font-face')) // this is added with base64 data below
+                                .join('\n');
+                        }
                     }
+                    s.textContent += '\n';
+
+                    const uris = await getBase64FontFace(elem, className, cssFont, cssName, baseUrl);
+                    s.textContent += uris.join('\n');
+
+                    elem.prepend(s);
+                    addedFontsCSSName.add(cssName);
+                } catch (err) {
+                    alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
+                    console.error(err);
                 }
-                s.textContent += '\n';
-
-                const uris = await getBase64FontFace(elem, className, cssFont, cssName, baseUrl);
-                s.textContent += uris.join('\n');
-
-                elem.prepend(s);
-                addedFontsCSSName.add(cssName);
-            } catch (err) {
-                alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
-                console.error(err);
             }
         }
     }

@@ -84,6 +84,7 @@ export default function DownloadActions() {
     ];
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
+    const [isUseSystemFontsSelected, setIsUseSystemFontsSelected] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
@@ -129,7 +130,7 @@ export default function DownloadActions() {
                 isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
             );
 
-        const { elem, width, height } = await makeImages(graph.current, isAttachSelected);
+        const { elem, width, height } = await makeImages(graph.current, isAttachSelected, isUseSystemFontsSelected);
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);
@@ -223,6 +224,12 @@ export default function DownloadActions() {
                             </>
                         )}
                         <br />
+                        <Checkbox
+                            isChecked={isUseSystemFontsSelected}
+                            onChange={e => setIsUseSystemFontsSelected(e.target.checked)}
+                        >
+                            <Text>{t('header.download.useSystemFonts')}</Text>
+                        </Checkbox>
                         <Checkbox isChecked={isAttachSelected} onChange={e => setIsAttachSelected(e.target.checked)}>
                             <Text>
                                 {t('header.download.shareInfo1')}

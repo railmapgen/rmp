@@ -350,6 +350,7 @@
             "disabledScaleOptions": "Some scale options are disabled due to your browser's canvas limitation.",
             "disabledScaleOptionsWorkarounds": "Possible workarounds include generating the image from svg using this cli tool: ",
             "imageTooBig": "The image is too big for your browser to generate!",
+            "useSystemFonts": "Use system fonts instead of fonts previewed in the canvas",
             "shareInfo1": "I will attach ",
             "shareInfo2": " and its link when I share this image.",
             "termsAndConditions": "Terms and Conditions",
