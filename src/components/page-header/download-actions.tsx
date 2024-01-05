@@ -130,7 +130,13 @@ export default function DownloadActions() {
                 isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
             );
 
-        const { elem, width, height } = await makeImages(graph.current, isAttachSelected, isUseSystemFontsSelected);
+        const svgVersion = 2;
+        const { elem, width, height } = await makeImages(
+            graph.current,
+            isAttachSelected,
+            isUseSystemFontsSelected,
+            svgVersion
+        );
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);

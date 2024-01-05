@@ -28,14 +28,15 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * Clone the svg element and add fonts & missing external svg to it.
  * The returned svg should be opened and displayed correctly in any svg viewer.
  * @param graph The graph.
- * @param isAttachSelected Whether to call `generateRmpInfo`.
- * @param isUseSystemFontsSelected Whether to add font-family to elements with fonts classes.
+ * @param generateRMPInfo Whether to call `generateRmpInfo`.
+ * @param useSystemFonts Whether to add font-family to elements with fonts classes.
  * @returns The all in one SVGSVGElement and the size of canvas.
  */
 export const makeImages = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    isAttachSelected: boolean,
-    isUseSystemFontsSelected: boolean
+    generateRMPInfo: boolean,
+    useSystemFonts: boolean,
+    svgVersion: 1.1 | 2
 ) => {
     // get the minimum and maximum of the graph
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
@@ -47,7 +48,7 @@ export const makeImages = async (
         .filter(e => graph.hasNode(e.id) && graph.getNodeAttribute(e.id, 'type') === MiscNodeType.Virtual)
         .forEach(e => elem.removeChild(e));
     // append rmp info if user does not want to share rmp info
-    if (!isAttachSelected) elem.appendChild(generateRmpInfo(xMax - 400, yMax - 120));
+    if (!generateRMPInfo) elem.appendChild(generateRmpInfo(xMax - 400, yMax - 120));
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -66,7 +67,7 @@ export const makeImages = async (
             // Polyfill paint-order used in .rmp-name-outline for Adobe Illustrator.
             // This is an SVG 2 specification and SVG 2 is not finalized or released yet.
             // https://www.w3.org/TR/SVG2/painting.html#PaintOrder
-            if (className === '.rmp-name-outline')
+            if (className === '.rmp-name-outline' && svgVersion === 1.1)
                 el.insertAdjacentElement('afterend', el.cloneNode(true) as SVGElement);
 
             styleSet.forEach(styleName => {
@@ -84,15 +85,15 @@ export const makeImages = async (
     const nodesExist = findNodesExist(graph);
 
     // load fonts
-    if (!isUseSystemFontsSelected) {
-        const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use the same fonts css
+    if (!useSystemFonts) {
+        const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use same fonts css
         for (const nodeType in FONTS_CSS) {
             if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
                 try {
                     const s = document.createElement('style');
                     const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
 
-                    for (let i = 0; i < document.styleSheets.length; i = i + 1) {
+                    for (let i = document.styleSheets.length - 1; i >= 0; i = i - 1) {
                         if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
                             s.textContent = [...document.styleSheets[i].cssRules]
                                 .map(_ => _.cssText)
