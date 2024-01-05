@@ -150,13 +150,13 @@ export const FONTS_CSS: {
     },
     [StationType.JREastBasic]: {
         className: ['.rmp-name__jreast_ja'],
-        cssFont: ["100% 'M PLUS 1'"],
+        cssFont: ["100% 'M PLUS 2'"],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
     [StationType.JREastImportant]: {
         className: ['.rmp-name__jreast_ja'],
-        cssFont: ["100% 'M PLUS 1'"],
+        cssFont: ["100% 'M PLUS 2'"],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },
@@ -174,7 +174,7 @@ export const FONTS_CSS: {
     },
     [MiscNodeType.JREastLineBadge]: {
         className: ['.rmp-name__jreast_ja'],
-        cssFont: ["100% 'M PLUS 1'"],
+        cssFont: ["100% 'M PLUS 2'"],
         cssName: 'fonts_jreast',
         baseUrl: import.meta.env.BASE_URL + 'styles/',
     },

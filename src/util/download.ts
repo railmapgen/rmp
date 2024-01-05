@@ -53,15 +53,8 @@ export const makeImages = async (
     elem.setAttribute('width', width.toString());
     elem.setAttribute('height', height.toString());
     // copy attributes from css to each elem in the newly cloned svg
-    // TODO: #274 copy all possible attributes using document.querySelectorAll('link'), this is hard to maintain
+    // only styles other than fonts need to be stated here, fonts are handled below
     Object.entries({
-        '.rmp-name__zh': ['font-family'],
-        '.rmp-name__en': ['font-family'],
-        '.rmp-name__mtr__zh': ['font-family'],
-        '.rmp-name__mtr__en': ['font-family', 'font-weight'],
-        '.rmp-name__berlin': ['font-family'],
-        '.rmp-name__mrt': ['font-family'],
-        '.rmp-name__jreast_ja': ['font-family'],
         '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
     }).forEach(([className, styleSet]) => {
         const e = document.querySelector(className);
@@ -89,14 +82,28 @@ export const makeImages = async (
     const nodesExist = findNodesExist(graph);
 
     // load fonts
+    const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use the same fonts css
     for (const nodeType in FONTS_CSS) {
-        if (nodesExist[nodeType as NodeType]) {
+        if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
             try {
-                const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
-                const uris = await getBase64FontFace(elem, className, cssFont, cssName, baseUrl);
                 const s = document.createElement('style');
-                s.textContent = uris.join('\n');
+                const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
+
+                for (let i = 0; i < document.styleSheets.length; i = i + 1) {
+                    if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
+                        s.textContent = [...document.styleSheets[i].cssRules]
+                            .map(_ => _.cssText)
+                            .filter(_ => !_.startsWith('@font-face'))
+                            .join('\n');
+                    }
+                }
+                s.textContent += '\n';
+
+                const uris = await getBase64FontFace(elem, className, cssFont, cssName, baseUrl);
+                s.textContent += uris.join('\n');
+
                 elem.prepend(s);
+                addedFontsCSSName.add(cssName);
             } catch (err) {
                 alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
                 console.error(err);
