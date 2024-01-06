@@ -84,6 +84,8 @@ export const LineStylesWithColor = [
     LineStyleType.MTRRaceDays,
     LineStyleType.MTRLightRail,
     LineStyleType.MRTUnderConstruction,
+    LineStyleType.JREastSingleColor,
+    LineStyleType.JREastSingleColorPattern,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
