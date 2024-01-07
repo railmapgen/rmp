@@ -125,10 +125,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
 export interface ShmetroIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
-    /**
-     * 0 <= rotate < 360
-     */
-    rotate: number;
+    rotate: Rotate;
     width: number;
     height: number;
 }

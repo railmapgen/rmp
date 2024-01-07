@@ -17,7 +17,7 @@ import {
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
-const NAME_SZ_BASIC = {
+const NAME_JRE_BASIC = {
     ja: {
         size: 10,
         baseOffset: 1,
@@ -64,8 +64,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const iconRotateDY2 = Math.sin((rotate * Math.PI) / 180) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
 
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
-    const textJAHeight = names[0].split('\\').length * (nameOffsetY === 'middle' ? 0 : NAME_SZ_BASIC.ja.size);
-    const textJAOffset = (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_SZ_BASIC.ja.baseOffset;
+    const textJAHeight = names[0].split('\\').length * (nameOffsetY === 'middle' ? 0 : NAME_JRE_BASIC.ja.size);
+    const textJAOffset = (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_JRE_BASIC.ja.baseOffset;
     const textDY =
         (textJAHeight + textJAOffset) * NAME_DY[nameOffsetY].polarity +
         (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? iconRotateDY1 : iconRotateDY2);
@@ -76,21 +76,21 @@ const JREastBasicStation = (props: StationComponentProps) => {
         en: nameOffsetY === 'top' || textOneLine ? 'up' : 'down',
     };
     const textBaseOffset: { ja: number; en: number } = {
-        ja: NAME_SZ_BASIC.ja.baseOffset,
+        ja: NAME_JRE_BASIC.ja.baseOffset,
         en:
             (nameOffsetY === 'middle'
                 ? textOneLine
-                    ? (-names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2 - 1
-                    : (names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2
+                    ? (-names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 - 1
+                    : (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2
                 : 0) +
             (important && !textOneLine ? 2 : 0) +
-            NAME_SZ_BASIC.en.baseOffset,
+            NAME_JRE_BASIC.en.baseOffset,
     };
 
     const textJAEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 0 } as DOMRect);
     React.useEffect(() => setBBox(textJAEl.current!.getBBox()), [names[0], textVertical, setBBox, textJAEl]);
-    const textSafeDImportant = (textVertical ? 0.2 : 0.7) * NAME_SZ_BASIC.ja.size;
+    const textSafeDImportant = (textVertical ? 0.2 : 0.7) * NAME_JRE_BASIC.ja.size;
     const textJAXImportant = { left: -textSafeDImportant / 2, middle: 0, right: textSafeDImportant / 2 }[nameOffsetX];
     const textJAYImportant = { top: -2, middle: 0, bottom: 2 }[nameOffsetY];
     const textENX = textOneLine
@@ -118,15 +118,15 @@ const JREastBasicStation = (props: StationComponentProps) => {
 
     const textVerticalDY =
         (nameOffsetY === 'top'
-            ? iconRotateDY1 - NAME_SZ_BASIC.en.baseOffset
-            : iconRotateDY2 + NAME_SZ_BASIC.en.baseOffset) +
+            ? iconRotateDY1 - NAME_JRE_BASIC.en.baseOffset
+            : iconRotateDY2 + NAME_JRE_BASIC.en.baseOffset) +
         (important ? textSafeDImportant : 0) * NAME_DY[nameOffsetY].polarity;
     const textVerticalAnchor = {
         ja: nameOffsetY === 'top' ? 'end' : 'start',
         en: nameOffsetY === 'top' ? 'start' : 'end',
     };
     const textVerticalENBaseOffset =
-        (names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
+        (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 + NAME_JRE_BASIC.en.baseOffset;
     const textVerticalENY = (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
 
     return (
@@ -175,8 +175,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         x={important && nameOffsetX !== 'middle' ? textJAXImportant : 0}
                         y={important && nameOffsetY !== 'middle' ? textJAYImportant : 0}
                         text={names[0].split('\\')}
-                        fontSize={NAME_SZ_BASIC.ja.size}
-                        lineHeight={NAME_SZ_BASIC.ja.size}
+                        fontSize={NAME_JRE_BASIC.ja.size}
+                        lineHeight={NAME_JRE_BASIC.ja.size}
                         grow={textGrow.ja}
                         baseOffset={textBaseOffset.ja}
                         className="rmp-name__jreast_ja"
@@ -186,8 +186,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         text={names[1].split('\\')}
                         x={textENX}
                         y={textENY}
-                        fontSize={NAME_SZ_BASIC.en.size}
-                        lineHeight={NAME_SZ_BASIC.en.size}
+                        fontSize={NAME_JRE_BASIC.en.size}
+                        lineHeight={NAME_JRE_BASIC.en.size}
                         grow={textGrow.en}
                         baseOffset={textBaseOffset.en}
                         className="rmp-name__jreast_en"
@@ -209,8 +209,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         <MultilineTextVertical
                             ref={textJAEl}
                             text={names[0].split('\\')}
-                            fontSize={NAME_SZ_BASIC.ja.size}
-                            lineWidth={NAME_SZ_BASIC.ja.size}
+                            fontSize={NAME_JRE_BASIC.ja.size}
+                            lineWidth={NAME_JRE_BASIC.ja.size}
                             grow="bidirectional"
                             baseOffset={0}
                             className="rmp-name__jreast_ja"
@@ -221,8 +221,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         <MultilineText
                             text={names[1].split('\\')}
                             y={textVerticalENY}
-                            fontSize={NAME_SZ_BASIC.en.size}
-                            lineHeight={NAME_SZ_BASIC.en.size}
+                            fontSize={NAME_JRE_BASIC.en.size}
+                            lineHeight={NAME_JRE_BASIC.en.size}
                             grow={nameOffsetY === 'top' ? 'down' : 'up'}
                             baseOffset={textVerticalENBaseOffset}
                             className="rmp-name__jreast_en"
