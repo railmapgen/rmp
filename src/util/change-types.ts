@@ -1,10 +1,9 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, Id, NodeAttributes, Theme } from '../constants/constants';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/lines';
 import stations from '../components/svgs/stations/stations';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
-import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { AttributesWithColor } from '../components/panels/details/color-field';
 
@@ -14,7 +13,7 @@ const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
  * Change a station's type.
  * @param graph Graph.
  * @param selectedFirst Current station's id.
- * @param newType New station's type.
+ * @param newStnType New station's type.
  */
 export const changeStationType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -74,6 +73,7 @@ export const changeStationsTypeInBatch = (
  * @param graph Graph.
  * @param currentLineStyleType Current lines' type.
  * @param newLineStyleType New lines' type.
+ * @param theme New theme.
  * @returns Nothing.
  */
 export const changeLineStyleTypeInBatch = (
@@ -89,10 +89,48 @@ export const changeLineStyleTypeInBatch = (
         });
 
 /**
+ * Change selected lines' style type to newLineStyleType in batch.
+ * @param graph Graph.
+ * @param selected Selected.
+ * @param newLineStyleType New lines' type.
+ * @param theme New theme.
+ * @returns Nothing.
+ */
+export const changeLineStyleTypeSelected = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    selected: Set<Id>,
+    newLineStyleType: LineStyleType,
+    theme: Theme
+) =>
+    [...selected]
+        .filter(id => id.startsWith('line'))
+        .forEach(id => {
+            changeLineStyleType(graph, id, newLineStyleType, theme);
+        });
+
+/**
+ * Change selected lines' path type to newLineStyleType in batch.
+ * @param graph Graph.
+ * @param selected Selected.
+ * @param newLinePathType New lines' type.
+ * @returns Nothing.
+ */
+export const changeLinePathTypeSelected = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    selected: Set<Id>,
+    newLinePathType: LinePathType
+) =>
+    [...selected]
+        .filter(id => id.startsWith('line'))
+        .forEach(id => {
+            changeLinePathType(graph, id, newLinePathType);
+        });
+
+/**
  * Change a line's path type.
  * @param graph Graph.
  * @param selectedFirst Current line's id.
- * @param newType New line's path type.
+ * @param newLinePathType New line's path type.
  */
 export const changeLinePathType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -109,7 +147,7 @@ export const changeLinePathType = (
  * Change a line's style type.
  * @param graph Graph.
  * @param selectedFirst Current line's id.
- * @param newType New line's style type.
+ * @param newLineStyleType New line's style type.
  * @param theme A handy helper to override color to current theme.
  */
 export const changeLineStyleType = (

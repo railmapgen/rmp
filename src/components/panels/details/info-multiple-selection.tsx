@@ -1,9 +1,9 @@
 import { Box, Button, Heading, VStack } from '@chakra-ui/react';
-import { RmgLabel } from '@railmapgen/rmg-components';
+import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Theme } from '../../../constants/constants';
-import { LineStyleType } from '../../../constants/lines';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
@@ -15,6 +15,16 @@ import {
 } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 import { AttributesWithColor } from './color-field';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { changeLinePathTypeSelected, changeLineStyleTypeSelected } from '../../../util/change-types';
+
+const defaultLinePathData = {
+    default: { metadata: { displayName: '...' } },
+};
+
+const defaultLineStyleData = {
+    default: { metadata: { displayName: '...' } },
+};
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
@@ -71,6 +81,23 @@ export default function InfoMultipleSection() {
         hardRefresh();
     };
 
+    const availableLinePathOptions = {
+        ...Object.fromEntries(
+            Object.entries(defaultLinePathData).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        ),
+        ...(Object.fromEntries(
+            Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        ) as { [k in LinePathType]: string }),
+    };
+    const availableLineStyleOptions = {
+        ...Object.fromEntries(
+            Object.entries(defaultLineStyleData).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        ),
+        ...(Object.fromEntries(
+            Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        ) as { [k in LineStyleType]: string }),
+    };
+
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
         if (isThemeRequested && output) {
@@ -82,8 +109,31 @@ export default function InfoMultipleSection() {
     return (
         <Box>
             <Heading as="h5" size="sm">
-                {t('panel.details.selected')} {selected.size}
+                {t('panel.details.Batch Properties')}
             </Heading>
+            <RmgLabel label={t('panel.details.info.multipleLinePathType')} minW="276">
+                <RmgSelect
+                    options={availableLinePathOptions}
+                    disabledOptions={['simple']}
+                    defaultValue="default"
+                    value="default"
+                    onChange={({ target: { value } }) => {
+                        changeLinePathTypeSelected(graph.current, selected, value as LinePathType);
+                        hardRefresh();
+                    }}
+                />
+            </RmgLabel>
+            <RmgLabel label={t('panel.details.info.multipleLineStyleType')} minW="276">
+                <RmgSelect
+                    options={availableLineStyleOptions}
+                    defaultValue="default"
+                    value="default"
+                    onChange={({ target: { value } }) => {
+                        changeLineStyleTypeSelected(graph.current, selected, value as LineStyleType, theme);
+                        hardRefresh();
+                    }}
+                />
+            </RmgLabel>
             <RmgLabel label={t('panel.details.multipleChangeColor')}>
                 <ThemeButton
                     theme={theme}
@@ -93,6 +143,9 @@ export default function InfoMultipleSection() {
                     }}
                 />
             </RmgLabel>
+            <Heading as="h5" size="sm">
+                {t('panel.details.selected')} {selected.size}
+            </Heading>
             <VStack m="var(--chakra-space-1)">
                 {[...selected].map(id => (
                     <Button
