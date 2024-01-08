@@ -183,7 +183,12 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     key={`gzmtr_int_${id}_stn_${i}`}
                     transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})scale(0.75)`}
                 >
-                    <StationNumber strokeColour={info[2]} lineNum={info[4]} stnNum={info[5]} />
+                    <StationNumber
+                        strokeColour={info[2]}
+                        lineNum={info[4]}
+                        stnNum={info[5]}
+                        textClassName="rmp-name__zh"
+                    />
                 </g>
             ))}
 

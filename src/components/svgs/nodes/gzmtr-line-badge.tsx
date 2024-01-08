@@ -40,6 +40,8 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
             <LineIcon
                 zhName={names.at(0) ?? ''}
                 enName={names.at(1) ?? ''}
+                zhClassName="rmp-name__zh"
+                enClassName="rmp-name__en"
                 foregroundColour={color[3]}
                 backgroundColour={color[2]}
                 spanDigits

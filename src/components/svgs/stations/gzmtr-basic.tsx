@@ -95,6 +95,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                     strokeColour={color[2]}
                     lineNum={lineCode === '' ? undefined : lineCode}
                     stnNum={stationCode === '' ? undefined : stationCode}
+                    textClassName="rmp-name__zh"
                 />
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
