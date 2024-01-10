@@ -196,6 +196,7 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
             disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                if (attrs.nameOffsetX !== 'middle') attrs.textVertical = false;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -208,6 +209,7 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
             disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                if (attrs.nameOffsetY === 'middle') attrs.textVertical = false;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
