@@ -29,9 +29,13 @@
                 "lineStyleType": "線段樣式類型",
                 "type": "類型"
             },
-            "multipleSelection": "多重選取",
-            "multipleChangeColor": "變更所選物件的顏色為：",
-            "selected": "選取的對象:",
+            "multipleSelection": {
+                "title": "多重選取",
+                "changeColor": "更改所選物件的顏色為:",
+                "changeLinePathType": "更改所選線段路徑類型為:",
+                "changeLineStyleType": "更改所選線段樣式類型為:",
+                "selected": "選取的物件:"
+            },
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",

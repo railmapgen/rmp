@@ -29,9 +29,13 @@
                 "lineStyleType": "路線風格の種類",
                 "type": "種類"
             },
-            "multipleSelection": "複数選択",
-            "multipleChangeColor": "選択したオブジェクトの色を次のように変更します：",
-            "selected": "選択したオブジェクト:",
+            "multipleSelection": {
+                "title": "複数選択",
+                "changeColor": "選択したオブジェクトの色を次のように変更します:",
+                "changeLinePathType": "選択した線分のパスの種類を次のように変更します:",
+                "changeLineStyleType": "選択した線分のスタイル タイプを次のように変更します:",
+                "selected": "選択されたオブジェクト:"
+            },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
             "changeType": "種類を変更",

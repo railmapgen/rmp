@@ -139,10 +139,7 @@ export default function InfoMultipleSection() {
     return (
         <>
             <Box>
-                <Heading as="h5" size="sm">
-                    {t('panel.details.Batch Properties')}
-                </Heading>
-                <RmgLabel label={t('panel.details.info.multipleLinePathType')} minW="276">
+                <RmgLabel label={t('panel.details.multipleSelection.changeLinePathType')} minW="276">
                     <RmgSelect
                         options={availableLinePathOptions}
                         disabledOptions={['simple']}
@@ -154,7 +151,7 @@ export default function InfoMultipleSection() {
                         }}
                     />
                 </RmgLabel>
-                <RmgLabel label={t('panel.details.info.multipleLineStyleType')} minW="276">
+                <RmgLabel label={t('panel.details.multipleSelection.changeLineStyleType')} minW="276">
                     <RmgSelect
                         options={availableLineStyleOptions}
                         defaultValue="default"
@@ -165,7 +162,7 @@ export default function InfoMultipleSection() {
                         }}
                     />
                 </RmgLabel>
-                <RmgLabel label={t('panel.details.multipleChangeColor')}>
+                <RmgLabel label={t('panel.details.multipleSelection.changeColor')}>
                     <ThemeButton
                         theme={theme}
                         onClick={() => {
@@ -175,7 +172,7 @@ export default function InfoMultipleSection() {
                     />
                 </RmgLabel>
                 <Heading as="h5" size="sm">
-                    {t('panel.details.selected')} {selected.size}
+                    {t('panel.details.multipleSelection.selected')} {selected.size}
                 </Heading>
                 <VStack m="var(--chakra-space-1)">
                     {[...selected].map(id => (
