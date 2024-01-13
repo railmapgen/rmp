@@ -138,9 +138,12 @@ export const changeLinePathType = (
     newLinePathType: LinePathType
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
-    graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
-    const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
-    graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
+    const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
+    if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(newLinePathType)) {
+        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
+        const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
+        graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
+    }
 };
 
 /**
@@ -156,16 +159,21 @@ export const changeLineStyleType = (
     newLineStyleType: LineStyleType,
     theme: Theme
 ) => {
+    const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
-    graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
-    const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
-    if (LineStylesWithColor.includes(currentLineStyleType) && LineStylesWithColor.includes(newLineStyleType))
-        (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-    else if (LineStylesWithColor.includes(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
-    graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
-    if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
-    else graph.setEdgeAttribute(selectedFirst, 'zIndex', 0);
+    if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
+        const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
+        const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
+        graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
+        const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
+        if (LineStylesWithColor.includes(currentLineStyleType) && LineStylesWithColor.includes(newLineStyleType))
+            (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
+        else if (LineStylesWithColor.includes(newLineStyleType) && theme)
+            (newAttrs as AttributesWithColor).color = theme;
+        graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
+        if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
+        else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
+    }
 };
 
 export const changeLinesColorInBatch = (

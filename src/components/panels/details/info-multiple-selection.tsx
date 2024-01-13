@@ -1,4 +1,15 @@
-import { Box, Button, Heading, VStack } from '@chakra-ui/react';
+import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
+    Box,
+    Button,
+    Heading,
+    VStack,
+} from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -106,64 +117,106 @@ export default function InfoMultipleSection() {
         }
     }, [output?.toString()]);
 
+    const [isChangeTypeWarningOpen, setIsChangeTypeWarningOpen] = React.useState(false);
+    const cancelRef = React.useRef(null);
+    const [newLinePathType, setNewLinePathType] = React.useState<LinePathType | undefined>(undefined);
+    const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
+    const handleClose = (proceed: boolean) => {
+        if (proceed) {
+            if (newLinePathType) {
+                changeLinePathTypeSelected(graph.current, selected, newLinePathType);
+                setNewLinePathType(undefined);
+                hardRefresh();
+            } else if (newLineStyleType) {
+                changeLineStyleTypeSelected(graph.current, selected, newLineStyleType, theme);
+                setNewLineStyleType(undefined);
+                hardRefresh();
+            }
+        }
+        setIsChangeTypeWarningOpen(false);
+    };
+
     return (
-        <Box>
-            <Heading as="h5" size="sm">
-                {t('panel.details.Batch Properties')}
-            </Heading>
-            <RmgLabel label={t('panel.details.info.multipleLinePathType')} minW="276">
-                <RmgSelect
-                    options={availableLinePathOptions}
-                    disabledOptions={['simple']}
-                    defaultValue="default"
-                    value="default"
-                    onChange={({ target: { value } }) => {
-                        changeLinePathTypeSelected(graph.current, selected, value as LinePathType);
-                        hardRefresh();
-                    }}
-                />
-            </RmgLabel>
-            <RmgLabel label={t('panel.details.info.multipleLineStyleType')} minW="276">
-                <RmgSelect
-                    options={availableLineStyleOptions}
-                    defaultValue="default"
-                    value="default"
-                    onChange={({ target: { value } }) => {
-                        changeLineStyleTypeSelected(graph.current, selected, value as LineStyleType, theme);
-                        hardRefresh();
-                    }}
-                />
-            </RmgLabel>
-            <RmgLabel label={t('panel.details.multipleChangeColor')}>
-                <ThemeButton
-                    theme={theme}
-                    onClick={() => {
-                        setIsThemeRequested(true);
-                        dispatch(openPaletteAppClip(theme));
-                    }}
-                />
-            </RmgLabel>
-            <Heading as="h5" size="sm">
-                {t('panel.details.selected')} {selected.size}
-            </Heading>
-            <VStack m="var(--chakra-space-1)">
-                {[...selected].map(id => (
-                    <Button
-                        key={id}
-                        width="100%"
-                        size="sm"
-                        variant="solid"
-                        onClick={() => dispatch(setSelected(new Set([id])))}
-                        overflow="hidden"
-                        maxW="270"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap"
-                        display="ruby"
-                    >
-                        {getName(id)?.replaceAll('\\', '⏎')}
-                    </Button>
-                ))}
-            </VStack>
-        </Box>
+        <>
+            <Box>
+                <Heading as="h5" size="sm">
+                    {t('panel.details.Batch Properties')}
+                </Heading>
+                <RmgLabel label={t('panel.details.info.multipleLinePathType')} minW="276">
+                    <RmgSelect
+                        options={availableLinePathOptions}
+                        disabledOptions={['simple']}
+                        defaultValue="default"
+                        value="default"
+                        onChange={({ target: { value } }) => {
+                            setNewLinePathType(value as LinePathType);
+                            setIsChangeTypeWarningOpen(true);
+                        }}
+                    />
+                </RmgLabel>
+                <RmgLabel label={t('panel.details.info.multipleLineStyleType')} minW="276">
+                    <RmgSelect
+                        options={availableLineStyleOptions}
+                        defaultValue="default"
+                        value="default"
+                        onChange={({ target: { value } }) => {
+                            setNewLineStyleType(value as LineStyleType);
+                            setIsChangeTypeWarningOpen(true);
+                        }}
+                    />
+                </RmgLabel>
+                <RmgLabel label={t('panel.details.multipleChangeColor')}>
+                    <ThemeButton
+                        theme={theme}
+                        onClick={() => {
+                            setIsThemeRequested(true);
+                            dispatch(openPaletteAppClip(theme));
+                        }}
+                    />
+                </RmgLabel>
+                <Heading as="h5" size="sm">
+                    {t('panel.details.selected')} {selected.size}
+                </Heading>
+                <VStack m="var(--chakra-space-1)">
+                    {[...selected].map(id => (
+                        <Button
+                            key={id}
+                            width="100%"
+                            size="sm"
+                            variant="solid"
+                            onClick={() => dispatch(setSelected(new Set([id])))}
+                            overflow="hidden"
+                            maxW="270"
+                            textOverflow="ellipsis"
+                            whiteSpace="nowrap"
+                            display="ruby"
+                        >
+                            {getName(id)?.replaceAll('\\', '⏎')}
+                        </Button>
+                    ))}
+                </VStack>
+            </Box>
+
+            <AlertDialog
+                isOpen={isChangeTypeWarningOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={() => handleClose(false)}
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>{t('warning')}</AlertDialogHeader>
+                        <AlertDialogBody>{t('panel.details.changeLineTypeContent')}</AlertDialogBody>
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={() => handleClose(false)}>
+                                {t('cancel')}
+                            </Button>
+                            <Button ml="2" colorScheme="red" onClick={() => handleClose(true)}>
+                                {t('panel.details.changeType')}
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+        </>
     );
 }
