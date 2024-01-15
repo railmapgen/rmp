@@ -8,6 +8,7 @@ import {
     Box,
     Button,
     Heading,
+    HStack,
     VStack,
 } from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
@@ -136,6 +137,13 @@ export default function InfoMultipleSection() {
         setIsChangeTypeWarningOpen(false);
     };
 
+    const [filterNodes, setFilterNodes] = React.useState(true);
+    const [filterEdges, setFilterEdges] = React.useState(true);
+    React.useEffect(() => {
+        setFilterNodes(true);
+        setFilterEdges(true);
+    }, [selected]);
+
     return (
         <>
             <Box>
@@ -175,22 +183,45 @@ export default function InfoMultipleSection() {
                     {t('panel.details.multipleSelection.selected')} {selected.size}
                 </Heading>
                 <VStack m="var(--chakra-space-1)">
-                    {[...selected].map(id => (
+                    <HStack m="var(--chakra-space-1)" width="100%">
                         <Button
-                            key={id}
-                            width="100%"
                             size="sm"
-                            variant="solid"
-                            onClick={() => dispatch(setSelected(new Set([id])))}
-                            overflow="hidden"
-                            maxW="270"
-                            textOverflow="ellipsis"
-                            whiteSpace="nowrap"
-                            display="ruby"
+                            width="100%"
+                            variant={filterNodes ? 'solid' : 'ghost'}
+                            onClick={() => setFilterNodes(!filterNodes)}
+                            colorScheme="blue"
                         >
-                            {getName(id)?.replaceAll('\\', '⏎')}
+                            {t('panel.details.multipleSelection.filterNodes')}
                         </Button>
-                    ))}
+                        <Button
+                            size="sm"
+                            width="100%"
+                            variant={filterEdges ? 'solid' : 'ghost'}
+                            onClick={() => setFilterEdges(!filterEdges)}
+                            colorScheme="blue"
+                        >
+                            {t('panel.details.multipleSelection.filterEdges')}
+                        </Button>
+                    </HStack>
+                    {[...selected]
+                        .filter(id => filterNodes || !(id.startsWith('stn') || id.startsWith('misc_node')))
+                        .filter(id => filterEdges || !id.startsWith('line'))
+                        .map(id => (
+                            <Button
+                                key={id}
+                                width="100%"
+                                size="sm"
+                                variant="solid"
+                                onClick={() => dispatch(setSelected(new Set([id])))}
+                                overflow="hidden"
+                                maxW="270"
+                                textOverflow="ellipsis"
+                                whiteSpace="nowrap"
+                                display="ruby"
+                            >
+                                {getName(id)?.replaceAll('\\', '⏎')}
+                            </Button>
+                        ))}
                 </VStack>
             </Box>
 

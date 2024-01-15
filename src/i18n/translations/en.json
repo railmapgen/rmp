@@ -34,7 +34,9 @@
                 "changeColor": "Change selected objects' color to:",
                 "changeLinePathType": "Change selected lines' path type to:",
                 "changeLineStyleType": "Change selected lines' style type to:",
-                "selected": "Selected Objects:"
+                "selected": "Selected Objects:",
+                "filterNodes": "Filter Nodes",
+                "filterEdges": "Filter Edges"
             },
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
             "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
