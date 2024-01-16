@@ -16,7 +16,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
-import { StationAttributes } from '../../../constants/stations';
+import { StationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import {
@@ -25,18 +25,15 @@ import {
     setRefreshNodes,
     setSelected,
 } from '../../../redux/runtime/runtime-slice';
-import ThemeButton from '../theme-button';
-import { AttributesWithColor } from './color-field';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
-import { changeLinePathTypeSelected, changeLineStyleTypeSelected } from '../../../util/change-types';
-
-const defaultLinePathData = {
-    default: { metadata: { displayName: '...' } },
-};
-
-const defaultLineStyleData = {
-    default: { metadata: { displayName: '...' } },
-};
+import stations from '../../svgs/stations/stations';
+import { AttributesWithColor } from './color-field';
+import {
+    changeLinePathTypeSelected,
+    changeLineStyleTypeSelected,
+    changeStationsTypeSelected,
+} from '../../../util/change-types';
+import ThemeButton from '../theme-button';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
@@ -75,14 +72,14 @@ export default function InfoMultipleSection() {
 
     const handleChangeColor = (color: Theme) => {
         selected.forEach(id => {
-            if (graph.current.hasEdge(id)) {
+            if (filterEdges && graph.current.hasEdge(id)) {
                 const thisType = graph.current.getEdgeAttributes(id).style;
                 const attrs = graph.current.getEdgeAttribute(id, thisType);
                 if (thisType !== LineStyleType.River && (attrs as AttributesWithColor)['color'] !== undefined) {
                     (attrs as AttributesWithColor)['color'] = color;
                 }
                 graph.current.mergeEdgeAttributes(id, { [thisType]: attrs });
-            } else if (graph.current.hasNode(id)) {
+            } else if (filterNodes && graph.current.hasNode(id)) {
                 const thisType = graph.current.getNodeAttributes(id).type;
                 const attrs = graph.current.getNodeAttribute(id, thisType);
                 if ((attrs as AttributesWithColor)['color'] !== undefined)
@@ -94,20 +91,22 @@ export default function InfoMultipleSection() {
     };
 
     const availableLinePathOptions = {
-        ...Object.fromEntries(
-            Object.entries(defaultLinePathData).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-        ),
+        default: '...',
         ...(Object.fromEntries(
             Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
         ) as { [k in LinePathType]: string }),
     };
     const availableLineStyleOptions = {
-        ...Object.fromEntries(
-            Object.entries(defaultLineStyleData).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-        ),
+        default: '...',
         ...(Object.fromEntries(
             Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
         ) as { [k in LineStyleType]: string }),
+    };
+    const availableStationOptions = {
+        default: '...',
+        ...(Object.fromEntries(
+            Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        ) as { [k in StationType]: string }),
     };
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
@@ -122,6 +121,7 @@ export default function InfoMultipleSection() {
     const cancelRef = React.useRef(null);
     const [newLinePathType, setNewLinePathType] = React.useState<LinePathType | undefined>(undefined);
     const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
+    const [newStationType, setNewStationType] = React.useState<StationType | undefined>(undefined);
     const handleClose = (proceed: boolean) => {
         if (proceed) {
             if (newLinePathType) {
@@ -131,6 +131,10 @@ export default function InfoMultipleSection() {
             } else if (newLineStyleType) {
                 changeLineStyleTypeSelected(graph.current, selected, newLineStyleType, theme);
                 setNewLineStyleType(undefined);
+                hardRefresh();
+            } else if (newStationType) {
+                changeStationsTypeSelected(graph.current, selected, newStationType);
+                setNewStationType(undefined);
                 hardRefresh();
             }
         }
@@ -147,38 +151,57 @@ export default function InfoMultipleSection() {
     return (
         <>
             <Box>
-                <RmgLabel label={t('panel.details.multipleSelection.changeLinePathType')} minW="276">
-                    <RmgSelect
-                        options={availableLinePathOptions}
-                        disabledOptions={['simple']}
-                        defaultValue="default"
-                        value="default"
-                        onChange={({ target: { value } }) => {
-                            setNewLinePathType(value as LinePathType);
-                            setIsChangeTypeWarningOpen(true);
-                        }}
-                    />
-                </RmgLabel>
-                <RmgLabel label={t('panel.details.multipleSelection.changeLineStyleType')} minW="276">
-                    <RmgSelect
-                        options={availableLineStyleOptions}
-                        defaultValue="default"
-                        value="default"
-                        onChange={({ target: { value } }) => {
-                            setNewLineStyleType(value as LineStyleType);
-                            setIsChangeTypeWarningOpen(true);
-                        }}
-                    />
-                </RmgLabel>
-                <RmgLabel label={t('panel.details.multipleSelection.changeColor')}>
-                    <ThemeButton
-                        theme={theme}
-                        onClick={() => {
-                            setIsThemeRequested(true);
-                            dispatch(openPaletteAppClip(theme));
-                        }}
-                    />
-                </RmgLabel>
+                {filterNodes && (
+                    <RmgLabel label={t('panel.details.multipleSelection.changeStationType')} minW="276">
+                        <RmgSelect
+                            options={availableStationOptions}
+                            defaultValue="default"
+                            value="default"
+                            onChange={({ target: { value } }) => {
+                                setNewStationType(value as StationType);
+                                setIsChangeTypeWarningOpen(true);
+                            }}
+                        />
+                    </RmgLabel>
+                )}
+                {filterEdges && (
+                    <>
+                        <RmgLabel label={t('panel.details.multipleSelection.changeLinePathType')} minW="276">
+                            <RmgSelect
+                                options={availableLinePathOptions}
+                                disabledOptions={['simple']}
+                                defaultValue="default"
+                                value="default"
+                                onChange={({ target: { value } }) => {
+                                    setNewLinePathType(value as LinePathType);
+                                    setIsChangeTypeWarningOpen(true);
+                                }}
+                            />
+                        </RmgLabel>
+                        <RmgLabel label={t('panel.details.multipleSelection.changeLineStyleType')} minW="276">
+                            <RmgSelect
+                                options={availableLineStyleOptions}
+                                defaultValue="default"
+                                value="default"
+                                onChange={({ target: { value } }) => {
+                                    setNewLineStyleType(value as LineStyleType);
+                                    setIsChangeTypeWarningOpen(true);
+                                }}
+                            />
+                        </RmgLabel>
+                    </>
+                )}
+                {(filterNodes || filterEdges) && (
+                    <RmgLabel label={t('panel.details.multipleSelection.changeColor')}>
+                        <ThemeButton
+                            theme={theme}
+                            onClick={() => {
+                                setIsThemeRequested(true);
+                                dispatch(openPaletteAppClip(theme));
+                            }}
+                        />
+                    </RmgLabel>
+                )}
                 <Heading as="h5" size="sm">
                     {t('panel.details.multipleSelection.selected')} {selected.size}
                 </Heading>

@@ -32,6 +32,7 @@
             "multipleSelection": {
                 "title": "複数選択",
                 "changeColor": "選択したオブジェクトの色を次のように変更します:",
+                "changeStationType": "選択したステーションのタイプを次のように変更します:",
                 "changeLinePathType": "選択した線分のパスの種類を次のように変更します:",
                 "changeLineStyleType": "選択した線分のスタイル タイプを次のように変更します:",
                 "selected": "選択されたオブジェクト:",

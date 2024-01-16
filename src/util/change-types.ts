@@ -69,6 +69,24 @@ export const changeStationsTypeInBatch = (
         });
 
 /**
+ * Change selected stations' type to newStnType in batch.
+ * @param graph Graph.
+ * @param selected Selected
+ * @param newStnType New station's type.
+ * @returns Nothing.
+ */
+export const changeStationsTypeSelected = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    selected: Set<Id>,
+    newStnType: StationType
+) =>
+    [...selected]
+        .filter(id => id.startsWith('stn'))
+        .forEach(stnId => {
+            changeStationType(graph, stnId, newStnType);
+        });
+
+/**
  * Change all the lines' style type of currentLineStyleType to newLineStyleType in batch.
  * @param graph Graph.
  * @param currentLineStyleType Current lines' type.

@@ -32,6 +32,7 @@
             "multipleSelection": {
                 "title": "多重選取",
                 "changeColor": "更改所選物件的顏色為:",
+                "changeStationType": "更改所選車站的類型為:",
                 "changeLinePathType": "更改所選線段路徑類型為:",
                 "changeLineStyleType": "更改所選線段樣式類型為:",
                 "selected": "選取的物件:",

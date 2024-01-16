@@ -32,6 +32,7 @@
             "multipleSelection": {
                 "title": "Multiple Selection",
                 "changeColor": "Change selected objects' color to:",
+                "changeStationType": "Change selected stations' type to:",
                 "changeLinePathType": "Change selected lines' path type to:",
                 "changeLineStyleType": "Change selected lines' style type to:",
                 "selected": "Selected Objects:",
