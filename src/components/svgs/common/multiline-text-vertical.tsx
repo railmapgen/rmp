@@ -1,11 +1,11 @@
 import React from 'react';
-import { NameOffsetY } from '../../../constants/stations';
 
 interface MultilineTextVerticalProps extends React.SVGProps<SVGTextElement> {
     text: string[];
     lineWidth: number;
     grow: 'left' | 'right' | 'bidirectional';
     baseOffset?: number;
+    baseDY?: number;
 }
 
 export const MultilineTextVertical = React.forwardRef(
@@ -16,7 +16,8 @@ export const MultilineTextVertical = React.forwardRef(
             grow,
             // if dominantBaseline is defined, use it, or we calculate the dominantBaseline for you
             dominantBaseline = grow === 'left' ? 'hanging' : grow === 'right' ? 'auto' : 'central',
-            baseOffset = 2, // default dy offset
+            baseOffset = 2, // default dx offset
+            baseDY = 0, // default dy
             ...otherSvgTextProps
         } = props;
 
@@ -25,10 +26,11 @@ export const MultilineTextVertical = React.forwardRef(
 
         return (
             <g ref={ref}>
-                {[...text].reverse().map((t, i) => (
+                {[...text].reverse().map((t, i, arr) => (
                     <text
                         key={`${t}${i}`}
-                        dx={(i * lineWidth + baseOffset) * (grow === 'left' ? -1 : 1) + offset}
+                        x={(i * lineWidth + baseOffset) * (grow === 'left' ? -1 : 1) + offset}
+                        dy={(i - (arr.length - 1) / 2) * baseDY}
                         writingMode="vertical-rl"
                         dominantBaseline={dominantBaseline}
                         {...otherSvgTextProps}
