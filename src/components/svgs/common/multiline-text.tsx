@@ -6,6 +6,10 @@ interface MultilineTextProps extends React.SVGProps<SVGTextElement> {
     lineHeight: number;
     grow: 'up' | 'down' | 'bidirectional';
     baseOffset?: number;
+    /**
+     * Change the dx of each line with index i.
+     */
+    funcDX?: (i: number) => number;
 }
 
 export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: React.Ref<SVGGElement>) => {
@@ -16,6 +20,7 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
         // if dominantBaseline is defined, use it, or we calculate the dominantBaseline for you
         dominantBaseline = grow === 'up' ? 'auto' : grow === 'down' ? 'hanging' : 'middle',
         baseOffset = 2, // default dy offset
+        funcDX = () => 0, // default dx will always be 0
         ...otherSvgTextProps
     } = props;
 
@@ -24,10 +29,11 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
 
     return (
         <g ref={ref}>
-            {(grow === 'up' ? [...text].reverse() : text).map((t, i) => (
+            {(grow === 'up' ? [...text].reverse() : text).map((t, i, arr) => (
                 <text
                     key={`${t}${i}`}
                     dy={(i * lineHeight + baseOffset) * (grow === 'up' ? -1 : 1) + offset}
+                    dx={funcDX(i)}
                     dominantBaseline={dominantBaseline}
                     {...otherSvgTextProps}
                 >
