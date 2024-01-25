@@ -31,6 +31,7 @@
             },
             "multipleSelection": {
                 "title": "다중 선택",
+                "change": "선택한 개체의 속성 변경",
                 "changeColor": "선택한 개체의 색상을 다음으로 변경:",
                 "changeStationType": "선택한 방송국 유형을 다음으로 변경하세요:",
                 "changeLinePathType": "선택한 선분의 경로 유형을 다음으로 변경합니다:",

@@ -31,6 +31,7 @@
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
+                "change": "Change selected objects' attributes",
                 "changeColor": "Change selected objects' color to:",
                 "changeStationType": "Change selected stations' type to:",
                 "changeLinePathType": "Change selected lines' path type to:",

@@ -31,10 +31,11 @@
             },
             "multipleSelection": {
                 "title": "多重选取",
-                "changeColor": "更改所选对象的颜色为:",
-                "changeStationType": "更改所选车站的类型为:",
-                "changeLinePathType": "更改所选线段路径类型为:",
-                "changeLineStyleType": "更改所选线段样式类型为:",
+                "change": "修改选中对象的属性",
+                "changeColor": "修改所选对象的颜色为:",
+                "changeStationType": "修改所选车站的类型为:",
+                "changeLinePathType": "修改所选线段路径类型为:",
+                "changeLineStyleType": "修改所选线段样式类型为:",
                 "selected": "选中的对象:",
                 "filterNodes": "筛选节点",
                 "filterEdges": "筛选线段"
