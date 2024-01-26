@@ -82,12 +82,6 @@ export default function InfoMultipleSection() {
     return (
         <>
             <Box>
-                {(filterEdges || filterNodes) && (
-                    <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
-                        {t('panel.details.multipleSelection.change')}
-                    </Button>
-                )}
-
                 <Heading as="h5" size="sm">
                     {t('panel.details.multipleSelection.selected')} {selected.size}
                 </Heading>
@@ -112,6 +106,18 @@ export default function InfoMultipleSection() {
                             {t('panel.details.multipleSelection.filterEdges')}
                         </Button>
                     </HStack>
+                    {(filterEdges || filterNodes) && (
+                        <Button
+                            m="var(--chakra-space-1)"
+                            width="100%"
+                            size="sm"
+                            onClick={() => setIsOpenChangeModal(true)}
+                            variant="outline"
+                            colorScheme="blue"
+                        >
+                            {t('panel.details.multipleSelection.change')}
+                        </Button>
+                    )}
                     {[...selected]
                         .filter(id => filterNodes || !(id.startsWith('stn') || id.startsWith('misc_node')))
                         .filter(id => filterEdges || !id.startsWith('line'))
