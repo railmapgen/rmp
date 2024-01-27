@@ -83,78 +83,63 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
         NAME_DY_SZ_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <g
-                    transform={`rotate(${rotate})`}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                >
-                    <rect
-                        x={-width / 2}
-                        y={-ICON_SIZE / 2}
-                        width={width}
-                        height={ICON_SIZE}
-                        ry={ICON_SIZE / 2}
-                        stroke="#616161"
-                        strokeWidth="1"
-                        fill="white"
-                    />
-                    {(transfer.at(0) ?? []).length > 0 &&
-                        transfer
-                            .at(0)!
-                            .map(info => info[2])
-                            .map((color, i) => (
-                                <circle key={`${i}_${color}`} r={2} cx={-width / 2 + 3 + i * 5} fill={color} />
-                            ))}
-                    <rect
-                        id={`stn_core_${id}`}
-                        x={-width / 2 - 0.5}
-                        y={-ICON_SIZE / 2 - 0.5}
-                        width={width + 1}
-                        height={ICON_SIZE + 1}
-                        ry={ICON_SIZE / 2}
-                        fill="white"
-                        opacity="0"
-                    />
-                </g>
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\\')}
-                        fontSize={NAME_SZ_BASIC.zh.size}
-                        lineHeight={NAME_SZ_BASIC.zh.size}
-                        grow="up"
-                        baseOffset={NAME_SZ_BASIC.zh.baseOffset}
-                        className="rmp-name__zh"
-                    />
-                    <MultilineText
-                        text={names[1].split('\\')}
-                        fontSize={NAME_SZ_BASIC.en.size}
-                        lineHeight={NAME_SZ_BASIC.en.size}
-                        grow="down"
-                        baseOffset={NAME_SZ_BASIC.en.baseOffset}
-                        className="rmp-name__zh"
-                        fill="gray"
-                    />
-                </g>
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <g
+                transform={`rotate(${rotate})`}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
+                <rect
+                    x={-width / 2}
+                    y={-ICON_SIZE / 2}
+                    width={width}
+                    height={ICON_SIZE}
+                    ry={ICON_SIZE / 2}
+                    stroke="#616161"
+                    strokeWidth="1"
+                    fill="white"
+                />
+                {(transfer.at(0) ?? []).length > 0 &&
+                    transfer
+                        .at(0)!
+                        .map(info => info[2])
+                        .map((color, i) => (
+                            <circle key={`${i}_${color}`} r={2} cx={-width / 2 + 3 + i * 5} fill={color} />
+                        ))}
+                <rect
+                    id={`stn_core_${id}`}
+                    x={-width / 2 - 0.5}
+                    y={-ICON_SIZE / 2 - 0.5}
+                    width={width + 1}
+                    height={ICON_SIZE + 1}
+                    ry={ICON_SIZE / 2}
+                    fill="white"
+                    opacity="0"
+                />
             </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            ...names,
-            nameOffsetX,
-            nameOffsetY,
-            rotate,
-            JSON.stringify(transfer),
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\\')}
+                    fontSize={NAME_SZ_BASIC.zh.size}
+                    lineHeight={NAME_SZ_BASIC.zh.size}
+                    grow="up"
+                    baseOffset={NAME_SZ_BASIC.zh.baseOffset}
+                    className="rmp-name__zh"
+                />
+                <MultilineText
+                    text={names[1].split('\\')}
+                    fontSize={NAME_SZ_BASIC.en.size}
+                    lineHeight={NAME_SZ_BASIC.en.size}
+                    grow="down"
+                    baseOffset={NAME_SZ_BASIC.en.baseOffset}
+                    className="rmp-name__en"
+                    fill="gray"
+                />
+            </g>
+        </g>
     );
 };
 
@@ -164,10 +149,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
 export interface SuzhouRTIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
-    /**
-     * 0 <= rotate < 360
-     */
-    rotate: number;
+    rotate: Rotate;
 }
 
 const defaultSuzhouRTIntStationAttributes: SuzhouRTIntStationAttributes = {
@@ -191,7 +173,7 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0].replaceAll('\\', '\n') ?? defaultSuzhouRTIntStationAttributes.names[0],
             onChange: val => {
                 attrs.names[0] = val.replaceAll('\n', '\\');
                 handleAttrsUpdate(id, attrs);
@@ -201,7 +183,7 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1].replaceAll('\\', '\n') ?? defaultSuzhouRTIntStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString().replaceAll('\n', '\\');
                 handleAttrsUpdate(id, attrs);
@@ -211,7 +193,7 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
+            value: attrs.nameOffsetX ?? defaultSuzhouRTIntStationAttributes.nameOffsetX,
             options: { left: 'left', middle: 'middle', right: 'right' },
             disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -223,7 +205,7 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
+            value: attrs.nameOffsetY ?? defaultSuzhouRTIntStationAttributes.nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
             disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -235,7 +217,7 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
+            value: attrs.rotate ?? defaultSuzhouRTIntStationAttributes.rotate,
             hidden: (attrs?.transfer?.flat()?.length ?? 0) === 0,
             options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
             onChange: val => {

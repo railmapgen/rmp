@@ -198,7 +198,8 @@
                     "rotate": "アイコンの回転"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "蘇州軌道交通基本駅"
+                    "displayName": "蘇州軌道交通基本駅",
+                    "textVertical": "垂直の名前"
                 },
                 "suzhouRTInt": {
                     "displayName": "蘇州軌道交通乗り換え駅"

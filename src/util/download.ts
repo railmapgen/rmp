@@ -86,6 +86,17 @@ export const makeImages = async (
 
     // load fonts
     if (!useSystemFonts) {
+        // add rmp-name__zh and rmp-name__en every time as they are the default fonts
+        const s = document.createElement('style');
+        for (let i = 0; i < document.styleSheets.length; i = i + 1) {
+            if (document.styleSheets[i].href?.endsWith('styles/fonts.css')) {
+                s.textContent = [...document.styleSheets[i].cssRules].map(_ => _.cssText).join('\n');
+                break;
+            }
+        }
+        elem.prepend(s);
+
+        // add specified fonts for nodes registered in FONTS_CSS
         const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use same fonts css
         for (const nodeType in FONTS_CSS) {
             if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
@@ -99,6 +110,7 @@ export const makeImages = async (
                                 .map(_ => _.cssText)
                                 .filter(_ => !_.startsWith('@font-face')) // this is added with base64 data below
                                 .join('\n');
+                            break;
                         }
                     }
                     s.textContent += '\n';

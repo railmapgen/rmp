@@ -17,7 +17,7 @@ import {
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
-const NAME_SZ_BASIC = {
+const NAME_JRE_BASIC = {
     ja: {
         size: 10,
         baseOffset: 1,
@@ -58,14 +58,18 @@ const JREastBasicStation = (props: StationComponentProps) => {
 
     const iconWidth = (Math.max(...lines) - Math.min(...lines) + 1) * LINE_WIDTH;
     const iconDX1 = (Math.min(...lines) - 0.5) * LINE_WIDTH;
-    const iconRotateDX1 = Math.cos((rotate * Math.PI) / 180) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2;
-    const iconRotateDX2 = Math.cos((rotate * Math.PI) / 180) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
-    const iconRotateDY1 = Math.sin((rotate * Math.PI) / 180) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2;
-    const iconRotateDY2 = Math.sin((rotate * Math.PI) / 180) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
+    const iconRotateDX1 =
+        Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2 - 1;
+    const iconRotateDX2 =
+        Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2 + 1;
+    const iconRotateDY1 =
+        Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2;
+    const iconRotateDY2 =
+        Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
 
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
-    const textJAHeight = names[0].split('\\').length * (nameOffsetY === 'middle' ? 0 : NAME_SZ_BASIC.ja.size);
-    const textJAOffset = (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_SZ_BASIC.ja.baseOffset;
+    const textJAHeight = names[0].split('\\').length * (nameOffsetY === 'middle' ? 0 : NAME_JRE_BASIC.ja.size);
+    const textJAOffset = (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_JRE_BASIC.ja.baseOffset;
     const textDY =
         (textJAHeight + textJAOffset) * NAME_DY[nameOffsetY].polarity +
         (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? iconRotateDY1 : iconRotateDY2);
@@ -76,34 +80,45 @@ const JREastBasicStation = (props: StationComponentProps) => {
         en: nameOffsetY === 'top' || textOneLine ? 'up' : 'down',
     };
     const textBaseOffset: { ja: number; en: number } = {
-        ja: NAME_SZ_BASIC.ja.baseOffset,
+        ja: NAME_JRE_BASIC.ja.baseOffset,
         en:
             (nameOffsetY === 'middle'
                 ? textOneLine
-                    ? (-names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2 - 1
-                    : (names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2
+                    ? (-names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 - 1
+                    : (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2
                 : 0) +
             (important && !textOneLine ? 2 : 0) +
-            NAME_SZ_BASIC.en.baseOffset,
+            NAME_JRE_BASIC.en.baseOffset,
     };
 
     const textJAEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 0 } as DOMRect);
     React.useEffect(() => setBBox(textJAEl.current!.getBBox()), [names[0], textVertical, setBBox, textJAEl]);
-    const textSafeDImportant = (textVertical ? 0.2 : 0.7) * NAME_SZ_BASIC.ja.size;
-    const textJAXImportant = { left: -textSafeDImportant / 2, middle: 0, right: textSafeDImportant / 2 }[nameOffsetX];
-    const textJAYImportant = { top: -2, middle: 0, bottom: 2 }[nameOffsetY];
+    const textImportantSafeD = (textVertical ? 0.2 : 0.7) * NAME_JRE_BASIC.ja.size;
+    const textJAImportantX = { left: -textImportantSafeD / 2, middle: 0, right: textImportantSafeD / 2 }[nameOffsetX];
+    const textJAImportantY = { top: -2, middle: 0, bottom: 2 }[nameOffsetY];
+
+    const textIconRotateDX =
+        rotate % 90 !== 0 && nameOffsetX !== 'middle'
+            ? (nameOffsetX === 'left' ? iconRotateDX1 : iconRotateDX2) * Math.SQRT2
+            : 0;
+    const textX = (important && nameOffsetX !== 'middle' ? textJAImportantX : 0) + textIconRotateDX;
+    const textBase = { 0: 0, 45: -1, 90: 0, 135: 1, 180: 0, 225: -1, 270: 0, 315: 1 }[rotate];
+    const textBaseDX = textBase * NAME_JRE_BASIC.ja.size;
     const textENX = textOneLine
-        ? (bBox.width + 1 + (important ? textSafeDImportant : 0)) * (nameOffsetX === 'left' ? -1 : 1)
-        : 0;
+        ? (Math.abs(textX) + bBox.width + 1 + (important ? textImportantSafeD : 0)) * (nameOffsetX === 'left' ? -1 : 1)
+        : rotate % 90 !== 0 && nameOffsetX !== 'middle'
+          ? (names[0].split('\\').length / 2) * textBase * NAME_JRE_BASIC.ja.size +
+            (nameOffsetX === 'left' ? -1 : 1) * NAME_JRE_BASIC.ja.size
+          : 0;
     const textENY = (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity;
 
     const iconImportantWidth = bBox.width;
     const iconImportantHeight = bBox.height;
     const iconImportantDX = {
-        left: -(iconImportantWidth + textSafeDImportant),
-        middle: -(iconImportantWidth + textSafeDImportant) / 2,
-        right: 0,
+        left: -(iconImportantWidth + textImportantSafeD) + textIconRotateDX,
+        middle: -(iconImportantWidth + textImportantSafeD) / 2,
+        right: textIconRotateDX,
     }[nameOffsetX];
     const iconImportantDY = {
         top: -2 - textBaseOffset.ja,
@@ -116,18 +131,26 @@ const JREastBasicStation = (props: StationComponentProps) => {
         bottom: -3 + textBaseOffset.ja,
     }[nameOffsetY];
 
-    const textVerticalDY =
+    const textVerticalY =
         (nameOffsetY === 'top'
-            ? iconRotateDY1 - NAME_SZ_BASIC.en.baseOffset
-            : iconRotateDY2 + NAME_SZ_BASIC.en.baseOffset) +
-        (important ? textSafeDImportant : 0) * NAME_DY[nameOffsetY].polarity;
+            ? iconRotateDY1 - NAME_JRE_BASIC.en.baseOffset
+            : iconRotateDY2 + NAME_JRE_BASIC.en.baseOffset) +
+        ((important ? textImportantSafeD : 0) + (rotate % 90 !== 0 ? NAME_JRE_BASIC.ja.size / 2 : 0)) *
+            NAME_DY[nameOffsetY].polarity;
     const textVerticalAnchor = {
         ja: nameOffsetY === 'top' ? 'end' : 'start',
         en: nameOffsetY === 'top' ? 'start' : 'end',
     };
+    const textVerticalBase = { 0: 0, 45: -1, 90: 0, 135: 1, 180: 0, 225: -1, 270: 0, 315: 1 }[rotate];
+    const textVerticalBaseDY = textVerticalBase * NAME_JRE_BASIC.ja.size;
     const textVerticalENBaseOffset =
-        (names[0].split('\\').length * NAME_SZ_BASIC.ja.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
+        (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 + NAME_JRE_BASIC.en.baseOffset;
     const textVerticalENY = (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
+    const textVerticalENX =
+        ((names[0].split('\\').length - 0) / 2) *
+        (nameOffsetY === 'top' ? -1 : 1) *
+        textVerticalBase *
+        NAME_JRE_BASIC.ja.size;
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -164,7 +187,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         <rect
                             x={iconImportantDX}
                             y={iconImportantDY}
-                            width={bBox.width + textSafeDImportant}
+                            width={bBox.width + textImportantSafeD}
                             height={iconImportantHeight}
                             ry={iconImportantHeight / 2}
                             fill="black"
@@ -172,13 +195,14 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     )}
                     <MultilineText
                         ref={textJAEl}
-                        x={important && nameOffsetX !== 'middle' ? textJAXImportant : 0}
-                        y={important && nameOffsetY !== 'middle' ? textJAYImportant : 0}
+                        x={textX}
+                        y={important && nameOffsetY !== 'middle' ? textJAImportantY : 0}
                         text={names[0].split('\\')}
-                        fontSize={NAME_SZ_BASIC.ja.size}
-                        lineHeight={NAME_SZ_BASIC.ja.size}
+                        fontSize={NAME_JRE_BASIC.ja.size}
+                        lineHeight={NAME_JRE_BASIC.ja.size}
                         grow={textGrow.ja}
                         baseOffset={textBaseOffset.ja}
+                        funcDX={i => (i - (names[0].split('\\').length - 1) / 2) * textBaseDX}
                         className="rmp-name__jreast_ja"
                         fill={important ? 'white' : 'black'}
                     />
@@ -186,22 +210,23 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         text={names[1].split('\\')}
                         x={textENX}
                         y={textENY}
-                        fontSize={NAME_SZ_BASIC.en.size}
-                        lineHeight={NAME_SZ_BASIC.en.size}
+                        fontSize={NAME_JRE_BASIC.en.size}
+                        lineHeight={NAME_JRE_BASIC.en.size}
                         grow={textGrow.en}
                         baseOffset={textBaseOffset.en}
+                        funcDX={i => i * LINE_WIDTH * Math.SQRT1_2 * textBase}
                         className="rmp-name__jreast_en"
                     />
                 </g>
             ) : (
                 <>
-                    <g transform={`translate(0, ${textVerticalDY})`} textAnchor={textVerticalAnchor.ja}>
+                    <g transform={`translate(0, ${textVerticalY})`} textAnchor={textVerticalAnchor.ja}>
                         {important && (
                             <rect
                                 x={-(iconImportantWidth - 6) / 2}
-                                y={iconImportantVerticalDY - textSafeDImportant / 2}
+                                y={iconImportantVerticalDY - textImportantSafeD / 2}
                                 width={iconImportantWidth - 6}
-                                height={iconImportantHeight + textSafeDImportant}
+                                height={iconImportantHeight + textImportantSafeD}
                                 rx={(iconImportantWidth - 6) / 2}
                                 fill="black"
                             />
@@ -209,22 +234,29 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         <MultilineTextVertical
                             ref={textJAEl}
                             text={names[0].split('\\')}
-                            fontSize={NAME_SZ_BASIC.ja.size}
-                            lineWidth={NAME_SZ_BASIC.ja.size}
+                            fontSize={NAME_JRE_BASIC.ja.size}
+                            lineWidth={NAME_JRE_BASIC.ja.size}
                             grow="bidirectional"
                             baseOffset={0}
+                            baseDY={textVerticalBaseDY}
                             className="rmp-name__jreast_ja"
                             fill={important ? 'white' : 'black'}
                         />
                     </g>
-                    <g transform={`translate(0, ${textVerticalDY})rotate(270)`} textAnchor={textVerticalAnchor.en}>
+                    <g
+                        transform={`translate(0, ${textVerticalY + textVerticalENY})rotate(270)`}
+                        textAnchor={textVerticalAnchor.en}
+                    >
                         <MultilineText
                             text={names[1].split('\\')}
-                            y={textVerticalENY}
-                            fontSize={NAME_SZ_BASIC.en.size}
-                            lineHeight={NAME_SZ_BASIC.en.size}
+                            fontSize={NAME_JRE_BASIC.en.size}
+                            lineHeight={NAME_JRE_BASIC.en.size}
                             grow={nameOffsetY === 'top' ? 'down' : 'up'}
                             baseOffset={textVerticalENBaseOffset}
+                            funcDX={i =>
+                                i * LINE_WIDTH * Math.SQRT1_2 * textVerticalBase * (nameOffsetY === 'top' ? -1 : 1)
+                            }
+                            x={textVerticalENX}
                             className="rmp-name__jreast_en"
                         />
                     </g>
@@ -269,6 +301,10 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             value: attrs.names[0].replaceAll('\\', '\n'),
             onChange: val => {
                 attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                if (attrs.names[0].length > 1) {
+                    attrs.textOneLine = false;
+                    attrs.important = false;
+                }
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -279,6 +315,10 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             value: attrs.names[1].replaceAll('\\', '\n'),
             onChange: val => {
                 attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                if (attrs.names[1].length > 1) {
+                    attrs.textOneLine = false;
+                    attrs.important = false;
+                }
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -317,7 +357,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'switch',
             label: t('panel.details.stations.jrEastBasic.textOneLine'),
             isChecked: attrs.textOneLine,
-            isDisabled: attrs.nameOffsetY !== 'middle',
+            isDisabled: attrs.nameOffsetY !== 'middle' || attrs.names.some(name => name.split('\\').length > 1),
             onChange: (val: boolean) => {
                 attrs.textOneLine = val;
                 handleAttrsUpdate(id, attrs);
@@ -341,6 +381,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'switch',
             label: t('panel.details.stations.jrEastBasic.important'),
             isChecked: attrs.important ?? false,
+            isDisabled: attrs.names.some(name => name.split('\\').length > 1),
             onChange: (val: boolean) => {
                 attrs.important = val;
                 handleAttrsUpdate(id, attrs);

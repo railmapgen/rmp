@@ -200,7 +200,8 @@
                     "rotate": "Icon rotation"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "Suzhou Rail Transit basic station"
+                    "displayName": "Suzhou Rail Transit basic station",
+                    "textVertical": "Vertical names"
                 },
                 "suzhouRTInt": {
                     "displayName": "Suzhou Rail Transit interchange station"

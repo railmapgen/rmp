@@ -197,7 +197,8 @@
                     "displayName": "香港MTR车站"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "苏州轨道交通基本车站"
+                    "displayName": "苏州轨道交通基本车站",
+                    "textVertical": "垂直名称"
                 },
                 "suzhouRTInt": {
                     "displayName": "苏州轨道交通换乘车站"

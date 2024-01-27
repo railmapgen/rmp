@@ -48,10 +48,3 @@ div#root {
     /* Do not forget to define stroke-width when using this class! */
     stroke-linejoin: round;
 }
-
-.rmp-name__zh {
-    font-family: Arial, SimHei, STHeitiSC-Medium, PingFangSC-Regular, sans-serif;
-}
-.rmp-name__en {
-    font-family: Arial, sans-serif;
-}

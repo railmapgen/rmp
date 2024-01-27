@@ -197,7 +197,8 @@
                     "displayName": "홍콩 MTR 역"
                 },
                 "suzhouRTBasic": {
-                    "displayName": "쑤저우 궤도교통 기본역"
+                    "displayName": "쑤저우 궤도교통 기본역",
+                    "textVertical": "수직 이름"
                 },
                 "suzhouRTInt": {
                     "displayName": "쑤저우 궤도교통 환승역"

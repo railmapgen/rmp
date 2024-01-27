@@ -1,6 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -11,8 +13,8 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
 const NAME_SZ_BASIC = {
     zh: {
@@ -50,6 +52,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
         color = defaultSuzhouRTBasicStationAttributes.color,
         nameOffsetX = defaultSuzhouRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultSuzhouRTBasicStationAttributes.nameOffsetY,
+        textVertical = defaultSuzhouRTBasicStationAttributes.textVertical,
     } = attrs[StationType.SuzhouRTBasic] ?? defaultSuzhouRTBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -72,20 +75,24 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
         NAME_DY_SZ_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <circle
-                    id={`stn_core_${id}`}
-                    r={3}
-                    stroke={color[2]}
-                    strokeWidth="1"
-                    fill="white"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+    const textVerticalY = nameOffsetY === 'top' ? -2.5 - 2 : 2.5 + 2; // iconRadius + verticalOffset
+    const textVerticalAnchor = nameOffsetY === 'top' ? 'end' : 'start';
+    const textVerticalEnX = (names[0].split('\\').length * NAME_SZ_BASIC.zh.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
+
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <circle
+                id={`stn_core_${id}`}
+                r={3}
+                stroke={color[2]}
+                strokeWidth="1"
+                fill="white"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
+            {!textVertical ? (
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
                         text={names[0].split('\\')}
@@ -101,13 +108,41 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                         lineHeight={NAME_SZ_BASIC.en.size}
                         grow="down"
                         baseOffset={NAME_SZ_BASIC.en.baseOffset}
-                        className="rmp-name__zh"
+                        className="rmp-name__en"
                         fill="gray"
                     />
                 </g>
-            </g>
-        ),
-        [id, x, y, ...names, ...color, nameOffsetX, nameOffsetY, onPointerDown, onPointerMove, onPointerUp]
+            ) : (
+                <>
+                    <g transform={`translate(-1, ${textVerticalY})`} textAnchor={textVerticalAnchor}>
+                        <MultilineTextVertical
+                            text={names[0].split('\\')}
+                            fontSize={NAME_SZ_BASIC.zh.size}
+                            lineWidth={NAME_SZ_BASIC.zh.size}
+                            grow="bidirectional"
+                            baseOffset={NAME_SZ_BASIC.zh.baseOffset}
+                            dominantBaseline="central"
+                            className="rmp-name__zh"
+                        />
+                    </g>
+                    <g
+                        transform={`translate(${textVerticalEnX}, ${textVerticalY})rotate(90)`}
+                        textAnchor={textVerticalAnchor}
+                    >
+                        <MultilineText
+                            text={names[1].split('\\')}
+                            fontSize={NAME_SZ_BASIC.en.size}
+                            lineHeight={NAME_SZ_BASIC.en.size}
+                            grow="up"
+                            baseOffset={NAME_SZ_BASIC.en.baseOffset}
+                            className="rmp-name__en"
+                            dominantBaseline="central"
+                            fill="gray"
+                        />
+                    </g>
+                </>
+            )}
+        </g>
     );
 };
 
@@ -117,90 +152,93 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
 export interface SuzhouRTBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    textVertical: boolean;
 }
 
 const defaultSuzhouRTBasicStationAttributes: SuzhouRTBasicStationAttributes = {
     ...defaultStationAttributes,
+    color: [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
-    color: [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white],
+    textVertical: false,
 };
 
-const suzhouRTBasicStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: SuzhouRTBasicStationAttributes) =>
-            (attrs ?? defaultSuzhouRTBasicStationAttributes).names[0].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: SuzhouRTBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSuzhouRTBasicStationAttributes;
-            // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: SuzhouRTBasicStationAttributes) =>
-            (attrs ?? defaultSuzhouRTBasicStationAttributes).names[1].replaceAll('\\', '\n'),
-        onChange: (val: string | number, attrs_: SuzhouRTBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSuzhouRTBasicStationAttributes;
-            // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: SuzhouRTBasicStationAttributes) => (attrs ?? defaultSuzhouRTBasicStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: SuzhouRTBasicStationAttributes) =>
-            attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
-        onChange: (val: string | number, attrs_: SuzhouRTBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSuzhouRTBasicStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as NameOffsetX;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: SuzhouRTBasicStationAttributes) => (attrs ?? defaultSuzhouRTBasicStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: SuzhouRTBasicStationAttributes) =>
-            attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
-        onChange: (val: string | number, attrs_: SuzhouRTBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSuzhouRTBasicStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as NameOffsetY;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField type={StationType.SuzhouRTBasic} defaultTheme={defaultSuzhouRTBasicStationAttributes.color} />
-        ),
-    },
-];
+const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={suzhouRTBasicStationFields as RmgFieldsFieldDetail<SuzhouRTBasicStationAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n') ?? defaultSuzhouRTBasicStationAttributes.names[0],
+            onChange: val => {
+                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names[1].replaceAll('\\', '\n') ?? defaultSuzhouRTBasicStationAttributes.names[1],
+            onChange: val => {
+                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX ?? defaultSuzhouRTBasicStationAttributes.nameOffsetX,
+            options: { left: 'left', middle: 'middle', right: 'right' },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as NameOffsetX;
+                if (attrs.nameOffsetX !== 'middle') attrs.textVertical = false;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY ?? defaultSuzhouRTBasicStationAttributes.nameOffsetY,
+            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
+                if (attrs.nameOffsetY === 'middle') attrs.textVertical = false;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.suzhouRTBasic.textVertical'),
+            isChecked: attrs.textVertical ?? defaultSuzhouRTBasicStationAttributes.textVertical,
+            isDisabled: attrs.nameOffsetY === 'middle' || attrs.nameOffsetX !== 'middle',
+            onChange: (val: boolean) => {
+                attrs.textVertical = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            oneLine: true,
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={StationType.SuzhouRTBasic}
+                    defaultTheme={defaultSuzhouRTBasicStationAttributes.color}
+                />
+            ),
+        },
+    ];
+    return <RmgFields fields={fields} />;
+};
 
 const suzhouRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
@@ -212,7 +250,7 @@ const suzhouRTBasicStation: Station<SuzhouRTBasicStationAttributes> = {
     component: SuzhouRTBasicStation,
     icon: suzhouRTBasicStationIcon,
     defaultAttrs: defaultSuzhouRTBasicStationAttributes,
-    attrsComponent,
+    attrsComponent: SuzhouRTBasicAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.suzhouRTBasic.displayName',
         cities: [CityCode.Suzhou],
