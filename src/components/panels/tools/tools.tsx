@@ -199,7 +199,7 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             {Object.values(MiscNodeType)
-                                .filter(type => type !== MiscNodeType.Virtual)
+                                .filter(type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText)
                                 .map(type => (
                                     <Button
                                         key={type}

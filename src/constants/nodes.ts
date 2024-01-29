@@ -15,6 +15,7 @@ import { MRTDestinationNumbersAttributes } from '../components/svgs/nodes/mrt-de
 import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
+import { I18nTextAttributes } from '../components/svgs/nodes/i18n-text';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -33,6 +34,7 @@ export enum MiscNodeType {
     JREastLineBadge = 'jr-east-line-badge',
     Facilities = 'facilities',
     Text = 'text',
+    I18nText = 'i18n-text',
 }
 
 export interface MiscNodeAttributes {
@@ -52,6 +54,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.JREastLineBadge]?: JREastLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
+    [MiscNodeType.I18nText]?: I18nTextAttributes;
 }
 
 export interface NodeComponentProps<T> {

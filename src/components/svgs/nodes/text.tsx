@@ -116,7 +116,7 @@ export interface TextAttributes extends AttributesWithColor {
     bold: string | number;
 }
 
-const defaultTextAttributes: TextAttributes = {
+export const defaultTextAttributes: TextAttributes = {
     content: 'Enter your text here',
     fontSize: 16,
     lineHeight: 16,
