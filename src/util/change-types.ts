@@ -1,5 +1,13 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, Id, NodeAttributes, Theme } from '../constants/constants';
+import {
+    EdgeAttributes,
+    GraphAttributes,
+    LineId,
+    MiscNodeId,
+    NodeAttributes,
+    StnId,
+    Theme,
+} from '../constants/constants';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/lines';
 import stations from '../components/svgs/stations/stations';
@@ -51,97 +59,28 @@ export const changeStationType = (
 };
 
 /**
- * Change all the stations' type of currentStnType to newStnType in batch.
+ * Change stations' type of currentStnType to newStnType in batch.
  * @param graph Graph.
  * @param currentStnType Current station's type.
  * @param newStnType New station's type.
+ * @param stations Selected stations (undefined for all)
  * @returns Nothing.
  */
 export const changeStationsTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    currentStnType: StationType,
-    newStnType: StationType
+    currentStnType: StationType | 'any',
+    newStnType: StationType,
+    stations?: StnId[]
 ) =>
     graph
-        .filterNodes((node, attr) => node.startsWith('stn') && attr.type === currentStnType)
+        .filterNodes(
+            (node, attr) =>
+                node.startsWith('stn') &&
+                (currentStnType === 'any' || attr.type === currentStnType) &&
+                (!stations || stations.includes(node as StnId))
+        )
         .forEach(stnId => {
             changeStationType(graph, stnId, newStnType);
-        });
-
-/**
- * Change selected stations' type to newStnType in batch.
- * @param graph Graph.
- * @param selected Selected
- * @param newStnType New station's type.
- * @returns Nothing.
- */
-export const changeStationsTypeSelected = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    selected: Set<Id>,
-    newStnType: StationType
-) =>
-    [...selected]
-        .filter(id => id.startsWith('stn'))
-        .forEach(stnId => {
-            changeStationType(graph, stnId, newStnType);
-        });
-
-/**
- * Change all the lines' style type of currentLineStyleType to newLineStyleType in batch.
- * @param graph Graph.
- * @param currentLineStyleType Current lines' type.
- * @param newLineStyleType New lines' type.
- * @param theme New theme.
- * @returns Nothing.
- */
-export const changeLineStyleTypeInBatch = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    currentLineStyleType: LineStyleType,
-    newLineStyleType: LineStyleType,
-    theme: Theme
-) =>
-    graph
-        .filterEdges(edge => graph.getEdgeAttribute(edge, 'style') === currentLineStyleType)
-        .forEach(edgeId => {
-            changeLineStyleType(graph, edgeId, newLineStyleType, theme);
-        });
-
-/**
- * Change selected lines' style type to newLineStyleType in batch.
- * @param graph Graph.
- * @param selected Selected.
- * @param newLineStyleType New lines' type.
- * @param theme New theme.
- * @returns Nothing.
- */
-export const changeLineStyleTypeSelected = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    selected: Set<Id>,
-    newLineStyleType: LineStyleType,
-    theme: Theme
-) =>
-    [...selected]
-        .filter(id => id.startsWith('line'))
-        .forEach(id => {
-            changeLineStyleType(graph, id, newLineStyleType, theme);
-        });
-
-/**
- * Change selected lines' path type to newLineStyleType in batch.
- * @param graph Graph.
- * @param selected Selected.
- * @param newLinePathType New lines' type.
- * @returns Nothing.
- */
-export const changeLinePathTypeSelected = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    selected: Set<Id>,
-    newLinePathType: LinePathType
-) =>
-    [...selected]
-        .filter(id => id.startsWith('line'))
-        .forEach(id => {
-            changeLinePathType(graph, id, newLinePathType);
         });
 
 /**
@@ -163,6 +102,30 @@ export const changeLinePathType = (
         graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
     }
 };
+
+/**
+ * Change selected lines' path type to newLineStyleType in batch.
+ * @param graph Graph.
+ * @param currentLinePathType Current lines' path type.
+ * @param newLinePathType New lines' path type.
+ * @param lines Selected lines. (undefined for all)
+ * @returns Nothing.
+ */
+export const changeLinePathTypeInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    currentLinePathType: LinePathType | 'any',
+    newLinePathType: LinePathType,
+    lines?: LineId[]
+) =>
+    graph
+        .filterEdges(
+            edge =>
+                (currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType) &&
+                (!lines || lines.includes(edge as LineId))
+        )
+        .forEach(edgeId => {
+            changeLinePathType(graph, edgeId, newLinePathType);
+        });
 
 /**
  * Change a line's style type.
@@ -194,22 +157,102 @@ export const changeLineStyleType = (
     }
 };
 
-export const changeLinesColorInBatch = (
+/**
+ * Change the lines' style type of currentLineStyleType to newLineStyleType in batch.
+ * @param graph Graph.
+ * @param currentLineStyleType Current lines' type.
+ * @param newLineStyleType New lines' type.
+ * @param theme New theme.
+ * @param lines Selected lines. (undefined for all)
+ * @returns Nothing.
+ */
+export const changeLineStyleTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    currentLineColor: Theme,
-    newLineColor: Theme
+    currentLineStyleType: LineStyleType | 'any',
+    newLineStyleType: LineStyleType,
+    theme: Theme,
+    lines?: LineId[]
 ) =>
     graph
-        .filterEdges(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
+        .filterEdges(
+            edge =>
+                (currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType) &&
+                (!lines || lines.includes(edge as LineId))
+        )
+        .forEach(edgeId => {
+            changeLineStyleType(graph, edgeId, newLineStyleType, theme);
+        });
+
+/**
+ * Change lines' color from currentLineColor to newLineColor in batch
+ * @param graph Graph.
+ * @param currentLineColor current theme.
+ * @param newLineColor new theme.
+ * @param lines selected lines (undefined for all)
+ * @returns Nothing.
+ */
+export const changeLinesColorInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    currentLineColor: Theme | 'any',
+    newLineColor: Theme,
+    lines?: LineId[]
+) =>
+    graph
+        .filterEdges(
+            edge =>
+                LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')) &&
+                (!lines || lines.includes(edge as LineId))
+        )
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);
             const color = (attr[attr.style] as AttributesWithColor).color;
             if (
-                color[0] == currentLineColor[0] &&
-                color[1] == currentLineColor[1] &&
-                color[2] == currentLineColor[2] &&
-                color[3] == currentLineColor[3]
+                currentLineColor === 'any' ||
+                (color[0] == currentLineColor[0] &&
+                    color[1] == currentLineColor[1] &&
+                    color[2] == currentLineColor[2] &&
+                    color[3] == currentLineColor[3])
             ) {
                 graph.mergeEdgeAttributes(edge, { [attr.style]: { color: newLineColor } });
             }
         });
+
+/**
+ * Change lines' color from currentLineColor to newLineColor in batch
+ * @param graph Graph.
+ * @param currentColor current theme.
+ * @param newColor new theme.
+ * @param stations selected stations. (undefined for all)
+ * @param miscNodes selected misc-nodes. (undefined for all)
+ * @returns Nothing.
+ */
+export const changeNodesColorInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    currentColor: Theme | 'any',
+    newColor: Theme,
+    stations?: StnId[],
+    miscNodes?: MiscNodeId[]
+) => {
+    graph
+        .filterNodes(
+            node =>
+                (node.startsWith('stn') && (!stations || stations.includes(node as StnId))) ||
+                (node.startsWith('misc_node') && (!miscNodes || miscNodes.includes(node as MiscNodeId)))
+        )
+        .forEach(node => {
+            const thisType = graph.getNodeAttributes(node).type;
+            const attrs = graph.getNodeAttribute(node, thisType);
+            if ((attrs as AttributesWithColor)['color'] !== undefined) {
+                const color = (attrs as AttributesWithColor)['color'];
+                if (
+                    currentColor === 'any' ||
+                    (color[0] == currentColor[0] &&
+                        color[1] == currentColor[1] &&
+                        color[2] == currentColor[2] &&
+                        color[3] == currentColor[3])
+                )
+                    (attrs as AttributesWithColor)['color'] = newColor;
+            }
+            graph.mergeNodeAttributes(node, { [thisType]: attrs });
+        });
+};
