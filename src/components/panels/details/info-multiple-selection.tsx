@@ -17,10 +17,11 @@ import {
     ModalOverlay,
     Text,
     VStack,
+    Divider,
+    Checkbox,
 } from '@chakra-ui/react';
-import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
+import { RmgButtonGroup, RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import React from 'react';
-import { MdClose } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
@@ -76,6 +77,10 @@ export default function InfoMultipleSection() {
         setFilterNodes(true);
         setFilterEdges(true);
     }, [selected]);
+    const handleFilterChange = (value: ('node' | 'edge')[]) => {
+        setFilterNodes(value.includes('node'));
+        setFilterEdges(value.includes('edge'));
+    };
 
     const [isOpenChangeModal, setIsOpenChangeModal] = React.useState(false);
 
@@ -86,37 +91,33 @@ export default function InfoMultipleSection() {
                     {t('panel.details.multipleSelection.selected')} {selected.size}
                 </Heading>
                 <VStack m="var(--chakra-space-1)">
-                    <HStack m="var(--chakra-space-1)" width="100%">
-                        <Button
-                            size="sm"
-                            width="100%"
-                            variant={filterNodes ? 'solid' : 'ghost'}
-                            onClick={() => setFilterNodes(!filterNodes)}
-                            colorScheme="blue"
-                        >
-                            {t('panel.details.multipleSelection.filterNodes')}
-                        </Button>
-                        <Button
-                            size="sm"
-                            width="100%"
-                            variant={filterEdges ? 'solid' : 'ghost'}
-                            onClick={() => setFilterEdges(!filterEdges)}
-                            colorScheme="blue"
-                        >
-                            {t('panel.details.multipleSelection.filterEdges')}
-                        </Button>
+                    <HStack w="100%">
+                        <Heading as="h5" size="xs" w="100%">
+                            {t('Show')}
+                        </Heading>
+                        <RmgButtonGroup
+                            selections={[
+                                {
+                                    label: t('Nodes'),
+                                    value: 'node',
+                                },
+                                {
+                                    label: t('Edges'),
+                                    value: 'edge',
+                                },
+                            ]}
+                            defaultValue={['node', 'edge']}
+                            multiSelect={true}
+                            onChange={value => handleFilterChange(value)}
+                        />
                     </HStack>
                     {(filterEdges || filterNodes) && (
-                        <Button
-                            m="var(--chakra-space-1)"
-                            width="100%"
-                            size="sm"
-                            onClick={() => setIsOpenChangeModal(true)}
-                            variant="outline"
-                            colorScheme="blue"
-                        >
-                            {t('panel.details.multipleSelection.change')}
-                        </Button>
+                        <>
+                            <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
+                                {t('panel.details.multipleSelection.change')}
+                            </Button>
+                            <Divider />
+                        </>
                     )}
                     {[...selected]
                         .filter(id => filterNodes || !(id.startsWith('stn') || id.startsWith('misc_node')))
@@ -136,9 +137,12 @@ export default function InfoMultipleSection() {
                                 >
                                     {getName(id)?.replaceAll('\\', '⏎')}
                                 </Button>
-                                <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
-                                    <MdClose />
-                                </Button>
+                                <Checkbox
+                                    defaultChecked
+                                    size="lg"
+                                    colorScheme="blue"
+                                    onChange={() => dispatch(removeSelected(id))}
+                                />
                             </HStack>
                         ))}
                 </VStack>
