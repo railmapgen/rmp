@@ -1,4 +1,19 @@
-import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from '@chakra-ui/react';
+import {
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
+    Box,
+    Button,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Text,
+} from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +35,12 @@ import stations from '../svgs/stations/stations';
 import ThemeButton from '../panels/theme-button';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
+type ChangeTypeInfo = {
+    id: string;
+    title: string;
+    onClose: () => void;
+    field: RmgFieldsField[];
+};
 
 export const ChangeTypeModal = (props: {
     isOpen: boolean;
@@ -58,7 +79,6 @@ export const ChangeTypeModal = (props: {
         ) as { [k in StationType]: string }),
     };
 
-    const [fields, setFields] = React.useState<RmgFieldsField[]>([]);
     const [isStationTypeSwitch, setIsStationTypeSwitch] = React.useState(false);
     const [currentStationType, setCurrentStationType] = React.useState<StationType | 'any'>('any');
     const [newStationType, setNewStationType] = React.useState<StationType>(StationType.ShmetroBasic);
@@ -89,107 +109,89 @@ export const ChangeTypeModal = (props: {
         }
     }, [output.output?.toString()]);
 
-    React.useEffect(() => {
-        const newFields: RmgFieldsField[] = [];
-        if (!filter || filter.includes('station')) {
-            newFields.push({
-                type: 'switch',
-                label: t('header.settings.procedures.changeStationType.title'),
-                isChecked: isStationTypeSwitch,
-                oneLine: true,
-                onChange: value => setIsStationTypeSwitch(value),
-            });
-            isStationTypeSwitch &&
-                newFields.push(
-                    {
-                        type: 'select',
-                        label: t('header.settings.procedures.changeStationType.changeFrom'),
-                        options: availableStationOptions,
-                        value: currentStationType,
-                        disabledOptions: [newStationType],
-                        onChange: value => setCurrentStationType(value as StationType | 'any'),
-                    },
-                    {
-                        type: 'select',
-                        label: t('header.settings.procedures.changeStationType.changeTo'),
-                        options: availableStationOptions,
-                        value: newStationType,
-                        disabledOptions: ['any', currentStationType],
-                        onChange: value => setNewStationType(value as StationType),
-                    }
-                );
-        }
-        if (!filter || filter.includes('line')) {
-            newFields.push({
-                type: 'switch',
-                label: t('header.settings.procedures.changeLineStyleType.title'),
-                isChecked: isLineStyleTypeSwitch,
-                oneLine: true,
-                onChange: value => setIsLineStyleTypeSwitch(value),
-            });
-            isLineStyleTypeSwitch &&
-                newFields.push(
-                    {
-                        type: 'select',
-                        label: t('header.settings.procedures.changeLineStyleType.changeFrom'),
-                        options: availableLineStyleOptions,
-                        value: currentLineStyleType,
-                        disabledOptions: [newLineStyleType],
-                        onChange: value => setCurrentLineStyleType(value as LineStyleType | 'any'),
-                    },
-                    {
-                        type: 'select',
-                        label: t('header.settings.procedures.changeLineStyleType.changeTo'),
-                        options: availableLineStyleOptions,
-                        value: newLineStyleType,
-                        disabledOptions: ['any', currentLineStyleType],
-                        onChange: value => setNewLineStyleType(value as LineStyleType),
-                    }
-                );
-            newFields.push({
-                type: 'switch',
-                label: t('header.settings.procedures.changeLinePathType.title'),
-                isChecked: isLinePathTypeSwitch,
-                oneLine: true,
-                onChange: value => setIsLinePathTypeSwitch(value),
-            });
-            isLinePathTypeSwitch &&
-                newFields.push(
-                    {
-                        type: 'select',
-                        label: t('header.settings.procedures.changeLinePathType.changeFrom'),
-                        options: availableLinePathOptions,
-                        value: currentLinePathType,
-                        disabledOptions: [newLinePathType],
-                        onChange: value => setCurrentLinePathType(value as LinePathType | 'any'),
-                    },
-                    {
-                        type: 'select',
-                        label: t('header.settings.procedures.changeLinePathType.changeTo'),
-                        options: availableLineStyleOptions,
-                        value: newLineStyleType,
-                        disabledOptions: ['any', currentLineStyleType],
-                        onChange: value => setNewLinePathType(value as LinePathType),
-                    }
-                );
-        }
-        newFields.push({
-            type: 'switch',
-            label: t('header.settings.procedures.changeColor.title'),
-            isChecked: isColorSwitch,
-            oneLine: true,
-            onChange: value => setIsColorSwitch(value),
-        });
-        if (isColorSwitch) {
-            newFields.push({
-                type: 'switch',
-                label: t('header.settings.procedures.changeColor.any'),
-                isChecked: isCurrentColorAny,
-                oneLine: true,
-                onChange: value => setIsCurrentColorAny(value),
-            });
-            !isCurrentColorAny &&
-                newFields.push({
+    const changeTypeField: ChangeTypeInfo[] = [
+        {
+            id: 'changeStationType',
+            title: t('header.settings.procedures.changeStationType.title'),
+            onClose: () => setIsStationTypeSwitch(!isStationTypeSwitch),
+            field: [
+                {
+                    type: 'select',
+                    label: t('header.settings.procedures.changeStationType.changeFrom'),
+                    options: availableStationOptions,
+                    value: currentStationType,
+                    disabledOptions: [newStationType],
+                    onChange: value => setCurrentStationType(value as StationType | 'any'),
+                },
+                {
+                    type: 'select',
+                    label: t('header.settings.procedures.changeStationType.changeTo'),
+                    options: availableStationOptions,
+                    value: newStationType,
+                    disabledOptions: ['any', currentStationType],
+                    onChange: value => setNewStationType(value as StationType),
+                },
+            ],
+        },
+        {
+            id: 'changeLineStyleType',
+            title: t('header.settings.procedures.changeLineStyleType.title'),
+            onClose: () => setIsLineStyleTypeSwitch(!isLineStyleTypeSwitch),
+            field: [
+                {
+                    type: 'select',
+                    label: t('header.settings.procedures.changeLineStyleType.changeFrom'),
+                    options: availableLineStyleOptions,
+                    value: currentLineStyleType,
+                    disabledOptions: [newLineStyleType],
+                    onChange: value => setCurrentLineStyleType(value as LineStyleType | 'any'),
+                },
+                {
+                    type: 'select',
+                    label: t('header.settings.procedures.changeLineStyleType.changeTo'),
+                    options: availableLineStyleOptions,
+                    value: newLineStyleType,
+                    disabledOptions: ['any', currentLineStyleType],
+                    onChange: value => setNewLineStyleType(value as LineStyleType),
+                },
+            ],
+        },
+        {
+            id: 'changeLinePathType',
+            title: t('header.settings.procedures.changeLinePathType.title'),
+            onClose: () => setIsLinePathTypeSwitch(!isLinePathTypeSwitch),
+            field: [
+                {
+                    type: 'select',
+                    label: t('header.settings.procedures.changeLinePathType.changeFrom'),
+                    options: availableLinePathOptions,
+                    value: currentLinePathType,
+                    disabledOptions: [newLinePathType],
+                    onChange: value => setCurrentLinePathType(value as LinePathType | 'any'),
+                },
+                {
+                    type: 'select',
+                    label: t('header.settings.procedures.changeLinePathType.changeTo'),
+                    options: availableLineStyleOptions,
+                    value: newLineStyleType,
+                    disabledOptions: ['any', currentLineStyleType],
+                    onChange: value => setNewLinePathType(value as LinePathType),
+                },
+            ],
+        },
+        {
+            id: 'changeColor',
+            title: t('header.settings.procedures.changeColor.title'),
+            onClose: () => setIsColorSwitch(!isColorSwitch),
+            field: [
+                {
+                    type: 'switch',
+                    label: t('header.settings.procedures.changeColor.any'),
+                    isChecked: isCurrentColorAny,
+                    oneLine: true,
+                    onChange: value => setIsCurrentColorAny(value),
+                },
+                {
                     type: 'custom',
                     label: t('header.settings.procedures.changeColor.changeFrom'),
                     component: (
@@ -201,45 +203,30 @@ export const ChangeTypeModal = (props: {
                             }}
                         />
                     ),
-                });
-            newFields.push({
-                type: 'custom',
-                label: t('header.settings.procedures.changeColor.changeTo'),
-                component: (
-                    <ThemeButton
-                        theme={newColor}
-                        onClick={() => {
-                            setIsNewThemeRequested(true);
-                            dispatch(openPaletteAppClip(theme));
-                        }}
-                    />
-                ),
-            });
-        }
-        setFields(newFields);
-    }, [
-        filter,
-        isStationTypeSwitch,
-        currentStationType,
-        newStationType,
-        isLineStyleTypeSwitch,
-        currentLineStyleType,
-        newLineStyleType,
-        isLinePathTypeSwitch,
-        currentLinePathType,
-        newLinePathType,
-        isColorSwitch,
-        isCurrentColorAny,
-        currentColor,
-        newColor,
-    ]);
+                },
+                {
+                    type: 'custom',
+                    label: t('header.settings.procedures.changeColor.changeTo'),
+                    component: (
+                        <ThemeButton
+                            theme={newColor}
+                            onClick={() => {
+                                setIsNewThemeRequested(true);
+                                dispatch(openPaletteAppClip(theme));
+                            }}
+                        />
+                    ),
+                },
+            ],
+        },
+    ];
 
     React.useEffect(() => {
         setIsStationTypeSwitch(false);
         setIsLineStyleTypeSwitch(false);
         setIsLinePathTypeSwitch(false);
         setIsColorSwitch(false);
-    }, [selected]);
+    }, [isOpen]);
 
     const handleChange = () => {
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
@@ -309,7 +296,23 @@ export const ChangeTypeModal = (props: {
                 </ModalHeader>
 
                 <ModalBody>
-                    <RmgFields fields={fields} minW={270} />
+                    <Accordion allowMultiple>
+                        {changeTypeField.map(p => (
+                            <AccordionItem key={p.id}>
+                                <AccordionButton onClick={p.onClose}>
+                                    <Box as="span" flex="1" textAlign="left">
+                                        <Text as="b" fontSize="md">
+                                            {p.title}
+                                        </Text>
+                                    </Box>
+                                    <AccordionIcon />
+                                </AccordionButton>
+                                <AccordionPanel pb={4}>
+                                    <RmgFields fields={p.field} minW={270} />
+                                </AccordionPanel>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 </ModalBody>
 
                 <ModalFooter>
