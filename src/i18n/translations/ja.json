@@ -32,13 +32,11 @@
             "multipleSelection": {
                 "title": "複数選択",
                 "change": "選択したオブジェクトの属性を変更する",
-                "changeColor": "選択したオブジェクトの色を次のように変更します:",
-                "changeStationType": "選択したステーションのタイプを次のように変更します:",
-                "changeLinePathType": "選択した線分のパスの種類を次のように変更します:",
-                "changeLineStyleType": "選択した線分のスタイル タイプを次のように変更します:",
                 "selected": "選択されたオブジェクト:",
-                "filterNodes": "ノードのフィルター",
-                "filterEdges": "フィルターエッジ"
+                "show": "見せる",
+                "station": "駅",
+                "miscNode": "その他のノード",
+                "edge": "ライン"
             },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
@@ -419,6 +417,10 @@
                     "factor": "スケールファクター"
                 },
                 "changeType": {
+                    "title": "すべてのオブジェクトの属性を変更する",
+                    "any": "どれでも"
+                },
+                "changeStationType": {
                     "title": "一括で駅の種類を変更",
                     "changeFrom": "すべての駅をこの種類から変更する：",
                     "changeTo": "この種類に変更する：",
@@ -430,10 +432,16 @@
                     "changeTo": "この風格に：",
                     "info": "線の風格を変更すると、接続を除くすべての特定の属性が線から削除されます。 変更する前に保存してください！"
                 },
-                "changeLinesColor": {
-                    "title": "線の色を一括変更",
-                    "changeFrom": "すべての行をこの色から変更します。",
-                    "changeTo": "この色に:"
+                "changeLinePathType": {
+                    "title": "行のパスを一括で変更する",
+                    "changeFrom": "このパスのすべての行を変更します:",
+                    "changeTo": "この道へ:"
+                },
+                "changeColor": {
+                    "title": "一括で色を変更する",
+                    "changeFrom": "すべてのオブジェクトをこの色から変更します:",
+                    "changeTo": "この色に:",
+                    "any": "どの色からも"
                 },
                 "removeLines": {
                     "title": "単一色の路線を削除",

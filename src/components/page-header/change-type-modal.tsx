@@ -8,6 +8,7 @@ import {
     Button,
     Modal,
     ModalBody,
+    ModalCloseButton,
     ModalContent,
     ModalFooter,
     ModalHeader,
@@ -284,7 +285,7 @@ export const ChangeTypeModal = (props: {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="md" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
@@ -293,6 +294,7 @@ export const ChangeTypeModal = (props: {
                             ? t('panel.details.multipleSelection.change')
                             : t('header.settings.procedures.changeType.title')}
                     </Text>
+                    <ModalCloseButton />
                 </ModalHeader>
 
                 <ModalBody>
@@ -317,9 +319,16 @@ export const ChangeTypeModal = (props: {
 
                 <ModalFooter>
                     <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
-                        {t('close')}
+                        {t('cancel')}
                     </Button>
-                    <Button colorScheme="red" mr="1" onClick={handleChange}>
+                    <Button
+                        colorScheme="red"
+                        mr="1"
+                        onClick={handleChange}
+                        isDisabled={
+                            !isStationTypeSwitch && !isLineStyleTypeSwitch && !isLinePathTypeSwitch && !isColorSwitch
+                        }
+                    >
                         {t('apply')}
                     </Button>
                 </ModalFooter>

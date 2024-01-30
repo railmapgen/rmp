@@ -32,13 +32,11 @@
             "multipleSelection": {
                 "title": "다중 선택",
                 "change": "선택한 개체의 속성 변경",
-                "changeColor": "선택한 개체의 색상을 다음으로 변경:",
-                "changeStationType": "선택한 방송국 유형을 다음으로 변경하세요:",
-                "changeLinePathType": "선택한 선분의 경로 유형을 다음으로 변경합니다:",
-                "changeLineStyleType": "선택한 선분 스타일 유형을 다음으로 변경:",
                 "selected": "선택한 개체:",
-                "filterNodes": "필터 노드",
-                "filterEdges": "필터 가장자리"
+                "show": "보여주다",
+                "station": "역",
+                "miscNode": "기타 노드",
+                "edge": "윤곽"
             },
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
@@ -418,6 +416,10 @@
                     "factor": "스케일 팩터"
                 },
                 "changeType": {
+                    "title": "모든 객체의 속성 변경",
+                    "any": "어느"
+                },
+                "changeStationType": {
                     "title": "역의 종류를 대량으로 수정",
                     "changeFrom": "이 유형의 모든 역:",
                     "changeTo": "이 유형의 역으로 변환:",
@@ -429,14 +431,20 @@
                     "changeTo": "이 스타일에:",
                     "info": "선 스타일을 변경하면 연결을 제외한 선의 모든 특정 속성이 제거됩니다. 변경하기 전에 저장하세요!"
                 },
-                "changeLinesColor": {
-                    "title": "일괄적으로 선 색상 변경",
-                    "changeFrom": "이 색상의 모든 선을 변경합니다.",
-                    "changeTo": "이 색상에:"
+                "changeLinePathType": {
+                    "title": "일괄적으로 라인 경로 변경",
+                    "changeFrom": "이 경로의 모든 줄을 변경하세요:",
+                    "changeTo": "이 길로:"
+                },
+                "changeColor": {
+                    "title": "일괄 색상 변경",
+                    "changeFrom": "이 색상의 모든 개체를 변경합니다.:",
+                    "changeTo": "이 색상에:",
+                    "any": "모든 색상에서"
                 },
                 "removeLines": {
-                    "title": "Remove lines with single color",
-                    "content": "Remove lines that have this color: "
+                    "title": "단일 색상의 선 제거",
+                    "content": "이 색상의 선을 제거하세요: "
                 },
                 "unlockSimplePath": {
                     "title": "간단 경로 잠금 해제",

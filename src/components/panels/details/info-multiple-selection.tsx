@@ -49,7 +49,7 @@ export default function InfoMultipleSection() {
                 <VStack m="var(--chakra-space-1)">
                     <HStack w="100%">
                         <Heading as="h5" size="xs" w="100%">
-                            {t('Show')}
+                            {t('panel.details.multipleSelection.show')}
                         </Heading>
                         <RmgButtonGroup
                             selections={[

@@ -436,12 +436,12 @@
                 },
                 "changeLinePathType": {
                     "title": "Change lines path in batch",
-                    "changeFrom": "Change all lines from this style:",
-                    "changeTo": "To this style:"
+                    "changeFrom": "Change all lines from this path:",
+                    "changeTo": "To this path:"
                 },
                 "changeColor": {
                     "title": "Change color in batch",
-                    "changeFrom": "Change all lines from this color:",
+                    "changeFrom": "Change all objects from this color:",
                     "changeTo": "To this color:",
                     "any": "From any color"
                 },
