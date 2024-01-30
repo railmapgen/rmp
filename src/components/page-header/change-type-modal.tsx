@@ -172,9 +172,9 @@ export const ChangeTypeModal = (props: {
                 {
                     type: 'select',
                     label: t('header.settings.procedures.changeLinePathType.changeTo'),
-                    options: availableLineStyleOptions,
-                    value: newLineStyleType,
-                    disabledOptions: ['any', currentLineStyleType],
+                    options: availableLinePathOptions,
+                    value: newLinePathType,
+                    disabledOptions: ['any', 'simple', currentLinePathType],
                     onChange: value => setNewLinePathType(value as LinePathType),
                 },
             ],
