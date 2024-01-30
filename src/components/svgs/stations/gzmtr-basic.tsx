@@ -83,7 +83,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     return (
         <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
             <g
-                transform="scale(0.75)"
+                transform="scale(0.6)"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
