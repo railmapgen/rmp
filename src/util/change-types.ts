@@ -72,13 +72,8 @@ export const changeStationsTypeInBatch = (
     newStnType: StationType,
     stations?: StnId[]
 ) =>
-    graph
-        .filterNodes(
-            (node, attr) =>
-                node.startsWith('stn') &&
-                (currentStnType === 'any' || attr.type === currentStnType) &&
-                (!stations || stations.includes(node as StnId))
-        )
+    (stations ? stations : graph.filterNodes(node => node.startsWith('stn')))
+        .filter(node => currentStnType === 'any' || graph.getNodeAttribute(node, 'type') === currentStnType)
         .forEach(stnId => {
             changeStationType(graph, stnId, newStnType);
         });
@@ -117,12 +112,8 @@ export const changeLinePathTypeInBatch = (
     newLinePathType: LinePathType,
     lines?: LineId[]
 ) =>
-    graph
-        .filterEdges(
-            edge =>
-                (currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType) &&
-                (!lines || lines.includes(edge as LineId))
-        )
+    (lines ? lines : graph.edges())
+        .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
         .forEach(edgeId => {
             changeLinePathType(graph, edgeId, newLinePathType);
         });
@@ -173,11 +164,9 @@ export const changeLineStyleTypeInBatch = (
     theme: Theme,
     lines?: LineId[]
 ) =>
-    graph
-        .filterEdges(
-            edge =>
-                (currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType) &&
-                (!lines || lines.includes(edge as LineId))
+    (lines ? lines : graph.edges())
+        .filter(
+            edge => currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType
         )
         .forEach(edgeId => {
             changeLineStyleType(graph, edgeId, newLineStyleType, theme);
@@ -197,12 +186,8 @@ export const changeLinesColorInBatch = (
     newLineColor: Theme,
     lines?: LineId[]
 ) =>
-    graph
-        .filterEdges(
-            edge =>
-                LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')) &&
-                (!lines || lines.includes(edge as LineId))
-        )
+    (lines ? lines : graph.edges())
+        .filter(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);
             const color = (attr[attr.style] as AttributesWithColor).color;
@@ -233,26 +218,23 @@ export const changeNodesColorInBatch = (
     stations?: StnId[],
     miscNodes?: MiscNodeId[]
 ) => {
-    graph
-        .filterNodes(
-            node =>
-                (node.startsWith('stn') && (!stations || stations.includes(node as StnId))) ||
-                (node.startsWith('misc_node') && (!miscNodes || miscNodes.includes(node as MiscNodeId)))
-        )
-        .forEach(node => {
-            const thisType = graph.getNodeAttributes(node).type;
-            const attrs = graph.getNodeAttribute(node, thisType);
-            if ((attrs as AttributesWithColor)['color'] !== undefined) {
-                const color = (attrs as AttributesWithColor)['color'];
-                if (
-                    currentColor === 'any' ||
-                    (color[0] == currentColor[0] &&
-                        color[1] == currentColor[1] &&
-                        color[2] == currentColor[2] &&
-                        color[3] == currentColor[3])
-                )
-                    (attrs as AttributesWithColor)['color'] = newColor;
-            }
-            graph.mergeNodeAttributes(node, { [thisType]: attrs });
-        });
+    [
+        ...(stations ? stations : graph.filterNodes(node => node.startsWith('stn'))),
+        ...(miscNodes ? miscNodes : graph.filterNodes(node => node.startsWith('misc_node'))),
+    ].forEach(node => {
+        const thisType = graph.getNodeAttributes(node).type;
+        const attrs = graph.getNodeAttribute(node, thisType);
+        if ((attrs as AttributesWithColor)['color'] !== undefined) {
+            const color = (attrs as AttributesWithColor)['color'];
+            if (
+                currentColor === 'any' ||
+                (color[0] == currentColor[0] &&
+                    color[1] == currentColor[1] &&
+                    color[2] == currentColor[2] &&
+                    color[3] == currentColor[3])
+            )
+                (attrs as AttributesWithColor)['color'] = newColor;
+        }
+        graph.mergeNodeAttributes(node, { [thisType]: attrs });
+    });
 };

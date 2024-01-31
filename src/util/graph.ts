@@ -2,14 +2,18 @@ import { MultiDirectedGraph } from 'graphology';
 import {
     EdgeAttributes,
     GraphAttributes,
+    Id,
     LineId,
     MiscNodeId,
     NodeAttributes,
     NodeType,
     StnId,
+    Theme,
 } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { AttributesWithColor } from '../components/panels/details/color-field';
+import { LineStylesWithColor } from '../constants/lines';
 
 /**
  * Finds all edges that both its source and targets are in the nodes.
@@ -55,4 +59,39 @@ export const findNodesInRectangle = (
     const eX = x1 <= x2 ? x2 : x1;
     const eY = y1 <= y2 ? y2 : y1;
     return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y)) as (StnId | MiscNodeId)[];
+};
+
+/**
+ * Find all themes in selected items or in map
+ */
+export const findThemes = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    selected?: Id[]
+) => {
+    const colorList: Theme[] = [];
+    const colorSet: Set<string> = new Set<string>();
+    (selected ? selected.filter(id => id.startsWith('node') || id.startsWith('misc_node')) : graph.nodes()).forEach(
+        id => {
+            const thisType = graph.getNodeAttributes(id).type;
+            const attrs = graph.getNodeAttribute(id, thisType);
+            if ((attrs as AttributesWithColor)['color'] !== undefined) {
+                const color = (attrs as AttributesWithColor)['color'];
+                if (!colorSet.has(color.toString())) {
+                    colorList.push(color);
+                    colorSet.add(color.toString());
+                }
+            }
+        }
+    );
+    (selected ? selected.filter(id => id.startsWith('line')) : graph.edges())
+        .filter(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
+        .forEach(edge => {
+            const attr = graph.getEdgeAttributes(edge);
+            const color = (attr[attr.style] as AttributesWithColor).color;
+            if (!colorSet.has(color.toString())) {
+                colorList.push(color);
+                colorSet.add(color.toString());
+            }
+        });
+    return colorList;
 };

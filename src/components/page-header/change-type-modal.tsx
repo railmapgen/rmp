@@ -15,7 +15,8 @@ import {
     ModalOverlay,
     Text,
 } from '@chakra-ui/react';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
+import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LineId, MiscNodeId, StnId, Theme } from '../../constants/constants';
@@ -24,6 +25,7 @@ import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
 import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { findThemes } from '../../util/graph';
 import {
     changeLinePathTypeInBatch,
     changeLinesColorInBatch,
@@ -36,12 +38,19 @@ import stations from '../svgs/stations/stations';
 import ThemeButton from '../panels/theme-button';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
-type ChangeTypeInfo = {
+
+interface ChangeTypeInfo {
     id: string;
     title: string;
     onClose: () => void;
     field: RmgFieldsField[];
-};
+}
+
+interface ChangeTypeTheme {
+    id: string;
+    theme: Theme;
+    value: string;
+}
 
 export const ChangeTypeModal = (props: {
     isOpen: boolean;
@@ -90,23 +99,35 @@ export const ChangeTypeModal = (props: {
     const [currentLinePathType, setCurrentLinePathType] = React.useState<LinePathType | 'any'>('any');
     const [newLinePathType, setNewLinePathType] = React.useState<LinePathType>(LinePathType.Diagonal);
     const [isColorSwitch, setIsColorSwitch] = React.useState(false);
-    const [isCurrentColorAny, setIsCurrentColorAny] = React.useState(false);
-    const [currentColor, setCurrentColor] = React.useState<Theme>(theme);
+    const [currentColor, setCurrentColor] = React.useState<Theme | 'any'>('any');
     const [newColor, setNewColor] = React.useState<Theme>(theme);
 
-    const [isCurrentThemeRequested, setIsCurrentThemeRequested] = React.useState(false);
     const [isNewThemeRequested, setIsNewThemeRequested] = React.useState(false);
 
     React.useEffect(() => {
-        if (isCurrentThemeRequested && output.output) {
-            setCurrentColor(output.output);
-            setIsCurrentThemeRequested(false);
-        }
         if (isNewThemeRequested && output.output) {
             setNewColor(output.output);
             setIsNewThemeRequested(false);
         }
     }, [output.output?.toString()]);
+
+    const [themeList, setThemeList] = React.useState<ChangeTypeTheme[]>([]);
+
+    const displayHandler = (item: ChangeTypeTheme) => {
+        return (
+            <RmgLineBadge
+                name={item.value}
+                fg={item.theme[3]}
+                bg={item.theme[2]}
+                title={item.theme[1]}
+                sx={{
+                    display: 'inline-block',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                }}
+            />
+        );
+    };
 
     const changeTypeField: ChangeTypeInfo[] = [
         {
@@ -186,22 +207,19 @@ export const ChangeTypeModal = (props: {
                 {
                     type: 'custom',
                     label: t('header.settings.procedures.changeColor.changeFrom'),
-                    component: !isCurrentColorAny && (
-                        <ThemeButton
-                            theme={currentColor}
-                            onClick={() => {
-                                setIsCurrentThemeRequested(true);
-                                dispatch(openPaletteAppClip(theme));
-                            }}
+                    component: (
+                        <RmgAutoComplete
+                            data={themeList}
+                            displayHandler={displayHandler}
+                            predicate={(item, query) =>
+                                item.id.toLowerCase().includes(query.toLowerCase()) ||
+                                Object.values(item.id).some(name => name.toLowerCase().includes(query.toLowerCase()))
+                            }
+                            displayValue={item => item.value}
+                            defaultValue={themeList[0]}
+                            onChange={item => setCurrentColor(item.id === 'any' ? 'any' : item.theme)}
                         />
                     ),
-                },
-                {
-                    type: 'switch',
-                    label: t('header.settings.procedures.changeColor.any'),
-                    isChecked: isCurrentColorAny,
-                    oneLine: true,
-                    onChange: value => setIsCurrentColorAny(value),
                 },
                 {
                     type: 'custom',
@@ -221,10 +239,23 @@ export const ChangeTypeModal = (props: {
     ];
 
     React.useEffect(() => {
-        setIsStationTypeSwitch(false);
-        setIsLineStyleTypeSwitch(false);
-        setIsLinePathTypeSwitch(false);
-        setIsColorSwitch(false);
+        if (isOpen) {
+            setIsStationTypeSwitch(false);
+            setIsLineStyleTypeSwitch(false);
+            setIsLinePathTypeSwitch(false);
+            setIsColorSwitch(false);
+            setThemeList([
+                { id: 'any', theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black], value: 'Any' },
+                ...findThemes(graph.current, isSelect ? [...selected] : undefined).map(
+                    theme =>
+                        ({
+                            id: theme.toString(),
+                            theme: theme,
+                            value: theme[1] === 'other' ? theme[2] : theme[1],
+                        }) as ChangeTypeTheme
+                ),
+            ]);
+        }
     }, [isOpen]);
 
     const handleChange = () => {
@@ -257,14 +288,14 @@ export const ChangeTypeModal = (props: {
             if (!filter || filter.includes('line'))
                 changeLinesColorInBatch(
                     graph.current,
-                    isCurrentColorAny ? 'any' : currentColor,
+                    currentColor,
                     newColor,
                     isSelect ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[]) : undefined
                 );
             if (!filter || filter.includes('station'))
                 changeNodesColorInBatch(
                     graph.current,
-                    isCurrentColorAny ? 'any' : currentColor,
+                    currentColor,
                     newColor,
                     isSelect ? ([...selected].filter(node => node.startsWith('stn')) as StnId[]) : undefined,
                     []
@@ -272,7 +303,7 @@ export const ChangeTypeModal = (props: {
             if (!filter || filter.includes('misc-node'))
                 changeNodesColorInBatch(
                     graph.current,
-                    isCurrentColorAny ? 'any' : currentColor,
+                    currentColor,
                     newColor,
                     [],
                     isSelect ? ([...selected].filter(node => node.startsWith('misc_node')) as MiscNodeId[]) : undefined
