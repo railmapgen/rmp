@@ -102,8 +102,6 @@ export const ChangeTypeModal = (props: {
             setCurrentColor(output.output);
             setIsCurrentThemeRequested(false);
         }
-    }, [output.output?.toString()]);
-    React.useEffect(() => {
         if (isNewThemeRequested && output.output) {
             setNewColor(output.output);
             setIsNewThemeRequested(false);
@@ -186,16 +184,9 @@ export const ChangeTypeModal = (props: {
             onClose: () => setIsColorSwitch(!isColorSwitch),
             field: [
                 {
-                    type: 'switch',
-                    label: t('header.settings.procedures.changeColor.any'),
-                    isChecked: isCurrentColorAny,
-                    oneLine: true,
-                    onChange: value => setIsCurrentColorAny(value),
-                },
-                {
                     type: 'custom',
                     label: t('header.settings.procedures.changeColor.changeFrom'),
-                    component: (
+                    component: !isCurrentColorAny && (
                         <ThemeButton
                             theme={currentColor}
                             onClick={() => {
@@ -204,6 +195,13 @@ export const ChangeTypeModal = (props: {
                             }}
                         />
                     ),
+                },
+                {
+                    type: 'switch',
+                    label: t('header.settings.procedures.changeColor.any'),
+                    isChecked: isCurrentColorAny,
+                    oneLine: true,
+                    onChange: value => setIsCurrentColorAny(value),
                 },
                 {
                     type: 'custom',
