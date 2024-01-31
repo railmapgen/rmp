@@ -245,7 +245,11 @@ export const ChangeTypeModal = (props: {
             setIsLinePathTypeSwitch(false);
             setIsColorSwitch(false);
             setThemeList([
-                { id: 'any', theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black], value: 'Any' },
+                {
+                    id: 'any',
+                    theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black],
+                    value: t('header.settings.procedures.changeType.any'),
+                },
                 ...findThemes(graph.current, isSelect ? [...selected] : undefined).map(
                     theme =>
                         ({
