@@ -133,7 +133,7 @@ export const changeLineStyleType = (
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
+    if (lineStyles[newLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
         const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
         const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
         graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
