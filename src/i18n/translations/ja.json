@@ -119,14 +119,42 @@
                     "fontSize": "書体サイズ",
                     "lineHeight": "行の高さ",
                     "textAnchor": "テキストのアンカー",
+                    "start": "開始",
+                    "middle": "中央",
+                    "end": "終了",
+                    "auto": "自動",
+                    "hanging": "吊り下げ",
                     "dominantBaseline": "ドミナントベースライン",
                     "language": "言語での書体ファミリー",
+                    "zh": "中国語",
+                    "en": "英語",
+                    "mtr__zh": "香港MTR中国語",
+                    "mtr__en": "香港MTR英語",
+                    "berlin": "ベルリンS/Uバーン",
+                    "mrt": "シンガポールMRT",
+                    "jreast_ja": "JR東日本日本語",
+                    "jreast_en": "JR東日本英語",
                     "rotate": "回転",
                     "italic": "イタリック体",
                     "bold": "太字"
                 }
             },
             "stations": {
+                "common": {
+                    "nameZh": "中国語の駅名",
+                    "nameEn": "英語の駅名",
+                    "nameJa": "日本語の駅名",
+                    "nameOffsetX": "駅名補正値X",
+                    "nameOffsetY": "駅名補正値Y",
+                    "rotate": "アイコンの回転",
+                    "lineCode": "路線番号",
+                    "stationCode": "駅番号",
+                    "left": "左",
+                    "middle": "中央",
+                    "right": "右",
+                    "top": "上",
+                    "bottom": "下"
+                },
                 "interchange": {
                     "title": "乗り換え",
                     "within": "駅構内の乗り換え",
@@ -139,16 +167,6 @@
                     "add": "乗り換えを追加",
                     "copy": "乗り換えをコピー",
                     "remove": "乗り換えを削除"
-                },
-                "common": {
-                    "nameZh": "中国語の駅名",
-                    "nameEn": "英語の駅名",
-                    "nameJa": "日本語の駅名",
-                    "nameOffsetX": "駅名補正値X",
-                    "nameOffsetY": "駅名補正値Y",
-                    "rotate": "アイコンの回転",
-                    "lineCode": "路線番号",
-                    "stationCode": "駅番号"
                 },
                 "shmetroBasic": {
                     "displayName": "上海地下鉄基本駅"
