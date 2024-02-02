@@ -316,6 +316,7 @@
             "invalidType": "无效的文件类型！仅接受JSON格式的文件。",
             "unknownError": "解析上传文件时发生未知错误！请重试。",
             "gallery": "从画廊中导入",
+            "tutorial": "开始教程",
             "importFromRMPGallery": "模板 {{id}} 已导入。对此更改不满意？可通过 Ctrl + Z 或撤销按钮进行撤销。",
             "failToImportFromRMPGallery": "无法从画廊导入{{id}}，找不到文件。"
         },

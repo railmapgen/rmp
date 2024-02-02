@@ -1,5 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { Size } from './hooks';
 
 export const getMousePosition = (e: React.MouseEvent) => {
     const bbox = e.currentTarget.getBoundingClientRect();
@@ -53,6 +54,14 @@ export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, Ed
 
     return { xMin, yMin, xMax, yMax };
 };
+
+/**
+ * Return the canvas size with some margin for header and tools.
+ */
+export const getCanvasSize = (size: Size) => ({
+    width: (size.width ?? 720) - 40,
+    height: (size.height ?? 1280) - 40,
+});
 
 /**
  * Calculate the bounding box of the current element, with respect to its own transformation attribute.

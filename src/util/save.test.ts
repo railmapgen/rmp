@@ -4,21 +4,21 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
-    it('upgrade will return the default Shanghai template if originalParam is null', async () => {
+    it('upgrade will return the default tutorial if originalParam is null', async () => {
         const save = await upgrade(null);
         expect(save).toContain('人民广场');
-        expect(save).toContain('豫园');
-        expect(save).toContain('Hongqiao Airport Terminal 2');
-        expect(save).toContain('Longyang Road');
+        expect(save).toContain('交通大学');
+        expect(save).toContain('Xinzhuang');
+        expect(save).toContain('Longyang');
     });
 
-    it('upgrade will return the default Shanghai template if version is missing or invalid', async () => {
+    it('upgrade will return the default tutorial if version is missing or invalid', async () => {
         let save = await upgrade('{}');
         expect(save).toContain('人民广场');
-        expect(save).toContain('Longyang Road');
+        expect(save).toContain('Xinzhuang');
         save = await upgrade('{"version":"114514"}');
-        expect(save).toContain('豫园');
-        expect(save).toContain('Hongqiao Airport Terminal 2');
+        expect(save).toContain('交通大学');
+        expect(save).toContain('Longyang');
     });
 
     it('Can upgrade all the way up from version 0 to CURRENT_VERSION', async () => {
