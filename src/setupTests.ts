@@ -1,8 +1,4 @@
-import { vi } from 'vitest';
 import infoJson from '../info.json';
-import { MockBroadcastChannel } from './mock-broadcast-channel';
-
-vi.stubGlobal('BroadcastChannel', MockBroadcastChannel);
 
 const originalFetch = global.fetch;
 global.fetch = (...args) => {

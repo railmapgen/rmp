@@ -11,11 +11,11 @@
         "@chakra-ui/react": "^2.8.2",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
-        "@railmapgen/rmg-components": "^9.0.0",
+        "@railmapgen/rmg-components": "^10.0.6",
         "@railmapgen/rmg-palette-resources": "^0.8.34",
-        "@railmapgen/rmg-runtime": "^8.1.0",
-        "@railmapgen/rmg-translate": "^3.1.0",
-        "@railmapgen/svg-assets": "^3.0.0",
+        "@railmapgen/rmg-runtime": "^9.0.4",
+        "@railmapgen/rmg-translate": "^3.1.2",
+        "@railmapgen/svg-assets": "^3.1.1",
         "@reduxjs/toolkit": "^2.0.1",
         "bezier-js": "^6.1.4",
         "canvas-size": "^1.2.6",
@@ -65,18 +65,6 @@
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
     },
     "version": "3.5.3"
 }
