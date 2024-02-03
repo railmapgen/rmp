@@ -11,12 +11,12 @@
         "@chakra-ui/react": "^2.8.2",
         "@emotion/react": "^11.11.1",
         "@emotion/styled": "^11.11.0",
-        "@railmapgen/rmg-components": "^9.0.0",
+        "@railmapgen/rmg-components": "^10.0.6",
         "@railmapgen/rmg-palette-resources": "^0.8.34",
-        "@railmapgen/rmg-runtime": "^8.1.0",
-        "@railmapgen/rmg-translate": "^3.1.0",
-        "@railmapgen/svg-assets": "^3.0.0",
-        "@reduxjs/toolkit": "^2.0.1",
+        "@railmapgen/rmg-runtime": "^9.0.4",
+        "@railmapgen/rmg-translate": "^3.1.2",
+        "@railmapgen/svg-assets": "^3.1.1",
+        "@reduxjs/toolkit": "^2.1.0",
         "bezier-js": "^6.1.4",
         "canvas-size": "^1.2.6",
         "graphology": "^0.25.4",
@@ -42,7 +42,6 @@
         "@types/react": "^18.2.45",
         "@types/react-dom": "^18.2.18",
         "@types/react-router-dom": "^5.3.3",
-        "@types/redux-mock-store": "^1.0.6",
         "@typescript-eslint/eslint-plugin": "^6.15.0",
         "@typescript-eslint/parser": "^6.15.0",
         "@vitejs/plugin-legacy": "^5.2.0",
@@ -52,7 +51,6 @@
         "eslint-plugin-prettier": "^5.1.0",
         "eslint-plugin-react": "^7.33.2",
         "prettier": "^3.1.1",
-        "redux-mock-store": "^1.5.4",
         "typescript": "^5.3.3",
         "vite": "^5.0.12",
         "vite-plugin-checker": "^0.6.2",
@@ -65,18 +63,6 @@
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
     },
     "version": "3.5.3"
 }

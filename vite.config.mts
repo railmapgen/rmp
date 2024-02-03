@@ -31,7 +31,6 @@ export default defineConfig({
                         'react-i18next',
                     ],
                     chakra: ['@chakra-ui/react', '@emotion/react', '@emotion/styled', 'framer-motion', 'react-icons'],
-                    'ag-grid': ['ag-grid-community', 'ag-grid-react'],
                 },
             },
         },
