@@ -125,8 +125,21 @@
                     "fontSize": "Font size",
                     "lineHeight": "Line height",
                     "textAnchor": "Text anchor",
+                    "start": "Start",
+                    "middle": "Middle",
+                    "end": "End",
+                    "auto": "Auto",
+                    "hanging": "Hanging",
                     "dominantBaseline": "Dominant baseline",
                     "language": "Font family in which language",
+                    "zh": "Chinese",
+                    "en": "English",
+                    "mtr__zh": "Hongkong MTR Chinese",
+                    "mtr__en": "Hongkong MTR English",
+                    "berlin": "Berlin S/U Bahn",
+                    "mrt": "Singapore MRT",
+                    "jreast_ja": "JR East Japanese",
+                    "jreast_en": "JR East English",
                     "rotate": "Rotation",
                     "italic": "Italic",
                     "bold": "Bold"
@@ -141,7 +154,12 @@
                     "nameOffsetY": "Names offset Y",
                     "rotate": "Icon rotation",
                     "lineCode": "Line code",
-                    "stationCode": "Station code"
+                    "stationCode": "Station code",
+                    "left": "Left",
+                    "middle": "Middle",
+                    "right": "Right",
+                    "top": "Top",
+                    "bottom": "Bottom"
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -325,6 +343,7 @@
             "invalidType": "Invalid file type! Only file in JSON format is accepted.",
             "unknownError": "Unknown error occurred while parsing the uploaded file! Please try again.",
             "gallery": "Import from Gallery",
+            "tutorial": "Start tutorial",
             "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
             "failToImportFromRMPGallery": "Fail to import {{id}} from the gallery. The file can not be found."
         },

@@ -327,7 +327,12 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'select',
             label: t('panel.details.stations.jrEastBasic.nameOffset'),
             value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: { top: 'top', bottom: 'bottom', left: 'left', right: 'right' },
+            options: {
+                left: t('panel.details.stations.common.left'),
+                right: t('panel.details.stations.common.right'),
+                top: t('panel.details.stations.common.top'),
+                bottom: t('panel.details.stations.common.bottom'),
+            },
             onChange: val => {
                 if (val === 'left' || val === 'right') {
                     attrs.nameOffsetX = val as NameOffsetX;

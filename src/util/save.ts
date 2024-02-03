@@ -27,9 +27,9 @@ export interface RMPSave {
 export const CURRENT_VERSION = 26;
 
 /**
- * Load Shanghai template only if the param is missing or invalid.
+ * Load the tutorial.
  */
-const getInitialParam = async () => JSON.stringify((await import('../saves/shanghai.json')).default);
+export const getInitialParam = async () => JSON.stringify((await import('../saves/tutorial.json')).default);
 
 /**
  * Upgrade the passed param to the latest format.

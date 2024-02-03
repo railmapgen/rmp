@@ -116,7 +116,7 @@ export interface TextAttributes extends AttributesWithColor {
     bold: string | number;
 }
 
-const defaultTextAttributes: TextAttributes = {
+export const defaultTextAttributes: TextAttributes = {
     content: 'Enter your text here',
     fontSize: 16,
     lineHeight: 16,
@@ -170,7 +170,11 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             type: 'select',
             label: t('panel.details.nodes.text.textAnchor'),
             value: attrs.textAnchor ?? defaultTextAttributes.textAnchor,
-            options: { start: 'start', middle: 'middle', end: 'end' },
+            options: {
+                start: t('panel.details.nodes.text.start'),
+                middle: t('panel.details.nodes.text.middle'),
+                end: t('panel.details.nodes.text.end'),
+            },
             onChange: val => {
                 attrs.textAnchor = val as React.SVGProps<SVGTextElement>['textAnchor'];
                 handleAttrsUpdate(id, attrs);
@@ -181,7 +185,11 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             type: 'select',
             label: t('panel.details.nodes.text.dominantBaseline'),
             value: attrs.dominantBaseline ?? defaultTextAttributes.dominantBaseline,
-            options: { auto: 'auto', middle: 'middle', hanging: 'hanging' },
+            options: {
+                auto: t('panel.details.nodes.text.auto'),
+                middle: t('panel.details.nodes.text.middle'),
+                hanging: t('panel.details.nodes.text.hanging'),
+            },
             onChange: val => {
                 attrs.dominantBaseline = val as React.SVGProps<SVGTextElement>['dominantBaseline'];
                 handleAttrsUpdate(id, attrs);
@@ -193,14 +201,14 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             label: t('panel.details.nodes.text.language'),
             value: attrs.language ?? defaultTextAttributes.language,
             options: {
-                zh: 'Chinese',
-                en: 'English',
-                mtr__zh: 'MTR Chinese',
-                mtr__en: 'MTR English',
-                berlin: 'Berlin S/U Bahn',
-                mrt: 'MRT',
-                jreast_ja: 'JR East Japanese',
-                jreast_en: 'JR East English',
+                zh: t('panel.details.nodes.text.zh'),
+                en: t('panel.details.nodes.text.en'),
+                mtr__zh: t('panel.details.nodes.text.mtr__zh'),
+                mtr__en: t('panel.details.nodes.text.mtr__en'),
+                berlin: t('panel.details.nodes.text.berlin'),
+                mrt: t('panel.details.nodes.text.mrt'),
+                jreast_ja: t('panel.details.nodes.text.jreast_ja'),
+                jreast_en: t('panel.details.nodes.text.jreast_en'),
             },
             onChange: val => {
                 attrs.language = val.toString();

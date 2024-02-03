@@ -125,8 +125,21 @@
                     "fontSize": "文字大小",
                     "lineHeight": "行高度",
                     "textAnchor": "文字锚点",
+                    "start": "开始",
+                    "middle": "居中",
+                    "end": "结束",
+                    "auto": "自动",
+                    "hanging": "悬挂",
                     "dominantBaseline": "显性基线",
                     "language": "哪个语言的字体系列",
+                    "zh": "中文",
+                    "en": "英文",
+                    "mtr__zh": "港铁中文",
+                    "mtr__en": "港铁英文",
+                    "berlin": "柏林 S/U Bahn",
+                    "mrt": "新加坡地铁",
+                    "jreast_ja": "JR东日本日语",
+                    "jreast_en": "JR东日本英语",
                     "rotate": "旋转",
                     "italic": "斜体",
                     "bold": "粗体"
@@ -141,7 +154,12 @@
                     "nameOffsetY": "名称纵向偏移",
                     "rotate": "车站旋转角度",
                     "lineCode": "路线编号",
-                    "stationCode": "车站编号"
+                    "stationCode": "车站编号",
+                    "left": "左",
+                    "middle": "中间",
+                    "right": "右",
+                    "top": "顶部",
+                    "bottom": "底部"
                 },
                 "interchange": {
                     "title": "换乘",
@@ -322,6 +340,7 @@
             "invalidType": "无效的文件类型！仅接受JSON格式的文件。",
             "unknownError": "解析上传文件时发生未知错误！请重试。",
             "gallery": "从画廊中导入",
+            "tutorial": "开始教程",
             "importFromRMPGallery": "模板 {{id}} 已导入。对此更改不满意？可通过 Ctrl + Z 或撤销按钮进行撤销。",
             "failToImportFromRMPGallery": "无法从画廊导入{{id}}，找不到文件。"
         },

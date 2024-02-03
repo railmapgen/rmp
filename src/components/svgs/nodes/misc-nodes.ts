@@ -6,8 +6,6 @@ import gzmtrLineBadge from './gzmtr-line-badge';
 import bjsubwayNumLineBadge from './bjsubway-num-line-badge';
 import bjsubwayTextLineBadge from './bjsubway-text-line-badge';
 import suzhouRTNumLineBadge from './suzhourt-num-line-badge';
-import facilities from './facilities';
-import text from './text';
 import berlinUBahnLineBadge from './berlin-u-bahn-line-badge';
 import berlinSBahnLineBadge from './berlin-s-bahn-line-badge';
 import chongqingRTNumLineBadge from './chongqingrt-num-line-badge';
@@ -15,6 +13,9 @@ import chongqingRTTextLineBadge from './chongqingrt-text-line-badge';
 import shenzhenMetroNumLineBadge from './shenzhenmetro-num-line-badge';
 import mrtDestinationNumbers from './mrt-dest-num';
 import jrEastLineBadge from './jr-east-line-badge';
+import facilities from './facilities';
+import text from './text';
+import i18nText from './i18n-text';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -33,6 +34,7 @@ const miscNodes = {
     [MiscNodeType.JREastLineBadge]: jrEastLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
+    [MiscNodeType.I18nText]: i18nText,
 };
 
 export default miscNodes;

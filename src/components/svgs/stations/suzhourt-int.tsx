@@ -194,7 +194,11 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
             value: attrs.nameOffsetX ?? defaultSuzhouRTIntStationAttributes.nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
+            options: {
+                left: t('panel.details.stations.common.left'),
+                middle: t('panel.details.stations.common.middle'),
+                right: t('panel.details.stations.common.right'),
+            },
             disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
@@ -206,7 +210,11 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
             value: attrs.nameOffsetY ?? defaultSuzhouRTIntStationAttributes.nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
+            options: {
+                top: t('panel.details.stations.common.top'),
+                middle: t('panel.details.stations.common.middle'),
+                bottom: t('panel.details.stations.common.bottom'),
+            },
             disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;

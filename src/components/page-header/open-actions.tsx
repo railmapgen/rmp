@@ -2,14 +2,16 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdUpload } from 'react-icons/md';
+import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { RMGParam } from '../../constants/rmg';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { getCanvasSize } from '../../util/helpers';
+import { useWindowSize } from '../../util/hooks';
 import { parseRmgParam } from '../../util/rmg-param-parser';
-import { upgrade } from '../../util/save';
+import { getInitialParam, upgrade } from '../../util/save';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
@@ -53,6 +55,19 @@ export default function OpenActions() {
         }
     };
 
+    const loadParam = async (paramStr: string) => {
+        const { version, ...save } = JSON.parse(await upgrade(paramStr));
+
+        // details panel will complain about unknown nodes or edges if the last selected is not cleared
+        dispatch(clearSelected());
+
+        // rest graph with new data
+        graph.current.clear();
+        graph.current.import(save.graph);
+
+        refreshAndSave();
+    };
+
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         console.log('OpenActions.handleUpload():: received file', file);
@@ -63,16 +78,7 @@ export default function OpenActions() {
         } else {
             try {
                 const paramStr = await readFileAsText(file);
-                const { version, ...save } = JSON.parse(await upgrade(paramStr));
-
-                // details panel will complain about unknown nodes or edges if the last selected is not cleared
-                dispatch(clearSelected());
-
-                // rest graph with new data
-                graph.current.clear();
-                graph.current.import(save.graph);
-
-                refreshAndSave();
+                await loadParam(paramStr);
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
                 console.error(
@@ -84,6 +90,17 @@ export default function OpenActions() {
 
         // clear field for next upload
         event.target.value = '';
+    };
+
+    const size = useWindowSize();
+    const { height } = getCanvasSize(size);
+
+    const handleLoadTutorial = async () => {
+        await loadParam(await getInitialParam());
+        dispatch(setSvgViewBoxMin({ x: -10, y: -13 }));
+        // these magic k and b comes from linear equation fitting where you record several window size...
+        const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
+        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
     };
 
     return (
@@ -116,6 +133,10 @@ export default function OpenActions() {
                     <Badge ml="1" colorScheme="green">
                         New
                     </Badge>
+                </MenuItem>
+
+                <MenuItem icon={<MdSchool />} onClick={handleLoadTutorial}>
+                    {t('header.open.tutorial')}
                 </MenuItem>
             </MenuList>
 

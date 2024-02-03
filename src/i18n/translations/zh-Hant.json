@@ -125,8 +125,21 @@
                     "fontSize": "文字大小",
                     "lineHeight": "行高度",
                     "textAnchor": "文字錨點",
+                    "start": "開始",
+                    "middle": "中間",
+                    "end": "結束",
+                    "auto": "自動",
+                    "hanging": "懸吊",
                     "dominantBaseline": "顯性基線",
                     "language": "哪個語言的字體系列",
+                    "zh": "中文",
+                    "en": "英文",
+                    "mtr__zh": "香港地鐵中文",
+                    "mtr__en": "香港地鐵英文",
+                    "berlin": "柏林 S/U 地鐵",
+                    "mrt": "新加坡地鐵",
+                    "jreast_ja": "JR 東日本日文",
+                    "jreast_en": "JR 東日本英文",
                     "rotate": "旋轉",
                     "italic": "斜體",
                     "bold": "粗體"
@@ -141,7 +154,12 @@
                     "nameOffsetY": "名稱縱向偏移",
                     "rotate": "車站旋轉角度",
                     "lineCode": "路綫編碼",
-                    "stationCode": "車站編碼"
+                    "stationCode": "車站編碼",
+                    "left": "左",
+                    "middle": "中間",
+                    "right": "右",
+                    "top": "頂部",
+                    "bottom": "底部"
                 },
                 "interchange": {
                     "title": "換乘",
@@ -322,6 +340,7 @@
             "invalidType": "無效的文件類型！僅接受JSON格式的文件。",
             "unknownError": "解析上傳文件時發生未知錯誤！請重試。",
             "gallery": "從畫廊中讀入",
+            "tutorial": "開始教程",
             "importFromRMPGallery": "範本 {{id}} 已匯入。對此更改不滿意？可通過 Ctrl + Z 或撤銷按鈕進行撤銷。",
             "failToImportFromRMPGallery": "無法從畫廊導入{{id}}，找不到檔案。"
         },

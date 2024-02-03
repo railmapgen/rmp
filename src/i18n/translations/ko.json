@@ -125,8 +125,21 @@
                     "fontSize": "글자 대소",
                     "lineHeight": "행고도",
                     "textAnchor": "글자 앵커",
+                    "start": "시작",
+                    "middle": "가운데",
+                    "end": "끝",
+                    "auto": "자동",
+                    "hanging": "매달리는",
                     "dominantBaseline": "현성 바셀린",
                     "language": "언어로 된 글꼴 종류",
+                    "zh": "중국어",
+                    "en": "영어",
+                    "mtr__zh": "홍콩 MTR 중국어",
+                    "mtr__en": "홍콩 MTR 영어",
+                    "berlin": "베를린 S/U Bahn",
+                    "mrt": "싱가포르 MRT",
+                    "jreast_ja": "JR 동일본어",
+                    "jreast_en": "JR 동일본 영어",
                     "rotate": "회전",
                     "italic": "이탤릭체",
                     "bold": "굵게"
@@ -141,7 +154,12 @@
                     "nameOffsetY": "명칭 세로 이동",
                     "rotate": "역회전각도",
                     "lineCode": "노선 번호",
-                    "stationCode": "역 번호"
+                    "stationCode": "역 번호",
+                    "left": "왼쪽",
+                    "middle": "가운데",
+                    "right": "오른쪽",
+                    "top": "위",
+                    "bottom": "아래"
                 },
                 "interchange": {
                     "title": "환승",
@@ -322,6 +340,7 @@
             "invalidType": "잘못된 파일 형식입니다! JSON 형식의 파일만 허용됩니다.",
             "unknownError": "업로드된 파일의 파싱 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
             "gallery": "갤러리에서 가져오기",
+            "tutorial": "튜토리얼 시작",
             "importFromRMPGallery": "템플릿 {{id}}가 가져 왔습니다. 이 변경 사항에 만족하지 않으십니까? Ctrl + Z 또는 실행 취소 버튼을 사용하여 실행 취소하세요.",
             "failToImportFromRMPGallery": "갤러리에서 {{id}}를 가져올 수 없습니다. 파일을 찾을 수 없습니다."
         },

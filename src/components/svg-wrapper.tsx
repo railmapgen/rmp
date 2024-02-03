@@ -19,8 +19,8 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import { getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
-import { Size, useWindowSize } from '../util/hooks';
+import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import { useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -48,9 +48,8 @@ const SvgWrapper = () => {
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
 
-    const size: Size = useWindowSize();
-    const height = (size.height ?? 1280) - 40;
-    const width = (size.width ?? 720) - 40;
+    const size = useWindowSize();
+    const { height, width } = getCanvasSize(size);
 
     // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
