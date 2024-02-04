@@ -70,9 +70,9 @@ export const changeStationsTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentStnType: StationType | 'any',
     newStnType: StationType,
-    stations?: StnId[]
+    stations: StnId[]
 ) =>
-    (stations ? stations : graph.filterNodes(node => node.startsWith('stn')))
+    stations
         .filter(node => currentStnType === 'any' || graph.getNodeAttribute(node, 'type') === currentStnType)
         .forEach(stnId => {
             changeStationType(graph, stnId, newStnType);
@@ -110,9 +110,9 @@ export const changeLinePathTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentLinePathType: LinePathType | 'any',
     newLinePathType: LinePathType,
-    lines?: LineId[]
+    lines: LineId[]
 ) =>
-    (lines ? lines : graph.edges())
+    lines
         .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
         .forEach(edgeId => {
             changeLinePathType(graph, edgeId, newLinePathType);
@@ -162,9 +162,9 @@ export const changeLineStyleTypeInBatch = (
     currentLineStyleType: LineStyleType | 'any',
     newLineStyleType: LineStyleType,
     theme: Theme,
-    lines?: LineId[]
+    lines: LineId[]
 ) =>
-    (lines ? lines : graph.edges())
+    lines
         .filter(
             edge => currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType
         )
@@ -215,13 +215,10 @@ export const changeNodesColorInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentColor: Theme | 'any',
     newColor: Theme,
-    stations?: StnId[],
-    miscNodes?: MiscNodeId[]
+    stations: StnId[],
+    miscNodes: MiscNodeId[]
 ) => {
-    [
-        ...(stations ? stations : graph.filterNodes(node => node.startsWith('stn'))),
-        ...(miscNodes ? miscNodes : graph.filterNodes(node => node.startsWith('misc_node'))),
-    ].forEach(node => {
+    [...stations, ...miscNodes].forEach(node => {
         const thisType = graph.getNodeAttributes(node).type;
         const attrs = graph.getNodeAttribute(node, thisType);
         if ((attrs as AttributesWithColor)['color'] !== undefined) {

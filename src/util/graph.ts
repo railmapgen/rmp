@@ -2,12 +2,11 @@ import { MultiDirectedGraph } from 'graphology';
 import {
     EdgeAttributes,
     GraphAttributes,
-    Id,
+    NodeAttributes,
+    StnId,
     LineId,
     MiscNodeId,
-    NodeAttributes,
     NodeType,
-    StnId,
     Theme,
 } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
@@ -66,24 +65,23 @@ export const findNodesInRectangle = (
  */
 export const findThemes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    selected?: Id[]
+    nodes: (StnId | MiscNodeId)[],
+    edges: LineId[]
 ) => {
     const colorList: Theme[] = [];
     const colorSet: Set<string> = new Set<string>();
-    (selected ? selected.filter(id => id.startsWith('node') || id.startsWith('misc_node')) : graph.nodes()).forEach(
-        id => {
-            const thisType = graph.getNodeAttributes(id).type;
-            const attrs = graph.getNodeAttribute(id, thisType);
-            if ((attrs as AttributesWithColor)['color'] !== undefined) {
-                const color = (attrs as AttributesWithColor)['color'];
-                if (!colorSet.has(color.toString())) {
-                    colorList.push(color);
-                    colorSet.add(color.toString());
-                }
+    nodes.forEach(id => {
+        const thisType = graph.getNodeAttributes(id).type;
+        const attrs = graph.getNodeAttribute(id, thisType);
+        if ((attrs as AttributesWithColor)['color'] !== undefined) {
+            const color = (attrs as AttributesWithColor)['color'];
+            if (!colorSet.has(color.toString())) {
+                colorList.push(color);
+                colorSet.add(color.toString());
             }
         }
-    );
-    (selected ? selected.filter(id => id.startsWith('line')) : graph.edges())
+    });
+    edges
         .filter(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);

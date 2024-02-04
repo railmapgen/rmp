@@ -1,4 +1,4 @@
-import { Box, Button, Heading, HStack, VStack, Divider, Checkbox } from '@chakra-ui/react';
+import { Box, Button, Heading, HStack, VStack, Divider } from '@chakra-ui/react';
 import { RmgButtonGroup } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setSelected, removeSelected } from '../../../redux/runtime/runtime-slice';
 import { ChangeTypeModal, FilterType } from '../../page-header/change-type-modal';
+import { MdDeselect } from 'react-icons/md';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
@@ -66,7 +67,7 @@ export default function InfoMultipleSection() {
                                     value: 'line',
                                 },
                             ]}
-                            defaultValue={['station', 'misc-node', 'line']}
+                            defaultValue={filter}
                             multiSelect={true}
                             onChange={value => setFilter(value as FilterType[])}
                         />
@@ -98,12 +99,9 @@ export default function InfoMultipleSection() {
                                 >
                                     {getName(id)?.replaceAll('\\', '⏎')}
                                 </Button>
-                                <Checkbox
-                                    defaultChecked
-                                    size="lg"
-                                    colorScheme="blue"
-                                    onChange={() => dispatch(removeSelected(id))}
-                                />
+                                <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
+                                    <MdDeselect />
+                                </Button>
                             </HStack>
                         ))}
                 </VStack>

@@ -19,7 +19,7 @@ import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railm
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineId, MiscNodeId, StnId, Theme } from '../../constants/constants';
+import { LineId, StnId, MiscNodeId, Theme } from '../../constants/constants';
 import { LinePathType, LineStyleType } from '../../constants/lines';
 import { StationType } from '../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../redux';
@@ -39,7 +39,7 @@ import ThemeButton from '../panels/theme-button';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
-interface ChangeTypeInfo {
+interface ChangeTypeField {
     id: string;
     title: string;
     onClose: () => void;
@@ -61,7 +61,11 @@ export const ChangeTypeModal = (props: {
     const { isOpen, onClose, isSelect, filter } = props;
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const { selected, theme, paletteAppClip: output } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        theme,
+        paletteAppClip: { output },
+    } = useRootSelector(state => state.runtime);
 
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
@@ -91,25 +95,25 @@ export const ChangeTypeModal = (props: {
 
     const [isStationTypeSwitch, setIsStationTypeSwitch] = React.useState(false);
     const [currentStationType, setCurrentStationType] = React.useState<StationType | 'any'>('any');
-    const [newStationType, setNewStationType] = React.useState<StationType>(StationType.ShmetroBasic);
+    const [newStationType, setNewStationType] = React.useState(StationType.ShmetroBasic);
     const [isLineStyleTypeSwitch, setIsLineStyleTypeSwitch] = React.useState(false);
     const [currentLineStyleType, setCurrentLineStyleType] = React.useState<LineStyleType | 'any'>('any');
-    const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType>(LineStyleType.SingleColor);
+    const [newLineStyleType, setNewLineStyleType] = React.useState(LineStyleType.SingleColor);
     const [isLinePathTypeSwitch, setIsLinePathTypeSwitch] = React.useState(false);
     const [currentLinePathType, setCurrentLinePathType] = React.useState<LinePathType | 'any'>('any');
-    const [newLinePathType, setNewLinePathType] = React.useState<LinePathType>(LinePathType.Diagonal);
+    const [newLinePathType, setNewLinePathType] = React.useState(LinePathType.Diagonal);
     const [isColorSwitch, setIsColorSwitch] = React.useState(false);
     const [currentColor, setCurrentColor] = React.useState<Theme | 'any'>('any');
-    const [newColor, setNewColor] = React.useState<Theme>(theme);
+    const [newColor, setNewColor] = React.useState(theme);
 
     const [isNewThemeRequested, setIsNewThemeRequested] = React.useState(false);
 
     React.useEffect(() => {
-        if (isNewThemeRequested && output.output) {
-            setNewColor(output.output);
+        if (isNewThemeRequested && output) {
+            setNewColor(output);
             setIsNewThemeRequested(false);
         }
-    }, [output.output?.toString()]);
+    }, [output?.toString()]);
 
     const [themeList, setThemeList] = React.useState<ChangeTypeTheme[]>([]);
 
@@ -129,7 +133,7 @@ export const ChangeTypeModal = (props: {
         );
     };
 
-    const changeTypeField: ChangeTypeInfo[] = [
+    const changeTypeField: ChangeTypeField[] = [
         {
             id: 'changeStationType',
             title: t('header.settings.procedures.changeStationType.title'),
@@ -250,7 +254,13 @@ export const ChangeTypeModal = (props: {
                     theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black],
                     value: t('header.settings.procedures.changeType.any'),
                 },
-                ...findThemes(graph.current, isSelect ? [...selected] : undefined).map(
+                ...findThemes(
+                    graph.current,
+                    (isSelect
+                        ? [...selected].filter(id => id.startsWith('stn') || id.startsWith('misc_node'))
+                        : graph.current.nodes()) as (StnId | MiscNodeId)[],
+                    (isSelect ? [...selected].filter(id => id.startsWith('line')) : graph.current.edges()) as LineId[]
+                ).map(
                     theme =>
                         ({
                             id: theme.toString(),
@@ -263,55 +273,33 @@ export const ChangeTypeModal = (props: {
     }, [isOpen]);
 
     const handleChange = () => {
+        const stations = filter?.includes('station')
+            ? ([...selected].filter(node => node.startsWith('stn')) as StnId[])
+            : isSelect
+              ? []
+              : (graph.current.filterNodes(node => node.startsWith('stn')) as StnId[]);
+        const miscNodes = filter?.includes('misc-node')
+            ? ([...selected].filter(node => node.startsWith('misc_node')) as MiscNodeId[])
+            : isSelect
+              ? []
+              : (graph.current.filterNodes(node => node.startsWith('misc_node')) as MiscNodeId[]);
+        const lines = isSelect
+            ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[])
+            : (graph.current.edges() as LineId[]);
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
-            changeStationsTypeInBatch(
-                graph.current,
-                currentStationType,
-                newStationType,
-                isSelect ? ([...selected].filter(node => node.startsWith('stn')) as StnId[]) : undefined
-            );
+            changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
-            changeLineStyleTypeInBatch(
-                graph.current,
-                currentLineStyleType,
-                newLineStyleType,
-                theme,
-                isSelect ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[]) : undefined
-            );
+            changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, theme, lines);
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
-            changeLinePathTypeInBatch(
-                graph.current,
-                currentLinePathType,
-                newLinePathType,
-                isSelect ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[]) : undefined
-            );
+            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines);
         }
         if (isColorSwitch) {
             if (!filter || filter.includes('line'))
-                changeLinesColorInBatch(
-                    graph.current,
-                    currentColor,
-                    newColor,
-                    isSelect ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[]) : undefined
-                );
-            if (!filter || filter.includes('station'))
-                changeNodesColorInBatch(
-                    graph.current,
-                    currentColor,
-                    newColor,
-                    isSelect ? ([...selected].filter(node => node.startsWith('stn')) as StnId[]) : undefined,
-                    []
-                );
-            if (!filter || filter.includes('misc-node'))
-                changeNodesColorInBatch(
-                    graph.current,
-                    currentColor,
-                    newColor,
-                    [],
-                    isSelect ? ([...selected].filter(node => node.startsWith('misc_node')) as MiscNodeId[]) : undefined
-                );
+                changeLinesColorInBatch(graph.current, currentColor, newColor, lines);
+            if (!filter || filter.includes('misc-node') || filter.includes('station'))
+                changeNodesColorInBatch(graph.current, currentColor, newColor, stations, miscNodes);
         }
         hardRefresh();
         onClose();
