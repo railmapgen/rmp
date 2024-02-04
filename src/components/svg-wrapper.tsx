@@ -17,7 +17,7 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
-import { FONTS_CSS } from '../util/fonts';
+import { FONTS_CSS, loadFontCss } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
 import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
@@ -55,36 +55,11 @@ const SvgWrapper = () => {
     React.useEffect(() => {
         const nodesExist = findNodesExist(graph.current);
 
-        const cssObjs = Object.entries(nodesExist)
+        Object.entries(nodesExist)
             // find nodes that exist and require additional fonts
             .filter(([type, exists]) => exists && type in FONTS_CSS)
             // only type is needed
-            .map(([type, _]) => type as NodeType)
-            // only load fonts that are not loaded before
-            .filter(type => FONTS_CSS[type] && document.getElementById(FONTS_CSS[type]!.cssName) === null)
-            // get the css name
-            .map(type => FONTS_CSS[type]!);
-
-        const cssLinks = cssObjs
-            .map(obj => obj.cssName)
-            // remove duplicates
-            .filter((type, i, arr) => i === arr.findIndex(t => t === type))
-            .map(css => {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.id = css!;
-                link.href = import.meta.env.BASE_URL + `styles/${css!}.css`;
-                return link;
-            });
-
-        Promise.all(
-            cssObjs
-                .filter(obj => obj.useRuntime)
-                .flatMap(obj => obj.cssFont)
-                .map(font => rmgRuntime.loadFont(font))
-        ).then(() => {
-            document.head.append(...cssLinks);
-        });
+            .forEach(([type]) => loadFontCss(type as NodeType));
     }, [refreshNodes]);
 
     // select related
