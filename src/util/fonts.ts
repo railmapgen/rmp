@@ -71,12 +71,8 @@ export const FONTS_CSS: {
     },
 };
 
-const loadedCssNames = Object.values(FONTS_CSS)
-    .map(({ cssName }) => cssName)
-    .filter(cssName => document.getElementById(cssName));
-
+const loadedCssNames: string[] = [];
 export const loadFontCss = async (type: NodeType) => {
-    console.log(loadedCssNames)
     const cssObj = FONTS_CSS[type];
     if (!cssObj) return;
 
