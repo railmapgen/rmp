@@ -55,7 +55,7 @@ const SvgWrapper = () => {
     React.useEffect(() => {
         const nodesExist = findNodesExist(graph.current);
 
-        Object.entries(nodesExist)
+        const cssObjs = Object.entries(nodesExist)
             // find nodes that exist and require additional fonts
             .filter(([type, exists]) => exists && type in FONTS_CSS)
             // only type is needed
@@ -63,16 +63,28 @@ const SvgWrapper = () => {
             // only load fonts that are not loaded before
             .filter(type => FONTS_CSS[type] && document.getElementById(FONTS_CSS[type]!.cssName) === null)
             // get the css name
-            .map(type => FONTS_CSS[type]!.cssName)
+            .map(type => FONTS_CSS[type]!);
+
+        const cssLinks = cssObjs
+            .map(obj => obj.cssName)
             // remove duplicates
             .filter((type, i, arr) => i === arr.findIndex(t => t === type))
-            .forEach(css => {
+            .map(css => {
                 const link = document.createElement('link');
                 link.rel = 'stylesheet';
                 link.id = css!;
                 link.href = import.meta.env.BASE_URL + `styles/${css!}.css`;
-                document.head.append(link);
+                return link;
             });
+
+        Promise.all(
+            cssObjs
+                .filter(obj => obj.useRuntime)
+                .flatMap(obj => obj.cssFont)
+                .map(font => rmgRuntime.loadFont(font))
+        ).then(() => {
+            document.head.append(...cssLinks);
+        });
     }, [refreshNodes]);
 
     // select related

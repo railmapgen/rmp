@@ -4,39 +4,8 @@ import { StationType } from '../constants/stations';
 
 const searchSrcRegex = /url\("([\S*]+)"\)/;
 
-const waitForMs = (ms: number) => {
-    return new Promise<void>(resolve => {
-        setTimeout(resolve, ms);
-    });
-};
-
 export const isSafari = () => {
     return navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-};
-
-export const waitForFontReady = async () => {
-    let retryAttempt = 3;
-
-    while (retryAttempt--) {
-        // railmapgen/rmg#274 ready font fact set may not contain GenYoMin when first resolved
-        const fontFaceSet = await document.fonts.ready;
-        const it = fontFaceSet.values();
-        while (true) {
-            const next = it.next();
-            if (next.done) {
-                break;
-            }
-
-            if (next.value.family === 'GenYoMin TW') {
-                return;
-            }
-        }
-
-        console.log('GenYoMin is NOT ready. Retry attempts remaining: ' + retryAttempt + ' ...');
-        await waitForMs(500);
-    }
-
-    throw new Error('Failed to load GenYoMin after 3 attempts');
 };
 
 const readBlobAsDataURL = (blob: Blob): Promise<string> => {
@@ -128,13 +97,15 @@ export const FONTS_CSS: {
         cssFont: string[];
         cssName: string;
         baseUrl: string;
+        useRuntime?: boolean;
     };
 } = {
     [StationType.MTR]: {
         className: ['.rmp-name__mtr__zh', '.rmp-name__mtr__en'],
-        cssFont: ['80px GenYoMin TW', 'Vegur'],
+        cssFont: ['Vegur', 'GenYoMin TW'],
         cssName: 'fonts_mtr',
         baseUrl: '/styles/',
+        useRuntime: true,
     },
     [StationType.MRTBasic]: {
         className: ['.rmp-name__mrt'],

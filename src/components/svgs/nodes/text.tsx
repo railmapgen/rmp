@@ -8,6 +8,7 @@ import { Rotate, StationType } from '../../../constants/stations';
 import { FONTS_CSS } from '../../../util/fonts';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -44,12 +45,18 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
             jreast_en: StationType.JREastBasic,
         }[language];
         if (type && document.getElementById(FONTS_CSS[type]!.cssName) === null) {
-            const css = FONTS_CSS[type]!.cssName;
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.id = css;
-            link.href = import.meta.env.BASE_URL + `styles/${css!}.css`;
-            document.head.append(link);
+            const cssObj = FONTS_CSS[type]!;
+            const fontsPromise = cssObj.useRuntime
+                ? Promise.all(cssObj.cssFont.map(font => rmgRuntime.loadFont(font)))
+                : Promise.all([]);
+            fontsPromise.then(() => {
+                const css = cssObj.cssName;
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.id = css;
+                link.href = import.meta.env.BASE_URL + `styles/${css}.css`;
+                document.head.append(link);
+            });
         }
     }, [language]);
 
