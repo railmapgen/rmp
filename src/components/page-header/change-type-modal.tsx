@@ -103,7 +103,11 @@ export const ChangeTypeModal = (props: {
     const [currentLinePathType, setCurrentLinePathType] = React.useState<LinePathType | 'any'>('any');
     const [newLinePathType, setNewLinePathType] = React.useState(LinePathType.Diagonal);
     const [isColorSwitch, setIsColorSwitch] = React.useState(false);
-    const [currentColor, setCurrentColor] = React.useState<Theme | 'any'>('any');
+    const [selectedColor, setSelectedColor] = React.useState<ChangeTypeTheme>({
+        id: 'any',
+        theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black],
+        value: t('header.settings.procedures.changeType.any'),
+    });
     const [newColor, setNewColor] = React.useState(theme);
 
     const [isNewThemeRequested, setIsNewThemeRequested] = React.useState(false);
@@ -116,22 +120,6 @@ export const ChangeTypeModal = (props: {
     }, [output?.toString()]);
 
     const [themeList, setThemeList] = React.useState<ChangeTypeTheme[]>([]);
-
-    const displayHandler = (item: ChangeTypeTheme) => {
-        return (
-            <RmgLineBadge
-                name={item.value}
-                fg={item.theme[3]}
-                bg={item.theme[2]}
-                title={item.theme[1]}
-                sx={{
-                    display: 'inline-block',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                }}
-            />
-        );
-    };
 
     const changeTypeField: ChangeTypeField[] = [
         {
@@ -214,14 +202,26 @@ export const ChangeTypeModal = (props: {
                     component: (
                         <RmgAutoComplete
                             data={themeList}
-                            displayHandler={displayHandler}
-                            predicate={(item, query) =>
+                            displayHandler={item => (
+                                <RmgLineBadge
+                                    name={item.value}
+                                    fg={item.theme[3]}
+                                    bg={item.theme[2]}
+                                    title={item.theme[1]}
+                                    sx={{
+                                        display: 'inline-block',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                    }}
+                                />
+                            )}
+                            filter={(query, item) =>
                                 item.id.toLowerCase().includes(query.toLowerCase()) ||
                                 Object.values(item.id).some(name => name.toLowerCase().includes(query.toLowerCase()))
                             }
-                            displayValue={item => item.value}
+                            value={selectedColor.value}
                             defaultValue={themeList[0]}
-                            onChange={item => setCurrentColor(item.id === 'any' ? 'any' : item.theme)}
+                            onChange={item => setSelectedColor(item)}
                         />
                     ),
                 },
@@ -297,9 +297,20 @@ export const ChangeTypeModal = (props: {
         }
         if (isColorSwitch) {
             if (!filter || filter.includes('line'))
-                changeLinesColorInBatch(graph.current, currentColor, newColor, lines);
+                changeLinesColorInBatch(
+                    graph.current,
+                    selectedColor.id === 'any' ? 'any' : selectedColor.theme,
+                    newColor,
+                    lines
+                );
             if (!filter || filter.includes('misc-node') || filter.includes('station'))
-                changeNodesColorInBatch(graph.current, currentColor, newColor, stations, miscNodes);
+                changeNodesColorInBatch(
+                    graph.current,
+                    selectedColor.id === 'any' ? 'any' : selectedColor.theme,
+                    newColor,
+                    stations,
+                    miscNodes
+                );
         }
         hardRefresh();
         onClose();

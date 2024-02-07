@@ -1,4 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
+import { AttributesWithColor } from '../components/panels/details/color-field';
+import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import stations from '../components/svgs/stations/stations';
 import {
     EdgeAttributes,
     GraphAttributes,
@@ -8,12 +12,8 @@ import {
     StnId,
     Theme,
 } from '../constants/constants';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/lines';
-import stations from '../components/svgs/stations/stations';
-import { linePaths, lineStyles } from '../components/svgs/lines/lines';
-import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
-import { AttributesWithColor } from '../components/panels/details/color-field';
+import { ExternalStationAttributes, StationType } from '../constants/stations';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -177,16 +177,16 @@ export const changeLineStyleTypeInBatch = (
  * @param graph Graph.
  * @param currentLineColor current theme.
  * @param newLineColor new theme.
- * @param lines selected lines (undefined for all)
+ * @param lines selected lines.
  * @returns Nothing.
  */
 export const changeLinesColorInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentLineColor: Theme | 'any',
     newLineColor: Theme,
-    lines?: LineId[]
+    lines: LineId[]
 ) =>
-    (lines ? lines : graph.edges())
+    lines
         .filter(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);

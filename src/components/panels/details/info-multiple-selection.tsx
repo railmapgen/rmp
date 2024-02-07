@@ -1,12 +1,12 @@
-import { Box, Button, Heading, HStack, VStack, Divider } from '@chakra-ui/react';
+import { Badge, Box, Button, Divider, HStack, Heading, Tooltip, VStack } from '@chakra-ui/react';
 import { RmgButtonGroup } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdDeselect } from 'react-icons/md';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setSelected, removeSelected } from '../../../redux/runtime/runtime-slice';
+import { removeSelected, setSelected } from '../../../redux/runtime/runtime-slice';
 import { ChangeTypeModal, FilterType } from '../../page-header/change-type-modal';
-import { MdDeselect } from 'react-icons/md';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
@@ -76,6 +76,15 @@ export default function InfoMultipleSection() {
                         <>
                             <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
                                 {t('panel.details.multipleSelection.change')}
+                                <Tooltip label={t('header.settings.pro')}>
+                                    <Badge
+                                        ml="1"
+                                        color="gray.50"
+                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                    >
+                                        PRO
+                                    </Badge>
+                                </Tooltip>
                             </Button>
                             <Divider />
                         </>

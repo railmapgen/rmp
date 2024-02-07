@@ -33,8 +33,8 @@ import { setUnlockSimplePath } from '../../redux/app/app-slice';
 import { saveGraph } from '../../redux/param/param-slice';
 import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { shuffle } from '../../util/helpers';
-import ThemeButton from '../panels/theme-button';
 import { AttributesWithColor } from '../panels/details/color-field';
+import ThemeButton from '../panels/theme-button';
 
 export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;

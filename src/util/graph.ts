@@ -1,18 +1,18 @@
 import { MultiDirectedGraph } from 'graphology';
+import { AttributesWithColor } from '../components/panels/details/color-field';
 import {
     EdgeAttributes,
     GraphAttributes,
-    NodeAttributes,
-    StnId,
     LineId,
     MiscNodeId,
+    NodeAttributes,
     NodeType,
+    StnId,
     Theme,
 } from '../constants/constants';
+import { LineStylesWithColor } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { AttributesWithColor } from '../components/panels/details/color-field';
-import { LineStylesWithColor } from '../constants/lines';
 
 /**
  * Finds all edges that both its source and targets are in the nodes.

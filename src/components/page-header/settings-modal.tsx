@@ -33,13 +33,13 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
+import { ChangeTypeModal } from './change-type-modal';
 import {
     RemoveLinesWithSingleColorModal,
     ScaleNodesModal,
     TranslateNodesModal,
     UnlockSimplePathModal,
 } from './procedures-modal';
-import { ChangeTypeModal } from './change-type-modal';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',
