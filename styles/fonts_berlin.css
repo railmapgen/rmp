@@ -1,14 +1,3 @@
 .rmp-name__berlin {
     font-family: Roboto, Arial, Helvetica, sans-serif;
 }
-
-@font-face {
-    font-family: Roboto;
-    font-display: swap;
-    src: url('../fonts/Roboto-Bold.ttf');
-    /*
-     * This is obvious as the font only support ascii letters,
-     * but added here as getBase64FontFace and matchCssRuleByFontFace require this value.
-    */
-    unicode-range: U+0-7F;
-}

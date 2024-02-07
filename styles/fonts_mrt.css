@@ -6,17 +6,6 @@
  * is a direct request from LTA, we need to pull this down from out site.
 */
 
-@font-face {
-    font-family: IdentityFont;
-    font-display: swap;
-    src: url('../fonts/LTAIdentity-Medium.woff');
-    /*
-     * This is obvious as the font only support ascii letters,
-     * but added here as getBase64FontFace and matchCssRuleByFontFace require this value.
-    */
-    unicode-range: U+0-7F;
-}
-
 .rmp-name__mrt {
     font-family: IdentityFont, sans-serif;
 }
