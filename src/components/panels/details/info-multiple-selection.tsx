@@ -42,85 +42,79 @@ export default function InfoMultipleSection() {
     const [isOpenChangeModal, setIsOpenChangeModal] = React.useState(false);
 
     return (
-        <>
-            <Box>
-                <Heading as="h5" size="sm">
-                    {t('panel.details.multipleSelection.selected')} {selected.size}
-                </Heading>
-                <VStack m="var(--chakra-space-1)">
-                    <HStack w="100%">
-                        <Heading as="h5" size="xs" w="100%">
-                            {t('panel.details.multipleSelection.show')}
-                        </Heading>
-                        <RmgButtonGroup
-                            selections={[
-                                {
-                                    label: t('panel.details.multipleSelection.station'),
-                                    value: 'station',
-                                },
-                                {
-                                    label: t('panel.details.multipleSelection.miscNode'),
-                                    value: 'misc-node',
-                                },
-                                {
-                                    label: t('panel.details.multipleSelection.edge'),
-                                    value: 'line',
-                                },
-                            ]}
-                            defaultValue={filter}
-                            multiSelect={true}
-                            onChange={value => setFilter(value as FilterType[])}
-                        />
-                    </HStack>
-                    {filter.length !== 0 && (
-                        <>
-                            <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
-                                {t('panel.details.multipleSelection.change')}
-                                <Tooltip label={t('header.settings.pro')}>
-                                    <Badge
-                                        ml="1"
-                                        color="gray.50"
-                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                    >
-                                        PRO
-                                    </Badge>
-                                </Tooltip>
+        <Box>
+            <Heading as="h5" size="sm">
+                {t('panel.details.multipleSelection.selected')} {selected.size}
+            </Heading>
+            <VStack m="var(--chakra-space-1)">
+                <HStack w="100%">
+                    <Heading as="h5" size="xs" w="100%">
+                        {t('panel.details.multipleSelection.show')}
+                    </Heading>
+                    <RmgButtonGroup
+                        selections={[
+                            {
+                                label: t('panel.details.multipleSelection.station'),
+                                value: 'station',
+                            },
+                            {
+                                label: t('panel.details.multipleSelection.miscNode'),
+                                value: 'misc-node',
+                            },
+                            {
+                                label: t('panel.details.multipleSelection.edge'),
+                                value: 'line',
+                            },
+                        ]}
+                        defaultValue={filter}
+                        multiSelect={true}
+                        onChange={value => setFilter(value as FilterType[])}
+                    />
+                </HStack>
+                {filter.length !== 0 && (
+                    <>
+                        <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
+                            {t('panel.details.multipleSelection.change')}
+                            <Tooltip label={t('header.settings.pro')}>
+                                <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                                    PRO
+                                </Badge>
+                            </Tooltip>
+                        </Button>
+                        <Divider />
+                    </>
+                )}
+                {[...selected]
+                    .filter(id => filter.includes('station') || !id.startsWith('stn'))
+                    .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
+                    .filter(id => filter.includes('line') || !id.startsWith('line'))
+                    .map(id => (
+                        <HStack key={id} width="100%">
+                            <Button
+                                width="100%"
+                                size="sm"
+                                variant="solid"
+                                onClick={() => dispatch(setSelected(new Set([id])))}
+                                overflow="hidden"
+                                maxW="270"
+                                textOverflow="ellipsis"
+                                whiteSpace="nowrap"
+                                display="ruby"
+                            >
+                                {getName(id)?.replaceAll('\\', '⏎')}
                             </Button>
-                            <Divider />
-                        </>
-                    )}
-                    {[...selected]
-                        .filter(id => filter.includes('station') || !id.startsWith('stn'))
-                        .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
-                        .filter(id => filter.includes('line') || !id.startsWith('line'))
-                        .map(id => (
-                            <HStack key={id} width="100%">
-                                <Button
-                                    width="100%"
-                                    size="sm"
-                                    variant="solid"
-                                    onClick={() => dispatch(setSelected(new Set([id])))}
-                                    overflow="hidden"
-                                    maxW="270"
-                                    textOverflow="ellipsis"
-                                    whiteSpace="nowrap"
-                                    display="ruby"
-                                >
-                                    {getName(id)?.replaceAll('\\', '⏎')}
-                                </Button>
-                                <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
-                                    <MdDeselect />
-                                </Button>
-                            </HStack>
-                        ))}
-                </VStack>
-            </Box>
+                            <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
+                                <MdDeselect />
+                            </Button>
+                        </HStack>
+                    ))}
+            </VStack>
             <ChangeTypeModal
                 isOpen={isOpenChangeModal}
                 onClose={() => setIsOpenChangeModal(false)}
                 isSelect={true}
                 filter={filter}
             />
-        </>
+        </Box>
     );
 }
