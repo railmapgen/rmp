@@ -93,6 +93,12 @@ export const ChangeTypeModal = (props: {
         ) as { [k in StationType]: string }),
     };
 
+    const defaultSelectedTheme: ChangeTypeTheme = {
+        id: 'any',
+        theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black],
+        value: t('header.settings.procedures.changeType.any'),
+    };
+
     const [isStationTypeSwitch, setIsStationTypeSwitch] = React.useState(false);
     const [currentStationType, setCurrentStationType] = React.useState<StationType | 'any'>('any');
     const [newStationType, setNewStationType] = React.useState(StationType.ShmetroBasic);
@@ -103,11 +109,7 @@ export const ChangeTypeModal = (props: {
     const [currentLinePathType, setCurrentLinePathType] = React.useState<LinePathType | 'any'>('any');
     const [newLinePathType, setNewLinePathType] = React.useState(LinePathType.Diagonal);
     const [isColorSwitch, setIsColorSwitch] = React.useState(false);
-    const [selectedColor, setSelectedColor] = React.useState<ChangeTypeTheme>({
-        id: 'any',
-        theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black],
-        value: t('header.settings.procedures.changeType.any'),
-    });
+    const [selectedColor, setSelectedColor] = React.useState(defaultSelectedTheme);
     const [newColor, setNewColor] = React.useState(theme);
 
     const [isNewThemeRequested, setIsNewThemeRequested] = React.useState(false);
@@ -220,7 +222,6 @@ export const ChangeTypeModal = (props: {
                                 Object.values(item.id).some(name => name.toLowerCase().includes(query.toLowerCase()))
                             }
                             value={selectedColor.value}
-                            defaultValue={themeList[0]}
                             onChange={item => setSelectedColor(item)}
                         />
                     ),
@@ -249,11 +250,7 @@ export const ChangeTypeModal = (props: {
             setIsLinePathTypeSwitch(false);
             setIsColorSwitch(false);
             setThemeList([
-                {
-                    id: 'any',
-                    theme: [CityCode.Other, 'other', '#ffffff', MonoColour.black],
-                    value: t('header.settings.procedures.changeType.any'),
-                },
+                defaultSelectedTheme,
                 ...findThemes(
                     graph.current,
                     (isSelect
@@ -269,6 +266,7 @@ export const ChangeTypeModal = (props: {
                         }) as ChangeTypeTheme
                 ),
             ]);
+            setSelectedColor(defaultSelectedTheme);
         }
     }, [isOpen]);
 
