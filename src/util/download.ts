@@ -2,9 +2,10 @@ import { MultiDirectedGraph } from 'graphology';
 import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { FONTS_CSS, getBase64FontFace } from './fonts';
+import { FONTS_CSS } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -102,7 +103,7 @@ export const makeImages = async (
             if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
                 try {
                     const s = document.createElement('style');
-                    const { className, cssFont, cssName, baseUrl } = FONTS_CSS[nodeType as NodeType]!;
+                    const { cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
 
                     for (let i = document.styleSheets.length - 1; i >= 0; i = i - 1) {
                         if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
@@ -115,8 +116,11 @@ export const makeImages = async (
                     }
                     s.textContent += '\n';
 
-                    const uris = await getBase64FontFace(elem, className, cssFont, cssName, baseUrl);
-                    s.textContent += uris.join('\n');
+                    const cssPromises = await Promise.allSettled(Object.keys(cssFont).map(rmgRuntime.getFontCSS));
+                    const cssTexts = cssPromises
+                        .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
+                        .map(promise => promise.value);
+                    s.textContent += cssTexts.join('\n');
 
                     elem.prepend(s);
                     addedFontsCSSName.add(cssName);

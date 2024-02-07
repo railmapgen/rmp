@@ -8,12 +8,6 @@
  * https://github.com/coz-m/MPLUS_FONTS
  * This is a free font with SIL OPEN FONT LICENSE.
  */
-@font-face {
-    font-family: 'M PLUS 2';
-    font-display: swap;
-    src: url('../fonts/Mplus2-Medium.otf');
-    unicode-range: U+0-10FFFF;
-}
 
 .rmp-name__jreast_ja {
     font-family: a-otf-ud-shin-go-pr6n, 'M PLUS 2', sans-serif;

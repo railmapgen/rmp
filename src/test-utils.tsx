@@ -1,19 +1,18 @@
-import { Store } from '@reduxjs/toolkit';
 import '@testing-library/jest-dom';
+import { Store } from '@reduxjs/toolkit';
 import { render, RenderOptions } from '@testing-library/react';
 import React, { ReactElement, ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
 import i18n from './i18n/config';
-import rootReducer from './redux';
+import { createStore } from './redux';
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
     store: Store;
 }
 
 const initialOptions: CustomRenderOptions = {
-    store: configureStore()({ ...rootReducer.getState() }),
+    store: createStore(),
 };
 
 interface TestingProviderProps {
