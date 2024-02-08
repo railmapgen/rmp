@@ -1,35 +1,18 @@
-import { Box, Button, Heading, VStack } from '@chakra-ui/react';
-import { RmgLabel } from '@railmapgen/rmg-components';
+import { Badge, Box, Button, Divider, HStack, Heading, Tooltip, VStack } from '@chakra-ui/react';
+import { RmgButtonGroup } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Theme } from '../../../constants/constants';
-import { LineStyleType } from '../../../constants/lines';
+import { MdDeselect } from 'react-icons/md';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/param/param-slice';
-import {
-    openPaletteAppClip,
-    setRefreshEdges,
-    setRefreshNodes,
-    setSelected,
-} from '../../../redux/runtime/runtime-slice';
-import ThemeButton from '../theme-button';
-import { AttributesWithColor } from './color-field';
+import { removeSelected, setSelected } from '../../../redux/runtime/runtime-slice';
+import { ChangeTypeModal, FilterType } from '../../page-header/change-type-modal';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const {
-        selected,
-        theme,
-        paletteAppClip: { output },
-    } = useRootSelector(state => state.runtime);
+    const { selected } = useRootSelector(state => state.runtime);
 
-    const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
-        dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const getName = (id: string) => {
@@ -51,66 +34,87 @@ export default function InfoMultipleSection() {
         }
     };
 
-    const handleChangeColor = (color: Theme) => {
-        selected.forEach(id => {
-            if (graph.current.hasEdge(id)) {
-                const thisType = graph.current.getEdgeAttributes(id).style;
-                const attrs = graph.current.getEdgeAttribute(id, thisType);
-                if (thisType !== LineStyleType.River && (attrs as AttributesWithColor)['color'] !== undefined) {
-                    (attrs as AttributesWithColor)['color'] = color;
-                }
-                graph.current.mergeEdgeAttributes(id, { [thisType]: attrs });
-            } else if (graph.current.hasNode(id)) {
-                const thisType = graph.current.getNodeAttributes(id).type;
-                const attrs = graph.current.getNodeAttribute(id, thisType);
-                if ((attrs as AttributesWithColor)['color'] !== undefined)
-                    (attrs as AttributesWithColor)['color'] = color;
-                graph.current.mergeNodeAttributes(id, { [thisType]: attrs });
-            }
-        });
-        hardRefresh();
-    };
-
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
+    const [filter, setFilter] = React.useState<FilterType[]>([]);
     React.useEffect(() => {
-        if (isThemeRequested && output) {
-            handleChangeColor(output);
-            setIsThemeRequested(false);
-        }
-    }, [output?.toString()]);
+        setFilter(['station', 'misc-node', 'line']);
+    }, [selected]);
+
+    const [isOpenChangeModal, setIsOpenChangeModal] = React.useState(false);
 
     return (
         <Box>
             <Heading as="h5" size="sm">
-                {t('panel.details.selected')} {selected.size}
+                {t('panel.details.multipleSelection.selected')} {selected.size}
             </Heading>
-            <RmgLabel label={t('panel.details.multipleChangeColor')}>
-                <ThemeButton
-                    theme={theme}
-                    onClick={() => {
-                        setIsThemeRequested(true);
-                        dispatch(openPaletteAppClip(theme));
-                    }}
-                />
-            </RmgLabel>
             <VStack m="var(--chakra-space-1)">
-                {[...selected].map(id => (
-                    <Button
-                        key={id}
-                        width="100%"
-                        size="sm"
-                        variant="solid"
-                        onClick={() => dispatch(setSelected(new Set([id])))}
-                        overflow="hidden"
-                        maxW="270"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap"
-                        display="ruby"
-                    >
-                        {getName(id)?.replaceAll('\\', '⏎')}
-                    </Button>
-                ))}
+                <HStack w="100%">
+                    <Heading as="h5" size="xs" w="100%">
+                        {t('panel.details.multipleSelection.show')}
+                    </Heading>
+                    <RmgButtonGroup
+                        selections={[
+                            {
+                                label: t('panel.details.multipleSelection.station'),
+                                value: 'station',
+                            },
+                            {
+                                label: t('panel.details.multipleSelection.miscNode'),
+                                value: 'misc-node',
+                            },
+                            {
+                                label: t('panel.details.multipleSelection.edge'),
+                                value: 'line',
+                            },
+                        ]}
+                        defaultValue={filter}
+                        multiSelect={true}
+                        onChange={value => setFilter(value as FilterType[])}
+                    />
+                </HStack>
+                {filter.length !== 0 && (
+                    <>
+                        <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
+                            {t('panel.details.multipleSelection.change')}
+                            <Tooltip label={t('header.settings.pro')}>
+                                <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                                    PRO
+                                </Badge>
+                            </Tooltip>
+                        </Button>
+                        <Divider />
+                    </>
+                )}
+                {[...selected]
+                    .filter(id => filter.includes('station') || !id.startsWith('stn'))
+                    .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
+                    .filter(id => filter.includes('line') || !id.startsWith('line'))
+                    .map(id => (
+                        <HStack key={id} width="100%">
+                            <Button
+                                width="100%"
+                                size="sm"
+                                variant="solid"
+                                onClick={() => dispatch(setSelected(new Set([id])))}
+                                overflow="hidden"
+                                maxW="270"
+                                textOverflow="ellipsis"
+                                whiteSpace="nowrap"
+                                display="ruby"
+                            >
+                                {getName(id)?.replaceAll('\\', '⏎')}
+                            </Button>
+                            <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
+                                <MdDeselect />
+                            </Button>
+                        </HStack>
+                    ))}
             </VStack>
+            <ChangeTypeModal
+                isOpen={isOpenChangeModal}
+                onClose={() => setIsOpenChangeModal(false)}
+                isSelect={true}
+                filter={filter}
+            />
         </Box>
     );
 }

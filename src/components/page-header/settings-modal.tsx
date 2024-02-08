@@ -33,10 +33,8 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
+import { ChangeTypeModal } from './change-type-modal';
 import {
-    ChangeLinesColorInBatchModal,
-    ChangeLineStyleTypeModal,
-    ChangeTypeModal,
     RemoveLinesWithSingleColorModal,
     ScaleNodesModal,
     TranslateNodesModal,
@@ -62,8 +60,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isTranslateNodesOpen, setIsTranslateNodesOpen] = React.useState(false);
     const [isScaleNodesOpen, setIsScaleNodesOpen] = React.useState(false);
     const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
-    const [isChangeLineStyleTypeOpen, setIsChangeLineStyleTypeOpen] = React.useState(false);
-    const [isChangeLinesColorInBatchOpen, setIsChangeLinesColorInBatchOpen] = React.useState(false);
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
 
@@ -141,41 +137,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tooltip>
                                     </Box>
                                 </Button>
-                                <ChangeTypeModal isOpen={isChangeTypeOpen} onClose={() => setIsChangeTypeOpen(false)} />
-
-                                <Button
-                                    sx={procedureButtonStyle}
-                                    rightIcon={<MdReadMore />}
-                                    onClick={() => setIsChangeLineStyleTypeOpen(true)}
-                                >
-                                    <Box>
-                                        {t('header.settings.procedures.changeLineStyleType.title')}
-                                        <Tooltip label={t('header.settings.pro')}>
-                                            <Badge
-                                                ml="1"
-                                                color="gray.50"
-                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            >
-                                                PRO
-                                            </Badge>
-                                        </Tooltip>
-                                    </Box>
-                                </Button>
-                                <ChangeLineStyleTypeModal
-                                    isOpen={isChangeLineStyleTypeOpen}
-                                    onClose={() => setIsChangeLineStyleTypeOpen(false)}
-                                />
-
-                                <Button
-                                    sx={procedureButtonStyle}
-                                    rightIcon={<MdReadMore />}
-                                    onClick={() => setIsChangeLinesColorInBatchOpen(true)}
-                                >
-                                    {t('header.settings.procedures.changeLinesColor.title')}
-                                </Button>
-                                <ChangeLinesColorInBatchModal
-                                    isOpen={isChangeLinesColorInBatchOpen}
-                                    onClose={() => setIsChangeLinesColorInBatchOpen(false)}
+                                <ChangeTypeModal
+                                    isOpen={isChangeTypeOpen}
+                                    onClose={() => setIsChangeTypeOpen(false)}
+                                    isSelect={false}
                                 />
 
                                 <Button

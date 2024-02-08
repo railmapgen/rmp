@@ -29,9 +29,15 @@
                 "lineStyleType": "線段樣式類型",
                 "type": "類型"
             },
-            "multipleSelection": "多重選取",
-            "multipleChangeColor": "變更所選物件的顏色為：",
-            "selected": "選取的對象:",
+            "multipleSelection": {
+                "title": "多重選取",
+                "change": "修改選取物件的屬性",
+                "selected": "選取的物件:",
+                "show": "顯示",
+                "station": "車站",
+                "miscNode": "雜項節點",
+                "edge": "線段"
+            },
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
@@ -429,6 +435,10 @@
                     "factor": "縮放因子"
                 },
                 "changeType": {
+                    "title": "修改所有物件的屬性",
+                    "any": "任意"
+                },
+                "changeStationType": {
                     "title": "批量修改車站種類",
                     "changeFrom": "將此類型的所有車站：",
                     "changeTo": "轉換為這個類型的車站：",
@@ -440,10 +450,16 @@
                     "changeTo": "轉換為這個樣式的線段：",
                     "info": "修改線段樣式會移除所有獨特屬性除了連通性。保存再操作！"
                 },
-                "changeLinesColor": {
-                    "title": "批量修改線段顏色",
-                    "changeFrom": "將此顏色的所有線段：",
-                    "changeTo": "轉換為這個顏色的線段："
+                "changeLinePathType": {
+                    "title": "批量修改線段類型",
+                    "changeFrom": "將此類型的所有線段：",
+                    "changeTo": "轉換為這個類型的線段："
+                },
+                "changeColor": {
+                    "title": "批量修改顏色",
+                    "changeFrom": "將此顏色的所有對象：",
+                    "changeTo": "轉換為這個顏色：",
+                    "any": "從任何顏色轉換"
                 },
                 "removeLines": {
                     "title": "移除所有純色線段",

@@ -59,7 +59,7 @@ export default function InfoSection() {
         fields.push({
             type: 'input',
             label: t('panel.details.info.type'),
-            value: 'multiple selection',
+            value: t('panel.details.multipleSelection.title'),
             minW: 276,
         });
     }

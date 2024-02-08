@@ -29,9 +29,15 @@
                 "lineStyleType": "Line Style Type",
                 "type": "Type"
             },
-            "multipleSelection": "Multiple Selection",
-            "multipleChangeColor": "Change selected objects' color to:",
-            "selected": "Selected Objects:",
+            "multipleSelection": {
+                "title": "Multiple Selection",
+                "change": "Change selected attributes",
+                "selected": "Selected Objects:",
+                "show": "Show",
+                "station": "Stations",
+                "miscNode": "MiscNodes",
+                "edge": "Lines"
+            },
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
             "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
             "changeType": "Change Type",
@@ -432,6 +438,10 @@
                     "factor": "Scale factor"
                 },
                 "changeType": {
+                    "title": "Change all objects' attributes",
+                    "any": "Any"
+                },
+                "changeStationType": {
                     "title": "Change stations type in batch",
                     "changeFrom": "Change all stations from this type:",
                     "changeTo": "To this type:",
@@ -443,10 +453,16 @@
                     "changeTo": "To this style:",
                     "info": "Changing lines' style will remove all specific attributes from lines except their connections. SAVE BEFORE CHANGE!"
                 },
-                "changeLinesColor": {
-                    "title": "Change lines color in batch",
-                    "changeFrom": "Change all lines from this color:",
-                    "changeTo": "To this color:"
+                "changeLinePathType": {
+                    "title": "Change lines path in batch",
+                    "changeFrom": "Change all lines from this path:",
+                    "changeTo": "To this path:"
+                },
+                "changeColor": {
+                    "title": "Change color in batch",
+                    "changeFrom": "Change all objects from this color:",
+                    "changeTo": "To this color:",
+                    "any": "From any color"
                 },
                 "removeLines": {
                     "title": "Remove lines with single color",
