@@ -74,7 +74,7 @@ export default function InfoMultipleSection() {
                 {filter.length !== 0 && (
                     <>
                         <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
-                            {t('panel.details.multipleSelection.changeButton')}
+                            {t('panel.details.multipleSelection.change')}
                             <Tooltip label={t('header.settings.pro')}>
                                 <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
                                     PRO

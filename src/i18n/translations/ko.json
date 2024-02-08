@@ -31,8 +31,7 @@
             },
             "multipleSelection": {
                 "title": "다중 선택",
-                "change": "선택한 개체의 속성 변경",
-                "changeButton": "객체의 속성 변경",
+                "change": "선택한 속성 변경",
                 "selected": "선택한 개체:",
                 "show": "보여주다",
                 "station": "역",

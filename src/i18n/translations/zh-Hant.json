@@ -32,7 +32,6 @@
             "multipleSelection": {
                 "title": "多重選取",
                 "change": "修改選取物件的屬性",
-                "changeButton": "修改物件的屬性",
                 "selected": "選取的物件:",
                 "show": "顯示",
                 "station": "車站",

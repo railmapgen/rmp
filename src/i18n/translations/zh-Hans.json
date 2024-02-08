@@ -32,7 +32,6 @@
             "multipleSelection": {
                 "title": "多重选取",
                 "change": "修改选中对象的属性",
-                "changeButton": "修改对象的属性",
                 "selected": "选中的对象:",
                 "show": "显示",
                 "station": "车站",
