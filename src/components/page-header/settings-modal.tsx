@@ -33,13 +33,11 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
-import { ChangeTypeModal } from './change-type-modal';
-import {
-    RemoveLinesWithSingleColorModal,
-    ScaleNodesModal,
-    TranslateNodesModal,
-    UnlockSimplePathModal,
-} from './procedures-modal';
+import { ChangeTypeModal } from './procedures/change-type-modal';
+import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
+import { ScaleNodesModal } from './procedures/scale-nodes-modal';
+import { TranslateNodesModal } from './procedures/translate-nodes-modal';
+import { UnlockSimplePathModal } from './procedures/unlock-simple-path-modal';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',

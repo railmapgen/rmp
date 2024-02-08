@@ -6,7 +6,7 @@ import { MdDeselect } from 'react-icons/md';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { removeSelected, setSelected } from '../../../redux/runtime/runtime-slice';
-import { ChangeTypeModal, FilterType } from '../../page-header/change-type-modal';
+import { ChangeTypeModal, FilterType } from '../../page-header/procedures/change-type-modal';
 
 export default function InfoMultipleSection() {
     const { t } = useTranslation();

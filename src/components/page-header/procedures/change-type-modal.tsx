@@ -19,23 +19,23 @@ import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railm
 import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineId, StnId, MiscNodeId, Theme } from '../../constants/constants';
-import { LinePathType, LineStyleType } from '../../constants/lines';
-import { StationType } from '../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/param/param-slice';
-import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
-import { findThemes } from '../../util/graph';
+import { LineId, StnId, MiscNodeId, Theme } from '../../../constants/constants';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
+import { StationType } from '../../../constants/stations';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/param/param-slice';
+import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { findThemes } from '../../../util/graph';
 import {
     changeLinePathTypeInBatch,
     changeLinesColorInBatch,
     changeLineStyleTypeInBatch,
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
-} from '../../util/change-types';
-import { linePaths, lineStyles } from '../svgs/lines/lines';
-import stations from '../svgs/stations/stations';
-import ThemeButton from '../panels/theme-button';
+} from '../../../util/change-types';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import stations from '../../svgs/stations/stations';
+import ThemeButton from '../../panels/theme-button';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
