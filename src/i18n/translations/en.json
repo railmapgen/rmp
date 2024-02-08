@@ -32,6 +32,7 @@
             "multipleSelection": {
                 "title": "Multiple Selection",
                 "change": "Change selected objects' attributes",
+                "changeButton": "Change objects' attributes",
                 "selected": "Selected Objects:",
                 "show": "Show",
                 "station": "Stations",

@@ -32,6 +32,7 @@
             "multipleSelection": {
                 "title": "複数選択",
                 "change": "選択したオブジェクトの属性を変更する",
+                "changeButton": "オブジェクトの属性を変更する",
                 "selected": "選択されたオブジェクト:",
                 "show": "見せる",
                 "station": "駅",
