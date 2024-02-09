@@ -31,7 +31,7 @@ export const FONTS_CSS: {
 } = {
     [StationType.MTR]: {
         className: ['.rmp-name__mtr__zh', '.rmp-name__mtr__en'],
-        cssFont: { Vegur: undefined, 'GenYoMin TW': undefined },
+        cssFont: { 'MyriadPro-Semibold': undefined, 'Vegur-Bold': undefined, 'GenYoMinTW-SB': undefined },
         cssName: 'fonts_mtr',
     },
     [StationType.MRTBasic]: {
