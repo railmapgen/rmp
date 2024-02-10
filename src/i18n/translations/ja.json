@@ -80,7 +80,8 @@
                 },
                 "gzmtrLineBadge": {
                     "displayName": "広州地下鉄路線徽章",
-                    "tram": "路面電車"
+                    "tram": "路面電車",
+                    "span": "行にまたがる数字"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "北京地下鉄路線番号徽章"

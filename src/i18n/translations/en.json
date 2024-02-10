@@ -80,7 +80,8 @@
                 },
                 "gzmtrLineBadge": {
                     "displayName": "Guangzhou Metro line badge",
-                    "tram": "Tram"
+                    "tram": "Tram",
+                    "span": "Row-spanning digits"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "Beijing Subway num line badge"

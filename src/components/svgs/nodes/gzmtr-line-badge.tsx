@@ -13,6 +13,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
         names = defaultGzmtrLineBadgeAttributes.names,
         color = defaultGzmtrLineBadgeAttributes.color,
         tram = defaultGzmtrLineBadgeAttributes.tram,
+        span = defaultGzmtrLineBadgeAttributes.span,
     } = attrs ?? defaultGzmtrLineBadgeAttributes;
 
     const onPointerDown = React.useCallback(
@@ -44,7 +45,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
                 enClassName="rmp-name__en"
                 foregroundColour={color[3]}
                 backgroundColour={color[2]}
-                spanDigits
+                spanDigits={span}
             />
         </g>
     );
@@ -56,12 +57,14 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
 export interface GzmtrLineBadgeAttributes extends AttributesWithColor {
     names: [string, string];
     tram: boolean;
+    span: boolean;
 }
 
 const defaultGzmtrLineBadgeAttributes: GzmtrLineBadgeAttributes = {
     names: ['1号线', 'Line 1'],
     color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
     tram: false,
+    span: true,
 };
 
 const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttributes>) => {
@@ -96,6 +99,17 @@ const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttribute
             isChecked: attrs.tram,
             onChange: val => {
                 attrs.tram = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.nodes.gzmtrLineBadge.span'),
+            oneLine: true,
+            isChecked: attrs.span,
+            onChange: val => {
+                attrs.span = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

@@ -80,7 +80,8 @@
                 },
                 "gzmtrLineBadge": {
                     "displayName": "광저우 지하철 노선 표지",
-                    "tram": "시가 전차"
+                    "tram": "시가 전차",
+                    "span": "행 범위 숫자"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "베이징 지하철 노선 배지"

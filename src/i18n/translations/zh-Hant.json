@@ -80,7 +80,8 @@
                 },
                 "gzmtrLineBadge": {
                     "displayName": "廣州地鐵線路標識",
-                    "tram": "輕軌"
+                    "tram": "輕軌",
+                    "span": "跨行顯示數字"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "北京地鐵數字線路標識"
