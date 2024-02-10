@@ -199,7 +199,7 @@ const jrEastLineBadgeAttrsComponent = (props: AttrsProps<JREastLineBadgeAttribut
         },
         {
             type: 'switch',
-            label: t('panel.details.lines.jrEastLineBadge.crosshatchPatternFill'),
+            label: t('panel.details.nodes.jrEastLineBadge.crosshatchPatternFill'),
             oneLine: true,
             isChecked: attrs.crosshatchPatternFill,
             onChange: val => {
