@@ -80,7 +80,8 @@
                 },
                 "gzmtrLineBadge": {
                     "displayName": "广州地铁线路标识",
-                    "tram": "有轨电车"
+                    "tram": "有轨电车",
+                    "span": "跨行显示数字"
                 },
                 "bjsubwayNumLineBadge": {
                     "displayName": "北京地铁数字线路标识"

@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 26;
+export const CURRENT_VERSION = 27;
 
 /**
  * Load the tutorial.
@@ -362,4 +362,19 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         // Bump save version to support JR East basic station, important station,
         // line badge, single color line style, and single color pattern style.
         JSON.stringify({ ...JSON.parse(param), version: 26 }),
+    26: param => {
+        // Add the span option to gzmtrLineBadge. #602
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.GzmtrLineBadge)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.span = true;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 27, graph: graph.export() });
+    },
 };
