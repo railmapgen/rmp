@@ -116,6 +116,7 @@ export enum Events {
     DOWNLOAD_PARAM = 'DOWNLOAD_PARAM',
     DOWNLOAD_IMAGES = 'DOWNLOAD_IMAGES',
     OPEN_DONATION = 'OPEN_DONATION',
+    LOAD_TUTORIAL = 'LOAD_TUTORIAL',
 }
 
 export enum LocalStorageKey {

@@ -34,7 +34,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const {
-        telemetry: { project: isAllowAppTelemetry },
+        telemetry: { app: isAllowAppTelemetry, project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
@@ -72,7 +72,11 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             .find(rep => rep.value.status === 200)
             ?.value.json()) as RMPSave | undefined;
         if (template) {
-            if (isAllowAppTelemetry) rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, { id });
+            if (isAllowAppTelemetry) {
+                const data: { id: string; host?: string } = { id };
+                if (isAllowProjectTelemetry && host) data['host'] = host;
+                rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, data);
+            }
             handleOpenTemplate(template);
             toast({
                 title: t('header.open.importFromRMPGallery', { id }),

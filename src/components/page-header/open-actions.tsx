@@ -101,6 +101,7 @@ export default function OpenActions() {
         // these magic k and b comes from linear equation fitting where you record several window size...
         const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
         dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+        rmgRuntime.event(Events.LOAD_TUTORIAL, {});
     };
 
     return (
