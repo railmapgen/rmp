@@ -59,12 +59,13 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         refreshAndSave();
     };
 
-    const fetchAndApplyTemplate = async (id: string) => {
+    const fetchAndApplyTemplate = async (id: string, host?: string) => {
+        const urlPrefix = host ? `https://${host}` : '';
         const template = (await (
             (
                 await Promise.allSettled([
-                    fetch(`/rmp-gallery/resources/real_world/${id}.json`),
-                    fetch(`/rmp-gallery/resources/fantasy/${id}.json`),
+                    fetch(`${urlPrefix}/rmp-gallery/resources/real_world/${id}.json`),
+                    fetch(`${urlPrefix}/rmp-gallery/resources/fantasy/${id}.json`),
                 ])
             ).filter(rep => rep.status === 'fulfilled') as PromiseFulfilledResult<Response>[]
         )
@@ -89,14 +90,15 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         }
     };
 
-    // A one time url match to see if it is a template share link and apply the template if needed.
+    // A one time url match to see if it is a work share link and apply the work if needed.
     React.useEffect(() => {
-        const url = window.location.href;
-        if (url.includes('/s/')) {
-            history.replaceState({}, t('about.rmp'), url.substring(0, url.indexOf('s/')));
-
-            const id = url.substring(url.lastIndexOf('s/') + 2);
-            fetchAndApplyTemplate(id);
+        const url = new URL(window.location.href);
+        const path = url.pathname;
+        if (path.includes('/s/')) {
+            history.replaceState({}, t('about.rmp'), url.pathname.substring(0, url.pathname.indexOf('s/')));
+            const id = path.substring(path.lastIndexOf('s/') + 2);
+            const host = url.searchParams.get('host') ?? undefined;
+            fetchAndApplyTemplate(id, host);
         }
     }, []);
 
