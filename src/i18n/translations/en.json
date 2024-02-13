@@ -198,8 +198,6 @@
                 },
                 "gzmtrInt": {
                     "displayName": "Guangzhou Metro interchange station",
-                    "lineCode": "Line code",
-                    "stationCode": "Station code",
                     "open": "Is opened",
                     "secondaryNameZh": "Secondary name in Chinese",
                     "secondaryNameEn": "Secondary name in English",

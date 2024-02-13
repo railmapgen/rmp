@@ -200,7 +200,8 @@
                     "displayName": "廣州地鐵換乘車站",
                     "open": "是否開通",
                     "secondaryNameZh": "中文第二名稱",
-                    "secondaryNameEn": "英文第二名稱"
+                    "secondaryNameEn": "英文第二名稱",
+                    "foshan": "佛山"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",
@@ -245,6 +246,13 @@
                   "textVertical": "垂直名稱",
                   "mostImportant": "最重要車站",
                   "minLength": "車站的最小長度"
+                },
+                "foshanMetroBasic": {
+                    "displayName": "佛山地鐵基本車站",
+                    "open": "是否開通",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱",
+                    "tram": "輕軌"
                 }
             },
             "lines": {

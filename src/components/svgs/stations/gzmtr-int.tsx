@@ -628,24 +628,22 @@ function InterchangeCard(props: InterchangeCardProps) {
     const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
         {
             type: 'input',
-            label: t('panel.details.stations.gzmtrInt.lineCode'),
+            label: t('panel.details.stations.common.lineCode'),
             value: it[4],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5], it[6]]),
         },
         {
             type: 'input',
-            label: t('panel.details.stations.gzmtrInt.stationCode'),
+            label: t('panel.details.stations.common.stationCode'),
             value: it[5],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val, it[6]]),
         },
     ]);
 
-    const handleFoshanChange = (it: InterchangeInfo, i: number, foshan: boolean) => {
-        console.log(it, i, foshan);
+    const handleFoshanChange = (it: InterchangeInfo, i: number, foshan: boolean) =>
         onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], it[5], foshan ? 'fs' : 'gz']);
-    };
 
     return (
         <RmgCard direction="column">
@@ -707,7 +705,6 @@ function InterchangeCard(props: InterchangeCardProps) {
                                 {
                                     type: 'switch',
                                     label: t('panel.details.stations.gzmtrInt.foshan'),
-                                    oneLine: true,
                                     isChecked: it[6] === 'fs',
                                     onChange: val => handleFoshanChange(it, i, val),
                                 },

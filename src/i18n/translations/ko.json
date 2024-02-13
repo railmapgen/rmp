@@ -200,7 +200,8 @@
                     "displayName": "광저우 지하철 환승역",
                     "open": "개통여부",
                     "secondaryNameZh": "한자 제2명칭",
-                    "secondaryNameEn": "영문 제2명칭"
+                    "secondaryNameEn": "영문 제2명칭",
+                    "foshan": "포산"
                 },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
@@ -245,6 +246,13 @@
                   "textVertical": "수직 이름",
                   "mostImportant": "가장 중요한 역",
                   "minLength": "스테이션의 최소 길이"
+                },
+                "foshanMetroBasic": {
+                    "displayName": "포산 지하철 기본역",
+                    "open": "개통여부",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭",
+                    "tram": "시가 전차"
                 }
             },
             "lines": {
