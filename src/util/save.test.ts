@@ -365,4 +365,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":255,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"],"tram":false,"span":true}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":27}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('27 -> 28', () => {
+        // Bump save version to add span in gzmtr-line-badge attributes.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_K2YVw2Ctjc","attributes":{"visible":true,"zIndex":0,"x":275,"y":265,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","","#AAAAAA","#fff","",""]],[["guangzhou","","#AAAAAA","#fff","",""]]],"open":true,"secondaryNames":["",""],"tram":false}}},{"key":"stn_Jv3ku8RGZ9","attributes":{"visible":true,"zIndex":0,"x":405,"y":265,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""],"tram":false}}}],"edges":[]},"version":27}';
+        const newParam = UPGRADE_COLLECTION[27](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_K2YVw2Ctjc","attributes":{"visible":true,"zIndex":0,"x":275,"y":265,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","","#AAAAAA","#fff","","","gz"]],[["guangzhou","","#AAAAAA","#fff","","","gz"]]],"open":true,"secondaryNames":["",""],"tram":false}}},{"key":"stn_Jv3ku8RGZ9","attributes":{"visible":true,"zIndex":0,"x":405,"y":265,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""],"tram":false}}}],"edges":[]},"version":28}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

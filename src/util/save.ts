@@ -24,7 +24,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 27;
+export const CURRENT_VERSION = 28;
 
 /**
  * Load the tutorial.
@@ -376,5 +376,21 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 27, graph: graph.export() });
+    },
+    27: param => {
+        // Bump save version to support Foshan Metro stations and foshan key in gzmtr-int.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GzmtrInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                for (let i = 0; i < attr.transfer.length; i = i + 1)
+                    for (let j = 0; j < attr.transfer[i].length; j = j + 1) attr.transfer[i][j].push('gz');
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 28, graph: graph.export() });
     },
 };
