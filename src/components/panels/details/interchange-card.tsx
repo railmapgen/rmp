@@ -41,14 +41,14 @@ export default function InterchangeCard(props: InterchangeCardProps) {
     const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
         {
             type: 'input',
-            label: t('panel.details.stations.gzmtrInt.lineCode'),
+            label: t('panel.details.stations.common.lineCode'),
             value: it[4],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5]]),
         },
         {
             type: 'input',
-            label: t('panel.details.stations.gzmtrInt.stationCode'),
+            label: t('panel.details.stations.common.stationCode'),
             value: it[5],
             minW: '80px',
             onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val]),

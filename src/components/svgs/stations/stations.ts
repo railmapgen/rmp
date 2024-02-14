@@ -16,6 +16,7 @@ import mrtBasicStation from './mrt-basic';
 import mrtIntStation from './mrt-int';
 import jrEastBasicStation from './jr-east-basic';
 import jrEastImportantStation from './jr-east-important';
+import foshanMetroBasicStation from './foshan-metro-basic';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -35,6 +36,7 @@ const stations = {
     [StationType.MRTInt]: mrtIntStation,
     [StationType.JREastBasic]: jrEastBasicStation,
     [StationType.JREastImportant]: jrEastImportantStation,
+    [StationType.FoshanMetroBasic]: foshanMetroBasicStation,
 };
 
 export default stations;

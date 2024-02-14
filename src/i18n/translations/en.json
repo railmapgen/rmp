@@ -198,11 +198,10 @@
                 },
                 "gzmtrInt": {
                     "displayName": "Guangzhou Metro interchange station",
-                    "lineCode": "Line code",
-                    "stationCode": "Station code",
                     "open": "Is opened",
                     "secondaryNameZh": "Secondary name in Chinese",
-                    "secondaryNameEn": "Secondary name in English"
+                    "secondaryNameEn": "Secondary name in English",
+                    "foshan": "Foshan"
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
@@ -248,6 +247,13 @@
                     "textVertical": "Vertical names",
                     "mostImportant": "Most important station",
                     "minLength": "Minimal length of the station"
+                },
+                "foshanMetroBasic": {
+                    "displayName": "Foshan Metro basic station",
+                    "open": "Is opened",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English",
+                    "tram": "Tram"
                 }
             },
             "lines": {

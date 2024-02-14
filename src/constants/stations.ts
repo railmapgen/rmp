@@ -17,6 +17,7 @@ import { MRTBasicStationAttributes } from '../components/svgs/stations/mrt-basic
 import { MRTIntStationAttributes } from '../components/svgs/stations/mrt-int';
 import { JREastBasicStationAttributes } from '../components/svgs/stations/jr-east-basic';
 import { JREastImportantStationAttributes } from '../components/svgs/stations/jr-east-important';
+import { FoshanMetroBasicStationAttributes } from '../components/svgs/stations/foshan-metro-basic';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -36,6 +37,7 @@ export enum StationType {
     MRTInt = 'mrt-int',
     JREastBasic = 'jr-east-basic',
     JREastImportant = 'jr-east-imp',
+    FoshanMetroBasic = 'foshan-metro-basic',
 }
 
 export interface ExternalStationAttributes {
@@ -56,6 +58,7 @@ export interface ExternalStationAttributes {
     [StationType.MRTInt]?: MRTIntStationAttributes;
     [StationType.JREastBasic]?: JREastBasicStationAttributes;
     [StationType.JREastImportant]?: JREastImportantStationAttributes;
+    [StationType.FoshanMetroBasic]?: FoshanMetroBasicStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
