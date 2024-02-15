@@ -1,21 +1,22 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     AlertDialog,
-    AlertDialogOverlay,
-    AlertDialogContent,
-    AlertDialogHeader,
     AlertDialogBody,
+    AlertDialogContent,
     AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
     Button,
 } from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshEdges } from '../../../redux/runtime/runtime-slice';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
-import { LinePathType, LineStyleType } from '../../../constants/lines';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { LearnHowToAdd } from '../tools/tools';
 
 export default function LineTypeSection() {
     const { t } = useTranslation();
@@ -108,6 +109,7 @@ export default function LineTypeSection() {
                     }}
                 />
             </RmgLabel>
+            <LearnHowToAdd type="line" />
 
             <AlertDialog
                 isOpen={isChangeTypeWarningOpen}

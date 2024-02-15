@@ -16,7 +16,13 @@
                 "stations": "車站",
                 "miscellaneousNodes": "雜項節點"
             },
-            "select": "多選"
+            "select": "多選",
+            "learnHowToAdd": {
+                "station": "了解如何添加車站！",
+                "misc-node": "了解如何添加節點！",
+                "line": "了解如何添加線條樣式！",
+                "donate": "或捐贈！"
+            }
         },
         "details": {
             "header": "詳情",

@@ -16,7 +16,13 @@
                 "stations": "车站",
                 "miscellaneousNodes": "杂项节点"
             },
-            "select": "多选"
+            "select": "多选",
+            "learnHowToAdd": {
+                "station": "了解如何添加车站！",
+                "misc-node": "了解如何添加节点！",
+                "line": "了解如何添加线段样式！",
+                "donate": "或捐赠！"
+            }
         },
         "details": {
             "header": "详情",

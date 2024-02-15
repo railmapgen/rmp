@@ -7,19 +7,24 @@ import {
     Box,
     Button,
     Flex,
+    HStack,
+    Icon,
+    Link,
     SystemStyleObject,
     Text,
     useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdExpandLess, MdExpandMore } from 'react-icons/md';
+import { IconContext } from 'react-icons';
+import { IoMdHeart } from 'react-icons/io';
+import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { LinePathType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
-import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, setIsDonationModalOpen, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -185,6 +190,7 @@ const ToolsPanel = () => {
                                     {isToolsExpanded ? t(stations[type].metadata.displayName) : undefined}
                                 </Button>
                             ))}
+                            <LearnHowToAdd type="station" />
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -212,6 +218,7 @@ const ToolsPanel = () => {
                                         {isToolsExpanded ? t(miscNodes[type].metadata.displayName) : undefined}
                                     </Button>
                                 ))}
+                            <LearnHowToAdd type="misc-node" />
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
@@ -221,3 +228,35 @@ const ToolsPanel = () => {
 };
 
 export default ToolsPanel;
+
+export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line' }) => {
+    const { type } = props;
+    const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+
+    const doc = type === 'misc-node' ? 'nodes' : type === 'station' ? 'stations' : 'line-styles';
+    const fontSize = type === 'line' ? 'xs' : undefined;
+    const size = type === 'line' ? '30px' : '40px';
+
+    return (
+        <HStack fontSize={fontSize}>
+            {type !== 'line' && (
+                <IconContext.Provider value={{ style: { padding: 5 }, size }}>
+                    <MdCode />
+                </IconContext.Provider>
+            )}
+            <Link color="teal.500" href={`https://github.com/railmapgen/rmp/blob/main/docs/${doc}.md`} isExternal>
+                {t(`panel.tools.learnHowToAdd.${type}`)}
+            </Link>
+            <Icon as={MdOpenInNew} color="teal.500" mr="auto" />
+            <Link color="teal.500" onClick={() => dispatch(setIsDonationModalOpen(true))} isExternal>
+                {t('panel.tools.learnHowToAdd.donate')}
+            </Link>
+            {type !== 'line' && (
+                <IconContext.Provider value={{ style: { padding: 5 }, color: 'red', size }}>
+                    <IoMdHeart />
+                </IconContext.Provider>
+            )}
+        </HStack>
+    );
+};

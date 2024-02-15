@@ -16,7 +16,13 @@
                 "stations": "역",
                 "miscellaneousNodes": "기타 노드"
             },
-            "select": "선택하다"
+            "select": "선택하다",
+            "learnHowToAdd": {
+                "station": "역을 추가하는 방법 배우기!",
+                "misc-node": "노드를 추가하는 방법 배우기!",
+                "line": "라인 스타일을 추가하는 방법 배우기!",
+                "donate": "또는 기부하기!"
+            }
         },
         "details": {
             "header": "상세한 상황",

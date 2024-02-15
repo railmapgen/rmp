@@ -16,7 +16,13 @@
                 "stations": "Stations",
                 "miscellaneousNodes": "Miscellaneous nodes"
             },
-            "select": "Select"
+            "select": "Select",
+            "learnHowToAdd": {
+                "station": "Learn how to add your stations!",
+                "misc-node": "Learn how to add your nodes!",
+                "line": "Learn how to add your line styles!",
+                "donate": "Or Donate!"
+            }
         },
         "details": {
             "header": "Details",

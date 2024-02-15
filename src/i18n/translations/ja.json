@@ -16,7 +16,13 @@
                 "stations": "駅",
                 "miscellaneousNodes": "その他の節点"
             },
-            "select": "選択する"
+            "select": "選択する",
+            "learnHowToAdd": {
+                "station": "駅を追加する方法を学ぶ！",
+                "misc-node": "節点を追加する方法を学ぶ！",
+                "line": "路線風格を追加する方法を学ぶ！",
+                "donate": "または寄付する！"
+            }
         },
         "details": {
             "header": "詳細",
