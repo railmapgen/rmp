@@ -481,6 +481,12 @@
                     "title": "Remove lines with single color",
                     "content": "Remove lines that have this color: "
                 },
+                "updateColor": {
+                    "title": "Update color",
+                    "content": "Update all colors with their latest value.",
+                    "success": "Successfully update all colors.",
+                    "error": "Error in updating all colors: {{e}}."
+                },
                 "unlockSimplePath": {
                     "title": "Unlock simple path",
                     "content1": "The Rail Map Painter application endeavors to offer an interactive platform conducive to the creation of rail maps while adhering to established conventions. Among these conventions, one particularly renowned style finds its origins in the innovative work of Harry Beck. His pioneering contribution, officially endorsed in the year 1932, garnered instantaneous acclaim from the general populace. Presently, it stands as an exemplar of paramount significance within the realm of information design. This paradigmatic approach has found widespread implementation in transit cartography on a global scale, albeit with varying degrees of success.",

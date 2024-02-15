@@ -38,6 +38,7 @@ import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-
 import { ScaleNodesModal } from './procedures/scale-nodes-modal';
 import { TranslateNodesModal } from './procedures/translate-nodes-modal';
 import { UnlockSimplePathModal } from './procedures/unlock-simple-path-modal';
+import { UpdateColorModal } from './procedures/update-color-modal';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',
@@ -59,6 +60,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isScaleNodesOpen, setIsScaleNodesOpen] = React.useState(false);
     const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
+    const [isUpdateColorOpen, setIsUpdateColorOpen] = React.useState(false);
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
@@ -151,6 +153,18 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <RemoveLinesWithSingleColorModal
                                     isOpen={isRemoveLinesWithSingleColorOpen}
                                     onClose={() => setIsRemoveLinesWithSingleColorOpen(false)}
+                                />
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsUpdateColorOpen(true)}
+                                >
+                                    {t('header.settings.procedures.updateColor.title')}
+                                </Button>
+                                <UpdateColorModal
+                                    isOpen={isUpdateColorOpen}
+                                    onClose={() => setIsUpdateColorOpen(false)}
                                 />
 
                                 <Button
