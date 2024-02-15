@@ -201,7 +201,7 @@ const myLineStyle: LineStyle<MyLineStyleAttributes> = {
     },
 };
 
-// export the plugin object as the default export of your module
+// export your line style object as the default export of your module
 export default myLineStyle;
 ```
 

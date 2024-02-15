@@ -222,6 +222,7 @@ Now you have completed the steps for creating a station. Don't forget to export 
   * Tags
 
 ```tsx
+import { CityCode } from '../../../constants/constants';
 import { Station } from '../../../constants/stations';
 
 const myStation: Station<MyStationAttributes> = {
@@ -238,7 +239,7 @@ const myStation: Station<MyStationAttributes> = {
     },
 };
 
-// export the plugin object as the default export of your module
+// export your station object as the default export of your module
 export default myStation;
 ```
 

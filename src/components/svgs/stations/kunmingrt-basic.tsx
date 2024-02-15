@@ -1,8 +1,8 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,

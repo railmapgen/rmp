@@ -1,10 +1,16 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { nanoid } from 'nanoid';
-
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
-import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes, Theme } from '../constants/constants';
+import {
+    CityCode,
+    EdgeAttributes,
+    GraphAttributes,
+    LocalStorageKey,
+    NodeAttributes,
+    Theme,
+} from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';

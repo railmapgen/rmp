@@ -1,9 +1,10 @@
 import { Box, HStack, IconButton, Text } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
+import { CityCode } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';

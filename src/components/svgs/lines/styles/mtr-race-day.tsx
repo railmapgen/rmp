@@ -1,5 +1,6 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,

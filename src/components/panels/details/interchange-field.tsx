@@ -1,9 +1,9 @@
+import { Button, FormLabel, VStack } from '@chakra-ui/react';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd } from 'react-icons/md';
-import { Button, FormLabel, VStack } from '@chakra-ui/react';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Theme } from '../../../constants/constants';
+import { CityCode, Theme } from '../../../constants/constants';
 import { StationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';

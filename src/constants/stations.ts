@@ -1,5 +1,4 @@
-import { CityCode } from '@railmapgen/rmg-palette-resources';
-import { CanvasType, StnId, CategoriesType, AttrsProps } from './constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId } from './constants';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';

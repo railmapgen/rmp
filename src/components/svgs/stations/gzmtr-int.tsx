@@ -1,12 +1,12 @@
 import { Box, Button, FormLabel, HStack, IconButton, Text, VStack, useColorModeValue } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fmetro';
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,

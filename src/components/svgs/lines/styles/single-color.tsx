@@ -1,4 +1,4 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import {
     LinePathAttributes,
@@ -12,6 +12,7 @@ import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
+import { CityCode } from '../../../../constants/constants';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handleClick } = props;

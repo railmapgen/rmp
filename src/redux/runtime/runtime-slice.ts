@@ -1,7 +1,7 @@
 import { AlertStatus } from '@chakra-ui/react';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
-import { Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { redoAction, undoAction } from '../param/param-slice';
 
 /**

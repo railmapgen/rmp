@@ -1,10 +1,10 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import { AttributesWithColor } from '../components/panels/details/color-field';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
+import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LineStyleType, LineStylesWithColor } from '../constants/lines';
 import {
     BranchStyle,

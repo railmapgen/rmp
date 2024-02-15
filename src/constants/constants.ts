@@ -1,4 +1,4 @@
-import { CityCode, ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
 import { ExternalStationAttributes, StationType } from './stations';
@@ -124,4 +124,20 @@ export enum LocalStorageKey {
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
+}
+
+export enum CityCode {
+    Other = 'other',
+    Beijing = 'beijing',
+    Berlin = 'berlin',
+    Chongqing = 'chongqing',
+    Foshan = 'foshan',
+    Guangzhou = 'guangzhou',
+    Hongkong = 'hongkong',
+    Kunming = 'kunming',
+    Shanghai = 'shanghai',
+    Shenzhen = 'shenzhen',
+    Singapore = 'singapore',
+    Suzhou = 'suzhou',
+    Tokyo = 'tokyo',
 }

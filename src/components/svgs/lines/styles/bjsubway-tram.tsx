@@ -1,4 +1,4 @@
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import {
     LinePathAttributes,
@@ -12,6 +12,7 @@ import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
+import { CityCode } from '../../../../constants/constants';
 
 const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) => {
     const { id, path, styleAttrs, handleClick } = props;
@@ -45,7 +46,7 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
 export interface BjsubwayTramAttributes extends LinePathAttributes, AttributesWithColor {}
 
 const defaultBjsubwayTramAttributes: BjsubwayTramAttributes = {
-    color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+    color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
 const bjsubwayTramFields = [

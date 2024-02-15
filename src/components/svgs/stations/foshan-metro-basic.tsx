@@ -1,9 +1,9 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber } from '@railmapgen/svg-assets/fmetro';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CanvasType, CategoriesType } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -181,7 +181,7 @@ const defaultFoshanMetroBasicStationAttributes: FoshanMetroBasicStationAttribute
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
-    color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
+    color: [CityCode.Foshan, 'gz1', '#F3D03E', MonoColour.black],
     lineCode: '1',
     stationCode: '01',
     open: true,
@@ -338,7 +338,7 @@ const foshanMetroBasicStation: Station<FoshanMetroBasicStationAttributes> = {
     attrsComponent: foshanMetroBasicStationAttrsComponents,
     metadata: {
         displayName: 'panel.details.stations.foshanMetroBasic.displayName',
-        cities: [CityCode.Guangzhou],
+        cities: [CityCode.Foshan],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: [],

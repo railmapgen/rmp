@@ -1,6 +1,5 @@
-import { CityCode } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,

@@ -1,6 +1,5 @@
-import { CityCode } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CanvasType, CategoriesType } from '../../../constants/constants';
+import { CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -225,7 +224,7 @@ const bjsubwayIntStation: Station<BjsubwayIntStationAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.stations.bjsubwayInt.displayName',
-        cities: [CityCode.Shanghai],
+        cities: [CityCode.Beijing],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: ['interchange'],

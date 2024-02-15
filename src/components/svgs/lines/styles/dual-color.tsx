@@ -1,10 +1,9 @@
 import { IconButton } from '@chakra-ui/react';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Bezier } from 'bezier-js';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdOutlineSwapVert } from 'react-icons/md';
-import { Theme } from '../../../../constants/constants';
+import { CityCode, Theme } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -15,11 +14,11 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { setRefreshEdges } from '../../../../redux/runtime/runtime-slice';
+import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
-import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 
 /**
  * Given the coordinates of point A, B, and C,

@@ -16,10 +16,10 @@ import {
     Text,
 } from '@chakra-ui/react';
 import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
-import { CityCode, MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineId, StnId, MiscNodeId, Theme } from '../../../constants/constants';
+import { LineId, StnId, MiscNodeId, Theme, CityCode } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
