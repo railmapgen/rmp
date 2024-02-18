@@ -3,7 +3,7 @@ import { Badge, IconButton, Popover, PopoverBody, PopoverContent, PopoverTrigger
 import { MdSearch } from 'react-icons/md';
 import { RmgAutoComplete, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { StnId } from '../../constants/constants';
-import { useRootSelector, useRootDispatch } from '../../redux';
+import { useRootDispatch } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { setSelected } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
@@ -18,7 +18,6 @@ interface SearchData {
 export const SearchPopover = () => {
     const [isOpen, setIsOpen] = React.useState(false);
 
-    const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
 
