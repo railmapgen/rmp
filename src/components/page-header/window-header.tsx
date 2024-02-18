@@ -16,6 +16,7 @@ import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
+import { SearchPopover } from './search-popover';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -69,6 +70,10 @@ export default function WindowHeader() {
             />
 
             <Wrap ml="auto">
+                <WrapItem>
+                    <SearchPopover />
+                </WrapItem>
+
                 <WrapItem>
                     <IconButton
                         size="sm"
