@@ -39,9 +39,9 @@ export const SearchPopover = () => {
                     })
             );
         }
-    });
+    }, [isOpen]);
 
-    const handleSearch = (stnId: StnId) => {
+    const moveCanvas = (stnId: StnId) => {
         dispatch(setSelected(new Set([stnId])));
         const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
         const { x, y } = pointerPosToSVGCoord((width - 300) / 2, height / 2, newSvgViewBoxZoom, {
@@ -65,7 +65,7 @@ export const SearchPopover = () => {
                         Object.values(item.value).some(name => name.toLowerCase().includes(query.toLowerCase()))
                     }
                     value=""
-                    onChange={item => handleSearch(item.id)}
+                    onChange={item => moveCanvas(item.id)}
                 />
             ),
         },
