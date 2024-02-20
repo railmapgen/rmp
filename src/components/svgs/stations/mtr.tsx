@@ -176,7 +176,7 @@ export interface MTRStationAttributes extends StationAttributes, StationAttribut
 }
 
 const defaultMTRStationAttributes: MTRStationAttributes = {
-    ...defaultStationAttributes,
+    names: ['車站', 'Stn'],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     rotate: 0,
