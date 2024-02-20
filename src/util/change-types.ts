@@ -16,7 +16,6 @@ import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/l
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
-const StationsWithOneName = [StationType.MRTBasic, StationType.MRTInt];
 
 /**
  * Change a station's type.
@@ -30,10 +29,15 @@ export const changeStationType = (
     newStnType: StationType
 ) => {
     const currentStnType = graph.getNodeAttribute(selectedFirst, 'type') as StationType;
-    const names = graph.getNodeAttribute(selectedFirst, currentStnType)!.names;
-    const tmpNames = Object.values(StationsWithOneName).includes(currentStnType) ? [names[0], 'Stn'] : names;
-    const newNames = Object.values(StationsWithOneName).includes(newStnType) ? [tmpNames[0]] : tmpNames;
-    const newAttrs = { ...stations[newStnType].defaultAttrs, names: newNames };
+    const names = structuredClone(graph.getNodeAttribute(selectedFirst, currentStnType)!.names);
+    for (let i = 0; i < Math.abs(stations[newStnType].defaultAttrs.names.length - names.length); i++) {
+        if (stations[newStnType].defaultAttrs.names.length > names.length) {
+            names.push('Stn');
+        } else {
+            names.pop();
+        }
+    }
+    const newAttrs = { ...stations[newStnType].defaultAttrs, names };
     if (
         !Object.values(StationsWithoutNameOffset).includes(currentStnType) ||
         !Object.values(StationsWithoutNameOffset).includes(newStnType)
