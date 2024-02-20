@@ -1,15 +1,15 @@
-import React from 'react';
 import { Badge, IconButton, Popover, PopoverBody, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
-import { MdSearch } from 'react-icons/md';
 import { RmgAutoComplete, RmgLabel } from '@railmapgen/rmg-components';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdSearch } from 'react-icons/md';
 import { StnId } from '../../constants/constants';
+import { StationAttributes } from '../../constants/stations';
 import { useRootDispatch } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { setSelected } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
-import { StationAttributes } from '../../constants/stations';
 
 interface SearchData {
     id: StnId;
