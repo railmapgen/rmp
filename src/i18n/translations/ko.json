@@ -348,6 +348,7 @@
     "header": {
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
+        "search": "방송국 검색",
         "open": {
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Badge, IconButton, Popover, PopoverBody, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { MdSearch } from 'react-icons/md';
-import { RmgAutoComplete, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgAutoComplete, RmgLabel } from '@railmapgen/rmg-components';
+import { useTranslation } from 'react-i18next';
 import { StnId } from '../../constants/constants';
 import { useRootDispatch } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
@@ -18,6 +19,7 @@ interface SearchData {
 export const SearchPopover = () => {
     const [isOpen, setIsOpen] = React.useState(false);
 
+    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
 
@@ -52,25 +54,6 @@ export const SearchPopover = () => {
         dispatch(setSvgViewBoxMin({ x: -x, y: -y }));
     };
 
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'custom',
-            label: '',
-            component: (
-                <RmgAutoComplete
-                    data={data}
-                    displayHandler={item => <Badge>{item.value}</Badge>}
-                    filter={(query, item) =>
-                        item.value.toLowerCase().includes(query.toLowerCase()) ||
-                        Object.values(item.value).some(name => name.toLowerCase().includes(query.toLowerCase()))
-                    }
-                    value=""
-                    onChange={item => moveCanvas(item.id)}
-                />
-            ),
-        },
-    ];
-
     return (
         <Popover isOpen={isOpen} onOpen={() => setIsOpen(true)} onClose={() => setIsOpen(false)}>
             <PopoverTrigger>
@@ -84,7 +67,18 @@ export const SearchPopover = () => {
             </PopoverTrigger>
             <PopoverContent>
                 <PopoverBody>
-                    <RmgFields fields={fields} noLabel />
+                    <RmgLabel label={t('header.search')}>
+                        <RmgAutoComplete
+                            data={data}
+                            displayHandler={item => <Badge>{item.value}</Badge>}
+                            filter={(query, item) =>
+                                item.value.toLowerCase().includes(query.toLowerCase()) ||
+                                Object.values(item.value).some(name => name.toLowerCase().includes(query.toLowerCase()))
+                            }
+                            value=""
+                            onChange={item => moveCanvas(item.id)}
+                        />
+                    </RmgLabel>
                 </PopoverBody>
             </PopoverContent>
         </Popover>

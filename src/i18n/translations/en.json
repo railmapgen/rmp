@@ -349,6 +349,7 @@
     "header": {
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
+        "search": "Search stations",
         "open": {
             "new": "New project",
             "config": "Import project",

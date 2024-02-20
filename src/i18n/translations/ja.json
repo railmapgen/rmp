@@ -349,6 +349,7 @@
     "header": {
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
+        "search": "駅を探す",
         "open": {
             "new": "新しい作品",
             "config": "作品をインポート",
