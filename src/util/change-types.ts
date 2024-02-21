@@ -29,7 +29,14 @@ export const changeStationType = (
     newStnType: StationType
 ) => {
     const currentStnType = graph.getNodeAttribute(selectedFirst, 'type') as StationType;
-    const names = graph.getNodeAttribute(selectedFirst, currentStnType)!.names;
+    const names = structuredClone(graph.getNodeAttribute(selectedFirst, currentStnType)!.names);
+    for (let i = 0; i < Math.abs(stations[newStnType].defaultAttrs.names.length - names.length); i++) {
+        if (stations[newStnType].defaultAttrs.names.length > names.length) {
+            names.push('Stn');
+        } else {
+            names.pop();
+        }
+    }
     const newAttrs = { ...stations[newStnType].defaultAttrs, names };
     if (
         !Object.values(StationsWithoutNameOffset).includes(currentStnType) ||
