@@ -259,6 +259,12 @@
                     "secondaryNameZh": "中文第二名稱",
                     "secondaryNameEn": "英文第二名稱",
                     "tram": "輕軌"
+                },
+                "qingdaoMetroBasic": {
+                    "displayName": "青島地鐵基本車站"
+                },
+                "qingdaoMetroInt": {
+                    "displayName": "青島地鐵轉乘車站"
                 }
             },
             "lines": {

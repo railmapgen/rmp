@@ -259,6 +259,12 @@
                     "secondaryNameZh": "한자 제2명칭",
                     "secondaryNameEn": "영문 제2명칭",
                     "tram": "시가 전차"
+                },
+                "qingdaoMetroBasic": {
+                    "displayName": "칭다오 지하철 기본역"
+                },
+                "qingdaoMetroInt": {
+                    "displayName": "칭다오 지하철 환승역"
                 }
             },
             "lines": {

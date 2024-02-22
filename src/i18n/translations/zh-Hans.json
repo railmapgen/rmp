@@ -259,6 +259,12 @@
                     "secondaryNameZh": "中文第二名称",
                     "secondaryNameEn": "英文第二名称",
                     "tram": "有轨电车"
+                },
+                "qingdaoMetroBasic": {
+                    "displayName": "青岛地铁基本车站"
+                },
+                "qingdaoMetroInt": {
+                    "displayName": "青岛地铁换乘车站"
                 }
             },
             "lines": {
