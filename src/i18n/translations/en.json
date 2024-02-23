@@ -73,7 +73,7 @@
                     "nameZh": "Line name in Chinese",
                     "nameEn": "Line name in English",
                     "nameJa": "Line name in Japanese",
-                    "num": "Line Number"
+                    "num": "Line number"
                 },
                 "virtual": {
                     "displayName": "Virtual node"
@@ -121,6 +121,11 @@
                 "jrEastLineBadge": {
                     "displayName": "JR East line badge",
                     "crosshatchPatternFill": "Fill with crosshatch pattern"
+                },
+                "qingdaoMetroNumLineBadge": {
+                    "displayName": "Qingdao Metro Num Line Badge",
+                    "numEn": "Line number in English",
+                    "showText": "Show text"
                 },
                 "facilities": {
                     "displayName": "Facilities",

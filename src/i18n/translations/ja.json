@@ -122,6 +122,11 @@
                   "displayName": "JR東日本路線番号徽章",
                   "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
+                "qingdaoMetroNumLineBadge": {
+                    "displayName": "青島地下鉄番号線バッジ",
+                    "numEn": "英語の行番号",
+                    "showText": "テキストを表示"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "種類"

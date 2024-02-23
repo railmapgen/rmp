@@ -122,6 +122,11 @@
                   "displayName": "JR東日本線路標識",
                   "crosshatchPatternFill": "用網狀圖案填充"
                 },
+                "qingdaoMetroNumLineBadge": {
+                    "displayName": "青島地鐵數位線路標識",
+                    "numEn": "英文線路號",
+                    "showText": "顯示文字"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"
