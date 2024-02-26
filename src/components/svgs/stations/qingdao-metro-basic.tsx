@@ -13,35 +13,12 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { MultilineText } from '../common/multiline-text';
 
-const NAME_QD_BASIC = {
-    zh: {
-        size: 10,
-        baseOffset: 1,
-    },
-    en: {
-        size: 5,
-        baseOffset: 1.5,
-    },
-};
-
-const NAME_DY_QD_BASIC = {
-    top: {
-        lineHeight: 5,
-        offset: 4 + NAME_QD_BASIC.en.baseOffset + 2.5, // offset + baseOffset + iconRadius
-        polarity: -1,
-    },
-    middle: {
-        lineHeight: 0,
-        offset: NAME_QD_BASIC.zh.size / 2,
-        polarity: 1,
-    },
-    bottom: {
-        lineHeight: 10,
-        offset: 3 + NAME_QD_BASIC.zh.baseOffset + 2.5, // offset + baseOffset + iconRadius
-        polarity: 1,
-    },
+const LineHeight = {
+    top: 5.5,
+    middle: 0,
+    bottom: 10,
 };
 
 const QingdaoMetroBasicStation = (props: StationComponentProps) => {
@@ -51,6 +28,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
         color = defaultQingdaoMetroBasicStationAttributes.color,
         nameOffsetX = defaultQingdaoMetroBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultQingdaoMetroBasicStationAttributes.nameOffsetY,
+        isInt = defaultQingdaoMetroBasicStationAttributes.isInt,
     } = attrs[StationType.QingdaoMetroBasic] ?? defaultQingdaoMetroBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -66,19 +44,48 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -7.5 : nameOffsetX === 'right' ? 7.5 : 0;
-    const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_QD_BASIC[nameOffsetY].lineHeight +
-            NAME_DY_QD_BASIC[nameOffsetY].offset) *
-        NAME_DY_QD_BASIC[nameOffsetY].polarity;
+    const getBasicTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
+        const textX = oX === 'left' ? -7.5 : oX === 'right' ? 7.5 : 0;
+        if (oY === 'top') {
+            return [textX, -names[1].split('\n').length * LineHeight[oY] - 8];
+        } else if (oY === 'bottom') {
+            return [textX, names[0].split('\n').length * LineHeight[oY] + 6];
+        } else {
+            return [textX, 5];
+        }
+    };
+
+    const getIntTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
+        if (oX === 'left' && oY === 'top') {
+            return [-7, -names[1].split('\n').length * LineHeight[oY] - 7];
+        } else if (oX === 'middle' && oY === 'top') {
+            return [0, -names[1].split('\n').length * LineHeight[oY] - 15];
+        } else if (oX === 'right' && oY === 'top') {
+            return [7, -names[1].split('\n').length * LineHeight[oY] - 7];
+        } else if (oX === 'left' && oY === 'bottom') {
+            return [-7, names[0].split('\n').length * LineHeight[oY] + 7];
+        } else if (oX === 'middle' && oY === 'bottom') {
+            return [0, names[0].split('\n').length * LineHeight[oY] + 12];
+        } else if (oX === 'right' && oY === 'bottom') {
+            return [7, names[0].split('\n').length * LineHeight[oY] + 7];
+        } else if (oX === 'left' && oY === 'middle') {
+            return [-13, 0];
+        } else if (oX === 'right' && oY === 'middle') {
+            return [13, 0];
+        } else return [0, 0];
+    };
+
+    const [[textX, textY], r] = isInt
+        ? [getIntTextOffset(nameOffsetX, nameOffsetY), 8]
+        : [getBasicTextOffset(nameOffsetX, nameOffsetY), 3];
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
-                r={3}
-                stroke={color[2]}
+                r={r}
+                stroke={isInt ? 'black' : color[2]}
                 strokeWidth="0.67"
                 fill="white"
                 onPointerDown={onPointerDown}
@@ -114,6 +121,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
 export interface QingdaoMetroBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    isInt: boolean;
 }
 
 const defaultQingdaoMetroBasicStationAttributes: QingdaoMetroBasicStationAttributes = {
@@ -121,6 +129,7 @@ const defaultQingdaoMetroBasicStationAttributes: QingdaoMetroBasicStationAttribu
     color: [CityCode.Qingdao, 'qd1', '#eaaa00', MonoColour.white],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    isInt: false,
 };
 
 const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStationAttributes>) => {
@@ -189,6 +198,18 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
                     defaultTheme={defaultQingdaoMetroBasicStationAttributes.color}
                 />
             ),
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.qingdaoMetro.isInt'),
+            isChecked: attrs.isInt,
+            oneLine: true,
+            onChange: val => {
+                attrs.isInt = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
     ];
     return <RmgFields fields={fields} />;
@@ -206,7 +227,7 @@ const qingdaoMetroBasicStation: Station<QingdaoMetroBasicStationAttributes> = {
     defaultAttrs: defaultQingdaoMetroBasicStationAttributes,
     attrsComponent: qingdaoMetroBasicAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.qingdaoMetroBasic.displayName',
+        displayName: 'panel.details.stations.qingdaoMetro.displayName',
         cities: [CityCode.Qingdao],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

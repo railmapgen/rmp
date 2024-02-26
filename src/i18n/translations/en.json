@@ -266,11 +266,9 @@
                     "secondaryNameEn": "Secondary name in English",
                     "tram": "Tram"
                 },
-                "qingdaoMetroBasic": {
-                    "displayName": "Qingdao Metro basic station"
-                },
-                "qingdaoMetroInt": {
-                    "displayName": "Qingdao Metro interchange station"
+                "qingdaoMetro": {
+                    "displayName": "Qingdao Metro station",
+                    "isInt": "Is interchange station"
                 }
             },
             "lines": {

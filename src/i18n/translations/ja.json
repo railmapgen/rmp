@@ -266,11 +266,9 @@
                     "secondaryNameEn": "英語の補助駅名",
                     "tram": "路面電車"
                 },
-                "qingdaoMetroBasic": {
-                    "displayName": "青島地下鉄基本駅"
-                },
-                "qingdaoMetroInt": {
-                    "displayName": "青島地下鉄乗換駅"
+                "qingdaoMetro": {
+                    "displayName": "地下鉄青島駅",
+                    "isInt": "乗換駅です"
                 }
             },
             "lines": {
