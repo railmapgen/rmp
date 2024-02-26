@@ -42,17 +42,17 @@ const QingdaoMetroIntStation = (props: StationComponentProps) => {
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-7, -names[1].split('\\').length * LineHeight[oY] - 7];
+            return [-7, -names[1].split('\n').length * LineHeight[oY] - 7];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -names[1].split('\\').length * LineHeight[oY] - 15];
+            return [0, -names[1].split('\n').length * LineHeight[oY] - 15];
         } else if (oX === 'right' && oY === 'top') {
-            return [7, -names[1].split('\\').length * LineHeight[oY] - 7];
+            return [7, -names[1].split('\n').length * LineHeight[oY] - 7];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-7, names[0].split('\\').length * LineHeight[oY] + 7];
+            return [-7, names[0].split('\n').length * LineHeight[oY] + 7];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\\').length * LineHeight[oY] + 12];
+            return [0, names[0].split('\n').length * LineHeight[oY] + 12];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [7, names[0].split('\\').length * LineHeight[oY] + 7];
+            return [7, names[0].split('\n').length * LineHeight[oY] + 7];
         } else if (oX === 'left' && oY === 'middle') {
             return [-13, 0];
         } else if (oX === 'right' && oY === 'middle') {
@@ -78,7 +78,7 @@ const QingdaoMetroIntStation = (props: StationComponentProps) => {
             />
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={10}
                     lineHeight={10}
                     grow="up"
@@ -86,7 +86,7 @@ const QingdaoMetroIntStation = (props: StationComponentProps) => {
                     className="rmp-name__zh"
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={5.5}
                     lineHeight={5.5}
                     grow="down"
@@ -99,7 +99,7 @@ const QingdaoMetroIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * qingdaoMetroIntStation specific props.
+ * Qingdao Metro interchange station specific props.
  */
 export interface QingdaoMetroIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
@@ -120,9 +120,9 @@ const qingdaoMetroIntAttrsComponent = (props: AttrsProps<QingdaoMetroIntStationA
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n') ?? defaultQingdaoMetroIntStationAttributes.names[0],
+            value: attrs.names[0] ?? defaultQingdaoMetroIntStationAttributes.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -130,9 +130,9 @@ const qingdaoMetroIntAttrsComponent = (props: AttrsProps<QingdaoMetroIntStationA
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n') ?? defaultQingdaoMetroIntStationAttributes.names[1],
+            value: attrs.names[1] ?? defaultQingdaoMetroIntStationAttributes.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

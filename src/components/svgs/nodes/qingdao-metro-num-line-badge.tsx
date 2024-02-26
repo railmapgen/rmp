@@ -1,10 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 
 const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;

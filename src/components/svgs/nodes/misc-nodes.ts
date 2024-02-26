@@ -13,10 +13,10 @@ import chongqingRTTextLineBadge from './chongqingrt-text-line-badge';
 import shenzhenMetroNumLineBadge from './shenzhenmetro-num-line-badge';
 import mrtDestinationNumbers from './mrt-dest-num';
 import jrEastLineBadge from './jr-east-line-badge';
+import qingdaoMetroNumLineBadge from './qingdao-metro-num-line-badge';
 import facilities from './facilities';
 import text from './text';
 import i18nText from './i18n-text';
-import qingdaoMetroNumLineBadge from './qingdao-metro-num-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,

@@ -68,7 +68,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -7.5 : nameOffsetX === 'right' ? 7.5 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_QD_BASIC[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_QD_BASIC[nameOffsetY].lineHeight +
             NAME_DY_QD_BASIC[nameOffsetY].offset) *
         NAME_DY_QD_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
@@ -88,7 +88,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
             />
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={10}
                     lineHeight={10}
                     grow="up"
@@ -96,7 +96,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
                     className="rmp-name__zh"
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={5.5}
                     lineHeight={5.5}
                     grow="down"
@@ -109,7 +109,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * qingdaoMetroBasicStation specific props.
+ * Qingdao Metro basic station specific props.
  */
 export interface QingdaoMetroBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
@@ -131,9 +131,9 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n') ?? defaultQingdaoMetroBasicStationAttributes.names[0],
+            value: attrs.names[0] ?? defaultQingdaoMetroBasicStationAttributes.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -141,9 +141,9 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n') ?? defaultQingdaoMetroBasicStationAttributes.names[1],
+            value: attrs.names[1] ?? defaultQingdaoMetroBasicStationAttributes.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
