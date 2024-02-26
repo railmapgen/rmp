@@ -1,6 +1,8 @@
 import React from 'react';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../constants/constants';
 
 /**
  * Facilities type, note that the value should match the filename under public/images/facilities.
@@ -18,6 +20,16 @@ export enum FacilitiesType {
     AirportBJ = 'airport_bj',
     BusTerminalSuzhou = 'bus_terminal_suzhou',
     RailwaySuzhou = 'railway_suzhou',
+    BusInterchange = 'bus_interchange',
+    AirportSG = 'airport_sg',
+    CruiseCentre = 'cruise_centre',
+    SentosaExpress = 'sentosa_express',
+    CableCar = 'cable_car',
+    Merlion = 'merlion',
+    MarinaBaySands = 'marina_bay_sands',
+    GardensByTheBay = 'gardens_by_the_bay',
+    SingaporeFlyer = 'singapore_flyer',
+    Esplanade = 'esplanade',
 }
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
@@ -26,7 +38,10 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
 
     const imgEl = React.useRef<SVGImageElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 25, height: 25 } as DOMRect);
-    React.useEffect(() => setBBox(imgEl.current!.getBBox()), [type, setBBox, imgEl]);
+    React.useEffect(() => {
+        setBBox(imgEl.current!.getBBox());
+        console.log(type, imgEl.current!.getBBox());
+    }, [type, setBBox, imgEl]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -71,39 +86,48 @@ const defaultFacilitiesAttributes: FacilitiesAttributes = {
     type: FacilitiesType.Airport,
 };
 
-const facilitiesFields = [
-    {
-        type: 'select',
-        label: 'panel.details.nodes.facilities.type',
-        value: (attrs?: FacilitiesAttributes) => (attrs ?? defaultFacilitiesAttributes).type,
-        options: {
-            [FacilitiesType.Airport]: 'Airport',
-            [FacilitiesType.Maglev]: 'Maglev',
-            [FacilitiesType.Disney]: 'Disney',
-            [FacilitiesType.Railway]: 'Railway',
-            [FacilitiesType.HSR]: 'HSR',
-            [FacilitiesType.AirportHK]: 'Airport Hongkong',
-            [FacilitiesType.DisneyHK]: 'Disney Hongkong',
-            [FacilitiesType.NgongPing360]: 'Ngong Ping 360',
-            [FacilitiesType.Tiananmen]: 'Tiananmen',
-            [FacilitiesType.AirportBJ]: 'Airport Beijing',
-            [FacilitiesType.BusTerminalSuzhou]: 'Bus Terminal Suzhou',
-            [FacilitiesType.RailwaySuzhou]: 'Railway Suzhou',
-        },
-        onChange: (val: string | number, attrs_: FacilitiesAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultFacilitiesAttributes;
-            // set value
-            attrs.type = val as FacilitiesType;
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const attrsComponent = (props: AttrsProps<FacilitiesAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes fields={facilitiesFields as RmgFieldsFieldDetail<FacilitiesAttributes>} />
-);
+    const field: RmgFieldsField[] = [
+        {
+            type: 'select',
+            label: t('panel.details.nodes.facilities.type'),
+            value: attrs.type,
+            options: {
+                [FacilitiesType.Airport]: 'Airport',
+                [FacilitiesType.Maglev]: 'Maglev',
+                [FacilitiesType.Disney]: 'Disney',
+                [FacilitiesType.Railway]: 'Railway',
+                [FacilitiesType.HSR]: 'HSR',
+                [FacilitiesType.AirportHK]: 'Airport Hongkong',
+                [FacilitiesType.DisneyHK]: 'Disney Hongkong',
+                [FacilitiesType.NgongPing360]: 'Ngong Ping 360',
+                [FacilitiesType.Tiananmen]: 'Tiananmen',
+                [FacilitiesType.AirportBJ]: 'Airport Beijing',
+                [FacilitiesType.BusTerminalSuzhou]: 'Bus Terminal Suzhou',
+                [FacilitiesType.RailwaySuzhou]: 'Railway Suzhou',
+                [FacilitiesType.BusInterchange]: 'Bus Interchange',
+                [FacilitiesType.AirportSG]: 'Changi Airport',
+                [FacilitiesType.CruiseCentre]: 'Cruise Centre',
+                [FacilitiesType.SentosaExpress]: 'Sentosa Express',
+                [FacilitiesType.CableCar]: 'Cable Car',
+                [FacilitiesType.Merlion]: 'Merlion',
+                [FacilitiesType.MarinaBaySands]: 'Marina Bay Sands',
+                [FacilitiesType.GardensByTheBay]: 'Gardens by the Bay',
+                [FacilitiesType.SingaporeFlyer]: 'Singapore Flyer',
+                [FacilitiesType.Esplanade]: 'Esplanade',
+            },
+            onChange: val => {
+                attrs.type = val as FacilitiesType;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+    ];
+
+    return <RmgFields fields={field} minW="full" />;
+};
 
 const facilitiesIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
