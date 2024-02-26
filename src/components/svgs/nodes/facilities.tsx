@@ -1,7 +1,7 @@
-import React from 'react';
-import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttrsProps } from '../../../constants/constants';
 
 /**
