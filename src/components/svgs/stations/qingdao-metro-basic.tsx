@@ -51,7 +51,7 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
         } else if (oY === 'bottom') {
             return [textX, names[0].split('\n').length * LineHeight[oY] + 6];
         } else {
-            return [textX, 5];
+            return [textX, 2.5];
         }
     };
 
