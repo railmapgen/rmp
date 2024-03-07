@@ -17,7 +17,7 @@ import { MRTIntStationAttributes } from '../components/svgs/stations/mrt-int';
 import { JREastBasicStationAttributes } from '../components/svgs/stations/jr-east-basic';
 import { JREastImportantStationAttributes } from '../components/svgs/stations/jr-east-important';
 import { FoshanMetroBasicStationAttributes } from '../components/svgs/stations/foshan-metro-basic';
-import { QingdaoMetroBasicStationAttributes } from '../components/svgs/stations/qingdao-metro-basic';
+import { QingdaoMetroStationAttributes } from '../components/svgs/stations/qingdao-metro-station';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -38,7 +38,7 @@ export enum StationType {
     JREastBasic = 'jr-east-basic',
     JREastImportant = 'jr-east-imp',
     FoshanMetroBasic = 'foshan-metro-basic',
-    QingdaoMetroBasic = 'qingdao-metro-basic',
+    QingdaoMetroStation = 'qingdao-metro-basic',
 }
 
 export interface ExternalStationAttributes {
@@ -60,7 +60,7 @@ export interface ExternalStationAttributes {
     [StationType.JREastBasic]?: JREastBasicStationAttributes;
     [StationType.JREastImportant]?: JREastImportantStationAttributes;
     [StationType.FoshanMetroBasic]?: FoshanMetroBasicStationAttributes;
-    [StationType.QingdaoMetroBasic]?: QingdaoMetroBasicStationAttributes;
+    [StationType.QingdaoMetroStation]?: QingdaoMetroStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */

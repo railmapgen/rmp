@@ -379,7 +379,7 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('28 -> 29', () => {
-        // Bump save version to support Singapore MRT destination numbers.
+        // Bump save version to support Qingdao Metro Station.
         const oldParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":28}';
         const newParam = UPGRADE_COLLECTION[28](oldParam);

@@ -21,15 +21,15 @@ const LineHeight = {
     bottom: 10,
 };
 
-const QingdaoMetroBasicStation = (props: StationComponentProps) => {
+const QingdaoMetroStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        color = defaultQingdaoMetroBasicStationAttributes.color,
-        nameOffsetX = defaultQingdaoMetroBasicStationAttributes.nameOffsetX,
-        nameOffsetY = defaultQingdaoMetroBasicStationAttributes.nameOffsetY,
-        isInt = defaultQingdaoMetroBasicStationAttributes.isInt,
-    } = attrs[StationType.QingdaoMetroBasic] ?? defaultQingdaoMetroBasicStationAttributes;
+        color = defaultQingdaoMetroStationAttributes.color,
+        nameOffsetX = defaultQingdaoMetroStationAttributes.nameOffsetX,
+        nameOffsetY = defaultQingdaoMetroStationAttributes.nameOffsetY,
+        isInt = defaultQingdaoMetroStationAttributes.isInt,
+    } = attrs[StationType.QingdaoMetroStation] ?? defaultQingdaoMetroStationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -116,15 +116,15 @@ const QingdaoMetroBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * Qingdao Metro basic station specific props.
+ * Qingdao Metro station specific props.
  */
-export interface QingdaoMetroBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface QingdaoMetroStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     isInt: boolean;
 }
 
-const defaultQingdaoMetroBasicStationAttributes: QingdaoMetroBasicStationAttributes = {
+const defaultQingdaoMetroStationAttributes: QingdaoMetroStationAttributes = {
     ...defaultStationAttributes,
     color: [CityCode.Qingdao, 'qd1', '#eaaa00', MonoColour.white],
     nameOffsetX: 'right',
@@ -132,7 +132,7 @@ const defaultQingdaoMetroBasicStationAttributes: QingdaoMetroBasicStationAttribu
     isInt: false,
 };
 
-const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStationAttributes>) => {
+const qingdaoMetroStationAttrsComponent = (props: AttrsProps<QingdaoMetroStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -140,7 +140,7 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0] ?? defaultQingdaoMetroBasicStationAttributes.names[0],
+            value: attrs.names[0] ?? defaultQingdaoMetroStationAttributes.names[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -150,7 +150,7 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1] ?? defaultQingdaoMetroBasicStationAttributes.names[1],
+            value: attrs.names[1] ?? defaultQingdaoMetroStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -160,7 +160,7 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultQingdaoMetroBasicStationAttributes.nameOffsetX,
+            value: attrs.nameOffsetX ?? defaultQingdaoMetroStationAttributes.nameOffsetX,
             options: {
                 left: t('panel.details.stations.common.left'),
                 middle: t('panel.details.stations.common.middle'),
@@ -176,7 +176,7 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultQingdaoMetroBasicStationAttributes.nameOffsetY,
+            value: attrs.nameOffsetY ?? defaultQingdaoMetroStationAttributes.nameOffsetY,
             options: {
                 top: t('panel.details.stations.common.top'),
                 middle: t('panel.details.stations.common.middle'),
@@ -194,8 +194,8 @@ const qingdaoMetroBasicAttrsComponent = (props: AttrsProps<QingdaoMetroBasicStat
             label: t('color'),
             component: (
                 <ColorField
-                    type={StationType.QingdaoMetroBasic}
-                    defaultTheme={defaultQingdaoMetroBasicStationAttributes.color}
+                    type={StationType.QingdaoMetroStation}
+                    defaultTheme={defaultQingdaoMetroStationAttributes.color}
                 />
             ),
             minW: 'full',
@@ -221,11 +221,11 @@ const qingdaoMetroBasicStationIcon = (
     </svg>
 );
 
-const qingdaoMetroBasicStation: Station<QingdaoMetroBasicStationAttributes> = {
-    component: QingdaoMetroBasicStation,
+const qingdaoMetroStation: Station<QingdaoMetroStationAttributes> = {
+    component: QingdaoMetroStation,
     icon: qingdaoMetroBasicStationIcon,
-    defaultAttrs: defaultQingdaoMetroBasicStationAttributes,
-    attrsComponent: qingdaoMetroBasicAttrsComponent,
+    defaultAttrs: defaultQingdaoMetroStationAttributes,
+    attrsComponent: qingdaoMetroStationAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.qingdaoMetro.displayName',
         cities: [CityCode.Qingdao],
@@ -235,4 +235,4 @@ const qingdaoMetroBasicStation: Station<QingdaoMetroBasicStationAttributes> = {
     },
 };
 
-export default qingdaoMetroBasicStation;
+export default qingdaoMetroStation;

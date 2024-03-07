@@ -73,13 +73,13 @@ const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineB
  */
 export interface QingdaoMetroNumLineBadgeAttributes extends AttributesWithColor {
     num: number;
-    numEn: number | string;
+    numEn: string;
     showText: boolean;
 }
 
 const defaultQingdaoMetroNumLineBadgeAttributes: QingdaoMetroNumLineBadgeAttributes = {
     num: 1,
-    numEn: 1,
+    numEn: '1',
     showText: true,
     color: [CityCode.Qingdao, 'qd1', '#eaaa00', MonoColour.white],
 };
@@ -95,7 +95,7 @@ const attrsComponent = (props: AttrsProps<QingdaoMetroNumLineBadgeAttributes>) =
             value: attrs.num.toString(),
             onChange: value => {
                 attrs.num = Number(value);
-                attrs.numEn = Number(value);
+                attrs.numEn = value;
                 handleAttrsUpdate(id, attrs);
             },
         },
