@@ -135,6 +135,7 @@ export enum CityCode {
     Guangzhou = 'guangzhou',
     Hongkong = 'hongkong',
     Kunming = 'kunming',
+    Qingdao = 'qingdao',
     Shanghai = 'shanghai',
     Shenzhen = 'shenzhen',
     Singapore = 'singapore',

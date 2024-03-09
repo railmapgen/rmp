@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 28;
+export const CURRENT_VERSION = 29;
 
 /**
  * Load the tutorial.
@@ -399,4 +399,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 28, graph: graph.export() });
     },
+    28: param =>
+        // Bump save version to support Qingdao Metro Station,
+        JSON.stringify({ ...JSON.parse(param), version: 29 }),
 };
