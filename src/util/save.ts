@@ -400,6 +400,9 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         return JSON.stringify({ ...p, version: 28, graph: graph.export() });
     },
     28: param =>
-        // Bump save version to support Qingdao Metro Station,
+        // Bump save version to support Qingdao Metro Station.
         JSON.stringify({ ...JSON.parse(param), version: 29 }),
+    29: param =>
+        // Bump save version to support Singapore MRT facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 30 }),
 };
