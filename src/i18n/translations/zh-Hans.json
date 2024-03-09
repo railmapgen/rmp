@@ -122,6 +122,11 @@
                   "displayName": "JR东日本线路标识",
                   "crosshatchPatternFill": "用网状图案填充"
                 },
+                "qingdaoMetroNumLineBadge": {
+                    "displayName": "青岛地铁数字线路标识",
+                    "numEn": "英文线路号",
+                    "showText": "显示文字"
+                },
                 "facilities": {
                     "displayName": "设施",
                     "type": "类型"
@@ -259,6 +264,10 @@
                     "secondaryNameZh": "中文第二名称",
                     "secondaryNameEn": "英文第二名称",
                     "tram": "有轨电车"
+                },
+                "qingdaoMetro": {
+                    "displayName": "青岛地铁车站",
+                    "isInt": "是换乘站"
                 }
             },
             "lines": {

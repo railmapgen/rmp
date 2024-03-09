@@ -122,6 +122,11 @@
                   "displayName": "JR 동일본 라인 배지",
                   "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
                 },
+                "qingdaoMetroNumLineBadge": {
+                    "displayName": "칭다오 지하철 번호 라인 배지",
+                    "numEn": "영어로 된 줄 번호",
+                    "showText": "텍스트 표시"
+                },
                 "facilities": {
                     "displayName": "시설",
                     "type": "유형"
@@ -259,6 +264,10 @@
                     "secondaryNameZh": "한자 제2명칭",
                     "secondaryNameEn": "영문 제2명칭",
                     "tram": "시가 전차"
+                },
+                "qingdaoMetro": {
+                    "displayName": "칭다오 지하철역",
+                    "isInt": "환승역인가"
                 }
             },
             "lines": {

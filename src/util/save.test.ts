@@ -377,4 +377,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_K2YVw2Ctjc","attributes":{"visible":true,"zIndex":0,"x":275,"y":265,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","","#AAAAAA","#fff","","","gz"]],[["guangzhou","","#AAAAAA","#fff","","","gz"]]],"open":true,"secondaryNames":["",""],"tram":false}}},{"key":"stn_Jv3ku8RGZ9","attributes":{"visible":true,"zIndex":0,"x":405,"y":265,"type":"gzmtr-int","gzmtr-int":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[],[]],"open":true,"secondaryNames":["",""],"tram":false}}}],"edges":[]},"version":28}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('28 -> 29', () => {
+        // Bump save version to support Qingdao Metro Station.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":28}';
+        const newParam = UPGRADE_COLLECTION[28](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":29}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
