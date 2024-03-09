@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 29;
+export const CURRENT_VERSION = 30;
 
 /**
  * Load the tutorial.
