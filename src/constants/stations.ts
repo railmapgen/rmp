@@ -73,6 +73,9 @@ export interface StationComponentProps {
     handlePointerDown: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
+    handleTouchStart: (node: StnId, e: React.TouchEvent<SVGElement>) => void;
+    handleTouchMove: (node: StnId, e: React.TouchEvent<SVGElement>) => void;
+    handleTouchEnd: (node: StnId, e: React.TouchEvent<SVGElement>) => void;
 }
 
 export interface StationAttributes {

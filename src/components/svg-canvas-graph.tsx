@@ -18,7 +18,7 @@ import {
     setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
-import { getMousePosition, roundToNearestN } from '../util/helpers';
+import { getMousePosition, getTouchPosition, isMobileDevice, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
@@ -47,66 +47,36 @@ const SvgCanvas = () => {
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
+    // the element position of pointer up
+    const [elementPosition, setElementPosition] = React.useState({ x: 0, y: 0 });
 
-    const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        e.stopPropagation();
-
+    const handleNodeDown = (node: StnId | MiscNodeId, { x, y }: { x: number; y: number }) => {
         if (mode === 'select') dispatch(setMode('free'));
 
-        const el = e.currentTarget;
-        const { x, y } = getMousePosition(e);
-        el.setPointerCapture(e.pointerId);
-
-        setOffset({ x, y });
-
         dispatch(setActive(node));
-
-        if (!mode.startsWith('line')) {
-            if (!e.shiftKey) {
-                // no shift key -> non multiple selection case
-                if (!selected.has(node)) {
-                    // set the current as the only one no matter what the previous selected were
-                    dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
-                } else {
-                    // no-op as users may drag the previously selected node(s) for the current selected
-                }
-            } else {
-                // shift key pressed -> multiple selection case
-                if (selected.has(node)) {
-                    // remove current if it is already in the multiple selection
-                    dispatch(removeSelected(node));
-                } else {
-                    // add current in the multiple selection
-                    dispatch(addSelected(node));
-                }
-            }
-            // console.log('down ', graph.current.getNodeAttributes(node));
-        }
-    });
-    const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
-        const { x, y } = getMousePosition(e);
-
+        setOffset({ x, y });
+        setMovingPosition({ x: 0, y: 0 });
+    };
+    const handleNodeMove = (node: StnId | MiscNodeId, { x, y }: { x: number; y: number }, altKey: boolean) => {
+        setMovingPosition({
+            x: ((offset.x - x) * svgViewBoxZoom) / 100,
+            y: ((offset.y - y) * svgViewBoxZoom) / 100,
+        });
         if (mode === 'free' && active === node) {
-            selected.forEach(s => {
-                if (graph.current.hasNode(s)) {
+            [...(selected.has(active) ? [undefined] : [active]), ...selected]
+                .filter(s => graph.current.hasNode(s))
+                .forEach(s => {
                     graph.current.updateNodeAttributes(s, attr => ({
                         ...attr,
-                        x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                        y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                        x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, altKey ? 1 : 5),
+                        y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, altKey ? 1 : 5),
                     }));
-                }
-            });
+                });
             dispatch(setRefreshNodes());
             dispatch(setRefreshEdges());
-            // console.log('move ', graph.current.getNodeAttributes(node));
-        } else if (mode.startsWith('line')) {
-            setMovingPosition({
-                x: ((offset.x - x) * svgViewBoxZoom) / 100,
-                y: ((offset.y - y) * svgViewBoxZoom) / 100,
-            });
         }
-    });
-    const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    };
+    const handleNodeUp = (node: StnId | MiscNodeId, shiftKey: boolean) => {
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
@@ -117,7 +87,7 @@ const SvgCanvas = () => {
 
             const prefixes = ['stn_core_', 'virtual_circle_'];
             prefixes.forEach(prefix => {
-                const elems = document.elementsFromPoint(e.clientX, e.clientY);
+                const elems = document.elementsFromPoint(elementPosition.x, elementPosition.y);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
                 // all connectable nodes have prefixes in their mask/event elements' ids
                 const couldIDBeConnected = id?.startsWith(prefix);
@@ -143,10 +113,29 @@ const SvgCanvas = () => {
         } else if (mode === 'free') {
             if (active) {
                 // the node is pointed down before
-                // check the offset and if it's not 0, it must be a click not move
-                const { x, y } = getMousePosition(e);
-                if (offset.x - x === 0 && offset.y - y === 0) {
-                    // no-op for click as the node is already added in pointer down
+                // check the movingPosition and if it's 0, it must be a click not move
+                if (movingPosition.x === 0 && movingPosition.y === 0) {
+                    // one click, add it to selected
+                    if (!mode.startsWith('line')) {
+                        if (!shiftKey) {
+                            // no shift key -> non multiple selection case
+                            if (!selected.has(node)) {
+                                // set the current as the only one no matter what the previous selected were
+                                dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+                            } else {
+                                // no-op as users may drag the previously selected node(s) for the current selected
+                            }
+                        } else {
+                            // shift key pressed -> multiple selection case
+                            if (selected.has(node)) {
+                                // remove current if it is already in the multiple selection
+                                dispatch(removeSelected(node));
+                            } else {
+                                // add current in the multiple selection
+                                dispatch(addSelected(node));
+                            }
+                        }
+                    }
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));
@@ -157,11 +146,58 @@ const SvgCanvas = () => {
         }
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
-    });
+    };
     const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
         if (!e.shiftKey) dispatch(clearSelected());
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));
+    });
+
+    const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+        if (!isMobileDevice) {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            handleNodeDown(node, getMousePosition(e));
+        }
+    });
+
+    const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+        if (!isMobileDevice) {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            setElementPosition({ x: e.clientX, y: e.clientY });
+            handleNodeMove(node, getMousePosition(e), e.altKey);
+        }
+    });
+
+    const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+        if (!isMobileDevice) {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            handleNodeUp(node, e.shiftKey);
+        }
+    });
+
+    const handleTouchStart = useEvent((node: StnId | MiscNodeId, e: React.TouchEvent<SVGElement>) => {
+        if (isMobileDevice) {
+            e.stopPropagation();
+            handleNodeDown(node, getTouchPosition(e));
+        }
+    });
+
+    const handleTouchMove = useEvent((node: StnId | MiscNodeId, e: React.TouchEvent<SVGElement>) => {
+        if (isMobileDevice) {
+            e.stopPropagation();
+            setElementPosition({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+            handleNodeMove(node, getTouchPosition(e), e.altKey);
+        }
+    });
+
+    const handleTouchEnd = useEvent((node: StnId | MiscNodeId, e: React.TouchEvent<SVGElement>) => {
+        if (isMobileDevice) {
+            e.stopPropagation();
+            handleNodeUp(node, e.shiftKey);
+        }
     });
 
     // These are elements that the svg draws from.
@@ -263,6 +299,9 @@ const SvgCanvas = () => {
                         handlePointerDown={handlePointerDown}
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
+                        handleTouchStart={handleTouchStart}
+                        handleTouchMove={handleTouchMove}
+                        handleTouchEnd={handleTouchEnd}
                     />
                 );
             })}
@@ -279,6 +318,9 @@ const SvgCanvas = () => {
                         handlePointerDown={handlePointerDown}
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
+                        handleTouchStart={handleTouchStart}
+                        handleTouchMove={handleTouchMove}
+                        handleTouchEnd={handleTouchEnd}
                     />
                 );
             })}

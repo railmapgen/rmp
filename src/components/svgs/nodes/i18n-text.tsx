@@ -4,7 +4,18 @@ import useTranslatedName from '../../../util/hooks';
 import text, { TextAttributes, defaultTextAttributes } from './text';
 
 const I18nText = (props: NodeComponentProps<I18nTextAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const {
+        id,
+        x,
+        y,
+        attrs,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
+        handleTouchStart,
+        handleTouchMove,
+        handleTouchEnd,
+    } = props;
     const translateName = useTranslatedName();
 
     attrs.content = translateName(attrs.contents);
@@ -19,6 +30,9 @@ const I18nText = (props: NodeComponentProps<I18nTextAttributes>) => {
             handlePointerDown={handlePointerDown}
             handlePointerMove={handlePointerMove}
             handlePointerUp={handlePointerUp}
+            handleTouchStart={handleTouchStart}
+            handleTouchMove={handleTouchMove}
+            handleTouchEnd={handleTouchEnd}
             attrs={attrs}
         />
     );

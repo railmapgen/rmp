@@ -1,4 +1,4 @@
-import { AttrsProps, MiscNodeId } from './constants';
+import { AttrsProps, MiscNodeId, StnId } from './constants';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
@@ -68,6 +68,9 @@ export interface NodeComponentProps<T> {
     handlePointerDown: (node: MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
+    handleTouchStart: (node: StnId, e: React.TouchEvent<SVGElement>) => void;
+    handleTouchMove: (node: StnId, e: React.TouchEvent<SVGElement>) => void;
+    handleTouchEnd: (node: StnId, e: React.TouchEvent<SVGElement>) => void;
 }
 export interface Node<T> {
     /**

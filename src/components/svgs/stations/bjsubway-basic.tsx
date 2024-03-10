@@ -21,7 +21,18 @@ export const LINE_HEIGHT = {
 };
 
 const BjsubwayBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const {
+        id,
+        x,
+        y,
+        attrs,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
+        handleTouchStart,
+        handleTouchMove,
+        handleTouchEnd,
+    } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultBjsubwayBasicStationAttributes.nameOffsetX,
@@ -40,6 +51,21 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
     const onPointerUp = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
+    );
+
+    const onTouchStart = React.useCallback(
+        (e: React.TouchEvent<SVGElement>) => handleTouchStart(id, e),
+        [id, handleTouchStart]
+    );
+
+    const onTouchMove = React.useCallback(
+        (e: React.TouchEvent<SVGElement>) => handleTouchMove(id, e),
+        [id, handleTouchStart]
+    );
+
+    const onTouchEnd = React.useCallback(
+        (e: React.TouchEvent<SVGElement>) => handleTouchEnd(id, e),
+        [id, handleTouchStart]
     );
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
@@ -77,6 +103,9 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
                 style={{ cursor: 'move' }}
             />
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>

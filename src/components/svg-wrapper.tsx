@@ -79,7 +79,6 @@ const SvgWrapper = () => {
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
 
     const handleBackgroundDown = ({ x, y }: { x: number; y: number }, shiftKey: boolean) => {
-        console.log('bg down', mode, selected, active);
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
@@ -147,7 +146,7 @@ const SvgWrapper = () => {
     };
 
     const handleBackgroundMove = ({ x, y }: { x: number; y: number }) => {
-        console.log('bg mv', x, y, mode, active);
+        // console.log('bg mv', x, y, mode, active);
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
@@ -164,7 +163,7 @@ const SvgWrapper = () => {
     };
 
     const handleBackgroundUp = (shiftKey: boolean) => {
-        console.log('bg up', mode, selected, active);
+        // console.log('bg up', mode, selected, active);
         if (mode === 'select') {
             const nodesInRectangle = findNodesInRectangle(
                 graph.current,
