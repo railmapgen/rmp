@@ -19,7 +19,15 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS, loadFontCss } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import {
+    getCanvasSize,
+    getMousePosition,
+    getTouchPosition,
+    isMacClient,
+    isMobileDevice,
+    pointerPosToSVGCoord,
+    roundToNearestN,
+} from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -70,8 +78,8 @@ const SvgWrapper = () => {
     const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
 
-    const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
-        const { x, y } = getMousePosition(e);
+    const handleBackgroundDown = ({ x, y }: { x: number; y: number }, shiftKey: boolean) => {
+        console.log('bg down', mode, selected, active);
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
@@ -125,7 +133,7 @@ const SvgWrapper = () => {
             // set initial position of the pointer, this is used in handleBackgroundMove
             setOffset({ x, y });
             setSvgViewBoxMinTmp(svgViewBoxMin);
-            if (!e.shiftKey) {
+            if (!shiftKey) {
                 // when user holding the shift key and mis-click the background
                 // preserve the current selection
                 dispatch(setActive('background'));
@@ -136,15 +144,15 @@ const SvgWrapper = () => {
             setSelectStart(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
             setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
         }
-    });
-    const handleBackgroundMove = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+    };
+
+    const handleBackgroundMove = ({ x, y }: { x: number; y: number }) => {
+        console.log('bg mv', x, y, mode, active);
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
-                const { x, y } = getMousePosition(e);
                 setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
             }
         } else if (active === 'background') {
-            const { x, y } = getMousePosition(e);
             dispatch(
                 setSvgViewBoxMin({
                     x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
@@ -153,15 +161,21 @@ const SvgWrapper = () => {
             );
             // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
         }
-    });
-    const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+    };
+
+    const handleBackgroundUp = (shiftKey: boolean) => {
+        console.log('bg up', mode, selected, active);
         if (mode === 'select') {
-            const { x, y } = getMousePosition(e);
-            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
+            const nodesInRectangle = findNodesInRectangle(
+                graph.current,
+                selectStart.x,
+                selectStart.y,
+                selectMoving.x,
+                selectMoving.y
+            );
             const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
             dispatch(
-                setSelected(new Set<Id>([...(e.shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle]))
+                setSelected(new Set<Id>([...(shiftKey ? selected : []), ...nodesInRectangle, ...edgesInRectangle]))
             );
             dispatch(setMode('free'));
             setSelectStart({ x: 0, y: 0 });
@@ -169,11 +183,11 @@ const SvgWrapper = () => {
         }
         // when user holding the shift key and mis-click the background
         // preserve the current selection
-        if (active === 'background' && !e.shiftKey) {
+        if (active === 'background' && !shiftKey) {
             dispatch(setActive(undefined)); // svg mouse event only
             // console.log('up', active);
         }
-    });
+    };
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
         let newSvgViewBoxZoom = svgViewBoxZoom;
@@ -279,6 +293,31 @@ const SvgWrapper = () => {
         }
     });
 
+    const handlePointerDown = useEvent(
+        (e: React.PointerEvent<SVGSVGElement>) =>
+            !isMobileDevice && handleBackgroundDown(getMousePosition(e), e.shiftKey)
+    );
+
+    const handlePointerMove = useEvent(
+        (e: React.PointerEvent<SVGSVGElement>) => !isMobileDevice && handleBackgroundMove(getMousePosition(e))
+    );
+
+    const handlePointerUp = useEvent(
+        (e: React.PointerEvent<SVGSVGElement>) => !isMobileDevice && handleBackgroundUp(e.shiftKey)
+    );
+
+    const handleTouchStart = useEvent(
+        (e: React.TouchEvent<SVGSVGElement>) => isMobileDevice && handleBackgroundDown(getTouchPosition(e), e.shiftKey)
+    );
+
+    const handleTouchMove = useEvent(
+        (e: React.TouchEvent<SVGSVGElement>) => isMobileDevice && handleBackgroundMove(getTouchPosition(e))
+    );
+
+    const handleTouchEnd = useEvent(
+        (e: React.TouchEvent<SVGSVGElement>) => isMobileDevice && handleBackgroundUp(e.shiftKey)
+    );
+
     const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
     React.useEffect(() => {
         setSelectCoord({
@@ -299,9 +338,12 @@ const SvgWrapper = () => {
             viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
                 (height * svgViewBoxZoom) / 100
             }`}
-            onPointerDown={handleBackgroundDown}
-            onPointerMove={handleBackgroundMove}
-            onPointerUp={handleBackgroundUp}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onWheel={handleBackgroundWheel}
             tabIndex={0}
             onKeyDown={handleKeyDown}
@@ -326,6 +368,10 @@ const SvgWrapper = () => {
                     <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                 </pattern>
+
+                <filter id="highlight">
+                    <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="cyan" />
+                </filter>
             </defs>
         </svg>
     );

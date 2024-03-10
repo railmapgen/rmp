@@ -61,25 +61,27 @@ const SvgCanvas = () => {
 
         dispatch(setActive(node));
 
-        if (!e.shiftKey) {
-            // no shift key -> non multiple selection case
-            if (!selected.has(node)) {
-                // set the current as the only one no matter what the previous selected were
-                dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+        if (!mode.startsWith('line')) {
+            if (!e.shiftKey) {
+                // no shift key -> non multiple selection case
+                if (!selected.has(node)) {
+                    // set the current as the only one no matter what the previous selected were
+                    dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+                } else {
+                    // no-op as users may drag the previously selected node(s) for the current selected
+                }
             } else {
-                // no-op as users may drag the previously selected node(s) for the current selected
+                // shift key pressed -> multiple selection case
+                if (selected.has(node)) {
+                    // remove current if it is already in the multiple selection
+                    dispatch(removeSelected(node));
+                } else {
+                    // add current in the multiple selection
+                    dispatch(addSelected(node));
+                }
             }
-        } else {
-            // shift key pressed -> multiple selection case
-            if (selected.has(node)) {
-                // remove current if it is already in the multiple selection
-                dispatch(removeSelected(node));
-            } else {
-                // add current in the multiple selection
-                dispatch(addSelected(node));
-            }
+            // console.log('down ', graph.current.getNodeAttributes(node));
         }
-        // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
@@ -280,7 +282,7 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {mode.startsWith('line') && active && (
+            {mode.startsWith('line') && active && active !== 'background' && (
                 <LineWrapper
                     // @ts-expect-error
                     id="create_in_progress___no_use"

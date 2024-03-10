@@ -10,6 +10,14 @@ export const getMousePosition = (e: React.MouseEvent) => {
     return { x, y };
 };
 
+export const getTouchPosition = (e: React.TouchEvent) => {
+    const bbox = e.currentTarget.getBoundingClientRect();
+    if (e.touches.length === 0) return { x: 0, y: 0 };
+    const x = e.touches[0].clientX - bbox.left;
+    const y = e.touches[0].clientY - bbox.top;
+    return { x, y };
+};
+
 /**
  * Translate the position relative to the viewport to the svg user coordinate system.
  * @param x The x of the pointer.
@@ -123,6 +131,10 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
+
+export const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+);
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {
