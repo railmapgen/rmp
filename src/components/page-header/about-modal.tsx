@@ -121,16 +121,16 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         <Tag
                             size="lg"
                             w="85%"
-                            onClick={() => window.open('https://github.com/52PD', '_blank')}
+                            onClick={() => window.open('https://github.com/Swiftiecott', '_blank')}
                             cursor="pointer"
                         >
-                            <Avatar src="https://github.com/52PD.png" size="lg" my={2} ml={-1} mr={2} />
+                            <Avatar src="https://github.com/Swiftiecott.png" size="lg" my={2} ml={-1} mr={2} />
                             <TagLabel display="block" width="100%">
                                 <Text fontSize="lg" fontWeight="bold" mb={1}>
-                                    52PD
+                                    Swiftiecott
                                 </Text>
                                 <Text fontSize="sm" mb={1}>
-                                    {t('header.about.52PD')}
+                                    {t('header.about.Swiftiecott')}
                                 </Text>
                             </TagLabel>
                         </Tag>
