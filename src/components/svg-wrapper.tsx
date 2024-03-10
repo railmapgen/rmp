@@ -190,8 +190,8 @@ const SvgWrapper = () => {
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
         let newSvgViewBoxZoom = svgViewBoxZoom;
-        if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) newSvgViewBoxZoom = svgViewBoxZoom + 10;
-        else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) newSvgViewBoxZoom = svgViewBoxZoom - 10;
+        if (e.deltaY > 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
+        else if (e.deltaY < 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
         dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
 
         // the position the pointer points will still be in the same place after zooming
@@ -292,6 +292,8 @@ const SvgWrapper = () => {
         }
     });
 
+    const [touchDist, setTouchDist] = React.useState(-1);
+
     const handlePointerDown = useEvent(
         (e: React.PointerEvent<SVGSVGElement>) =>
             !isMobileDevice && handleBackgroundDown(getMousePosition(e), e.shiftKey)
@@ -305,13 +307,37 @@ const SvgWrapper = () => {
         (e: React.PointerEvent<SVGSVGElement>) => !isMobileDevice && handleBackgroundUp(e.shiftKey)
     );
 
-    const handleTouchStart = useEvent(
-        (e: React.TouchEvent<SVGSVGElement>) => isMobileDevice && handleBackgroundDown(getTouchPosition(e), e.shiftKey)
-    );
+    const handleTouchStart = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        if (isMobileDevice) {
+            if (e.touches.length === 1) {
+                handleBackgroundDown(getTouchPosition(e), e.shiftKey);
+            } else if (e.touches.length === 2) {
+                const [dx, dy] = [
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY,
+                ];
+                setTouchDist(dx * dx + dy * dy);
+            }
+        }
+    });
 
-    const handleTouchMove = useEvent(
-        (e: React.TouchEvent<SVGSVGElement>) => isMobileDevice && handleBackgroundMove(getTouchPosition(e))
-    );
+    const handleTouchMove = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        if (isMobileDevice) {
+            if (touchDist === -1) {
+                handleBackgroundMove(getTouchPosition(e));
+            } else if (e.touches.length === 2) {
+                const [dx, dy] = [
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY,
+                ];
+                const d = dx * dx + dy * dy;
+                let newSvgViewBoxZoom = svgViewBoxZoom;
+                if (d - touchDist > 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
+                else if (d - touchDist < 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
+                dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+            }
+        }
+    });
 
     const handleTouchEnd = useEvent(
         (e: React.TouchEvent<SVGSVGElement>) => isMobileDevice && handleBackgroundUp(e.shiftKey)
