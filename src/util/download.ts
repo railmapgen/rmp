@@ -2,10 +2,10 @@ import { MultiDirectedGraph } from 'graphology';
 import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { FONTS_CSS } from './fonts';
+import { FONTS_CSS, FontFaceConfig, makeBase64EncodedFontsStyle } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import { languageToFontsCss } from '../components/svgs/nodes/text';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -97,39 +97,33 @@ export const makeImages = async (
         }
         elem.prepend(s);
 
-        // add specified fonts for nodes registered in FONTS_CSS
-        const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use same fonts css
-        for (const nodeType in FONTS_CSS) {
-            if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
+        // add additional fonts to the final svg in encoded base64 format
+        const fontsNeedToBeAdded: { [cssName: string]: Record<string, FontFaceConfig | undefined> } = {};
+        // find additional fonts imported from stations
+        (Object.keys(FONTS_CSS) as NodeType[])
+            .filter(nodeType => nodesExist[nodeType])
+            .forEach(nodeType => {
+                fontsNeedToBeAdded[FONTS_CSS[nodeType]!.cssName] = FONTS_CSS[nodeType]!.cssFont;
+            });
+        // find additional fonts from text nodes
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node_') && attr.type === MiscNodeType.Text)
+            .map(node => graph.getNodeAttribute(node, MiscNodeType.Text)!.language)
+            .map(lng => languageToFontsCss[lng])
+            .forEach(nodeType => {
+                fontsNeedToBeAdded[FONTS_CSS[nodeType]!.cssName] = FONTS_CSS[nodeType]!.cssFont;
+            });
+        // make base64 encoded fonts and add them to the svg
+        await Promise.all(
+            Object.entries(fontsNeedToBeAdded).map(async ([cssName, cssFont]) => {
                 try {
-                    const s = document.createElement('style');
-                    const { cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
-
-                    for (let i = document.styleSheets.length - 1; i >= 0; i = i - 1) {
-                        if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
-                            s.textContent = [...document.styleSheets[i].cssRules]
-                                .map(_ => _.cssText)
-                                .filter(_ => !_.startsWith('@font-face')) // this is added with base64 data below
-                                .join('\n');
-                            break;
-                        }
-                    }
-                    s.textContent += '\n';
-
-                    const cssPromises = await Promise.allSettled(Object.keys(cssFont).map(rmgRuntime.getFontCSS));
-                    const cssTexts = cssPromises
-                        .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
-                        .map(promise => promise.value);
-                    s.textContent += cssTexts.join('\n');
-
-                    elem.prepend(s);
-                    addedFontsCSSName.add(cssName);
+                    elem.prepend(await makeBase64EncodedFontsStyle(cssFont, cssName));
                 } catch (err) {
                     alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
                     console.error(err);
                 }
-            }
-        }
+            })
+        );
     }
 
     // load facilities svg

@@ -2,12 +2,34 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CityCode } from '../../../constants/constants';
+import { AttrsProps, CityCode, NodeType } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { Rotate, StationType } from '../../../constants/stations';
 import { loadFontCss } from '../../../util/fonts';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
+
+export enum TextLanguage {
+    zh = 'zh',
+    en = 'en',
+    mtr__zh = 'mtr__zh',
+    mtr__en = 'mtr__en',
+    berlin = 'berlin',
+    mrt = 'mrt',
+    jreast_ja = 'jreast_ja',
+    jreast_en = 'jreast_en',
+}
+
+export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
+    zh: StationType.ShmetroBasic,
+    en: StationType.ShmetroBasic,
+    mtr__zh: StationType.MTR,
+    mtr__en: StationType.MTR,
+    berlin: MiscNodeType.BerlinSBahnLineBadge,
+    mrt: StationType.MRTBasic,
+    jreast_ja: StationType.JREastBasic,
+    jreast_en: StationType.JREastBasic,
+};
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -35,17 +57,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 
     // Add fonts css to the document for the language selected.
     React.useEffect(() => {
-        const type = {
-            mtr__zh: StationType.MTR,
-            mtr__en: StationType.MTR,
-            berlin: MiscNodeType.BerlinSBahnLineBadge,
-            mrt: StationType.MRTBasic,
-            jreast_ja: StationType.JREastBasic,
-            jreast_en: StationType.JREastBasic,
-        }[language];
-        if (type) {
-            loadFontCss(type);
-        }
+        const type = languageToFontsCss[language];
+        if (type) loadFontCss(type);
     }, [language]);
 
     const onPointerDown = React.useCallback(
@@ -105,7 +118,7 @@ export interface TextAttributes extends AttributesWithColor {
     lineHeight: number;
     textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
     dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
-    language: string;
+    language: TextLanguage;
     rotate: Rotate;
     italic: string | number;
     bold: string | number;
@@ -117,7 +130,7 @@ export const defaultTextAttributes: TextAttributes = {
     lineHeight: 16,
     textAnchor: 'middle',
     dominantBaseline: 'middle',
-    language: 'en',
+    language: TextLanguage.en,
     color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],
     rotate: 0,
     italic: 'normal',
@@ -206,7 +219,7 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
                 jreast_en: t('panel.details.nodes.text.jreast_en'),
             },
             onChange: val => {
-                attrs.language = val.toString();
+                attrs.language = val.toString() as TextLanguage;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
