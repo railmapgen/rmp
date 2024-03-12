@@ -44,10 +44,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
                 onImport(data as RMGParam);
             }
         };
-
-        return () => {
-            channel.close();
-        };
+        return () => channel.close();
     }, []);
 
     return (
