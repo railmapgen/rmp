@@ -54,6 +54,8 @@ const selectIcon = (
     </svg>
 );
 
+const EXPAND_ANIMATION_DURATION = 0.3; // in second
+
 const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -78,6 +80,14 @@ const ToolsPanel = () => {
         }
     }, [output?.toString()]);
 
+    // text should only be appended after the expansion animation is complete
+    const [isTextShown, setIsTextShown] = React.useState(isToolsExpanded);
+    const handleExpand = () => {
+        if (isToolsExpanded) setIsTextShown(false);
+        else setTimeout(() => setIsTextShown(true), (EXPAND_ANIMATION_DURATION + 0.02) * 1000);
+        dispatch(setToolsPanelExpansion(!isToolsExpanded));
+    };
+
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
@@ -91,21 +101,21 @@ const ToolsPanel = () => {
             height="100%"
             bg={bgColor}
             zIndex="5"
-            transition="width 0.3s ease-in-out"
+            transition={`width ${EXPAND_ANIMATION_DURATION}s ease-in-out`}
         >
             <Button
                 aria-label="Menu"
                 leftIcon={
-                    isToolsExpanded ? (
+                    isTextShown ? (
                         <MdExpandMore size={40} transform="rotate(90)" />
                     ) : (
                         <MdExpandLess size={40} transform="rotate(90)" />
                     )
                 }
-                onClick={() => dispatch(setToolsPanelExpansion(!isToolsExpanded))}
+                onClick={handleExpand}
                 sx={buttonStyle}
             >
-                {isToolsExpanded ? t('panel.tools.showLess') : undefined}
+                {isTextShown ? t('panel.tools.showLess') : undefined}
             </Button>
 
             <Flex className="tools" overflow="auto">
@@ -117,11 +127,11 @@ const ToolsPanel = () => {
                         variant={mode === 'select' ? 'solid' : 'outline'}
                         sx={buttonStyle}
                     >
-                        {isToolsExpanded ? t('panel.tools.select') : undefined}
+                        {isTextShown ? t('panel.tools.select') : undefined}
                     </Button>
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
-                            {isToolsExpanded && (
+                            {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.lineDrawing')}
                                 </Box>
@@ -138,7 +148,7 @@ const ToolsPanel = () => {
                                     }}
                                 />
                                 <Text fontWeight="600" pl="1" alignSelf="center">
-                                    {isToolsExpanded ? t('color') : undefined}
+                                    {isTextShown ? t('color') : undefined}
                                 </Text>
                             </Flex>
 
@@ -153,7 +163,7 @@ const ToolsPanel = () => {
                                         variant={mode === `line-${type}` ? 'solid' : 'outline'}
                                         sx={buttonStyle}
                                     >
-                                        {isToolsExpanded ? t(linePaths[type].metadata.displayName) : undefined}
+                                        {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                     </Button>
                                 ))}
                             <Button
@@ -163,14 +173,14 @@ const ToolsPanel = () => {
                                 variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
                                 sx={buttonStyle}
                             >
-                                {isToolsExpanded ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                                {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                             </Button>
                         </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
-                            {isToolsExpanded && (
+                            {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.stations')}
                                 </Box>
@@ -187,16 +197,16 @@ const ToolsPanel = () => {
                                     variant={mode === `station-${type}` ? 'solid' : 'outline'}
                                     sx={buttonStyle}
                                 >
-                                    {isToolsExpanded ? t(stations[type].metadata.displayName) : undefined}
+                                    {isTextShown ? t(stations[type].metadata.displayName) : undefined}
                                 </Button>
                             ))}
-                            <LearnHowToAdd type="station" />
+                            <LearnHowToAdd type="station" expand={isTextShown} />
                         </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
-                            {isToolsExpanded && (
+                            {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.miscellaneousNodes')}
                                 </Box>
@@ -215,10 +225,10 @@ const ToolsPanel = () => {
                                         variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
                                         sx={buttonStyle}
                                     >
-                                        {isToolsExpanded ? t(miscNodes[type].metadata.displayName) : undefined}
+                                        {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
                                     </Button>
                                 ))}
-                            <LearnHowToAdd type="misc-node" />
+                            <LearnHowToAdd type="misc-node" expand={isTextShown} />
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
@@ -229,8 +239,8 @@ const ToolsPanel = () => {
 
 export default ToolsPanel;
 
-export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line' }) => {
-    const { type } = props;
+export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line'; expand: boolean }) => {
+    const { type, expand } = props;
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
 
@@ -245,17 +255,25 @@ export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line' })
                     <MdCode />
                 </IconContext.Provider>
             )}
-            <Link color="teal.500" href={`https://github.com/railmapgen/rmp/blob/main/docs/${doc}.md`} isExternal>
-                {t(`panel.tools.learnHowToAdd.${type}`)}
-            </Link>
-            <Icon as={MdOpenInNew} color="teal.500" mr="auto" />
-            <Link color="teal.500" onClick={() => dispatch(setIsDonationModalOpen(true))} isExternal>
-                {t('panel.tools.learnHowToAdd.donate')}
-            </Link>
-            {type !== 'line' && (
-                <IconContext.Provider value={{ style: { padding: 5 }, color: 'red', size }}>
-                    <IoMdHeart />
-                </IconContext.Provider>
+            {expand && (
+                <>
+                    <Link
+                        color="teal.500"
+                        href={`https://github.com/railmapgen/rmp/blob/main/docs/${doc}.md`}
+                        isExternal
+                    >
+                        {t(`panel.tools.learnHowToAdd.${type}`)}
+                    </Link>
+                    <Icon as={MdOpenInNew} color="teal.500" mr="auto" />
+                    <Link color="teal.500" onClick={() => dispatch(setIsDonationModalOpen(true))} isExternal>
+                        {t('panel.tools.learnHowToAdd.donate')}
+                    </Link>
+                    {type !== 'line' && (
+                        <IconContext.Provider value={{ style: { padding: 5 }, color: 'red', size }}>
+                            <IoMdHeart />
+                        </IconContext.Provider>
+                    )}
+                </>
             )}
         </HStack>
     );

@@ -109,7 +109,7 @@ export default function LineTypeSection() {
                     }}
                 />
             </RmgLabel>
-            <LearnHowToAdd type="line" />
+            <LearnHowToAdd type="line" expand />
 
             <AlertDialog
                 isOpen={isChangeTypeWarningOpen}
