@@ -245,7 +245,7 @@ export default function DownloadActions() {
                         <br />
                         <Checkbox
                             isChecked={isUseSystemFontsSelected}
-                            isDisabled={svgVersion === 1.1}
+                            isDisabled={format === 'svg' && svgVersion === 1.1}
                             onChange={e => setIsUseSystemFontsSelected(e.target.checked)}
                         >
                             <Text>{t('header.download.useSystemFonts')}</Text>
