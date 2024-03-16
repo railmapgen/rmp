@@ -6,6 +6,7 @@ import { MiscNodeType } from '../constants/nodes';
 import { FONTS_CSS, makeBase64EncodedFontsStyle } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
+import { StationType } from '../constants/stations';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -111,6 +112,8 @@ const loadFonts = async (
         .filterNodes((node, attr) => node.startsWith('misc_node_') && attr.type === MiscNodeType.Text)
         .map(node => graph.getNodeAttribute(node, MiscNodeType.Text)!.language)
         .map(lng => languageToFontsCss[lng])
+        // default fonts do not exist in FONTS_CSS but will be loaded definitely
+        .filter(nodeType => nodeType !== StationType.ShmetroBasic)
         .forEach(nodeType => fontsByNodeType.add(nodeType));
     if (!useSystemFonts) {
         // add rmp-name__zh and rmp-name__en every time as they are the default fonts
@@ -136,15 +139,21 @@ const loadFonts = async (
                     }
                 })
         );
-    }
-    // remove fonts class from the text element
-    fontsByNodeType.forEach(nodeType => {
-        FONTS_CSS[nodeType]!.className.forEach(className => {
+    } else {
+        // remove fonts class from the text element
+        ['.rmp-name__zh', '.rmp-name__en'].forEach(className => {
             elem.querySelectorAll(className).forEach(el => {
                 el.classList.remove(className.slice(1));
             });
         });
-    });
+        fontsByNodeType.forEach(nodeType => {
+            FONTS_CSS[nodeType]!.className.forEach(className => {
+                elem.querySelectorAll(className).forEach(el => {
+                    el.classList.remove(className.slice(1));
+                });
+            });
+        });
+    }
 };
 
 const loadFacilitiesSvg = async (
