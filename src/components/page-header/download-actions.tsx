@@ -30,11 +30,11 @@ import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs, makeImages } from '../../util/download';
+import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
-import { isSafari } from '../../util/fonts';
 
 export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');

@@ -3,10 +3,10 @@ import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { languageToFontsCss } from '../components/svgs/nodes/text';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
 import { FONTS_CSS, makeBase64EncodedFontsStyle } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
-import { StationType } from '../constants/stations';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
