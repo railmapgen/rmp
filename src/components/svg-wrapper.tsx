@@ -323,7 +323,6 @@ const SvgWrapper = () => {
 
     const handleTouchMove = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
         if (isMobileDevice) {
-            e.preventDefault();
             if (touchDist === -1) {
                 handleBackgroundMove(getTouchPosition(e));
             } else if (e.touches.length === 2) {
@@ -400,10 +399,6 @@ const SvgWrapper = () => {
                     <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                 </pattern>
-
-                <filter id="highlight">
-                    <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="cyan" />
-                </filter>
             </defs>
         </svg>
     );

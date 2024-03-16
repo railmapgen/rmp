@@ -9,6 +9,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
+import { isMobileDevice } from '../../../util/helpers';
 import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
@@ -93,13 +94,11 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
+            <circle r="4" stroke="black" strokeWidth="0.5" strokeDasharray={open ? undefined : '1.5'} fill="white" />
             <circle
                 id={`stn_core_${id}`}
-                r="4"
-                stroke="black"
-                strokeWidth="0.5"
-                strokeDasharray={open ? undefined : '1.5'}
-                fill="white"
+                r={isMobileDevice ? 8 : 4}
+                opacity="0"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
