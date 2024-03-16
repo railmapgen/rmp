@@ -61,7 +61,7 @@ export const makeImages = async (
     // this is necessary as styles stated in css will be missing in the cloned svg dom
     // only styles other than fonts need to be stated here, fonts are handled below
     Object.entries({
-        '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
+        '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-linejoin'],
     }).forEach(([className, styleSet]) => {
         const e = document.querySelector(className);
         if (e === null) return; // no element in the canvas uses this class
@@ -70,13 +70,19 @@ export const makeImages = async (
             // Polyfill paint-order used in .rmp-name-outline for Adobe Illustrator.
             // This is an SVG 2 specification and SVG 2 is not finalized or released yet.
             // https://www.w3.org/TR/SVG2/painting.html#PaintOrder
-            if (className === '.rmp-name-outline' && svgVersion === 1.1)
-                el.insertAdjacentElement('afterend', el.cloneNode(true) as SVGElement);
-
+            if (className === '.rmp-name-outline' && svgVersion === 1.1) {
+                const upperEl = el.insertAdjacentElement('afterend', el.cloneNode(true) as SVGElement);
+                if (upperEl) {
+                    upperEl.classList.remove(className.slice(1));
+                    if (upperEl.classList.length === 0) el.removeAttribute('class');
+                    upperEl.removeAttribute('stroke-width');
+                }
+            }
             styleSet.forEach(styleName => {
                 el.setAttribute(styleName, style.getPropertyValue(styleName));
             });
             el.classList.remove(className.slice(1));
+            if (el.classList.length === 0) el.removeAttribute('class');
         });
     });
     // Remove masks that only help user find and click the elements, but should not be shown on final export.
@@ -144,12 +150,14 @@ const loadFonts = async (
         ['.rmp-name__zh', '.rmp-name__en'].forEach(className => {
             elem.querySelectorAll(className).forEach(el => {
                 el.classList.remove(className.slice(1));
+                if (el.classList.length === 0) el.removeAttribute('class');
             });
         });
         fontsByNodeType.forEach(nodeType => {
             FONTS_CSS[nodeType]!.className.forEach(className => {
                 elem.querySelectorAll(className).forEach(el => {
                     el.classList.remove(className.slice(1));
+                    if (el.classList.length === 0) el.removeAttribute('class');
                 });
             });
         });
