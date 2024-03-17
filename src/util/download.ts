@@ -1,11 +1,12 @@
 import { MultiDirectedGraph } from 'graphology';
 import { FacilitiesType } from '../components/svgs/nodes/facilities';
+import { languageToFontsCss } from '../components/svgs/nodes/text';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { FONTS_CSS } from './fonts';
+import { StationType } from '../constants/stations';
+import { FONTS_CSS, makeBase64EncodedFontsStyle } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
-import rmgRuntime from '@railmapgen/rmg-runtime';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -57,9 +58,10 @@ export const makeImages = async (
     elem.setAttribute('width', width.toString());
     elem.setAttribute('height', height.toString());
     // copy attributes from css to each elem in the newly cloned svg
+    // this is necessary as styles stated in css will be missing in the cloned svg dom
     // only styles other than fonts need to be stated here, fonts are handled below
     Object.entries({
-        '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-width', 'stroke-linejoin'],
+        '.rmp-name-outline': ['paint-order', 'stroke', 'stroke-linejoin'],
     }).forEach(([className, styleSet]) => {
         const e = document.querySelector(className);
         if (e === null) return; // no element in the canvas uses this class
@@ -68,16 +70,22 @@ export const makeImages = async (
             // Polyfill paint-order used in .rmp-name-outline for Adobe Illustrator.
             // This is an SVG 2 specification and SVG 2 is not finalized or released yet.
             // https://www.w3.org/TR/SVG2/painting.html#PaintOrder
-            if (className === '.rmp-name-outline' && svgVersion === 1.1)
-                el.insertAdjacentElement('afterend', el.cloneNode(true) as SVGElement);
-
+            if (className === '.rmp-name-outline' && svgVersion === 1.1) {
+                const upperEl = el.insertAdjacentElement('afterend', el.cloneNode(true) as SVGElement);
+                if (upperEl) {
+                    upperEl.classList.remove(className.slice(1));
+                    if (upperEl.classList.length === 0) el.removeAttribute('class');
+                    upperEl.removeAttribute('stroke-width');
+                }
+            }
             styleSet.forEach(styleName => {
                 el.setAttribute(styleName, style.getPropertyValue(styleName));
             });
-            el.classList.remove(className);
+            el.classList.remove(className.slice(1));
+            if (el.classList.length === 0) el.removeAttribute('class');
         });
     });
-    // remove invisible mask
+    // Remove masks that only help user find and click the elements, but should not be shown on final export.
     elem.querySelectorAll('[fill="url(#opaque)"]').forEach(el => {
         el.setAttribute('fill', 'white');
         el.setAttribute('fill-opacity', '0');
@@ -85,7 +93,34 @@ export const makeImages = async (
 
     const nodesExist = findNodesExist(graph);
 
-    // load fonts
+    await loadFonts(elem, graph, nodesExist, useSystemFonts);
+
+    await loadFacilitiesSvg(elem, graph, nodesExist);
+
+    return { elem, width, height };
+};
+
+const loadFonts = async (
+    elem: SVGSVGElement,
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodesExist: ReturnType<typeof findNodesExist>,
+    useSystemFonts: boolean
+) => {
+    // TODO: add fonts by language (mtr__zh/mtr__en/mrt/jreast_ja) instead of node type
+    // this will reduce the fonts loaded as some node types (e.g. mtr) have two languages which might import two fonts
+    const fontsByNodeType: Set<NodeType> = new Set();
+    // find additional fonts imported from stations
+    (Object.keys(FONTS_CSS) as NodeType[])
+        .filter(nodeType => nodesExist[nodeType])
+        .forEach(nodeType => fontsByNodeType.add(nodeType));
+    // find additional fonts from text nodes
+    graph
+        .filterNodes((node, attr) => node.startsWith('misc_node_') && attr.type === MiscNodeType.Text)
+        .map(node => graph.getNodeAttribute(node, MiscNodeType.Text)!.language)
+        .map(lng => languageToFontsCss[lng])
+        // default fonts do not exist in FONTS_CSS but will be loaded definitely
+        .filter(nodeType => nodeType !== StationType.ShmetroBasic)
+        .forEach(nodeType => fontsByNodeType.add(nodeType));
     if (!useSystemFonts) {
         // add rmp-name__zh and rmp-name__en every time as they are the default fonts
         const s = document.createElement('style');
@@ -97,42 +132,43 @@ export const makeImages = async (
         }
         elem.prepend(s);
 
-        // add specified fonts for nodes registered in FONTS_CSS
-        const addedFontsCSSName: Set<string> = new Set<string>(); // multiple nodes might use same fonts css
-        for (const nodeType in FONTS_CSS) {
-            if (nodesExist[nodeType as NodeType] && !addedFontsCSSName.has(FONTS_CSS[nodeType as NodeType]!.cssName)) {
-                try {
-                    const s = document.createElement('style');
-                    const { cssFont, cssName } = FONTS_CSS[nodeType as NodeType]!;
-
-                    for (let i = document.styleSheets.length - 1; i >= 0; i = i - 1) {
-                        if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
-                            s.textContent = [...document.styleSheets[i].cssRules]
-                                .map(_ => _.cssText)
-                                .filter(_ => !_.startsWith('@font-face')) // this is added with base64 data below
-                                .join('\n');
-                            break;
-                        }
+        // add additional fonts to the final svg in encoded base64 format
+        await Promise.all(
+            [...fontsByNodeType.values()]
+                .map(nodeType => FONTS_CSS[nodeType]!)
+                .map(async ({ cssName, cssFont }) => {
+                    try {
+                        elem.prepend(await makeBase64EncodedFontsStyle(cssFont, cssName));
+                    } catch (err) {
+                        alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
+                        console.error(err);
                     }
-                    s.textContent += '\n';
-
-                    const cssPromises = await Promise.allSettled(Object.keys(cssFont).map(rmgRuntime.getFontCSS));
-                    const cssTexts = cssPromises
-                        .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
-                        .map(promise => promise.value);
-                    s.textContent += cssTexts.join('\n');
-
-                    elem.prepend(s);
-                    addedFontsCSSName.add(cssName);
-                } catch (err) {
-                    alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
-                    console.error(err);
-                }
-            }
-        }
+                })
+        );
+    } else {
+        // remove fonts class from the text element
+        ['.rmp-name__zh', '.rmp-name__en'].forEach(className => {
+            elem.querySelectorAll(className).forEach(el => {
+                el.classList.remove(className.slice(1));
+                if (el.classList.length === 0) el.removeAttribute('class');
+            });
+        });
+        fontsByNodeType.forEach(nodeType => {
+            FONTS_CSS[nodeType]!.className.forEach(className => {
+                elem.querySelectorAll(className).forEach(el => {
+                    el.classList.remove(className.slice(1));
+                    if (el.classList.length === 0) el.removeAttribute('class');
+                });
+            });
+        });
     }
+};
 
-    // load facilities svg
+const loadFacilitiesSvg = async (
+    elem: SVGSVGElement,
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodesExist: ReturnType<typeof findNodesExist>
+) => {
     if (nodesExist[MiscNodeType.Facilities]) {
         const facilitiesNodes = graph.filterNodes((_, attr) => attr.type === MiscNodeType.Facilities);
         const facilitiesTypesToNodesMapping = Object.fromEntries(
@@ -190,8 +226,6 @@ export const makeImages = async (
             // symbol and useElem will get garbage collected after elem.remove() in handleDownload
         });
     }
-
-    return { elem, width, height };
 };
 
 const generateRmpInfo = (x: number, y: number) => {

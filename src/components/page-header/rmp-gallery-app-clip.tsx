@@ -1,8 +1,9 @@
-import { CloseButton, SystemStyleObject, useToast } from '@chakra-ui/react';
+import { CloseButton, Flex, Icon, Link, SystemStyleObject, Text, useToast } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdOpenInNew } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
@@ -18,6 +19,11 @@ const styles: SystemStyleObject = {
     w: '80%',
 
     '& iframe': {
+        h: '100%',
+        w: '100%',
+    },
+
+    '& div': {
         h: '100%',
         w: '100%',
     },
@@ -38,6 +44,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
+    const inst = rmgRuntime.getInstance();
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(setRefreshNodes());
@@ -114,14 +121,29 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                 onClose();
             }
         };
+        return () => CHN.close();
     }, []);
 
     return (
-        <>
-            <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
-                <iframe src="/rmp-gallery/" loading="lazy" />
-                <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
-            </RmgAppClip>
-        </>
+        <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
+            {inst === 'Gitee' ? <DisabledGallery /> : <iframe src="/rmp-gallery/" loading="lazy" />}
+            <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
+        </RmgAppClip>
     );
 }
+
+const DisabledGallery = () => (
+    <Flex flexDirection="column" p="10">
+        <Text>抱歉，由于托管平台的敏感词限制，画廊已被禁用 ):</Text>
+        <br />
+        <Text>欢迎切换到Github或Gitlab镜像以使用完整版本 :)</Text>
+        <br style={{ marginBottom: 5 }} />
+        <Link color="teal.500" href="https://railmapgen.github.io/?app=rmp-gallery" isExternal>
+            https://railmapgen.github.io/?app=rmp-gallery <Icon as={MdOpenInNew} />
+        </Link>
+        <br />
+        <Link color="teal.500" href="https://railmapgen.gitlab.io/?app=rmp-gallery" isExternal>
+            https://railmapgen.gitlab.io/?app=rmp-gallery <Icon as={MdOpenInNew} />
+        </Link>
+    </Flex>
+);

@@ -30,11 +30,11 @@ import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs, makeImages } from '../../util/download';
+import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
-import { isSafari } from '../../util/fonts';
 
 export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
@@ -51,6 +51,7 @@ export default function DownloadActions() {
         png: t('header.download.png'),
         svg: t('header.download.svg'),
     };
+    const [svgVersion, setSvgVersion] = React.useState(2 as 1.1 | 2);
     const [maxArea, setMaxArea] = React.useState({ width: 1, height: 1, benchmark: 0.001 });
     const [scale, setScale] = React.useState(200);
     const scales = [10, 25, 33, 50, 67, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500, 750, 1000];
@@ -64,6 +65,18 @@ export default function DownloadActions() {
             value: format,
             options: formatOptions,
             onChange: value => setFormat(value === 'png' ? 'png' : 'svg'),
+        },
+    ];
+    const svgFields: RmgFieldsField[] = [
+        {
+            type: 'select',
+            label: t('header.download.svgVersion'),
+            value: svgVersion,
+            options: { 1.1: t('header.download.svg1.1'), 2: t('header.download.svg2') },
+            onChange: value => {
+                setSvgVersion(value as 1.1 | 2);
+                if (value === 1.1) setIsUseSystemFontsSelected(true);
+            },
         },
     ];
     const pngFields: RmgFieldsField[] = [
@@ -130,7 +143,6 @@ export default function DownloadActions() {
                 isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
             );
 
-        const svgVersion = 2;
         const { elem, width, height } = await makeImages(
             graph.current,
             isAttachSelected,
@@ -210,6 +222,7 @@ export default function DownloadActions() {
 
                     <ModalBody>
                         <RmgFields fields={fields} />
+                        {format === 'svg' && <RmgFields fields={svgFields} />}
                         {format === 'png' && <RmgFields fields={pngFields} />}
                         {format === 'png' && disabledScaleOptions.length > 0 && (
                             <>
@@ -232,6 +245,7 @@ export default function DownloadActions() {
                         <br />
                         <Checkbox
                             isChecked={isUseSystemFontsSelected}
+                            isDisabled={format === 'svg' && svgVersion === 1.1}
                             onChange={e => setIsUseSystemFontsSelected(e.target.checked)}
                         >
                             <Text>{t('header.download.useSystemFonts')}</Text>

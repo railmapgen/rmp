@@ -512,7 +512,7 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button onClick={handleChange} isDisabled={unlockSimplePathAttempts === 0}>
+                    <Button onClick={handleChange} isDisabled={unlockSimplePathAttempts <= 0}>
                         {unlockSimplePathAttempts < 0
                             ? t('header.settings.procedures.unlockSimplePath.unlocked')
                             : unlockSimplePathAttempts === 0

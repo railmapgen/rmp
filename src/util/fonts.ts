@@ -7,7 +7,7 @@ export const isSafari = () => {
     return navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
 };
 
-type FontFaceConfig = {
+export type FontFaceConfig = {
     source: string;
     descriptors?: FontFaceDescriptors;
 };
@@ -45,12 +45,12 @@ export const FONTS_CSS: {
         cssName: 'fonts_mrt',
     },
     [StationType.JREastBasic]: {
-        className: ['.rmp-name__jreast_ja'],
+        className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
         cssFont: { 'M PLUS 2': MPLUS2 },
         cssName: 'fonts_jreast',
     },
     [StationType.JREastImportant]: {
-        className: ['.rmp-name__jreast_ja'],
+        className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
         cssFont: { 'M PLUS 2': MPLUS2 },
         cssName: 'fonts_jreast',
     },
@@ -65,7 +65,7 @@ export const FONTS_CSS: {
         cssName: 'fonts_berlin',
     },
     [MiscNodeType.JREastLineBadge]: {
-        className: ['.rmp-name__jreast_ja'],
+        className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
         cssFont: { 'M PLUS 2': MPLUS2 },
         cssName: 'fonts_jreast',
     },
@@ -86,4 +86,30 @@ export const loadFontCss = async (type: NodeType) => {
     link.id = cssName;
     link.href = import.meta.env.BASE_URL + `styles/${cssName}.css`;
     document.head.append(link);
+};
+
+export const makeBase64EncodedFontsStyle = async (
+    cssFont: Record<string, FontFaceConfig | undefined>,
+    cssName: string
+) => {
+    const s = document.createElement('style');
+
+    for (let i = document.styleSheets.length - 1; i >= 0; i = i - 1) {
+        if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
+            s.textContent = [...document.styleSheets[i].cssRules]
+                .map(_ => _.cssText)
+                .filter(_ => !_.startsWith('@font-face')) // this is added with base64 data below
+                .join('\n');
+            break;
+        }
+    }
+    s.textContent += '\n';
+
+    const cssPromises = await Promise.allSettled(Object.keys(cssFont).map(rmgRuntime.getFontCSS));
+    const cssTexts = cssPromises
+        .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
+        .map(promise => promise.value);
+    s.textContent += cssTexts.join('\n');
+
+    return s;
 };
