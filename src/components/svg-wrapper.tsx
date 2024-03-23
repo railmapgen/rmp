@@ -293,10 +293,25 @@ const SvgWrapper = () => {
         if (touchDist !== 0 && e.touches.length === 2) {
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             const d = dx * dx + dy * dy;
+
             let newSvgViewBoxZoom = svgViewBoxZoom;
             if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
             else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
             dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+
+            // the mid-position the fingers touch will still be in the same place after zooming
+            const bbox = e.currentTarget.getBoundingClientRect();
+            const [x, y] = [
+                (e.touches[0].clientX + e.touches[1].clientX) / 2 - bbox.left,
+                (e.touches[0].clientY + e.touches[1].clientY) / 2 - bbox.top,
+            ];
+            const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
+            dispatch(
+                setSvgViewBoxMin({
+                    x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+                    y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+                })
+            );
         }
     });
 
