@@ -96,7 +96,6 @@ export default function InfoMultipleSection() {
                                 variant="solid"
                                 onClick={() => dispatch(setSelected(new Set([id])))}
                                 overflow="hidden"
-                                maxW="270"
                                 textOverflow="ellipsis"
                                 whiteSpace="nowrap"
                                 display="ruby"

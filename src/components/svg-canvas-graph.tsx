@@ -60,40 +60,21 @@ const SvgCanvas = () => {
         setOffset({ x, y });
 
         dispatch(setActive(node));
-
-        if (!e.shiftKey) {
-            // no shift key -> non multiple selection case
-            if (!selected.has(node)) {
-                // set the current as the only one no matter what the previous selected were
-                dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
-            } else {
-                // no-op as users may drag the previously selected node(s) for the current selected
-            }
-        } else {
-            // shift key pressed -> multiple selection case
-            if (selected.has(node)) {
-                // remove current if it is already in the multiple selection
-                dispatch(removeSelected(node));
-            } else {
-                // add current in the multiple selection
-                dispatch(addSelected(node));
-            }
-        }
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            selected.forEach(s => {
-                if (graph.current.hasNode(s)) {
+            [...(selected.has(active) ? [undefined] : [active]), ...selected]
+                .filter(s => graph.current.hasNode(s))
+                .forEach(s => {
                     graph.current.updateNodeAttributes(s, attr => ({
                         ...attr,
                         x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                         y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                     }));
-                }
-            });
+                });
             dispatch(setRefreshNodes());
             dispatch(setRefreshEdges());
             // console.log('move ', graph.current.getNodeAttributes(node));
@@ -144,7 +125,25 @@ const SvgCanvas = () => {
                 // check the offset and if it's not 0, it must be a click not move
                 const { x, y } = getMousePosition(e);
                 if (offset.x - x === 0 && offset.y - y === 0) {
-                    // no-op for click as the node is already added in pointer down
+                    // add node to selected if it is a click
+                    if (!e.shiftKey) {
+                        // no shift key -> non multiple selection case
+                        if (!selected.has(node)) {
+                            // set the current as the only one no matter what the previous selected were
+                            dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+                        } else {
+                            // no-op as users may drag the previously selected node(s) for the current selected
+                        }
+                    } else {
+                        // shift key pressed -> multiple selection case
+                        if (selected.has(node)) {
+                            // remove current if it is already in the multiple selection
+                            dispatch(removeSelected(node));
+                        } else {
+                            // add current in the multiple selection
+                            dispatch(addSelected(node));
+                        }
+                    }
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));
@@ -280,7 +279,7 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {mode.startsWith('line') && active && (
+            {mode.startsWith('line') && active && active !== 'background' && (
                 <LineWrapper
                     // @ts-expect-error
                     id="create_in_progress___no_use"
