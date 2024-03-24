@@ -66,15 +66,15 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            [...(selected.has(active) ? [undefined] : [active]), ...selected]
-                .filter(s => graph.current.hasNode(s))
-                .forEach(s => {
+            (selected.has(active) ? selected : [active]).forEach(s => {
+                if (graph.current.hasNode(s)) {
                     graph.current.updateNodeAttributes(s, attr => ({
                         ...attr,
                         x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                         y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
                     }));
-                });
+                }
+            });
             dispatch(setRefreshNodes());
             dispatch(setRefreshEdges());
             // console.log('move ', graph.current.getNodeAttributes(node));
