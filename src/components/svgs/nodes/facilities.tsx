@@ -5,7 +5,9 @@ import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttrsProps } from '../../../constants/constants';
 
 /**
- * Facilities type, note that the value should match the filename under public/images/facilities.
+ * Facilities type
+ *
+ * Note that the value should match the filename without the extension under public/images/facilities.
  */
 export enum FacilitiesType {
     Airport = 'airport',
