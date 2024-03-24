@@ -65,6 +65,10 @@ const SvgCanvas = () => {
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
 
+        if (active === node && !selected.has(active)) {
+            dispatch(setSelected(new Set()));
+        }
+
         if (mode === 'free' && active === node) {
             (selected.has(active) ? selected : [active]).forEach(s => {
                 if (graph.current.hasNode(s)) {
