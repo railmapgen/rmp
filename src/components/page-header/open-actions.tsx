@@ -11,7 +11,7 @@ import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from 
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { parseRmgParam } from '../../util/rmg-param-parser';
-import { getInitialParam, upgrade } from '../../util/save';
+import { RMPSave, getInitialParam, upgrade } from '../../util/save';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
@@ -56,7 +56,8 @@ export default function OpenActions() {
     };
 
     const loadParam = async (paramStr: string) => {
-        const { version, ...save } = JSON.parse(await upgrade(paramStr));
+        // templates may be obsolete and require upgrades
+        const { version, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
@@ -65,7 +66,14 @@ export default function OpenActions() {
         graph.current.clear();
         graph.current.import(save.graph);
 
+        // hard refresh the canvas
         refreshAndSave();
+
+        // load svg view box related settings from the save
+        const { svgViewBoxZoom, svgViewBoxMin } = save;
+        if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
+        if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
+            dispatch(setSvgViewBoxMin(svgViewBoxMin));
     };
 
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

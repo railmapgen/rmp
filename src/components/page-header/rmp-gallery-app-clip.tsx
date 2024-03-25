@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdOpenInNew } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/param/param-slice';
+import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { RMPSave, upgrade } from '../../util/save';
 
@@ -63,7 +63,14 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         graph.current.clear();
         graph.current.import(save.graph);
 
+        // hard refresh the canvas
         refreshAndSave();
+
+        // load svg view box related settings from the save
+        const { svgViewBoxZoom, svgViewBoxMin } = save;
+        if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
+        if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
+            dispatch(setSvgViewBoxMin(svgViewBoxMin));
     };
 
     const fetchAndApplyTemplate = async (id: string, host?: string) => {
