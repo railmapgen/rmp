@@ -269,6 +269,13 @@
                 "qingdaoMetro": {
                     "displayName": "Qingdao Metro station",
                     "isInt": "Is interchange station"
+                },
+                "londonTubeBasic": {
+                    "displayName": "London Tube basic station",
+                    "shareTracksIndex": "Index of the track share"
+                },
+                "londonTubeInt": {
+                    "displayName": "London Tube interchange station"
                 }
             },
             "lines": {
