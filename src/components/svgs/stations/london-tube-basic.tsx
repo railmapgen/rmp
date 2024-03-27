@@ -206,8 +206,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                     fontSize={X_HEIGHT}
                     lineHeight={2 * X_HEIGHT}
                     dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
-                    grow="up"
-                    baseOffset={1}
+                    grow="bidirectional"
+                    baseOffset={0}
                     className="rmp-name__tube"
                 />
             </g>

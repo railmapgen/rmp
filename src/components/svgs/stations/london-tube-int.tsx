@@ -68,12 +68,11 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
                 {stepFreeAccess === 'none' ? (
                     <circle
                         id={`stn_core_${id}`}
-                        r={X_HEIGHT}
-                        cx={(-X_HEIGHT * 0.66) / 2}
-                        cy={-X_HEIGHT * 0.66 - X_HEIGHT / 2}
+                        r={1.25 * X_HEIGHT}
                         width={X_HEIGHT * 0.66}
                         height={height}
                         stroke="black"
+                        strokeWidth={0.5 * X_HEIGHT}
                         fill="white"
                     />
                 ) : (
