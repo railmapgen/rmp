@@ -60,6 +60,25 @@ const SvgCanvas = () => {
         setOffset({ x, y });
 
         dispatch(setActive(node));
+
+        if (!e.shiftKey) {
+            // no shift key -> non multiple selection case
+            if (!selected.has(node)) {
+                // set the current as the only one no matter what the previous selected were
+                dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+            } else {
+                // no-op as users may drag the previously selected node(s) for the current selected
+            }
+        } else {
+            // shift key pressed -> multiple selection case
+            if (selected.has(node)) {
+                // remove current if it is already in the multiple selection
+                dispatch(removeSelected(node));
+            } else {
+                // add current in the multiple selection
+                dispatch(addSelected(node));
+            }
+        }
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -129,25 +148,7 @@ const SvgCanvas = () => {
                 // check the offset and if it's not 0, it must be a click not move
                 const { x, y } = getMousePosition(e);
                 if (offset.x - x === 0 && offset.y - y === 0) {
-                    // add node to selected if it is a click
-                    if (!e.shiftKey) {
-                        // no shift key -> non multiple selection case
-                        if (!selected.has(node)) {
-                            // set the current as the only one no matter what the previous selected were
-                            dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
-                        } else {
-                            // no-op as users may drag the previously selected node(s) for the current selected
-                        }
-                    } else {
-                        // shift key pressed -> multiple selection case
-                        if (selected.has(node)) {
-                            // remove current if it is already in the multiple selection
-                            dispatch(removeSelected(node));
-                        } else {
-                            // add current in the multiple selection
-                            dispatch(addSelected(node));
-                        }
-                    }
+                    // no-op for click as the node is already added in pointer down
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));
