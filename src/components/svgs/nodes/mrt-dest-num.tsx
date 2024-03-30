@@ -36,7 +36,7 @@ const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAt
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
         >
-            <circle r="6" fill={bgColor}></circle>
+            <circle r="8" fill={bgColor}></circle>
             <text
                 className="rmp-name__mrt"
                 textAnchor="middle"
@@ -45,7 +45,7 @@ const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAt
                 width="12"
                 height="12"
                 fill={fgColor}
-                fontSize="9"
+                fontSize="12"
                 dominantBaseline="central"
                 letterSpacing="-0.2"
             >
