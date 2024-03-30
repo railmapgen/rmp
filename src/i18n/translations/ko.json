@@ -538,10 +538,7 @@
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
             "slack": "슬랙 그룹",
-            "slackContent": "이 슬랙 채널에서 채팅해요!",
-            "linkExchange": "연결",
-            "guidaoTransit": "Guidao Transit",
-            "guidaoTransitContent": "상하이 철도 운송에 대해 더 알고 싶으십니까? 이 WeChat 계정을 팔로우하세요! (중국어 전용)"
+            "slackContent": "이 슬랙 채널에서 채팅해요!"
         }
     }
 }
