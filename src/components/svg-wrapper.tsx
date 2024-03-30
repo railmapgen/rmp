@@ -298,6 +298,7 @@ const SvgWrapper = () => {
             if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
             else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
             dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+            setTouchDist(d);
 
             // the mid-position the fingers touch will still be in the same place after zooming
             const bbox = e.currentTarget.getBoundingClientRect();
