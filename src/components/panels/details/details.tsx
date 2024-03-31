@@ -22,7 +22,7 @@ const DetailsPanel = () => {
         dispatch(setRefreshEdges());
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
-    const { selected, mode } = useRootSelector(state => state.runtime);
+    const { selected, mode, active } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
     const handleClose = () => dispatch(clearSelected());
@@ -50,7 +50,7 @@ const DetailsPanel = () => {
 
     return (
         <RmgSidePanel
-            isOpen={selected.size > 0 && !mode.startsWith('line')}
+            isOpen={selected.size > 0 && !mode.startsWith('line') && !active}
             width={300}
             header="Dummy header"
             alwaysOverlay

@@ -280,7 +280,7 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {mode.startsWith('line') && active && (
+            {mode.startsWith('line') && active && active !== 'background' && (
                 <LineWrapper
                     // @ts-expect-error
                     id="create_in_progress___no_use"
