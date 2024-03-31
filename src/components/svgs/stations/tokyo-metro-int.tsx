@@ -1,0 +1,576 @@
+import { RmgDebouncedInput, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
+import {
+    defaultStationAttributes,
+    NameOffsetX,
+    NameOffsetY,
+    Station,
+    StationAttributes,
+    StationComponentProps,
+    StationType,
+} from '../../../constants/stations';
+import { MultilineText } from '../common/multiline-text';
+import { MultilineTextVertical } from '../common/multiline-text-vertical';
+import { TokyoMetroBasicSvg, TokyoMetroBasicSvgAttributes } from './tokyo-metro-basic';
+import { Button, HStack, IconButton, VStack } from '@chakra-ui/react';
+import { MdAdd, MdDelete } from 'react-icons/md';
+import ThemeButton from '../../panels/theme-button';
+import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+
+const TokyoMetroIntStation = (props: StationComponentProps) => {
+    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const {
+        names = defaultStationAttributes.names,
+        nameOffsetX = defaultTokyoMetroIntStationAttributes.nameOffsetX,
+        nameOffsetY = defaultTokyoMetroIntStationAttributes.nameOffsetY,
+        textVertical = defaultTokyoMetroIntStationAttributes.textVertical,
+        interchanges = defaultTokyoMetroIntStationAttributes.interchanges,
+        align = defaultTokyoMetroIntStationAttributes.align,
+        importance = defaultTokyoMetroIntStationAttributes.importance,
+        mereOffset = defaultTokyoMetroIntStationAttributes.mereOffset,
+    } = attrs[StationType.TokyoMetroInt] ?? defaultTokyoMetroIntStationAttributes;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+    const onPointerMove = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerMove(id, e),
+        [id, handlePointerMove]
+    );
+    const onPointerUp = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
+        [id, handlePointerUp]
+    );
+
+    const [textLength, setTextLength] = React.useState(0);
+    React.useEffect(() => {
+        let len = 0;
+        names[0].split('\\').forEach(s => {
+            len = Math.max(len, s.length);
+        });
+        setTextLength(len);
+    }, [names[0]]);
+
+    const singleWidth = 13;
+    const singleHeight = 18;
+    const width = align === 'horizontal' ? interchanges.length * singleWidth : 0;
+    const height = align === 'vertical' ? interchanges.length * singleHeight : 0;
+    const textOffsetXL = align === 'horizontal' ? 4 : 10;
+    const textOffsetXR = align === 'horizontal' ? 2 : 9;
+    const textX =
+        nameOffsetX === 'left'
+            ? -textOffsetXL - width / 2
+            : nameOffsetX === 'right'
+              ? textOffsetXR + width / 2
+              : mereOffset === 'left2'
+                ? -5
+                : mereOffset === 'right2'
+                  ? 5
+                  : 0;
+
+    interface TokyoMetroIntSvgProps {
+        fontSize: number;
+        textXVer: number;
+        textY: number;
+        textYVer: number;
+    }
+
+    const getDefault = (): TokyoMetroIntSvgProps => {
+        const textOffsetYTop = align === 'vertical' ? 1 : 10;
+        const textOffsetYBottom = align === 'vertical' ? 3 : 12;
+        const textOffsetYVerTop = align === 'vertical' ? 1 : 13;
+        const textOffsetYVerBottom = align === 'vertical' ? 3 : 12;
+        const textMereOffsetX =
+            mereOffset === 'left1'
+                ? -4
+                : mereOffset === 'left2'
+                  ? -10
+                  : mereOffset === 'right1'
+                    ? 4
+                    : mereOffset === 'right2'
+                      ? 10
+                      : 0;
+        const textMereOffsetY = mereOffset === 'up' ? 3 : mereOffset === 'down' ? 10 : 0;
+        return {
+            fontSize: 10,
+            textXVer: (nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : -2) + textMereOffsetX,
+            textY:
+                nameOffsetY === 'bottom'
+                    ? textOffsetYTop + height / 2
+                    : nameOffsetY === 'top'
+                      ? -textOffsetYBottom - height / 2
+                      : -7.5 + textMereOffsetY,
+            textYVer:
+                nameOffsetY === 'bottom'
+                    ? textOffsetYVerBottom + height / 2 + textLength * 5
+                    : nameOffsetY === 'top'
+                      ? -textOffsetYVerTop - height / 2 - textLength * 5
+                      : -5,
+        };
+    };
+
+    const getMiddle = (): TokyoMetroIntSvgProps => {
+        const textOffsetYTop = align === 'vertical' ? 1 : 10;
+        const textOffsetYBottom = align === 'vertical' ? 3 : 13;
+        const textOffsetYVerTop = align === 'vertical' ? 4 : 13;
+        const textOffsetYVerBottom = align === 'vertical' ? 3 : 13;
+        const textMereOffsetX =
+            mereOffset === 'left1'
+                ? -8
+                : mereOffset === 'left2'
+                  ? -13
+                  : mereOffset === 'right1'
+                    ? 8
+                    : mereOffset === 'right2'
+                      ? 13
+                      : 0;
+        const textMereOffsetY = mereOffset === 'up' ? 4 : mereOffset === 'down' ? 12 : 0;
+        return {
+            fontSize: 15,
+            textXVer: (nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : -2) + textMereOffsetX,
+            textY:
+                nameOffsetY === 'bottom'
+                    ? textOffsetYTop + height / 2
+                    : nameOffsetY === 'top'
+                      ? -textOffsetYBottom - height / 2
+                      : -10 + textMereOffsetY,
+            textYVer:
+                nameOffsetY === 'bottom'
+                    ? textOffsetYVerBottom + height / 2 + textLength * 7.5
+                    : nameOffsetY === 'top'
+                      ? -textOffsetYVerTop - height / 2 - textLength * 7.5
+                      : -5,
+        };
+    };
+
+    const getImportant = (): TokyoMetroIntSvgProps => {
+        const textOffsetYTop = align === 'vertical' ? 1 : 13;
+        const textOffsetYBottom = align === 'vertical' ? 3 : 10;
+        const textOffsetYVerTop = align === 'vertical' ? 5 : 13;
+        const textOffsetYVerBottom = align === 'vertical' ? 4 : 13;
+        const textMereOffsetX =
+            mereOffset === 'left1'
+                ? -10
+                : mereOffset === 'left2'
+                  ? -16
+                  : mereOffset === 'right1'
+                    ? 10
+                    : mereOffset === 'right2'
+                      ? 16
+                      : 0;
+        const textMereOffsetY = mereOffset === 'up' ? 6 : mereOffset === 'down' ? 15 : 0;
+        return {
+            fontSize: 20,
+            textXVer: (nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : -2) + textMereOffsetX,
+            textY:
+                nameOffsetY === 'bottom'
+                    ? textOffsetYBottom + height / 2
+                    : nameOffsetY === 'top'
+                      ? -textOffsetYTop - height / 2
+                      : -13 + textMereOffsetY,
+            textYVer:
+                nameOffsetY === 'bottom'
+                    ? textOffsetYVerBottom + height / 2 + textLength * 10
+                    : nameOffsetY === 'top'
+                      ? -textOffsetYVerTop - height / 2 - textLength * 10
+                      : -5,
+        };
+    };
+
+    const { fontSize, textXVer, textY, textYVer } =
+        importance === 'default' ? getDefault() : importance === 'high' ? getImportant() : getMiddle();
+    const textAnchor =
+        nameOffsetX === 'left' || mereOffset === 'left1' || mereOffset === 'left2'
+            ? 'end'
+            : nameOffsetX === 'right' || mereOffset === 'right1' || mereOffset === 'right2'
+              ? 'start'
+              : 'middle';
+
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            {align === 'horizontal' ? (
+                <>
+                    <rect
+                        x={-(width + 3) / 2}
+                        y={-10.5}
+                        width={width + 3}
+                        height={21}
+                        rx={3}
+                        fill="#808285"
+                        stroke="black"
+                        strokeWidth="0.5"
+                    />
+                    {interchanges.map((s, i) => (
+                        <g key={i} transform={`translate(${i * singleWidth - (width - singleWidth) / 2}, 0)`}>
+                            <TokyoMetroBasicSvg
+                                lineCode={s.lineCode}
+                                stationCode={s.stationCode}
+                                color={s.color}
+                                stroke={true}
+                            />
+                        </g>
+                    ))}
+
+                    <rect
+                        id={`stn_core_${id}`}
+                        x={-(width + 3) / 2}
+                        y={-10.5}
+                        width={width + 3}
+                        height={21}
+                        rx={3}
+                        opacity={0}
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={onPointerUp}
+                        style={{ cursor: 'move' }}
+                    />
+                </>
+            ) : (
+                <>
+                    <rect
+                        x={-8}
+                        y={-(height + 3) / 2}
+                        width={16}
+                        height={height + 3}
+                        rx={3}
+                        fill="#808285"
+                        stroke="black"
+                        strokeWidth="0.5"
+                    />
+                    {interchanges.map((s, i) => (
+                        <g key={i} transform={`translate(0, ${i * singleHeight - (height - singleHeight) / 2})`}>
+                            <TokyoMetroBasicSvg
+                                lineCode={s.lineCode}
+                                stationCode={s.stationCode}
+                                color={s.color}
+                                stroke={true}
+                            />
+                        </g>
+                    ))}
+
+                    <rect
+                        id={`stn_core_${id}`}
+                        x={-8}
+                        y={-(height + 3) / 2}
+                        width={16}
+                        height={height + 3}
+                        rx={3}
+                        opacity={0}
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={onPointerUp}
+                        style={{ cursor: 'move' }}
+                    />
+                </>
+            )}
+            <g textAnchor={textAnchor} className="rmp-name-outline" strokeWidth="1">
+                {!textVertical ? (
+                    <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                        <MultilineText
+                            text={names[0].split('\\')}
+                            fontSize={fontSize}
+                            lineHeight={fontSize}
+                            grow={nameOffsetY === 'top' || mereOffset === 'up' ? 'up' : 'down'}
+                            className="rmp-name__jreast_ja"
+                            fill={'black'}
+                            fontWeight={importance !== 'default' ? 'bold' : 'normal'}
+                        />
+                    </g>
+                ) : (
+                    <g transform={`translate(${textXVer}, ${textYVer})`} textAnchor="middle">
+                        <MultilineTextVertical
+                            text={names[0].split('\\')}
+                            fontSize={fontSize}
+                            lineWidth={fontSize}
+                            grow="bidirectional"
+                            className="rmp-name__jreast_ja"
+                            fill={'black'}
+                            fontWeight={importance !== 'default' ? 'bold' : 'normal'}
+                        />
+                    </g>
+                )}
+            </g>
+        </g>
+    );
+};
+
+type MereOffset = 'none' | 'left1' | 'left2' | 'right1' | 'right2' | 'up' | 'down';
+type Align = 'vertical' | 'horizontal';
+type Importance = 'default' | 'middle' | 'high';
+
+/**
+ * TokyoMetroIntStation specific props.
+ */
+export interface TokyoMetroIntStationAttributes extends StationAttributes {
+    nameOffsetX: NameOffsetX;
+    nameOffsetY: NameOffsetY;
+    mereOffset: MereOffset;
+    textVertical: boolean;
+    interchanges: TokyoMetroBasicSvgAttributes[];
+    align: Align;
+    importance: Importance;
+}
+
+const defaultTokyoMetroIntStationAttributes: TokyoMetroIntStationAttributes = {
+    names: ['日本橋'],
+    nameOffsetX: 'right',
+    nameOffsetY: 'middle',
+    mereOffset: 'none',
+    textVertical: false,
+    interchanges: [
+        {
+            lineCode: 'G',
+            stationCode: '11',
+            color: [CityCode.Tokyo, 'g', '#f9a328', MonoColour.white],
+        },
+        {
+            lineCode: 'T',
+            stationCode: '10',
+            color: [CityCode.Tokyo, 't', '#00a4db', MonoColour.white],
+        },
+        {
+            lineCode: 'A',
+            stationCode: '13',
+            color: [CityCode.Tokyo, 'a', '#dd4231', MonoColour.white],
+        },
+    ],
+    align: 'horizontal',
+    importance: 'default',
+};
+
+const defaultTransferInfo: TokyoMetroBasicSvgAttributes = {
+    lineCode: '',
+    stationCode: '',
+    color: [CityCode.Tokyo, '', '#AAAAAA', MonoColour.white],
+};
+
+const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const dispatch = useRootDispatch();
+    const {
+        paletteAppClip: { output },
+    } = useRootSelector(state => state.runtime);
+    const { t } = useTranslation();
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0].replaceAll('\\', '\n'),
+            onChange: val => {
+                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.jrEastInt.nameOffset'),
+            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
+            options: {
+                left: t('panel.details.stations.common.left'),
+                right: t('panel.details.stations.common.right'),
+                top: t('panel.details.stations.common.top'),
+                bottom: t('panel.details.stations.common.bottom'),
+            },
+            onChange: val => {
+                if (val === 'left' || val === 'right') {
+                    attrs.nameOffsetX = val as NameOffsetX;
+                    attrs.nameOffsetY = 'middle';
+                    attrs.textVertical = false;
+                    if (
+                        attrs.mereOffset === 'left1' ||
+                        attrs.mereOffset === 'left2' ||
+                        attrs.mereOffset === 'right1' ||
+                        attrs.mereOffset === 'right2'
+                    ) {
+                        attrs.mereOffset = 'none';
+                    }
+                } else {
+                    attrs.nameOffsetX = 'middle';
+                    attrs.nameOffsetY = val as NameOffsetY;
+                    if (attrs.mereOffset === 'up' || attrs.mereOffset === 'down') {
+                        attrs.mereOffset = 'none';
+                    }
+                }
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.tokyoMetroInt.mereOffset.displayName'),
+            value: attrs.mereOffset,
+            options: {
+                none: t('panel.details.stations.tokyoMetroInt.mereOffset.none'),
+                ...(attrs.nameOffsetX === 'middle'
+                    ? {
+                          left1: t('panel.details.stations.common.left'),
+                          left2: t('panel.details.stations.common.left'),
+                          right1: t('panel.details.stations.common.right'),
+                          right2: t('panel.details.stations.common.right'),
+                      }
+                    : {
+                          up: t('panel.details.stations.common.top'),
+                          down: t('panel.details.stations.common.bottom'),
+                      }),
+            },
+            onChange: val => {
+                attrs.mereOffset = val as MereOffset;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.jrEastInt.textVertical'),
+            isChecked: attrs.textVertical,
+            isDisabled: attrs.nameOffsetX !== 'middle',
+            onChange: (val: boolean) => {
+                attrs.textVertical = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            oneLine: true,
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.tokyoMetroInt.align.displayName'),
+            value: attrs.align,
+            options: {
+                horizontal: t('panel.details.stations.tokyoMetroInt.align.horizontal'),
+                vertical: t('panel.details.stations.tokyoMetroInt.align.vertical'),
+            },
+            onChange: val => {
+                attrs.align = val as Align;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.tokyoMetroInt.importance.displayName'),
+            value: attrs.importance,
+            options: {
+                default: t('panel.details.stations.tokyoMetroInt.importance.default'),
+                middle: t('panel.details.stations.tokyoMetroInt.importance.middle'),
+                high: t('panel.details.stations.tokyoMetroInt.importance.high'),
+            },
+            onChange: val => {
+                attrs.importance = val as Importance;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+    ];
+
+    const [themeRequested, setThemeRequested] = React.useState<number | undefined>(undefined);
+    React.useEffect(() => {
+        if (themeRequested && output) {
+            attrs.interchanges[themeRequested].color = output;
+            handleAttrsUpdate(id, attrs);
+            setThemeRequested(undefined);
+        }
+    }, [output?.toString()]);
+
+    const handleAdd = (index: number) => {
+        const newInterchanges = structuredClone(attrs.interchanges);
+        newInterchanges.push(defaultTransferInfo);
+        for (let i = newInterchanges.length - 1; i > index; i--) {
+            newInterchanges[i] = structuredClone(newInterchanges[i - 1]);
+        }
+        newInterchanges[index] = defaultTransferInfo;
+        handleAttrsUpdate(id, { ...attrs, interchanges: newInterchanges });
+    };
+
+    const handleDelete = (index: number) => {
+        const newInterchanges = attrs.interchanges.filter((s, i) => i !== index);
+        handleAttrsUpdate(id, { ...attrs, interchanges: newInterchanges });
+    };
+
+    return (
+        <>
+            <RmgFields fields={fields} />
+
+            <RmgLabel label={t('panel.details.stations.interchange.title')}>
+                <VStack align="flex-start">
+                    {attrs.interchanges.map((s, i) => (
+                        <HStack key={i}>
+                            <ThemeButton
+                                theme={s.color}
+                                onClick={() => {
+                                    setThemeRequested(i);
+                                    dispatch(openPaletteAppClip(s.color));
+                                }}
+                            />
+                            <RmgLabel label="Line code">
+                                <RmgDebouncedInput value={s.lineCode} />
+                            </RmgLabel>
+                            <RmgLabel label="Station code">
+                                <RmgDebouncedInput value={s.stationCode} />
+                            </RmgLabel>
+                            <IconButton
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('panel.details.stations.interchange.add')}
+                                icon={<MdAdd />}
+                                onClick={() => handleAdd(i)}
+                            ></IconButton>
+                            <IconButton
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('panel.details.stations.interchange.add')}
+                                icon={<MdDelete />}
+                                onClick={() => handleDelete(i)}
+                                isDisabled={attrs.interchanges.length === 1}
+                            ></IconButton>
+                        </HStack>
+                    ))}
+
+                    <Button
+                        size="sm"
+                        width="100%"
+                        variant="outline"
+                        leftIcon={<MdAdd />}
+                        onClick={() => handleAdd(attrs.interchanges.length)}
+                    >
+                        Interchanges
+                    </Button>
+                </VStack>
+            </RmgLabel>
+        </>
+    );
+};
+
+const tokyoMetroIntStationIcon = (
+    <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
+        <rect x="6.5" y="4.5" rx="1.5" width="10" height="15" stroke="currentColor" fill="none" />
+        <text x="9" y="11" fontSize="7">
+            G
+        </text>
+        <text x="7.75" y="18" fontSize="7" letterSpacing="-0.8">
+            10
+        </text>
+    </svg>
+);
+
+const tokyoMetroIntStation: Station<TokyoMetroIntStationAttributes> = {
+    component: TokyoMetroIntStation,
+    icon: tokyoMetroIntStationIcon,
+    defaultAttrs: defaultTokyoMetroIntStationAttributes,
+    attrsComponent: tokyoMetroIntAttrsComponent,
+    metadata: {
+        displayName: 'panel.details.stations.tokyoMetroInt.displayName',
+        cities: [CityCode.Tokyo],
+        canvas: [CanvasType.RailMap],
+        categories: [CategoriesType.Metro],
+        tags: [],
+    },
+};
+
+export default tokyoMetroIntStation;

@@ -69,6 +69,16 @@ export const FONTS_CSS: {
         cssFont: { 'M PLUS 2': MPLUS2 },
         cssName: 'fonts_jreast',
     },
+    [StationType.TokyoMetroBasic]: {
+        className: ['.rmp-name__jreast_ja'],
+        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssName: 'fonts_jreast',
+    },
+    [StationType.TokyoMetroInt]: {
+        className: ['.rmp-name__jreast_ja'],
+        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssName: 'fonts_jreast',
+    },
 };
 
 const loadedCssNames: string[] = [];

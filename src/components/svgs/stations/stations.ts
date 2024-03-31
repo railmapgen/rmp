@@ -18,6 +18,8 @@ import jrEastBasicStation from './jr-east-basic';
 import jrEastImportantStation from './jr-east-important';
 import foshanMetroBasicStation from './foshan-metro-basic';
 import qingdaoMetroStation from './qingdao-metro-station';
+import tokyoMetroBasicStation from './tokyo-metro-basic';
+import tokyoMetroIntStation from './tokyo-metro-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -39,6 +41,8 @@ const stations = {
     [StationType.JREastImportant]: jrEastImportantStation,
     [StationType.FoshanMetroBasic]: foshanMetroBasicStation,
     [StationType.QingdaoMetroStation]: qingdaoMetroStation,
+    [StationType.TokyoMetroBasic]: tokyoMetroBasicStation,
+    [StationType.TokyoMetroInt]: tokyoMetroIntStation,
 };
 
 export default stations;
