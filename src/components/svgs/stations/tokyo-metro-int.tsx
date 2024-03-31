@@ -360,7 +360,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
-            label: t('panel.details.stations.common.nameZh'),
+            label: t('panel.details.stations.common.nameJa'),
             value: attrs.names[0].replaceAll('\\', '\n'),
             onChange: val => {
                 attrs.names[0] = val.toString().replaceAll('\n', '\\');
@@ -370,7 +370,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         },
         {
             type: 'select',
-            label: t('panel.details.stations.jrEastInt.nameOffset'),
+            label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
             value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
             options: {
                 left: t('panel.details.stations.common.left'),
@@ -410,14 +410,14 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
                 none: t('panel.details.stations.tokyoMetroInt.mereOffset.none'),
                 ...(attrs.nameOffsetX === 'middle'
                     ? {
-                          left1: t('panel.details.stations.common.left'),
-                          left2: t('panel.details.stations.common.left'),
-                          right1: t('panel.details.stations.common.right'),
-                          right2: t('panel.details.stations.common.right'),
+                          left1: t('panel.details.stations.tokyoMetroInt.mereOffset.left1'),
+                          left2: t('panel.details.stations.tokyoMetroInt.mereOffset.left2'),
+                          right1: t('panel.details.stations.tokyoMetroInt.mereOffset.right1'),
+                          right2: t('panel.details.stations.tokyoMetroInt.mereOffset.right2'),
                       }
                     : {
-                          up: t('panel.details.stations.common.top'),
-                          down: t('panel.details.stations.common.bottom'),
+                          up: t('panel.details.stations.tokyoMetroInt.mereOffset.up'),
+                          down: t('panel.details.stations.tokyoMetroInt.mereOffset.down'),
                       }),
             },
             onChange: val => {
@@ -428,7 +428,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.jrEastInt.textVertical'),
+            label: t('panel.details.stations.tokyoMetroBasic.textVertical'),
             isChecked: attrs.textVertical,
             isDisabled: attrs.nameOffsetX !== 'middle',
             onChange: (val: boolean) => {
@@ -436,20 +436,6 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
                 handleAttrsUpdate(id, attrs);
             },
             oneLine: true,
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.tokyoMetroInt.align.displayName'),
-            value: attrs.align,
-            options: {
-                horizontal: t('panel.details.stations.tokyoMetroInt.align.horizontal'),
-                vertical: t('panel.details.stations.tokyoMetroInt.align.vertical'),
-            },
-            onChange: val => {
-                attrs.align = val as Align;
-                handleAttrsUpdate(id, attrs);
-            },
             minW: 'full',
         },
         {
@@ -463,6 +449,20 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
             },
             onChange: val => {
                 attrs.importance = val as Importance;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.tokyoMetroInt.align.displayName'),
+            value: attrs.align,
+            options: {
+                horizontal: t('panel.details.stations.tokyoMetroInt.align.horizontal'),
+                vertical: t('panel.details.stations.tokyoMetroInt.align.vertical'),
+            },
+            onChange: val => {
+                attrs.align = val as Align;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -493,6 +493,16 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         handleAttrsUpdate(id, { ...attrs, interchanges: newInterchanges });
     };
 
+    const handleLineCodeChange = (val: string, index: number) => {
+        attrs.interchanges[index].lineCode = val;
+        handleAttrsUpdate(id, attrs);
+    };
+
+    const handleStationCodeChange = (val: string, index: number) => {
+        attrs.interchanges[index].stationCode = val;
+        handleAttrsUpdate(id, attrs);
+    };
+
     return (
         <>
             <RmgFields fields={fields} />
@@ -508,11 +518,17 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
                                     dispatch(openPaletteAppClip(s.color));
                                 }}
                             />
-                            <RmgLabel label="Line code">
-                                <RmgDebouncedInput value={s.lineCode} />
+                            <RmgLabel label={t('panel.details.stations.tokyoMetroBasic.lineCode')}>
+                                <RmgDebouncedInput
+                                    defaultValue={s.lineCode}
+                                    onDebouncedChange={val => handleLineCodeChange(val, i)}
+                                />
                             </RmgLabel>
-                            <RmgLabel label="Station code">
-                                <RmgDebouncedInput value={s.stationCode} />
+                            <RmgLabel label={t('panel.details.stations.tokyoMetroBasic.stationCode')}>
+                                <RmgDebouncedInput
+                                    defaultValue={s.stationCode}
+                                    onDebouncedChange={val => handleStationCodeChange(val, i)}
+                                />
                             </RmgLabel>
                             <IconButton
                                 size="sm"

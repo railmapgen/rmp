@@ -14,6 +14,7 @@ import {
 } from '../../../constants/stations';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
+import { ColorField } from '../../panels/details/color-field';
 
 export interface TokyoMetroBasicSvgAttributes {
     lineCode: string;
@@ -52,10 +53,26 @@ export const TokyoMetroBasicSvg = (props: TokyoMetroBasicSvgProps) => {
                 stroke={color[2]}
                 fill="white"
             />
-            <text x={0} y={-1} textAnchor="middle" className="rmp-name__jreast_en" fontSize={6} fill="black">
+            <text
+                x={0}
+                y={lineCode.length === 1 ? -0.75 : -1.5}
+                textAnchor="middle"
+                className="rmp-name__tokyo_en"
+                fontSize={lineCode.length === 1 ? 7 : 4.5}
+                fill="black"
+            >
                 {lineCode}
             </text>
-            <text x={0} y={5} textAnchor="middle" className="rmp-name__en" fontSize={6} fill="black">
+            <text
+                x={stationCode.length === 1 ? 0 : -0.4 / stationCode.length}
+                y={5.5}
+                textAnchor="middle"
+                className="rmp-name__en"
+                fontSize={7}
+                fontWeight="bold"
+                letterSpacing="-0.4"
+                fill="black"
+            >
                 {stationCode}
             </text>
         </>
@@ -175,7 +192,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
-            label: t('panel.details.stations.common.nameZh'),
+            label: t('panel.details.stations.common.nameJa'),
             value: attrs.names[0].replaceAll('\\', '\n'),
             onChange: val => {
                 attrs.names[0] = val.toString().replaceAll('\n', '\\');
@@ -185,7 +202,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         },
         {
             type: 'select',
-            label: t('panel.details.stations.jrEastBasic.nameOffset'),
+            label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
             value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
             options: {
                 left: t('panel.details.stations.common.left'),
@@ -208,7 +225,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.jrEastBasic.textVertical'),
+            label: t('panel.details.stations.tokyoMetroBasic.textVertical'),
             isChecked: attrs.textVertical,
             isDisabled: attrs.nameOffsetX !== 'middle',
             onChange: (val: boolean) => {
@@ -216,6 +233,37 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
                 handleAttrsUpdate(id, attrs);
             },
             oneLine: true,
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.tokyoMetroBasic.lineCode'),
+            value: attrs.lineCode,
+            onChange: val => {
+                attrs.lineCode = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.tokyoMetroBasic.stationCode'),
+            value: attrs.stationCode,
+            onChange: val => {
+                attrs.stationCode = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={StationType.TokyoMetroBasic}
+                    defaultTheme={defaultTokyoMetroBasicStationAttributes.color}
+                />
+            ),
             minW: 'full',
         },
     ];
