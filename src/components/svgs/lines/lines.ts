@@ -20,6 +20,8 @@ import mrtUnderConstruction from './styles/mrt-under-construction';
 import mrtSentosaExpress from './styles/mrt-sentosa-express';
 import jrEastSingleColor from './styles/jr-east-single-color';
 import jrEastSingleColorPattern from './styles/jr-east-single-color-pattern';
+import londonTubeInternalInt from './styles/london-tube-internal-int';
+import londonTube10MinWalk from './styles/london-tube-10-min-walk';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -46,4 +48,6 @@ export const lineStyles = {
     [LineStyleType.MRTSentosaExpress]: mrtSentosaExpress,
     [LineStyleType.JREastSingleColor]: jrEastSingleColor,
     [LineStyleType.JREastSingleColorPattern]: jrEastSingleColorPattern,
+    [LineStyleType.LondonTubeInternalInt]: londonTubeInternalInt,
+    [LineStyleType.LondonTube10MinWalk]: londonTube10MinWalk,
 };

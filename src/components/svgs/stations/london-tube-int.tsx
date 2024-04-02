@@ -47,12 +47,12 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
               ? X_HEIGHT / 2 + X_HEIGHT * 1.33
               : 0;
     const textDy =
-        (nameOffsetY === 'top'
+        nameOffsetY === 'top'
             ? -(X_HEIGHT / 2 + X_HEIGHT * 1.33)
             : nameOffsetY === 'bottom'
               ? X_HEIGHT / 2 + X_HEIGHT * 1.33
-              : 0) + // fixed dy for each rotation
-        (names[0].split('\n').length - 1) * X_HEIGHT * (nameOffsetY === 'top' ? -1 : nameOffsetY === 'bottom' ? 1 : 0); // dynamic dy of n lines;
+              : 0; // fixed dy for each rotation
+
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     const dominantBaseline = nameOffsetY === 'top' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
 
@@ -82,10 +82,10 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
             <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={X_HEIGHT}
-                    lineHeight={2 * X_HEIGHT}
+                    fontSize={1.22 * X_HEIGHT}
+                    lineHeight={X_HEIGHT}
                     dominantBaseline={dominantBaseline}
-                    grow="up"
+                    grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'bottom' ? 'down' : 'bidirectional'}
                     baseOffset={1}
                     className="rmp-name__tube"
                 />

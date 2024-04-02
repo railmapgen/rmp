@@ -25,8 +25,9 @@ const ROTATE_CONST: {
         textDy: number;
         textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
         dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
-        lineHeight: 0 | 6.67 | 12.67;
+        lineHeight: number;
         polarity: -1 | 0 | 1;
+        grow: 'up' | 'down' | 'bidirectional';
     };
 } = {
     0: {
@@ -34,64 +35,72 @@ const ROTATE_CONST: {
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33),
         textAnchor: 'middle',
         dominantBaseline: 'auto',
-        lineHeight: 6.67,
+        lineHeight: X_HEIGHT,
         polarity: -1,
+        grow: 'up',
     },
     45: {
-        textDx: 1,
-        textDy: -16.25,
+        textDx: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'start',
         dominantBaseline: 'auto',
-        lineHeight: 6.67,
+        lineHeight: X_HEIGHT,
         polarity: -1,
+        grow: 'up',
     },
     90: {
         textDx: X_HEIGHT / 2 + X_HEIGHT * 1.33,
         textDy: 0,
         textAnchor: 'start',
         dominantBaseline: 'middle',
-        lineHeight: 0,
+        lineHeight: X_HEIGHT,
         polarity: 0,
+        grow: 'bidirectional',
     },
     135: {
-        textDx: 5,
-        textDy: 21,
+        textDx: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textDy: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'start',
-        dominantBaseline: 'auto',
-        lineHeight: 12.67,
+        dominantBaseline: 'hanging',
+        lineHeight: X_HEIGHT,
         polarity: 1,
+        grow: 'down',
     },
     180: {
         textDx: 0,
         textDy: X_HEIGHT / 2 + X_HEIGHT * 1.33,
         textAnchor: 'middle',
         dominantBaseline: 'hanging',
-        lineHeight: 12.67,
+        lineHeight: X_HEIGHT,
         polarity: 1,
+        grow: 'down',
     },
     225: {
-        textDx: -5,
-        textDy: 21,
+        textDx: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textDy: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'end',
-        dominantBaseline: 'auto',
-        lineHeight: 12.67,
+        dominantBaseline: 'hanging',
+        lineHeight: X_HEIGHT,
         polarity: 1,
+        grow: 'down',
     },
     270: {
         textDx: -(X_HEIGHT / 2 + X_HEIGHT * 1.33),
         textDy: 0,
         textAnchor: 'end',
         dominantBaseline: 'middle',
-        lineHeight: 0,
+        lineHeight: X_HEIGHT,
         polarity: 0,
+        grow: 'bidirectional',
     },
     315: {
-        textDx: -1,
-        textDy: -16.25,
+        textDx: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'end',
         dominantBaseline: 'auto',
-        lineHeight: 6.67,
+        lineHeight: X_HEIGHT,
         polarity: -1,
+        grow: 'up',
     },
 };
 
@@ -108,6 +117,7 @@ export const AccessibleIcon = (props: AccessibleIconProps) => {
             <path
                 fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
                 stroke="#1C3E93"
+                strokeWidth={0.5 * X_HEIGHT}
                 d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
             />
             <path
@@ -158,8 +168,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const textDx = ROTATE_CONST[rotate].textDx + Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4]));
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
-        Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT + // dynamic dy of n share tracks
-        (names[0].split('\n').length - 1) * ROTATE_CONST[rotate].lineHeight * ROTATE_CONST[rotate].polarity; // dynamic dy of n lines;
+        Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
 
     const accessibleD =
         -((Math.max(...transfer[0].map(_ => _[4])) + Math.min(...transfer[0].map(_ => _[4]))) / 2) * X_HEIGHT;
@@ -203,10 +212,10 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
             >
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={X_HEIGHT}
-                    lineHeight={2 * X_HEIGHT}
+                    fontSize={1.22 * X_HEIGHT}
+                    lineHeight={ROTATE_CONST[rotate].lineHeight}
                     dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
-                    grow="bidirectional"
+                    grow={ROTATE_CONST[rotate].grow}
                     baseOffset={0}
                     className="rmp-name__tube"
                 />
