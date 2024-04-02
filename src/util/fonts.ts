@@ -18,7 +18,7 @@ const IdentityFont: FontFaceConfig = {
 };
 const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
 const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
-const Johnston: FontFaceConfig = { source: 'url("./fonts/Johnston-Regular.ttf")', descriptors: { display: 'swap' } };
+const Railway: FontFaceConfig = { source: 'url("./fonts/Railway-PlyE.otf")', descriptors: { display: 'swap' } };
 
 /**
  * Node type to fonts' css related data.
@@ -57,7 +57,7 @@ export const FONTS_CSS: {
     },
     [StationType.LondonTubeBasic]: {
         className: ['.rmp-name__tube'],
-        cssFont: { Johnston: Johnston },
+        cssFont: { Railway: Railway },
         cssName: 'fonts_tube',
     },
     [MiscNodeType.BerlinSBahnLineBadge]: {
