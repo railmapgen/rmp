@@ -569,10 +569,7 @@
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
             "slack": "Slackグループ",
-            "slackContent": "Slackのチャンネルでチャットしましょう！",
-            "linkExchange": "リンク",
-            "guidaoTransit": "贵道蕉通",
-            "guidaoTransitContent": "上海鉄道交通についてもっと知りたいですか? このWeChatアカウントをフォローしてください！ (中国語のみ)"
+            "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     }
 }

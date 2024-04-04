@@ -570,10 +570,7 @@
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
             "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!",
-            "linkExchange": "Link Exchange",
-            "guidaoTransit": "Guidao Transit",
-            "guidaoTransitContent": "Want to know more about Shanghai rail transit? Follow this WeChat account! (Chinese Only)"
+            "slackContent": "Chat in these Slack channels!"
         }
     }
 }
