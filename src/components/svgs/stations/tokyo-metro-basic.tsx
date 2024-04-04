@@ -274,10 +274,10 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
 const tokyoMetroBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <rect x="6.5" y="4.5" rx="1.5" width="10" height="15" stroke="currentColor" fill="none" />
-        <text x="9" y="11" fontSize="7">
+        <text x="9" y="11" fontSize="7" fill="currentColor">
             G
         </text>
-        <text x="7.75" y="18" fontSize="7" letterSpacing="-0.8">
+        <text x="7.75" y="18" fontSize="7" letterSpacing="-0.8" fill="currentColor">
             10
         </text>
     </svg>

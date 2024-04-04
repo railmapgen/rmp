@@ -268,6 +268,37 @@
                 "qingdaoMetro": {
                     "displayName": "칭다오 지하철역",
                     "isInt": "환승역인가"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "도쿄메트로 기본역",
+                    "nameOffset": "이름 오프셋",
+                    "textVertical": "업종명",
+                    "lineCode": "라인 코드",
+                    "stationCode": "역 코드"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "도쿄메트로 환승역",
+                    "mereOffset": {
+                        "displayName": "단순한 오프셋 이름",
+                        "none": "없음",
+                        "left1": "왼쪽(적음)",
+                        "left2": "왼쪽(더)",
+                        "right1": "오른쪽(적음)",
+                        "right2": "맞아요 (더)",
+                        "up": "위로",
+                        "down": "아래에"
+                    },
+                    "importance": {
+                        "displayName": "역 중요성",
+                        "default": "기본",
+                        "middle": "가운데",
+                        "high": "높은"
+                    },
+                    "align": {
+                        "displayName": "아이콘 정렬",
+                        "horizontal": "수평의",
+                        "vertical": "수직의"
+                    }
                 }
             },
             "lines": {

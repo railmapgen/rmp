@@ -278,7 +278,7 @@
                     "stationCode": "Station code"
                 },
                 "tokyoMetroInt": {
-                    "displayName": "Tokyo Metro Int station",
+                    "displayName": "Tokyo Metro interchange station",
                     "mereOffset": {
                         "displayName": "Names mere offset",
                         "none": "None",

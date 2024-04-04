@@ -555,7 +555,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
                         leftIcon={<MdAdd />}
                         onClick={() => handleAdd(attrs.interchanges.length)}
                     >
-                        Interchanges
+                        {t('panel.details.stations.interchange.title')}
                     </Button>
                 </VStack>
             </RmgLabel>
@@ -565,12 +565,19 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
 
 const tokyoMetroIntStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <rect x="6.5" y="4.5" rx="1.5" width="10" height="15" stroke="currentColor" fill="none" />
-        <text x="9" y="11" fontSize="7">
+        <rect x="4" y="8" rx="1" width="6.5" height="10" stroke="currentColor" fill="none" />
+        <rect x="12.5" y="8" rx="1" width="6.5" height="10" stroke="currentColor" fill="none" />
+        <text x="5.5" y="12.5" fontSize="4" fill="currentColor">
             G
         </text>
-        <text x="7.75" y="18" fontSize="7" letterSpacing="-0.8">
-            10
+        <text x="5" y="16.25" fontSize="4" letterSpacing="-0.8" fill="currentColor">
+            16
+        </text>
+        <text x="14.25" y="12.5" fontSize="4" fill="currentColor">
+            H
+        </text>
+        <text x="13.75" y="16.25" fontSize="4" letterSpacing="-0.8" fill="currentColor">
+            18
         </text>
     </svg>
 );

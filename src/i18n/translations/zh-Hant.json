@@ -268,6 +268,37 @@
                 "qingdaoMetro": {
                     "displayName": "青島地鐵基本車站",
                     "isInt": "是換乘站"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "東京地鐵基本車站",
+                    "nameOffset": "名稱偏移",
+                    "textVertical": "垂直站名",
+                    "lineCode": "線路編號",
+                    "stationCode": "車站編號"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "東京地鐵轉乘車站",
+                    "mereOffset": {
+                        "displayName": "名稱微小偏移",
+                        "none": "無",
+                        "left1": "左 (较少)",
+                        "left2": "左 (较大)",
+                        "right1": "右 (较少)",
+                        "right2": "右 (较大)",
+                        "up": "上",
+                        "down": "下"
+                    },
+                    "importance": {
+                        "displayName": "車站重要性",
+                        "default": "預設",
+                        "middle": "中",
+                        "high": "高"
+                    },
+                    "align": {
+                        "displayName": "圖標排列方向",
+                        "horizontal": "橫向",
+                        "vertical": "縱向"
+                    }
                 }
             },
             "lines": {
