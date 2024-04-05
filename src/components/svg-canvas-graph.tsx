@@ -20,12 +20,12 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
-import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import LineWrapper from './svgs/lines/line-wrapper';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import allStations from './svgs/stations/stations';
+import { makeParallelIndex } from '../util/parallel';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -123,7 +123,12 @@ const SvgCanvas = () => {
                 if (couldActiveBeConnected && couldIDBeConnected) {
                     const type = mode.slice(5) as LinePathType;
                     const newLineId = `line_${nanoid(10)}`;
-                    graph.current.addDirectedEdgeWithKey(newLineId, active, id!.slice(prefix.length), {
+                    const [source, target] = [
+                        active! as StnId | MiscNodeId,
+                        id!.slice(prefix.length) as StnId | MiscNodeId,
+                    ];
+                    const parallelIndex = makeParallelIndex(graph.current, type, source, target);
+                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
                         type,
@@ -132,6 +137,8 @@ const SvgCanvas = () => {
                         style: LineStyleType.SingleColor,
                         [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',
+                        parallelIndex,
+                        // parallelIndex: -1,
                     });
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
@@ -167,85 +174,54 @@ const SvgCanvas = () => {
     const [stations, setStations] = React.useState(getStations(graph.current));
     const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
-    const [reconciledLines, setReconciledLines] = React.useState([] as LineId[][]);
-    const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
     React.useEffect(() => {
         setStations(getStations(graph.current));
         setNodes(getMiscNodes(graph.current));
     }, [refreshNodes]);
     React.useEffect(() => {
         setLines(getLines(graph.current));
-        const { allReconciledLines, danglingLines } = reconcileLines(graph.current);
-        setReconciledLines(allReconciledLines);
-        setDanglingLines(danglingLines);
     }, [refreshEdges]);
+
+    const elements = [...lines];
+    elements.sort(elem => {
+        switch (elem.type) {
+            case 'line':
+                return elem.line!.attr.zIndex;
+            case 'station':
+                return 0;
+            case 'misc-node':
+                return 0;
+        }
+    });
 
     return (
         <>
-            {danglingLines.map(edge => {
-                const [source, target] = graph.current.extremities(edge);
-                const sourceAttr = graph.current.getNodeAttributes(source);
-                const targetAttr = graph.current.getNodeAttributes(target);
-                return (
-                    <LineWrapper
-                        id={edge}
-                        key={edge}
-                        x1={sourceAttr.x}
-                        y1={sourceAttr.y}
-                        x2={targetAttr.x}
-                        y2={targetAttr.y}
-                        newLine={false}
-                        type={LinePathType.Simple}
-                        attrs={linePaths[LinePathType.Simple].defaultAttrs}
-                        styleType={LineStyleType.SingleColor}
-                        styleAttrs={{ color: ['', '', '#c0c0c0', '#fff'] }}
-                        handleClick={handleEdgeClick}
-                    />
-                );
-            })}
-            {reconciledLines.map(reconciledLine => {
-                const path = generateReconciledPath(graph.current, reconciledLine);
-                if (!path) return <></>;
+            {elements.map(element => {
+                if (element.type === 'line') {
+                    const type = element.line!.attr.type;
+                    const style = element.line!.attr.style;
+                    const styleAttrs = element.line!.attr[style] as NonNullable<
+                        ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
+                    >;
+                    // HELP NEEDED: Why component is not this type?
+                    const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as React.FC<
+                        LineStyleComponentProps<
+                            NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
+                        >
+                    >;
 
-                const id = reconciledLine.at(0)!;
-                const type = graph.current.getEdgeAttribute(id, 'type');
-                const style = graph.current.getEdgeAttribute(id, 'style');
-                const styleAttrs = graph.current.getEdgeAttribute(id, style) as NonNullable<
-                    ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
-                >;
-                const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as React.FC<
-                    LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
-                >;
-
-                return (
-                    <StyleComponent
-                        id={id}
-                        key={id}
-                        type={type}
-                        path={path}
-                        styleAttrs={styleAttrs}
-                        newLine={false}
-                        handleClick={handleEdgeClick}
-                    />
-                );
-            })}
-            {lines.map(({ edge, x1, y1, x2, y2, type, attr, style, styleAttr }) => {
-                return (
-                    <LineWrapper
-                        id={edge}
-                        key={edge}
-                        x1={x1}
-                        y1={y1}
-                        x2={x2}
-                        y2={y2}
-                        newLine={false}
-                        type={type}
-                        attrs={attr}
-                        styleType={style}
-                        styleAttrs={styleAttr}
-                        handleClick={handleEdgeClick}
-                    />
-                );
+                    return (
+                        <StyleComponent
+                            key={element.id}
+                            id={element.id as LineId}
+                            type={type}
+                            path={element.line!.path}
+                            styleAttrs={styleAttrs}
+                            newLine={false}
+                            handleClick={handleEdgeClick}
+                        />
+                    );
+                }
             })}
             {nodes.map(n => {
                 const { node, x, y, type } = n;
