@@ -22,7 +22,6 @@ import { getMousePosition, roundToNearestN } from '../util/helpers';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes, getZIndexFromElement } from '../util/process-elements';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
-import LineWrapper from './svgs/lines/line-wrapper';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import allStations from './svgs/stations/stations';
