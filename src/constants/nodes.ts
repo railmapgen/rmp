@@ -60,6 +60,8 @@ export interface MiscNodeAttributes {
     [MiscNodeType.I18nText]?: I18nTextAttributes;
 }
 
+/* ----- Below are core types for all miscellaneous nodes, DO NOT TOUCH. ----- */
+
 export interface NodeComponentProps<T> {
     id: MiscNodeId;
     attrs: T;

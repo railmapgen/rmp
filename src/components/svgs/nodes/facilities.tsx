@@ -40,10 +40,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
 
     const imgEl = React.useRef<SVGImageElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 25, height: 25 } as DOMRect);
-    React.useEffect(() => {
-        setBBox(imgEl.current!.getBBox());
-        console.log(type, imgEl.current!.getBBox());
-    }, [type, setBBox, imgEl]);
+    React.useEffect(() => setBBox(imgEl.current!.getBBox()), [type, setBBox, imgEl]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

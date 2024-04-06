@@ -27,6 +27,10 @@ export type EdgeAttributes = BaseAttributes & {
      * Unique ID to reconcile lines.
      */
     reconcileId: string;
+    /**
+     * Index for the line position in a parallel group. Leave it -1 for deactivation of parallel.
+     */
+    parallelIndex: number;
 } & Partial<ExternalLinePathAttributes> &
     Partial<ExternalLineStyleAttributes>;
 

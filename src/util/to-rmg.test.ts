@@ -39,6 +39,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);
@@ -239,6 +240,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_2', 'stn_1', 'stn_3', {
             visible: true,
@@ -248,6 +250,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_3', 'stn_3', 'stn_2', {
             visible: true,
@@ -257,6 +260,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);
@@ -403,6 +407,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_2', 'stn_a', 'stn_2', {
             visible: true,
@@ -412,6 +417,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_3', 'stn_a', 'stn_3', {
             visible: true,
@@ -421,6 +427,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);
@@ -773,6 +780,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_2', 'stn_2', 'stn_3', {
             visible: true,
@@ -782,6 +790,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_3', 'stn_3', 'stn_4', {
             visible: true,
@@ -791,6 +800,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_4', 'stn_4', 'stn_2', {
             visible: true,
@@ -800,6 +810,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);
@@ -943,6 +954,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);
@@ -1000,6 +1012,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_2', 'stn_a', 'stn_2', {
             visible: true,
@@ -1009,6 +1022,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_3', 'stn_a', 'stn_3', {
             visible: true,
@@ -1018,6 +1032,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_4', 'stn_a', 'stn_4', {
             visible: true,
@@ -1027,6 +1042,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);
@@ -1076,6 +1092,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
         graph.addDirectedEdgeWithKey('line_2', 'stn_3', 'stn_4', {
             visible: true,
@@ -1085,6 +1102,7 @@ describe('Unit tests for to rmg function', () => {
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color },
             reconcileId: '',
+            parallelIndex: -1,
         });
 
         const toRmgRes = toRmg(graph);

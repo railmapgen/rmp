@@ -131,15 +131,13 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     },
     3: param => {
         const p = JSON.parse(param);
-        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        const graph = new MultiDirectedGraph();
         graph.import(p?.graph);
         // Add style and single color attrs to all existing lines.
         graph
             .filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => edge.startsWith('line'))
             .forEach(edge => {
-                // @ts-expect-error We are dealing with old saves.
                 const color = graph.getEdgeAttribute(edge, 'color') as Theme;
-                // @ts-expect-error We are dealing with old saves.
                 graph.removeEdgeAttribute(edge, 'color');
                 // All the existing lines are single color lines and there is no name changes in type.
                 graph.mergeEdgeAttributes(edge, {

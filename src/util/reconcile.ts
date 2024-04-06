@@ -1,55 +1,56 @@
 import { MultiDirectedGraph } from 'graphology';
+import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../constants/constants';
+import { LinePathType, Path } from '../constants/lines';
+import { checkSimplePathAvailability } from './auto-simple';
 
 /**
  * Only lines have a reconcileId will be considered.
  */
-const getAllLinesNeedToReconcile = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    const linesNeedToReconcile = graph.filterDirectedEdges(
-        (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-            edge.startsWith('line') && attr.reconcileId !== ''
-    ) as LineId[];
-
-    const lineGroupToReconcile: { [reconcileId: string]: LineId[] } = {};
-    for (const lineNeedReconcile of linesNeedToReconcile) {
-        const reconcileId = graph.getEdgeAttribute(lineNeedReconcile, 'reconcileId');
-        if (reconcileId in lineGroupToReconcile) lineGroupToReconcile[reconcileId].push(lineNeedReconcile);
-        else lineGroupToReconcile[reconcileId] = [lineNeedReconcile];
+export const getAllLinesNeedToReconcile = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+) => {
+    const lineGroupsToReconcile: { [reconcileId: string]: EdgeEntry<NodeAttributes, EdgeAttributes>[] } = {};
+    for (const lineEntry of graph.edgeEntries()) {
+        if (lineEntry.edge.startsWith('line') && lineEntry.attributes.reconcileId !== '') {
+            const reconcileId = lineEntry.attributes.reconcileId;
+            if (reconcileId in lineGroupsToReconcile) lineGroupsToReconcile[reconcileId].push(lineEntry);
+            else lineGroupsToReconcile[reconcileId] = [lineEntry];
+        }
     }
-
-    return lineGroupToReconcile;
+    return lineGroupsToReconcile;
 };
 
 /**
  * Reconcile lines to a single path.
  *
- * It will try to find a path from one source to one target if
- * the lines are set correctly. All the lines need to implement
- * the generatePath function.
+ * It will try to find a path from one source to one target if the lines are set correctly.
+ * All the lines need to implement the generatePath function.
  */
-const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    const lineGroupToReconcile = getAllLinesNeedToReconcile(graph);
+export const reconcileLines = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    lineGroupsToReconcile: { [reconcileId: string]: EdgeEntry<NodeAttributes, EdgeAttributes>[] }
+) => {
     // console.log(lineGroupToReconcile);
-
     const allReconciledLines: LineId[][] = [];
     const danglingLines: LineId[] = [];
-    Object.values(lineGroupToReconcile).forEach(linesNeedToReconcile => {
+    Object.values(lineGroupsToReconcile).forEach(linesNeedToReconcile => {
         // it is not possible to reconcile a single line
         if (linesNeedToReconcile.length === 1) {
-            danglingLines.push(...linesNeedToReconcile);
+            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
 
         // all the lines in linesNeedToReconcile should be the same type and style
         const type = graph.getEdgeAttribute(linesNeedToReconcile.at(0), 'type');
         if (!linesNeedToReconcile.every(line => graph.getEdgeAttribute(line, 'type') === type)) {
-            danglingLines.push(...linesNeedToReconcile);
+            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
         const style = graph.getEdgeAttribute(linesNeedToReconcile.at(0), 'style');
         if (!linesNeedToReconcile.every(line => graph.getEdgeAttribute(line, 'style') === style)) {
-            danglingLines.push(...linesNeedToReconcile);
+            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
 
@@ -64,7 +65,7 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
                 count[target] = (count[target] ?? 0) + 1;
                 sources.add(source);
                 targets.add(target);
-                return [source, [line, target] as [LineId, string]];
+                return [source, [line.edge, target] as [LineId, string]];
             })
         );
 
@@ -74,13 +75,13 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
         const target_ = Array.from(targets).filter(t => count[t] === 1);
         // console.log(source_, target_, count);
         if (source_.length !== 1 || target_.length !== 1) {
-            danglingLines.push(...linesNeedToReconcile);
+            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
         const source = source_[0];
         const target = target_[0];
         if (source === target) {
-            danglingLines.push(...linesNeedToReconcile);
+            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
 
@@ -91,7 +92,7 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
             const currentTarget = extremities[currentNode]?.at(1);
             // console.log(currentNode, extremities[currentNode]?.at(0), currentTarget);
             if (!currentTarget) {
-                danglingLines.push(...linesNeedToReconcile);
+                danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
                 return;
             }
 
@@ -100,7 +101,7 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
         }
         // console.log(currentNode, reconciledLines);
         if (currentNode !== target || reconciledLines.length !== linesNeedToReconcile.length) {
-            danglingLines.push(...linesNeedToReconcile);
+            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
         allReconciledLines.push(reconciledLines);
@@ -109,15 +110,13 @@ const reconcileLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes
     return { allReconciledLines, danglingLines };
 };
 
-export default reconcileLines;
-
 /**
  * Call each lines' `generatePath` and merge all the paths to a single path.
  */
-export const generateReconciledPath = (
+export const makeReconciledPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     reconciledLines: LineId[]
-) => {
+): Path | undefined => {
     if (!reconciledLines.every(line => graph.hasEdge(line))) return undefined;
 
     // call each line's generatePath to generate its own path
@@ -127,6 +126,22 @@ export const generateReconciledPath = (
         const targetAttr = graph.getNodeAttributes(target);
         const type = graph.getEdgeAttribute(line, 'type');
         const attr = graph.getEdgeAttribute(line, type) ?? linePaths[type].defaultAttrs;
+
+        const simplePathAvailability = checkSimplePathAvailability(
+            line,
+            type,
+            sourceAttr.x,
+            sourceAttr.y,
+            targetAttr.x,
+            targetAttr.y,
+            attr
+        );
+        if (simplePathAvailability) {
+            // simple path hook on matched situation
+            const { x1, y1, x2, y2, offset } = simplePathAvailability;
+            return linePaths[LinePathType.Simple].generatePath(x1, x2, y1, y2, { offset });
+        }
+
         return (
             // @ts-ignore-error
             linePaths[type]?.generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr) ??
@@ -141,5 +156,5 @@ export const generateReconciledPath = (
     }
     // console.log(reconciledLines, paths, path);
 
-    return path as `${'m' | 'M'}${string}`;
+    return path as Path;
 };

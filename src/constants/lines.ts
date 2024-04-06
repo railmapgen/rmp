@@ -90,6 +90,8 @@ export const LineStylesWithColor = [
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
+export type Path = `M${string}`;
+
 export interface LineWrapperComponentProps {
     id: LineId;
     x1: number;
@@ -118,7 +120,7 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: `${'m' | 'M'}${string}`;
+    path: Path;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -197,4 +199,4 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => `M ${string}`;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
