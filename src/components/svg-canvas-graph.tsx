@@ -19,13 +19,14 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, roundToNearestN } from '../util/helpers';
-import { getLines, getMiscNodes, getStations } from '../util/process-elements';
+import { makeParallelIndex } from '../util/parallel';
+import { getLines, getNodes, getZIndexFromElement } from '../util/process-elements';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import LineWrapper from './svgs/lines/line-wrapper';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import allStations from './svgs/stations/stations';
-import { makeParallelIndex } from '../util/parallel';
+import singleColor from './svgs/lines/styles/single-color';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -171,28 +172,15 @@ const SvgCanvas = () => {
 
     // These are elements that the svg draws from.
     // They are updated by the refresh triggers in the runtime state.
-    const [stations, setStations] = React.useState(getStations(graph.current));
-    const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
+    const [nodes, setNodes] = React.useState(getNodes(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
-    React.useEffect(() => {
-        setStations(getStations(graph.current));
-        setNodes(getMiscNodes(graph.current));
-    }, [refreshNodes]);
-    React.useEffect(() => {
-        setLines(getLines(graph.current));
-    }, [refreshEdges]);
+    React.useEffect(() => setNodes(getNodes(graph.current)), [refreshNodes]);
+    React.useEffect(() => setLines(getLines(graph.current)), [refreshEdges]);
 
-    const elements = [...lines];
-    elements.sort(elem => {
-        switch (elem.type) {
-            case 'line':
-                return elem.line!.attr.zIndex;
-            case 'station':
-                return 0;
-            case 'misc-node':
-                return 0;
-        }
-    });
+    const elements = [...lines, ...nodes];
+    elements.sort((a, b) => getZIndexFromElement(a) - getZIndexFromElement(b));
+
+    const SingleColor = singleColor.component;
 
     return (
         <>
@@ -221,54 +209,58 @@ const SvgCanvas = () => {
                             handleClick={handleEdgeClick}
                         />
                     );
+                } else if (element.type === 'station') {
+                    const attr = element.station!;
+                    const type = attr.type as StationType;
+                    const StationComponent = allStations[type]?.component ?? UnknownNode;
+
+                    return (
+                        <StationComponent
+                            key={element.id}
+                            id={element.id as StnId}
+                            x={attr.x}
+                            y={attr.y}
+                            attrs={attr}
+                            handlePointerDown={handlePointerDown}
+                            handlePointerMove={handlePointerMove}
+                            handlePointerUp={handlePointerUp}
+                        />
+                    );
+                } else if (element.type === 'misc-node') {
+                    const attr = element.miscNode!;
+                    const type = attr.type as MiscNodeType;
+                    const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
+
+                    return (
+                        <MiscNodeComponent
+                            key={element.id}
+                            id={element.id as MiscNodeId}
+                            x={attr.x}
+                            y={attr.y}
+                            // @ts-expect-error
+                            attrs={attr[type]}
+                            handlePointerDown={handlePointerDown}
+                            handlePointerMove={handlePointerMove}
+                            handlePointerUp={handlePointerUp}
+                        />
+                    );
                 }
             })}
-            {nodes.map(n => {
-                const { node, x, y, type } = n;
-                const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-                return (
-                    <MiscNodeComponent
-                        id={node}
-                        key={node}
-                        x={x}
-                        y={y}
-                        // @ts-expect-error
-                        attrs={n[type]}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-            })}
-            {stations.map(station => {
-                const { node, x, y, type } = station;
-                const StationComponent = allStations[type]?.component ?? UnknownNode;
-                return (
-                    <StationComponent
-                        id={node}
-                        key={node}
-                        x={x}
-                        y={y}
-                        attrs={{ [type]: station[type] }}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-            })}
             {mode.startsWith('line') && active && active !== 'background' && (
-                <LineWrapper
-                    // @ts-expect-error
-                    id="create_in_progress___no_use"
-                    x1={graph.current.getNodeAttribute(active, 'x')}
-                    y1={graph.current.getNodeAttribute(active, 'y')}
-                    x2={graph.current.getNodeAttribute(active, 'x') - movingPosition.x}
-                    y2={graph.current.getNodeAttribute(active, 'y') - movingPosition.y}
-                    newLine={true}
+                <SingleColor
+                    id="line_create_in_progress___no_use"
                     type={mode.slice(5) as LinePathType}
-                    attrs={linePaths[mode.slice(5) as LinePathType].defaultAttrs}
-                    styleType={LineStyleType.SingleColor}
+                    path={linePaths[mode.slice(5) as LinePathType].generatePath(
+                        graph.current.getNodeAttribute(active, 'x'),
+                        graph.current.getNodeAttribute(active, 'x') - movingPosition.x,
+                        graph.current.getNodeAttribute(active, 'y'),
+                        graph.current.getNodeAttribute(active, 'y') - movingPosition.y,
+                        // @ts-expect-error
+                        linePaths[mode.slice(5) as LinePathType].defaultAttrs
+                    )}
                     styleAttrs={{ color: theme }}
+                    newLine
+                    handleClick={() => {}} // no use
                 />
             )}
         </>

@@ -3,8 +3,6 @@ import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
-import { MiscNodeType } from '../constants/nodes';
-import { StationType } from '../constants/stations';
 import { checkSimplePathAvailability } from './auto-simple';
 import { extractParallelLines, makeParallelPaths } from './parallel';
 import { makeReconciledPath, reconcileLines } from './reconcile';
@@ -18,50 +16,19 @@ import { makeReconciledPath, reconcileLines } from './reconcile';
 export interface Element {
     id: Id;
     type: 'station' | 'misc-node' | 'line';
-    station?: StationElem;
-    miscNode?: MiscNodeElem;
-    line?: LinePathElem;
+    station?: NodeAttributes;
+    miscNode?: NodeAttributes;
+    line?: LinePathElement;
 }
 
-type StationElem = NodeAttributes & { node: StnId; type: StationType };
-export const getStations = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
-): StationElem[] =>
-    graph
-        .filterNodes((node, attr) => node.startsWith('stn'))
-        .map(node => [node, graph.getNodeAttributes(node)] as [StnId, NodeAttributes])
-        .filter(([node, attr]) => attr.visible)
-        .sort((a, b) => a[1].zIndex - b[1].zIndex)
-        .map(([node, attr]) => ({
-            node: node as StnId,
-            visible: attr.visible,
-            zIndex: attr.zIndex,
-            x: attr.x,
-            y: attr.y,
-            type: attr.type as StationType,
-            [attr.type]: attr[attr.type],
-        }));
+export const getNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Element[] =>
+    [...graph.nodeEntries()].map(_ =>
+        _.node.startsWith('stn')
+            ? { id: _.node as StnId, type: 'station', station: _.attributes }
+            : { id: _.node as MiscNodeId, type: 'misc-node', miscNode: _.attributes }
+    );
 
-type MiscNodeElem = NodeAttributes & { node: MiscNodeId; type: MiscNodeType };
-export const getMiscNodes = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
-): MiscNodeElem[] =>
-    graph
-        .filterNodes((node, attr) => node.startsWith('misc_node'))
-        .map(node => [node, graph.getNodeAttributes(node)] as [MiscNodeId, NodeAttributes])
-        .filter(([node, attr]) => attr.visible)
-        .sort((a, b) => a[1].zIndex - b[1].zIndex)
-        .map(([node, attr]) => ({
-            node,
-            visible: attr.visible,
-            zIndex: attr.zIndex,
-            x: attr.x,
-            y: attr.y,
-            type: attr.type as MiscNodeType,
-            [attr.type]: attr[attr.type],
-        }));
-
-interface LinePathElem {
+interface LinePathElement {
     id: LineId; // TODO: may be remove this?
     attr: EdgeAttributes;
     path: Path;
@@ -69,7 +36,7 @@ interface LinePathElem {
 type NonNullableExternalLinePathAttribute = NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>;
 
 export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Element[] => {
-    const resolvedLines: { [k in LineId]: LinePathElem } = {};
+    const resolvedLines: { [k in LineId]: LinePathElement } = {};
 
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     const lineGroupsToReconcile: { [reconcileId: string]: EdgeEntry<NodeAttributes, EdgeAttributes>[] } = {};
@@ -193,4 +160,15 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     }
 
     return Object.values(resolvedLines).map(_ => ({ id: _.id, type: 'line', line: _ }));
+};
+
+export const getZIndexFromElement = (element: Element) => {
+    switch (element.type) {
+        case 'line':
+            return element.line!.attr.zIndex;
+        case 'station':
+            return element.station!.zIndex;
+        case 'misc-node':
+            return element.miscNode!.zIndex;
+    }
 };
