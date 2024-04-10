@@ -30,7 +30,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setTelemetryApp } from '../../redux/app/app-slice';
+import { setAutoParallel, setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { ChangeTypeModal } from './procedures/change-type-modal';
@@ -66,6 +66,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
     const {
         telemetry: { app: isAllowAppTelemetry },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
     const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
 
@@ -88,6 +89,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Switch
                                         isChecked={keepLastPath}
                                         onChange={({ target: { checked } }) => dispatch(setKeepLastPath(checked))}
+                                    />
+                                </Box>
+                                <Box display="flex" mb="1">
+                                    <Text flex="1">{t('header.settings.preference.autoParallel')}</Text>
+                                    <Switch
+                                        isChecked={autoParallel}
+                                        onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
                                     />
                                 </Box>
                             </Box>

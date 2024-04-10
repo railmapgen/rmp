@@ -32,6 +32,7 @@ const SvgCanvas = () => {
     const graph = React.useRef(window.graph);
     const {
         telemetry: { project: isAllowProjectTelemetry },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const {
@@ -127,7 +128,7 @@ const SvgCanvas = () => {
                         active! as StnId | MiscNodeId,
                         id!.slice(prefix.length) as StnId | MiscNodeId,
                     ];
-                    const parallelIndex = makeParallelIndex(graph.current, type, source, target);
+                    const parallelIndex = autoParallel ? makeParallelIndex(graph.current, type, source, target) : -1;
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
@@ -138,7 +139,6 @@ const SvgCanvas = () => {
                         [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',
                         parallelIndex,
-                        // parallelIndex: -1,
                     });
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
