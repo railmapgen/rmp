@@ -171,13 +171,21 @@ const SvgCanvas = () => {
 
     // These are elements that the svg draws from.
     // They are updated by the refresh triggers in the runtime state.
-    const [nodes, setNodes] = React.useState(getNodes(graph.current));
-    const [lines, setLines] = React.useState(getLines(graph.current));
-    React.useEffect(() => setNodes(getNodes(graph.current)), [refreshNodes]);
-    React.useEffect(() => setLines(getLines(graph.current)), [refreshEdges]);
 
-    const elements = [...lines, ...nodes];
-    elements.sort((a, b) => getZIndexFromElement(a) - getZIndexFromElement(b));
+    // const [nodes, setNodes] = React.useState(getNodes(graph.current));
+    // const [lines, setLines] = React.useState(getLines(graph.current));
+    // React.useEffect(() => setNodes(getNodes(graph.current)), [refreshNodes]);
+    // React.useEffect(() => setLines(getLines(graph.current)), [refreshEdges]);
+    // const elements = [...lines, ...nodes];
+    // elements.sort((a, b) => getZIndexFromElement(a) - getZIndexFromElement(b));
+
+    const elements = React.useMemo(
+        () =>
+            [...getLines(graph.current), ...getNodes(graph.current)].sort(
+                (a, b) => getZIndexFromElement(a) - getZIndexFromElement(b)
+            ),
+        [refreshEdges, refreshNodes]
+    );
 
     const SingleColor = singleColor.component;
 

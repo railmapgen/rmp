@@ -149,8 +149,6 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             continue;
         }
 
-        // console.log(lineID, x1, y1, x2, y2, attr);
-
         // regular line path type, call the corresponding generatePath function
         resolvedLines[lineID] = {
             id: lineID,

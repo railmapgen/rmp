@@ -91,6 +91,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
     return parallelPaths;
 };
 
+// TODO: maybe return the first index that has no lines occupied?
 export const makeParallelIndex = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     type: LinePathType,
