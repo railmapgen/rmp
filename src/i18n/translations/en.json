@@ -277,6 +277,8 @@
                     "offsetFrom": "Offset From",
                     "offsetTo": "Offset To",
                     "startFrom": "Start From",
+                    "from": "From",
+                    "to": "To",
                     "roundCornerFactor": "Round Corner Factor"
                 },
                 "simple": {

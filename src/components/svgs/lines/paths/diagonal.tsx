@@ -1,7 +1,17 @@
+import { Button, Text } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps } from '../../../../constants/constants';
-import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
+import { LineId } from '../../../../constants/constants';
+import {
+    LinePath,
+    LinePathAttributes,
+    LinePathAttrsProps,
+    LinePathType,
+    PathGenerator,
+} from '../../../../constants/lines';
+import { useRootDispatch } from '../../../../redux';
+import { setSelected } from '../../../../redux/runtime/runtime-slice';
+import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
@@ -79,9 +89,13 @@ const defaultDiagonalPathAttributes: DiagonalPathAttributes = {
     roundCornerFactor: 10,
 };
 
-const attrsComponent = (props: AttrsProps<DiagonalPathAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
+const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
+    const { id, attrs, handleAttrsUpdate, parallelIndex } = props;
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+
+    const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.Diagonal, id as LineId);
+    const isParallelDisable = parallelIndex >= 0 && baseParallelLineID !== id;
 
     const fields: RmgFieldsField[] = [
         {
@@ -105,6 +119,7 @@ const attrsComponent = (props: AttrsProps<DiagonalPathAttributes>) => {
                 attrs.offsetFrom = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            isDisabled: isParallelDisable,
             minW: 'full',
         },
         {
@@ -117,6 +132,7 @@ const attrsComponent = (props: AttrsProps<DiagonalPathAttributes>) => {
                 attrs.offsetTo = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            isDisabled: isParallelDisable,
             minW: 'full',
         },
         {
@@ -129,11 +145,24 @@ const attrsComponent = (props: AttrsProps<DiagonalPathAttributes>) => {
                 attrs.roundCornerFactor = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            isDisabled: isParallelDisable,
             minW: 'full',
         },
     ];
 
-    return <RmgFields fields={fields} />;
+    return (
+        <>
+            {isParallelDisable && (
+                <>
+                    <Text>Some attributes are disabled as this line is parallel.</Text>
+                    <Button onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}>
+                        Go to line: {baseParallelLineID}
+                    </Button>
+                </>
+            )}
+            <RmgFields fields={fields} />
+        </>
+    );
 };
 
 const diagonalIcon = (

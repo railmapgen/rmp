@@ -48,6 +48,8 @@ export const LineSpecificAttributes = () => {
     const style = window.graph.getEdgeAttribute(id, 'style');
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
     const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
+    const parallelIndex = window.graph.getEdgeAttribute(id, 'parallelIndex');
+    const reconcileId = window.graph.getEdgeAttribute(id, 'reconcileId');
 
     const handlePathAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
@@ -64,14 +66,24 @@ export const LineSpecificAttributes = () => {
     return (
         <>
             {PathAttrsComponent ? (
-                <PathAttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handlePathAttrsUpdate} />
+                <PathAttrsComponent
+                    id={id}
+                    attrs={attrs}
+                    handleAttrsUpdate={handlePathAttrsUpdate}
+                    parallelIndex={parallelIndex}
+                />
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">
                     {t('panel.details.unknown.error', { category: t('panel.details.unknown.linePath') })}
                 </Text>
             )}
             {StyleAttrsComponent ? (
-                <StyleAttrsComponent id={id} attrs={styleAttrs} handleAttrsUpdate={handleStyleAttrsUpdate} />
+                <StyleAttrsComponent
+                    id={id}
+                    attrs={styleAttrs}
+                    handleAttrsUpdate={handleStyleAttrsUpdate}
+                    reconcileId={reconcileId}
+                />
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">
                     {t('panel.details.unknown.error', { category: t('panel.details.unknown.lineStyle') })}

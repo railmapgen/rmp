@@ -117,3 +117,40 @@ export const makeParallelIndex = (
     }
     return parallelIndex;
 };
+
+/**
+ * Return the base parallel line if the provided line is not the base parallel line, otherwise itself.
+ * @param graph The graph.
+ * @param type The line type.
+ * @param lineID The id of the line.
+ * @returns Base parallel line id.
+ */
+export const getBaseParallelLineID = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    type: LinePathType,
+    lineID: LineId
+) => {
+    if (type === LinePathType.Simple) return lineID;
+
+    const parallelIndex = graph.getEdgeAttribute(lineID, 'parallelIndex');
+    if (parallelIndex < 0) return lineID;
+
+    const startFrom = graph.getEdgeAttribute(lineID, type)!['startFrom'];
+    const [source, target] = graph.extremities(lineID);
+
+    let minParallelIndex = Number.MAX_VALUE;
+    let minLineID = lineID;
+    for (const lineEntry of graph.edgeEntries(source, target)) {
+        const attr = lineEntry.attributes;
+        if (
+            type === attr.type &&
+            (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom &&
+            attr.parallelIndex >= 0 &&
+            attr.parallelIndex < minParallelIndex
+        ) {
+            minParallelIndex = attr.parallelIndex;
+            minLineID = lineEntry.edge as LineId;
+        }
+    }
+    return minParallelIndex == parallelIndex ? lineID : minLineID;
+};
