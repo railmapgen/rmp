@@ -19,23 +19,23 @@ import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railm
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineId, StnId, MiscNodeId, Theme, CityCode } from '../../../constants/constants';
+import { CityCode, LineId, MiscNodeId, StnId, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import { findThemes } from '../../../util/graph';
 import {
     changeLinePathTypeInBatch,
-    changeLinesColorInBatch,
     changeLineStyleTypeInBatch,
+    changeLinesColorInBatch,
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
 } from '../../../util/change-types';
+import { findThemes } from '../../../util/graph';
+import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
-import ThemeButton from '../../panels/theme-button';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
@@ -66,6 +66,9 @@ export const ChangeTypeModal = (props: {
         theme,
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
 
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
@@ -291,7 +294,7 @@ export const ChangeTypeModal = (props: {
             changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, theme, lines);
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
-            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines);
+            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel);
         }
         if (isColorSwitch) {
             if (!filter || filter.includes('line'))

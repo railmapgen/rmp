@@ -6,7 +6,7 @@ import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, St
 import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
 import { makeShortPathParallel } from './bezier-parallel';
 
-type NonSimpleLinePathAttributes = NonNullable<
+export type NonSimpleLinePathAttributes = NonNullable<
     Exclude<ExternalLinePathAttributes[keyof ExternalLinePathAttributes], SimplePathAttributes>
 >;
 
@@ -29,18 +29,25 @@ export const extractParallelLines = (
     const [source, target] = graph.extremities(lineID);
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
+        if (lineEntry.attributes.parallelIndex < 0) {
+            normal.push(lineEntry);
+            continue;
+        }
+
         // edgeEntries will also return edges from target to source
-        if (lineEntry.attributes.type === type && source === lineEntry.source) {
-            if (
-                (lineEntry.attributes[type] as NonSimpleLinePathAttributes).startFrom !==
+        if (
+            lineEntry.attributes.type === type &&
+            source === lineEntry.source &&
+            (lineEntry.attributes[type] as NonSimpleLinePathAttributes).startFrom ===
                 (attr as NonSimpleLinePathAttributes).startFrom
-            ) {
-                continue;
-            }
-            if (lineEntry.attributes.parallelIndex < 0) {
-                normal.push(lineEntry);
-                continue;
-            }
+        ) {
+            parallelLines.push(lineEntry);
+        } else if (
+            lineEntry.attributes.type === type &&
+            source === lineEntry.target &&
+            (lineEntry.attributes[type] as NonSimpleLinePathAttributes).startFrom !==
+                (attr as NonSimpleLinePathAttributes).startFrom
+        ) {
             parallelLines.push(lineEntry);
         }
     }
@@ -97,24 +104,30 @@ export const makeParallelIndex = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     type: LinePathType,
     source: StnId | MiscNodeId,
-    target: StnId | MiscNodeId
+    target: StnId | MiscNodeId,
+    startFrom: 'from' | 'to'
 ) => {
     if (type === LinePathType.Simple) return -1;
 
     let parallelIndex = 0;
     for (const lineEntry of graph.edgeEntries(source, target)) {
         const attr = lineEntry.attributes;
-        // console.log(type, attr.type);
-        // console.log((attr[type] as NonSimpleLinePathAttributes).startFrom, linePaths[type].defaultAttrs.startFrom);
-        // console.log(attr.parallelIndex, parallelIndex);
         if (
             type === attr.type &&
+            // edgeEntries will also return edges from target to source
             source === lineEntry.source &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom === linePaths[type].defaultAttrs.startFrom &&
+            (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom &&
             attr.parallelIndex >= parallelIndex
         ) {
             parallelIndex = lineEntry.attributes.parallelIndex + 1;
-            // console.log(parallelIndex);
+        } else if (
+            type === attr.type &&
+            // edgeEntries will also return edges from target to source
+            source === lineEntry.target &&
+            (attr[type] as NonSimpleLinePathAttributes).startFrom !== startFrom &&
+            attr.parallelIndex >= parallelIndex
+        ) {
+            parallelIndex = lineEntry.attributes.parallelIndex + 1;
         }
     }
     return parallelIndex;
@@ -146,8 +159,19 @@ export const getBaseParallelLineID = (
         const attr = lineEntry.attributes;
         if (
             type === attr.type &&
+            // edgeEntries will also return edges from target to source
             source === lineEntry.source &&
             (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom &&
+            attr.parallelIndex >= 0 &&
+            attr.parallelIndex < minParallelIndex
+        ) {
+            minParallelIndex = attr.parallelIndex;
+            minLineID = lineEntry.edge as LineId;
+        } else if (
+            type === attr.type &&
+            // edgeEntries will also return edges from target to source
+            source === lineEntry.target &&
+            (attr[type] as NonSimpleLinePathAttributes).startFrom !== startFrom &&
             attr.parallelIndex >= 0 &&
             attr.parallelIndex < minParallelIndex
         ) {

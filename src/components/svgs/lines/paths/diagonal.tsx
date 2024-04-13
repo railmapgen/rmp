@@ -1,7 +1,7 @@
 import { Button, Text } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { LineId } from '../../../../constants/constants';
+import { LineId, MiscNodeId, StnId } from '../../../../constants/constants';
 import {
     LinePath,
     LinePathAttributes,
@@ -9,9 +9,9 @@ import {
     LinePathType,
     PathGenerator,
 } from '../../../../constants/lines';
-import { useRootDispatch } from '../../../../redux';
+import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { setSelected } from '../../../../redux/runtime/runtime-slice';
-import { getBaseParallelLineID } from '../../../../util/parallel';
+import { getBaseParallelLineID, makeParallelIndex } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
@@ -94,6 +94,10 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
 
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
+
     const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.Diagonal, id as LineId);
     const isParallelDisable = parallelIndex >= 0 && baseParallelLineID !== id;
 
@@ -104,7 +108,16 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
             value: attrs.startFrom,
             options: { from: t('panel.details.lines.common.from'), to: t('panel.details.lines.common.to') },
             onChange: val => {
-                attrs.startFrom = val as 'from' | 'to';
+                const startFrom = val as 'from' | 'to';
+
+                let parallelIndex = -1;
+                if (autoParallel) {
+                    const [source, target] = window.graph.extremities(id) as [StnId | MiscNodeId, StnId | MiscNodeId];
+                    parallelIndex = makeParallelIndex(window.graph, LinePathType.Diagonal, source, target, startFrom);
+                }
+                window.graph.setEdgeAttribute(id, 'parallelIndex', parallelIndex);
+
+                attrs.startFrom = startFrom;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

@@ -6,7 +6,7 @@ import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import { makeParallelIndex } from '../../../util/parallel';
+import { NonSimpleLinePathAttributes, makeParallelIndex } from '../../../util/parallel';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
 import InfoMultipleSection from './info-multiple-selection';
@@ -32,7 +32,7 @@ export default function InfoSection() {
         if (graph.current.hasEdge(selectedFirst)) graph.current.setEdgeAttribute(selectedFirst, 'zIndex', zIndex);
         hardRefresh();
     };
-    const handleParallelSwitch = (val: boolean) => {
+    const handleParallelSwitch = (val: boolean, startFrom: 'from' | 'to') => {
         let parallelIndex = -1; // default to turn off
         if (val) {
             const attr = graph.current.getEdgeAttributes(selectedFirst);
@@ -40,7 +40,7 @@ export default function InfoSection() {
                 StnId | MiscNodeId,
                 StnId | MiscNodeId,
             ];
-            parallelIndex = makeParallelIndex(graph.current, attr.type, source, target);
+            parallelIndex = makeParallelIndex(graph.current, attr.type, source, target, startFrom);
         }
         handleParallelIndexChange(parallelIndex);
     };
@@ -81,7 +81,7 @@ export default function InfoSection() {
                 type: 'switch',
                 label: t('panel.details.info.parallel'),
                 isChecked: parallelIndex >= 0,
-                onChange: val => handleParallelSwitch(val),
+                onChange: val => handleParallelSwitch(val, (attr[attr.type] as NonSimpleLinePathAttributes).startFrom),
                 oneLine: true,
                 minW: 276,
             });

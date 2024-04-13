@@ -26,6 +26,9 @@ export default function LineTypeSection() {
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, setRefreshEdges, saveGraph]);
 
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
     const { selected, theme } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
@@ -58,7 +61,7 @@ export default function LineTypeSection() {
 
     const handleChangeLinePathType = () => {
         if (newLinePathType) {
-            changeLinePathType(graph.current, selectedFirst!, newLinePathType);
+            changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
             setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
             hardRefresh();
         }

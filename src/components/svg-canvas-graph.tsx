@@ -128,7 +128,9 @@ const SvgCanvas = () => {
                         active! as StnId | MiscNodeId,
                         id!.slice(prefix.length) as StnId | MiscNodeId,
                     ];
-                    const parallelIndex = autoParallel ? makeParallelIndex(graph.current, type, source, target) : -1;
+                    const parallelIndex = autoParallel
+                        ? makeParallelIndex(graph.current, type, source, target, 'from')
+                        : -1;
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
