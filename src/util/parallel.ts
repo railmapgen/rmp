@@ -1,9 +1,9 @@
 import { MultiDirectedGraph } from 'graphology';
+import { EdgeEntry } from 'graphology-types';
+import { linePaths } from '../components/svgs/lines/lines';
 import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
-import { EdgeEntry } from 'graphology-types';
-import { linePaths } from '../components/svgs/lines/lines';
 import { makeShortPathParallel } from './bezier-parallel';
 
 type NonSimpleLinePathAttributes = NonNullable<
@@ -29,7 +29,8 @@ export const extractParallelLines = (
     const [source, target] = graph.extremities(lineID);
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
-        if (lineEntry.attributes.type === type) {
+        // edgeEntries will also return edges from target to source
+        if (lineEntry.attributes.type === type && source === lineEntry.source) {
             if (
                 (lineEntry.attributes[type] as NonSimpleLinePathAttributes).startFrom !==
                 (attr as NonSimpleLinePathAttributes).startFrom
@@ -108,6 +109,7 @@ export const makeParallelIndex = (
         // console.log(attr.parallelIndex, parallelIndex);
         if (
             type === attr.type &&
+            source === lineEntry.source &&
             (attr[type] as NonSimpleLinePathAttributes).startFrom === linePaths[type].defaultAttrs.startFrom &&
             attr.parallelIndex >= parallelIndex
         ) {
@@ -144,6 +146,7 @@ export const getBaseParallelLineID = (
         const attr = lineEntry.attributes;
         if (
             type === attr.type &&
+            source === lineEntry.source &&
             (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom &&
             attr.parallelIndex >= 0 &&
             attr.parallelIndex < minParallelIndex
