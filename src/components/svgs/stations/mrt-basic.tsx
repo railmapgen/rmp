@@ -241,7 +241,7 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.common.stationCode'),
+            label: t('panel.details.stations.MRTBasic.isTram'),
             isChecked: attrs.isTram,
             onChange: val => {
                 attrs.isTram = val;

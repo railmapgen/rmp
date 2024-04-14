@@ -243,7 +243,8 @@
                     "displayName": "昆明轨道交通换乘车站"
                 },
                 "MRTBasic": {
-                    "displayName": "新加坡MRT基本车站"
+                    "displayName": "新加坡MRT基本车站",
+                    "isTram": "是LRT车站"
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT换乘车站"
@@ -347,6 +348,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR东日本单色网状图案样式"
+                },
+                "lrtSingleColor": {
+                    "displayName": "新加坡LRT纯色样式"
                 }
             },
             "edges": {},

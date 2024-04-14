@@ -244,7 +244,8 @@
                     "displayName": "昆明軌道交通乗り換え駅"
                 },
                 "MRTBasic": {
-                    "displayName": "シンガポールMRT基本駅"
+                    "displayName": "シンガポールMRT基本駅",
+                    "isTram": "LRTの駅です"
                 },
                 "MRTInt": {
                     "displayName": "シンガポールMRT乗り換え駅"
@@ -348,6 +349,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本単色網目模様風格"
+                },
+                "lrtSingleColor": {
+                    "displayName": "シンガポールLRT単色スタイル"
                 }
             },
             "edges": {},
