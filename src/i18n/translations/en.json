@@ -116,7 +116,11 @@
                     "branch": "Is branch line"
                 },
                 "mrtDestinationNumbers": {
-                    "displayName": "Singapore MRT Destination Numbers"
+                    "displayName": "Singapore MRT destination numbers"
+                },
+                "mrtLineBadge": {
+                    "displayName": "Singapore MRT line badge",
+                    "isTram": "Is LRT line badge"
                 },
                 "jrEastLineBadge": {
                     "displayName": "JR East line badge",

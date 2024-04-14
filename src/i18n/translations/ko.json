@@ -118,6 +118,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "싱가포르 MRT 목적지 번호"
                 },
+                "mrtLineBadge": {
+                    "displayName": "싱가포르 MRT 노선 배지",
+                    "isTram": "LRT 노선 배지입니다"
+                },
                 "jrEastLineBadge": {
                   "displayName": "JR 동일본 라인 배지",
                   "crosshatchPatternFill": "크로스해치 패턴으로 채우기"

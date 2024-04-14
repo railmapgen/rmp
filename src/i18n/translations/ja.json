@@ -118,6 +118,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "シンガポールMRTの目的地番号"
                 },
+                "mrtLineBadge": {
+                    "displayName": "シンガポールMRT路線バッジ",
+                    "isTram": "LRT路線バッジです"
+                },
                 "jrEastLineBadge": {
                   "displayName": "JR東日本路線番号徽章",
                   "crosshatchPatternFill": "網目模様で塗りつぶす"

@@ -118,6 +118,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT終點數字"
                 },
+                "mrtLineBadge": {
+                    "displayName": "新加坡MRT線路標識",
+                    "isTram": "是LRT線路標識"
+                },
                 "jrEastLineBadge": {
                   "displayName": "JR東日本線路標識",
                   "crosshatchPatternFill": "用網狀圖案填充"
