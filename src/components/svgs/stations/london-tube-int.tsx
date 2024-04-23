@@ -15,6 +15,8 @@ import { MultilineText } from '../common/multiline-text';
 import { AccessibleIcon } from './london-tube-basic';
 
 const X_HEIGHT = 5;
+const FONT_SIZE = 2 * X_HEIGHT;
+const LINE_HEIGHT = 0.85 * FONT_SIZE;
 
 const LondonTubeIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -76,14 +78,14 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
                         fill="white"
                     />
                 ) : (
-                    <AccessibleIcon stepFreeAccess={stepFreeAccess} transform={`scale(0.2)`} />
+                    <AccessibleIcon id={id} stepFreeAccess={stepFreeAccess} transform={`scale(0.2)`} />
                 )}
             </g>
             <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={1.22 * X_HEIGHT}
-                    lineHeight={X_HEIGHT}
+                    fontSize={FONT_SIZE}
+                    lineHeight={LINE_HEIGHT}
                     dominantBaseline={dominantBaseline}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'bottom' ? 'down' : 'bidirectional'}
                     baseOffset={1}

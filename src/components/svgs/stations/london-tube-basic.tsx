@@ -4,7 +4,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId, Theme } from '../../../constants/constants';
 import {
     Rotate,
     Station,
@@ -19,13 +19,14 @@ import ThemeButton from '../../panels/theme-button';
 import { MultilineText } from '../common/multiline-text';
 
 const X_HEIGHT = 5;
+const FONT_SIZE = 2 * X_HEIGHT;
+const LINE_HEIGHT = 0.85 * FONT_SIZE;
 const ROTATE_CONST: {
     [rotate: number]: {
         textDx: number;
         textDy: number;
         textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
         dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
-        lineHeight: number;
         polarity: -1 | 0 | 1;
         grow: 'up' | 'down' | 'bidirectional';
     };
@@ -35,7 +36,6 @@ const ROTATE_CONST: {
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33),
         textAnchor: 'middle',
         dominantBaseline: 'auto',
-        lineHeight: X_HEIGHT,
         polarity: -1,
         grow: 'up',
     },
@@ -44,7 +44,6 @@ const ROTATE_CONST: {
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'start',
         dominantBaseline: 'auto',
-        lineHeight: X_HEIGHT,
         polarity: -1,
         grow: 'up',
     },
@@ -53,7 +52,6 @@ const ROTATE_CONST: {
         textDy: 0,
         textAnchor: 'start',
         dominantBaseline: 'middle',
-        lineHeight: X_HEIGHT,
         polarity: 0,
         grow: 'bidirectional',
     },
@@ -62,7 +60,6 @@ const ROTATE_CONST: {
         textDy: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'start',
         dominantBaseline: 'hanging',
-        lineHeight: X_HEIGHT,
         polarity: 1,
         grow: 'down',
     },
@@ -71,7 +68,6 @@ const ROTATE_CONST: {
         textDy: X_HEIGHT / 2 + X_HEIGHT * 1.33,
         textAnchor: 'middle',
         dominantBaseline: 'hanging',
-        lineHeight: X_HEIGHT,
         polarity: 1,
         grow: 'down',
     },
@@ -80,7 +76,6 @@ const ROTATE_CONST: {
         textDy: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'end',
         dominantBaseline: 'hanging',
-        lineHeight: X_HEIGHT,
         polarity: 1,
         grow: 'down',
     },
@@ -89,7 +84,6 @@ const ROTATE_CONST: {
         textDy: 0,
         textAnchor: 'end',
         dominantBaseline: 'middle',
-        lineHeight: X_HEIGHT,
         polarity: 0,
         grow: 'bidirectional',
     },
@@ -98,7 +92,6 @@ const ROTATE_CONST: {
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textAnchor: 'end',
         dominantBaseline: 'auto',
-        lineHeight: X_HEIGHT,
         polarity: -1,
         grow: 'up',
     },
@@ -108,10 +101,11 @@ type InterchangeInfo = [...Theme, number];
 const defaultTransferInfo = [CityCode.London, 'central', '#DC241F', MonoColour.white, 0] as InterchangeInfo;
 
 interface AccessibleIconProps extends React.SVGProps<SVGGElement> {
+    id: StnId;
     stepFreeAccess: 'train' | 'platform';
 }
 export const AccessibleIcon = (props: AccessibleIconProps) => {
-    const { stepFreeAccess, ...svgGProps } = props;
+    const { id, stepFreeAccess, ...svgGProps } = props;
     return (
         <g {...svgGProps}>
             <path
@@ -134,6 +128,15 @@ export const AccessibleIcon = (props: AccessibleIconProps) => {
                 d="M3-12.4L2.5-9.2h-9.9c0,0-2.1,0.2-2.1,2.2s2.1,2.2,2.1,2.2h9.3l-0.5,3h-12.5c0,0-0.9,0-1.3,0.5
 	C-12.8-1-13.2,0-13.2,0l-7,14.2c0,0-0.8,1.8,1.2,2.9c2,1.1,3.3-1,3.3-1l5.5-11.3c0,0,0.5-0.7,1-1c0.6-0.3,1.1-0.3,1.1-0.3H3.4
 	c0,0,1.2,0,2.2-0.9c0.9-0.9,1.1-2,1.1-2l1.7-12.4c0,0,0-2.6-2.7-2.7C3.6-14.5,3-12.4,3-12.4"
+            />
+            <path
+                id={`stn_core_${id}`}
+                fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
+                fillOpacity="0"
+                stroke="#1C3E93"
+                strokeWidth={0.5 * X_HEIGHT}
+                strokeOpacity="0"
+                d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
             />
         </g>
     );
@@ -199,6 +202,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                     ) : (
                         <AccessibleIcon
                             key={`${id}_${info[2]}_${info[4]}`}
+                            id={id}
                             stepFreeAccess={stepFreeAccess}
                             transform={`translate(${accessibleDX},${accessibleDY})rotate(${-rotate})scale(0.2)`}
                         />
@@ -212,8 +216,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
             >
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={1.22 * X_HEIGHT}
-                    lineHeight={ROTATE_CONST[rotate].lineHeight}
+                    fontSize={FONT_SIZE}
+                    lineHeight={LINE_HEIGHT}
                     dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
                     grow={ROTATE_CONST[rotate].grow}
                     baseOffset={0}
