@@ -242,3 +242,35 @@ export const changeNodesColorInBatch = (
         graph.mergeNodeAttributes(node, { [thisType]: attrs });
     });
 };
+
+export const changeZIndexInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    stations: StnId[],
+    miscNodes: MiscNodeId[],
+    lines: LineId[],
+    value: number
+) => {
+    [...stations, ...miscNodes].forEach(s => {
+        graph.setNodeAttribute(s, 'zIndex', value);
+    });
+    lines.forEach(s => {
+        graph.setEdgeAttribute(s, 'zIndex', value);
+    });
+};
+
+export const increaseZIndexInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    stations: StnId[],
+    miscNodes: MiscNodeId[],
+    lines: LineId[],
+    value: number
+) => {
+    [...stations, ...miscNodes].forEach(s => {
+        const z = graph.getNodeAttribute(s, 'zIndex');
+        graph.setNodeAttribute(s, 'zIndex', z + value);
+    });
+    lines.forEach(s => {
+        const z = graph.getEdgeAttribute(s, 'zIndex');
+        graph.setEdgeAttribute(s, 'zIndex', z + value);
+    });
+};
