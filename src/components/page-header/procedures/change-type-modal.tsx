@@ -129,7 +129,7 @@ export const ChangeTypeModal = (props: {
     const changeTypeField: ChangeTypeField[] = [
         {
             id: 'changeZIndex',
-            title: t('header.settings.procedures.changeStationType.zIndex'),
+            title: t('header.settings.procedures.changeZIndex'),
             onClose: () => setIsZIndexSwitch(!isZIndexSwitch),
             field: [
                 {
