@@ -467,6 +467,7 @@
                     "title": "すべてのオブジェクトの属性を変更する",
                     "any": "どれでも"
                 },
+                "changeZIndex": "バッチで深さを変更する",
                 "changeStationType": {
                     "title": "一括で駅の種類を変更",
                     "changeFrom": "すべての駅をこの種類から変更する：",

@@ -467,6 +467,7 @@
                     "title": "Change all objects' attributes",
                     "any": "Any"
                 },
+                "changeZIndex": "Change depth in batch",
                 "changeStationType": {
                     "title": "Change stations type in batch",
                     "changeFrom": "Change all stations from this type:",

@@ -466,6 +466,7 @@
                     "title": "모든 객체의 속성 변경",
                     "any": "어느"
                 },
+                "changeZIndex": "일괄적으로 깊이 변경",
                 "changeStationType": {
                     "title": "역의 종류를 대량으로 수정",
                     "changeFrom": "이 유형의 모든 역:",

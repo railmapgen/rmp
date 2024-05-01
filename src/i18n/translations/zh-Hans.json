@@ -466,6 +466,7 @@
                     "title": "修改所有对象的属性",
                     "any": "任意"
                 },
+                "changeZIndex": "批量修改深度",
                 "changeStationType": {
                     "title": "批量修改车站种类",
                     "changeFrom": "将此类型的所有车站：",

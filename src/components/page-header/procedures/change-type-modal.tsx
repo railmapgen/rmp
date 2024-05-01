@@ -32,6 +32,7 @@ import {
     changeLineStyleTypeInBatch,
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
+    changeZIndexInBatch,
 } from '../../../util/change-types';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
@@ -99,6 +100,8 @@ export const ChangeTypeModal = (props: {
         value: t('header.settings.procedures.changeType.any'),
     };
 
+    const [isZIndexSwitch, setIsZIndexSwitch] = React.useState(false);
+    const [zIndex, setZIndex] = React.useState(0);
     const [isStationTypeSwitch, setIsStationTypeSwitch] = React.useState(false);
     const [currentStationType, setCurrentStationType] = React.useState<StationType | 'any'>('any');
     const [newStationType, setNewStationType] = React.useState(StationType.ShmetroBasic);
@@ -124,6 +127,20 @@ export const ChangeTypeModal = (props: {
     const [themeList, setThemeList] = React.useState<ChangeTypeTheme[]>([]);
 
     const changeTypeField: ChangeTypeField[] = [
+        {
+            id: 'changeZIndex',
+            title: t('header.settings.procedures.changeZIndex'),
+            onClose: () => setIsZIndexSwitch(!isZIndexSwitch),
+            field: [
+                {
+                    type: 'select',
+                    label: t('panel.details.info.zIndex'),
+                    value: zIndex,
+                    options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
+                    onChange: val => setZIndex(Number(val)),
+                },
+            ],
+        },
         {
             id: 'changeStationType',
             title: t('header.settings.procedures.changeStationType.title'),
@@ -245,10 +262,12 @@ export const ChangeTypeModal = (props: {
 
     React.useEffect(() => {
         if (isOpen) {
+            setIsZIndexSwitch(false);
             setIsStationTypeSwitch(false);
             setIsLineStyleTypeSwitch(false);
             setIsLinePathTypeSwitch(false);
             setIsColorSwitch(false);
+            setZIndex(0);
             setThemeList([
                 defaultSelectedTheme,
                 ...findThemes(
@@ -310,6 +329,9 @@ export const ChangeTypeModal = (props: {
                     miscNodes
                 );
         }
+        if (isZIndexSwitch) {
+            changeZIndexInBatch(graph.current, stations, miscNodes, lines, zIndex);
+        }
         hardRefresh();
         onClose();
     };
@@ -356,7 +378,11 @@ export const ChangeTypeModal = (props: {
                         mr="1"
                         onClick={handleChange}
                         isDisabled={
-                            !isStationTypeSwitch && !isLineStyleTypeSwitch && !isLinePathTypeSwitch && !isColorSwitch
+                            !isZIndexSwitch &&
+                            !isStationTypeSwitch &&
+                            !isLineStyleTypeSwitch &&
+                            !isLinePathTypeSwitch &&
+                            !isColorSwitch
                         }
                     >
                         {t('apply')}
