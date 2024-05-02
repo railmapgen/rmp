@@ -63,6 +63,16 @@ export interface ExternalStationAttributes {
     [StationType.QingdaoMetroStation]?: QingdaoMetroStationAttributes;
 }
 
+export const StationWithColor = [
+    StationType.ShmetroBasic2020,
+    StationType.GzmtrBasic,
+    StationType.SuzhouRTBasic,
+    StationType.KunmingRTBasic,
+    StationType.MRTBasic,
+    StationType.FoshanMetroBasic,
+    StationType.QingdaoMetroStation,
+];
+
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 
 export interface StationComponentProps {

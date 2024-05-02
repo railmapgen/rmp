@@ -12,8 +12,8 @@ import {
     StnId,
     Theme,
 } from '../constants/constants';
-import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/lines';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
+import { LinePathType, LineStylesWithColor, LineStyleType } from '../constants/lines';
+import { ExternalStationAttributes, StationType, StationWithColor } from '../constants/stations';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -60,6 +60,11 @@ export const changeStationType = (
             selectedFirst,
             currentStnType as Exclude<StationType, StationType.ShmetroBasic2020>
         )!.nameOffsetY;
+    }
+    if (StationWithColor.includes(newStnType) && StationWithColor.includes(currentStnType)) {
+        (newAttrs as AttributesWithColor).color = structuredClone(
+            (graph.getNodeAttribute(selectedFirst, currentStnType) as AttributesWithColor)!.color
+        );
     }
     graph.removeNodeAttribute(selectedFirst, currentStnType);
     graph.mergeNodeAttributes(selectedFirst, { type: newStnType, [newStnType]: newAttrs });

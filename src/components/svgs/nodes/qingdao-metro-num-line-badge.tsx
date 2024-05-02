@@ -81,7 +81,7 @@ const defaultQingdaoMetroNumLineBadgeAttributes: QingdaoMetroNumLineBadgeAttribu
     num: 1,
     numEn: '1',
     showText: true,
-    color: [CityCode.Qingdao, 'qd1', '#eaaa00', MonoColour.white],
+    color: [CityCode.Qingdao, 'qd1', '#f7b000', MonoColour.white],
 };
 
 const attrsComponent = (props: AttrsProps<QingdaoMetroNumLineBadgeAttributes>) => {
