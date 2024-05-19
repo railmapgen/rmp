@@ -24,10 +24,11 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
     );
 
     return (
-        <g id={id}>
+        <g>
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
             <path d={path} fill="none" stroke="white" strokeWidth="1.67" />
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"

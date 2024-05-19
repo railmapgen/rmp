@@ -55,10 +55,11 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     }, [path]);
 
     return (
-        <g id={id}>
+        <g>
             <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth="2.5" strokeLinecap="round" />
             <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth="2.5" strokeLinecap="round" />
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"

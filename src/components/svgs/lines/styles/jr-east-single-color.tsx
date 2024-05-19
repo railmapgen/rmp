@@ -22,10 +22,11 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
     );
 
     return (
-        <g id={id}>
+        <g>
             <path d={path} fill="none" stroke="black" strokeWidth="5.1" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth="4.9" />
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"

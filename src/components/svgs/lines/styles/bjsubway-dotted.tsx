@@ -25,16 +25,16 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     return (
-        <g id={id}>
+        <g>
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="2 2" />
             <path d={path} fill="none" stroke={bgColor} strokeWidth="3.4" />
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"
                 strokeOpacity="0"
                 strokeWidth={5}
-                strokeDasharray="2 2"
                 cursor="pointer"
                 onClick={onClick}
             />

@@ -11,11 +11,12 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
     );
 
     return (
-        <g id={id}>
+        <g>
             <path d={path} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
             <path d={path} fill="none" stroke="white" strokeWidth="4.33" strokeLinecap="round" />
             {/* Below is an overlay element that has all event hooks but can not be seen. */}
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"

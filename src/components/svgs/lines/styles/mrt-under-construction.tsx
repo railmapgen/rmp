@@ -22,9 +22,10 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
     );
 
     return (
-        <g id={id}>
+        <g>
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="0 10" strokeLinecap="round" />
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"

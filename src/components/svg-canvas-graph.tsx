@@ -160,6 +160,7 @@ const SvgCanvas = () => {
         if (!e.shiftKey) dispatch(clearSelected());
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));
+        console.log(edge);
     });
 
     // These are elements that the svg draws from.

@@ -36,7 +36,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
     }, [path]);
 
     return (
-        <g id={id}>
+        <g>
             <defs>
                 <clipPath id="jr_east_fill_pattern_clip_path" patternUnits="userSpaceOnUse">
                     <polygon points={`0,0 0,${PATTERN_CLIP_PATH_D} ${PATTERN_CLIP_PATH_D},0`} />
@@ -78,6 +78,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
             <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
             <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
             <path
+                id={id}
                 d={paths.outline}
                 fill="white"
                 fillOpacity="0"

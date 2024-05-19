@@ -12,6 +12,7 @@ const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) 
 
     return (
         <path
+            id={id}
             d={path}
             fill="none"
             stroke="black"

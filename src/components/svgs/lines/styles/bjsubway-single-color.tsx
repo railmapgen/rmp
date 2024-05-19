@@ -22,10 +22,11 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
     );
 
     return (
-        <g id={id}>
+        <g>
             <path d={path} fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
             <path
+                id={id}
                 d={path}
                 fill="none"
                 stroke="white"

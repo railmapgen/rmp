@@ -72,14 +72,20 @@ const SvgWrapper = () => {
 
     const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
-        if (mode.startsWith('station')) {
+        if (mode.startsWith('station') || mode.startsWith('misc-node')) {
+            const isStation = mode.startsWith('station');
+            const elems = document.elementsFromPoint(e.clientX, e.clientY);
+            const line_id = elems[0].attributes?.getNamedItem('id')?.value;
+            const clickOnLine = line_id ? graph.current.hasEdge(line_id) : false;
             dispatch(setMode('free'));
             const rand = nanoid(10);
-            const id: StnId = `stn_${rand}`;
-            const type = mode.slice(8) as StationType;
+            const id = isStation ? (`stn_${rand}` as StnId) : (`misc_node_${rand}` as MiscNodeId);
+            const type = isStation ? (mode.slice(8) as StationType) : (mode.slice(10) as MiscNodeType);
 
             // deep copy to prevent mutual reference
-            const attr = structuredClone(stations[type].defaultAttrs);
+            const attr = isStation
+                ? structuredClone(stations[type as StationType].defaultAttrs)
+                : structuredClone(miscNodes[type as MiscNodeType].defaultAttrs);
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
 
@@ -92,25 +98,33 @@ const SvgWrapper = () => {
                 type,
                 [type]: attr,
             });
-            // console.log('down', active, offset);
-            refreshAndSave();
-            if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
-            dispatch(setSelected(new Set([id])));
-        } else if (mode.startsWith('misc-node')) {
-            dispatch(setMode('free'));
-            const rand = nanoid(10);
-            const id: MiscNodeId = `misc_node_${rand}`;
-            const type = mode.slice(10) as MiscNodeType;
-            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            graph.current.addNode(id, {
-                visible: true,
-                zIndex: 0,
-                x: roundToNearestN(svgX, 5),
-                y: roundToNearestN(svgY, 5),
-                type,
-                // deep copy to prevent mutual reference
-                [type]: structuredClone(miscNodes[type].defaultAttrs),
-            });
+            if (clickOnLine && (isStation || type === MiscNodeType.Virtual)) {
+                const zIndex = graph.current.getEdgeAttribute(line_id, 'zIndex');
+                const type = graph.current.getEdgeAttribute(line_id, 'type');
+                const style = graph.current.getEdgeAttribute(line_id, 'style');
+                const [source, target] = graph.current.extremities(line_id);
+                const typeAttr = graph.current.getEdgeAttributes(line_id)[type];
+                const styleAttr = graph.current.getEdgeAttributes(line_id)[style];
+                graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
+                    visible: true,
+                    zIndex,
+                    type,
+                    [type]: structuredClone(typeAttr),
+                    style,
+                    [style]: structuredClone(styleAttr),
+                    reconcileId: '',
+                });
+                graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, id, target, {
+                    visible: true,
+                    zIndex,
+                    type,
+                    [type]: structuredClone(typeAttr),
+                    style,
+                    [style]: structuredClone(styleAttr),
+                    reconcileId: '',
+                });
+                graph.current.dropEdge(line_id);
+            }
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
             dispatch(setSelected(new Set([id])));
