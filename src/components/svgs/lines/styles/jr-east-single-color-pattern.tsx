@@ -19,13 +19,13 @@ const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
 
 const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, newLine, handleClick } = props;
+    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultJREastSingleColorPatternAttributes.color } =
         styleAttrs ?? defaultJREastSingleColorPatternAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     const [paths, setPaths] = React.useState({ outline: path, pA: path, pB: path });
@@ -36,7 +36,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
     }, [path]);
 
     return (
-        <g>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <defs>
                 <clipPath id="jr_east_fill_pattern_clip_path" patternUnits="userSpaceOnUse">
                     <polygon points={`0,0 0,${PATTERN_CLIP_PATH_D} ${PATTERN_CLIP_PATH_D},0`} />
@@ -77,18 +77,6 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
             <path d={paths.outline} fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`} />
             <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
             <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
-            <path
-                id={id}
-                d={paths.outline}
-                fill="white"
-                fillOpacity="0"
-                stroke="white"
-                strokeWidth="0.1"
-                strokeOpacity="0"
-                cursor="pointer"
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
-            />
         </g>
     );
 };

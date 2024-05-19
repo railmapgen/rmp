@@ -13,28 +13,26 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructionAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultMRTUnderConstructionAttributes.color } = styleAttrs ?? defaultMRTUnderConstructionAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
-        <g>
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="0 10" strokeLinecap="round" />
-            <path
-                id={id}
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeOpacity="0"
-                strokeWidth={5}
-                cursor="pointer"
-                onClick={onClick}
-            />
-        </g>
+        <path
+            id={id}
+            d={path}
+            fill="none"
+            stroke={color[2]}
+            strokeWidth="5"
+            strokeDasharray="0 10"
+            strokeLinecap="round"
+            cursor="pointer"
+            onPointerDown={onPointerDown}
+        />
     );
 };
 

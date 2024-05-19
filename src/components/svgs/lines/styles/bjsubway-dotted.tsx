@@ -14,30 +14,20 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultBjsubwayDottedAttributes.color } = styleAttrs ?? defaultBjsubwayDottedAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     return (
-        <g>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="2 2" />
             <path d={path} fill="none" stroke={bgColor} strokeWidth="3.4" />
-            <path
-                id={id}
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeOpacity="0"
-                strokeWidth={5}
-                cursor="pointer"
-                onClick={onClick}
-            />
         </g>
     );
 };

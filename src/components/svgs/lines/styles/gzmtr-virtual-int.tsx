@@ -2,11 +2,11 @@ import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttributes>) => {
-    const { id, path, handleClick } = props;
+    const { id, path, handlePointerDown } = props;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -18,7 +18,7 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
             strokeWidth="3"
             strokeDasharray="3"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };

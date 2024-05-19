@@ -3,11 +3,11 @@ import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } 
 import { RmgFieldsFieldSpecificAttributes } from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) => {
-    const { id, path, handleClick } = props;
+    const { id, path, handlePointerDown } = props;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -19,7 +19,7 @@ const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) 
             strokeWidth="1.33"
             strokeDasharray="2.66 1.33"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };

@@ -15,12 +15,12 @@ import {
 } from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultMTRLightRailAttributes.color } = styleAttrs ?? defaultMTRLightRailAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -32,7 +32,7 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
             strokeWidth="2.5"
             strokeLinecap="round"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };
