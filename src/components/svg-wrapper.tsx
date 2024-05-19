@@ -73,11 +73,8 @@ const SvgWrapper = () => {
     const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
-            const isStation = mode.startsWith('station');
-            const elems = document.elementsFromPoint(e.clientX, e.clientY);
-            const line_id = elems[0].attributes?.getNamedItem('id')?.value;
-            const clickOnLine = line_id ? graph.current.hasEdge(line_id) : false;
             dispatch(setMode('free'));
+            const isStation = mode.startsWith('station');
             const rand = nanoid(10);
             const id = isStation ? (`stn_${rand}` as StnId) : (`misc_node_${rand}` as MiscNodeId);
             const type = isStation ? (mode.slice(8) as StationType) : (mode.slice(10) as MiscNodeType);
@@ -98,6 +95,11 @@ const SvgWrapper = () => {
                 type,
                 [type]: attr,
             });
+
+            // Add station in the current line
+            const elems = document.elementsFromPoint(e.clientX, e.clientY);
+            const line_id = elems[0].attributes?.getNamedItem('id')?.value;
+            const clickOnLine = line_id ? graph.current.hasEdge(line_id) : false;
             if (clickOnLine && (isStation || type === MiscNodeType.Virtual)) {
                 const zIndex = graph.current.getEdgeAttribute(line_id, 'zIndex');
                 const type = graph.current.getEdgeAttribute(line_id, 'type');
