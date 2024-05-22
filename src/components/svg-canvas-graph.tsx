@@ -162,7 +162,7 @@ const SvgCanvas = () => {
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
-    const handleEdgeClick = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
+    const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
         if (!e.shiftKey) dispatch(clearSelected());
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
@@ -191,12 +191,11 @@ const SvgCanvas = () => {
                 [stnType]: attr,
             });
 
-            const zIndex = graph.current.getEdgeAttribute(edge, 'zIndex');
-            const linePathType = graph.current.getEdgeAttribute(edge, 'type');
-            const lineStyleType = graph.current.getEdgeAttribute(edge, 'style');
+            const edgeAttrs = graph.current.getEdgeAttributes(edge);
+            const { zIndex, type: linePathType, style: lineStyleType } = edgeAttrs;
+            const typeAttr = edgeAttrs[linePathType];
+            const styleAttr = edgeAttrs[lineStyleType];
             const [source, target] = graph.current.extremities(edge);
-            const typeAttr = graph.current.getEdgeAttributes(edge)[linePathType];
-            const styleAttr = graph.current.getEdgeAttributes(edge)[lineStyleType];
             graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
                 visible: true,
                 zIndex,
@@ -217,10 +216,13 @@ const SvgCanvas = () => {
             });
             graph.current.dropEdge(edge);
             refreshAndSave();
-            if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { stnType });
+            if (isAllowProjectTelemetry) {
+                rmgRuntime.event(Events.ADD_STATION, { type: stnType });
+                rmgRuntime.event(Events.ADD_LINE, { type: linePathType });
+            }
+            dispatch(setMode('free'));
             dispatch(setSelected(new Set([id])));
         }
-        dispatch(setMode('free'));
     });
 
     // These are elements that the svg draws from.
@@ -260,7 +262,7 @@ const SvgCanvas = () => {
                         attrs={linePaths[LinePathType.Simple].defaultAttrs}
                         styleType={LineStyleType.SingleColor}
                         styleAttrs={{ color: ['', '', '#c0c0c0', '#fff'] }}
-                        onPointerDown={handleEdgeClick}
+                        onPointerDown={handleEdgePointerDown}
                     />
                 );
             })}
@@ -286,7 +288,7 @@ const SvgCanvas = () => {
                         path={path}
                         styleAttrs={styleAttrs}
                         newLine={false}
-                        handlePointerDown={handleEdgeClick}
+                        handlePointerDown={handleEdgePointerDown}
                     />
                 );
             })}
@@ -304,7 +306,7 @@ const SvgCanvas = () => {
                         attrs={attr}
                         styleType={style}
                         styleAttrs={styleAttr}
-                        onPointerDown={handleEdgeClick}
+                        onPointerDown={handleEdgePointerDown}
                     />
                 );
             })}
