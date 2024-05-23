@@ -13,29 +13,18 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorAttributes>) => {
-    const { id, path, styleAttrs, newLine, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultBjsubwaySingleColorAttributes.color } = styleAttrs ?? defaultBjsubwaySingleColorAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
-        <g id={id}>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeWidth="6"
-                strokeLinecap="round"
-                strokeOpacity="0"
-                cursor="pointer"
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
-            />
         </g>
     );
 };

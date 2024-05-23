@@ -9,13 +9,13 @@ import {
 } from '../../../panels/details/rmg-field-specific-attrs';
 
 const River = (props: LineStyleComponentProps<RiverAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultRiverAttributes.color, width = defaultRiverAttributes.width } =
         styleAttrs ?? defaultRiverAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -27,7 +27,7 @@ const River = (props: LineStyleComponentProps<RiverAttributes>) => {
             strokeWidth={width}
             strokeLinecap="round"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };
