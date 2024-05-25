@@ -12,7 +12,7 @@ export default function GlobalAlerts() {
         if (rmgRuntime.isStandaloneWindow()) {
             window.open(`/${linkedApp}`, '_blank');
         } else {
-            rmgRuntime.openApp(linkedApp);
+            rmgRuntime.openApp({ appId: linkedApp });
         }
     };
 
