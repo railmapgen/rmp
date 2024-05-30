@@ -214,6 +214,11 @@
                     "secondaryNameEn": "Secondary name in English",
                     "foshan": "Foshan"
                 },
+                "gzmtrInt2024": {
+                    "displayName": "Guangzhou Metro interchange station (2024)",
+                    "anchorAt": "Anchor at",
+                    "preferVertical": "Vertical layout (2 interchanges only)"
+                },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
                     "open": "Is opened"

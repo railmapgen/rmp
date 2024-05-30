@@ -214,6 +214,11 @@
                     "secondaryNameEn": "英語の補助駅名",
                     "foshan": "佛山"
                 },
+                "gzmtrInt2024": {
+                    "displayName": "広州地下鉄乗り換え駅（令和6年）",
+                    "anchorAt": "錨位置",
+                    "preferVertical": "縦向き版面構成（乗り換え駅2つのみ）"
+                },
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
                     "open": "開業済み"

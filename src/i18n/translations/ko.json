@@ -214,6 +214,11 @@
                     "secondaryNameEn": "영문 제2명칭",
                     "foshan": "포산"
                 },
+                "gzmtrInt2024": {
+                    "displayName": "광저우 지하철 환승역 (2024)",
+                    "anchorAt": "앵커 위치",
+                    "preferVertical": "세로 레이아웃 (환승 2개만)"
+                },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
                     "open": "개통여부"
