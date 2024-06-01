@@ -217,6 +217,7 @@
                 "gzmtrInt2024": {
                     "displayName": "广州地铁换乘站（2024）",
                     "anchorAt": "定位于",
+                    "anchorAtNone": "中心",
                     "preferVertical": "垂直布局（仅限2个换乘）"
                 },
                 "bjsubwayBasic": {

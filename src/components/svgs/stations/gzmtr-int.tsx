@@ -344,7 +344,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * GzmtrStation specific props.
+ * GzmtrIntStation specific props.
  */
 export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;

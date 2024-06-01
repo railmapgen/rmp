@@ -217,6 +217,7 @@
                 "gzmtrInt2024": {
                     "displayName": "廣州地鐵換乘站（2024）",
                     "anchorAt": "定位於",
+                    "anchorAtNone": "中心",
                     "preferVertical": "垂直佈局（僅限2個換乘）"
                 },
                 "bjsubwayBasic": {

@@ -217,6 +217,7 @@
                 "gzmtrInt2024": {
                     "displayName": "広州地下鉄乗り換え駅（令和6年）",
                     "anchorAt": "錨位置",
+                    "anchorAtNone": "中心",
                     "preferVertical": "縦向き版面構成（乗り換え駅2つのみ）"
                 },
                 "bjsubwayBasic": {

@@ -20,14 +20,22 @@ export const defaultGZMTRTransferInfo = [
     'gz',
 ] as InterchangeInfo;
 
-interface InterchangeCardProps {
+/**
+ * A Guangzhou Metro specified interchange card props.
+ * For general use, see `src\components\panels\details\interchange-card.tsx`
+ */
+interface InterchangeCardGZMTRProps {
     interchangeList: InterchangeInfo[];
     onAdd?: (info: InterchangeInfo) => void;
     onDelete?: (index: number) => void;
     onUpdate?: (index: number, info: InterchangeInfo) => void;
 }
 
-export function InterchangeCardGZMTR(props: InterchangeCardProps) {
+/**
+ * A Guangzhou Metro specified interchange card.
+ * For general use, see `src\components\panels\details\interchange-card.tsx`
+ */
+export function InterchangeCardGZMTR(props: InterchangeCardGZMTRProps) {
     const { interchangeList, onAdd, onDelete, onUpdate } = props;
     const dispatch = useRootDispatch();
     const {

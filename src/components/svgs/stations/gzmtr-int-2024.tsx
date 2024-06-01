@@ -57,8 +57,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         const [iconX2, iconY2] = [iconX1 + iconWidth, iconY1 + iconHeight];
         setIconBBox({ x1: iconX1, x2: iconX2, y1: iconY1, y2: iconY2 });
     }, [JSON.stringify(transferAll), anchorAt, setIconBBox, iconEl]);
-    // console.log(iconEl.current, iconX1, iconY1);
     const textDX = preferVertical && transferAll.length === 2 ? 0 : 8;
+
+    const stations = transferAll.map(s => ({
+        style: s[6] === 'gz' ? 'gzmtr' : ('fmetro' as 'gzmtr' | 'fmetro'),
+        lineNum: s[4],
+        stnNum: s[5],
+        strokeColour: s[2],
+    }));
 
     const textX = nameOffsetX === 'left' ? iconBBox.x1 + textDX : nameOffsetX === 'right' ? iconBBox.x2 - textDX : 0;
     const textY =
@@ -88,13 +94,6 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     const underConstructionDx =
         (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) * (nameOffsetX === 'left' ? -1 : 1);
 
-    const stations = transferAll.map(s => ({
-        style: s[6] === 'gz' ? 'gzmtr' : ('fmetro' as 'gzmtr' | 'fmetro'),
-        lineNum: s[4],
-        stnNum: s[5],
-        strokeColour: s[2],
-    }));
-
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <g
@@ -112,7 +111,6 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                     anchorAt={anchorAt >= 0 ? anchorAt : undefined}
                 />
             </g>
-            {/* <line x1={iconBBox.x1} x2={iconBBox.x2} y1={iconBBox.y1} y2={iconBBox.y2} stroke="black" strokeWidth="1" /> */}
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\\')}
@@ -174,7 +172,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 };
 
 /**
- * GzmtrStation specific props.
+ * GzmtrInt2024Station specific props.
  */
 export interface GzmtrInt2024StationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
