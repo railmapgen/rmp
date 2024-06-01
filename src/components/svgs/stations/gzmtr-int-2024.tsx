@@ -113,14 +113,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={16}
                     lineHeight={16}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={10}
                     lineHeight={10}
                     grow="down"
