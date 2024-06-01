@@ -1,7 +1,7 @@
-import { Button, FormLabel, VStack, useColorModeValue } from '@chakra-ui/react';
+import { Button, FormLabel, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fmetro';
-import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { InterchangeStation2024 } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd } from 'react-icons/md';
@@ -19,37 +19,18 @@ import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
 
-const CODE_POS = [
-    [[0, 0]],
-    [[0, 0]],
-    [
-        [-18, 0],
-        [18, 0],
-    ],
-    [
-        [-19.395, -11.198],
-        [19.395, -11.198],
-        [0, 22.395],
-    ],
-    [
-        [-15.836, -15.836],
-        [15.836, -15.836],
-        [15.836, 15.836],
-        [-15.836, 15.836],
-    ],
-];
-
-const GzmtrIntStation = (props: StationComponentProps) => {
+const GzmtrInt2024Station = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultGzmtrIntStationAttributes.nameOffsetX,
-        nameOffsetY = defaultGzmtrIntStationAttributes.nameOffsetY,
-        transfer = defaultGzmtrIntStationAttributes.transfer,
-        open = defaultGzmtrIntStationAttributes.open,
-        secondaryNames = defaultGzmtrIntStationAttributes.secondaryNames,
-        tram = defaultGzmtrIntStationAttributes.tram,
-    } = attrs[StationType.GzmtrInt] ?? defaultGzmtrIntStationAttributes;
+        nameOffsetX = defaultGzmtrInt2024StationAttributes.nameOffsetX,
+        nameOffsetY = defaultGzmtrInt2024StationAttributes.nameOffsetY,
+        transfer = defaultGzmtrInt2024StationAttributes.transfer,
+        open = defaultGzmtrInt2024StationAttributes.open,
+        secondaryNames = defaultGzmtrInt2024StationAttributes.secondaryNames,
+        preferVertical = defaultGzmtrInt2024StationAttributes.preferVertical,
+        anchorAt = defaultGzmtrInt2024StationAttributes.anchorAt,
+    } = attrs[StationType.GzmtrInt2024] ?? defaultGzmtrInt2024StationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -64,13 +45,31 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
+    const transferAll = transfer.flat().slice(0, 4); // slice to make sure at most 4 transfers
 
-    const textX =
-        (nameOffsetX === 'left' ? -27.5 : nameOffsetX === 'right' ? 27.5 : 0) * (nameOffsetY === 'middle' ? 1.2 : 1);
+    // temporary fix for the missing id on the top element of the station
+    const iconEl = React.useRef<SVGGElement | null>(null);
+    iconEl.current?.querySelectorAll('path')?.forEach(elem => elem.setAttribute('id', `stn_core_${id}`));
+
+    const [iconBBox, setIconBBox] = React.useState({ x1: 0, x2: 0, y1: 0, y2: 0 });
+    React.useEffect(() => {
+        const { height: iconHeight, width: iconWidth, x: iconX1, y: iconY1 } = iconEl.current!.getBBox();
+        const [iconX2, iconY2] = [iconX1 + iconWidth, iconY1 + iconHeight];
+        setIconBBox({ x1: iconX1, x2: iconX2, y1: iconY1, y2: iconY2 });
+    }, [JSON.stringify(transferAll), anchorAt, setIconBBox, iconEl]);
+    const textDX = preferVertical && transferAll.length === 2 ? 0 : 8;
+
+    const stations = transferAll.map(s => ({
+        style: s[6] === 'gz' ? 'gzmtr' : ('fmetro' as 'gzmtr' | 'fmetro'),
+        lineNum: s[4],
+        stnNum: s[5],
+        strokeColour: s[2],
+    }));
+
+    const textX = nameOffsetX === 'left' ? iconBBox.x1 + textDX : nameOffsetX === 'right' ? iconBBox.x2 - textDX : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
-            20 * (nameOffsetX === 'middle' ? 1.8 : 1)) *
+            (iconBBox.y2 - iconBBox.y1) / 2) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor =
         nameOffsetX === 'left'
@@ -82,20 +81,6 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                   'end'
                 : // Default to middle when nameOffsetX === 'middle'.
                   'middle';
-
-    const transferAll = transfer.flat().slice(0, 4); // slice to make sure at most 4 transfers
-    const arrowColor = [
-        ['black', 'black'],
-        [transferAll.at(0)?.at(2) ?? 'black', transferAll.at(0)?.at(2) ?? 'black'],
-        [transferAll.at(0)?.at(2) ?? 'black', transferAll.at(1)?.at(2) ?? 'black'],
-        [transferAll.at(0)?.at(2) ?? 'black', transferAll.at(1)?.at(2) ?? 'black', transferAll.at(2)?.at(2) ?? 'black'],
-        [
-            transferAll.at(0)?.at(2) ?? 'black',
-            transferAll.at(1)?.at(2) ?? 'black',
-            transferAll.at(2)?.at(2) ?? 'black',
-            transferAll.at(3)?.at(2) ?? 'black',
-        ],
-    ];
 
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
@@ -110,189 +95,32 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) * (nameOffsetX === 'left' ? -1 : 1);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
-            {transferAll
-                .map(info => info[2])
-                .filter((color, i, arr) => arr.indexOf(color) === i)
-                .map(color => (
-                    <marker
-                        key={`gzmtr_int_arrow_${color}`}
-                        id={`gzmtr_int_arrow_${color}`}
-                        markerWidth="5"
-                        markerHeight="5"
-                        refX="1"
-                        refY="1.25"
-                        orient="auto"
-                    >
-                        <polygon points="0.25,0 0.25,2.5 2.25,1.25" fill={color} />
-                    </marker>
-                ))}
-            {transferAll.length <= 2 && (
-                <g>
-                    {/* A simple mask to hide all underlying lines. */}
-                    <path d="M -18,-12 A 24 24 0 0 1 18,-12 L 18,12 A 24 24 0 0 1 -18,12 Z" fill={bgColor} />
-                    <path
-                        d="M -18,-12 A 24 24 0 0 1 18,-12"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][0]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                    />
-                    <path
-                        d="M 18,12 A 24 24 0 0 1 -18,12"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][1]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                    />
-                </g>
-            )}
-            {transferAll.length === 3 && (
-                <g>
-                    <circle r="22.395" fill={bgColor} />
-                    <path
-                        d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][0]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                    />
-                    <path
-                        d="M 0,-22.395 A 22.395 22.395 0 0 1 19.3948,11.1976"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][1]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                    />
-                    <path
-                        d="M 19.3948,11.1976 A 22.395 22.395 0 0 1 -19.3948,11.1976"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][2]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][2]})`}
-                    />
-                    {/* Add another 2 transparent arrows with marker to cover bottom arrows */}
-                    <path
-                        d="M -19.3948,11.1976 A 22.395 22.395 0 0 1 0,-22.395"
-                        fill="none"
-                        strokeOpacity="0"
-                        stroke="white"
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                    />
-                    <path
-                        d="M 0,-22.395 A 22.395 22.395 0 0 1 19.3948,11.1976"
-                        fill="none"
-                        strokeOpacity="0"
-                        stroke="white"
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                    />
-                </g>
-            )}
-            {transferAll.length >= 4 && (
-                <g>
-                    <circle r="22.395" fill={bgColor} />
-                    <path
-                        d="M -22.395,0 A 22.395 22.395 0 0 1 0,-22.395"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][0]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                    />
-                    <path
-                        d="M 0,-22.395 A 22.395 22.395 0 0 1 22.395,0"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][1]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                    />
-                    <path
-                        d="M 22.395,0 A 22.395 22.395 0 0 1 0,22.395"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][2]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][2]})`}
-                    />
-                    <path
-                        d="M 0,22.395 A 22.395 22.395 0 0 1 -22.395,0"
-                        fill="none"
-                        stroke={arrowColor[transferAll.length][3]}
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][3]})`}
-                    />
-                    {/* Add another 2 transparent arrows with marker to cover bottom arrows */}
-                    <path
-                        d="M -22.395,0 A 22.395 22.395 0 0 1 0,-22.395"
-                        fill="none"
-                        strokeOpacity="0"
-                        stroke="white"
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][0]})`}
-                    />
-                    <path
-                        d="M 0,-22.395 A 22.395 22.395 0 0 1 22.395,0"
-                        fill="none"
-                        strokeOpacity="0"
-                        stroke="white"
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][1]})`}
-                    />
-                    <path
-                        d="M 22.395,0 A 22.395 22.395 0 0 1 0,22.395"
-                        fill="none"
-                        strokeOpacity="0"
-                        stroke="white"
-                        strokeWidth="5"
-                        markerEnd={`url(#gzmtr_int_arrow_${arrowColor[transferAll.length][2]})`}
-                    />
-                </g>
-            )}
-
-            {transfer[0]?.map((info, i, arr) => (
-                <g
-                    key={`gzmtr_int_${id}_stn_${i}`}
-                    transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})scale(0.6)`}
-                >
-                    {info[6] === 'gz' ? (
-                        <StationNumber
-                            strokeColour={info[2]}
-                            lineNum={info[4]}
-                            stnNum={info[5]}
-                            textClassName="rmp-name__zh"
-                        />
-                    ) : (
-                        <FoshanStationNumber
-                            strokeColour={info[2]}
-                            lineNum={info[4]}
-                            stnNum={info[5]}
-                            textClassName="rmp-name__zh"
-                        />
-                    )}
-                </g>
-            ))}
-
-            {/* Below is an overlay element that has all event hooks but can not be seen. */}
-            <circle
-                id={`stn_core_${id}`}
-                r={transferAll.length === 3 ? 22.395 : 18}
-                fill="white"
-                fillOpacity="0"
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <g
+                transform="scale(0.56)"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
-            />
+                ref={iconEl}
+            >
+                <InterchangeStation2024
+                    stations={stations}
+                    textClassName="rmp-name__zh"
+                    preferVertical={preferVertical}
+                    anchorAt={anchorAt >= 0 ? anchorAt : undefined}
+                />
+            </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={16}
                     lineHeight={16}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={10}
                     lineHeight={10}
                     grow="down"
@@ -344,9 +172,9 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * GzmtrIntStation specific props.
+ * GzmtrInt2024Station specific props.
  */
-export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
+export interface GzmtrInt2024StationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     /**
@@ -354,20 +182,27 @@ export interface GzmtrIntStationAttributes extends StationAttributes, StationAtt
      */
     open: boolean;
     secondaryNames: [string, string];
-    tram: boolean;
+    preferVertical: boolean;
+    anchorAt: number;
 }
 
-const defaultGzmtrIntStationAttributes: GzmtrIntStationAttributes = {
+const defaultGzmtrInt2024StationAttributes: GzmtrInt2024StationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
-    transfer: [[], []],
+    transfer: [
+        [
+            [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.white, '1', '14', 'gz'],
+            [CityCode.Guangzhou, 'gz3', '#ECA154', MonoColour.white, '3', '11', 'gz'],
+        ],
+    ],
     open: true,
     secondaryNames: ['', ''],
-    tram: false,
+    preferVertical: true,
+    anchorAt: -1,
 };
 
-const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttributes>) => {
+const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024StationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -375,9 +210,9 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -385,9 +220,9 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -425,6 +260,33 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
             minW: 'full',
         },
         {
+            type: 'select',
+            label: t('panel.details.stations.gzmtrInt2024.anchorAt'),
+            value: attrs.anchorAt ?? '-1',
+            options: {
+                '-1': t('panel.details.stations.gzmtrInt2024.anchorAtNone'),
+                ...Object.fromEntries(
+                    Array.from({ length: Math.min(attrs.transfer.flat().length, 4) }, (_, i) => [i.toString(), i])
+                ),
+            },
+            onChange: val => {
+                attrs.anchorAt = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrInt2024.preferVertical'),
+            oneLine: true,
+            isChecked: attrs.preferVertical,
+            onChange: val => {
+                attrs.preferVertical = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
             type: 'switch',
             label: t('panel.details.stations.gzmtrInt.open'),
             oneLine: true,
@@ -455,21 +317,10 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
             },
             minW: 'full',
         },
-        {
-            type: 'switch',
-            label: t('panel.details.stations.gzmtrBasic.tram'),
-            oneLine: true,
-            isChecked: attrs.tram,
-            onChange: val => {
-                attrs.tram = val;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
     ];
 
     const maximumTransfers = [4, 4, 0];
-    const transfer = attrs.transfer ?? defaultGzmtrIntStationAttributes.transfer;
+    const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
         const newTransferInfo = structuredClone(transfer);
@@ -491,6 +342,7 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
             );
 
             attrs.transfer = newTransferInfo;
+            attrs.anchorAt = -1;
             handleAttrsUpdate(id, attrs);
         }
     };
@@ -558,29 +410,35 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
     );
 };
 
-const gzmtrIntStationIcon = (
+const gzmtrInt2024StationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <g transform="translate(6,12)scale(0.3)">
-            <StationNumber strokeColour="currentColor" lineNum="1" stnNum="09" />
-        </g>
-        <g transform="translate(18,12)scale(0.3)">
-            <StationNumber strokeColour="currentColor" lineNum="2" stnNum="13" />
-        </g>
-        <marker id="arrow" markerWidth="5" markerHeight="5" refX="1" refY="1.25" orient="auto">
-            <polygon points="0,0 0,3 2,1.5" />
-        </marker>
-        <path d="M 6,6 A 8 8 0 0 1 18,6" fill="none" stroke="currentColor" strokeWidth="2" markerEnd="url(#arrow)" />
-        <path d="M 18,18 A 8 8 0 0 1 6,18" fill="none" stroke="currentColor" strokeWidth="2" markerEnd="url(#arrow)" />
+        <InterchangeStation2024
+            stations={[
+                {
+                    strokeColour: 'currentColor',
+                    lineNum: '3',
+                    stnNum: '03',
+                },
+                {
+                    strokeColour: 'currentColor',
+                    lineNum: '7',
+                    stnNum: '05',
+                },
+            ]}
+            textClassName="rmp-name__zh"
+            preferVertical
+            transform="translate(12,12)scale(0.3)"
+        />
     </svg>
 );
 
-const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
-    component: GzmtrIntStation,
-    icon: gzmtrIntStationIcon,
-    defaultAttrs: defaultGzmtrIntStationAttributes,
-    attrsComponent: gzmtrIntStationAttrsComponents,
+const gzmtrInt2024Station: Station<GzmtrInt2024StationAttributes> = {
+    component: GzmtrInt2024Station,
+    icon: gzmtrInt2024StationIcon,
+    defaultAttrs: defaultGzmtrInt2024StationAttributes,
+    attrsComponent: gzmtrInt2024StationAttrsComponents,
     metadata: {
-        displayName: 'panel.details.stations.gzmtrInt.displayName',
+        displayName: 'panel.details.stations.gzmtrInt2024.displayName',
         cities: [CityCode.Guangzhou],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -588,4 +446,4 @@ const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
     },
 };
 
-export default gzmtrIntStation;
+export default gzmtrInt2024Station;

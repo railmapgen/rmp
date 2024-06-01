@@ -190,7 +190,7 @@
                     "displayName": "上海地铁基本车站"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "上海地铁基本车站(2020)"
+                    "displayName": "上海地铁基本车站（2020）"
                 },
                 "shmetroInt": {
                     "displayName": "上海地铁换乘车站",
@@ -213,6 +213,12 @@
                     "secondaryNameZh": "中文第二名称",
                     "secondaryNameEn": "英文第二名称",
                     "foshan": "佛山"
+                },
+                "gzmtrInt2024": {
+                    "displayName": "广州地铁换乘站（2024）",
+                    "anchorAt": "定位于",
+                    "anchorAtNone": "中心",
+                    "preferVertical": "垂直布局（仅限2个换乘）"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
