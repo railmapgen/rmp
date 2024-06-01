@@ -162,7 +162,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * GzmtrStation specific props.
+ * GzmtrBasicStation specific props.
  */
 export interface GzmtrBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
