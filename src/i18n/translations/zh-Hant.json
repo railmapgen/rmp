@@ -118,6 +118,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT終點數字"
                 },
+                "mrtLineBadge": {
+                    "displayName": "新加坡MRT線路標識",
+                    "isTram": "是LRT線路標識"
+                },
                 "jrEastLineBadge": {
                   "displayName": "JR東日本線路標識",
                   "crosshatchPatternFill": "用網狀圖案填充"
@@ -245,7 +249,8 @@
                     "displayName": "昆明軌道交通換乘車站"
                 },
                 "MRTBasic": {
-                    "displayName": "新加坡MRT基本車站"
+                    "displayName": "新加坡MRT基本車站",
+                    "isTram": "是LRT車站"
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT換乘車站"
@@ -349,6 +354,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本單色網狀圖案風格"
+                },
+                "lrtSingleColor": {
+                    "displayName": "新加坡LRT純色樣式"
                 }
             },
             "edges": {},

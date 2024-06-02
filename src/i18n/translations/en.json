@@ -116,7 +116,11 @@
                     "branch": "Is branch line"
                 },
                 "mrtDestinationNumbers": {
-                    "displayName": "Singapore MRT Destination Numbers"
+                    "displayName": "Singapore MRT destination numbers"
+                },
+                "mrtLineBadge": {
+                    "displayName": "Singapore MRT line badge",
+                    "isTram": "Is LRT line badge"
                 },
                 "jrEastLineBadge": {
                     "displayName": "JR East line badge",
@@ -246,7 +250,8 @@
                     "displayName": "Kunming Rail Transit interchange station"
                 },
                 "MRTBasic": {
-                    "displayName": "Singapore MRT basic station"
+                    "displayName": "Singapore MRT basic station",
+                    "isTram": "Is LRT station"
                 },
                 "MRTInt": {
                     "displayName": "Singapore MRT interchange station"
@@ -350,6 +355,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR East single color filled with crosshatch pattern style"
+                },
+                "lrtSingleColor": {
+                    "displayName": "Singapore LRT single color style"
                 }
             },
             "edge": {},
