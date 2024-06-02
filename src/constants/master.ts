@@ -1,9 +1,8 @@
 export interface MasterSvgsElem {
     id: string;
     type: string;
-    x: string;
-    y: string;
-    attrs: object;
+    attrs: Record<string, string>;
+    children?: MasterSvgsElem[];
 }
 
 export interface MasterComponent {

@@ -13,7 +13,7 @@ import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
-import { MasterParam } from '../../../constants/master';
+import { MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../../panels/theme-button';
@@ -36,34 +36,15 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     const calcFunc = (str: string, ...rest: string[]) => new Function(...rest, `return ${str}`);
 
-    const calcFuncInBatch = (str: string[], name: string[], value: string[], varType: string[]) => {
-        return str.map(s => {
-            try {
-                return calcFunc(
-                    s,
-                    ...name,
-                    'color'
-                )(
-                    ...value.map((v, varI) => (varType[varI] === 'number' && !Number.isNaN(Number(v)) ? Number(v) : v)),
-                    attrs.color ? attrs.color.value ?? attrs.color.defaultValue : ''
-                );
-            } catch (e) {
-                return '';
-            }
-        });
-    };
-
     const modifyAttributes = <T extends Record<string, any>>(t: T, varValues: string[], varType: string[]): T => {
         const modifiedAttrs: Partial<T> = {};
 
         for (const key in t) {
-            if (key !== 'children' && Object.prototype.hasOwnProperty.call(t, key)) {
+            if (Object.prototype.hasOwnProperty.call(t, key)) {
                 try {
                     modifiedAttrs[key] = calcFunc(
                         t[key],
-                        'x',
-                        'y',
-                        ...attrs.components.map(s => s.id),
+                        ...attrs.components.map(s => s.label),
                         'color'
                     )(
                         ...varValues.map((v, varI) =>
@@ -83,42 +64,37 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const gPointerEvents =
         attrs.nodeType === 'MiscNode' ? { onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } } : {};
 
+    const dfsCreateElement = (svgs: MasterSvgsElem[]): ReactNode => {
+        return svgs.map(s => {
+            const coreProps =
+                attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
+                    ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
+                    : {};
+            const calcAttrs = modifyAttributes(
+                s.attrs,
+                attrs.components.map(s => s.value),
+                attrs.components.map(s => s.type)
+            );
+            return React.createElement(
+                s.type,
+                {
+                    ...calcAttrs,
+                    key: s.id,
+                    ...coreProps,
+                },
+                ('_rmp_children_text' in calcAttrs
+                    ? (calcAttrs._rmp_children_text as string)
+                    : s.children
+                      ? dfsCreateElement(s.children)
+                      : null) as ReactNode
+            );
+        });
+    };
     return React.createElement(
         'g',
         { id: id, transform: `translate(${x}, ${y})`, ...gPointerEvents },
         attrs.randomId !== 'undefined' ? (
-            attrs.svgs.map(s => {
-                const coreProps =
-                    attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
-                        ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
-                        : {};
-                const [calX, calY] = calcFuncInBatch(
-                    [s.x, s.y],
-                    attrs.components.map(s => s.id),
-                    attrs.components.map(s => s.value),
-                    attrs.components.map(s => s.type)
-                );
-                return React.createElement(
-                    s.type,
-                    {
-                        x: calX,
-                        y: calY,
-                        ...modifyAttributes(
-                            s.attrs,
-                            [calX, calY, ...attrs.components.map(s => s.value)],
-                            ['number', 'number', ...attrs.components.map(s => s.type)]
-                        ),
-                        key: s.id,
-                        ...coreProps,
-                    },
-                    ('children' in s.attrs
-                        ? calcFunc(
-                              s.attrs.children as string,
-                              ...attrs.components.map(s => s.label)
-                          )(...attrs.components.map(s => s.value))
-                        : null) as ReactNode
-                );
-            })
+            dfsCreateElement(attrs.svgs)
         ) : (
             <>
                 <circle r={5} />
