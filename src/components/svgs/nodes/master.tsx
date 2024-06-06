@@ -82,11 +82,11 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                     key: s.id,
                     ...coreProps,
                 },
-                ('_rmp_children_text' in calcAttrs
-                    ? (calcAttrs._rmp_children_text as string)
-                    : s.children
-                      ? dfsCreateElement(s.children)
-                      : null) as ReactNode
+                s.children
+                    ? dfsCreateElement(s.children)
+                    : '_rmp_children_text' in calcAttrs
+                      ? (calcAttrs._rmp_children_text as string)
+                      : null
             );
         });
     };
@@ -159,7 +159,7 @@ export const ImportMaster = (props: { isOpen: boolean; onClose: () => void; onSu
                     <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
-                    <Button colorScheme="red" onClick={handleChange}>
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
                         {t('apply')}
                     </Button>
                 </ModalFooter>
@@ -199,7 +199,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         param.components.forEach((c, i) => {
             param.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
         });
-        if (param.color !== undefined) param.color.value = param.color.defaultValue;
+        if (param.color !== undefined) param.color.value = attrs.color ? attrs.color.value : param.color.defaultValue;
         handleAttrsUpdate(id, param);
     };
 
