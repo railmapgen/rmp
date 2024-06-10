@@ -19,6 +19,8 @@ import { JREastBasicStationAttributes } from '../components/svgs/stations/jr-eas
 import { JREastImportantStationAttributes } from '../components/svgs/stations/jr-east-important';
 import { FoshanMetroBasicStationAttributes } from '../components/svgs/stations/foshan-metro-basic';
 import { QingdaoMetroStationAttributes } from '../components/svgs/stations/qingdao-metro-station';
+import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
+import { LondonTubeIntStationAttributes } from '../components/svgs/stations/london-tube-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -41,6 +43,8 @@ export enum StationType {
     JREastImportant = 'jr-east-imp',
     FoshanMetroBasic = 'foshan-metro-basic',
     QingdaoMetroStation = 'qingdao-metro-basic',
+    LondonTubeBasic = 'london-tube-basic',
+    LondonTubeInt = 'london-tube-int',
 }
 
 export interface ExternalStationAttributes {
@@ -64,6 +68,8 @@ export interface ExternalStationAttributes {
     [StationType.JREastImportant]?: JREastImportantStationAttributes;
     [StationType.FoshanMetroBasic]?: FoshanMetroBasicStationAttributes;
     [StationType.QingdaoMetroStation]?: QingdaoMetroStationAttributes;
+    [StationType.LondonTubeBasic]?: LondonTubeBasicStationAttributes;
+    [StationType.LondonTubeInt]?: LondonTubeIntStationAttributes;
 }
 
 export const StationWithColor = [

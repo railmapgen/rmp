@@ -19,7 +19,7 @@ const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
 
 const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, newLine, handleClick } = props;
+    const { id, type, path, styleAttrs, handleClick } = props;
     const { color = defaultJREastSingleColorPatternAttributes.color } =
         styleAttrs ?? defaultJREastSingleColorPatternAttributes;
 
@@ -85,8 +85,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                 strokeWidth="0.1"
                 strokeOpacity="0"
                 cursor="pointer"
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
+                onClick={onClick}
             />
         </g>
     );
