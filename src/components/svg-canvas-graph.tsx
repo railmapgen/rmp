@@ -114,7 +114,7 @@ const SvgCanvas = () => {
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
-            const connectableNodesType = [...Object.values(StationType), MiscNodeType.Virtual];
+            const connectableNodesType = [...Object.values(StationType), MiscNodeType.Virtual, MiscNodeType.Master];
             const couldActiveBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
@@ -168,7 +168,7 @@ const SvgCanvas = () => {
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));
 
-        if (mode.startsWith('station') || mode.startsWith('misc-node-virtual')) {
+        if (mode.startsWith('station') || mode.startsWith('misc-node-virtual') || mode.startsWith('misc-node-master')) {
             const x = e.clientX - document.getElementById('canvas')!.getBoundingClientRect().left;
             const y = e.clientY - document.getElementById('canvas')!.getBoundingClientRect().top;
             // Add station in the current line
