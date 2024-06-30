@@ -75,18 +75,23 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                 attrs.components.map(s => s.value),
                 attrs.components.map(s => s.type)
             );
-            return React.createElement(
-                s.type,
-                {
-                    ...calcAttrs,
-                    key: s.id,
-                    ...coreProps,
-                },
-                s.children
-                    ? dfsCreateElement(s.children)
-                    : '_rmp_children_text' in calcAttrs
-                      ? (calcAttrs._rmp_children_text as string)
-                      : null
+            return (
+                <g key={s.id} transform={`translate(${calcAttrs.x ?? 0}, ${calcAttrs.y ?? 0})`}>
+                    {React.createElement(
+                        s.type,
+                        {
+                            ...calcAttrs,
+                            x: 0,
+                            y: 0,
+                            ...coreProps,
+                        },
+                        s.children
+                            ? dfsCreateElement(s.children)
+                            : '_rmp_children_text' in calcAttrs
+                              ? (calcAttrs._rmp_children_text as string)
+                              : null
+                    )}
+                </g>
             );
         });
     };
