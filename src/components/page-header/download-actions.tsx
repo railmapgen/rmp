@@ -29,7 +29,7 @@ import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
-import { downloadAs, downloadBlobAs, makeImages } from '../../util/download';
+import { downloadAs, downloadBlobAs, makeRenderReadySVGElement } from '../../util/download';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
@@ -143,22 +143,25 @@ export default function DownloadActions() {
                 isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
             );
 
-        const { elem, width, height } = await makeImages(
+        const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
             isAttachSelected,
             isUseSystemFontsSelected,
             svgVersion
         );
+        // white spaces will be converted to &nbsp; and will fail the canvas render process
+        // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
+        const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ');
 
         if (format === 'svg') {
-            downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', elem.outerHTML);
+            downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
             return;
         }
 
         // append to document to render the svg
         document.body.appendChild(elem);
         // convert it to an encoded string
-        const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(elem.outerHTML)));
+        const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
         // release after use
         document.body.removeChild(elem);
         elem.remove();
@@ -186,6 +189,7 @@ export default function DownloadActions() {
                             // See #301 for more discussion and more on https://github.com/jhildenbiddle/canvas-size#test-results
                             // Possible solutions include RazrFalcon/resvg and yisibl/resvg-js.
                             dispatch(setGlobalAlert({ status: 'error', message: t('header.download.imageTooBig') }));
+                            return;
                         }
                         downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!);
                     }, 'image/png');
