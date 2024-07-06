@@ -8,6 +8,7 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    useToast,
 } from '@chakra-ui/react';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -176,6 +177,7 @@ export const ImportMaster = (props: { isOpen: boolean; onClose: () => void; onSu
 const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
+    const toast = useToast();
     const {
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
@@ -200,9 +202,26 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
             components: p.components,
             color: p.color,
             core: p.core,
+            version: p.version,
         };
+        if (!param.version) {
+            toast({
+                title: 'Outdated configuration!',
+                status: 'error' as const,
+                duration: 9000,
+                isClosable: true,
+            });
+            return;
+        }
         param.components.forEach((c, i) => {
             param.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
+        });
+        param.svgs.forEach((s, i) => {
+            for (const key in s.attrs) {
+                if (Object.prototype.hasOwnProperty.call(s.attrs, key)) {
+                    param.svgs[i].attrs[key] = s.attrs[key].slice(1);
+                }
+            }
         });
         if (param.color !== undefined) param.color.value = attrs.color ? attrs.color.value : param.color.defaultValue;
         handleAttrsUpdate(id, param);

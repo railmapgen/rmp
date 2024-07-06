@@ -15,6 +15,7 @@ export interface MasterComponent {
 
 export interface MasterParam {
     randomId: string;
+    version?: number;
     nodeType: 'MiscNode' | 'Station';
     svgs: MasterSvgsElem[];
     components: MasterComponent[];
