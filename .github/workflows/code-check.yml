@@ -13,8 +13,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: latest
+      - run: rm package-lock.json
       - run: npm i
-      - run: npm i @rollup/rollup-linux-x64-gnu
       - name: Check
         run: |
           npm run lint
