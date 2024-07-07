@@ -1,6 +1,7 @@
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -9,7 +10,6 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
-import { AttrsProps, CityCode } from '../../../../constants/constants';
 
 const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
