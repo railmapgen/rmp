@@ -62,7 +62,6 @@
         "test": "vitest",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
-        "postinstall": "npm install --global rollup",
         "preview": "vite preview"
     },
     "version": "5.0.0"
