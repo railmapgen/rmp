@@ -413,4 +413,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":31}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('31 -> 32', () => {
+        // Bump save version to support Railway line style
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_nO6Tr5nD9m","attributes":{"visible":true,"zIndex":0,"x":290,"y":400,"type":"virtual","virtual":{}}},{"key":"misc_node_pZfw7VPwDb","attributes":{"visible":true,"zIndex":0,"x":290,"y":495,"type":"virtual","virtual":{}}}],"edges":[{"key":"line_9lFz3Aeyaz","source":"misc_node_nO6Tr5nD9m","target":"misc_node_pZfw7VPwDb","attributes":{"visible":true,"zIndex":0,"type":"diagonal","diagonal":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":10},"style":"china-railway","reconcileId":"","china-railway":{}}}]},"svgViewBoxZoom":40,"svgViewBoxMin":{"x":212.953125,"y":258.939453125},"version":31}';
+        const newParam = UPGRADE_COLLECTION[31](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_nO6Tr5nD9m","attributes":{"visible":true,"zIndex":0,"x":290,"y":400,"type":"virtual","virtual":{}}},{"key":"misc_node_pZfw7VPwDb","attributes":{"visible":true,"zIndex":0,"x":290,"y":495,"type":"virtual","virtual":{}}}],"edges":[{"key":"line_9lFz3Aeyaz","source":"misc_node_nO6Tr5nD9m","target":"misc_node_pZfw7VPwDb","attributes":{"visible":true,"zIndex":0,"type":"diagonal","diagonal":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":10},"style":"china-railway","reconcileId":"","china-railway":{"color":["shanghai","jsr","#000000","#fff"]}}}]},"svgViewBoxZoom":40,"svgViewBoxMin":{"x":212.953125,"y":258.939453125},"version":32}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
