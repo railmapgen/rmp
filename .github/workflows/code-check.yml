@@ -10,10 +10,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - run: npm i --no-package-lock
+          node-version: latest
+      - run: npm i
       - name: Check
         run: |
           npm run lint
