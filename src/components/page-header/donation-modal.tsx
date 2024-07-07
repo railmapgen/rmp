@@ -38,7 +38,7 @@ const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
         if (rmgRuntime.isStandaloneWindow()) {
             window.open('/rmp-gallery/#/donation', '_blank');
         } else {
-            rmgRuntime.openApp('rmp-gallery', '/rmp-gallery/#/donation');
+            rmgRuntime.openApp({ appId: 'rmp-gallery', hash: '/donation' });
         }
     };
 
