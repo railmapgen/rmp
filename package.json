@@ -56,11 +56,6 @@
         "vite-plugin-checker": "^0.7.0",
         "vitest": "^1.6.0"
     },
-    "overrides": {
-        "vite": {
-            "rollup": "npm:@rollup/wasm-node"
-        }
-    },
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
