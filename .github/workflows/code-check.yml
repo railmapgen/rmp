@@ -13,9 +13,7 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '20'
-      - run: |
-          rm package-lock.json
-          npm i
+      - run: npm i
       - name: Check
         run: |
           npm run lint
