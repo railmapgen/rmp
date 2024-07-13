@@ -44,7 +44,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
             if (Object.prototype.hasOwnProperty.call(t, key)) {
                 try {
                     modifiedAttrs[key] = calcFunc(
-                        t[key],
+                        (t[key] as string).slice(1),
                         ...attrs.components.map(s => s.label),
                         'color'
                     )(
@@ -215,13 +215,6 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         }
         param.components.forEach((c, i) => {
             param.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
-        });
-        param.svgs.forEach((s, i) => {
-            for (const key in s.attrs) {
-                if (Object.prototype.hasOwnProperty.call(s.attrs, key)) {
-                    param.svgs[i].attrs[key] = s.attrs[key].slice(1);
-                }
-            }
         });
         if (param.color !== undefined) param.color.value = attrs.color ? attrs.color.value : param.color.defaultValue;
         handleAttrsUpdate(id, param);
