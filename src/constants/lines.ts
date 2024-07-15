@@ -106,7 +106,7 @@ export interface LineWrapperComponentProps {
      * https://stackoverflow.com/a/49174322
      */
     newLine: boolean;
-    handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
+    onPointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
     type: LinePathType;
     attrs: ExternalLinePathAttributes[keyof ExternalLinePathAttributes];
     styleType: LineStyleType;
@@ -131,7 +131,7 @@ export interface LineStyleComponentProps<
      * https://stackoverflow.com/a/49174322
      */
     newLine: boolean;
-    handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
+    handlePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
 }
 
 /**

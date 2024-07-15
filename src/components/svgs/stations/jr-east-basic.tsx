@@ -185,10 +185,10 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     {important && (
                         <rect
                             x={iconImportantDX}
-                            y={iconImportantDY}
+                            y={iconImportantDY + 1.75}
                             width={bBox.width + textImportantSafeD}
-                            height={iconImportantHeight}
-                            ry={iconImportantHeight / 2}
+                            height={iconImportantHeight - 3.5}
+                            ry={(iconImportantHeight - 3.5) / 2}
                             fill="black"
                         />
                     )}
@@ -222,11 +222,11 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     <g transform={`translate(0, ${textVerticalY})`} textAnchor={textVerticalAnchor.ja}>
                         {important && (
                             <rect
-                                x={-(iconImportantWidth - 6) / 2}
-                                y={iconImportantVerticalDY - textImportantSafeD / 2}
-                                width={iconImportantWidth - 6}
-                                height={iconImportantHeight + textImportantSafeD}
-                                rx={(iconImportantWidth - 6) / 2}
+                                x={-(iconImportantWidth - 8) / 2}
+                                y={iconImportantVerticalDY}
+                                width={iconImportantWidth - 8}
+                                height={iconImportantHeight}
+                                rx={(iconImportantWidth - 8) / 2}
                                 fill="black"
                             />
                         )}
@@ -238,6 +238,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             grow="bidirectional"
                             baseOffset={0}
                             baseDY={textVerticalBaseDY}
+                            y="-2.75"
                             className="rmp-name__jreast_ja"
                             fill={important ? 'white' : 'black'}
                         />

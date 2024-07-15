@@ -15,12 +15,12 @@ import {
 import { CityCode } from '../../../../constants/constants';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
-    const { id, path, styleAttrs, newLine, handleClick } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultSingleColorAttributes.color } = styleAttrs ?? defaultSingleColorAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -32,7 +32,7 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
             strokeWidth="5"
             strokeLinecap="round"
             cursor="pointer"
-            onClick={newLine ? undefined : onClick}
+            onPointerDown={newLine ? undefined : onPointerDown}
             pointerEvents={newLine ? 'none' : undefined}
         />
     );

@@ -29,7 +29,7 @@ import { LineStyleComponentProps, LineStyleType } from '../../../constants/lines
 // MyLineStyleAttributes will be added in the next step
 const MyLineStyleComponent = (props: LineStyleComponentProps<MyLineStyleAttributes>) => {
     // destructure the props
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     // destructure the specific attributes of your line style
     // defaultMyLineStyleAttributes will be added in the 4th step
     const {
@@ -38,9 +38,9 @@ const MyLineStyleComponent = (props: LineStyleComponentProps<MyLineStyleAttribut
     } = styleAttrs ?? defaultRiverAttributes;
 
     // some boilerplate to cache a function between re-renders
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     // return an SVG JSX element
@@ -53,7 +53,7 @@ const MyLineStyleComponent = (props: LineStyleComponentProps<MyLineStyleAttribut
             strokeWidth="5"
             strokeLinecap="round"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };

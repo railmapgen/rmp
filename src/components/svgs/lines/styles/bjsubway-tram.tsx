@@ -15,27 +15,18 @@ import {
 import { CityCode } from '../../../../constants/constants';
 
 const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultBjsubwayTramAttributes.color } = styleAttrs ?? defaultBjsubwayTramAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
-        <g id={id}>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
             <path d={path} fill="none" stroke="white" strokeWidth="1.67" />
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeOpacity="0"
-                strokeWidth={5}
-                cursor="pointer"
-                onClick={onClick}
-            />
         </g>
     );
 };

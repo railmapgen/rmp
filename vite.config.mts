@@ -12,7 +12,7 @@ export default defineConfig({
     plugins: [
         react(),
         svgr(),
-        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src' } }),
+        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } }),
         legacy({
             targets: ['defaults', '>0.2%', 'not dead'],
             modernPolyfills: true,
@@ -37,23 +37,6 @@ export default defineConfig({
     },
     server: {
         proxy: {
-            '/rmg/': {
-                target: 'https://railmapgen.github.io',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/rmg-palette/': {
-                target: 'http://localhost:8000',
-                // target: 'https://railmapgen.github.io',
-                changeOrigin: true,
-                secure: false,
-            },
-            '/rmp-gallery/': {
-                target: 'http://localhost:8000',
-                // target: 'https://railmapgen.github.io',
-                changeOrigin: true,
-                secure: false,
-            },
             '^(/styles/|/fonts/|/rmg/|/rmg-palette/|/rmp-gallery/)': {
                 target: 'https://railmapgen.github.io',
                 changeOrigin: true,

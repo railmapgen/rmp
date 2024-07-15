@@ -18,22 +18,28 @@ import {
     setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
-import { getMousePosition, roundToNearestN } from '../util/helpers';
+import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { getLines, getMiscNodes, getStations } from '../util/process-elements';
 import reconcileLines, { generateReconciledPath } from '../util/reconcile';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import LineWrapper from './svgs/lines/line-wrapper';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
+import stations from './svgs/stations/stations';
 import allStations from './svgs/stations/stations';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
+    const refreshAndSave = () => {
+        dispatch(setRefreshNodes());
+        dispatch(setRefreshEdges());
+        dispatch(saveGraph(graph.current.export()));
+    };
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
         refresh: { nodes: refreshNodes, edges: refreshEdges },
@@ -156,21 +162,78 @@ const SvgCanvas = () => {
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
-    const handleEdgeClick = useEvent((edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+    const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
+        e.stopPropagation();
         if (!e.shiftKey) dispatch(clearSelected());
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));
+
+        if (mode.startsWith('station') || mode.startsWith('misc-node-virtual')) {
+            const x = e.clientX - document.getElementById('canvas')!.getBoundingClientRect().left;
+            const y = e.clientY - document.getElementById('canvas')!.getBoundingClientRect().top;
+            // Add station in the current line
+            const isStation = mode.startsWith('station');
+            const rand = nanoid(10);
+            const id = isStation ? (`stn_${rand}` as StnId) : (`misc_node_${rand}` as MiscNodeId);
+            const stnType = isStation ? (mode.slice(8) as StationType) : (mode.slice(10) as MiscNodeType);
+            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+            // deep copy to prevent mutual reference
+            const attr = isStation
+                ? structuredClone(stations[stnType as StationType].defaultAttrs)
+                : structuredClone(miscNodes[stnType as MiscNodeType].defaultAttrs);
+            if ('color' in attr) attr.color = theme;
+            graph.current.addNode(id, {
+                visible: true,
+                zIndex: 0,
+                x: roundToNearestN(svgX, 5),
+                y: roundToNearestN(svgY, 5),
+                type: stnType,
+                [stnType]: attr,
+            });
+
+            const edgeAttrs = graph.current.getEdgeAttributes(edge);
+            const { zIndex, type: linePathType, style: lineStyleType } = edgeAttrs;
+            const typeAttr = edgeAttrs[linePathType];
+            const styleAttr = edgeAttrs[lineStyleType];
+            const [source, target] = graph.current.extremities(edge);
+            graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
+                visible: true,
+                zIndex,
+                type: linePathType,
+                [linePathType]: structuredClone(typeAttr),
+                style: lineStyleType,
+                [lineStyleType]: structuredClone(styleAttr),
+                reconcileId: '',
+            });
+            graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, id, target, {
+                visible: true,
+                zIndex,
+                type: linePathType,
+                [linePathType]: structuredClone(typeAttr),
+                style: lineStyleType,
+                [lineStyleType]: structuredClone(styleAttr),
+                reconcileId: '',
+            });
+            graph.current.dropEdge(edge);
+            refreshAndSave();
+            if (isAllowProjectTelemetry) {
+                rmgRuntime.event(Events.ADD_STATION, { type: stnType });
+                rmgRuntime.event(Events.ADD_LINE, { type: linePathType });
+            }
+            dispatch(setMode('free'));
+            dispatch(setSelected(new Set([id])));
+        }
     });
 
     // These are elements that the svg draws from.
     // They are updated by the refresh triggers in the runtime state.
-    const [stations, setStations] = React.useState(getStations(graph.current));
+    const [stationsElem, setStationsElem] = React.useState(getStations(graph.current));
     const [nodes, setNodes] = React.useState(getMiscNodes(graph.current));
     const [lines, setLines] = React.useState(getLines(graph.current));
     const [reconciledLines, setReconciledLines] = React.useState([] as LineId[][]);
     const [danglingLines, setDanglingLines] = React.useState([] as LineId[]);
     React.useEffect(() => {
-        setStations(getStations(graph.current));
+        setStationsElem(getStations(graph.current));
         setNodes(getMiscNodes(graph.current));
     }, [refreshNodes]);
     React.useEffect(() => {
@@ -199,7 +262,7 @@ const SvgCanvas = () => {
                         attrs={linePaths[LinePathType.Simple].defaultAttrs}
                         styleType={LineStyleType.SingleColor}
                         styleAttrs={{ color: ['', '', '#c0c0c0', '#fff'] }}
-                        handleClick={handleEdgeClick}
+                        onPointerDown={handleEdgePointerDown}
                     />
                 );
             })}
@@ -225,7 +288,7 @@ const SvgCanvas = () => {
                         path={path}
                         styleAttrs={styleAttrs}
                         newLine={false}
-                        handleClick={handleEdgeClick}
+                        handlePointerDown={handleEdgePointerDown}
                     />
                 );
             })}
@@ -243,7 +306,7 @@ const SvgCanvas = () => {
                         attrs={attr}
                         styleType={style}
                         styleAttrs={styleAttr}
-                        handleClick={handleEdgeClick}
+                        onPointerDown={handleEdgePointerDown}
                     />
                 );
             })}
@@ -264,7 +327,7 @@ const SvgCanvas = () => {
                     />
                 );
             })}
-            {stations.map(station => {
+            {stationsElem.map(station => {
                 const { node, x, y, type } = station;
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 return (
