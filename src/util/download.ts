@@ -34,7 +34,7 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * @param useSystemFonts Whether to add font-family to elements with fonts classes.
  * @returns The all in one SVGSVGElement and the size of canvas.
  */
-export const makeImages = async (
+export const makeRenderReadySVGElement = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     generateRMPInfo: boolean,
     useSystemFonts: boolean,

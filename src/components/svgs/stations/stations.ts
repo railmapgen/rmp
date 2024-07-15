@@ -5,6 +5,7 @@ import shmetroIntStation from './shmetro-int';
 import shmetroOsysiStation from './shmetro-osysi';
 import gzmtrBasicStation from './gzmtr-basic';
 import gzmtrIntStation from './gzmtr-int';
+import gzmtrInt2024Station from './gzmtr-int-2024';
 import bjsubwayBasicStation from './bjsubway-basic';
 import bjsubwayIntStation from './bjsubway-int';
 import mtrStation from './mtr';
@@ -28,6 +29,7 @@ const stations = {
     [StationType.ShmetroOutOfSystemInt]: shmetroOsysiStation,
     [StationType.GzmtrBasic]: gzmtrBasicStation,
     [StationType.GzmtrInt]: gzmtrIntStation,
+    [StationType.GzmtrInt2024]: gzmtrInt2024Station,
     [StationType.BjsubwayBasic]: bjsubwayBasicStation,
     [StationType.BjsubwayInt]: bjsubwayIntStation,
     [StationType.MTR]: mtrStation,

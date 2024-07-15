@@ -5,6 +5,7 @@ import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro
 import { ShmetroOsysiStationAttributes } from '../components/svgs/stations/shmetro-osysi';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
+import { GzmtrInt2024StationAttributes } from '../components/svgs/stations/gzmtr-int-2024';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 import { MTRStationAttributes } from '../components/svgs/stations/mtr';
@@ -28,6 +29,7 @@ export enum StationType {
     ShmetroOutOfSystemInt = 'shmetro-osysi',
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
+    GzmtrInt2024 = 'gzmtr-int-2024',
     BjsubwayBasic = 'bjsubway-basic',
     BjsubwayInt = 'bjsubway-int',
     MTR = 'mtr',
@@ -52,6 +54,7 @@ export interface ExternalStationAttributes {
     [StationType.ShmetroOutOfSystemInt]?: ShmetroOsysiStationAttributes;
     [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
+    [StationType.GzmtrInt2024]?: GzmtrInt2024StationAttributes;
     [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;
     [StationType.BjsubwayInt]?: BjsubwayIntStationAttributes;
     [StationType.MTR]?: MTRStationAttributes;
@@ -68,6 +71,16 @@ export interface ExternalStationAttributes {
     [StationType.TokyoMetroBasic]?: TokyoMetroBasicStationAttributes;
     [StationType.TokyoMetroInt]?: TokyoMetroIntStationAttributes;
 }
+
+export const StationWithColor = [
+    StationType.ShmetroBasic2020,
+    StationType.GzmtrBasic,
+    StationType.SuzhouRTBasic,
+    StationType.KunmingRTBasic,
+    StationType.MRTBasic,
+    StationType.FoshanMetroBasic,
+    StationType.QingdaoMetroStation,
+];
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 

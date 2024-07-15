@@ -15,7 +15,7 @@ import { MultilineText } from '../common/multiline-text';
 
 const NAME_JRE_BASIC = {
     ja: {
-        size: 10,
+        size: 15,
         baseOffset: 1,
     },
     en: {
@@ -61,7 +61,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
     const textSafeD = (textVertical ? 0.1 : 0.7) * NAME_JRE_BASIC.ja.size;
     const iconLength = Math.max(textLength + textSafeD, minLength);
     const iconWidth = textVertical ? NAME_JRE_BASIC.ja.size + ICON_SAFE_D : iconLength;
-    const iconHeight = textVertical ? iconLength : NAME_JRE_BASIC.ja.size + ICON_SAFE_D;
+    const iconHeight = textVertical ? iconLength - 5 : NAME_JRE_BASIC.ja.size + ICON_SAFE_D;
 
     const textENDX = { left: -iconWidth / 2 - 1, middle: 0, right: iconWidth / 2 + 1 }[nameOffsetX];
     const textENDY = { top: -iconHeight / 2 - 1, middle: 0, bottom: iconHeight / 2 + 1 }[nameOffsetY];
@@ -85,7 +85,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                 {!textVertical ? (
                     <text
                         ref={textJAEl}
-                        y="-0.525"
+                        y="-1"
                         className="rmp-name__jreast_ja"
                         textAnchor="middle"
                         fontSize={NAME_JRE_BASIC.ja.size}

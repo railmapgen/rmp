@@ -109,13 +109,22 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     };
 
     // A one time url match to see if it is a work share link and apply the work if needed.
+    //
+    // Since rmt will pass all params in `searchParams` here,
+    // e.g. https://railmapgen.github.io/?app=rmp&searchParams=id.hostname
+    // we will split id and host name from it and `fetchAndApplyTemplate`.
+    //
+    // It's really ugly to have multiple search params in searchParams after `encodeURIComponent`,
+    // so we are joining id and host by '.'.
     React.useEffect(() => {
         const url = new URL(window.location.href);
-        const path = url.pathname;
-        if (path.includes('/s/')) {
-            history.replaceState({}, t('about.rmp'), url.pathname.substring(0, url.pathname.indexOf('s/')));
-            const id = path.substring(path.lastIndexOf('s/') + 2);
-            const host = url.searchParams.get('host') ?? undefined;
+        const searchParams = url.searchParams;
+        if (searchParams.size > 0) {
+            const params = searchParams.keys().next()['value'] as string;
+            const firstDotIndex = params.indexOf('.');
+            const id = params.substring(0, firstDotIndex === -1 ? undefined : firstDotIndex);
+            let host: string | undefined = undefined;
+            if (firstDotIndex !== -1) host = params.substring(firstDotIndex + 1);
             fetchAndApplyTemplate(id, host);
         }
     }, []);

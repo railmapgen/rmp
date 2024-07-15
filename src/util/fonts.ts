@@ -22,6 +22,10 @@ const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', 
 
 /**
  * Node type to fonts' css related data.
+ *
+ * NOTE: If the font name contains spaces, double quotes should be added.
+ * e.g., cssFont: { 'M PLUS 2': MPLUS2 }, -> cssFont: { '"M PLUS 2"': MPLUS2 },
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1706648
  */
 export const FONTS_CSS: {
     [k in NodeType]?: {
@@ -47,12 +51,12 @@ export const FONTS_CSS: {
     },
     [StationType.JREastBasic]: {
         className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
     [StationType.JREastImportant]: {
         className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
     [MiscNodeType.BerlinSBahnLineBadge]: {
@@ -67,7 +71,7 @@ export const FONTS_CSS: {
     },
     [MiscNodeType.JREastLineBadge]: {
         className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
     [StationType.TokyoMetroBasic]: {
@@ -91,7 +95,11 @@ export const loadFontCss = async (type: NodeType) => {
     if (loadedCssNames.includes(cssName)) return;
 
     loadedCssNames.push(cssName);
-    await Promise.all(Object.entries(cssFont).map(([font, config]) => rmgRuntime.loadFont(font, config)));
+    await Promise.all(
+        (Object.entries(cssFont).filter(([_, config]) => config !== undefined) as [string, FontFaceConfig][]).map(
+            ([font, config]) => rmgRuntime.loadFont(font, { configs: [config] })
+        )
+    );
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.id = cssName;

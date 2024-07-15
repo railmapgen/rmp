@@ -22,7 +22,7 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
             ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
         >,
         newLine,
-        handleClick,
+        onPointerDown,
     } = props;
     const { x1, y1, x2, y2 } = props;
 
@@ -43,7 +43,7 @@ const LineWrapper = (props: LineWrapperComponentProps) => {
             path={path}
             styleAttrs={styleAttrs}
             newLine={newLine}
-            handleClick={handleClick}
+            handlePointerDown={onPointerDown}
         />
     );
 };

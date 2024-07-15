@@ -39,7 +39,7 @@
         <script>
             const d = new Date();const tag=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2, '0')}01`;const ver=`${String(d.getFullYear()).slice(-2)}.${d.getMonth()+1}.1`;
             document.getElementById('win').href=`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`;
-            document.getElementById('mac').href=`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64.dmg`;
+            document.getElementById('mac').href=`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_aarch64.dmg`;
             document.getElementById('linux').href=`https://mirror.ghproxy.com/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`;
         </script>
         <script type="module" src="src/index.tsx"></script>
