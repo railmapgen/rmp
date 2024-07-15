@@ -95,16 +95,16 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
                                 </text>
                             </>
                         ) : (
-                            <>
-                                <circle r="6" fill={bgColor}></circle>
-                                <image
-                                    width="12"
-                                    height="12"
-                                    x="-6"
-                                    y="-6"
-                                    href={import.meta.env.BASE_URL + `images/facilities/airport_sg.svg`}
+                            <g transform="translate(-6, -6) scale(4.5)">
+                                <path
+                                    d="M2.467 0H.226A.226.226 0 0 0 0 .226v2.241a.225.225 0 0 0 .226.225h2.241a.225.225 0 0 0 .225-.225V.226A.226.226 0 0 0 2.467 0"
+                                    style={{ fill: '#2d2a26' }}
                                 />
-                            </>
+                                <path
+                                    d="M1.5.746v.3l.73.642a.08.08 0 0 1 .022.05v.12c0 .017-.012.025-.027.018L1.5 1.529l-.06.541.2.113a.03.03 0 0 1 .013.023V2.3a.01.01 0 0 1-.014.011l-.293-.091-.286.087a.01.01 0 0 1-.014-.007v-.09a.03.03 0 0 1 .013-.023l.2-.113-.059-.545-.724.348a.018.018 0 0 1-.028-.018v-.12a.07.07 0 0 1 .023-.05l.73-.642v-.3c0-.482.3-.482.3 0"
+                                    style={{ fill: '#fff', fillRule: 'evenodd' }}
+                                />
+                            </g>
                         )}
                     </g>
                 ))}

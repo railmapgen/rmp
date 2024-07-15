@@ -12,12 +12,12 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultLRTSingleColorAttributes.color } = styleAttrs ?? defaultLRTSingleColorAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -29,7 +29,7 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
             strokeWidth="2.157"
             strokeLinecap="round"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };
