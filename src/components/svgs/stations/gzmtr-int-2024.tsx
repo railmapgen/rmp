@@ -68,7 +68,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? iconBBox.x1 + textDX : nameOffsetX === 'right' ? iconBBox.x2 - textDX : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
             (iconBBox.y2 - iconBBox.y1) / 2) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor =
