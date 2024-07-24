@@ -13,7 +13,7 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
-    const { id, path, styleAttrs, newLine, handleClick } = props;
+    const { id, path, styleAttrs, handleClick } = props;
     const { color = defaultJREastSingleColorAttributes.color } = styleAttrs ?? defaultJREastSingleColorAttributes;
 
     const onClick = React.useCallback(
@@ -32,8 +32,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
                 strokeWidth="5.1"
                 strokeOpacity="0"
                 cursor="pointer"
-                onClick={newLine ? undefined : onClick}
-                pointerEvents={newLine ? 'none' : undefined}
+                onClick={onClick}
             />
         </g>
     );
