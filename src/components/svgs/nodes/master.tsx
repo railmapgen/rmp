@@ -1,23 +1,16 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import {
-    Button,
-    Modal,
-    ModalBody,
-    ModalCloseButton,
-    ModalContent,
-    ModalFooter,
-    ModalHeader,
-    ModalOverlay,
-    useToast,
-} from '@chakra-ui/react';
+import { Button, useToast } from '@chakra-ui/react';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdSettings, MdUpload } from 'react-icons/md';
 import { AttrsProps } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../../panels/theme-button';
+import { MasterManager } from '../../page-header/master-manager';
+import { MasterImport } from '../../page-header/master-import';
 
 const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -116,62 +109,10 @@ export interface MasterAttributes extends MasterParam {}
 
 const defaultMasterAttributes: MasterAttributes = {
     randomId: 'undefined',
+    label: 'Undefined',
     nodeType: 'MiscNode',
     svgs: [],
     components: [],
-};
-
-export const ImportMaster = (props: { isOpen: boolean; onClose: () => void; onSubmit: (s: string) => void }) => {
-    const { isOpen, onClose, onSubmit } = props;
-    const { t } = useTranslation();
-
-    const [param, setParam] = React.useState('');
-    const [error, setError] = React.useState('');
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'textarea',
-            label: t('Paste json from RMP style generator'),
-            value: param.toString(),
-            onChange: val => setParam(val),
-            minW: 'full',
-        },
-    ];
-
-    const handleChange = () => {
-        try {
-            onSubmit(param);
-        } catch (e) {
-            setError('Something went wrong.');
-            return;
-        }
-        onClose();
-    };
-
-    React.useEffect(() => setError(''), [isOpen]);
-
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>{t('Upload master parameter')}</ModalHeader>
-                <ModalCloseButton />
-
-                <ModalBody>
-                    <RmgFields fields={fields} />
-                    <span style={{ color: 'red' }}>{error}</span>
-                </ModalBody>
-
-                <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
-                        {t('cancel')}
-                    </Button>
-                    <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
-                        {t('apply')}
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
-    );
 };
 
 const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
@@ -183,6 +124,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const [openImport, setOpenImport] = React.useState(false);
+    const [openManager, setOpenManager] = React.useState(false);
 
     const getComponentValue = (query: string) => {
         attrs.components.forEach(c => {
@@ -195,9 +137,11 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
 
     const handleImportParam = (s: string) => {
         const p = JSON.parse(s);
+        const rid = p.id ? p.id : p.randomId;
         const param: MasterParam = {
-            randomId: p.id,
-            nodeType: p.type,
+            randomId: rid,
+            label: p.label ? p.label : rid,
+            nodeType: p.nodeType ? p.nodeType : p.type,
             svgs: p.svgs,
             components: p.components,
             color: p.color,
@@ -224,12 +168,21 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         {
             type: 'output',
             label: 'Master Type',
-            value: attrs.randomId,
+            value: attrs.label ?? attrs.randomId,
         },
         {
             type: 'custom',
             label: '',
-            component: <Button onClick={() => setOpenImport(true)}>Upload</Button>,
+            component: (
+                <>
+                    <Button onClick={() => setOpenImport(true)}>
+                        <MdUpload />
+                    </Button>
+                    <Button onClick={() => setOpenManager(true)}>
+                        <MdSettings />
+                    </Button>
+                </>
+            ),
             oneLine: true,
         },
     ];
@@ -307,7 +260,8 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
             {attrs.randomId !== 'undefined' && attrs.color !== undefined && (
                 <RmgFields fields={colorField} minW="full" />
             )}
-            <ImportMaster isOpen={openImport} onClose={() => setOpenImport(false)} onSubmit={handleImportParam} />
+            <MasterImport isOpen={openImport} onClose={() => setOpenImport(false)} onSubmit={handleImportParam} />
+            <MasterManager isOpen={openManager} onClose={() => setOpenManager(false)} />
         </>
     );
 };

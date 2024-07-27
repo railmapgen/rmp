@@ -175,6 +175,15 @@ const ToolsPanel = () => {
                             >
                                 {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                             </Button>
+                            <Button
+                                aria-label={MiscNodeType.Master}
+                                leftIcon={miscNodes[MiscNodeType.Master].icon}
+                                onClick={() => handleMiscNode(MiscNodeType.Master)}
+                                variant={mode === `misc-node-${MiscNodeType.Master}` ? 'solid' : 'outline'}
+                                sx={buttonStyle}
+                            >
+                                {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
+                            </Button>
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -215,7 +224,12 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             {Object.values(MiscNodeType)
-                                .filter(type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText)
+                                .filter(
+                                    type =>
+                                        type !== MiscNodeType.Virtual &&
+                                        type !== MiscNodeType.I18nText &&
+                                        type !== MiscNodeType.Master
+                                )
                                 .map(type => (
                                     <Button
                                         key={type}
