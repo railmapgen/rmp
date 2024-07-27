@@ -17,6 +17,7 @@ import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { I18nTextAttributes } from '../components/svgs/nodes/i18n-text';
 import { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
+import { MasterAttributes } from '../components/svgs/nodes/master';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -37,6 +38,7 @@ export enum MiscNodeType {
     Facilities = 'facilities',
     Text = 'text',
     I18nText = 'i18n-text',
+    Master = 'master',
 }
 
 export interface MiscNodeAttributes {
@@ -58,6 +60,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.I18nText]?: I18nTextAttributes;
+    [MiscNodeType.Master]?: MasterAttributes;
 }
 
 export interface NodeComponentProps<T> {
