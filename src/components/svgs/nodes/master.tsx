@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MdSettings, MdUpload } from 'react-icons/md';
 import { AttrsProps } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
-import { MasterParam, MasterSvgsElem } from '../../../constants/master';
+import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../../panels/theme-button';
@@ -89,11 +89,18 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
             );
         });
     };
+
+    const masterTransform = attrs.transform ?? defaultMasterTransform;
+
     return React.createElement(
         'g',
         { id: id, transform: `translate(${x}, ${y})`, ...gPointerEvents },
         attrs.randomId !== 'undefined' ? (
-            dfsCreateElement(attrs.svgs)
+            <g
+                transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}
+            >
+                {dfsCreateElement(attrs.svgs)}
+            </g>
         ) : (
             <>
                 <circle r={5} />
@@ -110,6 +117,7 @@ export interface MasterAttributes extends MasterParam {}
 const defaultMasterAttributes: MasterAttributes = {
     randomId: 'undefined',
     label: 'Undefined',
+    transform: defaultMasterTransform,
     nodeType: 'MiscNode',
     svgs: [],
     components: [],
@@ -140,15 +148,16 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         const rid = p.id ? p.id : p.randomId;
         const param: MasterParam = {
             randomId: rid,
-            label: p.label ? p.label : rid,
-            nodeType: p.nodeType ? p.nodeType : p.type,
+            label: p.label ?? rid,
+            nodeType: p.nodeType ?? p.type,
+            transform: p.transform ?? defaultMasterTransform,
             svgs: p.svgs,
             components: p.components,
             color: p.color,
             core: p.core,
             version: p.version,
         };
-        if (!param.version) {
+        if (!param.version || param.version < 2) {
             toast({
                 title: 'Outdated configuration!',
                 status: 'error' as const,

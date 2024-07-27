@@ -50,7 +50,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
             const masterList = getMasterNodeTypes(graph.current)
                 .filter(p => p.randomId !== 'undefined')
                 .map(p => {
-                    return { id: p.randomId, value: p.randomId, param: p };
+                    return { id: p.randomId, value: p.label ?? p.randomId, param: p };
                 });
             setList(allowAddNewMaster ? [defaultMasterTypeList].concat(masterList) : masterList);
         }

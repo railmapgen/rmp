@@ -16,7 +16,7 @@ import React from 'react';
 import { MdDelete, MdDownload, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
 import { MiscNodeType } from '../../constants/nodes';
-import { MasterParam } from '../../constants/master';
+import { defaultMasterTransform, MasterParam } from '../../constants/master';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/param/param-slice';
@@ -48,15 +48,16 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         const id = p.id ? p.id : p.randomId;
         const param: MasterParam = {
             randomId: id,
-            label: p.label ? p.label : id,
-            nodeType: p.nodeType ? p.nodeType : p.type,
+            label: p.label ?? id,
+            nodeType: p.nodeType ?? p.type,
+            transform: p.transform ?? defaultMasterTransform,
             svgs: p.svgs,
             components: p.components,
             color: p.color,
             core: p.core,
             version: p.version,
         };
-        if (!param.version) {
+        if (!param.version || param.version < 2) {
             toast({
                 title: 'Outdated configuration!',
                 status: 'error' as const,
