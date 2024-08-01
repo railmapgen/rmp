@@ -433,7 +433,7 @@
         },
         "settings": {
             "title": "설정",
-            "pro": "잠시 무료 PRO 기능입니다!",
+            "pro": "이것은 PRO 기능이며 구독 계정이 필요합니다.",
             "preference": {
                 "title": "선호",
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다"

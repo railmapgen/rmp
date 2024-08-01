@@ -4,6 +4,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { LocalStorageKey } from '../constants/constants';
 import { onRMTSaveUpdate } from '../util/rmt-save';
 import { stringifyParam } from '../util/save';
+import accountReducer from './account/account-slice';
 import appReducer from './app/app-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
@@ -11,6 +12,7 @@ import runtimeReducer from './runtime/runtime-slice';
 enableMapSet();
 
 const rootReducer = combineReducers({
+    account: accountReducer,
     app: appReducer,
     param: paramReducer,
     runtime: runtimeReducer,

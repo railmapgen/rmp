@@ -21,6 +21,7 @@ import {
     RadioGroup,
     Stack,
     Text,
+    Tooltip,
     useToast,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -36,6 +37,7 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
     const {
         preference: { unlockSimplePathAttempts },
     } = useRootSelector(state => state.app);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const toast = useToast();
     const { t } = useTranslation();
 
@@ -512,13 +514,18 @@ export const UnlockSimplePathModal = (props: { isOpen: boolean; onClose: () => v
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button onClick={handleChange} isDisabled={unlockSimplePathAttempts <= 0}>
-                        {unlockSimplePathAttempts < 0
-                            ? t('header.settings.procedures.unlockSimplePath.unlocked')
-                            : unlockSimplePathAttempts === 0
-                              ? t('header.settings.procedures.unlockSimplePath.maximumAttemptsExceed')
-                              : t('header.settings.procedures.unlockSimplePath.check')}
-                    </Button>
+                    <Tooltip label={t('header.settings.pro')} isOpen={!activeSubscriptions.RMP_CLOUD}>
+                        <Button
+                            onClick={handleChange}
+                            isDisabled={unlockSimplePathAttempts <= 0 || !activeSubscriptions.RMP_CLOUD}
+                        >
+                            {unlockSimplePathAttempts < 0
+                                ? t('header.settings.procedures.unlockSimplePath.unlocked')
+                                : unlockSimplePathAttempts === 0
+                                  ? t('header.settings.procedures.unlockSimplePath.maximumAttemptsExceed')
+                                  : t('header.settings.procedures.unlockSimplePath.check')}
+                        </Button>
+                    </Tooltip>
                 </ModalFooter>
             </ModalContent>
         </Modal>
