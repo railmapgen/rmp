@@ -1,11 +1,12 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import { enableMapSet } from 'immer';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { LocalStorageKey } from '../constants/constants';
+import { onRMTSaveUpdate } from '../util/rmt-save';
 import { stringifyParam } from '../util/save';
 import appReducer from './app/app-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
-import { enableMapSet } from 'immer';
 
 enableMapSet();
 
@@ -26,7 +27,10 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
 const store = createStore();
 export type RootStore = typeof store;
 
-store.subscribe(() => {
+store.subscribe(async () => {
+    // notify rmt to update the save
+    await onRMTSaveUpdate(store.getState().param.present);
+
     localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(store.getState().param));
     localStorage.setItem(LocalStorageKey.APP, JSON.stringify(store.getState().app));
 });
