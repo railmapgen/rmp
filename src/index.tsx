@@ -70,5 +70,5 @@ upgrade(param).then(param => {
 
     registerOnRMTTokenResponse(store);
     requestToken();
-    window.setInterval(() => requestToken(), 1 * 60 * 1000);
+    window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
 });
