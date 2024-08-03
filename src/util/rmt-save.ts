@@ -78,7 +78,7 @@ export const registerOnRMTTokenResponse = async (store: ReturnType<typeof create
                 return;
             }
 
-            const rep = await fetch('http://localhost:3000/v1/subscription', {
+            const rep = await fetch('https://railmapgen.org/v1/subscription', {
                 headers: {
                     accept: 'application/json',
                     'Content-Type': 'application/json',
