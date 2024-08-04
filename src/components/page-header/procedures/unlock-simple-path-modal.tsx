@@ -8,7 +8,7 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
-    Tooltip
+    Tooltip,
 } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import { useRootDispatch, useRootSelector } from '../../../redux';
