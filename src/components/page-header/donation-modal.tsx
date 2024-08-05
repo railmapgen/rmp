@@ -148,7 +148,7 @@ const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
                         <Tag
                             size="lg"
                             w="85%"
-                            onClick={() => window.open('https://afdian.net/a/rail-map-toolkit', '_blank')}
+                            onClick={() => window.open('https://afdian.com/a/rail-map-toolkit', '_blank')}
                             cursor="pointer"
                         >
                             <Avatar src={AfdianIcon} size="lg" my={2} ml={-1} mr={2} />
