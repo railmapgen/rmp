@@ -43,7 +43,7 @@ let notifyRMTSaveTimeout: number | undefined;
 
 const SAVE_UPDATE_TIMEOUT_MS = 60 * 1000; // 60s
 
-export const onRMTSaveUpdate = async (graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     if (notifyRMTSaveTimeout) {
         return;
     }
