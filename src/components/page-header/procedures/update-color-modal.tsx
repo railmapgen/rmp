@@ -91,8 +91,7 @@ const isTheme = (arr: any[]): boolean => {
         arr.length >= 4 && // InterchangeInfo will append strings after Theme
         arr.every(elem => typeof elem === 'string') && // type ok
         !!arr[2].match(/^#[0-9a-fA-F]{6}$/) && // hex ok
-        // @ts-expect-error its okay to return false on any type
-        Object.values(MonoColour).includes(arr[3]) // bg ok
+        Object.values(MonoColour).includes(arr[3] as any) // bg ok
     );
 };
 

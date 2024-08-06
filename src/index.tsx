@@ -16,6 +16,7 @@ import {
     setUnlockSimplePath,
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
+import { registerOnRMTTokenResponse, requestToken } from './util/rmt-save';
 import { RMPSave, upgrade } from './util/save';
 
 declare global {
@@ -66,4 +67,8 @@ upgrade(param).then(param => {
 
     renderApp();
     rmgRuntime.injectUITools();
+
+    registerOnRMTTokenResponse(store);
+    requestToken();
+    window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
 });

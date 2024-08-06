@@ -124,18 +124,17 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     rightIcon={<MdReadMore />}
                                     onClick={() => setIsChangeTypeOpen(true)}
                                 >
-                                    <Box>
-                                        {t('header.settings.procedures.changeType.title')}
-                                        <Tooltip label={t('header.settings.pro')}>
-                                            <Badge
-                                                ml="1"
-                                                color="gray.50"
-                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            >
-                                                PRO
-                                            </Badge>
-                                        </Tooltip>
-                                    </Box>
+                                    {t('header.settings.procedures.changeType.title')}
+                                    <Tooltip label={t('header.settings.pro')}>
+                                        <Badge
+                                            ml="1"
+                                            color="gray.50"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                            mr="auto"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
                                 </Button>
                                 <ChangeTypeModal
                                     isOpen={isChangeTypeOpen}
@@ -173,6 +172,16 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     onClick={() => setIsUnlockSimplePathOpen(true)}
                                 >
                                     {t('header.settings.procedures.unlockSimplePath.title')}
+                                    <Tooltip label={t('header.settings.pro')}>
+                                        <Badge
+                                            ml="1"
+                                            color="gray.50"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                            mr="auto"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
                                 </Button>
                                 <UnlockSimplePathModal
                                     isOpen={isUnlockSimplePathOpen}
