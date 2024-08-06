@@ -22,28 +22,26 @@ export interface SaveManagerEvent {
 
 export const saveManagerChannel = new BroadcastChannel(SAVE_MANAGER_CHANNEL_NAME);
 
-export const notifyRMTSaveChange = () => {
-    saveManagerChannel.postMessage({
-        type: SaveManagerEventType.SAVE_CHANGED,
-        key: LocalStorageKey.PARAM,
-        from: 'rmp',
-    } as SaveManagerEvent);
-};
-
 /**
  * Remember the previous hash of the graph state.
  * Notify RMT only if the graph changes.
  */
 let previousGraphHash: string | undefined;
 
+// Notify rmt to update save when the state is changed.
 export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     const graphHash = await createHash(JSON.stringify(graph));
     if (previousGraphHash && previousGraphHash !== graphHash) {
-        notifyRMTSaveChange();
+        saveManagerChannel.postMessage({
+            type: SaveManagerEventType.SAVE_CHANGED,
+            key: LocalStorageKey.PARAM,
+            from: 'rmp',
+        } as SaveManagerEvent);
     }
     previousGraphHash = graphHash;
 };
 
+// Token returned from will be handled in registerOnRMTTokenResponse.
 export const requestToken = async () => {
     saveManagerChannel.postMessage({
         type: SaveManagerEventType.TOKEN_REQUEST,
@@ -56,6 +54,7 @@ export interface APISubscription {
     expires: string;
 }
 
+// Update subscription info on token received.
 export const registerOnRMTTokenResponse = async (store: ReturnType<typeof createStore>) => {
     const eventHandler = async (ev: MessageEvent<SaveManagerEvent>) => {
         const { type, token, from } = ev.data;
