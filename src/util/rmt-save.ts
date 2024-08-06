@@ -32,27 +32,14 @@ export const notifyRMTSaveChange = () => {
 
 /**
  * Remember the previous hash of the graph state.
- * Notify the rmt only if the graph changes.
+ * Notify RMT only if the graph changes.
  */
 let previousGraphHash: string | undefined;
 
-/**
- * Slightly reduce the server load by notifying a sequence of updates once.
- */
-let notifyRMTSaveTimeout: number | undefined;
-
-const SAVE_UPDATE_TIMEOUT_MS = 60 * 1000; // 60s
-
 export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    if (notifyRMTSaveTimeout) {
-        return;
-    }
     const graphHash = await createHash(JSON.stringify(graph));
     if (previousGraphHash && previousGraphHash !== graphHash) {
-        notifyRMTSaveTimeout = window.setTimeout(() => {
-            notifyRMTSaveChange();
-            notifyRMTSaveTimeout = undefined;
-        }, SAVE_UPDATE_TIMEOUT_MS);
+        notifyRMTSaveChange();
     }
     previousGraphHash = graphHash;
 };
