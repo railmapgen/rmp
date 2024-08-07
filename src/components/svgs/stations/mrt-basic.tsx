@@ -43,6 +43,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
         color = defaultMRTBasicStationAttributes.color,
         lineCode = defaultMRTBasicStationAttributes.lineCode,
         stationCode = defaultMRTBasicStationAttributes.stationCode,
+        isTram = defaultMRTBasicStationAttributes.isTram,
     } = attrs[StationType.MRTBasic] ?? defaultMRTBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -68,7 +69,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
 
     return React.useMemo(
         () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
+            <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
                 <g
                     onPointerDown={onPointerDown}
                     onPointerMove={onPointerMove}
@@ -142,6 +143,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
             color,
             lineCode,
             stationCode,
+            isTram,
             onPointerDown,
             onPointerMove,
             onPointerUp,
@@ -157,6 +159,7 @@ export interface MRTBasicStationAttributes extends StationAttributes, Attributes
     nameOffsetY: NameOffsetY;
     lineCode: string;
     stationCode: string;
+    isTram: boolean;
 }
 
 const defaultMRTBasicStationAttributes: MRTBasicStationAttributes = {
@@ -165,6 +168,7 @@ const defaultMRTBasicStationAttributes: MRTBasicStationAttributes = {
     nameOffsetY: 'top',
     lineCode: 'NS',
     stationCode: '28',
+    isTram: false,
     color: [CityCode.Singapore, 'nsl', '#DA291C', MonoColour.white],
 };
 
@@ -234,6 +238,17 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.MRTBasic.isTram'),
+            isChecked: attrs.isTram,
+            onChange: val => {
+                attrs.isTram = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            oneLine: true,
         },
         {
             type: 'custom',

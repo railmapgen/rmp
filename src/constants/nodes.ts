@@ -12,11 +12,12 @@ import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chon
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
 import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
 import { MRTDestinationNumbersAttributes } from '../components/svgs/nodes/mrt-dest-num';
+import { MRTLineBadgeAttributes } from '../components/svgs/nodes/mrt-line-badge';
 import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
+import { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { I18nTextAttributes } from '../components/svgs/nodes/i18n-text';
-import { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -34,6 +35,7 @@ export enum MiscNodeType {
     MRTDestinationNumbers = 'mrt-num-line-badge',
     JREastLineBadge = 'jr-east-line-badge',
     QingdaoMetroNumLineBadge = 'qingdao-metro-num-line-badge',
+    MRTLineBadge = 'mrt-line-badge',
     Facilities = 'facilities',
     Text = 'text',
     I18nText = 'i18n-text',
@@ -55,6 +57,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.MRTDestinationNumbers]?: MRTDestinationNumbersAttributes;
     [MiscNodeType.JREastLineBadge]?: JREastLineBadgeAttributes;
     [MiscNodeType.QingdaoMetroNumLineBadge]?: QingdaoMetroNumLineBadgeAttributes;
+    [MiscNodeType.MRTLineBadge]?: MRTLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.I18nText]?: I18nTextAttributes;

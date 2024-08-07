@@ -118,6 +118,10 @@
                 "mrtDestinationNumbers": {
                     "displayName": "싱가포르 MRT 목적지 번호"
                 },
+                "mrtLineBadge": {
+                    "displayName": "싱가포르 MRT 노선 배지",
+                    "isTram": "LRT 노선 배지입니다"
+                },
                 "jrEastLineBadge": {
                   "displayName": "JR 동일본 라인 배지",
                   "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
@@ -245,7 +249,8 @@
                     "displayName": "쿤밍 궤도교통 환승역"
                 },
                 "MRTBasic": {
-                    "displayName": "싱가포르MRT기본역"
+                    "displayName": "싱가포르MRT기본역",
+                    "isTram": "LRT역이에요"
                 },
                 "MRTInt": {
                     "displayName": "싱가포르MRT환승역"
@@ -349,6 +354,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR 동일본 단색 크로스해치 패턴 스타일"
+                },
+                "lrtSingleColor": {
+                    "displayName": "싱가포르 LRT 단색 스타일"
                 }
             },
             "edges": {},
