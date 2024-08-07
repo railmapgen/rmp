@@ -142,24 +142,8 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     return (
         <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
-            {inst === 'Gitee' ? <DisabledGallery /> : <iframe src="/rmp-gallery/" loading="lazy" />}
+            <iframe src="/rmp-gallery/" loading="lazy" />
             <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
         </RmgAppClip>
     );
 }
-
-const DisabledGallery = () => (
-    <Flex flexDirection="column" p="10">
-        <Text>抱歉，由于托管平台的敏感词限制，画廊已被禁用 ):</Text>
-        <br />
-        <Text>欢迎切换到Github或Gitlab镜像以使用完整版本 :)</Text>
-        <br style={{ marginBottom: 5 }} />
-        <Link color="teal.500" href="https://railmapgen.github.io/?app=rmp-gallery" isExternal>
-            https://railmapgen.github.io/?app=rmp-gallery <Icon as={MdOpenInNew} />
-        </Link>
-        <br />
-        <Link color="teal.500" href="https://railmapgen.gitlab.io/?app=rmp-gallery" isExternal>
-            https://railmapgen.gitlab.io/?app=rmp-gallery <Icon as={MdOpenInNew} />
-        </Link>
-    </Flex>
-);
