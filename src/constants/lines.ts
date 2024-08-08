@@ -84,11 +84,13 @@ export const LineStylesWithColor = [
     LineStyleType.BjsubwaySingleColor,
     LineStyleType.BjsubwayTram,
     LineStyleType.BjsubwayDotted,
+    LineStyleType.ChinaRailway,
     LineStyleType.MTRRaceDays,
     LineStyleType.MTRLightRail,
     LineStyleType.MRTUnderConstruction,
     LineStyleType.JREastSingleColor,
     LineStyleType.JREastSingleColorPattern,
+    LineStyleType.LRTSingleColor,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */

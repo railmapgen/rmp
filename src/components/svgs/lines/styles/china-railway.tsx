@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
@@ -38,10 +39,11 @@ const defaultChinaRailwayAttributes: ChinaRailwayAttributes = {
 };
 
 const attrsComponent = (props: AttrsProps<ChinaRailwayAttributes>) => {
+    const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField type={LineStyleType.ChinaRailway} defaultTheme={defaultChinaRailwayAttributes.color} />
             ),
