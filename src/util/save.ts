@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 30;
+export const CURRENT_VERSION = 33;
 
 /**
  * Load the tutorial.
@@ -398,9 +398,33 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         return JSON.stringify({ ...p, version: 28, graph: graph.export() });
     },
     28: param =>
-        // Bump save version to support Qingdao Metro Station.
+        // Bump save version to support Qingdao Metro station.
         JSON.stringify({ ...JSON.parse(param), version: 29 }),
     29: param =>
         // Bump save version to support Singapore MRT facilities.
         JSON.stringify({ ...JSON.parse(param), version: 30 }),
+    30: param =>
+        // Bump save version to support Guangzhou Metro interchange station 2024.
+        JSON.stringify({ ...JSON.parse(param), version: 31 }),
+    31: param => {
+        // Bump save version to support Railway line color
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterEdges((line, attrs) => attrs.style === LineStyleType.ChinaRailway)
+            .forEach(line => {
+                const s = graph.getEdgeAttributes(line)[LineStyleType.ChinaRailway];
+                graph.mergeEdgeAttributes(line, {
+                    [LineStyleType.ChinaRailway]: {
+                        ...s,
+                        color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],
+                    },
+                });
+            });
+        return JSON.stringify({ ...p, version: 32, graph: graph.export() });
+    },
+    32: param =>
+        // Bump save version to support Singapore MRT line badges and LRT style.
+        JSON.stringify({ ...JSON.parse(param), version: 33 }),
 };

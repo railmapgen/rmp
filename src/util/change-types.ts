@@ -12,9 +12,9 @@ import {
     StnId,
     Theme,
 } from '../constants/constants';
-import { LinePathType, LineStyleType, LineStylesWithColor } from '../constants/lines';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { NonSimpleLinePathAttributes, makeParallelIndex } from './parallel';
+import { LinePathType, LineStylesWithColor, LineStyleType } from '../constants/lines';
+import { ExternalStationAttributes, StationType, StationWithColor } from '../constants/stations';
+import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -61,6 +61,11 @@ export const changeStationType = (
             selectedFirst,
             currentStnType as Exclude<StationType, StationType.ShmetroBasic2020>
         )!.nameOffsetY;
+    }
+    if (StationWithColor.includes(newStnType) && StationWithColor.includes(currentStnType)) {
+        (newAttrs as AttributesWithColor).color = structuredClone(
+            (graph.getNodeAttribute(selectedFirst, currentStnType) as AttributesWithColor)!.color
+        );
     }
     graph.removeNodeAttribute(selectedFirst, currentStnType);
     graph.mergeNodeAttributes(selectedFirst, { type: newStnType, [newStnType]: newAttrs });
@@ -251,5 +256,37 @@ export const changeNodesColorInBatch = (
                 (attrs as AttributesWithColor)['color'] = newColor;
         }
         graph.mergeNodeAttributes(node, { [thisType]: attrs });
+    });
+};
+
+export const changeZIndexInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    stations: StnId[],
+    miscNodes: MiscNodeId[],
+    lines: LineId[],
+    value: number
+) => {
+    [...stations, ...miscNodes].forEach(s => {
+        graph.setNodeAttribute(s, 'zIndex', value);
+    });
+    lines.forEach(s => {
+        graph.setEdgeAttribute(s, 'zIndex', value);
+    });
+};
+
+export const increaseZIndexInBatch = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    stations: StnId[],
+    miscNodes: MiscNodeId[],
+    lines: LineId[],
+    value: number
+) => {
+    [...stations, ...miscNodes].forEach(s => {
+        const z = graph.getNodeAttribute(s, 'zIndex');
+        graph.setNodeAttribute(s, 'zIndex', z + value);
+    });
+    lines.forEach(s => {
+        const z = graph.getEdgeAttribute(s, 'zIndex');
+        graph.setEdgeAttribute(s, 'zIndex', z + value);
     });
 };

@@ -1,7 +1,6 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
@@ -12,9 +11,9 @@ import {
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
-const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructionAttributes>) => {
+const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
-    const { color = defaultMRTUnderConstructionAttributes.color } = styleAttrs ?? defaultMRTUnderConstructionAttributes;
+    const { color = defaultLRTSingleColorAttributes.color } = styleAttrs ?? defaultLRTSingleColorAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -27,8 +26,7 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
             d={path}
             fill="none"
             stroke={color[2]}
-            strokeWidth="5"
-            strokeDasharray="0 10"
+            strokeWidth="2.157"
             strokeLinecap="round"
             cursor="pointer"
             onPointerDown={onPointerDown}
@@ -37,27 +35,21 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
 };
 
 /**
- * MRTUnderConstruction specific props.
+ * LRT Single Color specific props.
  */
-export interface MRTUnderConstructionAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface LRTSingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
 
-const defaultMRTUnderConstructionAttributes: MRTUnderConstructionAttributes = {
-    color: [CityCode.Singapore, 'ewl', '#009739', MonoColour.white],
+const defaultLRTSingleColorAttributes: LRTSingleColorAttributes = {
+    color: [CityCode.Singapore, 'lrt', '#708573', MonoColour.white],
 };
 
-const attrsComponent = (props: AttrsProps<MRTUnderConstructionAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
-    const { t } = useTranslation();
-
+const lrtSingleColorAttrsComponent = (props: AttrsProps<LRTSingleColorAttributes>) => {
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
             label: 'color',
             component: (
-                <ColorField
-                    type={LineStyleType.MRTUnderConstruction}
-                    defaultTheme={defaultMRTUnderConstructionAttributes.color}
-                />
+                <ColorField type={LineStyleType.LRTSingleColor} defaultTheme={defaultLRTSingleColorAttributes.color} />
             ),
         },
     ];
@@ -65,14 +57,14 @@ const attrsComponent = (props: AttrsProps<MRTUnderConstructionAttributes>) => {
     return <RmgFields fields={fields} />;
 };
 
-const mrtUnderConstruction: LineStyle<MRTUnderConstructionAttributes> = {
-    component: MRTUnderConstruction,
-    defaultAttrs: defaultMRTUnderConstructionAttributes,
-    attrsComponent,
+const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
+    component: LRTSingleColor,
+    defaultAttrs: defaultLRTSingleColorAttributes,
+    attrsComponent: lrtSingleColorAttrsComponent,
     metadata: {
-        displayName: 'panel.details.lines.mrtUnderConstruction.displayName',
+        displayName: 'panel.details.lines.lrtSingleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 
-export default mrtUnderConstruction;
+export default lrtSingleColor;

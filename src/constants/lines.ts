@@ -21,6 +21,7 @@ import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/
 import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
 import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
 import { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
+import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-single-color';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -54,6 +55,7 @@ export enum LineStyleType {
     MRTSentosaExpress = 'mrt-sentosa-express',
     JREastSingleColor = 'jr-east-single-color',
     JREastSingleColorPattern = 'jr-east-single-color-pattern',
+    LRTSingleColor = 'lrt-single-color',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -74,6 +76,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
     [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
     [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
+    [LineStyleType.LRTSingleColor]?: LRTSingleColorAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -105,7 +108,7 @@ export interface LineWrapperComponentProps {
      * https://stackoverflow.com/a/49174322
      */
     newLine: boolean;
-    handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
+    onPointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
     type: LinePathType;
     attrs: ExternalLinePathAttributes[keyof ExternalLinePathAttributes];
     styleType: LineStyleType;
@@ -130,7 +133,7 @@ export interface LineStyleComponentProps<
      * https://stackoverflow.com/a/49174322
      */
     newLine: boolean;
-    handleClick: (edge: LineId, e: React.MouseEvent<SVGPathElement, MouseEvent>) => void;
+    handlePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
 }
 
 /**

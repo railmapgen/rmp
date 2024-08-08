@@ -126,7 +126,7 @@ export interface QingdaoMetroStationAttributes extends StationAttributes, Attrib
 
 const defaultQingdaoMetroStationAttributes: QingdaoMetroStationAttributes = {
     ...defaultStationAttributes,
-    color: [CityCode.Qingdao, 'qd1', '#eaaa00', MonoColour.white],
+    color: [CityCode.Qingdao, 'qd1', '#f7b000', MonoColour.white],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     isInt: false,

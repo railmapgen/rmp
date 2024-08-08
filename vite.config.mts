@@ -12,7 +12,7 @@ export default defineConfig({
     plugins: [
         react(),
         svgr(),
-        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src' } }),
+        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } }),
         legacy({
             targets: ['defaults', '>0.2%', 'not dead'],
             modernPolyfills: true,
