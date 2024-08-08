@@ -205,6 +205,8 @@ const SvgCanvas = () => {
             const typeAttr = edgeAttrs[linePathType];
             const styleAttr = edgeAttrs[lineStyleType];
             const [source, target] = graph.current.extremities(edge);
+            // new stations must not have existing lines, so leave it to 0 if auto parallel is on
+            const parallelIndex = autoParallel ? 0 : -1;
             graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
                 visible: true,
                 zIndex,
@@ -213,7 +215,7 @@ const SvgCanvas = () => {
                 style: lineStyleType,
                 [lineStyleType]: structuredClone(styleAttr),
                 reconcileId: '',
-                parallelIndex: 0, // TODO: calculate this
+                parallelIndex,
             });
             graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, id, target, {
                 visible: true,
@@ -223,7 +225,7 @@ const SvgCanvas = () => {
                 style: lineStyleType,
                 [lineStyleType]: structuredClone(styleAttr),
                 reconcileId: '',
-                parallelIndex: 0, // TODO: calculate this
+                parallelIndex,
             });
             graph.current.dropEdge(edge);
             refreshAndSave();

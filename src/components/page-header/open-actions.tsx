@@ -21,6 +21,7 @@ export default function OpenActions() {
     const dispatch = useRootDispatch();
     const {
         telemetry: { project: isAllowAppTelemetry },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
@@ -46,7 +47,7 @@ export default function OpenActions() {
     const handleImportRMGProject = (param: RMGParam) => {
         try {
             if (isAllowAppTelemetry) rmgRuntime.event(Events.IMPORT_RMG_PARAM, {});
-            parseRmgParam(graph.current, param);
+            parseRmgParam(graph.current, param, autoParallel);
             refreshAndSave();
         } catch (err) {
             dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));

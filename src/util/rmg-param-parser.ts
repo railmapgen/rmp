@@ -1,4 +1,4 @@
-import Graph from 'graphology';
+import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import { InterchangeInfo } from '../components/panels/details/interchange-field';
 import { linePaths } from '../components/svgs/lines/lines';
@@ -7,20 +7,22 @@ import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int
 import { MTRStationAttributes } from '../components/svgs/stations/mtr';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import stations from '../components/svgs/stations/stations';
-import { Theme } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, StnId, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { PanelTypeShmetro, RMGParam, RmgStyle } from '../constants/rmg';
 import { StationAttributes, StationType } from '../constants/stations';
+import { makeParallelIndex } from './parallel';
 
 export const parseRmgParam = (
-    graph: Graph,
-    { info_panel_type, line_num, stn_list: stnList, style, theme }: RMGParam
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    { info_panel_type, line_num, stn_list: stnList, style, theme }: RMGParam,
+    autoParallel: boolean
 ) => {
     // generate stn id
     const stnIdMap = Object.fromEntries(
         Object.keys(stnList)
             .filter(id => !['linestart', 'lineend'].includes(id))
-            .map(id => [id, `stn_${nanoid(10)}`])
+            .map(id => [id, `stn_${nanoid(10)}` as StnId])
     );
     // update stnIdMap if stations exist in the graph
     Object.entries(stnList)
@@ -28,10 +30,10 @@ export const parseRmgParam = (
         .forEach(([id, stnInfo]) => {
             const nodes = graph.filterNodes(
                 (node, attr) =>
-                    Object.values(StationType).includes(attr.type) &&
+                    Object.values(StationType).includes(attr.type as StationType) &&
                     (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
             );
-            if (nodes.length !== 0) stnIdMap[id] = nodes[0];
+            if (nodes.length !== 0) stnIdMap[id] = nodes[0] as StnId;
         });
 
     // only import stations that does not exist in the graph, filter by name[0]
@@ -41,7 +43,7 @@ export const parseRmgParam = (
             ([id, stnInfo]) =>
                 graph.filterNodes(
                     (node, attr) =>
-                        Object.values(StationType).includes(attr.type) &&
+                        Object.values(StationType).includes(attr.type as StationType) &&
                         (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
                 ).length === 0
         )
@@ -69,8 +71,9 @@ export const parseRmgParam = (
             };
 
             // add style specific attrs from RMG save
-            if (type === StationType.ShmetroBasic2020) (attr as ShmetroBasic2020StationAttributes).color = theme;
-            else if (type === StationType.GzmtrBasic) {
+            if (type === StationType.ShmetroBasic2020) {
+                (attr as ShmetroBasic2020StationAttributes).color = theme;
+            } else if (type === StationType.GzmtrBasic) {
                 (attr as GzmtrBasicStationAttributes).color = theme;
                 (attr as GzmtrBasicStationAttributes).lineCode = line_num;
                 (attr as GzmtrBasicStationAttributes).stationCode = stnInfo.num;
@@ -123,15 +126,19 @@ export const parseRmgParam = (
             stnInfo.children
                 .filter((child: string) => !['linestart', 'lineend'].includes(child))
                 .forEach((child: string) => {
-                    graph.addDirectedEdgeWithKey(`line_${nanoid(10)}`, stnIdMap[id], stnIdMap[child], {
+                    const type = LinePathType.Diagonal;
+                    const [source, target] = [stnIdMap[id], stnIdMap[child]];
+                    const parallelIndex = autoParallel ? makeParallelIndex(graph, type, source, target, 'from') : -1;
+                    graph.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, target, {
                         visible: true,
                         zIndex: 0,
-                        type: LinePathType.Diagonal,
+                        type,
                         // deep copy to prevent mutual reference
                         [LinePathType.Diagonal]: structuredClone(linePaths[LinePathType.Diagonal].defaultAttrs),
                         style: LineStyleType.SingleColor,
                         [LineStyleType.SingleColor]: { color: theme },
                         reconcileId: '',
+                        parallelIndex,
                     });
                 });
         });
