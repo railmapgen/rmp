@@ -176,7 +176,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     const field: RmgFieldsField[] = [
         {
             type: 'output',
-            label: 'Master Type',
+            label: t('panel.details.nodes.master.type'),
             value: attrs.label ?? attrs.randomId,
         },
         {
@@ -200,7 +200,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         const { label, type, defaultValue, value } = c;
         if (type === 'number' || type === 'text') {
             return {
-                label: label,
+                label: t(label),
                 type: 'input',
                 value: value ?? defaultValue,
                 onChange: v => {
@@ -210,7 +210,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
             };
         } else if (type === 'switch') {
             return {
-                label: label,
+                label: t(label),
                 type: 'switch',
                 isChecked: (value ?? defaultValue) === 'true',
                 onChange: v => {
@@ -220,7 +220,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
             };
         } else if (type === 'textarea') {
             return {
-                label: label,
+                label: t(label),
                 type: 'textarea',
                 value: value ?? defaultValue,
                 onChange: v => {

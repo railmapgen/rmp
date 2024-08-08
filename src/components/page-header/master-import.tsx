@@ -61,7 +61,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'Import from',
+            label: t('panel.details.masterManage.importFrom'),
             component: (
                 <RmgAutoComplete
                     data={list}
@@ -69,7 +69,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                         <RmgLineBadge
                             name={item.value}
                             fg={MonoColour.white}
-                            bg={item.param === null ? '#000000' : '#ff8651'}
+                            bg={item.param === null ? '#000000' : '#19B3EA'}
                             title={item.value}
                             sx={{
                                 display: 'inline-block',
@@ -89,7 +89,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         },
         {
             type: 'textarea',
-            label: t('Paste JSON from RMP Designer'),
+            label: t('panel.details.masterManage.importLabel'),
             value: param.toString(),
             onChange: val => setParam(val),
             minW: 'full',
@@ -110,13 +110,13 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     React.useEffect(() => setError(''), [isOpen]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('Upload master parameter')}</ModalHeader>
+                <ModalHeader>{t('panel.details.masterManage.importTitle')}</ModalHeader>
                 <ModalCloseButton />
 
-                <ModalBody minH={200}>
+                <ModalBody minH={250}>
                     <RmgFields fields={fields} />
                     <span style={{ color: 'red' }} hidden={selectedParam.param !== null}>
                         {error}

@@ -144,7 +144,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
     const fields: RmgFieldsField[][] = list.map(attrs => {
         return [
             {
-                label: 'id',
+                label: t('panel.details.masterManage.id'),
                 type: 'custom',
                 component: (
                     <RmgLineBadge
@@ -155,20 +155,20 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                 ),
             },
             {
-                label: 'label',
+                label: t('panel.details.masterManage.label'),
                 type: 'input',
                 value: attrs.label ?? attrs.randomId,
                 onChange: value => handleSetLabel(attrs, value),
                 hidden: attrs.randomId === 'undefined',
             },
             {
-                label: 'label',
+                label: t('panel.details.masterManage.label'),
                 type: 'output',
                 value: attrs.label ?? attrs.randomId,
                 hidden: attrs.randomId !== 'undefined',
             },
             {
-                label: 'type',
+                label: t('panel.details.masterManage.type'),
                 type: 'custom',
                 component: (
                     <RmgLineBadge
@@ -202,7 +202,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('Master Node Manager')}</ModalHeader>
+                <ModalHeader>{t('panel.details.masterManage.title')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
