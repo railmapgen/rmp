@@ -33,7 +33,9 @@
                 "stationType": "车站类型",
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型",
-                "type": "类型"
+                "type": "类型",
+                "parallel": "平行线段",
+                "parallelIndex": "平行线段索引"
             },
             "multipleSelection": {
                 "title": "多重选取",
@@ -287,7 +289,9 @@
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
                     "startFrom": "从这里开始",
-                    "roundCornerFactor": "转折圆角因子"
+                    "roundCornerFactor": "转折圆角因子",
+                    "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
+                    "changeInBaseLine": "在基准线段中更改它们："
                 },
                 "simple": {
                     "displayName": "基本线段",
@@ -444,7 +448,8 @@
             "pro": "这是PRO功能，需要带有订阅的账户。",
             "preference": {
                 "title": "偏好",
-                "keepLastPath": "在下一次操作中持续画线段直到点击背景"
+                "keepLastPath": "在下一次操作中持续画线段直到点击背景",
+                "autoParallel": "自动将新线段设置为与现有线段平行"
             },
             "shortcuts": {
                 "title": "快捷键",

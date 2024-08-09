@@ -33,7 +33,9 @@
                 "stationType": "駅の種類",
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
-                "type": "種類"
+                "type": "種類",
+                "parallel": "平行路線",
+                "parallelIndex": "平行路線の索引"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -288,7 +290,9 @@
                     "offsetFrom": "補正値（From）",
                     "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
-                    "roundCornerFactor": "角の丸め係数"
+                    "roundCornerFactor": "角の丸め係数",
+                    "parallelDisabled": "この路線が平行であるため、一部の属性が無効になっています。",
+                    "changeInBaseLine": "基準線で変更してください："
                 },
                 "simple": {
                     "displayName": "簡単な経路",
@@ -445,7 +449,8 @@
             "pro": "これはPRO機能であり、定期購読が必要です。",
             "preference": {
                 "title": "設定",
-                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける"
+                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
+                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定"
             },
             "shortcuts": {
                 "title": "ショートカット",

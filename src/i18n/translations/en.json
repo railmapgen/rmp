@@ -33,7 +33,9 @@
                 "stationType": "Station Type",
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type",
-                "type": "Type"
+                "type": "Type",
+                "parallel": "Parallel line",
+                "parallelIndex": "Parallel index"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -290,7 +292,9 @@
                     "startFrom": "Start From",
                     "from": "From",
                     "to": "To",
-                    "roundCornerFactor": "Round Corner Factor"
+                    "roundCornerFactor": "Round Corner Factor",
+                    "parallelDisabled": "Some attributes are disabled as this line is parallel.",
+                    "changeInBaseLine": "Change them in the base line:"
                 },
                 "simple": {
                     "displayName": "Simple path",
@@ -448,7 +452,7 @@
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
-                "autoParallel": "Set lines to be parallel to existing lines automatically"
+                "autoParallel": "Automatically set new lines to be parallel to existing lines"
             },
             "shortcuts": {
                 "title": "Shortcuts",
