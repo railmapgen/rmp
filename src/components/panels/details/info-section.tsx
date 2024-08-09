@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { NonSimpleLinePathAttributes, makeParallelIndex } from '../../../util/parallel';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
@@ -18,9 +18,9 @@ export default function InfoSection() {
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshEdges, saveGraph]);
+    }, [dispatch, refreshEdgesThunk, saveGraph]);
 
     const { selected } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
@@ -46,7 +46,7 @@ export default function InfoSection() {
     };
     const handleParallelIndexChange = (parallelIndex: number) => {
         graph.current.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 

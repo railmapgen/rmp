@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { LearnHowToAdd } from '../tools/tools';
@@ -22,9 +22,9 @@ export default function LineTypeSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshEdges, saveGraph]);
+    }, [dispatch, refreshEdgesThunk, saveGraph]);
 
     const {
         preference: { autoParallel },

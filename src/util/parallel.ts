@@ -181,3 +181,16 @@ export const getBaseParallelLineID = (
     }
     return minParallelIndex == parallelIndex ? lineID : minLineID;
 };
+
+export const MAX_PARALLEL_LINES_FREE = 5;
+export const MAX_PARALLEL_LINES_PRO = Infinity;
+
+export const countParallelLines = () => {
+    let parallelLinesCount = 0;
+    for (const lineEntry of window.graph.edgeEntries()) {
+        if (lineEntry.attributes.parallelIndex >= 0) {
+            parallelLinesCount += 1;
+        }
+    }
+    return parallelLinesCount;
+};

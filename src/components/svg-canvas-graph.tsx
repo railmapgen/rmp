@@ -11,29 +11,28 @@ import { saveGraph } from '../redux/param/param-slice';
 import {
     addSelected,
     clearSelected,
+    refreshEdgesThunk,
     removeSelected,
     setActive,
     setMode,
-    setRefreshEdges,
     setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
+import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes, getZIndexFromElement } from '../util/process-elements';
-import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import { linePaths, lineStyles } from './svgs/lines/lines';
-import miscNodes from './svgs/nodes/misc-nodes';
-import stations from './svgs/stations/stations';
-import allStations from './svgs/stations/stations';
 import singleColor from './svgs/lines/styles/single-color';
+import miscNodes from './svgs/nodes/misc-nodes';
+import { default as allStations, default as stations } from './svgs/stations/stations';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
     const {
@@ -102,7 +101,7 @@ const SvgCanvas = () => {
                 }
             });
             dispatch(setRefreshNodes());
-            dispatch(setRefreshEdges());
+            dispatch(refreshEdgesThunk());
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
             setMovingPosition({
@@ -151,7 +150,7 @@ const SvgCanvas = () => {
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
             });
-            dispatch(setRefreshEdges());
+            dispatch(refreshEdgesThunk());
             dispatch(saveGraph(graph.current.export()));
         } else if (mode === 'free') {
             if (active) {
@@ -240,14 +239,6 @@ const SvgCanvas = () => {
 
     // These are elements that the svg draws from.
     // They are updated by the refresh triggers in the runtime state.
-
-    // const [nodes, setNodes] = React.useState(getNodes(graph.current));
-    // const [lines, setLines] = React.useState(getLines(graph.current));
-    // React.useEffect(() => setNodes(getNodes(graph.current)), [refreshNodes]);
-    // React.useEffect(() => setLines(getLines(graph.current)), [refreshEdges]);
-    // const elements = [...lines, ...nodes];
-    // elements.sort((a, b) => getZIndexFromElement(a) - getZIndexFromElement(b));
-
     const elements = React.useMemo(
         () =>
             [...getLines(graph.current), ...getNodes(graph.current)].sort(
