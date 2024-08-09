@@ -6,7 +6,12 @@ import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import { NonSimpleLinePathAttributes, makeParallelIndex } from '../../../util/parallel';
+import {
+    MAX_PARALLEL_LINES_FREE,
+    MAX_PARALLEL_LINES_PRO,
+    NonSimpleLinePathAttributes,
+    makeParallelIndex,
+} from '../../../util/parallel';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
 import InfoMultipleSection from './info-multiple-selection';
@@ -22,7 +27,8 @@ export default function InfoSection() {
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshEdgesThunk, saveGraph]);
 
-    const { selected } = useRootSelector(state => state.runtime);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
+    const { selected, parallelLinesCount } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
@@ -77,9 +83,15 @@ export default function InfoSection() {
         if (graph.current.hasEdge(selectedFirst)) {
             const attr = graph.current.getEdgeAttributes(selectedFirst);
             const parallelIndex = attr.parallelIndex;
+            const maximumParallelLines = activeSubscriptions.RMP_CLOUD
+                ? MAX_PARALLEL_LINES_PRO
+                : MAX_PARALLEL_LINES_FREE;
+            const isParallelSwitchDisabled = parallelLinesCount > maximumParallelLines && parallelIndex < 0;
+            const isParallelInputDisabled = parallelLinesCount > maximumParallelLines && parallelIndex >= 0;
             fields.push({
                 type: 'switch',
                 label: t('panel.details.info.parallel'),
+                isDisabled: isParallelSwitchDisabled,
                 isChecked: parallelIndex >= 0,
                 onChange: val => handleParallelSwitch(val, (attr[attr.type] as NonSimpleLinePathAttributes).startFrom),
                 oneLine: true,
@@ -90,6 +102,7 @@ export default function InfoSection() {
                     type: 'input',
                     label: t('panel.details.info.parallelIndex'),
                     variant: 'number',
+                    isDisabled: isParallelInputDisabled,
                     value: attr.parallelIndex.toString(),
                     onChange: val => handleParallelIndexChange(Number(val)),
                     minW: 276,
