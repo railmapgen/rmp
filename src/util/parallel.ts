@@ -55,6 +55,37 @@ export const extractParallelLines = (
     return { normal, parallel: parallelLines };
 };
 
+/**
+ * Not sure how to make bezier-js.scale(positive number) always on the outer side,
+ * so just find all the cases that the parallel curves will be in side and flip them.
+ */
+const checkPathFlip = (type: LinePathType, x1: number, y1: number, x2: number, y2: number) => {
+    let pathFlip = false;
+    if (type === LinePathType.Diagonal) {
+        if (
+            (Math.abs(x2 - x1) < Math.abs(y2 - y1) && ((x2 < x1 && y2 < y1) || (x2 > x1 && y2 > y1))) ||
+            (Math.abs(x2 - x1) > Math.abs(y2 - y1) && ((x2 > x1 && y2 < y1) || (x2 < x1 && y2 > y1)))
+        ) {
+            pathFlip = true;
+        }
+    } else if (type === LinePathType.Perpendicular) {
+        if ((x2 > x1 && y2 < y1) || (x2 < x1 && y2 > y1)) {
+            pathFlip = true;
+        }
+    } else if (type === LinePathType.RotatePerpendicular) {
+        const [rx1, ry1, rx2, ry2] = [
+            x1 * Math.SQRT1_2 + y1 * Math.SQRT1_2,
+            -x1 * Math.SQRT1_2 + y1 * Math.SQRT1_2,
+            x2 * Math.SQRT1_2 + y2 * Math.SQRT1_2,
+            -x2 * Math.SQRT1_2 + y2 * Math.SQRT1_2,
+        ];
+        if ((rx2 > rx1 && ry2 < ry1) || (rx2 < rx1 && ry2 > ry1)) {
+            pathFlip = true;
+        }
+    }
+    return pathFlip;
+};
+
 export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[]) => {
     let baseLineEntry = parallelLines.at(0);
     if (!baseLineEntry) return {};
@@ -77,8 +108,9 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
         ...attr,
         roundCornerFactor: baseRoundCornerFactor,
     } as any);
-
     // console.log(basePath, x1, y1, x2, y2);
+
+    const pathFlip = checkPathFlip(type, x1, y1, x2, y2);
 
     const parallelPaths: { [k in LineId]: Path } = {};
     for (const lineEntry of parallelLines) {
@@ -90,10 +122,14 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
             continue;
         }
 
-        const d = parallelIndex * -5;
-        const [path, _] = makeShortPathParallel(basePath, type, d) ?? [`M ${x1} ${y1 + d} L ${x2} ${y2 + d}`, ''];
-        parallelPaths[lineEntry.edge as LineId] = path;
-        // console.log(lineEntry.edge, path);
+        const d = parallelIndex * 5;
+        const defaultSimpleParallelPath = [
+            `M ${x1} ${y1 + d} L ${x2} ${y2 + d}`,
+            `M ${x1} ${y1 - d} L ${x2} ${y2 - d}`,
+        ] as [Path, Path];
+        const [pathA, pathB] = makeShortPathParallel(basePath, type, d) ?? defaultSimpleParallelPath;
+
+        parallelPaths[lineEntry.edge as LineId] = pathFlip ? pathA : pathB;
     }
 
     return parallelPaths;

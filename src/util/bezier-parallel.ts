@@ -9,7 +9,7 @@ type Point = [X, Y];
  * Make a parallel path at the distance(d) of the given path.
  *
  * Note this is not reconcile ready meaning it only handles short path.
- * Short path is a path that starts with M, go to some L and then curve C to some place and end with L.
+ * Short path is a path that starts with M, goes to some L and then curves C to some place and ends with L.
  * @param path The given path.
  * @param type Check if the path is a linear line (without any curve).
  * @param d1 The distance between the given path and the paralleled path.
