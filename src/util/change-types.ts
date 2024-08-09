@@ -106,10 +106,10 @@ export const changeLinePathType = (
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
     if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(newLinePathType)) {
-        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
-        graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
 
+        // calculate parallel index before changing the type
+        // so that makeParallelIndex won't consider this line as an existing line
         let parallelIndex = -1;
         if (autoParallel && newLinePathType !== LinePathType.Simple) {
             const [source, target] = graph.extremities(selectedFirst) as [StnId | MiscNodeId, StnId | MiscNodeId];
@@ -117,6 +117,9 @@ export const changeLinePathType = (
             parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
         }
         graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
+
+        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
+        graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
     }
 };
 

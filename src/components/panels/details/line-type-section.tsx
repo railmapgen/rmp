@@ -52,6 +52,11 @@ export default function LineTypeSection() {
     );
     const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
 
+    React.useEffect(() => {
+        setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
+        setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
+    }, [selectedFirst]);
+
     const disabledLinePathOptions = Object.values(LinePathType).filter(
         linePathType => !lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType)
     );

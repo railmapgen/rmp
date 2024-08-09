@@ -114,7 +114,6 @@ export const makeParallelIndex = (
         const attr = lineEntry.attributes;
         if (
             type === attr.type &&
-            // edgeEntries will also return edges from target to source
             source === lineEntry.source &&
             (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom
         ) {

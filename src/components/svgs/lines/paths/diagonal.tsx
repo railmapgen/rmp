@@ -94,10 +94,6 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
 
-    const {
-        preference: { autoParallel },
-    } = useRootSelector(state => state.app);
-
     const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.Diagonal, id as LineId);
     const isParallelDisable = parallelIndex >= 0 && baseParallelLineID !== id;
 
@@ -108,16 +104,7 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
             value: attrs.startFrom,
             options: { from: t('panel.details.lines.common.from'), to: t('panel.details.lines.common.to') },
             onChange: val => {
-                const startFrom = val as 'from' | 'to';
-
-                let parallelIndex = -1;
-                if (autoParallel) {
-                    const [source, target] = window.graph.extremities(id) as [StnId | MiscNodeId, StnId | MiscNodeId];
-                    parallelIndex = makeParallelIndex(window.graph, LinePathType.Diagonal, source, target, startFrom);
-                }
-                window.graph.setEdgeAttribute(id, 'parallelIndex', parallelIndex);
-
-                attrs.startFrom = startFrom;
+                attrs.startFrom = val as 'from' | 'to';
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -163,19 +150,19 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
         },
     ];
 
-    return (
-        <>
-            {isParallelDisable && (
-                <>
-                    <Text>Some attributes are disabled as this line is parallel.</Text>
-                    <Button onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}>
-                        Go to line: {baseParallelLineID}
-                    </Button>
-                </>
-            )}
-            <RmgFields fields={fields} />
-        </>
-    );
+    if (isParallelDisable) {
+        fields.unshift({
+            type: 'custom',
+            label: t('panel.details.lines.common.parallelDisabled'),
+            component: (
+                <Button size="sm" variant="link" onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}>
+                    {t('panel.details.lines.common.changeInBaseLine')} {baseParallelLineID}
+                </Button>
+            ),
+        });
+    }
+
+    return <RmgFields fields={fields} />;
 };
 
 const diagonalIcon = (

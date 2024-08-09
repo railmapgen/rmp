@@ -1,7 +1,17 @@
+import { Button } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps } from '../../../../constants/constants';
-import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
+import { LineId } from '../../../../constants/constants';
+import {
+    LinePath,
+    LinePathAttributes,
+    LinePathAttrsProps,
+    LinePathType,
+    PathGenerator,
+} from '../../../../constants/lines';
+import { useRootDispatch } from '../../../../redux';
+import { setSelected } from '../../../../redux/runtime/runtime-slice';
+import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateRotatePerpendicularPath: PathGenerator<RotatePerpendicularPathAttributes> = (
@@ -90,9 +100,13 @@ const defaultRotatePerpendicularPathAttributes: RotatePerpendicularPathAttribute
     roundCornerFactor: 18.33,
 };
 
-const attrsComponent = (props: AttrsProps<RotatePerpendicularPathAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
+const attrsComponent = (props: LinePathAttrsProps<RotatePerpendicularPathAttributes>) => {
+    const { id, attrs, handleAttrsUpdate, parallelIndex } = props;
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+
+    const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.RotatePerpendicular, id as LineId);
+    const isParallelDisable = parallelIndex >= 0 && baseParallelLineID !== id;
 
     const fields: RmgFieldsField[] = [
         {
@@ -116,6 +130,7 @@ const attrsComponent = (props: AttrsProps<RotatePerpendicularPathAttributes>) =>
                 attrs.offsetFrom = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            isDisabled: isParallelDisable,
             minW: 'full',
         },
         {
@@ -128,6 +143,7 @@ const attrsComponent = (props: AttrsProps<RotatePerpendicularPathAttributes>) =>
                 attrs.offsetTo = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            isDisabled: isParallelDisable,
             minW: 'full',
         },
         {
@@ -140,9 +156,22 @@ const attrsComponent = (props: AttrsProps<RotatePerpendicularPathAttributes>) =>
                 attrs.roundCornerFactor = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            isDisabled: isParallelDisable,
             minW: 'full',
         },
     ];
+
+    if (isParallelDisable) {
+        fields.unshift({
+            type: 'custom',
+            label: t('panel.details.lines.common.parallelDisabled'),
+            component: (
+                <Button size="sm" variant="link" onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}>
+                    {t('panel.details.lines.common.changeInBaseLine')} {baseParallelLineID}
+                </Button>
+            ),
+        });
+    }
 
     return <RmgFields fields={fields} />;
 };
