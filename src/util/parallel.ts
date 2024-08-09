@@ -99,7 +99,6 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
     return parallelPaths;
 };
 
-// TODO: maybe return the first index that has no lines occupied?
 export const makeParallelIndex = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     type: LinePathType,
@@ -109,26 +108,35 @@ export const makeParallelIndex = (
 ) => {
     if (type === LinePathType.Simple) return -1;
 
-    let parallelIndex = 0;
+    // find all parallel lines that are either (source, target, from) or (target, source, to)
+    const existingParallelIndex: number[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
         const attr = lineEntry.attributes;
         if (
             type === attr.type &&
             // edgeEntries will also return edges from target to source
             source === lineEntry.source &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom &&
-            attr.parallelIndex >= parallelIndex
+            (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom
         ) {
-            parallelIndex = lineEntry.attributes.parallelIndex + 1;
+            existingParallelIndex.push(lineEntry.attributes.parallelIndex);
         } else if (
             type === attr.type &&
             // edgeEntries will also return edges from target to source
             source === lineEntry.target &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom !== startFrom &&
-            attr.parallelIndex >= parallelIndex
+            (attr[type] as NonSimpleLinePathAttributes).startFrom !== startFrom
         ) {
-            parallelIndex = lineEntry.attributes.parallelIndex + 1;
+            existingParallelIndex.push(lineEntry.attributes.parallelIndex);
         }
+    }
+
+    // find the smallest missing non-negative integers
+    existingParallelIndex.sort();
+    let parallelIndex = 0;
+    for (const i of existingParallelIndex) {
+        if (i > parallelIndex) {
+            break;
+        }
+        parallelIndex = i + 1;
     }
     return parallelIndex;
 };
