@@ -291,6 +291,8 @@
                     "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
                     "roundCornerFactor": "角の丸め係数",
+                    "from": "から",
+                    "to": "まで",
                     "parallelDisabled": "この路線が平行であるため、一部の属性が無効になっています。",
                     "changeInBaseLine": "基準線で変更してください："
                 },

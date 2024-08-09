@@ -290,6 +290,8 @@
                     "offsetTo": "结束点偏移",
                     "startFrom": "从这里开始",
                     "roundCornerFactor": "转折圆角因子",
+                    "from": "从",
+                    "to": "到",
                     "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
                     "changeInBaseLine": "在基准线段中更改它们："
                 },

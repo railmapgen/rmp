@@ -290,6 +290,8 @@
                     "offsetTo": "끝점 오프셋",
                     "startFrom": "여기서부터 시작",
                     "roundCornerFactor": "회전원각인자",
+                    "from": "에서",
+                    "to": "까지",
                     "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
                     "changeInBaseLine": "기본선에서 변경하십시오:"
                 },
