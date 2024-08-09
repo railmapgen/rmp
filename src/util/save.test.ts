@@ -437,4 +437,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":33}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('33 -> 34', () => {
+        // Bump save version to support parallel lines.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node__8CmQwl2e2","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"virtual","virtual":{}}},{"key":"misc_node_966GIPcDUU","attributes":{"visible":true,"zIndex":0,"x":50,"y":50,"type":"virtual","virtual":{}}}],"edges":[{"key":"line_39qw6f0ehK","source":"misc_node__8CmQwl2e2","target":"misc_node_966GIPcDUU","attributes":{"visible":true,"zIndex":0,"type":"diagonal","diagonal":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":10},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":""}}]},"version":33}';
+        const newParam = UPGRADE_COLLECTION[33](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node__8CmQwl2e2","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"virtual","virtual":{}}},{"key":"misc_node_966GIPcDUU","attributes":{"visible":true,"zIndex":0,"x":50,"y":50,"type":"virtual","virtual":{}}}],"edges":[{"key":"line_39qw6f0ehK","source":"misc_node__8CmQwl2e2","target":"misc_node_966GIPcDUU","attributes":{"visible":true,"zIndex":0,"type":"diagonal","diagonal":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":10},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}}]},"version":34}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

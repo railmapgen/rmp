@@ -14,6 +14,7 @@ import {
 } from '../constants/constants';
 import { LinePathType, LineStylesWithColor, LineStyleType } from '../constants/lines';
 import { ExternalStationAttributes, StationType, StationWithColor } from '../constants/stations';
+import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
 const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
 
@@ -99,13 +100,25 @@ export const changeStationsTypeInBatch = (
 export const changeLinePathType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selectedFirst: string,
-    newLinePathType: LinePathType
+    newLinePathType: LinePathType,
+    autoParallel: boolean
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
     if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(newLinePathType)) {
-        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
+
+        // calculate parallel index before changing the type
+        // so that makeParallelIndex won't consider this line as an existing line
+        let parallelIndex = -1;
+        if (autoParallel && newLinePathType !== LinePathType.Simple) {
+            const [source, target] = graph.extremities(selectedFirst) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            const startFrom = (newAttrs as NonSimpleLinePathAttributes).startFrom;
+            parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
+        }
+        graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
+
+        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
     }
 };
@@ -122,12 +135,13 @@ export const changeLinePathTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentLinePathType: LinePathType | 'any',
     newLinePathType: LinePathType,
-    lines: LineId[]
+    lines: LineId[],
+    autoParallel: boolean
 ) =>
     lines
         .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
         .forEach(edgeId => {
-            changeLinePathType(graph, edgeId, newLinePathType);
+            changeLinePathType(graph, edgeId, newLinePathType, autoParallel);
         });
 
 /**

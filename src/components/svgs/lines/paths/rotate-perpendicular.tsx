@@ -1,9 +1,18 @@
-import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
-import { roundPathCorners } from '../../../../util/pathRounding';
+import { Button } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { useTranslation } from 'react-i18next';
+import { LineId } from '../../../../constants/constants';
 import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
+    LinePath,
+    LinePathAttributes,
+    LinePathAttrsProps,
+    LinePathType,
+    PathGenerator,
+} from '../../../../constants/lines';
+import { useRootDispatch } from '../../../../redux';
+import { setSelected } from '../../../../redux/runtime/runtime-slice';
+import { getBaseParallelLineID } from '../../../../util/parallel';
+import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateRotatePerpendicularPath: PathGenerator<RotatePerpendicularPathAttributes> = (
     x1: number,
@@ -91,80 +100,81 @@ const defaultRotatePerpendicularPathAttributes: RotatePerpendicularPathAttribute
     roundCornerFactor: 18.33,
 };
 
-const rotatePerpendicularFields = [
-    {
-        type: 'select',
-        label: 'panel.details.lines.common.startFrom',
-        value: (attrs?: RotatePerpendicularPathAttributes) =>
-            attrs?.startFrom ?? defaultRotatePerpendicularPathAttributes.startFrom,
-        options: { from: 'from', to: 'to' },
-        onChange: (val: string | number, attrs_: RotatePerpendicularPathAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultRotatePerpendicularPathAttributes;
-            // set value
-            attrs.startFrom = val as 'from' | 'to';
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.lines.common.offsetFrom',
-        value: (attrs?: RotatePerpendicularPathAttributes) =>
-            (attrs?.offsetFrom ?? defaultRotatePerpendicularPathAttributes.offsetFrom).toString(),
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: RotatePerpendicularPathAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultRotatePerpendicularPathAttributes;
-            // return if invalid
-            if (Number.isNaN(val)) return attrs;
-            // set value
-            attrs.offsetFrom = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.lines.common.offsetTo',
-        value: (attrs?: RotatePerpendicularPathAttributes) =>
-            (attrs?.offsetTo ?? defaultRotatePerpendicularPathAttributes.offsetTo).toString(),
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: RotatePerpendicularPathAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultRotatePerpendicularPathAttributes;
-            // return if invalid
-            if (Number.isNaN(val)) return attrs;
-            // set value
-            attrs.offsetTo = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.lines.common.roundCornerFactor',
-        value: (attrs?: RotatePerpendicularPathAttributes) =>
-            (attrs?.roundCornerFactor ?? defaultRotatePerpendicularPathAttributes.roundCornerFactor).toString(),
-        validator: (val: string) => !Number.isNaN(val) && Number(val) >= 0,
-        onChange: (val: string | number, attrs_: RotatePerpendicularPathAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultRotatePerpendicularPathAttributes;
-            // return if invalid
-            if (Number.isNaN(val) || Number(val) < 0) return attrs;
-            // set value
-            attrs.roundCornerFactor = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const attrsComponent = (props: LinePathAttrsProps<RotatePerpendicularPathAttributes>) => {
+    const { id, attrs, handleAttrsUpdate, parallelIndex } = props;
+    const { t } = useTranslation();
+    const dispatch = useRootDispatch();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={rotatePerpendicularFields as RmgFieldsFieldDetail<RotatePerpendicularPathAttributes>}
-    />
-);
+    const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.RotatePerpendicular, id as LineId);
+    const isParallelDisable = parallelIndex >= 0 && baseParallelLineID !== id;
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'select',
+            label: t('panel.details.lines.common.startFrom'),
+            value: attrs.startFrom,
+            options: { from: t('panel.details.lines.common.from'), to: t('panel.details.lines.common.to') },
+            onChange: val => {
+                attrs.startFrom = val as 'from' | 'to';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.common.offsetFrom'),
+            value: (attrs.offsetFrom ?? defaultRotatePerpendicularPathAttributes.offsetFrom).toString(),
+            variant: 'number',
+            onChange: val => {
+                if (Number.isNaN(val)) val = '0';
+                attrs.offsetFrom = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            isDisabled: isParallelDisable,
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.common.offsetTo'),
+            value: (attrs.offsetTo ?? defaultRotatePerpendicularPathAttributes.offsetTo).toString(),
+            variant: 'number',
+            onChange: val => {
+                if (Number.isNaN(val)) val = '0';
+                attrs.offsetTo = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            isDisabled: isParallelDisable,
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.common.roundCornerFactor'),
+            value: (attrs?.roundCornerFactor ?? defaultRotatePerpendicularPathAttributes.roundCornerFactor).toString(),
+            variant: 'number',
+            onChange: val => {
+                if (Number.isNaN(val) || Number(val) < 0) val = '0';
+                attrs.roundCornerFactor = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            isDisabled: isParallelDisable,
+            minW: 'full',
+        },
+    ];
+
+    if (isParallelDisable) {
+        fields.unshift({
+            type: 'custom',
+            label: t('panel.details.lines.common.parallelDisabled'),
+            component: (
+                <Button size="sm" variant="link" onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}>
+                    {t('panel.details.lines.common.changeInBaseLine')} {baseParallelLineID}
+                </Button>
+            ),
+        });
+    }
+
+    return <RmgFields fields={fields} />;
+};
 
 const rotatePerpendicularIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>

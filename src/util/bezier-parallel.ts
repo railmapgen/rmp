@@ -1,12 +1,21 @@
 import { Bezier } from 'bezier-js';
-import { LinePathType } from '../constants/lines';
+import { LinePathType, Path } from '../constants/lines';
 
-type Path = `${'m' | 'M'}${string}`;
 type X = number;
 type Y = number;
 type Point = [X, Y];
 
-// Note this is not reconcile ready meaning it only handles short path.
+/**
+ * Make a parallel path at the distance(d) of the given path.
+ *
+ * Note this is not reconcile ready meaning it only handles short path.
+ * Short path is a path that starts with M, goes to some L and then curves C to some place and ends with L.
+ * @param path The given path.
+ * @param type Check if the path is a linear line (without any curve).
+ * @param d1 The distance between the given path and the paralleled path.
+ * @param d2 The other distance. Will be -d1 if not given.
+ * @returns Two paths that are parallel to the give path at the distance of d1 and d2.
+ */
 export const makeShortPathParallel = (
     path: Path,
     type: LinePathType,
@@ -14,7 +23,6 @@ export const makeShortPathParallel = (
     d2?: number
 ): [Path, Path] | undefined => {
     d2 = d2 ?? -d1;
-    const d = Math.abs(d1);
 
     const [m, end] = findStartAndEnd(path);
     if (!m || !end) return;
@@ -25,6 +33,7 @@ export const makeShortPathParallel = (
         m[1] === end[1] ||
         (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
     ) {
+        const d = Math.abs(d1);
         return makeStraightParallel(m, end, d);
     }
 
@@ -52,7 +61,18 @@ export const makeShortPathParallel = (
     ];
 };
 
-// Note this is not reconcile ready meaning it only handles short path.
+/**
+ * Make two parallel paths at the distance(d) of the given path.
+ * Also make the closing path that fill cloud be used on it.
+ *
+ * Note this is not reconcile ready meaning it only handles short path.
+ * Short path is a path that starts with M, go to some L and then curve C to some place and end with L.
+ * @param path The given path.
+ * @param type Check if the path is a linear line (without any curve).
+ * @param d1 The distance between the given path and the paralleled path.
+ * @param d2 The other distance. Will be -d1 if not given.
+ * @returns Two paths that are parallel to the give path at the distance of d1 and d2. The closing path that fill cloud be used on it.
+ */
 export const makeShortPathOutline = (
     path: Path,
     type: LinePathType,
@@ -60,7 +80,6 @@ export const makeShortPathOutline = (
     d2?: number
 ): { outline: Path; pA: Path; pB: Path } | undefined => {
     d2 = d2 ?? -d1;
-    const d = Math.abs(d1);
 
     const [m, end] = findStartAndEnd(path);
     if (!m || !end) return;
@@ -71,6 +90,7 @@ export const makeShortPathOutline = (
         m[1] === end[1] ||
         (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
     ) {
+        const d = Math.abs(d1);
         const [pA, pB] = makeStraightParallel(m, end, d);
         return { outline: makeStraightOutline(m, end, d), pA, pB };
     }

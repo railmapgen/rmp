@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Id } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
@@ -19,9 +19,9 @@ const DetailsPanel = () => {
     const graph = React.useRef(window.graph);
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
+    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph]);
     const { selected, mode, active } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 

@@ -13,7 +13,7 @@ import {
 } from '../../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
-import { setRefreshEdges } from '../../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 import {
     RmgFieldsFieldDetail,
@@ -96,7 +96,7 @@ const DualColorSwitch = () => {
                 attrs.colorA = attrs.colorB;
                 attrs.colorB = tmp;
                 graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.DualColor]: attrs });
-                dispatch(setRefreshEdges());
+                dispatch(refreshEdgesThunk());
                 dispatch(saveGraph(graph.current.export()));
             }}
         />

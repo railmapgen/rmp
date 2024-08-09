@@ -53,7 +53,7 @@ export const exportSelectedNodesAndEdges = (
 };
 
 /**
- * Import nodes and edges from the clipboard data.
+ * Import nodes and edges from the clipboard data. Version of the data must be the same as the current.
  * @param s The text from the clipboard.
  * @param graph The graph.
  * @param x The central x of the svg canvas. Nodes and edges added will repositioned around this point.
@@ -70,20 +70,20 @@ export const importSelectedNodesAndEdges = (
     if (version !== 1) throw Error(`Unrecognized version: ${version}`);
 
     // rename id to be not existed in the current graph
-    const renameMap: { [key in string]: string } = {};
+    const renamedMap: { [key in string]: string } = {};
     Object.keys(nodes)
         .filter(node => graph.hasNode(node))
         .forEach(node => {
             const rand = nanoid(10);
-            if (node.startsWith('stn_')) renameMap[node] = `stn_${rand}`;
-            else if (node.startsWith('misc_node_')) renameMap[node] = `misc_node_${rand}`;
+            if (node.startsWith('stn_')) renamedMap[node] = `stn_${rand}`;
+            else if (node.startsWith('misc_node_')) renamedMap[node] = `misc_node_${rand}`;
             else throw Error(`Unrecognized node id: ${node}`);
         });
     Object.keys(edges)
         .filter(edge => graph.hasEdge(edge))
-        .forEach(edge => (renameMap[edge] = `line_${nanoid(10)}`));
+        .forEach(edge => (renamedMap[edge] = `line_${nanoid(10)}`));
 
-    const renamedS = Object.entries(renameMap).reduce((_, [k, v]) => _.replaceAll(k, v), s);
+    const renamedS = Object.entries(renamedMap).reduce((_, [k, v]) => _.replaceAll(k, v), s);
 
     // add nodes and edges into the graph
     const { nodesWithAttrs, edgesWithAttrs, avgX, avgY } = JSON.parse(renamedS) as ClipboardData;

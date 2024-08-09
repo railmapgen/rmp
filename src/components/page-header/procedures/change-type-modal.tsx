@@ -25,11 +25,11 @@ import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import {
     changeLinePathTypeInBatch,
-    changeLinesColorInBatch,
     changeLineStyleTypeInBatch,
+    changeLinesColorInBatch,
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
     changeZIndexInBatch,
@@ -68,13 +68,16 @@ export const ChangeTypeModal = (props: {
         theme,
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
     const { activeSubscriptions } = useRootSelector(state => state.account);
 
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
+    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const availableLinePathOptions = {
@@ -312,7 +315,7 @@ export const ChangeTypeModal = (props: {
             changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, theme, lines);
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
-            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines);
+            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel);
         }
         if (isColorSwitch) {
             if (!filter || filter.includes('line'))

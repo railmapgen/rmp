@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { LineStylesWithColor } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, setRefreshEdges } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { AttributesWithColor } from '../../panels/details/color-field';
 import ThemeButton from '../../panels/theme-button';
 
@@ -45,7 +45,7 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
                     JSON.stringify((attr[attr.style] as AttributesWithColor)!.color) === JSON.stringify(theme)
             )
             .forEach(edge => graph.current.dropEdge(edge));
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
         onClose();
     };
