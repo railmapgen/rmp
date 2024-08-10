@@ -7,7 +7,7 @@
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
-    "possibleZIndexChange": "Version 5 allows you to put lines above stations, zIndexs are upgraded and update them in case of inconsistency.",
+    "possibleZIndexChange": "Version 5 allows you to put lines above stations, depths are upgraded and fix them if the result is not expected.",
 
     "panel": {
         "tools": {
@@ -449,7 +449,8 @@
         },
         "settings": {
             "title": "Settings",
-            "pro": "This is PRO feature and an account with a subscription is required.",
+            "pro": "This is a PRO feature and an account with a subscription is required.",
+            "proLimitExceed": "Current action reaches the limit. Subscribe to unlock more!",
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",

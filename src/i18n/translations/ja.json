@@ -7,7 +7,7 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-    "possibleZIndexChange": "バージョン5では、駅の上に路線を配置できるようになり、深さがアップグレードされ、不整合が発生した場合は更新されます。",
+    "possibleZIndexChange": "バージョン5では、駅の上に路線を配置でき、深度がアップグレードされ、結果が予期されない場合は修正でください。",
 
     "panel": {
         "tools": {
@@ -30,7 +30,7 @@
             "info": {
                 "title": "基本情報",
                 "id": "ID",
-                "zIndex": "深さ",
+                "zIndex": "深度",
                 "stationType": "駅の種類",
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
@@ -449,7 +449,8 @@
         },
         "settings": {
             "title": "設定",
-            "pro": "これはPRO機能であり、定期購読が必要です。",
+            "pro": "これはPRO機能であり、サブスクリプションが必要です。",
+            "proLimitExceed": "現在の操作は制限に達しています。サブスクリプションを登録してさらにアンロックしてください！",
             "preference": {
                 "title": "設定",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
@@ -489,7 +490,7 @@
                     "title": "すべてのオブジェクトの属性を変更する",
                     "any": "どれでも"
                 },
-                "changeZIndex": "バッチで深さを変更する",
+                "changeZIndex": "深度を変更する",
                 "changeStationType": {
                     "title": "一括で駅の種類を変更",
                     "changeFrom": "すべての駅をこの種類から変更する：",

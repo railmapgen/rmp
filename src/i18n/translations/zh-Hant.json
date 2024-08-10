@@ -7,7 +7,7 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-    "possibleZIndexChange": "5.0允許你在車站上方放置線路，深度进行了升級，请在不一致時更新它們。",
+    "possibleZIndexChange": "版本5允許您將線段放置在站點上方，深度已升級，如果結果不符合預期，请進行修復。",
 
     "panel": {
         "tools": {
@@ -448,7 +448,8 @@
         },
         "settings": {
             "title": "設置",
-            "pro": "這是PRO功能，需要带有訂閱的帳戶。",
+            "pro": "這是一個專業功能，需要带有訂閱的帳戶。",
+            "proLimitExceed": "當前操作已達到限制。訂閱以解鎖更多功能！",
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",

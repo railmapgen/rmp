@@ -7,7 +7,7 @@
     "close": "关闭",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
-    "possibleZIndexChange": "5.0版本允许你在车站上方放置线路，深度进行了升级，请在不一致时更新它们。",
+    "possibleZIndexChange": "版本5允许您将线段放置在站点上方，深度已升级，如果结果不符合预期，请进行修复。",
 
     "panel": {
         "tools": {
@@ -448,7 +448,8 @@
         },
         "settings": {
             "title": "设置",
-            "pro": "这是PRO功能，需要带有订阅的账户。",
+            "pro": "这是一个专业功能，需要带有订阅的账户。",
+            "proLimitExceed": "当前操作已达到限制。订阅以解锁更多！",
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
