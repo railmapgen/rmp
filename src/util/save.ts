@@ -434,11 +434,10 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         graph.import(p?.graph);
         graph.forEachDirectedEdge(edge => {
             graph.setEdgeAttribute(edge, 'parallelIndex', -1);
-            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => ((zIndex ?? 0) > 0 ? 0 : zIndex) ?? 0);
+            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => (zIndex ?? 0) - 5);
         });
         graph.forEachNode(node => {
-            if (node.startsWith('misc_node')) return;
-            graph.updateNodeAttribute(node, 'zIndex', zIndex => ((zIndex ?? 0) < 0 ? 0 : zIndex) ?? 0);
+            graph.updateNodeAttribute(node, 'zIndex', zIndex => (zIndex ?? 0) + 5);
         });
         return JSON.stringify({ ...p, version: 34, graph: graph.export() });
     },

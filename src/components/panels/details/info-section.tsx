@@ -33,7 +33,7 @@ export default function InfoSection() {
     const graph = React.useRef(window.graph);
 
     const handleZIndexChange = (val: number) => {
-        const zIndex = Math.min(Math.max(val, -5), 5);
+        const zIndex = Math.min(Math.max(val, -10), 10);
         if (graph.current.hasNode(selectedFirst)) graph.current.setNodeAttribute(selectedFirst, 'zIndex', zIndex);
         if (graph.current.hasEdge(selectedFirst)) graph.current.setEdgeAttribute(selectedFirst, 'zIndex', zIndex);
         hardRefresh();
@@ -77,7 +77,7 @@ export default function InfoSection() {
                       ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
                       : 0
                 : 0,
-            options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
+            options: Object.fromEntries(Array.from({ length: 21 }, (_, i) => [i - 10, (i - 10).toString()])),
             onChange: val => handleZIndexChange(Number(val)),
         });
         if (graph.current.hasEdge(selectedFirst)) {
