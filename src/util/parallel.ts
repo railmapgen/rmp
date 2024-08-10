@@ -228,9 +228,9 @@ export const getBaseParallelLineID = (
 export const MAX_PARALLEL_LINES_FREE = 5;
 export const MAX_PARALLEL_LINES_PRO = Infinity;
 
-export const countParallelLines = () => {
+export const countParallelLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     let parallelLinesCount = 0;
-    for (const lineEntry of window.graph.edgeEntries()) {
+    for (const lineEntry of graph.edgeEntries()) {
         if (lineEntry.attributes.parallelIndex >= 0) {
             parallelLinesCount += 1;
         }

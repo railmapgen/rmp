@@ -78,7 +78,7 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     const state = getState() as RootState;
     dispatch(setRefreshEdges());
 
-    const parallelLinesCount = countParallelLines();
+    const parallelLinesCount = countParallelLines(window.graph);
     dispatch(setParallelLinesCount(parallelLinesCount));
     const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
         ? MAX_PARALLEL_LINES_PRO
