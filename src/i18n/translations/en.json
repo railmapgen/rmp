@@ -116,7 +116,11 @@
                     "branch": "Is branch line"
                 },
                 "mrtDestinationNumbers": {
-                    "displayName": "Singapore MRT Destination Numbers"
+                    "displayName": "Singapore MRT destination numbers"
+                },
+                "mrtLineBadge": {
+                    "displayName": "Singapore MRT line badge",
+                    "isTram": "Is LRT line badge"
                 },
                 "jrEastLineBadge": {
                     "displayName": "JR East line badge",
@@ -246,7 +250,8 @@
                     "displayName": "Kunming Rail Transit interchange station"
                 },
                 "MRTBasic": {
-                    "displayName": "Singapore MRT basic station"
+                    "displayName": "Singapore MRT basic station",
+                    "isTram": "Is LRT station"
                 },
                 "MRTInt": {
                     "displayName": "Singapore MRT interchange station"
@@ -350,6 +355,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR East single color filled with crosshatch pattern style"
+                },
+                "lrtSingleColor": {
+                    "displayName": "Singapore LRT single color style"
                 }
             },
             "edge": {},
@@ -434,7 +442,7 @@
         },
         "settings": {
             "title": "Settings",
-            "pro": "This is PRO feature and is free for a limited time!",
+            "pro": "This is PRO feature and an account with a subscription is required.",
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move"
@@ -512,12 +520,7 @@
                     "content1": "The Rail Map Painter application endeavors to offer an interactive platform conducive to the creation of rail maps while adhering to established conventions. Among these conventions, one particularly renowned style finds its origins in the innovative work of Harry Beck. His pioneering contribution, officially endorsed in the year 1932, garnered instantaneous acclaim from the general populace. Presently, it stands as an exemplar of paramount significance within the realm of information design. This paradigmatic approach has found widespread implementation in transit cartography on a global scale, albeit with varying degrees of success.",
                     "content2": "The application inherently conceals the option to utilize a simple path, as its deployment has the potential to contravene established conventions. This particular feature remains discreetly tucked away by default. Additionally, submissions to the Rail Map Painter Gallery are subject to stringent scrutiny, with a categorical rejection of compositions that employ the simple path with a single color style approach.",
                     "content3": "Nonetheless, we place unwavering faith in the limitless creative potential harbored within you. As such, we extend the opportunity for exploration. However, a series of inquiries must be adequately addressed prior to achieving the status of a seasoned professional and thereby unlocking access to the simple path functionality. It is pertinent to note that even post-attainment, the employment of the simple path is exclusively restricted to the single-color style.",
-                    "content4": "For the sake of conciseness, certain paragraphs within the passage have been omitted. Furthermore, in the interest of enhancing clarity, both the passage and the accompanying questions have been retained in their original language without translation.",
-                    "content5": "You are accorded three attempts to respond accurately to the aforementioned questions. It is imperative to bear in mind that once the remaining attempts are depleted, the opportunity to address further queries will be forfeited. Current Remaining Attempts: ",
-                    "check": "Checking answers and unlock simple path",
-                    "maximumAttemptsExceed": "Maximum attempts exceed",
-                    "unlocked": "Already Unlocked",
-                    "fail": "Fail"
+                    "check": "Unlock simple path"
                 }
             },
             "telemetry": {
