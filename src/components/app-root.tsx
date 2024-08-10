@@ -5,7 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runtime-slice';
+import { closePaletteAppClip, onPaletteAppClipEmit, setGlobalAlert } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
@@ -26,6 +26,12 @@ export default function AppRoot() {
         if (rmgRuntime.isStandaloneWindow() && !window.localStorage.getItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG)) {
             setIsShowRMTMessage(true);
         }
+        dispatch(
+            setGlobalAlert({
+                status: 'warning',
+                message: t('possibleZIndexChange'),
+            })
+        );
     }, []);
 
     const d = new Date();

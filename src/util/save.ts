@@ -428,12 +428,17 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         // Bump save version to support Singapore MRT line badges and LRT style.
         JSON.stringify({ ...JSON.parse(param), version: 33 }),
     33: param => {
-        // Bump save version to support parallel lines.
+        // Bump save version to support parallel lines and sort elements.
         const p = JSON.parse(param);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         graph.import(p?.graph);
         graph.forEachDirectedEdge(edge => {
             graph.setEdgeAttribute(edge, 'parallelIndex', -1);
+            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => ((zIndex ?? 0) > 0 ? 0 : zIndex) ?? 0);
+        });
+        graph.forEachNode(node => {
+            if (node.startsWith('misc_node')) return;
+            graph.updateNodeAttribute(node, 'zIndex', zIndex => ((zIndex ?? 0) < 0 ? 0 : zIndex) ?? 0);
         });
         return JSON.stringify({ ...p, version: 34, graph: graph.export() });
     },

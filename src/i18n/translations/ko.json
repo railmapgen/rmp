@@ -7,6 +7,7 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
+    "possibleZIndexChange": "버전 5에서는 역 위에 선을 배치할 수 있으며, 깊이 가 업그레이드되고 일관성 문제 발생 시 업데이트됩니다.",
 
     "panel": {
         "tools": {
