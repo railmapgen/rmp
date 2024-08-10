@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
+      - run: npm i rollup
 
       - name: Optimize SVGs in public/images/facilities
         working-directory: public/images/facilities
