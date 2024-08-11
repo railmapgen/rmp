@@ -30,9 +30,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setTelemetryApp } from '../../redux/app/app-slice';
+import { setAutoParallel, setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
+import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { ChangeTypeModal } from './procedures/change-type-modal';
 import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
 import { ScaleNodesModal } from './procedures/scale-nodes-modal';
@@ -51,7 +52,12 @@ const macKeyStyle: SystemStyleObject = {
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
-    const { keepLastPath } = useRootSelector(state => state.runtime);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
+    const {
+        telemetry: { app: isAllowAppTelemetry },
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
+    const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
@@ -64,10 +70,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
-    const {
-        telemetry: { app: isAllowAppTelemetry },
-    } = useRootSelector(state => state.app);
     const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
+
+    const maximumParallelLines = activeSubscriptions.RMP_CLOUD ? MAX_PARALLEL_LINES_PRO : MAX_PARALLEL_LINES_FREE;
+    const isParallelLineDisabled = parallelLinesCount > maximumParallelLines;
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>
@@ -88,6 +94,24 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Switch
                                         isChecked={keepLastPath}
                                         onChange={({ target: { checked } }) => dispatch(setKeepLastPath(checked))}
+                                    />
+                                </Box>
+                                <Box display="flex" mb="1">
+                                    <Text>{t('header.settings.preference.autoParallel')}</Text>
+                                    <Tooltip label={t('header.settings.proLimitExceed')}>
+                                        <Badge
+                                            ml="1"
+                                            color="gray.50"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                            mr="auto"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
+                                    <Switch
+                                        isDisabled={isParallelLineDisabled}
+                                        isChecked={autoParallel}
+                                        onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
                                     />
                                 </Box>
                             </Box>

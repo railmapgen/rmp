@@ -9,10 +9,10 @@ import { useRootDispatch, useRootSelector } from '../redux';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
     clearSelected,
+    refreshEdgesThunk,
     setActive,
     setKeepLastPath,
     setMode,
-    setRefreshEdges,
     setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
@@ -30,7 +30,7 @@ const SvgWrapper = () => {
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 

@@ -33,7 +33,9 @@
                 "stationType": "車站類型",
                 "linePathType": "線段路徑類型",
                 "lineStyleType": "線段樣式類型",
-                "type": "類型"
+                "type": "類型",
+                "parallel": "平行線段",
+                "parallelIndex": "平行線段索引"
             },
             "multipleSelection": {
                 "title": "多重選取",
@@ -287,7 +289,11 @@
                     "offsetFrom": "起始點偏移",
                     "offsetTo": "結束點偏移",
                     "startFrom": "從這裏開始",
-                    "roundCornerFactor": "轉折圓角因子"
+                    "roundCornerFactor": "轉折圓角因子",
+                    "from": "從",
+                    "to": "到",
+                    "parallelDisabled": "由於此線段是平行的，因此某些屬性已被禁用。",
+                    "changeInBaseLine": "在基準線段中更改它們："
                 },
                 "simple": {
                     "displayName": "基本線段",
@@ -441,10 +447,12 @@
         },
         "settings": {
             "title": "設置",
-            "pro": "這是PRO功能，需要带有訂閱的帳戶。",
+            "pro": "這是一個專業功能，需要带有訂閱的帳戶。",
+            "proLimitExceed": "當前操作已達到限制。訂閱以解鎖更多功能！",
             "preference": {
                 "title": "偏好",
-                "keepLastPath": "在下一次操作中持續畫線段直到點擊背景"
+                "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
+                "autoParallel": "自動將新段線設置為與現有線段平行"
             },
             "shortcuts": {
                 "title": "捷徑",
