@@ -1,17 +1,18 @@
 import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
-import { Events } from '../../constants/constants';
+import { Events, LocalStorageKey } from '../../constants/constants';
 import { RMGParam } from '../../constants/rmg';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, setGlobalAlert, setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { parseRmgParam } from '../../util/rmg-param-parser';
-import { RMPSave, getInitialParam, upgrade } from '../../util/save';
+import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
+import { getInitialParam, RMPSave, upgrade } from '../../util/save';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
@@ -20,6 +21,7 @@ export default function OpenActions() {
     const dispatch = useRootDispatch();
     const {
         telemetry: { project: isAllowAppTelemetry },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
@@ -30,9 +32,9 @@ export default function OpenActions() {
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph, graph]);
+    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph, graph]);
 
     const handleNew = () => {
         dispatch(clearSelected());
@@ -45,7 +47,7 @@ export default function OpenActions() {
     const handleImportRMGProject = (param: RMGParam) => {
         try {
             if (isAllowAppTelemetry) rmgRuntime.event(Events.IMPORT_RMG_PARAM, {});
-            parseRmgParam(graph.current, param);
+            parseRmgParam(graph.current, param, autoParallel);
             refreshAndSave();
         } catch (err) {
             dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
@@ -100,9 +102,6 @@ export default function OpenActions() {
         event.target.value = '';
     };
 
-    const size = useWindowSize();
-    const { height } = getCanvasSize(size);
-
     const handleLoadTutorial = async () => {
         await loadParam(await getInitialParam());
         dispatch(setSvgViewBoxMin({ x: -10, y: -13 }));
@@ -111,6 +110,29 @@ export default function OpenActions() {
         dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
         rmgRuntime.event(Events.LOAD_TUTORIAL, {});
     };
+
+    React.useEffect(() => {
+        // Note that this function will capture all the states if they're used on first mount,
+        // which will prevent code from getting the lasted state changes.
+        // Move event listener of broadcast channel to init and use store.getState() and
+        // store.dispatch() for correctly handling this case.
+        const rmtSaveHandler = async (ev: MessageEvent<SaveManagerEvent>) => {
+            const { type, key, from } = ev.data;
+            if (type === SaveManagerEventType.SAVE_CHANGED && key === LocalStorageKey.PARAM && from === 'rmt') {
+                logger.debug(`Received save changed event on key: ${key}`);
+                const param = localStorage.getItem(LocalStorageKey.PARAM);
+                if (!param) return;
+                await loadParam(param);
+            }
+        };
+        saveManagerChannel.addEventListener('message', rmtSaveHandler);
+
+        // this should never get unmount, but added for safety
+        return () => saveManagerChannel.removeEventListener('message', rmtSaveHandler);
+    }, []);
+
+    const size = useWindowSize();
+    const { height } = getCanvasSize(size);
 
     return (
         <Menu>

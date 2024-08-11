@@ -14,29 +14,30 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
+    Tooltip,
 } from '@chakra-ui/react';
 import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineId, StnId, MiscNodeId, Theme, CityCode } from '../../../constants/constants';
+import { CityCode, LineId, MiscNodeId, StnId, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import { findThemes } from '../../../util/graph';
+import { openPaletteAppClip, refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import {
     changeLinePathTypeInBatch,
-    changeLinesColorInBatch,
     changeLineStyleTypeInBatch,
+    changeLinesColorInBatch,
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
     changeZIndexInBatch,
 } from '../../../util/change-types';
+import { findThemes } from '../../../util/graph';
+import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
-import ThemeButton from '../../panels/theme-button';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
@@ -67,12 +68,16 @@ export const ChangeTypeModal = (props: {
         theme,
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
 
     const hardRefresh = React.useCallback(() => {
         dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
+    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const availableLinePathOptions = {
@@ -310,7 +315,7 @@ export const ChangeTypeModal = (props: {
             changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, theme, lines);
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
-            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines);
+            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel);
         }
         if (isColorSwitch) {
             if (!filter || filter.includes('line'))
@@ -373,20 +378,23 @@ export const ChangeTypeModal = (props: {
                     <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
-                    <Button
-                        colorScheme="red"
-                        mr="1"
-                        onClick={handleChange}
-                        isDisabled={
-                            !isZIndexSwitch &&
-                            !isStationTypeSwitch &&
-                            !isLineStyleTypeSwitch &&
-                            !isLinePathTypeSwitch &&
-                            !isColorSwitch
-                        }
-                    >
-                        {t('apply')}
-                    </Button>
+                    <Tooltip label={t('header.settings.pro')} isOpen={!activeSubscriptions.RMP_CLOUD}>
+                        <Button
+                            colorScheme="red"
+                            mr="1"
+                            onClick={handleChange}
+                            isDisabled={
+                                !activeSubscriptions.RMP_CLOUD ||
+                                (!isZIndexSwitch &&
+                                    !isStationTypeSwitch &&
+                                    !isLineStyleTypeSwitch &&
+                                    !isLinePathTypeSwitch &&
+                                    !isColorSwitch)
+                            }
+                        >
+                            {t('apply')}
+                        </Button>
+                    </Tooltip>
                 </ModalFooter>
             </ModalContent>
         </Modal>

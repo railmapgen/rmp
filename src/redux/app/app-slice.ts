@@ -30,6 +30,10 @@ export interface AppState {
              */
             expand: boolean;
         };
+        /**
+         * Whether to enable parallel for new lines.
+         */
+        autoParallel: boolean;
     };
 }
 
@@ -43,11 +47,12 @@ export const initialState: AppState = {
         toolsPanel: {
             expand: true,
         },
+        autoParallel: true,
     },
 };
 
 const appSlice = createSlice({
-    name: 'param',
+    name: 'app',
     initialState,
     reducers: {
         setTelemetryApp: (state, action: PayloadAction<boolean>) => {
@@ -62,8 +67,12 @@ const appSlice = createSlice({
         setToolsPanelExpansion: (state, action: PayloadAction<boolean>) => {
             state.preference.toolsPanel.expand = action.payload;
         },
+        setAutoParallel: (state, action: PayloadAction<boolean>) => {
+            state.preference.autoParallel = action.payload;
+        },
     },
 });
 
-export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath, setToolsPanelExpansion } = appSlice.actions;
+export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath, setToolsPanelExpansion, setAutoParallel } =
+    appSlice.actions;
 export default appSlice.reducer;

@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../../../constants/constants';
 import { useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 
 export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -36,7 +36,7 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
             graph.current.clear();
             graph.current.import(updatedParam);
             dispatch(setRefreshNodes());
-            dispatch(setRefreshEdges());
+            dispatch(refreshEdgesThunk());
             dispatch(saveGraph(graph.current.export()));
             toast({
                 title: t('header.settings.procedures.updateColor.success'),
@@ -91,8 +91,7 @@ const isTheme = (arr: any[]): boolean => {
         arr.length >= 4 && // InterchangeInfo will append strings after Theme
         arr.every(elem => typeof elem === 'string') && // type ok
         !!arr[2].match(/^#[0-9a-fA-F]{6}$/) && // hex ok
-        // @ts-expect-error its okay to return false on any type
-        Object.values(MonoColour).includes(arr[3]) // bg ok
+        Object.values(MonoColour).includes(arr[3] as any) // bg ok
     );
 };
 

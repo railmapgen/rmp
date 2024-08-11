@@ -1,7 +1,11 @@
 import { AlertStatus } from '@chakra-ui/react';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '..';
 import { CityCode, Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import i18n from '../../i18n/config';
+import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
+import { setAutoParallel } from '../app/app-slice';
 import { redoAction, undoAction } from '../param/param-slice';
 
 /**
@@ -45,6 +49,7 @@ interface RuntimeState {
         input: Theme | undefined;
         output: Theme | undefined;
     };
+    parallelLinesCount: number;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
     isDonationModalOpen: boolean;
 }
@@ -64,9 +69,31 @@ const initialState: RuntimeState = {
         input: undefined,
         output: undefined,
     },
+    parallelLinesCount: 0,
     globalAlerts: {},
     isDonationModalOpen: false,
 };
+
+export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async (_, { getState, dispatch }) => {
+    const state = getState() as RootState;
+    dispatch(setRefreshEdges());
+
+    const parallelLinesCount = countParallelLines(window.graph);
+    dispatch(setParallelLinesCount(parallelLinesCount));
+    const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
+        ? MAX_PARALLEL_LINES_PRO
+        : MAX_PARALLEL_LINES_FREE;
+    if (parallelLinesCount > maximumParallelLines) {
+        dispatch(setAutoParallel(false));
+        dispatch(
+            setGlobalAlert({
+                status: 'warning',
+                message: i18n.t('header.settings.proLimitExceed'),
+            })
+        );
+    }
+    return;
+});
 
 const runtimeSlice = createSlice({
     name: 'runtime',
@@ -114,6 +141,9 @@ const runtimeSlice = createSlice({
             state.paletteAppClip.input = undefined;
             state.paletteAppClip.output = action.payload;
         },
+        setParallelLinesCount: (state, action: PayloadAction<number>) => {
+            state.parallelLinesCount = action.payload;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -160,6 +190,7 @@ export const {
     openPaletteAppClip,
     closePaletteAppClip,
     onPaletteAppClipEmit,
+    setParallelLinesCount,
     setGlobalAlert,
     closeGlobalAlert,
     setIsDonationModalOpen,

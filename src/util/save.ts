@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 31;
+export const CURRENT_VERSION = 34;
 
 /**
  * Load the tutorial.
@@ -131,15 +131,13 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     },
     3: param => {
         const p = JSON.parse(param);
-        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        const graph = new MultiDirectedGraph();
         graph.import(p?.graph);
         // Add style and single color attrs to all existing lines.
         graph
             .filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => edge.startsWith('line'))
             .forEach(edge => {
-                // @ts-expect-error We are dealing with old saves.
                 const color = graph.getEdgeAttribute(edge, 'color') as Theme;
-                // @ts-expect-error We are dealing with old saves.
                 graph.removeEdgeAttribute(edge, 'color');
                 // All the existing lines are single color lines and there is no name changes in type.
                 graph.mergeEdgeAttributes(edge, {
@@ -400,7 +398,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         return JSON.stringify({ ...p, version: 28, graph: graph.export() });
     },
     28: param =>
-        // Bump save version to support Qingdao Metro tation.
+        // Bump save version to support Qingdao Metro station.
         JSON.stringify({ ...JSON.parse(param), version: 29 }),
     29: param =>
         // Bump save version to support Singapore MRT facilities.
@@ -408,4 +406,39 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     30: param =>
         // Bump save version to support Guangzhou Metro interchange station 2024.
         JSON.stringify({ ...JSON.parse(param), version: 31 }),
+    31: param => {
+        // Bump save version to support Railway line color
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterEdges((line, attrs) => attrs.style === LineStyleType.ChinaRailway)
+            .forEach(line => {
+                const s = graph.getEdgeAttributes(line)[LineStyleType.ChinaRailway];
+                graph.mergeEdgeAttributes(line, {
+                    [LineStyleType.ChinaRailway]: {
+                        ...s,
+                        color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],
+                    },
+                });
+            });
+        return JSON.stringify({ ...p, version: 32, graph: graph.export() });
+    },
+    32: param =>
+        // Bump save version to support Singapore MRT line badges and LRT style.
+        JSON.stringify({ ...JSON.parse(param), version: 33 }),
+    33: param => {
+        // Bump save version to support parallel lines and sort elements.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph.forEachDirectedEdge(edge => {
+            graph.setEdgeAttribute(edge, 'parallelIndex', -1);
+            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => (zIndex ?? 0) - 5);
+        });
+        graph.forEachNode(node => {
+            graph.updateNodeAttribute(node, 'zIndex', zIndex => (zIndex ?? 0) + 5);
+        });
+        return JSON.stringify({ ...p, version: 34, graph: graph.export() });
+    },
 };

@@ -12,6 +12,7 @@ import chongqingRTNumLineBadge from './chongqingrt-num-line-badge';
 import chongqingRTTextLineBadge from './chongqingrt-text-line-badge';
 import shenzhenMetroNumLineBadge from './shenzhenmetro-num-line-badge';
 import mrtDestinationNumbers from './mrt-dest-num';
+import mrtLineBadge from './mrt-line-badge';
 import jrEastLineBadge from './jr-east-line-badge';
 import qingdaoMetroNumLineBadge from './qingdao-metro-num-line-badge';
 import facilities from './facilities';
@@ -33,6 +34,7 @@ const miscNodes = {
     [MiscNodeType.ChongqingRTTextLineBadge]: chongqingRTTextLineBadge,
     [MiscNodeType.ShenzhenMetroNumLineBadge]: shenzhenMetroNumLineBadge,
     [MiscNodeType.MRTDestinationNumbers]: mrtDestinationNumbers,
+    [MiscNodeType.MRTLineBadge]: mrtLineBadge,
     [MiscNodeType.JREastLineBadge]: jrEastLineBadge,
     [MiscNodeType.QingdaoMetroNumLineBadge]: qingdaoMetroNumLineBadge,
     [MiscNodeType.Facilities]: facilities,

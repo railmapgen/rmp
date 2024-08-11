@@ -14,6 +14,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm i
+      - run: npm i rollup
       - name: Check
         run: |
           npm run lint
