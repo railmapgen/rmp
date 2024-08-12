@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { LearnHowToAdd } from '../tools/tools';
@@ -22,10 +22,13 @@ export default function LineTypeSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshEdges, saveGraph]);
+    }, [dispatch, refreshEdgesThunk, saveGraph]);
 
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
     const { selected, theme } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
@@ -49,6 +52,11 @@ export default function LineTypeSection() {
     );
     const [newLineStyleType, setNewLineStyleType] = React.useState<LineStyleType | undefined>(undefined);
 
+    React.useEffect(() => {
+        setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
+        setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
+    }, [selectedFirst]);
+
     const disabledLinePathOptions = Object.values(LinePathType).filter(
         linePathType => !lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType)
     );
@@ -58,7 +66,7 @@ export default function LineTypeSection() {
 
     const handleChangeLinePathType = () => {
         if (newLinePathType) {
-            changeLinePathType(graph.current, selectedFirst!, newLinePathType);
+            changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
             setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
             hardRefresh();
         }

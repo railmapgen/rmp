@@ -33,7 +33,9 @@
                 "stationType": "Station Type",
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type",
-                "type": "Type"
+                "type": "Type",
+                "parallel": "Parallel line",
+                "parallelIndex": "Parallel index"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -288,7 +290,11 @@
                     "offsetFrom": "Offset From",
                     "offsetTo": "Offset To",
                     "startFrom": "Start From",
-                    "roundCornerFactor": "Round Corner Factor"
+                    "from": "From",
+                    "to": "To",
+                    "roundCornerFactor": "Round Corner Factor",
+                    "parallelDisabled": "Some attributes are disabled as this line is parallel.",
+                    "changeInBaseLine": "Change them in the base line:"
                 },
                 "simple": {
                     "displayName": "Simple path",
@@ -442,10 +448,12 @@
         },
         "settings": {
             "title": "Settings",
-            "pro": "This is PRO feature and an account with a subscription is required.",
+            "pro": "This is a PRO feature and an account with a subscription is required.",
+            "proLimitExceed": "Current action reaches the limit. Subscribe to unlock more!",
             "preference": {
                 "title": "Preference",
-                "keepLastPath": "Keep drawing lines until clicking on the background in the next move"
+                "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
+                "autoParallel": "Automatically set new lines to be parallel to existing lines"
             },
             "shortcuts": {
                 "title": "Shortcuts",

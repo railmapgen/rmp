@@ -33,7 +33,9 @@
                 "stationType": "역 유형",
                 "linePathType": "선분 경로 유형",
                 "lineStyleType": "선분 스타일 유형",
-                "type": "유형"
+                "type": "유형",
+                "parallel": "평행선",
+                "parallelIndex": "평행 인덱스"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -287,7 +289,11 @@
                     "offsetFrom": "시작점 오프셋",
                     "offsetTo": "끝점 오프셋",
                     "startFrom": "여기서부터 시작",
-                    "roundCornerFactor": "회전원각인자"
+                    "roundCornerFactor": "회전원각인자",
+                    "from": "에서",
+                    "to": "까지",
+                    "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
+                    "changeInBaseLine": "기본선에서 변경하십시오:"
                 },
                 "simple": {
                     "displayName": "기본 선분",
@@ -441,10 +447,12 @@
         },
         "settings": {
             "title": "설정",
-            "pro": "이것은 PRO 기능이며 구독 계정이 필요합니다.",
+            "pro": "이것은 PRO 기능이며, 구독이 필요한 계정입니다.",
+            "proLimitExceed": "현재 작업이 한도에 도달했습니다. 더 많은 기능을 사용하려면 구독하세요!",
             "preference": {
                 "title": "선호",
-                "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다"
+                "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
+                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다"
             },
             "shortcuts": {
                 "title": "바로 가기",
