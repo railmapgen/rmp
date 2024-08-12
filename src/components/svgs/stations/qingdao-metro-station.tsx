@@ -16,9 +16,9 @@ import { AttributesWithColor, ColorField } from '../../panels/details/color-fiel
 import { MultilineText } from '../common/multiline-text';
 
 const LineHeight = {
-    top: 5.5,
+    top: 3.75,
     middle: 0,
-    bottom: 10,
+    bottom: 8,
 };
 
 const QingdaoMetroStation = (props: StationComponentProps) => {
@@ -45,48 +45,48 @@ const QingdaoMetroStation = (props: StationComponentProps) => {
     );
 
     const getBasicTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
-        const textX = oX === 'left' ? -7.5 : oX === 'right' ? 7.5 : 0;
+        const textX = oX === 'left' ? -6 : oX === 'right' ? 6 : 0;
         if (oY === 'top') {
-            return [textX, -names[1].split('\n').length * LineHeight[oY] - 8];
+            return [textX, -names[1].split('\n').length * LineHeight[oY] - 5.5];
         } else if (oY === 'bottom') {
-            return [textX, names[0].split('\n').length * LineHeight[oY] + 6];
+            return [textX, names[0].split('\n').length * LineHeight[oY] + 4];
         } else {
-            return [textX, 2.5];
+            return [textX, 2];
         }
     };
 
     const getIntTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-7, -names[1].split('\n').length * LineHeight[oY] - 7];
+            return [-6, -names[1].split('\n').length * LineHeight[oY] - 6];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -names[1].split('\n').length * LineHeight[oY] - 15];
+            return [0, -names[1].split('\n').length * LineHeight[oY] - 10];
         } else if (oX === 'right' && oY === 'top') {
-            return [7, -names[1].split('\n').length * LineHeight[oY] - 7];
+            return [6, -names[1].split('\n').length * LineHeight[oY] - 6];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-7, names[0].split('\n').length * LineHeight[oY] + 7];
+            return [-6, names[0].split('\n').length * LineHeight[oY] + 6];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\n').length * LineHeight[oY] + 12];
+            return [0, names[0].split('\n').length * LineHeight[oY] + 7];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [7, names[0].split('\n').length * LineHeight[oY] + 7];
+            return [6, names[0].split('\n').length * LineHeight[oY] + 6];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-13, 0];
+            return [-8, 2];
         } else if (oX === 'right' && oY === 'middle') {
-            return [13, 0];
+            return [8, 2];
         } else return [0, 0];
     };
 
-    const [[textX, textY], r] = isInt
-        ? [getIntTextOffset(nameOffsetX, nameOffsetY), 8]
-        : [getBasicTextOffset(nameOffsetX, nameOffsetY), 3];
+    const [textX, textY] = isInt
+        ? getIntTextOffset(nameOffsetX, nameOffsetY)
+        : getBasicTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
-                r={r}
+                r={isInt ? 6 : 2.7}
                 stroke={isInt ? 'black' : color[2]}
-                strokeWidth="0.67"
+                strokeWidth={isInt ? 1.5 : 0.2}
                 fill="white"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -96,16 +96,16 @@ const QingdaoMetroStation = (props: StationComponentProps) => {
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={10}
-                    lineHeight={10}
+                    fontSize={8}
+                    lineHeight={8}
                     grow="up"
                     baseOffset={1}
                     className="rmp-name__zh"
                 />
                 <MultilineText
                     text={names[1].split('\n')}
-                    fontSize={5.5}
-                    lineHeight={5.5}
+                    fontSize={3.75}
+                    lineHeight={3.75}
                     grow="down"
                     baseOffset={1.5}
                     className="rmp-name__en"
