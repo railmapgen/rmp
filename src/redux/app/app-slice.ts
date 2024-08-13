@@ -47,7 +47,7 @@ export const initialState: AppState = {
 };
 
 const appSlice = createSlice({
-    name: 'param',
+    name: 'app',
     initialState,
     reducers: {
         setTelemetryApp: (state, action: PayloadAction<boolean>) => {

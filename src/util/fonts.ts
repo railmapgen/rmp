@@ -74,6 +74,16 @@ export const FONTS_CSS: {
         cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
+    [MiscNodeType.MRTDestinationNumbers]: {
+        className: ['.rmp-name__mrt'],
+        cssFont: { IdentityFont },
+        cssName: 'fonts_mrt',
+    },
+    [MiscNodeType.MRTLineBadge]: {
+        className: ['.rmp-name__mrt'],
+        cssFont: { IdentityFont },
+        cssName: 'fonts_mrt',
+    },
     [StationType.TokyoMetroBasic]: {
         className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
         cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
