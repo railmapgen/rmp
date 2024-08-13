@@ -4,6 +4,7 @@ import {
     AccordionIcon,
     AccordionItem,
     AccordionPanel,
+    Badge,
     Box,
     Button,
     Flex,
@@ -12,6 +13,7 @@ import {
     Link,
     SystemStyleObject,
     Text,
+    Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -183,6 +185,16 @@ const ToolsPanel = () => {
                                 sx={buttonStyle}
                             >
                                 {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
+                                <Tooltip label={t('header.settings.pro')}>
+                                    <Badge
+                                        ml="1"
+                                        color="gray.50"
+                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                        mr="auto"
+                                    >
+                                        PRO
+                                    </Badge>
+                                </Tooltip>
                             </Button>
                         </AccordionPanel>
                     </AccordionItem>
