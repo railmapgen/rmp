@@ -449,4 +449,28 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node__8CmQwl2e2","attributes":{"visible":true,"zIndex":4,"x":0,"y":0,"type":"virtual","virtual":{}}},{"key":"misc_node_966GIPcDUU","attributes":{"visible":true,"zIndex":5,"x":50,"y":50,"type":"virtual","virtual":{}}}],"edges":[{"key":"line_39qw6f0ehK","source":"misc_node__8CmQwl2e2","target":"misc_node_966GIPcDUU","attributes":{"visible":true,"zIndex":-4,"type":"diagonal","diagonal":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":10},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}}]},"version":34}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('34 -> 35', () => {
+        // Bump save version to support Qingdao Metro facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":34}';
+        const newParam = UPGRADE_COLLECTION[34](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":35}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('35 -> 36', () => {
+        // Bump save version to support Tokyo Metro stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":35}';
+        const newParam = UPGRADE_COLLECTION[35](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":36}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
