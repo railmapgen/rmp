@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 33;
+export const CURRENT_VERSION = 34;
 
 /**
  * Load the tutorial.
@@ -429,4 +429,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     32: param =>
         // Bump save version to support Singapore MRT line badges and LRT style.
         JSON.stringify({ ...JSON.parse(param), version: 33 }),
+    33: param =>
+        // Bump save version to support Tokyo Metro stations.
+        JSON.stringify({ ...JSON.parse(param), version: 34 }),
 };
