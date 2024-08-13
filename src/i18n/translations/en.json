@@ -282,6 +282,37 @@
                 "qingdaoMetro": {
                     "displayName": "Qingdao Metro station",
                     "isInt": "Is interchange station"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "Tokyo Metro basic station",
+                    "nameOffset": "Names offset",
+                    "textVertical": "Vertical names",
+                    "lineCode": "Line code",
+                    "stationCode": "Station code"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "Tokyo Metro interchange station",
+                    "mereOffset": {
+                        "displayName": "Names mere offset",
+                        "none": "None",
+                        "left1": "Left (less)",
+                        "left2": "Left (more)",
+                        "right1": "Right (less)",
+                        "right2": "Right (more)",
+                        "up": "Up",
+                        "down": "Down"
+                    },
+                    "importance": {
+                        "displayName": "Station importance",
+                        "default": "Default",
+                        "middle": "Middle",
+                        "high": "High"
+                    },
+                    "align": {
+                        "displayName": "Icon align",
+                        "horizontal": "Horizontal",
+                        "vertical": "Vertical"
+                    }
                 }
             },
             "lines": {

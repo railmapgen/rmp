@@ -18,6 +18,7 @@ const IdentityFont: FontFaceConfig = {
 };
 const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
 const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
+const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', descriptors: { display: 'swap' } };
 
 /**
  * Node type to fonts' css related data.
@@ -82,6 +83,16 @@ export const FONTS_CSS: {
         className: ['.rmp-name__mrt'],
         cssFont: { IdentityFont },
         cssName: 'fonts_mrt',
+    },
+    [StationType.TokyoMetroBasic]: {
+        className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
+        cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
+        cssName: 'fonts_tokyo',
+    },
+    [StationType.TokyoMetroInt]: {
+        className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
+        cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
+        cssName: 'fonts_tokyo',
     },
 };
 

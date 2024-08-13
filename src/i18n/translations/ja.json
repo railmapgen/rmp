@@ -282,6 +282,37 @@
                 "qingdaoMetro": {
                     "displayName": "地下鉄青島駅",
                     "isInt": "乗換駅です"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "東京メトロの基本駅",
+                    "nameOffset": "名前のオフセット",
+                    "textVertical": "縦方向の名前",
+                    "lineCode": "回線コード",
+                    "stationCode": "駅コード"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "東京メトロ乗換駅",
+                    "mereOffset": {
+                        "displayName": "名前は単なるオフセットです",
+                        "none": "なし",
+                        "left1": "左（少ない）",
+                        "left2": "左（さらに）",
+                        "right1": "右（少ない）",
+                        "right2": "右（さらに）",
+                        "up": "上",
+                        "down": "下"
+                    },
+                    "importance": {
+                        "displayName": "駅の重要性",
+                        "default": "デフォルト",
+                        "middle": "真ん中",
+                        "high": "高い"
+                    },
+                    "align": {
+                        "displayName": "アイコンの整列",
+                        "horizontal": "水平",
+                        "vertical": "垂直"
+                    }
                 }
             },
             "lines": {
