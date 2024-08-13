@@ -1,8 +1,7 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../../constants/constants';
 import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
 
 const generateSimplePath: PathGenerator<SimplePathAttributes> = (
     x1: number,
@@ -36,28 +35,26 @@ const defaultSimplePathAttributes = {
     offset: 0,
 };
 
-const simpleFields = [
-    {
-        type: 'input',
-        label: 'panel.details.lines.simple.offset',
-        value: (attrs?: SimplePathAttributes) => (attrs?.offset ?? defaultSimplePathAttributes.offset).toString(),
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: SimplePathAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSimplePathAttributes;
-            // return if invalid
-            if (Number.isNaN(val)) return attrs;
-            // set value
-            attrs.offset = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const attrsComponent = (props: AttrsProps<SimplePathAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes fields={simpleFields as RmgFieldsFieldDetail<SimplePathAttributes>} />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.lines.simple.offset'),
+            value: (attrs.offset ?? defaultSimplePathAttributes.offset).toString(),
+            variant: 'number',
+            onChange: val => {
+                attrs.offset = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const simpleLineIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>

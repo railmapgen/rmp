@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 34;
+export const CURRENT_VERSION = 36;
 
 /**
  * Load the tutorial.
@@ -131,15 +131,13 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     },
     3: param => {
         const p = JSON.parse(param);
-        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        const graph = new MultiDirectedGraph();
         graph.import(p?.graph);
         // Add style and single color attrs to all existing lines.
         graph
             .filterEdges((edge, attr, source, target, sourceAttr, targetAttr, undirected) => edge.startsWith('line'))
             .forEach(edge => {
-                // @ts-expect-error We are dealing with old saves.
                 const color = graph.getEdgeAttribute(edge, 'color') as Theme;
-                // @ts-expect-error We are dealing with old saves.
                 graph.removeEdgeAttribute(edge, 'color');
                 // All the existing lines are single color lines and there is no name changes in type.
                 graph.mergeEdgeAttributes(edge, {
@@ -429,7 +427,24 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     32: param =>
         // Bump save version to support Singapore MRT line badges and LRT style.
         JSON.stringify({ ...JSON.parse(param), version: 33 }),
-    33: param =>
+    33: param => {
+        // Bump save version to support parallel lines and sort elements.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph.forEachDirectedEdge(edge => {
+            graph.setEdgeAttribute(edge, 'parallelIndex', -1);
+            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => (zIndex ?? 0) - 5);
+        });
+        graph.forEachNode(node => {
+            graph.updateNodeAttribute(node, 'zIndex', zIndex => (zIndex ?? 0) + 5);
+        });
+        return JSON.stringify({ ...p, version: 34, graph: graph.export() });
+    },
+    34: param =>
+        // Bump save version to support Qingdao Metro facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 35 }),
+    35: param =>
         // Bump save version to support Tokyo Metro stations.
-        JSON.stringify({ ...JSON.parse(param), version: 34 }),
+        JSON.stringify({ ...JSON.parse(param), version: 36 }),
 };

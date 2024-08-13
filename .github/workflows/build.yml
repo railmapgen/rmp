@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
+      - run: npm i rollup
 
       - name: Optimize SVGs in public/images/facilities
         working-directory: public/images/facilities
@@ -40,7 +41,7 @@ jobs:
           npm i -g svgo
           svgo -v
           svgo -f ./ --pretty --indent 2 --config ./svgo.config.js
-        # changes should be made before build.sh as there will be commit in build.sh
+        # changes should be made before build.sh as they will be committed in build.sh
 
       - name: Build
         id: build

@@ -29,11 +29,13 @@
             "info": {
                 "title": "基本情報",
                 "id": "ID",
-                "zIndex": "深さ",
+                "zIndex": "深度",
                 "stationType": "駅の種類",
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
-                "type": "種類"
+                "type": "種類",
+                "parallel": "平行路線",
+                "parallelIndex": "平行路線の索引"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -319,7 +321,11 @@
                     "offsetFrom": "補正値（From）",
                     "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
-                    "roundCornerFactor": "角の丸め係数"
+                    "roundCornerFactor": "角の丸め係数",
+                    "from": "から",
+                    "to": "まで",
+                    "parallelDisabled": "この路線が平行であるため、一部の属性が無効になっています。",
+                    "changeInBaseLine": "基準線で変更してください："
                 },
                 "simple": {
                     "displayName": "簡単な経路",
@@ -473,10 +479,12 @@
         },
         "settings": {
             "title": "設定",
-            "pro": "これはPRO機能であり、定期購読が必要です。",
+            "pro": "これはPRO機能であり、サブスクリプションが必要です。",
+            "proLimitExceed": "現在の操作は制限に達しています。サブスクリプションを登録してさらにアンロックしてください！",
             "preference": {
                 "title": "設定",
-                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける"
+                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
+                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定"
             },
             "shortcuts": {
                 "title": "ショートカット",
@@ -512,7 +520,7 @@
                     "title": "すべてのオブジェクトの属性を変更する",
                     "any": "どれでも"
                 },
-                "changeZIndex": "バッチで深さを変更する",
+                "changeZIndex": "深度を変更する",
                 "changeStationType": {
                     "title": "一括で駅の種類を変更",
                     "changeFrom": "すべての駅をこの種類から変更する：",

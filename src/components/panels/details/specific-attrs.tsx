@@ -1,9 +1,10 @@
 import { Text } from '@chakra-ui/react';
-import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { makeParallelIndex } from '../../../util/parallel';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -38,6 +39,9 @@ export const NodeSpecificAttributes = () => {
 
 export const LineSpecificAttributes = () => {
     const dispatch = useRootDispatch();
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
     const { selected } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const [id] = selected;
@@ -48,30 +52,49 @@ export const LineSpecificAttributes = () => {
     const style = window.graph.getEdgeAttribute(id, 'style');
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
     const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
+    const parallelIndex = window.graph.getEdgeAttribute(id, 'parallelIndex');
+    const reconcileId = window.graph.getEdgeAttribute(id, 'reconcileId');
 
     const handlePathAttrsUpdate = (id: string, attrs: any) => {
+        let parallelIndex = -1;
+        if (autoParallel) {
+            const [source, target] = window.graph.extremities(id) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            parallelIndex = makeParallelIndex(window.graph, type, source, target, attrs.startFrom);
+        }
+        window.graph.setEdgeAttribute(id, 'parallelIndex', parallelIndex);
+
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(window.graph.export()));
     };
 
     const handleStyleAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [style]: attrs });
-        dispatch(setRefreshEdges());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(window.graph.export()));
     };
 
     return (
         <>
             {PathAttrsComponent ? (
-                <PathAttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handlePathAttrsUpdate} />
+                <PathAttrsComponent
+                    id={id}
+                    attrs={attrs}
+                    handleAttrsUpdate={handlePathAttrsUpdate}
+                    parallelIndex={parallelIndex}
+                />
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">
                     {t('panel.details.unknown.error', { category: t('panel.details.unknown.linePath') })}
                 </Text>
             )}
             {StyleAttrsComponent ? (
-                <StyleAttrsComponent id={id} attrs={styleAttrs} handleAttrsUpdate={handleStyleAttrsUpdate} />
+                <StyleAttrsComponent
+                    id={id}
+                    attrs={styleAttrs}
+                    handleAttrsUpdate={handleStyleAttrsUpdate}
+                    reconcileId={reconcileId}
+                />
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">
                     {t('panel.details.unknown.error', { category: t('panel.details.unknown.lineStyle') })}

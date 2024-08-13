@@ -84,14 +84,18 @@ export const LineStylesWithColor = [
     LineStyleType.BjsubwaySingleColor,
     LineStyleType.BjsubwayTram,
     LineStyleType.BjsubwayDotted,
+    LineStyleType.ChinaRailway,
     LineStyleType.MTRRaceDays,
     LineStyleType.MTRLightRail,
     LineStyleType.MRTUnderConstruction,
     LineStyleType.JREastSingleColor,
     LineStyleType.JREastSingleColorPattern,
+    LineStyleType.LRTSingleColor,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
+
+export type Path = `M${string}`;
 
 export interface LineWrapperComponentProps {
     id: LineId;
@@ -121,7 +125,7 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: `${'m' | 'M'}${string}`;
+    path: Path;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -146,13 +150,11 @@ interface LineBase<T extends LinePathAttributes> {
      * Default attributes for this component.
      */
     defaultAttrs: T;
-    /**
-     * A React component that allows user to change the attributes.
-     * Will be displayed in the details panel.
-     */
-    attrsComponent: React.FC<AttrsProps<T>>;
 }
 
+export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsProps<T> {
+    parallelIndex: number;
+}
 export interface LinePathAttributes {}
 /**
  * The type a line path should export.
@@ -162,6 +164,11 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * The line path component.
      */
     generatePath: PathGenerator<T>;
+    /**
+     * A React component that allows user to change the attributes.
+     * Will be displayed in the details panel.
+     */
+    attrsComponent: React.FC<LinePathAttrsProps<T>>;
     /**
      * Metadata for this line path.
      */
@@ -173,6 +180,9 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
     };
 }
 
+export interface LineStyleAttrsProps<T extends LineStyleAttributes> extends AttrsProps<T> {
+    reconcileId: string;
+}
 export interface LineStyleAttributes {}
 /**
  * The type a line style should export.
@@ -182,6 +192,11 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
      * The line style component.
      */
     component: React.FC<LineStyleComponentProps<T>>;
+    /**
+     * A React component that allows user to change the attributes.
+     * Will be displayed in the details panel.
+     */
+    attrsComponent: React.FC<LineStyleAttrsProps<T>>;
     /**
      * Metadata for this line style.
      */
@@ -200,4 +215,4 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => `M ${string}`;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
