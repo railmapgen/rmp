@@ -457,6 +457,7 @@
         "settings": {
             "title": "设置",
             "pro": "这是一个专业功能，需要带有订阅的账户。",
+            "proWithTrial": "这是一个PRO功能，并提供有限的免费试用。",
             "proLimitExceed": "当前操作已达到限制。订阅以解锁更多！",
             "preference": {
                 "title": "偏好",

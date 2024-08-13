@@ -448,6 +448,7 @@
         "settings": {
             "title": "設置",
             "pro": "這是一個專業功能，需要带有訂閱的帳戶。",
+            "proWithTrial": "這是一個PRO功能，並提供有限的免費試用。",
             "proLimitExceed": "當前操作已達到限制。訂閱以解鎖更多功能！",
             "preference": {
                 "title": "偏好",

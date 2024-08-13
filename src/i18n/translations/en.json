@@ -462,6 +462,7 @@
         "settings": {
             "title": "Settings",
             "pro": "This is a PRO feature and an account with a subscription is required.",
+            "proWithTrial": "This is a PRO feature with a limited free trial available.",
             "proLimitExceed": "Current action reaches the limit. Subscribe to unlock more!",
             "preference": {
                 "title": "Preference",

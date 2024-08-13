@@ -185,7 +185,7 @@ const ToolsPanel = () => {
                                 sx={buttonStyle}
                             >
                                 {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
-                                <Tooltip label={t('header.settings.pro')}>
+                                <Tooltip label={t('header.settings.proWithTrial')}>
                                     <Badge
                                         ml="1"
                                         color="gray.50"
