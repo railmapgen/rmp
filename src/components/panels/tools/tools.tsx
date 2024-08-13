@@ -231,16 +231,21 @@ const ToolsPanel = () => {
                             >
                                 {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
                                 {isTextShown ? (
-                                    <Tooltip label={t('header.settings.proWithTrial')}>
-                                        <Badge
-                                            ml="1"
-                                            color="gray.50"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            mr="auto"
-                                        >
-                                            PRO
+                                    <>
+                                        <Badge ml="1" colorScheme="green">
+                                            New
                                         </Badge>
-                                    </Tooltip>
+                                        <Tooltip label={t('header.settings.proWithTrial')}>
+                                            <Badge
+                                                ml="1"
+                                                color="gray.50"
+                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                mr="auto"
+                                            >
+                                                PRO
+                                            </Badge>
+                                        </Tooltip>
+                                    </>
                                 ) : undefined}
                             </Button>
                             {Object.values(MiscNodeType)

@@ -98,6 +98,9 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Box>
                                 <Box display="flex" mb="1">
                                     <Text>{t('header.settings.preference.autoParallel')}</Text>
+                                    <Badge ml="1" colorScheme="green">
+                                        New
+                                    </Badge>
                                     <Tooltip label={t('header.settings.proWithTrial')}>
                                         <Badge
                                             ml="1"
