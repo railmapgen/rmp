@@ -1,8 +1,10 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -10,10 +12,11 @@ import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction 
 import {
     clearSelected,
     refreshEdgesThunk,
+    refreshNodesThunk,
     setActive,
+    setGlobalAlert,
     setKeepLastPath,
     setMode,
-    setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
@@ -26,14 +29,16 @@ import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
 
 const SvgWrapper = () => {
+    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -46,6 +51,7 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
+        masterNodesCount,
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
@@ -101,6 +107,19 @@ const SvgWrapper = () => {
             const rand = nanoid(10);
             const id: MiscNodeId = `misc_node_${rand}`;
             const type = mode.slice(10) as MiscNodeType;
+            if (
+                type === MiscNodeType.Master &&
+                !activeSubscriptions.RMP_CLOUD &&
+                masterNodesCount + 1 > MAX_MASTER_NODE_FREE
+            ) {
+                dispatch(
+                    setGlobalAlert({
+                        status: 'warning',
+                        message: t('header.settings.proLimitExceed'),
+                    })
+                );
+                return;
+            }
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(id, {
                 visible: true,

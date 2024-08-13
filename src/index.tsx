@@ -17,7 +17,7 @@ import {
     setUnlockSimplePath,
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
-import { refreshEdgesThunk } from './redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from './redux/runtime/runtime-slice';
 import { registerOnRMTTokenResponse, requestToken } from './util/rmt-save';
 import { RMPSave, upgrade } from './util/save';
 
@@ -67,6 +67,7 @@ upgrade(param).then(param => {
     window.graph = MultiDirectedGraph.from(graph);
     const state: ParamState = { ...save, present: graph, past: [], future: [] };
     store.dispatch(setFullState(state));
+    store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 
     renderApp();

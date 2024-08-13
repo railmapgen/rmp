@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import {
     MAX_PARALLEL_LINES_FREE,
     MAX_PARALLEL_LINES_PRO,
@@ -22,10 +22,10 @@ export default function InfoSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, refreshEdgesThunk, saveGraph]);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const { selected, parallelLinesCount } = useRootSelector(state => state.runtime);

@@ -12,10 +12,10 @@ import {
     addSelected,
     clearSelected,
     refreshEdgesThunk,
+    refreshNodesThunk,
     removeSelected,
     setActive,
     setMode,
-    setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
@@ -31,7 +31,7 @@ const SvgCanvas = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
@@ -100,7 +100,7 @@ const SvgCanvas = () => {
                     }));
                 }
             });
-            dispatch(setRefreshNodes());
+            dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
             // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {

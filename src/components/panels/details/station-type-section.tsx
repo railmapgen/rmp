@@ -1,29 +1,29 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
     AlertDialog,
-    AlertDialogOverlay,
-    AlertDialogContent,
-    AlertDialogHeader,
     AlertDialogBody,
+    AlertDialogContent,
     AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
     Button,
 } from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshNodes } from '../../../redux/runtime/runtime-slice';
-import { StationType } from '../../../constants/stations';
-import stations from '../../svgs/stations/stations';
+import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { changeStationType } from '../../../util/change-types';
+import stations from '../../svgs/stations/stations';
 
 export default function StationTypeSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, saveGraph]);
+    }, [dispatch, refreshNodesThunk, saveGraph]);
 
     const { selected } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;

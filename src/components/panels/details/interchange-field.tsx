@@ -7,7 +7,7 @@ import { CityCode, Theme } from '../../../constants/constants';
 import { StationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import InterchangeCard from './interchange-card';
 
 /**
@@ -45,9 +45,9 @@ export const InterchangeField = (props: {
     const dispatch = useRootDispatch();
 
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, saveGraph]);
+    }, [dispatch, refreshNodesThunk, saveGraph]);
     const { selected } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);

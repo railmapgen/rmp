@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { NodeAttributes } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, setGlobalAlert, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../../redux/runtime/runtime-slice';
 
 /**
  * @deprecated
@@ -72,7 +72,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 graph.current.mergeNodeAttributes(selectedFirst, {
                                     [type]: updatedAttrs,
                                 });
-                                dispatch(setRefreshNodes());
+                                dispatch(refreshNodesThunk());
                                 dispatch(saveGraph(graph.current.export()));
                             },
                         }) as RmgFieldsField

@@ -1,5 +1,3 @@
-import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import {
     Button,
     Flex,
@@ -12,17 +10,19 @@ import {
     ModalOverlay,
     useToast,
 } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { MdDelete, MdDownload, MdUpload } from 'react-icons/md';
 import { useTranslation } from 'react-i18next';
-import { MiscNodeType } from '../../constants/nodes';
+import { MdDelete, MdDownload, MdUpload } from 'react-icons/md';
 import { defaultMasterTransform, MasterParam } from '../../constants/master';
+import { MiscNodeType } from '../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../redux/param/param-slice';
+import { refreshNodesThunk } from '../../redux/runtime/runtime-slice';
+import { downloadAs } from '../../util/download';
 import { getMasterNodeTypes } from '../../util/graph';
 import { MasterImport } from './master-import';
-import { downloadAs } from '../../util/download';
 
 export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -93,7 +93,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                     newParam.color.value = attrs.color ? newParam.color.value : newParam.color.defaultValue;
                 graph.current.mergeNodeAttributes(node, { [MiscNodeType.Master]: newParam });
             });
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 
@@ -123,7 +123,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
             .forEach(node => {
                 graph.current.dropNode(node);
             });
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 
@@ -137,7 +137,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
             .forEach(node => {
                 graph.current.mergeNodeAttributes(node, { [MiscNodeType.Master]: { ...attr, label } });
             });
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 

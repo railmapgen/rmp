@@ -38,3 +38,6 @@ export interface MasterParam {
     color?: MasterComponent;
     core?: string;
 }
+
+export const MAX_MASTER_NODE_FREE = 3;
+export const MAX_MASTER_NODE_PRO = Infinity;
