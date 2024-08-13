@@ -29,7 +29,6 @@ import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
 
 const SvgWrapper = () => {
-    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
@@ -107,19 +106,6 @@ const SvgWrapper = () => {
             const rand = nanoid(10);
             const id: MiscNodeId = `misc_node_${rand}`;
             const type = mode.slice(10) as MiscNodeType;
-            if (
-                type === MiscNodeType.Master &&
-                !activeSubscriptions.RMP_CLOUD &&
-                masterNodesCount + 1 > MAX_MASTER_NODE_FREE
-            ) {
-                dispatch(
-                    setGlobalAlert({
-                        status: 'warning',
-                        message: t('header.settings.proLimitExceed'),
-                    })
-                );
-                return;
-            }
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(id, {
                 visible: true,
@@ -254,6 +240,7 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
+            refreshAndSave();
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
@@ -295,6 +282,7 @@ const SvgWrapper = () => {
             (!isMacClient && e.key === 'y' && e.ctrlKey)
         ) {
             dispatch(redoAction());
+            refreshAndSave();
         }
     });
 
