@@ -102,12 +102,15 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                 {dfsCreateElement(attrs.svgs)}
             </g>
         ) : (
-            <>
-                <circle r={5} />
-                <text x={-3.75} y={3} fill="white" fontSize="8" fontWeight="bold">
-                    M
-                </text>
-            </>
+            <g>
+                <circle r="5.5" />
+                <g transform="translate(-4.7, -5) scale(0.8)">
+                    <polygon
+                        points="6,1 7.5,4.25 11,4.65 8.5,7.1 9.2,10.75 6,9 2.8,10.75 3.5,7.1 1,4.65 4.5,4.25"
+                        fill="white"
+                    />
+                </g>
+            </g>
         )
     );
 };
@@ -278,9 +281,12 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
 const masterIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" />
-        <text x="8.5" y="15" fill="currentColor" fontSize="8">
-            M
-        </text>
+        <g transform="translate(7.25, 7) scale(0.8)">
+            <polygon
+                points="6,1 7.5,4.25 11,4.65 8.5,7.1 9.2,10.75 6,9 2.8,10.75 3.5,7.1 1,4.65 4.5,4.25"
+                fill="currentColor"
+            />
+        </g>
     </svg>
 );
 

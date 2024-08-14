@@ -1,5 +1,3 @@
-import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import {
     Button,
     Modal,
@@ -10,10 +8,12 @@ import {
     ModalHeader,
     ModalOverlay,
 } from '@chakra-ui/react';
+import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getMasterNodeTypes } from '../../util/graph';
 import { MasterParam } from '../../constants/master';
+import { getMasterNodeTypes } from '../../util/graph';
 
 interface MasterTypeList {
     id: string;
@@ -118,9 +118,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
                 <ModalBody minH={250}>
                     <RmgFields fields={fields} />
-                    <span style={{ color: 'red' }} hidden={selectedParam.param !== null}>
-                        {error}
-                    </span>
+                    {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
                 </ModalBody>
 
                 <ModalFooter>

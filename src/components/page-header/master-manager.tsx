@@ -141,8 +141,8 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         dispatch(saveGraph(graph.current.export()));
     };
 
-    const fields: RmgFieldsField[][] = list.map(attrs => {
-        return [
+    const fields = list.map(attrs => {
+        const field: RmgFieldsField[] = [
             {
                 label: t('panel.details.masterManage.id'),
                 type: 'custom',
@@ -178,24 +178,25 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                     />
                 ),
             },
-            {
-                label: '',
-                type: 'custom',
-                component: (
-                    <Flex direction="row">
-                        <Button onClick={() => setOpenImport(attrs.randomId)}>
-                            <MdUpload />
-                        </Button>
-                        <Button onClick={() => handleDownload(attrs)} isDisabled={attrs.randomId === 'undefined'}>
-                            <MdDownload />
-                        </Button>
-                        <Button onClick={() => handleRemove(attrs.randomId)}>
-                            <MdDelete />
-                        </Button>
-                    </Flex>
-                ),
-            },
         ];
+        return (
+            <Flex width="100%" direction="row">
+                <Flex width="100%">
+                    <RmgFields fields={field} minW="100px" />
+                </Flex>
+                <Flex direction="row" mr="auto">
+                    <Button onClick={() => setOpenImport(attrs.randomId)}>
+                        <MdUpload />
+                    </Button>
+                    <Button onClick={() => handleDownload(attrs)} isDisabled={attrs.randomId === 'undefined'}>
+                        <MdDownload />
+                    </Button>
+                    <Button onClick={() => handleRemove(attrs.randomId)}>
+                        <MdDelete />
+                    </Button>
+                </Flex>
+            </Flex>
+        );
     });
 
     return (
@@ -205,10 +206,8 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                 <ModalHeader>{t('panel.details.masterManage.title')}</ModalHeader>
                 <ModalCloseButton />
 
-                <ModalBody>
-                    {fields.map((field, i) => (
-                        <RmgFields key={i} fields={field} />
-                    ))}
+                <ModalBody width="100%">
+                    {...fields}
                     <MasterImport
                         isOpen={!!openImport}
                         onClose={() => setOpenImport(undefined)}
