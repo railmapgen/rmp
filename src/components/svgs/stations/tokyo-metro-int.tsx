@@ -471,7 +471,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
 
     const [themeRequested, setThemeRequested] = React.useState<number | undefined>(undefined);
     React.useEffect(() => {
-        if (themeRequested && output) {
+        if (themeRequested !== undefined && output) {
             attrs.interchanges[themeRequested].color = output;
             handleAttrsUpdate(id, attrs);
             setThemeRequested(undefined);
