@@ -29,11 +29,13 @@
             "info": {
                 "title": "基本情報",
                 "id": "ID",
-                "zIndex": "深さ",
+                "zIndex": "深度",
                 "stationType": "駅の種類",
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
-                "type": "種類"
+                "type": "種類",
+                "parallel": "平行路線",
+                "parallelIndex": "平行路線の索引"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -96,10 +98,10 @@
                     "displayName": "北京地下鉄テキスト路線徽章"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "ベルリン地下鉄番号徽章"
+                    "displayName": "ベルリンSバーン番号徽章"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "ベルリンSバーン番号徽章"
+                    "displayName": "ベルリン地下鉄番号徽章"
                 },
                 "suzhouRTNumLineBadge": {
                     "displayName": "蘇州軌道交通路線番号徽章",
@@ -117,6 +119,10 @@
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "シンガポールMRTの目的地番号"
+                },
+                "mrtLineBadge": {
+                    "displayName": "シンガポールMRT路線バッジ",
+                    "isTram": "LRT路線バッジです"
                 },
                 "jrEastLineBadge": {
                   "displayName": "JR東日本路線番号徽章",
@@ -214,6 +220,12 @@
                     "secondaryNameEn": "英語の補助駅名",
                     "foshan": "佛山"
                 },
+                "gzmtrInt2024": {
+                    "displayName": "広州地下鉄乗り換え駅（令和6年）",
+                    "anchorAt": "錨位置",
+                    "anchorAtNone": "中心",
+                    "preferVertical": "縦向き版面構成（乗り換え駅2つのみ）"
+                },
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
                     "open": "開業済み"
@@ -240,7 +252,8 @@
                     "displayName": "昆明軌道交通乗り換え駅"
                 },
                 "MRTBasic": {
-                    "displayName": "シンガポールMRT基本駅"
+                    "displayName": "シンガポールMRT基本駅",
+                    "isTram": "LRTの駅です"
                 },
                 "MRTInt": {
                     "displayName": "シンガポールMRT乗り換え駅"
@@ -269,6 +282,37 @@
                 "qingdaoMetro": {
                     "displayName": "地下鉄青島駅",
                     "isInt": "乗換駅です"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "東京メトロの基本駅",
+                    "nameOffset": "名前のオフセット",
+                    "textVertical": "縦方向の名前",
+                    "lineCode": "回線コード",
+                    "stationCode": "駅コード"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "東京メトロ乗換駅",
+                    "mereOffset": {
+                        "displayName": "名前は単なるオフセットです",
+                        "none": "なし",
+                        "left1": "左（少ない）",
+                        "left2": "左（さらに）",
+                        "right1": "右（少ない）",
+                        "right2": "右（さらに）",
+                        "up": "上",
+                        "down": "下"
+                    },
+                    "importance": {
+                        "displayName": "駅の重要性",
+                        "default": "デフォルト",
+                        "middle": "真ん中",
+                        "high": "高い"
+                    },
+                    "align": {
+                        "displayName": "アイコンの整列",
+                        "horizontal": "水平",
+                        "vertical": "垂直"
+                    }
                 }
             },
             "lines": {
@@ -277,7 +321,11 @@
                     "offsetFrom": "補正値（From）",
                     "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
-                    "roundCornerFactor": "角の丸め係数"
+                    "roundCornerFactor": "角の丸め係数",
+                    "from": "から",
+                    "to": "まで",
+                    "parallelDisabled": "この路線が平行であるため、一部の属性が無効になっています。",
+                    "changeInBaseLine": "基準線で変更してください："
                 },
                 "simple": {
                     "displayName": "簡単な経路",
@@ -344,6 +392,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本単色網目模様風格"
+                },
+                "lrtSingleColor": {
+                    "displayName": "シンガポールLRT単色スタイル"
                 }
             },
             "edges": {},
@@ -428,10 +479,13 @@
         },
         "settings": {
             "title": "設定",
-            "pro": "これはPROの機能であり、期間限定で無料です！",
+            "pro": "これはPRO機能であり、サブスクリプションが必要です。",
+            "proWithTrial": "これはPRO機能で、無料の限定トライアルが利用可能です。",
+            "proLimitExceed": "現在の操作は制限に達しています。サブスクリプションを登録してさらにアンロックしてください！",
             "preference": {
                 "title": "設定",
-                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける"
+                "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
+                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定"
             },
             "shortcuts": {
                 "title": "ショートカット",
@@ -467,6 +521,7 @@
                     "title": "すべてのオブジェクトの属性を変更する",
                     "any": "どれでも"
                 },
+                "changeZIndex": "深度を変更する",
                 "changeStationType": {
                     "title": "一括で駅の種類を変更",
                     "changeFrom": "すべての駅をこの種類から変更する：",
@@ -505,12 +560,7 @@
                     "content1": "「地下鉄路線図ペインター」は、既存の慣例に従いつつ、鉄道地図の作成を支援するインタラクティブなプラットフォームを提供することを目指しています。その中でも、特に有名な風格の1つは、ハリー・ベックの革新的な作品に由来しています。彼の先駆的な貢献は1932年に正式に認められ、一般大衆から即座に称賛されました。現在では、情報デザインの領域において極めて重要な存在となっています。この典型的なアプローチは、世界規模の公共交通カートグラフィに広く採用されていますが、成功度は異なります。",
                     "content2": "アプリケーション自体は、既存の慣例に反する可能性があるため、簡単な経路を利用するオプションをデフォルトで控えめに隠しています。また、「地下鉄路線図ペインターギャラリー」への投稿は厳格な審査を受けることになり、簡単な経路を単一の色の風格で使用する作品は断固として拒否されます。",
                     "content3": "それでも、私たちはあなたの中に秘められた無限の創造力に堅信しています。そのため、探求の機会を提供しています。ただし、熟練したプロフェッショナルとしての地位を獲得し、簡単な経路の機能にアクセスできるようになるには、いくつかの照会に適切に回答する必要があります。なお、獲得後も、簡単な経路の使用は単一の色の風格に限定されています。",
-                    "content4": "簡潔さのために、文中の一部の段落が省略されています。また、明確さを高めるために、本文と関連する質問は翻訳せずに元の言語で保持されています。",
-                    "content5": "上記の質問に正確に回答する機会は3回与えられます。残りの試行回数を使い切ると、さらなる質問に対処する機会が失われます。現在の残り試行回数：",
-                    "check": "回答をチェックして簡単な経路を解除",
-                    "maximumAttemptsExceed": "最大試行回数を超えました",
-                    "unlocked": "既に解除されています",
-                    "fail": "失敗"
+                    "check": "簡単な経路を解除"
                 }
             },
             "telemetry": {
@@ -538,10 +588,7 @@
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
             "slack": "Slackグループ",
-            "slackContent": "Slackのチャンネルでチャットしましょう！",
-            "linkExchange": "リンク",
-            "guidaoTransit": "贵道蕉通",
-            "guidaoTransitContent": "上海鉄道交通についてもっと知りたいですか? このWeChatアカウントをフォローしてください！ (中国語のみ)"
+            "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     }
 }

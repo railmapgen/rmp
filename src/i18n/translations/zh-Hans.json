@@ -33,7 +33,9 @@
                 "stationType": "车站类型",
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型",
-                "type": "类型"
+                "type": "类型",
+                "parallel": "平行线段",
+                "parallelIndex": "平行线段索引"
             },
             "multipleSelection": {
                 "title": "多重选取",
@@ -96,10 +98,10 @@
                     "displayName": "北京地铁文字线路标识"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "柏林地铁"
+                    "displayName": "柏林城市快铁线路标识"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "柏林城市快铁"
+                    "displayName": "柏林地铁线路标识"
                 },
                 "suzhouRTNumLineBadge": {
                     "displayName": "苏州轨道交通数字线路标识",
@@ -117,6 +119,10 @@
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT终点数字"
+                },
+                "mrtLineBadge": {
+                    "displayName": "新加坡MRT线路标识",
+                    "isTram": "是LRT线路标识"
                 },
                 "jrEastLineBadge": {
                   "displayName": "JR东日本线路标识",
@@ -190,7 +196,7 @@
                     "displayName": "上海地铁基本车站"
                 },
                 "shmetroBasic2020": {
-                    "displayName": "上海地铁基本车站(2020)"
+                    "displayName": "上海地铁基本车站（2020）"
                 },
                 "shmetroInt": {
                     "displayName": "上海地铁换乘车站",
@@ -213,6 +219,12 @@
                     "secondaryNameZh": "中文第二名称",
                     "secondaryNameEn": "英文第二名称",
                     "foshan": "佛山"
+                },
+                "gzmtrInt2024": {
+                    "displayName": "广州地铁换乘站（2024）",
+                    "anchorAt": "定位于",
+                    "anchorAtNone": "中心",
+                    "preferVertical": "垂直布局（仅限2个换乘）"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
@@ -239,7 +251,8 @@
                     "displayName": "昆明轨道交通换乘车站"
                 },
                 "MRTBasic": {
-                    "displayName": "新加坡MRT基本车站"
+                    "displayName": "新加坡MRT基本车站",
+                    "isTram": "是LRT车站"
                 },
                 "MRTInt": {
                     "displayName": "新加坡MRT换乘车站"
@@ -268,6 +281,37 @@
                 "qingdaoMetro": {
                     "displayName": "青岛地铁车站",
                     "isInt": "是换乘站"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "东京地铁基本车站",
+                    "nameOffset": "名称偏移",
+                    "textVertical": "垂直站名",
+                    "lineCode": "线路编号",
+                    "stationCode": "车站编号"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "东京地铁换乘车站",
+                    "mereOffset": {
+                        "displayName": "名称微小偏移",
+                        "none": "无",
+                        "left1": "左 (较少)",
+                        "left2": "左 (较大)",
+                        "right1": "右 (较少)",
+                        "right2": "右 (较大)",
+                        "up": "上",
+                        "down": "下"
+                    },
+                    "importance": {
+                        "displayName": "车站重要性",
+                        "default": "默认",
+                        "middle": "中",
+                        "high": "高"
+                    },
+                    "align": {
+                        "displayName": "图标排列方向",
+                        "horizontal": "横向",
+                        "vertical": "纵向"
+                    }
                 }
             },
             "lines": {
@@ -276,7 +320,11 @@
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
                     "startFrom": "从这里开始",
-                    "roundCornerFactor": "转折圆角因子"
+                    "roundCornerFactor": "转折圆角因子",
+                    "from": "从",
+                    "to": "到",
+                    "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
+                    "changeInBaseLine": "在基准线段中更改它们："
                 },
                 "simple": {
                     "displayName": "基本线段",
@@ -343,9 +391,21 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR东日本单色网状图案样式"
+                },
+                "lrtSingleColor": {
+                    "displayName": "新加坡LRT纯色样式"
                 }
             },
             "edges": {},
+            "masterManage": {
+                "title": "大师节点管理器",
+                "id": "唯一标识",
+                "label": "标签",
+                "type": "类型",
+                "importTitle": "上传大师节点参数",
+                "importFrom": "导入自",
+                "importLabel": "从RMP设计器粘贴JSON"
+            },
             "footer": {
                 "duplicate": "重复",
                 "copy": "复制",
@@ -427,10 +487,13 @@
         },
         "settings": {
             "title": "设置",
-            "pro": "这是一个暂时免费的 PRO 功能！",
+            "pro": "这是一个专业功能，需要带有订阅的账户。",
+            "proWithTrial": "这是一个PRO功能，并提供有限的免费试用。",
+            "proLimitExceed": "当前操作已达到限制。订阅以解锁更多！",
             "preference": {
                 "title": "偏好",
-                "keepLastPath": "在下一次操作中持续画线段直到点击背景"
+                "keepLastPath": "在下一次操作中持续画线段直到点击背景",
+                "autoParallel": "自动将新线段设置为与现有线段平行"
             },
             "shortcuts": {
                 "title": "快捷键",
@@ -466,6 +529,7 @@
                     "title": "修改所有对象的属性",
                     "any": "任意"
                 },
+                "changeZIndex": "批量修改深度",
                 "changeStationType": {
                     "title": "批量修改车站种类",
                     "changeFrom": "将此类型的所有车站：",
@@ -504,12 +568,7 @@
                     "content1": "地铁线路图绘制器应用致力于在遵循既定惯例的前提下，提供一个有利于创建地铁线路图的互动平台。在这些惯例中，一种特别著名的风格源自哈利·贝克的创新工作。他的开创性贡献于1932年得到官方认可，并在大众中迅速赢得了声誉。目前，它在信息设计领域具有重要的示范意义，在全球范围内的交通制图中得到了广泛的实施，尽管成功程度有所不同。",
                     "content2": "应用程序固有地隐藏了使用简单路径的选项，因为其部署有可能违反既定的惯例。默认情况下，此特定功能保持隐蔽。此外，提交到地铁线路图绘制器画廊的作品将经过严格的审查，坚决拒绝使用单色风格的简单路径的构图。",
                     "content3": "尽管如此，我们对您内心潜藏的无限创意潜力充满信心。因此，我们提供了探索的机会。然而，在成为经验丰富的专业人士并解锁简单路径功能之前，必须充分回答一系列问题。需要注意的是，即使获得后，简单路径的使用也仅限于单色风格。",
-                    "content4": "为了简洁起见，本文中的某些段落已被省略。此外，为了增强清晰度，本文和相关问题均保留在原文中，不进行翻译。",
-                    "content5": "您有三次机会对上述问题进行准确回答。务必记住，一旦剩余尝试次数用尽，将失去进一步回答问题的机会。当前剩余尝试次数：",
-                    "check": "检查答案并解锁简单路径",
-                    "maximumAttemptsExceed": "超过最大尝试次数",
-                    "unlocked": "已解锁",
-                    "fail": "失败"
+                    "check": "解锁简单路径"
                 }
             },
             "telemetry": {
@@ -538,10 +597,7 @@
             "github": "项目仓库",
             "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",
             "slack": "Slack群组",
-            "slackContent": "在这些Slack频道中讨论!",
-            "linkExchange": "友情链接",
-            "guidaoTransit": "贵道蕉通",
-            "guidaoTransitContent": "想了解更多关于上海轨道交通的信息吗？关注这个微信账号！"
+            "slackContent": "在这些Slack频道中讨论!"
         }
     }
 }

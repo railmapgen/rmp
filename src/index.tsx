@@ -10,12 +10,15 @@ import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
 import {
+    setAutoParallel,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
     setUnlockSimplePath,
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from './redux/runtime/runtime-slice';
+import { registerOnRMTTokenResponse, requestToken } from './util/rmt-save';
 import { RMPSave, upgrade } from './util/save';
 
 declare global {
@@ -53,6 +56,7 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
             store.dispatch(setUnlockSimplePath(app.preference.unlockSimplePathAttempts));
         if ('toolsPanel' in app.preference && 'expand' in app.preference.toolsPanel)
             store.dispatch(setToolsPanelExpansion(app.preference.toolsPanel.expand));
+        if ('autoParallel' in app.preference) store.dispatch(setAutoParallel(app.preference.autoParallel));
     }
 })();
 
@@ -63,7 +67,13 @@ upgrade(param).then(param => {
     window.graph = MultiDirectedGraph.from(graph);
     const state: ParamState = { ...save, present: graph, past: [], future: [] };
     store.dispatch(setFullState(state));
+    store.dispatch(refreshNodesThunk());
+    store.dispatch(refreshEdgesThunk());
 
     renderApp();
     rmgRuntime.injectUITools();
+
+    registerOnRMTTokenResponse(store);
+    requestToken();
+    window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
 });

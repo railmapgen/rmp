@@ -13,27 +13,18 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultJREastSingleColorAttributes.color } = styleAttrs ?? defaultJREastSingleColorAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
-        <g id={id}>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke="black" strokeWidth="5.1" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth="4.9" />
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeWidth="5.1"
-                strokeOpacity="0"
-                cursor="pointer"
-                onClick={onClick}
-            />
         </g>
     );
 };

@@ -33,7 +33,9 @@
                 "stationType": "역 유형",
                 "linePathType": "선분 경로 유형",
                 "lineStyleType": "선분 스타일 유형",
-                "type": "유형"
+                "type": "유형",
+                "parallel": "평행선",
+                "parallelIndex": "평행 인덱스"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -117,6 +119,10 @@
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "싱가포르 MRT 목적지 번호"
+                },
+                "mrtLineBadge": {
+                    "displayName": "싱가포르 MRT 노선 배지",
+                    "isTram": "LRT 노선 배지입니다"
                 },
                 "jrEastLineBadge": {
                   "displayName": "JR 동일본 라인 배지",
@@ -214,6 +220,12 @@
                     "secondaryNameEn": "영문 제2명칭",
                     "foshan": "포산"
                 },
+                "gzmtrInt2024": {
+                    "displayName": "광저우 지하철 환승역 (2024)",
+                    "anchorAt": "앵커 위치",
+                    "anchorAtNone": "중앙",
+                    "preferVertical": "세로 레이아웃 (환승 2개만)"
+                },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
                     "open": "개통여부"
@@ -239,7 +251,8 @@
                     "displayName": "쿤밍 궤도교통 환승역"
                 },
                 "MRTBasic": {
-                    "displayName": "싱가포르MRT기본역"
+                    "displayName": "싱가포르MRT기본역",
+                    "isTram": "LRT역이에요"
                 },
                 "MRTInt": {
                     "displayName": "싱가포르MRT환승역"
@@ -268,6 +281,37 @@
                 "qingdaoMetro": {
                     "displayName": "칭다오 지하철역",
                     "isInt": "환승역인가"
+                },
+                "tokyoMetroBasic": {
+                    "displayName": "도쿄메트로 기본역",
+                    "nameOffset": "이름 오프셋",
+                    "textVertical": "업종명",
+                    "lineCode": "라인 코드",
+                    "stationCode": "역 코드"
+                },
+                "tokyoMetroInt": {
+                    "displayName": "도쿄메트로 환승역",
+                    "mereOffset": {
+                        "displayName": "단순한 오프셋 이름",
+                        "none": "없음",
+                        "left1": "왼쪽(적음)",
+                        "left2": "왼쪽(더)",
+                        "right1": "오른쪽(적음)",
+                        "right2": "맞아요 (더)",
+                        "up": "위로",
+                        "down": "아래에"
+                    },
+                    "importance": {
+                        "displayName": "역 중요성",
+                        "default": "기본",
+                        "middle": "가운데",
+                        "high": "높은"
+                    },
+                    "align": {
+                        "displayName": "아이콘 정렬",
+                        "horizontal": "수평의",
+                        "vertical": "수직의"
+                    }
                 }
             },
             "lines": {
@@ -276,7 +320,11 @@
                     "offsetFrom": "시작점 오프셋",
                     "offsetTo": "끝점 오프셋",
                     "startFrom": "여기서부터 시작",
-                    "roundCornerFactor": "회전원각인자"
+                    "roundCornerFactor": "회전원각인자",
+                    "from": "에서",
+                    "to": "까지",
+                    "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
+                    "changeInBaseLine": "기본선에서 변경하십시오:"
                 },
                 "simple": {
                     "displayName": "기본 선분",
@@ -343,6 +391,9 @@
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR 동일본 단색 크로스해치 패턴 스타일"
+                },
+                "lrtSingleColor": {
+                    "displayName": "싱가포르 LRT 단색 스타일"
                 }
             },
             "edges": {},
@@ -427,10 +478,13 @@
         },
         "settings": {
             "title": "설정",
-            "pro": "잠시 무료 PRO 기능입니다!",
+            "pro": "이것은 PRO 기능이며, 구독이 필요한 계정입니다.",
+            "proWithTrial": "이것은 PRO 기능이며, 제한된 무료 체험이 가능합니다.",
+            "proLimitExceed": "현재 작업이 한도에 도달했습니다. 더 많은 기능을 사용하려면 구독하세요!",
             "preference": {
                 "title": "선호",
-                "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다"
+                "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
+                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다"
             },
             "shortcuts": {
                 "title": "바로 가기",
@@ -466,6 +520,7 @@
                     "title": "모든 객체의 속성 변경",
                     "any": "어느"
                 },
+                "changeZIndex": "일괄적으로 깊이 변경",
                 "changeStationType": {
                     "title": "역의 종류를 대량으로 수정",
                     "changeFrom": "이 유형의 모든 역:",
@@ -504,12 +559,7 @@
                     "content1": "Rail Map Painter 애플리케이션은 확립된 관례를 준수하면서도 철도지도 작성을 위한 대화식 플랫폼을 제공하기 위해 노력합니다. 이러한 관례 중 하나는 특히 해리 벡의 혁신적인 작업에서 비롯되었습니다. 그의 개척적인 기여는 공식적으로 1932년에 인정받았으며 일반 대중으로부터 즉각적인 찬사를 받았습니다. 현재는 정보 디자인 분야에서 중요한 본보기로 자리 잡고 있습니다. 이 패러다임적인 접근 방식은 전 세계적인 규모의 교통 카토그래피에서 널리 구현되었으나 성공의 정도는 다양합니다.",
                     "content2": "이 애플리케이션은 기존 관례에 위배될 가능성이 있기 때문에 간단한 경로를 활용하는 옵션을 기본 설정으로 가려놓았습니다. 또한 Rail Map Painter 갤러리에 제출되는 작품은 엄격한 심사를 받으며, 단일 색상 스타일로 간단한 경로를 사용하는 작품은 명확히 거부됩니다.",
                     "content3": "그럼에도 불구하고 우리는 여러분 안에 내재한 무한한 창의력을 절대적으로 믿습니다. 따라서 탐구의 기회를 확장합니다. 그러나 숙련된 전문가로서의 지위를 달성하고 간단한 경로 기능에 대한 액세스를 잠금 해제하려면 일련의 문의에 적절히 응답해야 합니다. 또한, 달성 후에도 간단한 경로의 사용은 단일 색상 스타일로 제한됩니다.",
-                    "content4": "간결성을 위해 본 문단의 일부는 생략되었습니다. 또한 명확성을 높이기 위해 본문과 동반되는 질문은 원래 언어로 번역하지 않고 그대로 보존되었습니다.",
-                    "content5": "상기 질문에 정확하게 답변할 수 있는 기회가 3회 부여됩니다. 남은 시도 횟수를 모두 소진하면 추가적인 질문에 대한 기회가 상실됩니다. 현재 남은 시도 횟수:",
-                    "check": "답변 확인 및 간단 경로 잠금 해제",
-                    "maximumAttemptsExceed": "최대 시도 횟수 초과",
-                    "unlocked": "이미 해제됨",
-                    "fail": "실패하다"
+                    "check": "간단한 경로 잠금 해제"
                 }
             },
             "telemetry": {
@@ -538,10 +588,7 @@
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
             "slack": "슬랙 그룹",
-            "slackContent": "이 슬랙 채널에서 채팅해요!",
-            "linkExchange": "연결",
-            "guidaoTransit": "Guidao Transit",
-            "guidaoTransitContent": "상하이 철도 운송에 대해 더 알고 싶으십니까? 이 WeChat 계정을 팔로우하세요! (중국어 전용)"
+            "slackContent": "이 슬랙 채널에서 채팅해요!"
         }
     }
 }

@@ -65,10 +65,11 @@ export default function LineExtremitiesSection() {
             type: 'custom',
             label: t('panel.details.lineExtremities.source'),
             component: (
-                <Button flex={1} size="sm" variant="link" onClick={handleSource}>
+                <Button ml="auto" size="sm" variant="link" onClick={handleSource}>
                     {source}
                 </Button>
             ),
+            oneLine: true,
             minW: 'full',
         },
         {
@@ -81,10 +82,11 @@ export default function LineExtremitiesSection() {
             type: 'custom',
             label: t('panel.details.lineExtremities.target'),
             component: (
-                <Button flex={1} size="sm" variant="link" onClick={handleTarget}>
+                <Button ml="auto" size="sm" variant="link" onClick={handleTarget}>
                     {target}
                 </Button>
             ),
+            oneLine: true,
             minW: 'full',
         },
         {

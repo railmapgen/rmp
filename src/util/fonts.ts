@@ -18,10 +18,15 @@ const IdentityFont: FontFaceConfig = {
 };
 const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
 const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
+const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', descriptors: { display: 'swap' } };
 const Railway: FontFaceConfig = { source: 'url("./fonts/Railway-PlyE.otf")', descriptors: { display: 'swap' } };
 
 /**
  * Node type to fonts' css related data.
+ *
+ * NOTE: If the font name contains spaces, double quotes should be added.
+ * e.g., cssFont: { 'M PLUS 2': MPLUS2 }, -> cssFont: { '"M PLUS 2"': MPLUS2 },
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1706648
  */
 export const FONTS_CSS: {
     [k in NodeType]?: {
@@ -47,12 +52,12 @@ export const FONTS_CSS: {
     },
     [StationType.JREastBasic]: {
         className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
     [StationType.JREastImportant]: {
         className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
     [StationType.LondonTubeBasic]: {
@@ -72,8 +77,28 @@ export const FONTS_CSS: {
     },
     [MiscNodeType.JREastLineBadge]: {
         className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
+        cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
+    },
+    [MiscNodeType.MRTDestinationNumbers]: {
+        className: ['.rmp-name__mrt'],
+        cssFont: { IdentityFont },
+        cssName: 'fonts_mrt',
+    },
+    [MiscNodeType.MRTLineBadge]: {
+        className: ['.rmp-name__mrt'],
+        cssFont: { IdentityFont },
+        cssName: 'fonts_mrt',
+    },
+    [StationType.TokyoMetroBasic]: {
+        className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
+        cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
+        cssName: 'fonts_tokyo',
+    },
+    [StationType.TokyoMetroInt]: {
+        className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
+        cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
+        cssName: 'fonts_tokyo',
     },
 };
 
@@ -86,7 +111,11 @@ export const loadFontCss = async (type: NodeType) => {
     if (loadedCssNames.includes(cssName)) return;
 
     loadedCssNames.push(cssName);
-    await Promise.all(Object.entries(cssFont).map(([font, config]) => rmgRuntime.loadFont(font, config)));
+    await Promise.all(
+        (Object.entries(cssFont).filter(([_, config]) => config !== undefined) as [string, FontFaceConfig][]).map(
+            ([font, config]) => rmgRuntime.loadFont(font, { configs: [config] })
+        )
+    );
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.id = cssName;

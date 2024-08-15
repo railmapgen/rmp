@@ -4,6 +4,7 @@ import {
     AccordionIcon,
     AccordionItem,
     AccordionPanel,
+    Badge,
     Box,
     Button,
     Flex,
@@ -12,6 +13,7 @@ import {
     Link,
     SystemStyleObject,
     Text,
+    Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -20,6 +22,7 @@ import { IconContext } from 'react-icons';
 import { IoMdHeart } from 'react-icons/io';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { LinePathType } from '../../../constants/lines';
+import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -59,17 +62,19 @@ const EXPAND_ANIMATION_DURATION = 0.3; // in second
 const ToolsPanel = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const {
-        mode,
-        theme,
-        paletteAppClip: { output },
-    } = useRootSelector(state => state.runtime);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         preference: {
             unlockSimplePathAttempts,
             toolsPanel: { expand: isToolsExpanded },
         },
     } = useRootSelector(state => state.app);
+    const {
+        mode,
+        theme,
+        paletteAppClip: { output },
+        masterNodesCount,
+    } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
@@ -91,6 +96,8 @@ const ToolsPanel = () => {
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
+
+    const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     return (
         <Flex
@@ -214,8 +221,40 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
+                            <Button
+                                aria-label={MiscNodeType.Master}
+                                leftIcon={miscNodes[MiscNodeType.Master].icon}
+                                onClick={() => handleMiscNode(MiscNodeType.Master)}
+                                variant={mode === `misc-node-${MiscNodeType.Master}` ? 'solid' : 'outline'}
+                                isDisabled={isMasterDisabled}
+                                sx={buttonStyle}
+                            >
+                                {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
+                                {isTextShown ? (
+                                    <>
+                                        <Badge ml="1" colorScheme="green">
+                                            New
+                                        </Badge>
+                                        <Tooltip label={t('header.settings.proWithTrial')}>
+                                            <Badge
+                                                ml="1"
+                                                color="gray.50"
+                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                mr="auto"
+                                            >
+                                                PRO
+                                            </Badge>
+                                        </Tooltip>
+                                    </>
+                                ) : undefined}
+                            </Button>
                             {Object.values(MiscNodeType)
-                                .filter(type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText)
+                                .filter(
+                                    type =>
+                                        type !== MiscNodeType.Virtual &&
+                                        type !== MiscNodeType.I18nText &&
+                                        type !== MiscNodeType.Master
+                                )
                                 .map(type => (
                                     <Button
                                         key={type}

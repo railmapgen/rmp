@@ -13,7 +13,7 @@ import {
 } from '../../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
-import { setRefreshEdges } from '../../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 import {
     RmgFieldsFieldDetail,
@@ -21,13 +21,13 @@ import {
 } from '../../../panels/details/rmg-field-specific-attrs';
 
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
-    const { id, type, path, styleAttrs, handleClick } = props;
+    const { id, type, path, styleAttrs, handlePointerDown } = props;
     const { colorA = defaultDualColorAttributes.colorA, colorB = defaultDualColorAttributes.colorB } =
         styleAttrs ?? defaultDualColorAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     const [pathA, setPathA] = React.useState(path);
@@ -41,19 +41,9 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     }, [path]);
 
     return (
-        <g id={id}>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth="2.5" strokeLinecap="round" />
             <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth="2.5" strokeLinecap="round" />
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeOpacity="0"
-                strokeWidth="5"
-                strokeLinecap="round"
-                cursor="pointer"
-                onClick={onClick}
-            />
         </g>
     );
 };
@@ -92,7 +82,7 @@ const DualColorSwitch = () => {
                 attrs.colorA = attrs.colorB;
                 attrs.colorB = tmp;
                 graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.DualColor]: attrs });
-                dispatch(setRefreshEdges());
+                dispatch(refreshEdgesThunk());
                 dispatch(saveGraph(graph.current.export()));
             }}
         />

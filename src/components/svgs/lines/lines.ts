@@ -20,6 +20,7 @@ import mrtUnderConstruction from './styles/mrt-under-construction';
 import mrtSentosaExpress from './styles/mrt-sentosa-express';
 import jrEastSingleColor from './styles/jr-east-single-color';
 import jrEastSingleColorPattern from './styles/jr-east-single-color-pattern';
+import lrtSingleColor from './styles/lrt-single-color';
 import londonTubeInternalInt from './styles/london-tube-internal-int';
 import londonTube10MinWalk from './styles/london-tube-10-min-walk';
 import londonTubeTerminal from './styles/london-tube-terminal';
@@ -49,6 +50,7 @@ export const lineStyles = {
     [LineStyleType.MRTSentosaExpress]: mrtSentosaExpress,
     [LineStyleType.JREastSingleColor]: jrEastSingleColor,
     [LineStyleType.JREastSingleColorPattern]: jrEastSingleColorPattern,
+    [LineStyleType.LRTSingleColor]: lrtSingleColor,
     [LineStyleType.LondonTubeTerminal]: londonTubeTerminal,
     [LineStyleType.LondonTubeInternalInt]: londonTubeInternalInt,
     [LineStyleType.LondonTube10MinWalk]: londonTube10MinWalk,

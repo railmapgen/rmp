@@ -13,10 +13,12 @@ import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/cho
 import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
 import { MRTDestinationNumbersAttributes } from '../components/svgs/nodes/mrt-dest-num';
 import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
+import { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
+import { MRTLineBadgeAttributes } from '../components/svgs/nodes/mrt-line-badge';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { I18nTextAttributes } from '../components/svgs/nodes/i18n-text';
-import { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
+import { MasterAttributes } from '../components/svgs/nodes/master';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -34,9 +36,11 @@ export enum MiscNodeType {
     MRTDestinationNumbers = 'mrt-num-line-badge',
     JREastLineBadge = 'jr-east-line-badge',
     QingdaoMetroNumLineBadge = 'qingdao-metro-num-line-badge',
+    MRTLineBadge = 'mrt-line-badge',
     Facilities = 'facilities',
     Text = 'text',
     I18nText = 'i18n-text',
+    Master = 'master',
 }
 
 export interface MiscNodeAttributes {
@@ -55,10 +59,14 @@ export interface MiscNodeAttributes {
     [MiscNodeType.MRTDestinationNumbers]?: MRTDestinationNumbersAttributes;
     [MiscNodeType.JREastLineBadge]?: JREastLineBadgeAttributes;
     [MiscNodeType.QingdaoMetroNumLineBadge]?: QingdaoMetroNumLineBadgeAttributes;
+    [MiscNodeType.MRTLineBadge]?: MRTLineBadgeAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.I18nText]?: I18nTextAttributes;
+    [MiscNodeType.Master]?: MasterAttributes;
 }
+
+/* ----- Below are core types for all miscellaneous nodes, DO NOT TOUCH. ----- */
 
 export interface NodeComponentProps<T> {
     id: MiscNodeId;

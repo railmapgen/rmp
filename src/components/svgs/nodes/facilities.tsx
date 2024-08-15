@@ -32,6 +32,11 @@ export enum FacilitiesType {
     GardensByTheBay = 'gardens_by_the_bay',
     SingaporeFlyer = 'singapore_flyer',
     Esplanade = 'esplanade',
+    QingdaoAirport = 'qingdao_airport',
+    QingdaoCoachStation = 'qingdao_coach_station',
+    QingdaoCruiseTerminal = 'qingdao_cruise_terminal',
+    QingdaoRailway = 'qingdao_railway',
+    QingdaoTram = 'qingdao_tram',
 }
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
@@ -40,10 +45,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
 
     const imgEl = React.useRef<SVGImageElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 25, height: 25 } as DOMRect);
-    React.useEffect(() => {
-        setBBox(imgEl.current!.getBBox());
-        console.log(type, imgEl.current!.getBBox());
-    }, [type, setBBox, imgEl]);
+    React.useEffect(() => setBBox(imgEl.current!.getBBox()), [type, setBBox, imgEl]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -120,6 +122,11 @@ const attrsComponent = (props: AttrsProps<FacilitiesAttributes>) => {
                 [FacilitiesType.GardensByTheBay]: 'Gardens by the Bay',
                 [FacilitiesType.SingaporeFlyer]: 'Singapore Flyer',
                 [FacilitiesType.Esplanade]: 'Esplanade',
+                [FacilitiesType.QingdaoAirport]: 'Airport Qingdao',
+                [FacilitiesType.QingdaoRailway]: 'Railway Qingdao',
+                [FacilitiesType.QingdaoCoachStation]: 'Coach Station Qingdao',
+                [FacilitiesType.QingdaoCruiseTerminal]: 'Cruise Terminal Qingdao',
+                [FacilitiesType.QingdaoTram]: 'Tram Qingdao',
             },
             onChange: val => {
                 attrs.type = val as FacilitiesType;

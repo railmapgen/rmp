@@ -1,19 +1,22 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
     clearSelected,
+    refreshEdgesThunk,
+    refreshNodesThunk,
     setActive,
+    setGlobalAlert,
     setKeepLastPath,
     setMode,
-    setRefreshEdges,
-    setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
@@ -29,11 +32,12 @@ const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
-        dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -46,6 +50,7 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
+        masterNodesCount,
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
@@ -235,6 +240,7 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
+            refreshAndSave();
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
@@ -276,6 +282,50 @@ const SvgWrapper = () => {
             (!isMacClient && e.key === 'y' && e.ctrlKey)
         ) {
             dispatch(redoAction());
+            refreshAndSave();
+        }
+    });
+
+    const [touchDist, setTouchDist] = React.useState(0);
+
+    const handleTouchStart = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        if (e.touches.length === 2) {
+            dispatch(setActive(undefined));
+            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
+            setTouchDist(dx * dx + dy * dy);
+        }
+    });
+
+    const handleTouchMove = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        if (touchDist !== 0 && e.touches.length === 2) {
+            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
+            const d = dx * dx + dy * dy;
+
+            let newSvgViewBoxZoom = svgViewBoxZoom;
+            if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
+            else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
+            dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+            setTouchDist(d);
+
+            // the mid-position the fingers touch will still be in the same place after zooming
+            const bbox = e.currentTarget.getBoundingClientRect();
+            const [x, y] = [
+                (e.touches[0].clientX + e.touches[1].clientX) / 2 - bbox.left,
+                (e.touches[0].clientY + e.touches[1].clientY) / 2 - bbox.top,
+            ];
+            const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
+            dispatch(
+                setSvgViewBoxMin({
+                    x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+                    y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+                })
+            );
+        }
+    });
+
+    const handleTouchEnd = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        if (touchDist !== 0) {
+            setTouchDist(0);
         }
     });
 
@@ -293,7 +343,7 @@ const SvgWrapper = () => {
         <svg
             xmlns="http://www.w3.org/2000/svg"
             id="canvas"
-            style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none' }}
+            style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
             height={height}
             width={width}
             viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
@@ -302,6 +352,9 @@ const SvgWrapper = () => {
             onPointerDown={handleBackgroundDown}
             onPointerMove={handleBackgroundMove}
             onPointerUp={handleBackgroundUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onWheel={handleBackgroundWheel}
             tabIndex={0}
             onKeyDown={handleKeyDown}

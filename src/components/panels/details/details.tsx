@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Id } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
@@ -18,11 +18,11 @@ const DetailsPanel = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph]);
-    const { selected, mode } = useRootSelector(state => state.runtime);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
+    const { selected, mode, active } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
     const handleClose = () => dispatch(clearSelected());
@@ -32,7 +32,7 @@ const DetailsPanel = () => {
         allAttr.y += 50;
         const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;
         graph.current.addNode(id, allAttr);
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
     const handleCopy = (selected: Set<Id>) => {
@@ -50,7 +50,7 @@ const DetailsPanel = () => {
 
     return (
         <RmgSidePanel
-            isOpen={selected.size > 0 && !mode.startsWith('line')}
+            isOpen={selected.size > 0 && !mode.startsWith('line') && !active}
             width={300}
             header="Dummy header"
             alwaysOverlay

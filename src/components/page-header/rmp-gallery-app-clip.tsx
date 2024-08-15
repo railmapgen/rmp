@@ -1,13 +1,12 @@
-import { CloseButton, Flex, Icon, Link, SystemStyleObject, Text, useToast } from '@chakra-ui/react';
+import { CloseButton, SystemStyleObject, useToast } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdOpenInNew } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph } from '../../redux/param/param-slice';
-import { clearSelected, setRefreshEdges, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { RMPSave, upgrade } from '../../util/save';
 
 const RMP_GALLERY_CHANNEL_NAME = 'RMP_GALLERY_CHANNEL';
@@ -44,13 +43,12 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     } = useRootSelector(state => state.app);
 
     const graph = React.useRef(window.graph);
-    const inst = rmgRuntime.getInstance();
 
     const refreshAndSave = React.useCallback(() => {
-        dispatch(setRefreshNodes());
-        dispatch(setRefreshEdges());
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, setRefreshEdges, saveGraph, graph]);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
     const handleOpenTemplate = async (rmpSave: RMPSave) => {
         // templates may be obsolete and require upgrades
@@ -63,7 +61,14 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         graph.current.clear();
         graph.current.import(save.graph);
 
+        // hard refresh the canvas
         refreshAndSave();
+
+        // load svg view box related settings from the save
+        const { svgViewBoxZoom, svgViewBoxMin } = save;
+        if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
+        if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
+            dispatch(setSvgViewBoxMin(svgViewBoxMin));
     };
 
     const fetchAndApplyTemplate = async (id: string, host?: string) => {
@@ -102,13 +107,22 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     };
 
     // A one time url match to see if it is a work share link and apply the work if needed.
+    //
+    // Since rmt will pass all params in `searchParams` here,
+    // e.g. https://railmapgen.github.io/?app=rmp&searchParams=id.hostname
+    // we will split id and host name from it and `fetchAndApplyTemplate`.
+    //
+    // It's really ugly to have multiple search params in searchParams after `encodeURIComponent`,
+    // so we are joining id and host by '.'.
     React.useEffect(() => {
         const url = new URL(window.location.href);
-        const path = url.pathname;
-        if (path.includes('/s/')) {
-            history.replaceState({}, t('about.rmp'), url.pathname.substring(0, url.pathname.indexOf('s/')));
-            const id = path.substring(path.lastIndexOf('s/') + 2);
-            const host = url.searchParams.get('host') ?? undefined;
+        const searchParams = url.searchParams;
+        if (searchParams.size > 0) {
+            const params = searchParams.keys().next()['value'] as string;
+            const firstDotIndex = params.indexOf('.');
+            const id = params.substring(0, firstDotIndex === -1 ? undefined : firstDotIndex);
+            let host: string | undefined = undefined;
+            if (firstDotIndex !== -1) host = params.substring(firstDotIndex + 1);
             fetchAndApplyTemplate(id, host);
         }
     }, []);
@@ -126,24 +140,8 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     return (
         <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
-            {inst === 'Gitee' ? <DisabledGallery /> : <iframe src="/rmp-gallery/" loading="lazy" />}
+            <iframe src="/rmp-gallery/" loading="lazy" />
             <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
         </RmgAppClip>
     );
 }
-
-const DisabledGallery = () => (
-    <Flex flexDirection="column" p="10">
-        <Text>抱歉，由于托管平台的敏感词限制，画廊已被禁用 ):</Text>
-        <br />
-        <Text>欢迎切换到Github或Gitlab镜像以使用完整版本 :)</Text>
-        <br style={{ marginBottom: 5 }} />
-        <Link color="teal.500" href="https://railmapgen.github.io/?app=rmp-gallery" isExternal>
-            https://railmapgen.github.io/?app=rmp-gallery <Icon as={MdOpenInNew} />
-        </Link>
-        <br />
-        <Link color="teal.500" href="https://railmapgen.gitlab.io/?app=rmp-gallery" isExternal>
-            https://railmapgen.gitlab.io/?app=rmp-gallery <Icon as={MdOpenInNew} />
-        </Link>
-    </Flex>
-);

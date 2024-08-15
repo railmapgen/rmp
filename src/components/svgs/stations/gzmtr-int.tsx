@@ -1,11 +1,10 @@
-import { Box, Button, FormLabel, HStack, IconButton, Text, VStack, useColorModeValue } from '@chakra-ui/react';
-import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { Button, FormLabel, VStack, useColorModeValue } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fmetro';
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
+import { MdAdd } from 'react-icons/md';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -16,11 +15,9 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../../redux';
-import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
-import ThemeButton from '../../panels/theme-button';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
 
 const CODE_POS = [
     [[0, 0]],
@@ -41,8 +38,6 @@ const CODE_POS = [
         [-15.836, 15.836],
     ],
 ];
-
-const defaultTransferInfo = [CityCode.Guangzhou, '', '#AAAAAA', MonoColour.white, '', '', 'gz'] as InterchangeInfo;
 
 const GzmtrIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -349,7 +344,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * GzmtrStation specific props.
+ * GzmtrIntStation specific props.
  */
 export interface GzmtrIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
@@ -480,7 +475,7 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
         const newTransferInfo = structuredClone(transfer);
         if (newTransferInfo.length <= setIndex) {
             for (let i = newTransferInfo.length; i <= setIndex; i++) {
-                newTransferInfo[i] = [defaultTransferInfo];
+                newTransferInfo[i] = [defaultGZMTRTransferInfo];
             }
         }
         newTransferInfo[setIndex].push(interchangeInfo);
@@ -519,7 +514,7 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
         }
     };
 
-    const handleAddInterchangeGroup = () => handleAdd(transfer.length)(defaultTransferInfo);
+    const handleAddInterchangeGroup = () => handleAdd(transfer.length)(defaultGZMTRTransferInfo);
 
     return (
         <>
@@ -537,7 +532,7 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
                                       : t('panel.details.stations.interchange.outSystem')}
                             </FormLabel>
 
-                            <InterchangeCard
+                            <InterchangeCardGZMTR
                                 interchangeList={infoList}
                                 onAdd={maximumTransfers[i] > infoList.length ? handleAdd(i) : undefined}
                                 onDelete={handleDelete(i)}
@@ -566,10 +561,10 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
 const gzmtrIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <g transform="translate(6,12)scale(0.3)">
-            <StationNumber strokeColour="#000" lineNum="1" stnNum="09" />
+            <StationNumber strokeColour="currentColor" lineNum="1" stnNum="09" />
         </g>
         <g transform="translate(18,12)scale(0.3)">
-            <StationNumber strokeColour="#000" lineNum="2" stnNum="13" />
+            <StationNumber strokeColour="currentColor" lineNum="2" stnNum="13" />
         </g>
         <marker id="arrow" markerWidth="5" markerHeight="5" refX="1" refY="1.25" orient="auto">
             <polygon points="0,0 0,3 2,1.5" />
@@ -594,125 +589,3 @@ const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
 };
 
 export default gzmtrIntStation;
-
-interface InterchangeCardProps {
-    interchangeList: InterchangeInfo[];
-    onAdd?: (info: InterchangeInfo) => void;
-    onDelete?: (index: number) => void;
-    onUpdate?: (index: number, info: InterchangeInfo) => void;
-}
-
-function InterchangeCard(props: InterchangeCardProps) {
-    const { interchangeList, onAdd, onDelete, onUpdate } = props;
-    const dispatch = useRootDispatch();
-    const {
-        paletteAppClip: { output },
-    } = useRootSelector(state => state.runtime);
-
-    const { t } = useTranslation();
-
-    const [indexRequestedTheme, setIndexRequestedTheme] = React.useState<number>();
-
-    React.useEffect(() => {
-        if (indexRequestedTheme !== undefined && output) {
-            onUpdate?.(indexRequestedTheme, [
-                ...output,
-                interchangeList[indexRequestedTheme][4],
-                interchangeList[indexRequestedTheme][5],
-                interchangeList[indexRequestedTheme][6],
-            ]);
-            setIndexRequestedTheme(undefined);
-        }
-    }, [output?.toString()]);
-
-    const interchangeFields: RmgFieldsField[][] = interchangeList.map((it, i) => [
-        {
-            type: 'input',
-            label: t('panel.details.stations.common.lineCode'),
-            value: it[4],
-            minW: '80px',
-            onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5], it[6]]),
-        },
-        {
-            type: 'input',
-            label: t('panel.details.stations.common.stationCode'),
-            value: it[5],
-            minW: '80px',
-            onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val, it[6]]),
-        },
-    ]);
-
-    const handleFoshanChange = (it: InterchangeInfo, i: number, foshan: boolean) =>
-        onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], it[5], foshan ? 'fs' : 'gz']);
-
-    return (
-        <RmgCard direction="column">
-            {interchangeList.length === 0 && (
-                <HStack spacing={0.5} data-testid={`interchange-card-stack`}>
-                    <Text as="i" flex={1} align="center" fontSize="md" colorScheme="gray">
-                        {t('panel.details.stations.interchange.noInterchanges')}
-                    </Text>
-
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
-                        aria-label={t('panel.details.stations.interchange.add')}
-                        onClick={() => onAdd?.(defaultTransferInfo)}
-                        icon={<MdAdd />}
-                    />
-                </HStack>
-            )}
-
-            {interchangeList.map((it, i) => (
-                <HStack key={i} spacing={0.5} data-testid={`interchange-card-stack-${i}`}>
-                    <RmgLabel label={t('color')} minW="40px" noLabel={i !== 0}>
-                        <ThemeButton
-                            theme={[it[0], it[1], it[2], it[3]]}
-                            onClick={() => {
-                                setIndexRequestedTheme(i);
-                                dispatch(openPaletteAppClip([it[0], it[1], it[2], it[3]]));
-                            }}
-                        />
-                    </RmgLabel>
-
-                    <RmgFields fields={interchangeFields[i]} noLabel={i !== 0} />
-
-                    <VStack>
-                        {onAdd && i === interchangeFields.length - 1 ? (
-                            <IconButton
-                                size="sm"
-                                variant="ghost"
-                                aria-label={t('panel.details.stations.interchange.copy')}
-                                onClick={() => onAdd?.(interchangeList.slice(-1)[0])} // duplicate last leg
-                                icon={<MdContentCopy />}
-                            />
-                        ) : (
-                            <Box minW={8} />
-                        )}
-
-                        {onDelete && (
-                            <IconButton
-                                size="sm"
-                                variant="ghost"
-                                aria-label={t('panel.details.stations.interchange.remove')}
-                                onClick={() => onDelete?.(i)}
-                                icon={<MdDelete />}
-                            />
-                        )}
-
-                        <RmgFields
-                            fields={[
-                                {
-                                    type: 'switch',
-                                    label: t('panel.details.stations.gzmtrInt.foshan'),
-                                    isChecked: it[6] === 'fs',
-                                    onChange: val => handleFoshanChange(it, i, val),
-                                },
-                            ]}
-                        />
-                    </VStack>
-                </HStack>
-            ))}
-        </RmgCard>
-    );
-}

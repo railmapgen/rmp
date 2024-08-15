@@ -3,8 +3,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NodeAttributes } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { setGlobalAlert, setRefreshEdges, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../../redux/runtime/runtime-slice';
 
 /**
  * @deprecated
@@ -72,7 +72,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 graph.current.mergeNodeAttributes(selectedFirst, {
                                     [type]: updatedAttrs,
                                 });
-                                dispatch(setRefreshNodes());
+                                dispatch(refreshNodesThunk());
                                 dispatch(saveGraph(graph.current.export()));
                             },
                         }) as RmgFieldsField
@@ -106,7 +106,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                 [type]: field.onChange(val, attrs),
                             });
                             // console.log(graph.current.getEdgeAttributes(selectedFirst));
-                            dispatch(setRefreshEdges());
+                            dispatch(refreshEdgesThunk());
                             dispatch(saveGraph(graph.current.export()));
                         },
                     }) as RmgFieldsField
@@ -139,7 +139,7 @@ export const RmgFieldsFieldSpecificAttributes = (props: {
                                     [style]: field.onChange(val, styleAttrs),
                                 });
                                 // console.log(graph.current.getEdgeAttributes(selectedFirst));
-                                dispatch(setRefreshEdges());
+                                dispatch(refreshEdgesThunk());
                                 dispatch(saveGraph(graph.current.export()));
                             },
                         }) as RmgFieldsField
