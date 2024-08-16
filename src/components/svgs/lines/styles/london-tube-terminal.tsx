@@ -13,15 +13,25 @@ import {
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
 const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAttributes>) => {
-    const { id, path, styleAttrs, handleClick } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultLondonTubeTerminalAttributes.color } = styleAttrs ?? defaultLondonTubeTerminalAttributes;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
-    return <path id={id} d={path} fill="none" stroke={color[2]} strokeWidth="5" cursor="pointer" onClick={onClick} />;
+    return (
+        <path
+            id={id}
+            d={path}
+            fill="none"
+            stroke={color[2]}
+            strokeWidth="5"
+            cursor="pointer"
+            onPointerDown={onPointerDown}
+        />
+    );
 };
 
 /**

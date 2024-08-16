@@ -2,31 +2,31 @@ import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
-    const { id, path, handleClick } = props;
+    const { id, path, handlePointerDown } = props;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
-        <g id={id}>
-            <clipPath id="londonTubeStnIconInner">
-                <circle r="5" />
-            </clipPath>
+        <g id={id} onPointerDown={onPointerDown}>
             <path d={path} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
+        </g>
+    );
+};
+
+const LondonTubeInternalIntPost = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
+    const { id, path, handlePointerDown } = props;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+
+    return (
+        <g id={`${id}.post`} onPointerDown={onPointerDown}>
             <path d={path} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-            {/* Below is an overlay element that has all event hooks but can not be seen. */}
-            <path
-                d={path}
-                fill="none"
-                stroke="white"
-                strokeOpacity="0"
-                strokeWidth="7"
-                strokeLinecap="round"
-                cursor="pointer"
-                onClick={onClick}
-            />
         </g>
     );
 };
@@ -42,6 +42,7 @@ const attrsComponent = () => undefined;
 
 const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
     component: LondonTubeInternalInt,
+    postComponent: LondonTubeInternalIntPost,
     defaultAttrs: defaultLondonTubeInternalIntAttributes,
     attrsComponent,
     metadata: {

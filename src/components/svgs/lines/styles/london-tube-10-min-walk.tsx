@@ -2,11 +2,11 @@ import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkAttributes>) => {
-    const { id, path, handleClick } = props;
+    const { id, path, handlePointerDown } = props;
 
-    const onClick = React.useCallback(
-        (e: React.MouseEvent<SVGPathElement, MouseEvent>) => handleClick(id, e),
-        [id, handleClick]
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
     );
 
     return (
@@ -17,7 +17,7 @@ const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkA
             strokeWidth="5"
             strokeDasharray="5 2.5"
             cursor="pointer"
-            onClick={onClick}
+            onPointerDown={onPointerDown}
         />
     );
 };
