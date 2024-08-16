@@ -37,7 +37,6 @@ const SvgWrapper = () => {
         dispatch(saveGraph(graph.current.export()));
     };
 
-    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -50,7 +49,6 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
-        masterNodesCount,
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
