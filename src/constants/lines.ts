@@ -193,6 +193,22 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
      */
     component: React.FC<LineStyleComponentProps<T>>;
     /**
+     * This pre component will always be under the main component and other
+     * elements with the same zIndex.
+     * This is not mandatory but helpful if some of the elements need to be
+     * put before other stations/misc-nodes/lines.
+     * Note it will be above other elements that have a smaller zIndex.
+     */
+    preComponent?: React.FC<LineStyleComponentProps<T>>;
+    /**
+     * This post component will always be above the main component and other
+     * elements with the same zIndex.
+     * This is not mandatory but helpful if some of the elements need to be
+     * put after other stations/misc-nodes/lines.
+     * Note it will be under other elements that have a bigger zIndex.
+     */
+    postComponent?: React.FC<LineStyleComponentProps<T>>;
+    /**
      * A React component that allows user to change the attributes.
      * Will be displayed in the details panel.
      */
