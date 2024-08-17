@@ -10,7 +10,7 @@ const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternal
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown}>
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
         </g>
     );
@@ -25,7 +25,7 @@ const LondonTubeInternalIntPost = (props: LineStyleComponentProps<LondonTubeInte
     );
 
     return (
-        <g id={`${id}.post`} onPointerDown={onPointerDown}>
+        <g id={`${id}.post`} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
         </g>
     );
