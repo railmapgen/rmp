@@ -83,7 +83,7 @@ const initialState: RuntimeState = {
  */
 export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
-    dispatch(setRefreshEdges());
+    dispatch(setRefreshNodes());
 
     let masterNodesCount = 0;
     window.graph.forEachNode((_, attr) => {
