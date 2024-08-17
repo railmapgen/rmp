@@ -97,12 +97,12 @@ export const FONTS_CSS: {
     },
     [StationType.LondonTubeBasic]: {
         className: ['.rmp-name__tube'],
-        cssFont: { Railway: Railway },
+        cssFont: { Railway },
         cssName: 'fonts_tube',
     },
     [StationType.LondonTubeInt]: {
         className: ['.rmp-name__tube'],
-        cssFont: { Railway: Railway },
+        cssFont: { Railway },
         cssName: 'fonts_tube',
     },
 };
