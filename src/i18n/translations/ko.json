@@ -312,6 +312,21 @@
                         "horizontal": "수평의",
                         "vertical": "수직의"
                     }
+                },
+                "londonTubeCommon": {
+                    "stepFreeAccess": "단차 없는 접근",
+                    "stepFreeAccessNone": "없음",
+                    "stepFreeAccessTrain": "거리에서 열차까지",
+                    "stepFreeAccessPlatform": "거리에서 플랫폼까지"
+                },
+                "londonTubeBasic": {
+                    "displayName": "런던 지하철 기본역",
+                    "terminal": "종착역",
+                    "shareTracks": "선로 공유",
+                    "shareTracksIndex": "선로 공유 지수"
+                },
+                "londonTubeInt": {
+                    "displayName": "런던 지하철 환승역"
                 }
             },
             "lines": {
@@ -394,6 +409,15 @@
                 },
                 "lrtSingleColor": {
                     "displayName": "싱가포르 LRT 단색 스타일"
+                },
+                "londonTubeInternalInt": {
+                    "displayName": "런던 지하철 내부 환승 스타일"
+                },
+                "londonTube10MinWalk": {
+                    "displayName": "런던 지하철 10분 이내 도보 환승 스타일"
+                },
+                "londonTubeTerminal": {
+                    "displayName": "런던 지하철 종착 스타일"
                 }
             },
             "edges": {},

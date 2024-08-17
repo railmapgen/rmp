@@ -161,12 +161,12 @@ const londonTubeIntAttrsComponent = (props: AttrsProps<LondonTubeIntStationAttri
         },
         {
             type: 'select',
-            label: t('panel.details.stations.londonTube.stepFreeAccess'),
+            label: t('panel.details.stations.londonTubeCommon.stepFreeAccess'),
             value: attrs.stepFreeAccess,
             options: {
-                none: t('panel.details.stations.londonTubeInt.stepFreeAccessNone'),
-                train: t('panel.details.stations.londonTubeInt.stepFreeAccessTrain'),
-                platform: t('panel.details.stations.londonTubeInt.stepFreeAccessPlatform'),
+                none: t('panel.details.stations.londonTubeCommon.stepFreeAccessNone'),
+                train: t('panel.details.stations.londonTubeCommon.stepFreeAccessTrain'),
+                platform: t('panel.details.stations.londonTubeCommon.stepFreeAccessPlatform'),
             },
             onChange: val => {
                 attrs.stepFreeAccess = val as 'none' | 'train' | 'platform';

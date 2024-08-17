@@ -274,7 +274,7 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.londonTube.terminal'),
+            label: t('panel.details.stations.londonTubeBasic.terminal'),
             isChecked: attrs.terminal,
             isDisabled: attrs.transfer[0].length > 1,
             onChange: (val: boolean) => {
@@ -286,12 +286,12 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
         },
         {
             type: 'select',
-            label: t('panel.details.stations.londonTube.stepFreeAccess'),
+            label: t('panel.details.stations.londonTubeCommon.stepFreeAccess'),
             value: attrs.stepFreeAccess,
             options: {
-                none: t('panel.details.stations.londonTubeBasic.stepFreeAccessNone'),
-                train: t('panel.details.stations.londonTubeBasic.stepFreeAccessTrain'),
-                platform: t('panel.details.stations.londonTubeBasic.stepFreeAccessPlatform'),
+                none: t('panel.details.stations.londonTubeCommon.stepFreeAccessNone'),
+                train: t('panel.details.stations.londonTubeCommon.stepFreeAccessTrain'),
+                platform: t('panel.details.stations.londonTubeCommon.stepFreeAccessPlatform'),
             },
             onChange: val => {
                 attrs.stepFreeAccess = val as 'none' | 'train' | 'platform';
@@ -351,7 +351,7 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             <RmgFields fields={fields} />
             <RmgLabel label={t('panel.details.stations.interchange.title')}>
                 <VStack align="flex-start">
-                    <FormLabel size="xs">{t('panel.details.stations.interchange.shareTracks')}</FormLabel>
+                    <FormLabel size="xs">{t('panel.details.stations.londonTubeBasic.shareTracks')}</FormLabel>
                     <InterchangeCard
                         interchangeList={transfer[0]}
                         onAdd={handleAdd(0)}

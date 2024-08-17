@@ -318,9 +318,17 @@
                         "vertical": "Vertical"
                     }
                 },
+                "londonTubeCommon": {
+                    "stepFreeAccess": "Step free access",
+                    "stepFreeAccessNone": "None",
+                    "stepFreeAccessTrain": "From street to train",
+                    "stepFreeAccessPlatform": "From street to platform"
+                },
                 "londonTubeBasic": {
                     "displayName": "London Tube basic station",
-                    "shareTracksIndex": "Index of the track share"
+                    "terminal": "Terminal station",
+                    "shareTracks": "Track shares",
+                    "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {
                     "displayName": "London Tube interchange station"
@@ -406,6 +414,15 @@
                 },
                 "lrtSingleColor": {
                     "displayName": "Singapore LRT single color style"
+                },
+                "londonTubeInternalInt": {
+                    "displayName": "London Tube internal interchange style"
+                },
+                "londonTube10MinWalk": {
+                    "displayName": "London Tube under a 10 minute walk interchange style"
+                },
+                "londonTubeTerminal": {
+                    "displayName": "London Tube terminal style"
                 }
             },
             "edge": {},

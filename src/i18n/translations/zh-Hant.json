@@ -312,6 +312,21 @@
                         "horizontal": "橫向",
                         "vertical": "縱向"
                     }
+                },
+                "londonTubeCommon": {
+                    "stepFreeAccess": "無障礙通行",
+                    "stepFreeAccessNone": "無",
+                    "stepFreeAccessTrain": "從街道到列車",
+                    "stepFreeAccessPlatform": "從街道到月台"
+                },
+                "londonTubeBasic": {
+                    "displayName": "倫敦地鐵基本車站",
+                    "terminal": "終點站",
+                    "shareTracks": "軌道共享",
+                    "shareTracksIndex": "軌道共享指數"
+                },
+                "londonTubeInt": {
+                    "displayName": "倫敦地鐵換乘車站"
                 }
             },
             "lines": {
@@ -387,13 +402,22 @@
                     "displayName": "新加坡MRT聖淘沙捷運樣式"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR東日本單色風格"
+                    "displayName": "JR東日本單色樣式"
                 },
                 "jrEastSingleColorPattern": {
-                    "displayName": "JR東日本單色網狀圖案風格"
+                    "displayName": "JR東日本單色網狀圖案樣式"
                 },
                 "lrtSingleColor": {
                     "displayName": "新加坡LRT純色樣式"
+                },
+                "londonTubeInternalInt": {
+                    "displayName": "倫敦地鐵內部換乘樣式"
+                },
+                "londonTube10MinWalk": {
+                    "displayName": "倫敦地鐵10分鐘步行換乘樣式"
+                },
+                "londonTubeTerminal": {
+                    "displayName": "倫敦地鐵終點站樣式"
                 }
             },
             "edges": {},
