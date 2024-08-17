@@ -60,11 +60,6 @@ export const FONTS_CSS: {
         cssFont: { '"M PLUS 2"': MPLUS2 },
         cssName: 'fonts_jreast',
     },
-    [StationType.LondonTubeBasic]: {
-        className: ['.rmp-name__tube'],
-        cssFont: { Railway: Railway },
-        cssName: 'fonts_tube',
-    },
     [MiscNodeType.BerlinSBahnLineBadge]: {
         className: ['.rmp-name__berlin'],
         cssFont: { Roboto },
@@ -99,6 +94,16 @@ export const FONTS_CSS: {
         className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
         cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
         cssName: 'fonts_tokyo',
+    },
+    [StationType.LondonTubeBasic]: {
+        className: ['.rmp-name__tube'],
+        cssFont: { Railway: Railway },
+        cssName: 'fonts_tube',
+    },
+    [StationType.LondonTubeInt]: {
+        className: ['.rmp-name__tube'],
+        cssFont: { Railway: Railway },
+        cssName: 'fonts_tube',
     },
 };
 
