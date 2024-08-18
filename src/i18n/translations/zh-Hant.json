@@ -133,6 +133,11 @@
                     "numEn": "英文線路號",
                     "showText": "顯示文字"
                 },
+                "master": {
+                    "displayName": "大師節點",
+                    "type": "大師節點類型",
+                    "undefined": "未定義"
+                },
                 "facilities": {
                     "displayName": "設施",
                     "type": "類型"
@@ -397,6 +402,19 @@
                 }
             },
             "edges": {},
+            "masterManage": {
+                "title": "管理全部大師節點",
+                "id": "唯一標識",
+                "label": "標籤",
+                "type": "類型",
+                "types": {
+                    "MiscNode": "雜項節點",
+                    "Station": "車站"
+                },
+                "importTitle": "上傳大師節點參數",
+                "importFrom": "導入自",
+                "importLabel": "從RMP設計器貼上JSON"
+            },
             "footer": {
                 "duplicate": "重複",
                 "copy": "複製",

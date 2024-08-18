@@ -133,6 +133,11 @@
                     "numEn": "영어로 된 줄 번호",
                     "showText": "텍스트 표시"
                 },
+                "master": {
+                    "displayName": "마스터 노드",
+                    "type": "마스터 노드 유형",
+                    "undefined": "정의되지 않음"
+                },
                 "facilities": {
                     "displayName": "시설",
                     "type": "유형"
@@ -397,6 +402,19 @@
                 }
             },
             "edges": {},
+            "masterManage": {
+                "title": "모든 마스터 노드를 관리",
+                "id": "ID",
+                "label": "레이블",
+                "type": "유형",
+                "types": {
+                    "MiscNode": "기타 노드",
+                    "Station": "스테이션"
+                },
+                "importTitle": "마스터 매개변수 업로드",
+                "importFrom": "에서 가져오기",
+                "importLabel": "RMP 디자이너에서 JSON 붙여넣기"
+            },
             "footer": {
                 "duplicate": "복사",
                 "copy": "복사",

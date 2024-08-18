@@ -133,6 +133,11 @@
                     "numEn": "英語の行番号",
                     "showText": "テキストを表示"
                 },
+                "master": {
+                    "displayName": "マスターノード",
+                    "type": "マスターノードタイプ",
+                    "undefined": "未定義"
+                },
                 "facilities": {
                     "displayName": "施設",
                     "type": "種類"
@@ -398,6 +403,19 @@
                 }
             },
             "edges": {},
+            "masterManage": {
+                "title": "すべてのマスターノードを管理する",
+                "id": "ID",
+                "label": "ラベル",
+                "type": "タイプ",
+                "types": {
+                    "MiscNode": "その他ノード",
+                    "Station": "ステーション"
+                },
+                "importTitle": "マスターパラメータをアップロード",
+                "importFrom": "からインポート",
+                "importLabel": "RMPデザイナーからJSONを貼り付ける"
+            },
             "footer": {
                 "duplicate": "重複",
                 "copy": "複製",

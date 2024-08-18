@@ -133,6 +133,11 @@
                     "numEn": "英文线路号",
                     "showText": "显示文字"
                 },
+                "master": {
+                    "displayName": "大师节点",
+                    "type": "大师节点类型",
+                    "undefined": "未定义"
+                },
                 "facilities": {
                     "displayName": "设施",
                     "type": "类型"
@@ -398,10 +403,14 @@
             },
             "edges": {},
             "masterManage": {
-                "title": "大师节点管理器",
+                "title": "管理全部大师节点",
                 "id": "唯一标识",
                 "label": "标签",
                 "type": "类型",
+                "types": {
+                    "MiscNode": "杂项节点",
+                    "Station": "车站"
+                },
                 "importTitle": "上传大师节点参数",
                 "importFrom": "导入自",
                 "importLabel": "从RMP设计器粘贴JSON"

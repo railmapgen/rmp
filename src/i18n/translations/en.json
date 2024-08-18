@@ -135,7 +135,8 @@
                 },
                 "master": {
                     "displayName": "Master node",
-                    "type": "Master type"
+                    "type": "Master node type",
+                    "undefined": "Undefined"
                 },
                 "facilities": {
                     "displayName": "Facilities",
@@ -403,10 +404,14 @@
             },
             "edge": {},
             "masterManage": {
-                "title": "Master Node Manager",
+                "title": "Manage all master nodes",
                 "id": "Id",
                 "label": "Label",
                 "type": "Type",
+                "types": {
+                    "MiscNode": "MiscNode",
+                    "Station": "Station"
+                },
                 "importTitle": "Upload master parameter",
                 "importFrom": "Import from",
                 "importLabel": "Paste JSON from RMP Designer"

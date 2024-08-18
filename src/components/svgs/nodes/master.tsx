@@ -1,5 +1,5 @@
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { Button, useToast } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
+import { Button, Flex, IconButton, Spacer, useToast } from '@chakra-ui/react';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdSettings, MdUpload } from 'react-icons/md';
@@ -95,7 +95,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     return React.createElement(
         'g',
         { id: id, transform: `translate(${x}, ${y})`, ...gPointerEvents },
-        attrs.randomId !== 'undefined' ? (
+        attrs.randomId ? (
             <g
                 transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}
             >
@@ -118,8 +118,8 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 export interface MasterAttributes extends MasterParam {}
 
 const defaultMasterAttributes: MasterAttributes = {
-    randomId: 'undefined',
-    label: 'Undefined',
+    randomId: undefined,
+    label: undefined,
     transform: defaultMasterTransform,
     nodeType: 'MiscNode',
     svgs: [],
@@ -138,12 +138,8 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     const [openManager, setOpenManager] = React.useState(false);
 
     const getComponentValue = (query: string) => {
-        attrs.components.forEach(c => {
-            if (c.id === query) {
-                return c.value ?? c.defaultValue;
-            }
-        });
-        return undefined;
+        const p = attrs.components.find(c => c.id === query);
+        return p ? p.type ?? p.defaultValue : undefined;
     };
 
     const handleImportParam = (s: string) => {
@@ -175,29 +171,6 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         if (param.color !== undefined) param.color.value = attrs.color ? attrs.color.value : param.color.defaultValue;
         handleAttrsUpdate(id, param);
     };
-
-    const field: RmgFieldsField[] = [
-        {
-            type: 'output',
-            label: t('panel.details.nodes.master.type'),
-            value: attrs.label ?? attrs.randomId,
-        },
-        {
-            type: 'custom',
-            label: '',
-            component: (
-                <>
-                    <Button onClick={() => setOpenImport(true)}>
-                        <MdUpload />
-                    </Button>
-                    <Button onClick={() => setOpenManager(true)}>
-                        <MdSettings />
-                    </Button>
-                </>
-            ),
-            oneLine: true,
-        },
-    ];
 
     const componentField: RmgFieldsField[] = attrs.components.map((c, i) => {
         const { label, type, defaultValue, value } = c;
@@ -267,11 +240,18 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
 
     return (
         <>
-            <RmgFields fields={field} />
-            {attrs.randomId !== 'undefined' && <RmgFields fields={componentField} minW="full" />}
-            {attrs.randomId !== 'undefined' && attrs.color !== undefined && (
-                <RmgFields fields={colorField} minW="full" />
-            )}
+            <Flex direction="row" mr="auto" width="100%">
+                <RmgLabel label={t('panel.details.nodes.master.type')}>
+                    {attrs.label ?? t('panel.details.nodes.master.undefined')}
+                </RmgLabel>
+                <Spacer />
+                <IconButton icon={<MdUpload />} onClick={() => setOpenImport(true)} aria-label="upload" />
+            </Flex>
+            <Button width="100%" leftIcon={<MdSettings />} onClick={() => setOpenManager(true)}>
+                {t('panel.details.masterManage.title')}
+            </Button>
+            {attrs.randomId && <RmgFields fields={componentField} minW="full" />}
+            {attrs.randomId && attrs.color !== undefined && <RmgFields fields={colorField} minW="full" />}
             <MasterImport isOpen={openImport} onClose={() => setOpenImport(false)} onSubmit={handleImportParam} />
             <MasterManager isOpen={openManager} onClose={() => setOpenManager(false)} />
         </>
