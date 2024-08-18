@@ -204,7 +204,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                             key={`${id}_${info[2]}_${info[4]}`}
                             id={id}
                             stepFreeAccess={stepFreeAccess}
-                            transform={`translate(${accessibleDX},${accessibleDY})rotate(${-rotate})scale(0.2)`}
+                            transform={`translate(${accessibleDX},${accessibleDY})rotate(${-rotate})scale(0.2333)`}
                         />
                     )
                 )}

@@ -78,7 +78,7 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
                         fill="white"
                     />
                 ) : (
-                    <AccessibleIcon id={id} stepFreeAccess={stepFreeAccess} transform={`scale(0.2)`} />
+                    <AccessibleIcon id={id} stepFreeAccess={stepFreeAccess} transform={`scale(0.2333)`} />
                 )}
             </g>
             <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
