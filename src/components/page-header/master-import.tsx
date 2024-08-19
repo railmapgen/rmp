@@ -14,7 +14,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MasterParam } from '../../constants/master';
 import { getMasterNodeTypes } from '../../util/graph';
-import { useRootSelector } from '../../redux';
 
 interface MasterTypeList {
     id: string;
@@ -38,12 +37,10 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const { isOpen, onClose, onSubmit } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
-    const { activeSubscriptions } = useRootSelector(state => state.account);
-    const maxNumber = activeSubscriptions.RMP_CLOUD ? Infinity : 3;
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
-    const [allowAddNewMaster, setAllowAddNewMaster] = React.useState(false);
+    const allowAddNewMaster = true;
     React.useEffect(() => {
         if (isOpen) {
             setParam('');
@@ -54,7 +51,6 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                 .map(p => {
                     return { id: p.randomId!, value: p.label! ?? p.randomId, param: p };
                 });
-            setAllowAddNewMaster(masterList.length < maxNumber);
             setList(allowAddNewMaster ? [defaultMasterTypeList].concat(masterList) : masterList);
         }
     }, [isOpen]);
