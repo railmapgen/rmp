@@ -1,6 +1,5 @@
 import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { RmgFieldsFieldSpecificAttributes } from '../../../panels/details/rmg-field-specific-attrs';
 
 const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttributes>) => {
     const { id, path, handlePointerDown } = props;
@@ -19,13 +18,13 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
 };
 
 /**
- * ShmetroVirtualInt specific props.
+ * ShmetroVirtualInt has no specific props.
  */
 export interface ShmetroVirtualIntAttributes extends LinePathAttributes {}
 
 const defaultShmetroVirtualIntAttributes: ShmetroVirtualIntAttributes = {};
 
-const attrsComponent = () => <RmgFieldsFieldSpecificAttributes fields={[]} type="style" />;
+const attrsComponent = () => undefined;
 
 const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
     component: ShmetroVirtualInt,

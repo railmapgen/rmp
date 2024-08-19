@@ -22,6 +22,9 @@ import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt
 import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
 import { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
 import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-single-color';
+import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
+import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
+import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -56,6 +59,9 @@ export enum LineStyleType {
     JREastSingleColor = 'jr-east-single-color',
     JREastSingleColorPattern = 'jr-east-single-color-pattern',
     LRTSingleColor = 'lrt-single-color',
+    LondonTubeTerminal = 'london-tube-terminal',
+    LondonTubeInternalInt = 'london-tube-internal-int',
+    LondonTube10MinWalk = 'london-tube-10-min-walk',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -77,6 +83,9 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
     [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
     [LineStyleType.LRTSingleColor]?: LRTSingleColorAttributes;
+    [LineStyleType.LondonTubeTerminal]?: LondonTubeTerminalAttributes;
+    [LineStyleType.LondonTubeInternalInt]?: LondonTubeInternalIntAttributes;
+    [LineStyleType.LondonTube10MinWalk]?: LondonTube10MinWalkAttributes;
 }
 
 export const LineStylesWithColor = [

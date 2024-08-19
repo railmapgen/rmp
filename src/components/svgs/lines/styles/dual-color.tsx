@@ -20,20 +20,6 @@ import {
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
 
-/**
- * Given the coordinates of point A, B, and C,
- * this helper function find the 4th vertex of the parallelogram.
- *   D---C
- *  /   /
- * A---B
- * @returns The coordinates of point D.
- */
-const find4thVertexOfAParallelogram = (xa: number, xb: number, xc: number, ya: number, yb: number, yc: number) => {
-    const [xmid, ymid] = [xa + xc, ya + yc];
-    const [xd, yd] = [xmid - xb, ymid - yb];
-    return [xd, yd];
-};
-
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     const { id, type, path, styleAttrs, handlePointerDown } = props;
     const { colorA = defaultDualColorAttributes.colorA, colorB = defaultDualColorAttributes.colorB } =

@@ -21,6 +21,8 @@ import foshanMetroBasicStation from './foshan-metro-basic';
 import qingdaoMetroStation from './qingdao-metro-station';
 import tokyoMetroBasicStation from './tokyo-metro-basic';
 import tokyoMetroIntStation from './tokyo-metro-int';
+import londonTubeBasicStation from './london-tube-basic';
+import londonTubeIntStation from './london-tube-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -45,6 +47,8 @@ const stations = {
     [StationType.QingdaoMetroStation]: qingdaoMetroStation,
     [StationType.TokyoMetroBasic]: tokyoMetroBasicStation,
     [StationType.TokyoMetroInt]: tokyoMetroIntStation,
+    [StationType.LondonTubeBasic]: londonTubeBasicStation,
+    [StationType.LondonTubeInt]: londonTubeIntStation,
 };
 
 export default stations;

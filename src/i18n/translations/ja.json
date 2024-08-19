@@ -35,7 +35,7 @@
                 "lineStyleType": "路線風格の種類",
                 "type": "種類",
                 "parallel": "平行路線",
-                "parallelIndex": "平行路線の索引"
+                "parallelIndex": "平行路線索引"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -318,6 +318,21 @@
                         "horizontal": "水平",
                         "vertical": "垂直"
                     }
+                },
+                "londonTubeCommon": {
+                    "stepFreeAccess": "段差のないアクセス",
+                    "stepFreeAccessNone": "なし",
+                    "stepFreeAccessTrain": "駅から電車まで",
+                    "stepFreeAccessPlatform": "駅からプラットフォームまで"
+                },
+                "londonTubeBasic": {
+                    "displayName": "ロンドン地下鉄基本駅",
+                    "terminal": "終着駅",
+                    "shareTracks": "線路共有",
+                    "shareTracksIndex": "線路共有索引"
+                },
+                "londonTubeInt": {
+                    "displayName": "ロンドン地下鉄乗換駅"
                 }
             },
             "lines": {
@@ -399,7 +414,16 @@
                     "displayName": "JR東日本単色網目模様風格"
                 },
                 "lrtSingleColor": {
-                    "displayName": "シンガポールLRT単色スタイル"
+                    "displayName": "シンガポールLRT単色風格"
+                },
+                "londonTubeInternalInt": {
+                    "displayName": "ロンドン地下鉄内部乗換風格"
+                },
+                "londonTube10MinWalk": {
+                    "displayName": "ロンドン地下鉄10分以内の乗換風格"
+                },
+                "londonTubeTerminal": {
+                    "displayName": "ロンドン地下鉄終着風格"
                 }
             },
             "edges": {},

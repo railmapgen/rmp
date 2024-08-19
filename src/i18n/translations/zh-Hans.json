@@ -263,18 +263,18 @@
                     "displayName": "新加坡MRT换乘车站"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR东日本基本车站",
-                  "nameOffset": "名称偏移",
-                  "textOneLine": "名称在一行中",
-                  "textVertical": "垂直名称",
-                  "important": "重要车站",
-                  "lines": "换乘线偏移"
+                    "displayName": "JR东日本基本车站",
+                    "nameOffset": "名称偏移",
+                    "textOneLine": "名称在一行中",
+                    "textVertical": "垂直名称",
+                    "important": "重要车站",
+                    "lines": "换乘线偏移"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR东日本重要车站",
-                  "textVertical": "垂直名称",
-                  "mostImportant": "最重要车站",
-                  "minLength": "车站的最小长度"
+                    "displayName": "JR东日本重要车站",
+                    "textVertical": "垂直名称",
+                    "mostImportant": "最重要车站",
+                    "minLength": "车站的最小长度"
                 },
                 "foshanMetroBasic": {
                     "displayName": "佛山地铁基本车站",
@@ -317,6 +317,21 @@
                         "horizontal": "横向",
                         "vertical": "纵向"
                     }
+                },
+                "londonTubeCommon": {
+                    "stepFreeAccess": "无障碍通行",
+                    "stepFreeAccessNone": "无",
+                    "stepFreeAccessTrain": "从街道到列车",
+                    "stepFreeAccessPlatform": "从街道到站台"
+                },
+                "londonTubeBasic": {
+                    "displayName": "伦敦地铁基本车站",
+                    "terminal": "终点站",
+                    "shareTracks": "轨道共享",
+                    "shareTracksIndex": "轨道共享索引"
+                },
+                "londonTubeInt": {
+                    "displayName": "伦敦地铁换乘车站"
                 }
             },
             "lines": {
@@ -399,6 +414,15 @@
                 },
                 "lrtSingleColor": {
                     "displayName": "新加坡LRT纯色样式"
+                },
+                "londonTubeInternalInt": {
+                    "displayName": "伦敦地铁内部换乘样式"
+                },
+                "londonTube10MinWalk": {
+                    "displayName": "伦敦地铁10分钟步行换乘样式"
+                },
+                "londonTubeTerminal": {
+                    "displayName": "伦敦地铁终点站样式"
                 }
             },
             "edges": {},

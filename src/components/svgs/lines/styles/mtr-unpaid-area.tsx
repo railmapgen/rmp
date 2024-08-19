@@ -1,6 +1,5 @@
 import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { RmgFieldsFieldSpecificAttributes } from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) => {
     const { id, path, handlePointerDown } = props;
@@ -25,13 +24,13 @@ const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) 
 };
 
 /**
- * MTRUnpaidArea specific props.
+ * MTRUnpaidArea has no specific props.
  */
 export interface MTRUnpaidAreaAttributes extends LinePathAttributes {}
 
 const defaultMTRUnpaidAreaAttributes: MTRUnpaidAreaAttributes = {};
 
-const attrsComponent = () => <RmgFieldsFieldSpecificAttributes fields={[]} type="style" />;
+const attrsComponent = () => undefined;
 
 const mtrUnpaidArea: LineStyle<MTRUnpaidAreaAttributes> = {
     component: MTRUnpaidArea,

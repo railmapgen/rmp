@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor } from '../components/panels/details/color-field';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import stations from '../components/svgs/stations/stations';
 import {
@@ -16,7 +17,7 @@ import { LinePathType, LineStylesWithColor, LineStyleType } from '../constants/l
 import { ExternalStationAttributes, StationType, StationWithColor } from '../constants/stations';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
-const StationsWithoutNameOffset = [StationType.ShmetroBasic2020];
+const StationsWithoutNameOffset = [StationType.ShmetroBasic2020, StationType.LondonTubeBasic];
 
 /**
  * Change a station's type.
@@ -46,20 +47,20 @@ export const changeStationType = (
         (
             newAttrs as Exclude<
                 ExternalStationAttributes[keyof ExternalStationAttributes],
-                ShmetroBasic2020StationAttributes | undefined
+                ShmetroBasic2020StationAttributes | LondonTubeBasicStationAttributes | undefined
             >
         ).nameOffsetX = graph.getNodeAttribute(
             selectedFirst,
-            currentStnType as Exclude<StationType, StationType.ShmetroBasic2020>
+            currentStnType as Exclude<StationType, StationType.ShmetroBasic2020 | StationType.LondonTubeBasic>
         )!.nameOffsetX;
         (
             newAttrs as Exclude<
                 ExternalStationAttributes[keyof ExternalStationAttributes],
-                ShmetroBasic2020StationAttributes | undefined
+                ShmetroBasic2020StationAttributes | LondonTubeBasicStationAttributes | undefined
             >
         ).nameOffsetY = graph.getNodeAttribute(
             selectedFirst,
-            currentStnType as Exclude<StationType, StationType.ShmetroBasic2020>
+            currentStnType as Exclude<StationType, StationType.ShmetroBasic2020 | StationType.LondonTubeBasic>
         )!.nameOffsetY;
     }
     if (StationWithColor.includes(newStnType) && StationWithColor.includes(currentStnType)) {
