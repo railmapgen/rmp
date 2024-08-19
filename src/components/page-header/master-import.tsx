@@ -38,19 +38,18 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
-    const allowAddNewMaster = true;
-
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
+    const allowAddNewMaster = true;
     React.useEffect(() => {
         if (isOpen) {
             setParam('');
             setError('');
             setSelectedParam(defaultMasterSelected);
             const masterList = getMasterNodeTypes(graph.current)
-                .filter(p => p.randomId !== 'undefined')
+                .filter(p => p.randomId)
                 .map(p => {
-                    return { id: p.randomId, value: p.label ?? p.randomId, param: p };
+                    return { id: p.randomId!, value: p.label! ?? p.randomId, param: p };
                 });
             setList(allowAddNewMaster ? [defaultMasterTypeList].concat(masterList) : masterList);
         }
@@ -61,7 +60,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: t('panel.details.masterManage.importFrom'),
+            label: t('header.settings.procedures.masterManager.importFrom'),
             component: (
                 <RmgAutoComplete
                     data={list}
@@ -89,7 +88,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         },
         {
             type: 'textarea',
-            label: t('panel.details.masterManage.importLabel'),
+            label: t('header.settings.procedures.masterManager.importLabel'),
             value: param.toString(),
             onChange: val => setParam(val),
             minW: 'full',
@@ -113,7 +112,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('panel.details.masterManage.importTitle')}</ModalHeader>
+                <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody minH={250}>

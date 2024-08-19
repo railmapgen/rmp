@@ -97,7 +97,7 @@ export const findThemes = (
 
 export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     const newList: MasterParam[] = [];
-    const nodeSet = new Set<string>();
+    const nodeSet = new Set<string | undefined>();
     graph
         .filterNodes(node => graph.getNodeAttribute(node, 'type') === MiscNodeType.Master)
         .forEach(node => {

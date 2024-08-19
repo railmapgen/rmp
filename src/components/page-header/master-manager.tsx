@@ -113,7 +113,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         downloadAs(`RMP_Master_Node_${new Date().valueOf()}.json`, 'application/json', JSON.stringify(param));
     };
 
-    const handleRemove = (type: string) => {
+    const handleRemove = (type: string | undefined) => {
         graph.current
             .filterNodes(
                 node =>
@@ -144,35 +144,35 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
     const fields = list.map(attrs => {
         const field: RmgFieldsField[] = [
             {
-                label: t('panel.details.masterManage.id'),
+                label: t('header.settings.procedures.masterManager.id'),
                 type: 'custom',
                 component: (
                     <RmgLineBadge
-                        name={attrs.randomId}
+                        name={attrs.randomId ?? 'undefined'}
                         fg={MonoColour.white}
-                        bg={attrs.randomId === 'undefined' ? '#000000' : '#19B3EA'}
+                        bg={attrs.randomId ? '#19B3EA' : '#000000'}
                     />
                 ),
             },
             {
-                label: t('panel.details.masterManage.label'),
+                label: t('header.settings.procedures.masterManager.label'),
                 type: 'input',
-                value: attrs.label ?? attrs.randomId,
+                value: attrs.label ?? t('panel.details.nodes.master.undefined'),
                 onChange: value => handleSetLabel(attrs, value),
-                hidden: attrs.randomId === 'undefined',
+                hidden: !attrs.randomId,
             },
             {
-                label: t('panel.details.masterManage.label'),
+                label: t('header.settings.procedures.masterManager.label'),
                 type: 'output',
-                value: attrs.label ?? attrs.randomId,
-                hidden: attrs.randomId !== 'undefined',
+                value: attrs.label ?? t('panel.details.nodes.master.undefined'),
+                hidden: !!attrs.randomId,
             },
             {
-                label: t('panel.details.masterManage.type'),
+                label: t('header.settings.procedures.masterManager.type'),
                 type: 'custom',
                 component: (
                     <RmgLineBadge
-                        name={attrs.nodeType}
+                        name={t(`header.settings.procedures.masterManager.types.${attrs.nodeType}`)}
                         fg={MonoColour.white}
                         bg={attrs.nodeType === 'MiscNode' ? '#FF8651' : '#51BC00'}
                     />
@@ -181,14 +181,12 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         ];
         return (
             <Flex width="100%" direction="row">
-                <Flex width="100%">
-                    <RmgFields fields={field} minW="100px" />
-                </Flex>
+                <RmgFields fields={field} minW="120px" />
                 <Flex direction="row" mr="auto">
                     <Button onClick={() => setOpenImport(attrs.randomId)}>
                         <MdUpload />
                     </Button>
-                    <Button onClick={() => handleDownload(attrs)} isDisabled={attrs.randomId === 'undefined'}>
+                    <Button onClick={() => handleDownload(attrs)} isDisabled={!attrs.randomId}>
                         <MdDownload />
                     </Button>
                     <Button onClick={() => handleRemove(attrs.randomId)}>
@@ -203,7 +201,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('panel.details.masterManage.title')}</ModalHeader>
+                <ModalHeader>{t('header.settings.procedures.masterManager.title')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody width="100%">

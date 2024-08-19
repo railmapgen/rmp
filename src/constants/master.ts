@@ -28,8 +28,8 @@ export const defaultMasterTransform: MasterParamTransform = {
 };
 
 export interface MasterParam {
-    randomId: string;
-    label: string;
+    randomId?: string;
+    label?: string;
     version?: number;
     transform: MasterParamTransform;
     nodeType: 'MiscNode' | 'Station';
