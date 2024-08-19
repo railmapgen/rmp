@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { Events, LineId, MiscNodeId, StnId } from '../constants/constants';
-import { ExternalLineStyleAttributes, LinePathType, LineStyleComponentProps, LineStyleType } from '../constants/lines';
+import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -20,12 +20,12 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { makeParallelIndex } from '../util/parallel';
-import { getLines, getNodes, getZIndexFromElement } from '../util/process-elements';
-import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
-import { linePaths, lineStyles } from './svgs/lines/lines';
+import { getLines, getNodes } from '../util/process-elements';
+import SvgLayer from './svg-layer';
+import { linePaths } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
-import { default as allStations, default as stations } from './svgs/stations/stations';
+import { default as stations } from './svgs/stations/stations';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -240,10 +240,7 @@ const SvgCanvas = () => {
     // These are elements that the svg draws from.
     // They are updated by the refresh triggers in the runtime state.
     const elements = React.useMemo(
-        () =>
-            [...getLines(graph.current), ...getNodes(graph.current)].sort(
-                (a, b) => getZIndexFromElement(a) - getZIndexFromElement(b)
-            ),
+        () => [...getLines(graph.current), ...getNodes(graph.current)],
         [refreshEdges, refreshNodes]
     );
 
@@ -251,68 +248,13 @@ const SvgCanvas = () => {
 
     return (
         <>
-            {elements.map(element => {
-                if (element.type === 'line') {
-                    const type = element.line!.attr.type;
-                    const style = element.line!.attr.style;
-                    const styleAttrs = element.line!.attr[style] as NonNullable<
-                        ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
-                    >;
-                    // HELP NEEDED: Why component is not this type?
-                    const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as React.FC<
-                        LineStyleComponentProps<
-                            NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>
-                        >
-                    >;
-
-                    return (
-                        <StyleComponent
-                            key={element.id}
-                            id={element.id as LineId}
-                            type={type}
-                            path={element.line!.path}
-                            styleAttrs={styleAttrs}
-                            newLine={false}
-                            handlePointerDown={handleEdgePointerDown}
-                        />
-                    );
-                } else if (element.type === 'station') {
-                    const attr = element.station!;
-                    const type = attr.type as StationType;
-                    const StationComponent = allStations[type]?.component ?? UnknownNode;
-
-                    return (
-                        <StationComponent
-                            key={element.id}
-                            id={element.id as StnId}
-                            x={attr.x}
-                            y={attr.y}
-                            attrs={attr}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
-                    );
-                } else if (element.type === 'misc-node') {
-                    const attr = element.miscNode!;
-                    const type = attr.type as MiscNodeType;
-                    const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-
-                    return (
-                        <MiscNodeComponent
-                            key={element.id}
-                            id={element.id as MiscNodeId}
-                            x={attr.x}
-                            y={attr.y}
-                            // @ts-expect-error
-                            attrs={attr[type]}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
-                    );
-                }
-            })}
+            <SvgLayer
+                elements={elements}
+                handlePointerDown={handlePointerDown}
+                handlePointerMove={handlePointerMove}
+                handlePointerUp={handlePointerUp}
+                handleEdgePointerDown={handleEdgePointerDown}
+            />
             {mode.startsWith('line') && active && active !== 'background' && (
                 <SingleColor
                     id="line_create_in_progress___no_use"
