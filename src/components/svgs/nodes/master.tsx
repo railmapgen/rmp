@@ -248,7 +248,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
                 <IconButton icon={<MdUpload />} onClick={() => setOpenImport(true)} aria-label="upload" />
             </Flex>
             <Button width="100%" leftIcon={<MdSettings />} onClick={() => setOpenManager(true)}>
-                {t('panel.details.masterManage.title')}
+                {t('header.settings.procedures.masterManager.title')}
             </Button>
             {attrs.randomId && <RmgFields fields={componentField} minW="full" />}
             {attrs.randomId && attrs.color !== undefined && <RmgFields fields={colorField} minW="full" />}

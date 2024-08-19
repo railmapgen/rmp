@@ -144,7 +144,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
     const fields = list.map(attrs => {
         const field: RmgFieldsField[] = [
             {
-                label: t('panel.details.masterManage.id'),
+                label: t('header.settings.procedures.masterManager.id'),
                 type: 'custom',
                 component: (
                     <RmgLineBadge
@@ -155,24 +155,24 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                 ),
             },
             {
-                label: t('panel.details.masterManage.label'),
+                label: t('header.settings.procedures.masterManager.label'),
                 type: 'input',
                 value: attrs.label ?? t('panel.details.nodes.master.undefined'),
                 onChange: value => handleSetLabel(attrs, value),
                 hidden: !attrs.randomId,
             },
             {
-                label: t('panel.details.masterManage.label'),
+                label: t('header.settings.procedures.masterManager.label'),
                 type: 'output',
                 value: attrs.label ?? t('panel.details.nodes.master.undefined'),
                 hidden: !!attrs.randomId,
             },
             {
-                label: t('panel.details.masterManage.type'),
+                label: t('header.settings.procedures.masterManager.type'),
                 type: 'custom',
                 component: (
                     <RmgLineBadge
-                        name={t(`panel.details.masterManage.types.${attrs.nodeType}`)}
+                        name={t(`header.settings.procedures.masterManager.types.${attrs.nodeType}`)}
                         fg={MonoColour.white}
                         bg={attrs.nodeType === 'MiscNode' ? '#FF8651' : '#51BC00'}
                     />
@@ -201,7 +201,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('panel.details.masterManage.title')}</ModalHeader>
+                <ModalHeader>{t('header.settings.procedures.masterManager.title')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody width="100%">

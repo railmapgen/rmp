@@ -60,7 +60,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: t('panel.details.masterManage.importFrom'),
+            label: t('header.settings.procedures.masterManager.importFrom'),
             component: (
                 <RmgAutoComplete
                     data={list}
@@ -88,7 +88,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         },
         {
             type: 'textarea',
-            label: t('panel.details.masterManage.importLabel'),
+            label: t('header.settings.procedures.masterManager.importLabel'),
             value: param.toString(),
             onChange: val => setParam(val),
             minW: 'full',
@@ -112,7 +112,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('panel.details.masterManage.importTitle')}</ModalHeader>
+                <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody minH={250}>
