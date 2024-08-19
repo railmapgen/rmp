@@ -402,15 +402,6 @@
                 }
             },
             "edges": {},
-            "masterManage": {
-                "title": "大师节点管理器",
-                "id": "唯一标识",
-                "label": "标签",
-                "type": "类型",
-                "importTitle": "上传大师节点参数",
-                "importFrom": "导入自",
-                "importLabel": "从RMP设计器粘贴JSON"
-            },
             "footer": {
                 "duplicate": "重复",
                 "copy": "复制",

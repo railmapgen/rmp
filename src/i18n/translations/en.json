@@ -403,15 +403,6 @@
                 }
             },
             "edge": {},
-            "masterManage": {
-                "title": "Master Node Manager",
-                "id": "Id",
-                "label": "Label",
-                "type": "Type",
-                "importTitle": "Upload master parameter",
-                "importFrom": "Import from",
-                "importLabel": "Paste JSON from RMP Designer"
-            },
             "footer": {
                 "duplicate": "Duplicate",
                 "copy": "Copy",

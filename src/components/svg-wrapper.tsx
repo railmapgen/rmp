@@ -1,7 +1,6 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
@@ -14,7 +13,6 @@ import {
     refreshEdgesThunk,
     refreshNodesThunk,
     setActive,
-    setGlobalAlert,
     setKeepLastPath,
     setMode,
     setSelected,
