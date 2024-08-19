@@ -8,15 +8,15 @@ import { IoMdHeart } from 'react-icons/io';
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { redoAction, undoAction } from '../../redux/param/param-slice';
-import { setIsDonationModalOpen } from '../../redux/runtime/runtime-slice';
+import { redoAction, saveGraph, undoAction } from '../../redux/param/param-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setIsDonationModalOpen } from '../../redux/runtime/runtime-slice';
 import AboutModal from './about-modal';
 import DonationModal from './donation-modal';
 import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
+import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
-import { SearchPopover } from './search-popover';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -26,6 +26,7 @@ export default function WindowHeader() {
     } = useRootSelector(state => state.app);
     const { past, future } = useRootSelector(state => state.param);
     const { isDonationModalOpen } = useRootSelector(state => state.runtime);
+    const graph = React.useRef(window.graph);
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -39,10 +40,18 @@ export default function WindowHeader() {
             rmgRuntime.event(Events.APP_LOAD, { isStandaloneWindow: rmgRuntime.isStandaloneWindow() });
     }, [environment]);
 
-    const handleChangeLanguage = async (language: LanguageCode) => {
-        // do not change language in the global as japanese is not supported in other apps
-        // rmgRuntime.setLanguage(language);
+    const handleChangeLanguage = (language: LanguageCode) => {
         rmgRuntime.getI18nInstance().changeLanguage(language);
+    };
+    const handleUndo = () => {
+        dispatch(undoAction());
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
+    };
+    const handleRedo = () => {
+        dispatch(redoAction());
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
     };
 
     return (
@@ -81,7 +90,7 @@ export default function WindowHeader() {
                         aria-label="Undo"
                         icon={<MdUndo />}
                         isDisabled={past.length === 0}
-                        onClick={() => dispatch(undoAction())}
+                        onClick={handleUndo}
                     />
                 </WrapItem>
                 <WrapItem>
@@ -91,7 +100,7 @@ export default function WindowHeader() {
                         aria-label="Redo"
                         icon={<MdRedo />}
                         isDisabled={future.length === 0}
-                        onClick={() => dispatch(redoAction())}
+                        onClick={handleRedo}
                     />
                 </WrapItem>
 

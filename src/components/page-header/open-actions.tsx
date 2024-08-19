@@ -7,7 +7,7 @@ import { Events, LocalStorageKey } from '../../constants/constants';
 import { RMGParam } from '../../constants/rmg';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, setGlobalAlert, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { parseRmgParam } from '../../util/rmg-param-parser';
@@ -31,10 +31,10 @@ export default function OpenActions() {
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph, graph]);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
     const handleNew = () => {
         dispatch(clearSelected());

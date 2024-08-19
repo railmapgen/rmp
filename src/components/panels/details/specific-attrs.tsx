@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { makeParallelIndex } from '../../../util/parallel';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
@@ -24,7 +24,7 @@ export const NodeSpecificAttributes = () => {
     const handleAttrsUpdate = (selectedFirst: string, attrs: any) => {
         const type = window.graph.getNodeAttribute(selectedFirst, 'type');
         window.graph.mergeNodeAttributes(selectedFirst, { [type]: attrs });
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(window.graph.export()));
     };
 

@@ -4,9 +4,11 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Id } from '../../../constants/constants';
+import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
+import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
@@ -18,12 +20,15 @@ const DetailsPanel = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph]);
-    const { selected, mode, active } = useRootSelector(state => state.runtime);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
+    const { selected, mode, active, masterNodesCount } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
+
+    const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     const handleClose = () => dispatch(clearSelected());
     const handleDuplicate = (selectedFirst: string) => {
@@ -32,7 +37,7 @@ const DetailsPanel = () => {
         allAttr.y += 50;
         const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;
         graph.current.addNode(id, allAttr);
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
     const handleCopy = (selected: Set<Id>) => {
@@ -75,8 +80,16 @@ const DetailsPanel = () => {
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
                 <HStack>
-                    {selected.size === 1 && graph.current.hasNode([...selected].at(0)) && (
-                        <Button size="sm" variant="outline" onClick={() => handleDuplicate([...selected].at(0)!)}>
+                    {selected.size === 1 && graph.current.hasNode(selectedFirst) && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDuplicate(selectedFirst)}
+                            isDisabled={
+                                graph.current.getNodeAttributes(selectedFirst).type === MiscNodeType.Master &&
+                                isMasterDisabled
+                            }
+                        >
                             {t('panel.details.footer.duplicate')}
                         </Button>
                     )}

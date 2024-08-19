@@ -3,6 +3,8 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
 import { CityCode, Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
+import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
@@ -49,6 +51,7 @@ interface RuntimeState {
         input: Theme | undefined;
         output: Theme | undefined;
     };
+    masterNodesCount: number;
     parallelLinesCount: number;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
     isDonationModalOpen: boolean;
@@ -69,11 +72,40 @@ const initialState: RuntimeState = {
         input: undefined,
         output: undefined,
     },
+    masterNodesCount: 0,
     parallelLinesCount: 0,
     globalAlerts: {},
     isDonationModalOpen: false,
 };
 
+/**
+ * Thunk middleware to sum the master nodes count.
+ */
+export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
+    const state = getState() as RootState;
+    dispatch(setRefreshNodes());
+
+    let masterNodesCount = 0;
+    window.graph.forEachNode((_, attr) => {
+        if (attr.type === MiscNodeType.Master) {
+            masterNodesCount += 1;
+        }
+    });
+    dispatch(setMasterNodesCount(masterNodesCount));
+    const maximumMasterNodes = state.account.activeSubscriptions.RMP_CLOUD ? MAX_MASTER_NODE_PRO : MAX_MASTER_NODE_FREE;
+    if (masterNodesCount > maximumMasterNodes) {
+        dispatch(
+            setGlobalAlert({
+                status: 'warning',
+                message: i18n.t('header.settings.proLimitExceed'),
+            })
+        );
+    }
+});
+
+/**
+ * Thunk middleware to sum the parallel lines count.
+ */
 export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     dispatch(setRefreshEdges());
@@ -92,7 +124,6 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
             })
         );
     }
-    return;
 });
 
 const runtimeSlice = createSlice({
@@ -141,6 +172,9 @@ const runtimeSlice = createSlice({
             state.paletteAppClip.input = undefined;
             state.paletteAppClip.output = action.payload;
         },
+        setMasterNodesCount: (state, action: PayloadAction<number>) => {
+            state.masterNodesCount = action.payload;
+        },
         setParallelLinesCount: (state, action: PayloadAction<number>) => {
             state.parallelLinesCount = action.payload;
         },
@@ -176,6 +210,8 @@ const runtimeSlice = createSlice({
     },
 });
 
+const { setMasterNodesCount, setParallelLinesCount } = runtimeSlice.actions;
+
 export const {
     setSelected,
     addSelected,
@@ -190,7 +226,6 @@ export const {
     openPaletteAppClip,
     closePaletteAppClip,
     onPaletteAppClipEmit,
-    setParallelLinesCount,
     setGlobalAlert,
     closeGlobalAlert,
     setIsDonationModalOpen,

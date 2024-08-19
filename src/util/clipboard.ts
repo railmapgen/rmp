@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
 
 type NodesWithAttrs = { [key in StnId | MiscNodeId]: NodeAttributes };
 type EdgesWithAttrs = {
@@ -56,6 +57,7 @@ export const exportSelectedNodesAndEdges = (
  * Import nodes and edges from the clipboard data. Version of the data must be the same as the current.
  * @param s The text from the clipboard.
  * @param graph The graph.
+ * @param filterMaster Whether filter master nodes on paste (no subscription only).
  * @param x The central x of the svg canvas. Nodes and edges added will repositioned around this point.
  * @param y The central y of the svg canvas. Nodes and edges added will repositioned around this point.
  * @returns The nodes and edges added to the graph.
@@ -63,6 +65,7 @@ export const exportSelectedNodesAndEdges = (
 export const importSelectedNodesAndEdges = (
     s: string,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    filterMaster: boolean,
     x: number,
     y: number
 ) => {
@@ -82,23 +85,36 @@ export const importSelectedNodesAndEdges = (
     Object.keys(edges)
         .filter(edge => graph.hasEdge(edge))
         .forEach(edge => (renamedMap[edge] = `line_${nanoid(10)}`));
-
     const renamedS = Object.entries(renamedMap).reduce((_, [k, v]) => _.replaceAll(k, v), s);
 
-    // add nodes and edges into the graph
+    // Filter master nodes if requested.
+    // Note users might exceed the current limit (3) if copy and paste 2 master nodes.
+    // This will result in a 4 node situation. A finer solution might be required.
     const { nodesWithAttrs, edgesWithAttrs, avgX, avgY } = JSON.parse(renamedS) as ClipboardData;
+    const filteredNodes = filterMaster
+        ? Object.fromEntries(Object.entries(nodesWithAttrs).filter(([_, attrs]) => attrs.type !== MiscNodeType.Master))
+        : nodesWithAttrs;
+    const filteredEdges = filterMaster
+        ? Object.fromEntries(
+              Object.entries(edgesWithAttrs).filter(
+                  ([_, { source, target }]) => source in filteredNodes && target in filteredNodes
+              )
+          )
+        : edgesWithAttrs;
+
+    // add nodes and edges into the graph
     const [offsetX, offsetY] = [x - avgX, y - avgY];
-    Object.entries(nodesWithAttrs).forEach(([node, attr]) => {
+    Object.entries(filteredNodes).forEach(([node, attr]) => {
         attr.x += offsetX;
         attr.y += offsetY;
         graph.addNode(node, attr);
     });
-    Object.entries(edgesWithAttrs).forEach(([edge, { attr, source, target }]) =>
+    Object.entries(filteredEdges).forEach(([edge, { attr, source, target }]) =>
         graph.addDirectedEdgeWithKey(edge, source, target, attr)
     );
 
     return {
-        nodes: new Set(Object.keys(nodesWithAttrs)) as Set<StnId | MiscNodeId>,
-        edges: new Set(Object.keys(edgesWithAttrs)) as Set<LineId>,
+        nodes: new Set(Object.keys(filteredNodes)) as Set<StnId | MiscNodeId>,
+        edges: new Set(Object.keys(filteredEdges)) as Set<LineId>,
     };
 };

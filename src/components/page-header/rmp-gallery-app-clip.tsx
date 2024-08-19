@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { RMPSave, upgrade } from '../../util/save';
 
 const RMP_GALLERY_CHANNEL_NAME = 'RMP_GALLERY_CHANNEL';
@@ -45,10 +45,10 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const graph = React.useRef(window.graph);
 
     const refreshAndSave = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph, graph]);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
     const handleOpenTemplate = async (rmpSave: RMPSave) => {
         // templates may be obsolete and require upgrades

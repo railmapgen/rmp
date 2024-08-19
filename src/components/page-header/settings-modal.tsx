@@ -34,6 +34,7 @@ import { setAutoParallel, setTelemetryApp } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
+import { MasterManager } from './master-manager';
 import { ChangeTypeModal } from './procedures/change-type-modal';
 import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
 import { ScaleNodesModal } from './procedures/scale-nodes-modal';
@@ -68,6 +69,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUpdateColorOpen, setIsUpdateColorOpen] = React.useState(false);
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
+    const [isManagerOpen, setIsManagerOpen] = React.useState(false);
 
     const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
     const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
@@ -98,7 +100,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Box>
                                 <Box display="flex" mb="1">
                                     <Text>{t('header.settings.preference.autoParallel')}</Text>
-                                    <Tooltip label={t('header.settings.proLimitExceed')}>
+                                    <Badge ml="1" colorScheme="green">
+                                        New
+                                    </Badge>
+                                    <Tooltip label={t('header.settings.proWithTrial')}>
                                         <Badge
                                             ml="1"
                                             color="gray.50"
@@ -211,6 +216,15 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     isOpen={isUnlockSimplePathOpen}
                                     onClose={() => setIsUnlockSimplePathOpen(false)}
                                 />
+
+                                <Button
+                                    sx={procedureButtonStyle}
+                                    rightIcon={<MdReadMore />}
+                                    onClick={() => setIsManagerOpen(true)}
+                                >
+                                    {t('header.settings.procedures.masterManager.title')}
+                                </Button>
+                                <MasterManager isOpen={isManagerOpen} onClose={() => setIsManagerOpen(false)} />
                             </Box>
                         </Box>
 

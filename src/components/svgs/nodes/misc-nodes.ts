@@ -18,6 +18,7 @@ import qingdaoMetroNumLineBadge from './qingdao-metro-num-line-badge';
 import facilities from './facilities';
 import text from './text';
 import i18nText from './i18n-text';
+import Master from './master';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -39,6 +40,7 @@ const miscNodes = {
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
     [MiscNodeType.I18nText]: i18nText,
+    [MiscNodeType.Master]: Master,
 };
 
 export default miscNodes;

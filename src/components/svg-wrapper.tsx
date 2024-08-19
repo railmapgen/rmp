@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -10,10 +11,10 @@ import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction 
 import {
     clearSelected,
     refreshEdgesThunk,
+    refreshNodesThunk,
     setActive,
     setKeepLastPath,
     setMode,
-    setRefreshNodes,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
@@ -29,11 +30,12 @@ const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
     };
 
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -46,10 +48,13 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
+        masterNodesCount,
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
+
+    const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
@@ -235,6 +240,8 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
@@ -263,6 +270,7 @@ const SvgWrapper = () => {
             const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
                 graph.current,
+                isMasterDisabled,
                 roundToNearestN(svgMidX, 5),
                 roundToNearestN(svgMidY, 5)
             );
@@ -276,6 +284,8 @@ const SvgWrapper = () => {
             (!isMacClient && e.key === 'y' && e.ctrlKey)
         ) {
             dispatch(redoAction());
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
         }
     });
 

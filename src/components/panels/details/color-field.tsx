@@ -5,7 +5,7 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
 
 /**
@@ -38,10 +38,10 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
     const [selectedFirst] = selected;
 
     const hardRefresh = React.useCallback(() => {
-        dispatch(setRefreshNodes());
+        dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
-    }, [dispatch, setRefreshNodes, refreshEdgesThunk, saveGraph]);
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const [hasNodeOrEdge, getNodeOrEdgeAttribute, mergeNodeOrEdgeAttributes] = ([] as NodeType[])

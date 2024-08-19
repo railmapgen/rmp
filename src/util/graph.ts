@@ -13,6 +13,7 @@ import {
 import { LineStylesWithColor } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { MasterParam } from '../constants/master';
 
 /**
  * Finds all edges that both its source and targets are in the nodes.
@@ -92,4 +93,19 @@ export const findThemes = (
             }
         });
     return colorList;
+};
+
+export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+    const newList: MasterParam[] = [];
+    const nodeSet = new Set<string | undefined>();
+    graph
+        .filterNodes(node => graph.getNodeAttribute(node, 'type') === MiscNodeType.Master)
+        .forEach(node => {
+            const attrs = graph.getNodeAttributes(node)[MiscNodeType.Master]!;
+            if (!nodeSet.has(attrs.randomId)) {
+                nodeSet.add(attrs.randomId);
+                newList.push(attrs);
+            }
+        });
+    return newList;
 };

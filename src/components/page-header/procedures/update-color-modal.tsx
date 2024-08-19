@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../../../constants/constants';
 import { useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 
 export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -35,7 +35,7 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
             const updatedParam = await updateColors(param);
             graph.current.clear();
             graph.current.import(updatedParam);
-            dispatch(setRefreshNodes());
+            dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
             dispatch(saveGraph(graph.current.export()));
             toast({
