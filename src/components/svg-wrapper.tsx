@@ -1,7 +1,6 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
@@ -14,7 +13,6 @@ import {
     refreshEdgesThunk,
     refreshNodesThunk,
     setActive,
-    setGlobalAlert,
     setKeepLastPath,
     setMode,
     setSelected,
@@ -37,6 +35,7 @@ const SvgWrapper = () => {
         dispatch(saveGraph(graph.current.export()));
     };
 
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -49,10 +48,13 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
+        masterNodesCount,
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
+
+    const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
@@ -238,7 +240,8 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
-            refreshAndSave();
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
@@ -267,6 +270,7 @@ const SvgWrapper = () => {
             const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
                 graph.current,
+                isMasterDisabled,
                 roundToNearestN(svgMidX, 5),
                 roundToNearestN(svgMidY, 5)
             );
@@ -280,7 +284,8 @@ const SvgWrapper = () => {
             (!isMacClient && e.key === 'y' && e.ctrlKey)
         ) {
             dispatch(redoAction());
-            refreshAndSave();
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
         }
     });
 

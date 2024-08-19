@@ -133,6 +133,11 @@
                     "numEn": "英文线路号",
                     "showText": "显示文字"
                 },
+                "master": {
+                    "displayName": "大师节点",
+                    "type": "大师节点类型",
+                    "undefined": "未定义"
+                },
                 "facilities": {
                     "displayName": "设施",
                     "type": "类型"
@@ -421,15 +426,6 @@
                 }
             },
             "edges": {},
-            "masterManage": {
-                "title": "大师节点管理器",
-                "id": "唯一标识",
-                "label": "标签",
-                "type": "类型",
-                "importTitle": "上传大师节点参数",
-                "importFrom": "导入自",
-                "importLabel": "从RMP设计器粘贴JSON"
-            },
             "footer": {
                 "duplicate": "重复",
                 "copy": "复制",
@@ -593,6 +589,19 @@
                     "content2": "应用程序固有地隐藏了使用简单路径的选项，因为其部署有可能违反既定的惯例。默认情况下，此特定功能保持隐蔽。此外，提交到地铁线路图绘制器画廊的作品将经过严格的审查，坚决拒绝使用单色风格的简单路径的构图。",
                     "content3": "尽管如此，我们对您内心潜藏的无限创意潜力充满信心。因此，我们提供了探索的机会。然而，在成为经验丰富的专业人士并解锁简单路径功能之前，必须充分回答一系列问题。需要注意的是，即使获得后，简单路径的使用也仅限于单色风格。",
                     "check": "解锁简单路径"
+                },
+                "masterManager": {
+                    "title": "管理全部大师节点",
+                    "id": "唯一标识",
+                    "label": "标签",
+                    "type": "类型",
+                    "types": {
+                        "MiscNode": "杂项节点",
+                        "Station": "车站"
+                    },
+                    "importTitle": "上传大师节点参数",
+                    "importFrom": "导入自",
+                    "importLabel": "从RMP设计器粘贴JSON"
                 }
             },
             "telemetry": {

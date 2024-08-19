@@ -47,13 +47,11 @@ export default function WindowHeader() {
         dispatch(undoAction());
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     };
     const handleRedo = () => {
         dispatch(redoAction());
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     };
 
     return (
