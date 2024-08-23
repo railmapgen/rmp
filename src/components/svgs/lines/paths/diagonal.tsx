@@ -90,12 +90,12 @@ const defaultDiagonalPathAttributes: DiagonalPathAttributes = {
 };
 
 const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
-    const { id, attrs, handleAttrsUpdate, parallelIndex } = props;
+    const { id, attrs, handleAttrsUpdate, recalculateParallelIndex, parallelIndex } = props;
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
 
     const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.Diagonal, id as LineId);
-    const isParallelDisable = parallelIndex >= 0 && baseParallelLineID !== id;
+    const isParallelDisabled = parallelIndex >= 0 && baseParallelLineID !== id;
 
     const fields: RmgFieldsField[] = [
         {
@@ -105,6 +105,7 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
             options: { from: t('panel.details.lines.common.from'), to: t('panel.details.lines.common.to') },
             onChange: val => {
                 attrs.startFrom = val as 'from' | 'to';
+                recalculateParallelIndex(id);
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -119,7 +120,7 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
                 attrs.offsetFrom = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
-            isDisabled: isParallelDisable,
+            isDisabled: isParallelDisabled,
             minW: 'full',
         },
         {
@@ -132,7 +133,7 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
                 attrs.offsetTo = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
-            isDisabled: isParallelDisable,
+            isDisabled: isParallelDisabled,
             minW: 'full',
         },
         {
@@ -145,12 +146,12 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
                 attrs.roundCornerFactor = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
-            isDisabled: isParallelDisable,
+            isDisabled: isParallelDisabled,
             minW: 'full',
         },
     ];
 
-    if (isParallelDisable) {
+    if (isParallelDisabled) {
         fields.unshift({
             type: 'custom',
             label: t('panel.details.lines.common.parallelDisabled'),

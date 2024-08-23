@@ -46,23 +46,21 @@ export const LineSpecificAttributes = () => {
     const { t } = useTranslation();
     const [id] = selected;
 
-    const type = window.graph.getEdgeAttribute(id, 'type');
+    const { type, style, parallelIndex, reconcileId } = window.graph.getEdgeAttributes(id);
     const attrs = (window.graph.getEdgeAttribute(id, type) ?? {}) as any;
     const PathAttrsComponent = type in linePaths && linePaths[type].attrsComponent;
-    const style = window.graph.getEdgeAttribute(id, 'style');
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
     const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
-    const parallelIndex = window.graph.getEdgeAttribute(id, 'parallelIndex');
-    const reconcileId = window.graph.getEdgeAttribute(id, 'reconcileId');
 
-    const handlePathAttrsUpdate = (id: string, attrs: any) => {
+    const recalculateParallelIndex = (id: string) => {
         let parallelIndex = -1;
         if (autoParallel) {
             const [source, target] = window.graph.extremities(id) as [StnId | MiscNodeId, StnId | MiscNodeId];
             parallelIndex = makeParallelIndex(window.graph, type, source, target, attrs.startFrom);
         }
         window.graph.setEdgeAttribute(id, 'parallelIndex', parallelIndex);
-
+    };
+    const handlePathAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
         dispatch(refreshEdgesThunk());
         dispatch(saveGraph(window.graph.export()));
@@ -80,6 +78,7 @@ export const LineSpecificAttributes = () => {
                 <PathAttrsComponent
                     id={id}
                     attrs={attrs}
+                    recalculateParallelIndex={recalculateParallelIndex}
                     handleAttrsUpdate={handlePathAttrsUpdate}
                     parallelIndex={parallelIndex}
                 />

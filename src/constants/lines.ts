@@ -162,7 +162,15 @@ interface LineBase<T extends LinePathAttributes> {
 }
 
 export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsProps<T> {
+    /**
+     * Index for the line position in a parallel group. Leave it -1 for deactivation of parallel.
+     */
     parallelIndex: number;
+    /**
+     * Changing the `startFrom` attr should result in new parallel recalculation.
+     * Passing it to each line path implementation to call it only in `startFrom`'s field onChange.
+     */
+    recalculateParallelIndex: (id: string) => void;
 }
 export interface LinePathAttributes {}
 /**
