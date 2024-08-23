@@ -124,17 +124,17 @@ export const makeReconciledPath = (
         const [source, target] = graph.extremities(line);
         const sourceAttr = graph.getNodeAttributes(source);
         const targetAttr = graph.getNodeAttributes(target);
-        const type = graph.getEdgeAttribute(line, 'type');
+        const { type, parallelIndex } = graph.getEdgeAttributes(line);
         const attr = graph.getEdgeAttribute(line, type) ?? linePaths[type].defaultAttrs;
 
         const simplePathAvailability = checkSimplePathAvailability(
-            line,
             type,
             sourceAttr.x,
             sourceAttr.y,
             targetAttr.x,
             targetAttr.y,
-            attr
+            attr,
+            parallelIndex
         );
         if (simplePathAvailability) {
             // simple path hook on matched situation

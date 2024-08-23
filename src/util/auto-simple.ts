@@ -11,13 +11,13 @@ import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
  *   3. Or offsetFrom and offsetTo
  */
 export const checkSimplePathAvailability = (
-    id: LineId,
     type: LinePathType,
     x1: number,
     y1: number,
     x2: number,
     y2: number,
-    attrs: NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>
+    attrs: NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>,
+    parallelIndex: number
 ): { x1: number; y1: number; x2: number; y2: number; offset: number } | undefined => {
     // Check if offsetFrom and offsetTo are defined and are numbers.
     if (!('offsetFrom' in attrs) || !('offsetTo' in attrs)) return;
@@ -27,7 +27,24 @@ export const checkSimplePathAvailability = (
     // It is just parallel to the line from (x1,y1) to (x2,y2).
     if (attrs['offsetFrom'] === attrs['offsetTo']) {
         if (checkKAndType(type, x1, y1, x2, y2)) {
-            return { x1, y1, x2, y2, offset: attrs['offsetFrom'] };
+            if (parallelIndex < 0) {
+                return { x1, y1, x2, y2, offset: attrs['offsetFrom'] };
+            }
+
+            // auto parallel instead of manual offset tweaks when parallelIndex >= 0 (enabled)
+            if (x1 === x2) {
+                return { x1: x1 + 5 * parallelIndex, y1, x2: x2 + 5 * parallelIndex, y2, offset: attrs['offsetFrom'] };
+            }
+            if (y1 === y2) {
+                return { x1, y1: y1 + 5 * parallelIndex, x2, y2: y2 + 5 * parallelIndex, offset: attrs['offsetFrom'] };
+            }
+            return {
+                x1: x1 + 5 * Math.SQRT1_2 * parallelIndex,
+                y1: y1 + 5 * Math.SQRT1_2 * parallelIndex,
+                x2: x2 + 5 * Math.SQRT1_2 * parallelIndex,
+                y2: y2 + 5 * Math.SQRT1_2 * parallelIndex,
+                offset: attrs['offsetFrom'],
+            };
         }
         return;
     }

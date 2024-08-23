@@ -50,16 +50,17 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             lineEntry.targetAttributes.y,
         ];
         const simplePathAvailability = checkSimplePathAvailability(
-            lineEntry.edge as LineId,
             lineEntry.attributes.type,
             x1,
             y1,
             x2,
             y2,
-            lineEntry.attributes[lineEntry.attributes.type] as NonNullableExternalLinePathAttribute
+            lineEntry.attributes[lineEntry.attributes.type] as NonNullableExternalLinePathAttribute,
+            lineEntry.attributes.parallelIndex
         );
         if (simplePathAvailability) {
             // if it could be a simple path, it must not be a parallel line
+            // but remember to handle the parallelIndex and make it looks like parallel
         } else if (lineEntry.attributes.parallelIndex >= 0) {
             parallelLines.push(lineEntry);
             continue;
