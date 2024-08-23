@@ -134,8 +134,8 @@
                     "showText": "テキストを表示"
                 },
                 "master": {
-                    "displayName": "マスターノード",
-                    "type": "マスターノードタイプ",
+                    "displayName": "大師節点",
+                    "type": "大師節点種類",
                     "undefined": "未定義"
                 },
                 "facilities": {
@@ -223,7 +223,7 @@
                     "open": "開業済み",
                     "secondaryNameZh": "中国語の補助駅名",
                     "secondaryNameEn": "英語の補助駅名",
-                    "foshan": "佛山"
+                    "foshan": "仏山"
                 },
                 "gzmtrInt2024": {
                     "displayName": "広州地下鉄乗り換え駅（令和6年）",
@@ -290,10 +290,8 @@
                 },
                 "tokyoMetroBasic": {
                     "displayName": "東京メトロの基本駅",
-                    "nameOffset": "名前のオフセット",
-                    "textVertical": "縦方向の名前",
-                    "lineCode": "回線コード",
-                    "stationCode": "駅コード"
+                    "nameOffset": "駅名補正値",
+                    "textVertical": "垂直の名前"
                 },
                 "tokyoMetroInt": {
                     "displayName": "東京メトロ乗換駅",
@@ -592,15 +590,15 @@
                     "check": "簡単な経路を解除"
                 },
                 "masterManager": {
-                    "title": "すべてのマスターノードを管理する",
+                    "title": "すべての大師節点を管理する",
                     "id": "ID",
-                    "label": "ラベル",
-                    "type": "タイプ",
+                    "label": "標識",
+                    "type": "種類",
                     "types": {
-                        "MiscNode": "その他ノード",
-                        "Station": "ステーション"
+                        "MiscNode": "その他節点",
+                        "Station": "駅"
                     },
-                    "importTitle": "マスターパラメータをアップロード",
+                    "importTitle": "大師引数をアップロード",
                     "importFrom": "からインポート",
                     "importLabel": "RMPデザイナーからJSONを貼り付ける"
                 }
