@@ -18,6 +18,8 @@ export enum TextLanguage {
     mrt = 'mrt',
     jreast_ja = 'jreast_ja',
     jreast_en = 'jreast_en',
+    tokyo_en = 'tokyo_en',
+    tube = 'tube',
 }
 
 export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
@@ -29,6 +31,8 @@ export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
     mrt: StationType.MRTBasic,
     jreast_ja: StationType.JREastBasic,
     jreast_en: StationType.JREastBasic,
+    tokyo_en: StationType.TokyoMetroBasic,
+    tube: StationType.LondonTubeBasic,
 };
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
@@ -83,15 +87,15 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
         >
-            {/* This hint rect is hard to remove in exporting. */}
-            {/* <rect
-                    fill="gray"
-                    fillOpacity="0.1"
-                    x={bBox.x - 1.5}
-                    y={bBox.y - 1.5}
-                    width={bBox.width + 3}
-                    height={bBox.height + 3}
-                /> */}
+            <rect
+                className="removeMe"
+                fill="gray"
+                fillOpacity="0.1"
+                x={bBox.x - 1.5}
+                y={bBox.y - 1.5}
+                width={bBox.width + 3}
+                height={bBox.height + 3}
+            />
             <MultilineText
                 ref={textLineEl}
                 text={content.split('\n')}
@@ -217,7 +221,9 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
                 mrt: t('panel.details.nodes.text.mrt'),
                 jreast_ja: t('panel.details.nodes.text.jreast_ja'),
                 jreast_en: t('panel.details.nodes.text.jreast_en'),
-            },
+                tokyo_en: t('panel.details.nodes.text.tokyo_en'),
+                tube: t('panel.details.nodes.text.tube'),
+            } as { [key in TextLanguage]: string },
             onChange: val => {
                 attrs.language = val.toString() as TextLanguage;
                 handleAttrsUpdate(id, attrs);

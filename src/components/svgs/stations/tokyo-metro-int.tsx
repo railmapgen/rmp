@@ -518,13 +518,13 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
                                     dispatch(openPaletteAppClip(s.color));
                                 }}
                             />
-                            <RmgLabel label={t('panel.details.stations.tokyoMetroBasic.lineCode')}>
+                            <RmgLabel label={t('panel.details.stations.common.lineCode')}>
                                 <RmgDebouncedInput
                                     defaultValue={s.lineCode}
                                     onDebouncedChange={val => handleLineCodeChange(val, i)}
                                 />
                             </RmgLabel>
-                            <RmgLabel label={t('panel.details.stations.tokyoMetroBasic.stationCode')}>
+                            <RmgLabel label={t('panel.details.stations.common.stationCode')}>
                                 <RmgDebouncedInput
                                     defaultValue={s.stationCode}
                                     onDebouncedChange={val => handleStationCodeChange(val, i)}

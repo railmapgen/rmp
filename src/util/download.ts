@@ -85,10 +85,13 @@ export const makeRenderReadySVGElement = async (
             if (el.classList.length === 0) el.removeAttribute('class');
         });
     });
-    // Remove masks that only help user find and click the elements, but should not be shown on final export.
+    // Remove masks that only help users find and click the elements, but should not be shown on final export.
     elem.querySelectorAll('[fill="url(#opaque)"]').forEach(el => {
         el.setAttribute('fill', 'white');
         el.setAttribute('fill-opacity', '0');
+    });
+    elem.querySelectorAll('.removeMe').forEach(el => {
+        el.remove();
     });
 
     const nodesExist = findNodesExist(graph);

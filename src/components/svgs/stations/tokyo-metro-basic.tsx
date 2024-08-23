@@ -237,7 +237,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         },
         {
             type: 'input',
-            label: t('panel.details.stations.tokyoMetroBasic.lineCode'),
+            label: t('panel.details.stations.common.lineCode'),
             value: attrs.lineCode,
             onChange: val => {
                 attrs.lineCode = val;
@@ -247,7 +247,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         },
         {
             type: 'input',
-            label: t('panel.details.stations.tokyoMetroBasic.stationCode'),
+            label: t('panel.details.stations.common.stationCode'),
             value: attrs.stationCode,
             onChange: val => {
                 attrs.stationCode = val;
