@@ -101,10 +101,12 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
         const param = {
             id: p.randomId,
             type: p.nodeType,
+            label: p.label,
             svgs: p.svgs,
             components: p.components,
             color: p.color,
             core: p.core,
+            transform: p.transform,
             version: p.version,
         };
         param.components.forEach((c, i) => {
