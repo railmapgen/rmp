@@ -382,8 +382,10 @@
                     "displayName": "Beijing Subway dotted style"
                 },
                 "dualColor": {
-                    "displayName": "Shanghai Maglev style",
-                    "swap": "Swap color"
+                    "displayName": "Dual color style",
+                    "swap": "Swap color",
+                    "colorA": "Color A",
+                    "colorB": "Color B"
                 },
                 "river": {
                     "displayName": "River style",

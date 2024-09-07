@@ -19,6 +19,7 @@ import {
     RmgFieldsFieldDetail,
     RmgFieldsFieldSpecificAttributes,
 } from '../../../panels/details/rmg-field-specific-attrs';
+import { ColorField } from '../../../panels/details/color-field';
 
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     const { id, type, path, styleAttrs, handlePointerDown } = props;
@@ -94,6 +95,28 @@ const dualColorFields = [
         type: 'custom',
         label: 'panel.details.lines.dualColor.swap',
         component: <DualColorSwitch />,
+    },
+    {
+        type: 'custom',
+        label: 'panel.details.lines.dualColor.colorA',
+        component: (
+            <ColorField
+                type={LineStyleType.DualColor}
+                colorKey="colorA"
+                defaultTheme={defaultDualColorAttributes.colorA}
+            />
+        ),
+    },
+    {
+        type: 'custom',
+        label: 'panel.details.lines.dualColor.colorB',
+        component: (
+            <ColorField
+                type={LineStyleType.DualColor}
+                colorKey="colorB"
+                defaultTheme={defaultDualColorAttributes.colorB}
+            />
+        ),
     },
 ];
 
