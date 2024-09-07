@@ -1,4 +1,6 @@
 {
+    "colorA": "Color A",
+    "colorB": "Color B",
     "color": "カラー",
     "warning": "警告",
     "cancel": "キャンセル",
@@ -380,8 +382,10 @@
                     "displayName": "北京地下鉄の点線風格"
                 },
                 "dualColor": {
-                    "displayName": "上海磁浮風格",
-                    "swap": "色を交換"
+                    "displayName": "2色風格",
+                    "swap": "色を交換",
+                    "colorA": "カラーA",
+                    "colorB": "カラーB"
                 },
                 "river": {
                     "displayName": "河川風格",

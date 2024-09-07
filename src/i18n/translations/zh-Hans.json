@@ -381,8 +381,10 @@
                     "displayName": "北京地铁虚线样式"
                 },
                 "dualColor": {
-                    "displayName": "上海磁悬浮样式",
-                    "swap": "切换颜色"
+                    "displayName": "双色样式",
+                    "swap": "切换颜色",
+                    "colorA": "颜色A",
+                    "colorB": "颜色B"
                 },
                 "river": {
                     "displayName": "河流样式",
