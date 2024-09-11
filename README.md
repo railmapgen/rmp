@@ -2,6 +2,8 @@
 
 Rail Map Painter is an open-source React project aimed at making the process of creating custom rail maps easy and fun. This tool provides an interactive SVG canvas where users can add stations, connect them using lines, and customize their maps with a wide array of icons from different cities.
 
+> Branches are renamed in v5 release. For more information see [here](./docs/developer-guide.md#rename-your-local-branches)
+
 ## Table of Contents
 
 - [Features](#features)
@@ -42,13 +44,13 @@ Note all images are generated via the interactive web application where you can 
 
 > Hong Kong
 
-More works can be found at [Rail Map Painter Gallery](https://railmapgen.github.io/?app=rmp-gallery) where contributors like you upload and update these great works!
+More works can be found at [Rail Map Painter Gallery](https://railmapgen.org/?app=rmp-gallery) where contributors like you upload and update these great works!
 
 ## Getting Started
 
 ### Online Website
 
-Simply visit the [Rail Map Painter](https://railmapgen.github.io/?app=rmp) to start designing your rail map.
+Simply visit the [Rail Map Painter](https://railmapgen.org/?app=rmp) to start designing your rail map.
 
 ### Offline Applications
 
