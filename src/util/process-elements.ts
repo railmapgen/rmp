@@ -160,14 +160,3 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
 
     return Object.values(resolvedLines).map(_ => ({ id: _.id, type: 'line', line: _ }));
 };
-
-export const getZIndexFromElement = (element: Element) => {
-    switch (element.type) {
-        case 'line':
-            return element.line!.attr.zIndex;
-        case 'station':
-            return element.station!.zIndex;
-        case 'misc-node':
-            return element.miscNode!.zIndex;
-    }
-};

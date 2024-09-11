@@ -92,6 +92,8 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     const masterTransform = attrs.transform ?? defaultMasterTransform;
 
+    const elements = React.useMemo(() => dfsCreateElement(attrs.svgs), [attrs.svgs]);
+
     return React.createElement(
         'g',
         { id: id, transform: `translate(${x}, ${y})`, ...gPointerEvents },
@@ -99,7 +101,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
             <g
                 transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}
             >
-                {dfsCreateElement(attrs.svgs)}
+                {elements}
             </g>
         ) : (
             <g>
