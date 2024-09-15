@@ -117,9 +117,7 @@ export const loadFontCss = async (type: NodeType) => {
 
     loadedCssNames.push(cssName);
     await Promise.all(
-        (Object.entries(cssFont).filter(([_, config]) => config !== undefined) as [string, FontFaceConfig][]).map(
-            ([font, config]) => rmgRuntime.loadFont(font, { configs: [config] })
-        )
+        Object.entries(cssFont).map(([font, config]) => rmgRuntime.loadFont(font, config && { configs: [config] }))
     );
     const link = document.createElement('link');
     link.rel = 'stylesheet';
