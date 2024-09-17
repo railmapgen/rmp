@@ -45,10 +45,6 @@ export const makeRenderReadySVGElement = async (
     const [width, height] = [xMax - xMin, yMax - yMin];
 
     const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
-    // remove virtual nodes
-    [...elem.children]
-        .filter(e => graph.hasNode(e.id) && graph.getNodeAttribute(e.id, 'type') === MiscNodeType.Virtual)
-        .forEach(e => elem.removeChild(e));
     // append rmp info if user does not want to share rmp info
     if (!generateRMPInfo) elem.appendChild(generateRmpInfo(xMax - 400, yMax - 120));
     // reset svg viewBox to display all the nodes in the graph
@@ -90,6 +86,7 @@ export const makeRenderReadySVGElement = async (
         el.setAttribute('fill', 'white');
         el.setAttribute('fill-opacity', '0');
     });
+    // remove virtual nodes and text hinting rect
     elem.querySelectorAll('.removeMe').forEach(el => {
         el.remove();
     });
