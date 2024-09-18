@@ -513,6 +513,13 @@
             "pro": "This is a PRO feature and an account with a subscription is required.",
             "proWithTrial": "This is a PRO feature with a limited free trial available.",
             "proLimitExceed": "Current action reaches the limit. Subscribe to unlock more!",
+            "subscription": {
+                "title": "Subscription Status",
+                "logged-out": "You are currently logged out.",
+                "free": "Logged In! Subscribe to unlock more features!",
+                "subscriber": "Thanks for your subscription! Enjoy all features!",
+                "expired": "Login status expired. Please log out and log in again."
+            },
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",

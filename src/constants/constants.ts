@@ -124,6 +124,7 @@ export enum LocalStorageKey {
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
+    ACCOUNT = 'rmg-home__account',
 }
 
 export enum CityCode {

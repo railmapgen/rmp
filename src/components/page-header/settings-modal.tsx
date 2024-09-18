@@ -41,6 +41,7 @@ import { ScaleNodesModal } from './procedures/scale-nodes-modal';
 import { TranslateNodesModal } from './procedures/translate-nodes-modal';
 import { UnlockSimplePathModal } from './procedures/unlock-simple-path-modal';
 import { UpdateColorModal } from './procedures/update-color-modal';
+import SubscriptionSection from './subscription-section';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',
@@ -86,6 +87,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalBody>
                     <VStack divider={<StackDivider borderColor="gray.200" />}>
+                        <SubscriptionSection />
                         <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">
                                 {t('header.settings.preference.title')}

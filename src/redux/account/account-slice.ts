@@ -15,10 +15,12 @@ export const defaultActiveSubscriptions: ActiveSubscriptions = {
  * Note login and management part should leave to rmg-home and only authenticate here.
  */
 export interface AccountState {
+    state: 'logged-out' | 'free' | 'subscriber' | 'expired';
     activeSubscriptions: ActiveSubscriptions;
 }
 
 export const initialState: AccountState = {
+    state: 'logged-out',
     activeSubscriptions: defaultActiveSubscriptions,
 };
 
@@ -26,11 +28,14 @@ const accountSlice = createSlice({
     name: 'account',
     initialState,
     reducers: {
+        setState: (state, action: PayloadAction<AccountState['state']>) => {
+            state.state = action.payload;
+        },
         setActiveSubscriptions: (state, action: PayloadAction<ActiveSubscriptions>) => {
             state.activeSubscriptions = action.payload;
         },
     },
 });
 
-export const { setActiveSubscriptions } = accountSlice.actions;
+export const { setState, setActiveSubscriptions } = accountSlice.actions;
 export default accountSlice.reducer;

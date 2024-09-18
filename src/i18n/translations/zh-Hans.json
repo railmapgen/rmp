@@ -512,6 +512,13 @@
             "pro": "这是一个专业功能，需要带有订阅的账户。",
             "proWithTrial": "这是一个PRO功能，并提供有限的免费试用。",
             "proLimitExceed": "当前操作已达到限制。订阅以解锁更多！",
+            "subscription": {
+                "title": "订阅状态",
+                "logged-out": "您当前已登出。",
+                "free": "已登录！订阅以解锁更多功能！",
+                "subscriber": "感谢您的订阅！享受所有功能吧！",
+                "expired": "登录状态已过期。请登出后重新登录。"
+            },
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",

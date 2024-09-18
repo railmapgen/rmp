@@ -1,10 +1,12 @@
 import { SerializedGraph } from 'graphology-types';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { subscription_endpoint } from '../constants/server';
 import { createStore } from '../redux';
 import {
     ActiveSubscriptions,
     defaultActiveSubscriptions,
     setActiveSubscriptions,
+    setState,
 } from '../redux/account/account-slice';
 import { createHash } from './helpers';
 
@@ -60,11 +62,12 @@ export const registerOnRMTTokenResponse = async (store: ReturnType<typeof create
         const { type, token, from } = ev.data;
         if (type === SaveManagerEventType.TOKEN_REQUEST && from === 'rmt') {
             if (!token) {
+                store.dispatch(setState('logged-out'));
                 store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
                 return;
             }
 
-            const rep = await fetch('https://railmapgen.org/v1/subscription', {
+            const rep = await fetch(subscription_endpoint, {
                 headers: {
                     accept: 'application/json',
                     'Content-Type': 'application/json',
@@ -72,16 +75,19 @@ export const registerOnRMTTokenResponse = async (store: ReturnType<typeof create
                 },
             });
             if (rep.status !== 200) {
+                store.dispatch(setState('expired'));
                 store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
                 return;
             }
 
+            store.dispatch(setState('free'));
             const subscriptions = (await rep.json()).subscriptions as APISubscription[];
 
             const activeSubscriptions = structuredClone(defaultActiveSubscriptions);
             for (const subscription of subscriptions) {
                 const type = subscription.type;
                 if (type in activeSubscriptions) {
+                    store.dispatch(setState('subscriber'));
                     activeSubscriptions[type as keyof ActiveSubscriptions] = true;
                 }
             }
