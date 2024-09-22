@@ -63,7 +63,7 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
     }
 
     if (changed) {
-        console.warn(`Upgrade save to version: ${version}`);
+        console.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
         // Backup original param in case of bugs in the upgrades.
         localStorage.setItem(LocalStorageKey.PARAM_BACKUP, originalParam);
     }
@@ -434,10 +434,10 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         graph.import(p?.graph);
         graph.forEachDirectedEdge(edge => {
             graph.setEdgeAttribute(edge, 'parallelIndex', -1);
-            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => (zIndex ?? 0) - 5);
+            graph.updateEdgeAttribute(edge, 'zIndex', zIndex => Math.max(-10, (zIndex ?? 0) - 5));
         });
         graph.forEachNode(node => {
-            graph.updateNodeAttribute(node, 'zIndex', zIndex => (zIndex ?? 0) + 5);
+            graph.updateNodeAttribute(node, 'zIndex', zIndex => Math.min(10, (zIndex ?? 0) + 5));
         });
         return JSON.stringify({ ...p, version: 34, graph: graph.export() });
     },
