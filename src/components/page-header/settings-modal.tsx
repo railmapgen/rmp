@@ -76,7 +76,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
 
     const maximumParallelLines = activeSubscriptions.RMP_CLOUD ? MAX_PARALLEL_LINES_PRO : MAX_PARALLEL_LINES_FREE;
-    const isParallelLineDisabled = parallelLinesCount > maximumParallelLines;
+    const isParallelLineDisabled = parallelLinesCount >= maximumParallelLines;
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>

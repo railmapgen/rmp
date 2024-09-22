@@ -512,7 +512,11 @@
             "title": "Settings",
             "pro": "This is a PRO feature and an account with a subscription is required.",
             "proWithTrial": "This is a PRO feature with a limited free trial available.",
-            "proLimitExceed": "Current action reaches the limit. Subscribe to unlock more!",
+            "proLimitExceed": {
+                "master": "Master nodes exceed the free tier.",
+                "parallel": "Parallel lines exceed the free tier.",
+                "solution": "Remove them to dismiss this warning, or subscribe to unlock more!"
+            },
             "subscription": {
                 "title": "Subscription Status",
                 "logged-out": "You are currently logged out.",

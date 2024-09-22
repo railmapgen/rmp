@@ -22,6 +22,7 @@ import { FONTS_CSS, loadFontCss } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
 import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
+import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -49,12 +50,14 @@ const SvgWrapper = () => {
         theme,
         refresh: { nodes: refreshNodes },
         masterNodesCount,
+        parallelLinesCount,
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
+    const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
 
     // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
@@ -271,6 +274,7 @@ const SvgWrapper = () => {
                 s,
                 graph.current,
                 isMasterDisabled,
+                isParallelDisabled,
                 roundToNearestN(svgMidX, 5),
                 roundToNearestN(svgMidY, 5)
             );

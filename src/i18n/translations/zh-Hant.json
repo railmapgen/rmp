@@ -511,7 +511,11 @@
             "title": "設置",
             "pro": "這是一個專業功能，需要带有訂閱的帳戶。",
             "proWithTrial": "這是一個PRO功能，並提供有限的免費試用。",
-            "proLimitExceed": "當前操作已達到限制。訂閱以解鎖更多功能！",
+            "proLimitExceed": {
+                "master": "大師節點超出了免費額度。",
+                "parallel": "平行線段超出了免費額度。",
+                "solution": "移除它們以解除此警告，或訂閱以解鎖更多功能！"
+            },
             "subscription": {
                 "title": "訂閱狀態",
                 "logged-out": "您目前已登出。",
@@ -541,7 +545,7 @@
                 "undo": "撤銷。",
                 "redo": "重做。"
             },
-            "procedures":{
+            "procedures": {
                 "title": "过程",
                 "translate": {
                     "title": "轉化節點坐標",

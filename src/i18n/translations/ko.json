@@ -511,7 +511,11 @@
             "title": "설정",
             "pro": "이것은 PRO 기능이며, 구독이 필요한 계정입니다.",
             "proWithTrial": "이것은 PRO 기능이며, 제한된 무료 체험이 가능합니다.",
-            "proLimitExceed": "현재 작업이 한도에 도달했습니다. 더 많은 기능을 사용하려면 구독하세요!",
+            "proLimitExceed": {
+                "master": "마스터 노드가 무료 사용 한도를 초과했습니다.",
+                "parallel": "평행선이 무료 사용 한도를 초과했습니다.",
+                "solution": "경고를 해제하려면 이 항목들을 제거하거나 구독을 통해 더 많은 기능을 잠금 해제하세요!"
+            },
             "subscription": {
                 "title": "구독 상태",
                 "logged-out": "현재 로그아웃 상태입니다.",
@@ -541,7 +545,7 @@
                 "undo": "취소하다.",
                 "redo": "다시 하다."
             },
-            "procedures":{
+            "procedures": {
                 "title": "절차",
                 "translate": {
                     "title": "노드 좌표 변환",

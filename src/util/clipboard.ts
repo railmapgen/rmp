@@ -58,6 +58,7 @@ export const exportSelectedNodesAndEdges = (
  * @param s The text from the clipboard.
  * @param graph The graph.
  * @param filterMaster Whether filter master nodes on paste (no subscription only).
+ * @param filterParallel Whether filter parallel lines on paste (no subscription only).
  * @param x The central x of the svg canvas. Nodes and edges added will repositioned around this point.
  * @param y The central y of the svg canvas. Nodes and edges added will repositioned around this point.
  * @returns The nodes and edges added to the graph.
@@ -66,6 +67,7 @@ export const importSelectedNodesAndEdges = (
     s: string,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     filterMaster: boolean,
+    filterParallel: boolean,
     x: number,
     y: number
 ) => {
@@ -101,6 +103,17 @@ export const importSelectedNodesAndEdges = (
               )
           )
         : edgesWithAttrs;
+
+    // Set parallelIndex to -1 (disable) if requested.
+    // Note users might exceed the current limit (5) if copy and paste 1...4 parallel lines.
+    // This will result in a at max 8 parallel lines situation. A finer solution might be required.
+    if (filterParallel) {
+        for (const edge in filteredEdges) {
+            if (filteredEdges[edge as LineId].attr.parallelIndex >= 0) {
+                filteredEdges[edge as LineId].attr.parallelIndex = -1;
+            }
+        }
+    }
 
     // add nodes and edges into the graph
     const [offsetX, offsetY] = [x - avgX, y - avgY];

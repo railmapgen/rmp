@@ -96,7 +96,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
     }
     const type = baseLineEntry.attributes.type;
     const attr = baseLineEntry.attributes[type] as NonSimpleLinePathAttributes;
-    const baseRoundCornerFactor = attr.roundCornerFactor >= 1 ? attr.roundCornerFactor : MIN_ROUND_CORNER_FACTOR;
+    const baseRoundCornerFactor = Math.max(MIN_ROUND_CORNER_FACTOR, attr.roundCornerFactor);
 
     const [x1, y1, x2, y2] = [
         baseLineEntry.sourceAttributes.x,

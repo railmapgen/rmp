@@ -97,7 +97,7 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
         dispatch(
             setGlobalAlert({
                 status: 'warning',
-                message: i18n.t('header.settings.proLimitExceed'),
+                message: `${i18n.t('header.settings.proLimitExceed.master')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
     }
@@ -115,12 +115,14 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
         ? MAX_PARALLEL_LINES_PRO
         : MAX_PARALLEL_LINES_FREE;
-    if (parallelLinesCount > maximumParallelLines) {
+    if (parallelLinesCount == maximumParallelLines) {
         dispatch(setAutoParallel(false));
+    }
+    if (parallelLinesCount > maximumParallelLines) {
         dispatch(
             setGlobalAlert({
                 status: 'warning',
-                message: i18n.t('header.settings.proLimitExceed'),
+                message: `${i18n.t('header.settings.proLimitExceed.parallel')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
     }

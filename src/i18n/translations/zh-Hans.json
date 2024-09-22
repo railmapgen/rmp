@@ -511,7 +511,11 @@
             "title": "设置",
             "pro": "这是一个专业功能，需要带有订阅的账户。",
             "proWithTrial": "这是一个PRO功能，并提供有限的免费试用。",
-            "proLimitExceed": "当前操作已达到限制。订阅以解锁更多！",
+            "proLimitExceed": {
+                "master": "大师节点超出了免费额度。",
+                "parallel": "平行线段超出了免费额度。",
+                "solution": "移除它们以消除此警告，或订阅以解锁更多功能！"
+            },
             "subscription": {
                 "title": "订阅状态",
                 "logged-out": "您当前已登出。",
@@ -541,7 +545,7 @@
                 "undo": "撤销。",
                 "redo": "重做。"
             },
-            "procedures":{
+            "procedures": {
                 "title": "过程",
                 "translate": {
                     "title": "转化节点坐标",
