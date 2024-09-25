@@ -15,7 +15,7 @@ import { MultilineText } from '../common/multiline-text';
 
 const NAME_JRE_IMPORTANT = {
     ja: {
-        size: 15,
+        size: 10,
         baseOffset: 1,
     },
     en: {
