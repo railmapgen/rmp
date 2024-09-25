@@ -56,7 +56,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         const { height: iconHeight, width: iconWidth, x: iconX1, y: iconY1 } = iconEl.current!.getBBox();
         const [iconX2, iconY2] = [iconX1 + iconWidth, iconY1 + iconHeight];
         setIconBBox({ x1: iconX1, x2: iconX2, y1: iconY1, y2: iconY2 });
-    }, [JSON.stringify(transferAll), anchorAt, setIconBBox, iconEl]);
+    }, [JSON.stringify(transferAll), preferVertical, anchorAt, setIconBBox, iconEl]);
     const textDX = preferVertical && transferAll.length === 2 ? 0 : 8;
 
     const stations = transferAll.map(s => ({
