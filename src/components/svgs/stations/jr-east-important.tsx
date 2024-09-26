@@ -13,9 +13,9 @@ import {
 } from '../../../constants/stations';
 import { MultilineText } from '../common/multiline-text';
 
-const NAME_JRE_BASIC = {
+const NAME_JRE_IMPORTANT = {
     ja: {
-        size: 15,
+        size: 10,
         baseOffset: 1,
     },
     en: {
@@ -58,10 +58,10 @@ const JREastImportantStation = (props: StationComponentProps) => {
     // writing-mode = vertical-rl -> the length of the text = bBox.height
     // Might due to the use of ref in two components, but anyway this Math.max should be a workaround.
     const textLength = Math.max(bBox.width, bBox.height);
-    const textSafeD = (textVertical ? 0.1 : 0.7) * NAME_JRE_BASIC.ja.size;
+    const textSafeD = (textVertical ? 0.1 : 0.7) * NAME_JRE_IMPORTANT.ja.size;
     const iconLength = Math.max(textLength + textSafeD, minLength);
-    const iconWidth = textVertical ? NAME_JRE_BASIC.ja.size + ICON_SAFE_D : iconLength;
-    const iconHeight = textVertical ? iconLength - 5 : NAME_JRE_BASIC.ja.size + ICON_SAFE_D;
+    const iconWidth = textVertical ? NAME_JRE_IMPORTANT.ja.size + ICON_SAFE_D : iconLength;
+    const iconHeight = textVertical ? iconLength - 5 : NAME_JRE_IMPORTANT.ja.size + ICON_SAFE_D;
 
     const textENDX = { left: -iconWidth / 2 - 1, middle: 0, right: iconWidth / 2 + 1 }[nameOffsetX];
     const textENDY = { top: -iconHeight / 2 - 1, middle: 0, bottom: iconHeight / 2 + 1 }[nameOffsetY];
@@ -88,7 +88,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                         y="-1"
                         className="rmp-name__jreast_ja"
                         textAnchor="middle"
-                        fontSize={NAME_JRE_BASIC.ja.size}
+                        fontSize={NAME_JRE_IMPORTANT.ja.size}
                         fill="white"
                         dominantBaseline="central"
                     >
@@ -100,7 +100,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                         className="rmp-name__jreast_ja"
                         textAnchor="middle"
                         writingMode="vertical-rl"
-                        fontSize={NAME_JRE_BASIC.ja.size}
+                        fontSize={NAME_JRE_IMPORTANT.ja.size}
                         fill="white"
                         dominantBaseline="central"
                     >
@@ -128,8 +128,8 @@ const JREastImportantStation = (props: StationComponentProps) => {
             <g transform={`translate(${textENDX * scale}, ${textENDY * scale})`} textAnchor={textENAnchor}>
                 <MultilineText
                     text={names[1].split('\\')}
-                    fontSize={NAME_JRE_BASIC.en.size}
-                    lineHeight={NAME_JRE_BASIC.en.size}
+                    fontSize={NAME_JRE_IMPORTANT.en.size}
+                    lineHeight={NAME_JRE_IMPORTANT.en.size}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
                     baseOffset={0}
                     className="rmp-name__jreast_en"

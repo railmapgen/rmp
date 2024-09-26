@@ -144,12 +144,13 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const textVerticalBaseDY = textVerticalBase * NAME_JRE_BASIC.ja.size;
     const textVerticalENBaseOffset =
         (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 + NAME_JRE_BASIC.en.baseOffset;
-    const textVerticalENY = (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
-    const textVerticalENX =
+    const textVerticalENX = (important ? 1 : 0) * NAME_DY[nameOffsetY].polarity * -1;
+    const textVerticalENY =
         ((names[0].split('\\').length - 0) / 2) *
-        (nameOffsetY === 'top' ? -1 : 1) *
-        textVerticalBase *
-        NAME_JRE_BASIC.ja.size;
+            (nameOffsetY === 'top' ? -1 : 1) *
+            textVerticalBase *
+            NAME_JRE_BASIC.ja.size +
+        (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -165,20 +166,6 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         fill="white"
                     />
                 ))}
-                <rect
-                    id={`stn_core_${id}`}
-                    fill="url(#opaque)"
-                    fillOpacity="50%"
-                    x={iconDX1}
-                    y={-LINE_WIDTH / 2}
-                    rx={LINE_WIDTH / 2}
-                    width={iconWidth}
-                    height={LINE_WIDTH}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
             </g>
             {!textVertical ? (
                 <g transform={`translate(${textDX}, ${textDY})`} textAnchor={textAnchor}>
@@ -238,13 +225,13 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             grow="bidirectional"
                             baseOffset={0}
                             baseDY={textVerticalBaseDY}
-                            y="-2.75"
+                            y={important ? 2.75 * NAME_DY[nameOffsetY].polarity : 0}
                             className="rmp-name__jreast_ja"
                             fill={important ? 'white' : 'black'}
                         />
                     </g>
                     <g
-                        transform={`translate(0, ${textVerticalY + textVerticalENY})rotate(270)`}
+                        transform={`translate(${textVerticalENX}, ${textVerticalY + textVerticalENY})rotate(270)`}
                         textAnchor={textVerticalAnchor.en}
                     >
                         <MultilineText
@@ -256,12 +243,28 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             funcDX={i =>
                                 i * LINE_WIDTH * Math.SQRT1_2 * textVerticalBase * (nameOffsetY === 'top' ? -1 : 1)
                             }
-                            x={textVerticalENX}
+                            // x={textVerticalENX}
                             className="rmp-name__jreast_en"
                         />
                     </g>
                 </>
             )}
+            <g transform={`rotate(${rotate})`}>
+                <rect
+                    id={`stn_core_${id}`}
+                    fill="url(#opaque)"
+                    fillOpacity="50%"
+                    x={iconDX1}
+                    y={-LINE_WIDTH / 2}
+                    rx={LINE_WIDTH / 2}
+                    width={iconWidth}
+                    height={LINE_WIDTH}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                />
+            </g>
         </g>
     );
 };
@@ -280,8 +283,8 @@ export interface JREastBasicStationAttributes extends StationAttributes {
 }
 
 const defaultJREastBasicStationAttributes: JREastBasicStationAttributes = {
-    names: ['渋谷', 'Shibuya'],
-    nameOffsetX: 'left',
+    names: ['新宿', 'Shinjuku'],
+    nameOffsetX: 'right',
     nameOffsetY: 'middle',
     rotate: 0,
     textOneLine: false,
