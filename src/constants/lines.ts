@@ -168,9 +168,20 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
     parallelIndex: number;
     /**
      * Changing the `startFrom` attr should result in new parallel recalculation.
-     * Passing it to each line path implementation to call it only in `startFrom`'s field onChange.
+     * Passing it to each line path implementation and only call it in `startFrom`'s field onChange.
+     *
+     * Note: Call this fuction before updating the `startFrom` attr as parallelIndex
+     * is calculated based on it and changing it before calcuation will result in
+     * considering this line (e.g. from -> to) as an existing line (e.g. to).
+     * ```ts
+     * onChange: val => {
+     *   recalculateParallelIndex(id, val as 'from' | 'to');
+     *   attrs.startFrom = val as 'from' | 'to';
+     *   handleAttrsUpdate(id, attrs);
+     * },
+     * ```
      */
-    recalculateParallelIndex: (id: string) => void;
+    recalculateParallelIndex: (id: string, startFrom: 'from' | 'to') => void;
 }
 export interface LinePathAttributes {}
 /**
