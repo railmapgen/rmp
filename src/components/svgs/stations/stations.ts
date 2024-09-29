@@ -3,6 +3,7 @@ import shmetroBasicStation from './shmetro-basic';
 import shmetroBasic2020Station from './shmetro-basic-2020';
 import shmetroIntStation from './shmetro-int';
 import shmetroOsysiStation from './shmetro-osysi';
+import shanghaiSuburbanRailwayStation from './shanghai-suburban-railway';
 import gzmtrBasicStation from './gzmtr-basic';
 import gzmtrIntStation from './gzmtr-int';
 import gzmtrInt2024Station from './gzmtr-int-2024';
@@ -29,6 +30,7 @@ const stations = {
     [StationType.ShmetroBasic2020]: shmetroBasic2020Station,
     [StationType.ShmetroInt]: shmetroIntStation,
     [StationType.ShmetroOutOfSystemInt]: shmetroOsysiStation,
+    [StationType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailwayStation,
     [StationType.GzmtrBasic]: gzmtrBasicStation,
     [StationType.GzmtrInt]: gzmtrIntStation,
     [StationType.GzmtrInt2024]: gzmtrInt2024Station,

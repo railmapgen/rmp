@@ -3,6 +3,7 @@ import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmet
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
 import { ShmetroOsysiStationAttributes } from '../components/svgs/stations/shmetro-osysi';
+import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { GzmtrInt2024StationAttributes } from '../components/svgs/stations/gzmtr-int-2024';
@@ -29,6 +30,7 @@ export enum StationType {
     ShmetroBasic2020 = 'shmetro-basic-2020',
     ShmetroInt = 'shmetro-int',
     ShmetroOutOfSystemInt = 'shmetro-osysi',
+    ShanghaiSuburbanRailway = 'sh-sub-rwy',
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
     GzmtrInt2024 = 'gzmtr-int-2024',
@@ -56,6 +58,7 @@ export interface ExternalStationAttributes {
     [StationType.ShmetroBasic2020]?: ShmetroBasic2020StationAttributes;
     [StationType.ShmetroInt]?: ShmetroIntStationAttributes;
     [StationType.ShmetroOutOfSystemInt]?: ShmetroOsysiStationAttributes;
+    [StationType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayStationAttributes;
     [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
     [StationType.GzmtrInt2024]?: GzmtrInt2024StationAttributes;
