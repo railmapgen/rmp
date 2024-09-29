@@ -5,6 +5,7 @@ import perpendicularPath from './paths/perpendicular';
 import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import singleColor from './styles/single-color';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
+import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
 import chinaRailway from './styles/china-railway';
 import bjsubwaySingleColor from './styles/bjsubway-single-color';
@@ -24,7 +25,6 @@ import lrtSingleColor from './styles/lrt-single-color';
 import londonTubeInternalInt from './styles/london-tube-internal-int';
 import londonTube10MinWalk from './styles/london-tube-10-min-walk';
 import londonTubeTerminal from './styles/london-tube-terminal';
-import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -36,6 +36,7 @@ export const linePaths = {
 export const lineStyles = {
     [LineStyleType.SingleColor]: singleColor,
     [LineStyleType.ShmetroVirtualInt]: shmetroVirtualInt,
+    [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwaySingleColor]: bjsubwaySingleColor,
@@ -55,5 +56,4 @@ export const lineStyles = {
     [LineStyleType.LondonTubeTerminal]: londonTubeTerminal,
     [LineStyleType.LondonTubeInternalInt]: londonTubeInternalInt,
     [LineStyleType.LondonTube10MinWalk]: londonTube10MinWalk,
-    [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
 };
