@@ -211,6 +211,9 @@
                 "shmetroOsysi": {
                     "displayName": "상하이 지하철 시스템 외환승 역"
                 },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "상하이 기차역"
+                },
                 "gzmtrBasic": {
                     "displayName": "광저우 지하철 기본역",
                     "open": "개통여부",
@@ -364,6 +367,10 @@
                 },
                 "shmetroVirtualInt": {
                     "displayName": "상해 지하철 역 환승 모습"
+                },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "상하이 도시철도 스타일",
+                    "isEnd": "끝 범위"
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "광저우 지하철 역 환승 모습"

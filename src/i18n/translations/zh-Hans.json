@@ -211,6 +211,9 @@
                 "shmetroOsysi": {
                     "displayName": "上海地铁转乘车站"
                 },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "上海市域铁路车站"
+                },
                 "gzmtrBasic": {
                     "displayName": "广州地铁基本车站",
                     "open": "是否开通",
@@ -364,6 +367,10 @@
                 },
                 "shmetroVirtualInt": {
                     "displayName": "上海地铁出站换乘样式"
+                },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "上海市域铁路样式",
+                    "isEnd": "结束区间"
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "广州地铁出站换乘样式"
