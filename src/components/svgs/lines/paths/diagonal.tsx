@@ -104,8 +104,8 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
             value: attrs.startFrom,
             options: { from: t('panel.details.lines.common.from'), to: t('panel.details.lines.common.to') },
             onChange: val => {
+                recalculateParallelIndex(id, val as 'from' | 'to');
                 attrs.startFrom = val as 'from' | 'to';
-                recalculateParallelIndex(id);
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

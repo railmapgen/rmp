@@ -52,11 +52,11 @@ export const LineSpecificAttributes = () => {
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
     const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
 
-    const recalculateParallelIndex = (id: string) => {
+    const recalculateParallelIndex = (id: string, startFrom: 'from' | 'to') => {
         let parallelIndex = -1;
         if (autoParallel) {
             const [source, target] = window.graph.extremities(id) as [StnId | MiscNodeId, StnId | MiscNodeId];
-            parallelIndex = makeParallelIndex(window.graph, type, source, target, attrs.startFrom);
+            parallelIndex = makeParallelIndex(window.graph, type, source, target, startFrom);
         }
         window.graph.setEdgeAttribute(id, 'parallelIndex', parallelIndex);
     };
