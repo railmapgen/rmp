@@ -92,7 +92,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     const masterTransform = attrs.transform ?? defaultMasterTransform;
 
-    const elements = React.useMemo(() => dfsCreateElement(attrs.svgs), [attrs.svgs]);
+    const elements = React.useMemo(() => dfsCreateElement(attrs.svgs), [attrs]);
 
     return React.createElement(
         'g',
@@ -141,7 +141,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
 
     const getComponentValue = (query: string) => {
         const p = attrs.components.find(c => c.id === query);
-        return p ? p.type ?? p.defaultValue : undefined;
+        return p ? p.value ?? p.defaultValue : undefined;
     };
 
     const handleImportParam = (s: string) => {
@@ -190,7 +190,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
             return {
                 label: t(label),
                 type: 'switch',
-                isChecked: (value ?? defaultValue) === 'true',
+                isChecked: value !== undefined ? !!value : defaultValue,
                 onChange: v => {
                     attrs.components[i].value = v;
                     handleAttrsUpdate(id, { ...attrs, components: attrs.components });
