@@ -123,9 +123,9 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect
                         id={`stn_core_${id}`}
-                        x="-2.33"
+                        x="-2"
                         y="-7.83"
-                        width="4.67"
+                        width="4"
                         height="7.83"
                         stroke="none"
                         fill={color[2]}
@@ -139,7 +139,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                     transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
                     textAnchor={ROTATE_CONST[rotate].textAnchor}
                     className="rmp-name-outline"
-                    strokeWidth="2.5"
+                    strokeWidth="1"
                 >
                     <MultilineText
                         text={names[0].split('\\')}

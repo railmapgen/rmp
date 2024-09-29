@@ -80,7 +80,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                         width={width}
                         ry={height / 2}
                         stroke="#393332"
-                        strokeWidth="1.33"
+                        strokeWidth="1"
                         fill="white"
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}
@@ -92,7 +92,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                     transform={`translate(${x + textX}, ${y + textY})`}
                     textAnchor={textAnchor}
                     className="rmp-name-outline"
-                    strokeWidth="2.5"
+                    strokeWidth="1"
                 >
                     <MultilineText
                         text={names[0].split('\\')}
