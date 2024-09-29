@@ -14,7 +14,7 @@ import {
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
-const ROTATE_CONST: {
+export const ROTATE_CONST: {
     [rotate: number]: {
         textDx: number;
         textDy: number;

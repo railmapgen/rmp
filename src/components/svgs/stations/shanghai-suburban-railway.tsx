@@ -1,5 +1,4 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -11,84 +10,8 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
-
-const ROTATE_CONST: {
-    [rotate: number]: {
-        textDx: number;
-        textDy: number;
-        textAnchor: 'start' | 'middle' | 'end';
-        namesPos: 0 | 1;
-        lineHeight: 0 | 6.67 | 12.67;
-        polarity: -1 | 0 | 1;
-    };
-} = {
-    0: {
-        textDx: 0,
-        textDy: -17.5,
-        textAnchor: 'middle',
-        namesPos: 1,
-        lineHeight: 6.67,
-        polarity: -1,
-    },
-    45: {
-        textDx: 1,
-        textDy: -16.25,
-        textAnchor: 'start',
-        namesPos: 1,
-        lineHeight: 6.67,
-        polarity: -1,
-    },
-    90: {
-        textDx: 12,
-        textDy: 0,
-        textAnchor: 'start',
-        namesPos: 0,
-        lineHeight: 0,
-        polarity: 0,
-    },
-    135: {
-        textDx: 5,
-        textDy: 21,
-        textAnchor: 'start',
-        namesPos: 0,
-        lineHeight: 12.67,
-        polarity: 1,
-    },
-    180: {
-        textDx: 0,
-        textDy: 22.5,
-        textAnchor: 'middle',
-        namesPos: 0,
-        lineHeight: 12.67,
-        polarity: 1,
-    },
-    225: {
-        textDx: -5,
-        textDy: 21,
-        textAnchor: 'end',
-        namesPos: 0,
-        lineHeight: 12.67,
-        polarity: 1,
-    },
-    270: {
-        textDx: -12,
-        textDy: 0,
-        textAnchor: 'end',
-        namesPos: 0,
-        lineHeight: 0,
-        polarity: 0,
-    },
-    315: {
-        textDx: -1,
-        textDy: -16.25,
-        textAnchor: 'end',
-        namesPos: 1,
-        lineHeight: 6.67,
-        polarity: -1,
-    },
-};
+import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
