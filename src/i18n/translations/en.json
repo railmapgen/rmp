@@ -211,6 +211,9 @@
                 "shmetroOsysi": {
                     "displayName": "Shanghai Metro out-of-system interchange station"
                 },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "Shanghai Suburban Railway station"
+                },
                 "gzmtrBasic": {
                     "displayName": "Guangzhou Metro basic station",
                     "open": "Is opened",
@@ -365,6 +368,10 @@
                 },
                 "shmetroVirtualInt": {
                     "displayName": "Shanghai Metro out-of-station interchange style"
+                },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "Shanghai Suburban Railway style",
+                    "isEnd": "Is the ending line"
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "Guangzhou Metro out-of-station interchange style"

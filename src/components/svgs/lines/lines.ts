@@ -5,6 +5,7 @@ import perpendicularPath from './paths/perpendicular';
 import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import singleColor from './styles/single-color';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
+import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
 import chinaRailway from './styles/china-railway';
 import bjsubwaySingleColor from './styles/bjsubway-single-color';
@@ -35,6 +36,7 @@ export const linePaths = {
 export const lineStyles = {
     [LineStyleType.SingleColor]: singleColor,
     [LineStyleType.ShmetroVirtualInt]: shmetroVirtualInt,
+    [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwaySingleColor]: bjsubwaySingleColor,

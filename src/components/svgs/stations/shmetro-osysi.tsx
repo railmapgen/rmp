@@ -62,7 +62,7 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
                     transform={`translate(${textX}, ${textY})`}
                     textAnchor={textAnchor}
                     className="rmp-name-outline"
-                    strokeWidth="2.5"
+                    strokeWidth="1"
                 >
                     <MultilineText
                         text={names[0].split('\\')}

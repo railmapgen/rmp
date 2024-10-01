@@ -6,6 +6,7 @@ import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perp
 import { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
+import { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
 import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
 import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
 import { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
@@ -42,6 +43,7 @@ export interface ExternalLinePathAttributes {
 
 export enum LineStyleType {
     SingleColor = 'single-color',
+    ShanghaiSuburbanRailway = 'sh-sub-rwy',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
     ChinaRailway = 'china-railway',
@@ -67,6 +69,7 @@ export enum LineStyleType {
 export interface ExternalLineStyleAttributes {
     [LineStyleType.SingleColor]?: SingleColorAttributes;
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
+    [LineStyleType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     [LineStyleType.BjsubwaySingleColor]?: BjsubwaySingleColorAttributes;

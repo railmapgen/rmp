@@ -213,6 +213,9 @@
                 "shmetroOsysi": {
                     "displayName": "上海地下鉄の系統外乗り換え駅"
                 },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "上海市営鉄道駅"
+                },
                 "gzmtrBasic": {
                     "displayName": "広州地下鉄基本駅",
                     "open": "開業済み",
@@ -366,6 +369,10 @@
                 "shmetroVirtualInt": {
                     "displayName": "上海地下鉄駅外乗り換え風格"
                 },
+                "shanghaiSuburbanRailway": {
+                    "displayName": "上海市営鉄道風格",
+                    "isEnd": "終了行"
+                },
                 "gzmtrVirtualInt": {
                     "displayName": "広州地下鉄駅外乗り換え風格"
                 },
@@ -384,8 +391,8 @@
                 "dualColor": {
                     "displayName": "2色風格",
                     "swap": "色を交換",
-                    "colorA": "カラーA",
-                    "colorB": "カラーB"
+                    "colorA": "色A",
+                    "colorB": "色B"
                 },
                 "river": {
                     "displayName": "河川風格",

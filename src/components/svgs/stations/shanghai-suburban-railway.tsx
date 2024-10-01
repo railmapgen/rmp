@@ -1,5 +1,4 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -11,92 +10,13 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
+import { ROTATE_CONST } from './shmetro-basic-2020';
 
-export const ROTATE_CONST: {
-    [rotate: number]: {
-        textDx: number;
-        textDy: number;
-        textAnchor: 'start' | 'middle' | 'end';
-        namesPos: 0 | 1;
-        lineHeight: 0 | 6.67 | 12.67;
-        polarity: -1 | 0 | 1;
-    };
-} = {
-    0: {
-        textDx: 0,
-        textDy: -17.5,
-        textAnchor: 'middle',
-        namesPos: 1,
-        lineHeight: 6.67,
-        polarity: -1,
-    },
-    45: {
-        textDx: 1,
-        textDy: -16.25,
-        textAnchor: 'start',
-        namesPos: 1,
-        lineHeight: 6.67,
-        polarity: -1,
-    },
-    90: {
-        textDx: 12,
-        textDy: 0,
-        textAnchor: 'start',
-        namesPos: 0,
-        lineHeight: 0,
-        polarity: 0,
-    },
-    135: {
-        textDx: 5,
-        textDy: 21,
-        textAnchor: 'start',
-        namesPos: 0,
-        lineHeight: 12.67,
-        polarity: 1,
-    },
-    180: {
-        textDx: 0,
-        textDy: 22.5,
-        textAnchor: 'middle',
-        namesPos: 0,
-        lineHeight: 12.67,
-        polarity: 1,
-    },
-    225: {
-        textDx: -5,
-        textDy: 21,
-        textAnchor: 'end',
-        namesPos: 0,
-        lineHeight: 12.67,
-        polarity: 1,
-    },
-    270: {
-        textDx: -12,
-        textDy: 0,
-        textAnchor: 'end',
-        namesPos: 0,
-        lineHeight: 0,
-        polarity: 0,
-    },
-    315: {
-        textDx: -1,
-        textDy: -16.25,
-        textAnchor: 'end',
-        namesPos: 1,
-        lineHeight: 6.67,
-        polarity: -1,
-    },
-};
-
-const ShmetroBasic2020Station = (props: StationComponentProps) => {
+const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const {
-        names = defaultStationAttributes.names,
-        color = defaultShmetroBasic2020StationAttributes.color,
-        rotate = defaultShmetroBasic2020StationAttributes.rotate,
-    } = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
+    const { names = defaultStationAttributes.names, rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate } =
+        attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
@@ -121,14 +41,26 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
         () => (
             <g id={id}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
+                    <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#666464" />
+                    {/* A mask for the end of shanghai subsurban railway style. */}
+                    <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
+                    <rect
+                        x={-2 + 1.1675}
+                        y={-7.83 + 1.5}
+                        width={(4 * 2) / 5}
+                        height={7.83 - 1.5}
+                        stroke="none"
+                        fill="white"
+                    />
                     <rect
                         id={`stn_core_${id}`}
                         x="-2"
                         y="-7.83"
                         width="4"
-                        height="7.83"
+                        height={7.83 + 1.25}
                         stroke="none"
-                        fill={color[2]}
+                        fill="white"
+                        fillOpacity="0"
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}
                         onPointerUp={onPointerUp}
@@ -139,7 +71,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                     transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
                     textAnchor={ROTATE_CONST[rotate].textAnchor}
                     className="rmp-name-outline"
-                    strokeWidth="1"
+                    strokeWidth="2.5"
                 >
                     <MultilineText
                         text={names[0].split('\\')}
@@ -161,24 +93,23 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 </g>
             </g>
         ),
-        [id, x, y, ...names, rotate, color, onPointerDown, onPointerMove, onPointerUp]
+        [id, x, y, ...names, rotate, onPointerDown, onPointerMove, onPointerUp]
     );
 };
 
 /**
- * ShmetroBasic2020Station specific props.
+ * ShanghaiSuburbanRailwayStation specific props.
  */
-export interface ShmetroBasic2020StationAttributes extends StationAttributes, AttributesWithColor {
+export interface ShanghaiSuburbanRailwayStationAttributes extends StationAttributes {
     rotate: Rotate;
 }
 
-const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttributes = {
+const defaultShanghaiSuburbanRailwayStationAttributes: ShanghaiSuburbanRailwayStationAttributes = {
     ...defaultStationAttributes,
     rotate: 0,
-    color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
-const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020StationAttributes>) => {
+const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburbanRailwayStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -214,34 +145,24 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
             },
             minW: 'full',
         },
-        {
-            type: 'custom',
-            label: t('color'),
-            component: (
-                <ColorField
-                    type={StationType.ShmetroBasic2020}
-                    defaultTheme={defaultShmetroBasic2020StationAttributes.color}
-                />
-            ),
-        },
     ];
 
     return <RmgFields fields={fields} />;
 };
 
-const shmetroBasic2020StationIcon = (
+const shanghaiSuburbanRailwayStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect x="6" y="9" width="12" height="6" stroke="currentColor" fill="currentColor" />
     </svg>
 );
 
-const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
-    component: ShmetroBasic2020Station,
-    icon: shmetroBasic2020StationIcon,
-    defaultAttrs: defaultShmetroBasic2020StationAttributes,
-    attrsComponent: shmetroBasic2020AttrsComponent,
+const shanghaiSuburbanRailwayStation: Station<ShanghaiSuburbanRailwayStationAttributes> = {
+    component: ShanghaiSuburbanRailwayStation,
+    icon: shanghaiSuburbanRailwayStationIcon,
+    defaultAttrs: defaultShanghaiSuburbanRailwayStationAttributes,
+    attrsComponent: shanghaiSuburbanRailwayAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.shmetroBasic2020.displayName',
+        displayName: 'panel.details.stations.shanghaiSuburbanRailway.displayName',
         cities: [CityCode.Shanghai],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -249,4 +170,4 @@ const shmetroBasic2020Station: Station<ShmetroBasic2020StationAttributes> = {
     },
 };
 
-export default shmetroBasic2020Station;
+export default shanghaiSuburbanRailwayStation;
