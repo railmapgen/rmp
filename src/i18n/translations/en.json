@@ -602,7 +602,8 @@
                     "content1": "The Rail Map Painter application endeavors to offer an interactive platform conducive to the creation of rail maps while adhering to established conventions. Among these conventions, one particularly renowned style finds its origins in the innovative work of Harry Beck. His pioneering contribution, officially endorsed in the year 1932, garnered instantaneous acclaim from the general populace. Presently, it stands as an exemplar of paramount significance within the realm of information design. This paradigmatic approach has found widespread implementation in transit cartography on a global scale, albeit with varying degrees of success.",
                     "content2": "The application inherently conceals the option to utilize a simple path, as its deployment has the potential to contravene established conventions. This particular feature remains discreetly tucked away by default. Additionally, submissions to the Rail Map Painter Gallery are subject to stringent scrutiny, with a categorical rejection of compositions that employ the simple path with a single color style approach.",
                     "content3": "Still, we reserve the opportunity to unlock this option and use the simple path when you subscribe. It should be noted that even after acquisition, the use of simple path is limited to single color.",
-                    "check": "Unlock simple path"
+                    "check": "Unlock",
+                    "unlocked": "Already Unlocked"
                 },
                 "masterManager": {
                     "title": "Manage all master nodes",
