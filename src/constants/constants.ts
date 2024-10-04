@@ -120,6 +120,7 @@ export enum Events {
 }
 
 export enum LocalStorageKey {
+    LOGIN_STATE = 'rmp__login_state',
     APP = 'rmp__app',
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',

@@ -61,6 +61,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         if (simplePathAvailability) {
             // if it could be a simple path, it must not be a parallel line
             // but remember to handle the parallelIndex and make it looks like parallel
+            // TODO: the simple data here does not follow the bath of parallel lines
         } else if (lineEntry.attributes.parallelIndex >= 0) {
             parallelLines.push(lineEntry);
             continue;

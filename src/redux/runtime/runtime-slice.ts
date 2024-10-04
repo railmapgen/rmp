@@ -85,6 +85,9 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     const state = getState() as RootState;
     dispatch(setRefreshNodes());
 
+    // no check on the first load
+    if (state.account.timeout) return;
+
     let masterNodesCount = 0;
     window.graph.forEachNode((_, attr) => {
         if (attr.type === MiscNodeType.Master) {
@@ -109,6 +112,9 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
 export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     dispatch(setRefreshEdges());
+
+    // no check on the first load
+    if (state.account.timeout) return;
 
     const parallelLinesCount = countParallelLines(window.graph);
     dispatch(setParallelLinesCount(parallelLinesCount));

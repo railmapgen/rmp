@@ -10,6 +10,12 @@ import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
 import {
+    defaultActiveSubscriptions,
+    setActiveSubscriptions,
+    setLoginStateTimeout,
+    setState,
+} from './redux/account/account-slice';
+import {
     setAutoParallel,
     setTelemetryApp,
     setTelemetryProject,
@@ -42,6 +48,7 @@ const renderApp = () => {
 
 // Load localstorage first or they will be overwritten after first store.dispatch.
 // A change in redux store will trigger the store.subscribe and will write states.
+const loginState = JSON.parse(localStorage.getItem(LocalStorageKey.LOGIN_STATE) ?? '{}');
 const app = JSON.parse(localStorage.getItem(LocalStorageKey.APP) ?? '{}');
 const param = localStorage.getItem(LocalStorageKey.PARAM);
 
@@ -57,6 +64,12 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
         if ('toolsPanel' in app.preference && 'expand' in app.preference.toolsPanel)
             store.dispatch(setToolsPanelExpansion(app.preference.toolsPanel.expand));
         if ('autoParallel' in app.preference) store.dispatch(setAutoParallel(app.preference.autoParallel));
+    }
+    if ('state' in loginState) {
+        store.dispatch(setState(loginState.state));
+    }
+    if ('activeSubscriptions' in loginState) {
+        store.dispatch(setActiveSubscriptions(loginState.activeSubscriptions));
     }
 })();
 
@@ -76,4 +89,12 @@ upgrade(param).then(param => {
     registerOnRMTTokenResponse(store);
     requestToken();
     window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
+
+    const accountStateTimeout = window.setTimeout(() => {
+        // console.log('Account state timeout');
+        store.dispatch(setState('logged-out'));
+        store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
+        store.dispatch(setLoginStateTimeout(undefined));
+    }, 6000);
+    store.dispatch(setLoginStateTimeout(accountStateTimeout));
 });

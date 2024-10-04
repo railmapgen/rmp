@@ -6,6 +6,7 @@ import {
     ActiveSubscriptions,
     defaultActiveSubscriptions,
     setActiveSubscriptions,
+    setLoginStateTimeout,
     setState,
 } from '../redux/account/account-slice';
 import { createHash } from './helpers';
@@ -61,6 +62,12 @@ export const registerOnRMTTokenResponse = async (store: ReturnType<typeof create
     const eventHandler = async (ev: MessageEvent<SaveManagerEvent>) => {
         const { type, token, from } = ev.data;
         if (type === SaveManagerEventType.TOKEN_REQUEST && from === 'rmt') {
+            if (store.getState().account.timeout) {
+                // console.log('Clearing login state timeout');
+                window.clearTimeout(store.getState().account.timeout);
+                store.dispatch(setLoginStateTimeout(undefined));
+            }
+
             if (!token) {
                 store.dispatch(setState('logged-out'));
                 store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));

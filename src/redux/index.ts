@@ -35,6 +35,7 @@ store.subscribe(async () => {
 
     localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(store.getState().param));
     localStorage.setItem(LocalStorageKey.APP, JSON.stringify(store.getState().app));
+    localStorage.setItem(LocalStorageKey.LOGIN_STATE, JSON.stringify(store.getState().account));
 });
 
 export type RootDispatch = typeof store.dispatch;
