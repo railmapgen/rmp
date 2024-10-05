@@ -286,7 +286,10 @@ export default function DownloadActions() {
                                 colorScheme="teal"
                                 variant="outline"
                                 size="sm"
-                                isDisabled={!isTermsAndConditionsSelected || disabledScaleOptions.includes(scale)}
+                                isDisabled={
+                                    !isTermsAndConditionsSelected ||
+                                    (format === 'png' && disabledScaleOptions.includes(scale))
+                                }
                                 onClick={handleDownload}
                             >
                                 {t('header.download.confirm')}
