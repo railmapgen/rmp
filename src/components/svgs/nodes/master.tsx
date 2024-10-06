@@ -58,6 +58,14 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const gPointerEvents =
         attrs.nodeType === 'MiscNode' ? { onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } } : {};
 
+    /**
+     * Fix #843: We add an ID filter to apply style to class only under this ID.
+     *   In node A, <style> .cls1{ fill: white } </style>
+     *   In node B, <style> .cls1{ fill: black } </style>
+     *   There is a conflict of styles between A and B.
+     *   So we add selector #ID for them.
+     *   e.g.  .cls-1 { ... }  =>  #A .cls-1 { ... }
+     * */
     const updateCSS = (cssString: string) => {
         return cssString.replace(/(^|,)\s*([^{},]+)/g, `$1 #${id} $2`);
     };
