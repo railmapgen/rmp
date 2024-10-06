@@ -475,7 +475,7 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('36 -> 37', () => {
-        // Bump save version to support Tokyo Metro stations.
+        // Bump save version to support London Underground stations.
         const oldParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":36}';
         const newParam = UPGRADE_COLLECTION[36](oldParam);
@@ -483,6 +483,18 @@ describe('Unit tests for param upgrade function', () => {
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":37}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('37 -> 38', () => {
+        // Bump save version to support Shanghai 2024 facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":37}';
+        const newParam = UPGRADE_COLLECTION[37](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":38}';
         expect(newParam).toEqual(expectParam);
     });
 });

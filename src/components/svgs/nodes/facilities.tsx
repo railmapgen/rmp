@@ -11,9 +11,11 @@ import { AttrsProps } from '../../../constants/constants';
  */
 export enum FacilitiesType {
     Airport = 'airport',
+    Airport2024 = 'airport_2024',
     Maglev = 'maglev',
     Disney = 'disney',
     Railway = 'railway',
+    Railway2024 = 'railway_2024',
     HSR = 'hsr',
     AirportHK = 'airport_hk',
     DisneyHK = 'disney_hk',
@@ -101,9 +103,11 @@ const attrsComponent = (props: AttrsProps<FacilitiesAttributes>) => {
             value: attrs.type,
             options: {
                 [FacilitiesType.Airport]: 'Airport',
+                [FacilitiesType.Airport2024]: 'Airport 2024',
                 [FacilitiesType.Maglev]: 'Maglev',
                 [FacilitiesType.Disney]: 'Disney',
                 [FacilitiesType.Railway]: 'Railway',
+                [FacilitiesType.Railway2024]: 'Railway 2024',
                 [FacilitiesType.HSR]: 'HSR',
                 [FacilitiesType.AirportHK]: 'Airport Hongkong',
                 [FacilitiesType.DisneyHK]: 'Disney Hongkong',
