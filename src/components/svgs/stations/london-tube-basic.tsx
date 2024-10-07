@@ -104,43 +104,47 @@ interface AccessibleIconProps extends React.SVGProps<SVGGElement> {
     id: StnId;
     stepFreeAccess: 'train' | 'platform';
 }
-export const AccessibleIcon = (props: AccessibleIconProps) => {
-    const { id, stepFreeAccess, ...svgGProps } = props;
-    return (
-        <g {...svgGProps}>
-            <path
-                fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
-                stroke="#1C3E93"
-                strokeWidth={0.5 * X_HEIGHT}
-                d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
-            />
-            <path
-                fill={stepFreeAccess === 'train' ? 'white' : '#1C3E93'}
-                d="M-10.5,9c1.4,4.9,6,8.4,11.3,8.4c6.5,0,11.8-5.3,11.8-11.8c0-3.4-1.5-6.5-3.8-8.7l0.7-5.1
+
+export const AccessibleIcon = React.memo(
+    (props: AccessibleIconProps) => {
+        const { id, stepFreeAccess, ...svgGProps } = props;
+        return (
+            <g {...svgGProps}>
+                <path
+                    fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
+                    stroke="#1C3E93"
+                    strokeWidth={0.5 * X_HEIGHT}
+                    d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
+                />
+                <path
+                    fill={stepFreeAccess === 'train' ? 'white' : '#1C3E93'}
+                    d="M-10.5,9c1.4,4.9,6,8.4,11.3,8.4c6.5,0,11.8-5.3,11.8-11.8c0-3.4-1.5-6.5-3.8-8.7l0.7-5.1
 	c4.6,2.9,7.6,8,7.6,13.8c0,9-7.3,16.3-16.3,16.3c-5.9,0-11-3.1-13.9-7.7L-10.5,9z"
-            />
-            <path
-                fill={props.stepFreeAccess === 'train' ? 'white' : '#1C3E93'}
-                d="M0.5-20.5c0,2.5,2,4.6,4.6,4.6c2.5,0,4.6-2.1,4.6-4.6s-2.1-4.6-4.6-4.6S0.5-23,0.5-20.5"
-            />
-            <path
-                fill={stepFreeAccess === 'train' ? 'white' : '#1C3E93'}
-                d="M3-12.4L2.5-9.2h-9.9c0,0-2.1,0.2-2.1,2.2s2.1,2.2,2.1,2.2h9.3l-0.5,3h-12.5c0,0-0.9,0-1.3,0.5
+                />
+                <path
+                    fill={props.stepFreeAccess === 'train' ? 'white' : '#1C3E93'}
+                    d="M0.5-20.5c0,2.5,2,4.6,4.6,4.6c2.5,0,4.6-2.1,4.6-4.6s-2.1-4.6-4.6-4.6S0.5-23,0.5-20.5"
+                />
+                <path
+                    fill={stepFreeAccess === 'train' ? 'white' : '#1C3E93'}
+                    d="M3-12.4L2.5-9.2h-9.9c0,0-2.1,0.2-2.1,2.2s2.1,2.2,2.1,2.2h9.3l-0.5,3h-12.5c0,0-0.9,0-1.3,0.5
 	C-12.8-1-13.2,0-13.2,0l-7,14.2c0,0-0.8,1.8,1.2,2.9c2,1.1,3.3-1,3.3-1l5.5-11.3c0,0,0.5-0.7,1-1c0.6-0.3,1.1-0.3,1.1-0.3H3.4
 	c0,0,1.2,0,2.2-0.9c0.9-0.9,1.1-2,1.1-2l1.7-12.4c0,0,0-2.6-2.7-2.7C3.6-14.5,3-12.4,3-12.4"
-            />
-            <path
-                id={`stn_core_${id}`}
-                fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
-                fillOpacity="0"
-                stroke="#1C3E93"
-                strokeWidth={0.5 * X_HEIGHT}
-                strokeOpacity="0"
-                d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
-            />
-        </g>
-    );
-};
+                />
+                <path
+                    id={`stn_core_${id}`}
+                    fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
+                    fillOpacity="0"
+                    stroke="#1C3E93"
+                    strokeWidth={0.5 * X_HEIGHT}
+                    strokeOpacity="0"
+                    d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
+                />
+            </g>
+        );
+    },
+    (prevProps, nextProps) => JSON.stringify(prevProps) === JSON.stringify(nextProps)
+);
 
 const LondonTubeBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -168,7 +172,9 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     // rotate starts from top-middle while Math.sin/cos starts from middle-right
     const rad = ((rotate - 90) * Math.PI) / 180;
     const height = (terminal ? 2 : 1) * (0.66 * X_HEIGHT + X_HEIGHT / 2);
-    const textDx = ROTATE_CONST[rotate].textDx + Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4]));
+    const textDx =
+        ROTATE_CONST[rotate].textDx + // fixed dx for each rotation
+        Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
         Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
@@ -187,8 +193,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             >
-                {transfer[0].map(info =>
-                    stepFreeAccess === 'none' ? (
+                {stepFreeAccess === 'none' ? (
+                    transfer[0].map(info => (
                         <rect
                             id={`stn_core_${id}`}
                             key={`${id}_${info[2]}_${info[4]}`}
@@ -199,14 +205,14 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                             stroke="none"
                             fill={info[2]}
                         />
-                    ) : (
-                        <AccessibleIcon
-                            key={`${id}_${info[2]}_${info[4]}`}
-                            id={id}
-                            stepFreeAccess={stepFreeAccess}
-                            transform={`translate(${accessibleDX},${accessibleDY})rotate(${-rotate})scale(0.2333)`}
-                        />
-                    )
+                    ))
+                ) : (
+                    <AccessibleIcon
+                        key={`stn_core_${id}`}
+                        id={id}
+                        stepFreeAccess={stepFreeAccess}
+                        transform={`translate(${accessibleDX},${accessibleDY})rotate(${-rotate})scale(0.2333)`}
+                    />
                 )}
             </g>
             <g
@@ -458,7 +464,7 @@ function InterchangeCard(props: InterchangeCardProps) {
                                 variant="ghost"
                                 aria-label={t('panel.details.stations.interchange.copy')}
                                 onClick={() => {
-                                    const info = interchangeList.slice(-1)[0];
+                                    const info = structuredClone(interchangeList.slice(-1)[0]);
                                     info[4] = Math.max(...interchangeList.map(_ => _[4])) + 1;
                                     onAdd?.(info);
                                 }} // duplicate last leg
