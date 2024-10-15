@@ -8,6 +8,9 @@ import { AttrsProps } from '../../../constants/constants';
  * Facilities type
  *
  * Note that the value should match the filename without the extension under public/images/facilities.
+ *
+ * Note changing the value needs both filename update and save version (type) update.
+ * See change of Qingdao in #809 and fix in #862.
  */
 export enum FacilitiesType {
     Airport = 'airport',

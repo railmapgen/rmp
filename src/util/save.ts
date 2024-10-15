@@ -30,7 +30,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 39;
+export const CURRENT_VERSION = 40;
 
 /**
  * Load the tutorial.
@@ -456,4 +456,23 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     38: param =>
         // Bump save version to support Guangzhou 2024 facilities.
         JSON.stringify({ ...JSON.parse(param), version: 39 }),
+    39: param => {
+        // Bump save version to support Qingdao facilities name change.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.Facilities)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (attr.type === 'qingdao_airport') attr.type = 'airport_qingdao';
+                else if (attr.type === 'qingdao_coach_station') attr.type = 'coach_station_qingdao';
+                else if (attr.type === 'qingdao_cruise_terminal') attr.type = 'cruise_terminal_qingdao';
+                else if (attr.type === 'qingdao_railway') attr.type = 'railway_qingdao';
+                else if (attr.type === 'qingdao_tram') attr.type = 'tram_qingdao';
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 40, graph: graph.export() });
+    },
 };
