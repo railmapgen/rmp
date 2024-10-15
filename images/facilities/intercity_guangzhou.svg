@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16.667 16.667">
+<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 16.667 16.667">
   <rect width="16.667" height="16.667" rx="1.25" style="fill:#b64d88"/>
   <path d="M56.667 51.25v1.458H44.583a1.25 1.25 0 0 1-1.25-1.25v-.208Z" style="fill:#fff" transform="translate(-41.667 -41.667)"/>
   <path d="M1.042 11.563h13.959v1.042H1.042z" style="fill:#fff"/>
