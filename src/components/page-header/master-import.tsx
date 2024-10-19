@@ -47,10 +47,11 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
+    const paramRef = React.useRef('');
     const allowAddNewMaster = true;
     React.useEffect(() => {
         if (isOpen) {
-            setParam('');
+            paramRef.current = '';
             setError('');
             setSelectedParam(defaultMasterSelected);
             const masterList = getMasterNodeTypes(graph.current)
@@ -62,7 +63,6 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         }
     }, [isOpen]);
 
-    const [param, setParam] = React.useState('');
     const [error, setError] = React.useState('');
     const fields: RmgFieldsField[] = [
         {
@@ -96,8 +96,8 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         {
             type: 'textarea',
             label: t('header.settings.procedures.masterManager.importLabel'),
-            value: param.toString(),
-            onChange: val => setParam(val),
+            value: paramRef.current.toString(),
+            onChange: val => (paramRef.current = val),
             minW: 'full',
             hidden: selectedParam.param !== null || !allowAddNewMaster,
         },
@@ -105,7 +105,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     const handleChange = () => {
         try {
-            onSubmit(selectedParam.param === null ? param : JSON.stringify(selectedParam.param));
+            onSubmit(selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param));
         } catch (e) {
             setError('Something went wrong.');
             return;
@@ -115,15 +115,16 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     React.useEffect(() => setError(''), [isOpen]);
 
-    const [reqTimeout, setReqTimeout] = React.useState<NodeJS.Timeout | null>(null);
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
     React.useEffect(() => {
         const handleMaster = (e: MessageEvent) => {
             const { event, data } = e.data;
-            if (event === RMP_MASTER_CHANNEL_POST && reqTimeout) {
-                setParam(data);
+            if (event === RMP_MASTER_CHANNEL_POST && timeoutRef.current) {
+                paramRef.current = data;
+                setLoading(false);
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
                 handleChange();
-                clearTimeout(reqTimeout);
-                setReqTimeout(null);
             }
         };
         CHN.addEventListener('message', handleMaster);
@@ -137,18 +138,16 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const handleDesigner = async () => {
         setLoading(true);
 
-        setReqTimeout(
-            setTimeout(() => {
-                setLoading(false);
-                toast({
-                    title: 'timeout',
-                    status: 'error' as const,
-                    duration: 9000,
-                    isClosable: true,
-                });
-                setReqTimeout(null);
-            }, 6000)
-        ); // 6 seconds
+        timeoutRef.current = setTimeout(() => {
+            setLoading(false);
+            toast({
+                title: 'timeout',
+                status: 'error' as const,
+                duration: 9000,
+                isClosable: true,
+            });
+            timeoutRef.current = null;
+        }, 6000);
 
         CHN.postMessage({ event: RMP_MASTER_CHANNEL_REQUEST });
     };
