@@ -7,6 +7,7 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    useToast,
 } from '@chakra-ui/react';
 import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
@@ -14,6 +15,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MasterParam } from '../../constants/master';
 import { getMasterNodeTypes } from '../../util/graph';
+
+const RMP_MASTER_CHANNEL_NAME = 'RMP_MASTER_CHANNEL';
+const RMP_MASTER_CHANNEL_REQUEST = 'MASTER_REQUEST';
+const RMP_MASTER_CHANNEL_POST = 'MASTER_POST';
+const CHN = new BroadcastChannel(RMP_MASTER_CHANNEL_NAME);
 
 interface MasterTypeList {
     id: string;
@@ -37,6 +43,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const { isOpen, onClose, onSubmit } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
+    const toast = useToast();
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
@@ -108,6 +115,44 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     React.useEffect(() => setError(''), [isOpen]);
 
+    const [reqTimeout, setReqTimeout] = React.useState<NodeJS.Timeout | null>(null);
+    React.useEffect(() => {
+        const handleMaster = (e: MessageEvent) => {
+            const { event, data } = e.data;
+            if (event === RMP_MASTER_CHANNEL_POST && reqTimeout) {
+                setParam(data);
+                handleChange();
+                clearTimeout(reqTimeout);
+                setReqTimeout(null);
+            }
+        };
+        CHN.addEventListener('message', handleMaster);
+        return () => {
+            CHN.removeEventListener('message', handleMaster);
+        };
+    }, []);
+
+    const [loading, setLoading] = React.useState(false);
+
+    const handleDesigner = async () => {
+        setLoading(true);
+
+        setReqTimeout(
+            setTimeout(() => {
+                setLoading(false);
+                toast({
+                    title: 'timeout',
+                    status: 'error' as const,
+                    duration: 9000,
+                    isClosable: true,
+                });
+                setReqTimeout(null);
+            }, 6000)
+        ); // 6 seconds
+
+        CHN.postMessage({ event: RMP_MASTER_CHANNEL_REQUEST });
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
             <ModalOverlay />
@@ -118,6 +163,12 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                 <ModalBody minH={250}>
                     <RmgFields fields={fields} />
                     {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
+                    <Button onClick={handleDesigner} isLoading={loading}>
+                        {t('from designer')}
+                    </Button>
+                    <Button onClick={() => {}} isDisabled={true}>
+                        {t('from gallery')}
+                    </Button>
                 </ModalBody>
 
                 <ModalFooter>
