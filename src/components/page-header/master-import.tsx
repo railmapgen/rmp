@@ -1,5 +1,6 @@
 import {
     Button,
+    CloseButton,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -7,13 +8,20 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    SystemStyleObject,
+    useToast,
 } from '@chakra-ui/react';
-import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
+import { RmgAppClip, RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MasterParam } from '../../constants/master';
 import { getMasterNodeTypes } from '../../util/graph';
+
+const RMP_MASTER_CHANNEL_NAME = 'RMP_MASTER_CHANNEL';
+const RMP_MASTER_CHANNEL_REQUEST = 'MASTER_REQUEST';
+const RMP_MASTER_CHANNEL_POST = 'MASTER_POST';
+const CHN = new BroadcastChannel(RMP_MASTER_CHANNEL_NAME);
 
 interface MasterTypeList {
     id: string;
@@ -33,17 +41,34 @@ const defaultMasterSelected: MasterTypeList = {
     param: null,
 };
 
+const styles: SystemStyleObject = {
+    h: '80%',
+    w: '80%',
+
+    '& iframe': {
+        h: '100%',
+        w: '100%',
+    },
+
+    '& div': {
+        h: '100%',
+        w: '100%',
+    },
+};
+
 export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSubmit: (s: string) => void }) => {
     const { isOpen, onClose, onSubmit } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
+    const toast = useToast();
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
+    const paramRef = React.useRef('');
     const allowAddNewMaster = true;
     React.useEffect(() => {
         if (isOpen) {
-            setParam('');
+            paramRef.current = '';
             setError('');
             setSelectedParam(defaultMasterSelected);
             const masterList = getMasterNodeTypes(graph.current)
@@ -55,7 +80,6 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         }
     }, [isOpen]);
 
-    const [param, setParam] = React.useState('');
     const [error, setError] = React.useState('');
     const fields: RmgFieldsField[] = [
         {
@@ -89,8 +113,8 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         {
             type: 'textarea',
             label: t('header.settings.procedures.masterManager.importLabel'),
-            value: param.toString(),
-            onChange: val => setParam(val),
+            value: paramRef.current.toString(),
+            onChange: val => (paramRef.current = val),
             minW: 'full',
             hidden: selectedParam.param !== null || !allowAddNewMaster,
         },
@@ -98,7 +122,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     const handleChange = () => {
         try {
-            onSubmit(selectedParam.param === null ? param : JSON.stringify(selectedParam.param));
+            onSubmit(selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param));
         } catch (e) {
             setError('Something went wrong.');
             return;
@@ -106,29 +130,103 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         onClose();
     };
 
-    React.useEffect(() => setError(''), [isOpen]);
+    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const isOpenRef = React.useRef(isOpen);
+    const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
+    const isGalleryOpenRef = React.useRef(false);
+    React.useEffect(() => {
+        isOpenRef.current = isOpen;
+        setError('');
+    }, [isOpen]);
+    React.useEffect(() => {
+        isGalleryOpenRef.current = isGalleryOpen;
+    }, [isGalleryOpen]);
+    React.useEffect(() => {
+        const handleMaster = (e: MessageEvent) => {
+            const { event, data } = e.data;
+            if (event === RMP_MASTER_CHANNEL_POST && isOpenRef.current) {
+                paramRef.current = data;
+                setLoading(false);
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                }
+                if (isGalleryOpenRef.current) {
+                    setIsGalleryOpen(false);
+                }
+                handleChange();
+            }
+        };
+        CHN.addEventListener('message', handleMaster);
+        return () => {
+            CHN.removeEventListener('message', handleMaster);
+        };
+    }, []);
+
+    const [loading, setLoading] = React.useState(false);
+
+    const handleDesigner = async () => {
+        setLoading(true);
+
+        timeoutRef.current = setTimeout(() => {
+            setLoading(false);
+            toast({
+                title: 'timeout',
+                status: 'error' as const,
+                duration: 9000,
+                isClosable: true,
+            });
+            timeoutRef.current = null;
+        }, 6000);
+
+        CHN.postMessage({ event: RMP_MASTER_CHANNEL_REQUEST });
+    };
+
+    const handleGallery = () => {
+        setIsGalleryOpen(true);
+    };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
-                <ModalCloseButton />
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
+                    <ModalCloseButton />
 
-                <ModalBody minH={250}>
-                    <RmgFields fields={fields} />
-                    {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
-                </ModalBody>
+                    <ModalBody minH={250}>
+                        <RmgFields fields={fields} />
+                        {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
+                        <Button onClick={handleDesigner} isLoading={loading}>
+                            {t('from designer')}
+                        </Button>
+                        <Button onClick={handleGallery} isDisabled={loading}>
+                            {t('from gallery')}
+                        </Button>
+                    </ModalBody>
 
-                <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
-                        {t('cancel')}
-                    </Button>
-                    <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
-                        {t('apply')}
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
+                    <ModalFooter>
+                        <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
+                            {t('cancel')}
+                        </Button>
+                        <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
+                            {t('apply')}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+            <MasterImportGalleryAppClip isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} />
+        </>
+    );
+};
+
+const MasterImportGalleryAppClip = (props: { isOpen: boolean; onClose: () => void }) => {
+    const { isOpen, onClose } = props;
+
+    return (
+        <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
+            <iframe src="https://uat-railmapgen.github.io/rmp-gallery/?tabId=2&master=true" loading="lazy" />
+            <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
+        </RmgAppClip>
     );
 };
