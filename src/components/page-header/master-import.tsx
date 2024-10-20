@@ -1,5 +1,6 @@
 import {
     Button,
+    CloseButton,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -7,9 +8,10 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    SystemStyleObject,
     useToast,
 } from '@chakra-ui/react';
-import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
+import { RmgAppClip, RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +39,21 @@ const defaultMasterSelected: MasterTypeList = {
     id: 'null',
     value: '',
     param: null,
+};
+
+const styles: SystemStyleObject = {
+    h: '80%',
+    w: '80%',
+
+    '& iframe': {
+        h: '100%',
+        w: '100%',
+    },
+
+    '& div': {
+        h: '100%',
+        w: '100%',
+    },
 };
 
 export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSubmit: (s: string) => void }) => {
@@ -113,17 +130,30 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         onClose();
     };
 
-    React.useEffect(() => setError(''), [isOpen]);
-
     const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+    const isOpenRef = React.useRef(isOpen);
+    const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
+    const isGalleryOpenRef = React.useRef(false);
+    React.useEffect(() => {
+        isOpenRef.current = isOpen;
+        setError('');
+    }, [isOpen]);
+    React.useEffect(() => {
+        isGalleryOpenRef.current = isGalleryOpen;
+    }, [isGalleryOpen]);
     React.useEffect(() => {
         const handleMaster = (e: MessageEvent) => {
             const { event, data } = e.data;
-            if (event === RMP_MASTER_CHANNEL_POST && timeoutRef.current) {
+            if (event === RMP_MASTER_CHANNEL_POST && isOpenRef.current) {
                 paramRef.current = data;
                 setLoading(false);
-                clearTimeout(timeoutRef.current);
-                timeoutRef.current = null;
+                if (timeoutRef.current) {
+                    clearTimeout(timeoutRef.current);
+                    timeoutRef.current = null;
+                }
+                if (isGalleryOpenRef.current) {
+                    setIsGalleryOpen(false);
+                }
                 handleChange();
             }
         };
@@ -152,33 +182,51 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         CHN.postMessage({ event: RMP_MASTER_CHANNEL_REQUEST });
     };
 
+    const handleGallery = () => {
+        setIsGalleryOpen(true);
+    };
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
-                <ModalCloseButton />
+        <>
+            <Modal isOpen={isOpen} onClose={onClose} size="sm" scrollBehavior="inside">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
+                    <ModalCloseButton />
 
-                <ModalBody minH={250}>
-                    <RmgFields fields={fields} />
-                    {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
-                    <Button onClick={handleDesigner} isLoading={loading}>
-                        {t('from designer')}
-                    </Button>
-                    <Button onClick={() => {}} isDisabled={true}>
-                        {t('from gallery')}
-                    </Button>
-                </ModalBody>
+                    <ModalBody minH={250}>
+                        <RmgFields fields={fields} />
+                        {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
+                        <Button onClick={handleDesigner} isLoading={loading}>
+                            {t('from designer')}
+                        </Button>
+                        <Button onClick={handleGallery} isDisabled={loading}>
+                            {t('from gallery')}
+                        </Button>
+                    </ModalBody>
 
-                <ModalFooter>
-                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
-                        {t('cancel')}
-                    </Button>
-                    <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
-                        {t('apply')}
-                    </Button>
-                </ModalFooter>
-            </ModalContent>
-        </Modal>
+                    <ModalFooter>
+                        <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
+                            {t('cancel')}
+                        </Button>
+                        <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
+                            {t('apply')}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+            <MasterImportGalleryAppClip isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} />
+        </>
+    );
+};
+
+const MasterImportGalleryAppClip = (props: { isOpen: boolean; onClose: () => void }) => {
+    const { isOpen, onClose } = props;
+
+    return (
+        <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
+            <iframe src="https://uat-railmapgen.github.io/rmp-gallery/?tabId=2&master=true" loading="lazy" />
+            <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
+        </RmgAppClip>
     );
 };
