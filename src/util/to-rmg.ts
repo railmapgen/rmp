@@ -402,7 +402,9 @@ const generateNewStn = (
         if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
             const gzAttr = uAttr as GzmtrBasicStationAttributes;
             newParam.stn_list[u].num = gzAttr.stationCode;
-            newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
+            if (gzAttr.secondaryNames[0] !== '' || gzAttr.secondaryNames[1] !== '') {
+                newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
+            }
         }
         if (graph.getNodeAttributes(u).type == StationType.GzmtrInt) {
             const gzAttr = uAttr as GzmtrIntStationAttributes;
