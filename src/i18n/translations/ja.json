@@ -622,8 +622,8 @@
                         "Station": "駅"
                     },
                     "importTitle": "大師引数をアップロード",
-                    "importFrom": "からインポート",
-                    "importLabel": "RMPデザイナーからJSONを貼り付ける"
+                    "importFrom": "インポートしたスタイルを使用",
+                    "importOther": "その他のオプション"
                 }
             },
             "telemetry": {

@@ -1,6 +1,7 @@
 import {
     Button,
     CloseButton,
+    Flex,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -8,10 +9,10 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Spacer,
     SystemStyleObject,
-    useToast,
 } from '@chakra-ui/react';
-import { RmgAppClip, RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
+import { RmgAppClip, RmgAutoComplete, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +20,6 @@ import { MasterParam } from '../../constants/master';
 import { getMasterNodeTypes } from '../../util/graph';
 
 const RMP_MASTER_CHANNEL_NAME = 'RMP_MASTER_CHANNEL';
-const RMP_MASTER_CHANNEL_REQUEST = 'MASTER_REQUEST';
 const RMP_MASTER_CHANNEL_POST = 'MASTER_POST';
 const CHN = new BroadcastChannel(RMP_MASTER_CHANNEL_NAME);
 
@@ -28,12 +28,6 @@ interface MasterTypeList {
     value: string;
     param: MasterParam | null;
 }
-
-const defaultMasterTypeList: MasterTypeList = {
-    id: 'new',
-    value: 'Upload a new param',
-    param: null,
-};
 
 const defaultMasterSelected: MasterTypeList = {
     id: 'null',
@@ -60,100 +54,46 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const { isOpen, onClose, onSubmit } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
-    const toast = useToast();
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
     const paramRef = React.useRef('');
-    const allowAddNewMaster = true;
     React.useEffect(() => {
         if (isOpen) {
             paramRef.current = '';
-            setError('');
             setSelectedParam(defaultMasterSelected);
-            const masterList = getMasterNodeTypes(graph.current)
-                .filter(p => p.randomId)
-                .map(p => {
-                    return { id: p.randomId!, value: p.label! ?? p.randomId, param: p };
-                });
-            setList(allowAddNewMaster ? [defaultMasterTypeList].concat(masterList) : masterList);
+            setList(
+                getMasterNodeTypes(graph.current)
+                    .filter(p => p.randomId)
+                    .map(p => {
+                        return { id: p.randomId!, value: p.label! ?? p.randomId, param: p };
+                    })
+            );
         }
     }, [isOpen]);
-
-    const [error, setError] = React.useState('');
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'custom',
-            label: t('header.settings.procedures.masterManager.importFrom'),
-            component: (
-                <RmgAutoComplete
-                    data={list}
-                    displayHandler={item => (
-                        <RmgLineBadge
-                            name={item.value}
-                            fg={MonoColour.white}
-                            bg={item.param === null ? '#000000' : '#19B3EA'}
-                            title={item.value}
-                            sx={{
-                                display: 'inline-block',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}
-                        />
-                    )}
-                    filter={(query, item) =>
-                        item.id.toLowerCase().includes(query.toLowerCase()) ||
-                        Object.values(item.id).some(name => name.toLowerCase().includes(query.toLowerCase()))
-                    }
-                    value={selectedParam.value}
-                    onChange={item => setSelectedParam(item)}
-                />
-            ),
-        },
-        {
-            type: 'textarea',
-            label: t('header.settings.procedures.masterManager.importLabel'),
-            value: paramRef.current.toString(),
-            onChange: val => (paramRef.current = val),
-            minW: 'full',
-            hidden: selectedParam.param !== null || !allowAddNewMaster,
-        },
-    ];
 
     const handleChange = () => {
         try {
             onSubmit(selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param));
         } catch (e) {
-            setError('Something went wrong.');
+            // setError('Something went wrong.');
             return;
         }
         onClose();
     };
 
-    const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
     const isOpenRef = React.useRef(isOpen);
-    const [isGalleryOpen, setIsGalleryOpen] = React.useState(false);
-    const isGalleryOpenRef = React.useRef(false);
+    const [appClipType, setAppClipType] = React.useState<'DESIGNER' | 'GALLERY'>('DESIGNER');
+    const [appClipOpen, setAppClipOpen] = React.useState(false);
     React.useEffect(() => {
         isOpenRef.current = isOpen;
-        setError('');
     }, [isOpen]);
-    React.useEffect(() => {
-        isGalleryOpenRef.current = isGalleryOpen;
-    }, [isGalleryOpen]);
     React.useEffect(() => {
         const handleMaster = (e: MessageEvent) => {
             const { event, data } = e.data;
             if (event === RMP_MASTER_CHANNEL_POST && isOpenRef.current) {
                 paramRef.current = data;
-                setLoading(false);
-                if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current);
-                    timeoutRef.current = null;
-                }
-                if (isGalleryOpenRef.current) {
-                    setIsGalleryOpen(false);
-                }
+                setAppClipOpen(false);
                 handleChange();
             }
         };
@@ -163,27 +103,13 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         };
     }, []);
 
-    const [loading, setLoading] = React.useState(false);
-
     const handleDesigner = async () => {
-        setLoading(true);
-
-        timeoutRef.current = setTimeout(() => {
-            setLoading(false);
-            toast({
-                title: 'timeout',
-                status: 'error' as const,
-                duration: 9000,
-                isClosable: true,
-            });
-            timeoutRef.current = null;
-        }, 6000);
-
-        CHN.postMessage({ event: RMP_MASTER_CHANNEL_REQUEST });
+        setAppClipType('DESIGNER');
+        setAppClipOpen(true);
     };
-
     const handleGallery = () => {
-        setIsGalleryOpen(true);
+        setAppClipType('GALLERY');
+        setAppClipOpen(true);
     };
 
     return (
@@ -194,38 +120,79 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                     <ModalHeader>{t('header.settings.procedures.masterManager.importTitle')}</ModalHeader>
                     <ModalCloseButton />
 
-                    <ModalBody minH={250}>
-                        <RmgFields fields={fields} />
-                        {error && selectedParam.param !== null && <span style={{ color: 'red' }}>{error}</span>}
-                        <Button onClick={handleDesigner} isLoading={loading}>
-                            {t('from designer')}
-                        </Button>
-                        <Button onClick={handleGallery} isDisabled={loading}>
-                            {t('from gallery')}
-                        </Button>
+                    <ModalBody>
+                        <RmgLabel label={t('header.settings.procedures.masterManager.importFrom')}>
+                            <RmgAutoComplete
+                                data={list}
+                                displayHandler={item => (
+                                    <RmgLineBadge
+                                        name={item.value}
+                                        fg={MonoColour.white}
+                                        bg={item.param === null ? '#000000' : '#19B3EA'}
+                                        title={item.value}
+                                        sx={{
+                                            display: 'inline-block',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        }}
+                                    />
+                                )}
+                                filter={(query, item) =>
+                                    item.id.toLowerCase().includes(query.toLowerCase()) ||
+                                    Object.values(item.id).some(name =>
+                                        name.toLowerCase().includes(query.toLowerCase())
+                                    )
+                                }
+                                value={selectedParam.value}
+                                onChange={item => setSelectedParam(item)}
+                            />
+                        </RmgLabel>
+                        <RmgLabel label={t('header.settings.procedures.masterManager.importOther')}>
+                            <Flex direction="row" width="100%">
+                                <Spacer />
+                                <Button m={1} width="100%" onClick={handleDesigner}>
+                                    {t('RMP Designer')}
+                                </Button>
+                                <Button m={1} width="100%" onClick={handleGallery}>
+                                    {t('RMP Gallery')}
+                                </Button>
+                            </Flex>
+                        </RmgLabel>
                     </ModalBody>
 
                     <ModalFooter>
                         <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                             {t('cancel')}
                         </Button>
-                        <Button colorScheme="blue" variant="outline" mr="1" onClick={handleChange}>
+                        <Button colorScheme="blue" variant="solid" mr="1" onClick={handleChange}>
                             {t('apply')}
                         </Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            <MasterImportGalleryAppClip isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} />
+            <MasterImportGalleryAppClip
+                isOpen={appClipOpen}
+                onClose={() => setAppClipOpen(false)}
+                source={appClipType}
+            />
         </>
     );
 };
 
-const MasterImportGalleryAppClip = (props: { isOpen: boolean; onClose: () => void }) => {
-    const { isOpen, onClose } = props;
+const MasterImportGalleryAppClip = (props: {
+    isOpen: boolean;
+    onClose: () => void;
+    source: 'DESIGNER' | 'GALLERY';
+}) => {
+    const { isOpen, onClose, source } = props;
+    const url =
+        source === 'DESIGNER'
+            ? 'https://uat-railmapgen.github.io/rmp-designer/#/export'
+            : 'https://uat-railmapgen.github.io/rmp-gallery/?tabId=2&master=true';
 
     return (
         <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
-            <iframe src="https://uat-railmapgen.github.io/rmp-gallery/?tabId=2&master=true" loading="lazy" />
+            <iframe src={url} loading="lazy" />
             <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
         </RmgAppClip>
     );

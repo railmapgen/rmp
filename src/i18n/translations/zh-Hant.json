@@ -621,8 +621,8 @@
                         "Station": "車站"
                     },
                     "importTitle": "上傳大師節點參數",
-                    "importFrom": "導入自",
-                    "importLabel": "從RMP設計器貼上JSON"
+                    "importFrom": "使用匯入的樣式",
+                    "importOther": "其他選項"
                 }
             },
             "telemetry": {
