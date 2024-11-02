@@ -185,10 +185,7 @@ const MasterImportGalleryAppClip = (props: {
     source: 'DESIGNER' | 'GALLERY';
 }) => {
     const { isOpen, onClose, source } = props;
-    const url =
-        source === 'DESIGNER'
-            ? 'https://uat-railmapgen.github.io/rmp-designer/#/export'
-            : 'https://uat-railmapgen.github.io/rmp-gallery/?tabId=2&master=true';
+    const url = source === 'DESIGNER' ? '/rmp-designer/#/export' : '/rmp-gallery/?tabId=2&master=true';
 
     return (
         <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
