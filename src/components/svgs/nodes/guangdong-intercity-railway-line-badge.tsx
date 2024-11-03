@@ -79,7 +79,7 @@ export interface GuangdongIntercityRailwayLineBadgeAttributes extends Attributes
 
 const defaultGuangdongIntercityRailwayLineBadgeAttributes: GuangdongIntercityRailwayLineBadgeAttributes = {
     names: ['广清城际', 'Guangzhou-Qingyuan Intercity'],
-    color: [CityCode.Guangzhou, 'ir', '#425392', MonoColour.white],
+    color: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],
 };
 
 const guangdongIntercityRailwayLineBadgeAttrsComponent = (

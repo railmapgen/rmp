@@ -29,7 +29,7 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
 export interface GuangdongIntercityRailwayAttributes extends LinePathAttributes, AttributesWithColor {}
 
 const defaultGuangdongIntercityRailwayAttributes: GuangdongIntercityRailwayAttributes = {
-    color: [CityCode.Guangzhou, 'ir', '#425392', MonoColour.white],
+    color: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],
 };
 
 const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> = {
