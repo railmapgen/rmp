@@ -67,8 +67,8 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                 >
                     <MultilineText
                         text={names[0].split('\\')}
-                        fontSize={12.67}
-                        lineHeight={12.67}
+                        fontSize={13.13}
+                        lineHeight={13.13}
                         grow="up"
                         baseOffset={1}
                         className="rmp-name__zh"
@@ -76,8 +76,8 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                     <MultilineText
                         text={names[1].split('\\')}
                         dx={nameOffsetX === 'right' ? 1.67 : 0}
-                        fontSize={6.67}
-                        lineHeight={6.67}
+                        fontSize={5.83}
+                        lineHeight={5.83}
                         grow="down"
                         baseOffset={1.5}
                         className="rmp-name__en"
