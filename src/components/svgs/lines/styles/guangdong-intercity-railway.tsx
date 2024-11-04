@@ -32,10 +32,12 @@ const defaultGuangdongIntercityRailwayAttributes: GuangdongIntercityRailwayAttri
     color: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],
 };
 
+const attrsComponent = () => undefined;
+
 const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> = {
     component: GuangdongIntercityRailway,
     defaultAttrs: defaultGuangdongIntercityRailwayAttributes,
-    attrsComponent: () => <></>,
+    attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.guangdongIntercityRailway.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
