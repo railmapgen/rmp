@@ -86,7 +86,7 @@ const shmetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBad
 
     const fields: RmgFieldsField[] = [
         {
-            type: 'textarea',
+            type: 'input',
             label: t('panel.details.nodes.common.nameZh'),
             value: attrs.names[0],
             onChange: val => {
