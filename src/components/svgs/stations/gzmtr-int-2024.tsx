@@ -114,15 +114,15 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={16}
-                    lineHeight={16}
+                    fontSize={13.13}
+                    lineHeight={13.13}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
                     text={names[1].split('\n')}
-                    fontSize={10}
-                    lineHeight={10}
+                    fontSize={6.56}
+                    lineHeight={6.56}
                     grow="down"
                     className="rmp-name__en"
                 />
@@ -130,7 +130,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
             {secondaryNames.join('') !== '' && (
                 <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
                     <text
-                        fontSize="20"
+                        fontSize="13.13"
                         dx={-(secondaryTextWidth + 5) / 2}
                         textAnchor="end"
                         dominantBaseline="middle"
@@ -139,7 +139,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                         （
                     </text>
                     <text
-                        fontSize="20"
+                        fontSize="13.13"
                         dx={(secondaryTextWidth + 5) / 2}
                         textAnchor="start"
                         dominantBaseline="middle"
@@ -148,10 +148,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                         ）
                     </text>
                     <g ref={secondaryTextRef}>
-                        <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        <text fontSize="10" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                             {secondaryNames[0]}
                         </text>
-                        <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" className="rmp-name__en">
                             {secondaryNames[1]}
                         </text>
                     </g>
@@ -159,10 +159,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
             )}
             {!open && (
                 <g transform={`translate(${textX + underConstructionDx}, ${textY})`} textAnchor={textAnchor}>
-                    <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                         （未开通）
                     </text>
-                    <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
                         (Under Construction)
                     </text>
                 </g>
