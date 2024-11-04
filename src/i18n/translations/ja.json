@@ -135,6 +135,9 @@
                     "numEn": "英語の行番号",
                     "showText": "テキストを表示"
                 },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "広東省都市間鉄道線徽章"
+                },
                 "master": {
                     "displayName": "大師節点",
                     "type": "大師節点種類",
@@ -336,6 +339,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "ロンドン地下鉄乗換駅"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "広東省都市間鉄道駅"
                 }
             },
             "lines": {
@@ -433,6 +439,9 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "ロンドン地下鉄終着風格"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "広東省都市間鉄道風格"
                 }
             },
             "edges": {},

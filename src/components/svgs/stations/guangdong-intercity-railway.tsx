@@ -164,7 +164,7 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.guangdongIntercityRailway.interchange'),
+            label: t('panel.details.stations.interchange.title'),
             oneLine: true,
             isChecked: attrs.interchange,
             onChange: val => {

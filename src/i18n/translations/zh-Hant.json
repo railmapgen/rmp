@@ -133,6 +133,9 @@
                     "numEn": "英文線路號",
                     "showText": "顯示文字"
                 },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "廣東城際鐵路線標識"
+                },
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
@@ -335,6 +338,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "倫敦地鐵換乘車站"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "廣東城際鐵路車站"
                 }
             },
             "lines": {
@@ -432,6 +438,9 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "倫敦地鐵終點站樣式"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "廣東城際鐵路樣式"
                 }
             },
             "edges": {},

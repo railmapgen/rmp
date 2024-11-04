@@ -133,6 +133,9 @@
                     "numEn": "영어로 된 줄 번호",
                     "showText": "텍스트 표시"
                 },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "광동 시외 철도 노선 표지판"
+                },
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
@@ -335,6 +338,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "런던 지하철 환승역"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "광둥 시외 기차역"
                 }
             },
             "lines": {
@@ -432,6 +438,9 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "런던 지하철 종착 스타일"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "광동성 도시간 철도 스타일"
                 }
             },
             "edges": {},
