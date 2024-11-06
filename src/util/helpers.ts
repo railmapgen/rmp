@@ -1,3 +1,4 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { Size } from './hooks';
@@ -138,4 +139,17 @@ export const createHash = async (data: string, algorithm = 'SHA-256') => {
     const hashBuffer = await crypto.subtle.digest(algorithm, encodedData);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
+export const getRandomHexColor = (): `#${string}` => {
+    const color = Math.floor(Math.random() * 0xffffff);
+    return `#${color.toString(16).padStart(6, '0')}`;
+};
+
+export const getContrastingColor = (hex: `#${string}`): MonoColour => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? MonoColour.black : MonoColour.white;
 };

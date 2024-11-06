@@ -1,3 +1,5 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
+
 export interface MasterSvgsElem {
     id: string;
     type: string;
@@ -30,6 +32,8 @@ export const defaultMasterTransform: MasterParamTransform = {
 export interface MasterParam {
     randomId?: string;
     label?: string;
+    labelColorBg?: `#${string}`;
+    labelColorFg?: MonoColour;
     version?: number;
     transform: MasterParamTransform;
     nodeType: 'MiscNode' | 'Station';

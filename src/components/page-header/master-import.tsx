@@ -11,13 +11,15 @@ import {
     ModalOverlay,
     SystemStyleObject,
     Textarea,
+    useToast,
 } from '@chakra-ui/react';
 import { RmgAppClip, RmgAutoComplete, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MasterParam } from '../../constants/master';
+import { defaultMasterTransform, MasterParam } from '../../constants/master';
 import { getMasterNodeTypes } from '../../util/graph';
+import { getContrastingColor, getRandomHexColor } from '../../util/helpers';
 
 const RMP_MASTER_CHANNEL_NAME = 'RMP_MASTER_CHANNEL';
 const RMP_MASTER_CHANNEL_POST = 'MASTER_POST';
@@ -27,12 +29,16 @@ interface MasterTypeList {
     id: string;
     value: string;
     param: MasterParam | null;
+    bg: `#${string}`;
+    fg: MonoColour;
 }
 
 const defaultMasterSelected: MasterTypeList = {
     id: 'null',
     value: '',
     param: null,
+    bg: '#000000',
+    fg: MonoColour.white,
 };
 
 const styles: SystemStyleObject = {
@@ -50,10 +56,15 @@ const styles: SystemStyleObject = {
     },
 };
 
-export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSubmit: (s: string) => void }) => {
+export const MasterImport = (props: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (param: MasterParam) => void;
+}) => {
     const { isOpen, onClose, onSubmit } = props;
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
+    const toast = useToast();
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
@@ -74,7 +85,13 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                 getMasterNodeTypes(graph.current)
                     .filter(p => p.randomId)
                     .map(p => {
-                        return { id: p.randomId!, value: p.label! ?? p.randomId, param: p };
+                        return {
+                            id: p.randomId!,
+                            value: p.label! ?? p.randomId,
+                            param: p,
+                            bg: p.labelColorBg ?? defaultMasterSelected.bg,
+                            fg: p.labelColorFg ?? defaultMasterSelected.fg,
+                        };
                     })
             );
         }
@@ -82,7 +99,33 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     const handleChange = () => {
         try {
-            onSubmit(selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param));
+            const s = selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param);
+            const p = JSON.parse(s);
+            const rid = p.id ? p.id : p.randomId;
+            const hex = p.labelColorBg ?? getRandomHexColor();
+            const param: MasterParam = {
+                randomId: rid,
+                label: p.label ?? rid,
+                labelColorBg: hex,
+                labelColorFg: getContrastingColor(hex),
+                nodeType: p.nodeType ?? p.type,
+                transform: p.transform ?? defaultMasterTransform,
+                svgs: p.svgs,
+                components: p.components,
+                color: p.color,
+                core: p.core,
+                version: p.version,
+            };
+            if (!param.version || param.version < 2) {
+                toast({
+                    title: 'Outdated configuration!',
+                    status: 'error' as const,
+                    duration: 9000,
+                    isClosable: true,
+                });
+                return;
+            }
+            onSubmit(param);
         } catch (e) {
             setTextareaInvalid(true);
             return;
@@ -147,8 +190,8 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                                 displayHandler={item => (
                                     <RmgLineBadge
                                         name={item.value}
-                                        fg={MonoColour.white}
-                                        bg={item.param === null ? '#000000' : '#19B3EA'}
+                                        fg={item.fg}
+                                        bg={item.bg}
                                         title={item.value}
                                         sx={{
                                             display: 'inline-block',

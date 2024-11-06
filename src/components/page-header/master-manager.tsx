@@ -8,14 +8,13 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-    useToast,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDelete, MdDownload, MdUpload } from 'react-icons/md';
-import { defaultMasterTransform, MasterParam } from '../../constants/master';
+import { MasterParam } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
@@ -32,7 +31,6 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
     } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
     const dispatch = useRootDispatch();
-    const toast = useToast();
 
     const [list, setList] = React.useState<MasterParam[]>([]);
     React.useEffect(() => {
@@ -43,29 +41,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
 
     const [openImport, setOpenImport] = React.useState<string | undefined>(undefined);
 
-    const handleReplace = (s: string) => {
-        const p = JSON.parse(s);
-        const id = p.id ? p.id : p.randomId;
-        const param: MasterParam = {
-            randomId: id,
-            label: p.label ?? id,
-            nodeType: p.nodeType ?? p.type,
-            transform: p.transform ?? defaultMasterTransform,
-            svgs: p.svgs,
-            components: p.components,
-            color: p.color,
-            core: p.core,
-            version: p.version,
-        };
-        if (!param.version || param.version < 2) {
-            toast({
-                title: 'Outdated configuration!',
-                status: 'error' as const,
-                duration: 9000,
-                isClosable: true,
-            });
-            return;
-        }
+    const handleReplace = (param: MasterParam) => {
         graph.current
             .filterNodes(
                 node =>
@@ -151,8 +127,8 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                 component: (
                     <RmgLineBadge
                         name={attrs.randomId ?? 'undefined'}
-                        fg={MonoColour.white}
-                        bg={attrs.randomId ? '#19B3EA' : '#000000'}
+                        fg={attrs.labelColorFg ?? MonoColour.white}
+                        bg={attrs.labelColorBg ?? '#000000'}
                     />
                 ),
             },
