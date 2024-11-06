@@ -623,7 +623,8 @@
                     },
                     "importTitle": "大師引数をアップロード",
                     "importFrom": "インポートしたスタイルを使用",
-                    "importOther": "その他のオプション"
+                    "importOther": "新しいスタイルをインポート",
+                    "importParam": "設定情報を貼り付け"
                 }
             },
             "telemetry": {

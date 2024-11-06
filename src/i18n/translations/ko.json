@@ -622,7 +622,8 @@
                     },
                     "importTitle": "마스터 매개변수 업로드",
                     "importFrom": "가져온 스타일 사용",
-                    "importOther": "기타 옵션"
+                    "importOther": "새 스타일 가져오기",
+                    "importParam": "구성 정보 붙여넣기"
                 }
             },
             "telemetry": {

@@ -622,7 +622,8 @@
                     },
                     "importTitle": "上傳大師節點參數",
                     "importFrom": "使用匯入的樣式",
-                    "importOther": "其他選項"
+                    "importOther": "導入新樣式",
+                    "importParam": "貼上配置信息"
                 }
             },
             "telemetry": {

@@ -623,7 +623,8 @@
                     },
                     "importTitle": "Upload master parameter",
                     "importFrom": "Use imported styles",
-                    "importOther": "Other options"
+                    "importOther": "Import new style",
+                    "importParam": "Paste configuration"
                 }
             },
             "telemetry": {

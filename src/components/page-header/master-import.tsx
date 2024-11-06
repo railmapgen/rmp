@@ -9,8 +9,8 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-    Spacer,
     SystemStyleObject,
+    Textarea,
 } from '@chakra-ui/react';
 import { RmgAppClip, RmgAutoComplete, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
@@ -57,11 +57,19 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
 
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
-    const paramRef = React.useRef('');
+    const [param, setParam] = React.useState('');
+    const paramRef = React.useRef(param);
+    const [useTextarea, setUseTextarea] = React.useState(false);
+    const [textareaInvalid, setTextareaInvalid] = React.useState(false);
+    React.useEffect(() => {
+        paramRef.current = param;
+    }, [param]);
+
     React.useEffect(() => {
         if (isOpen) {
-            paramRef.current = '';
+            setParam('');
             setSelectedParam(defaultMasterSelected);
+            setUseTextarea(false);
             setList(
                 getMasterNodeTypes(graph.current)
                     .filter(p => p.randomId)
@@ -76,7 +84,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         try {
             onSubmit(selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param));
         } catch (e) {
-            // setError('Something went wrong.');
+            setTextareaInvalid(true);
             return;
         }
         onClose();
@@ -92,7 +100,7 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
         const handleMaster = (e: MessageEvent) => {
             const { event, data } = e.data;
             if (event === RMP_MASTER_CHANNEL_POST && isOpenRef.current) {
-                paramRef.current = data;
+                setParam(data);
                 setAppClipOpen(false);
                 handleChange();
             }
@@ -110,6 +118,18 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
     const handleGallery = () => {
         setAppClipType('GALLERY');
         setAppClipOpen(true);
+    };
+
+    const handleTextareaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setTextareaInvalid(false);
+        setParam(event.target.value);
+        setSelectedParam(defaultMasterSelected);
+    };
+
+    const handleCompleteChange = (item: MasterTypeList) => {
+        setSelectedParam(item);
+        setUseTextarea(false);
+        setParam('');
     };
 
     return (
@@ -144,12 +164,11 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                                     )
                                 }
                                 value={selectedParam.value}
-                                onChange={item => setSelectedParam(item)}
+                                onChange={handleCompleteChange}
                             />
                         </RmgLabel>
                         <RmgLabel label={t('header.settings.procedures.masterManager.importOther')}>
                             <Flex direction="row" width="100%">
-                                <Spacer />
                                 <Button m={1} width="100%" onClick={handleDesigner}>
                                     {t('RMP Designer')}
                                 </Button>
@@ -157,6 +176,18 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                                     {t('RMP Gallery')}
                                 </Button>
                             </Flex>
+                            <Button m={1} onClick={() => setUseTextarea(true)}>
+                                {t('header.settings.procedures.masterManager.importParam')}
+                            </Button>
+                            <Textarea
+                                width="100%"
+                                placeholder="qwq"
+                                fontSize="sm"
+                                fontFamily="monospace"
+                                hidden={!useTextarea}
+                                onChange={handleTextareaChange}
+                                isInvalid={textareaInvalid}
+                            />
                         </RmgLabel>
                     </ModalBody>
 
@@ -164,7 +195,13 @@ export const MasterImport = (props: { isOpen: boolean; onClose: () => void; onSu
                         <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                             {t('cancel')}
                         </Button>
-                        <Button colorScheme="blue" variant="solid" mr="1" onClick={handleChange}>
+                        <Button
+                            colorScheme="blue"
+                            variant="solid"
+                            mr="1"
+                            onClick={handleChange}
+                            isDisabled={selectedParam.id === 'null' && param === ''}
+                        >
                             {t('apply')}
                         </Button>
                     </ModalFooter>
