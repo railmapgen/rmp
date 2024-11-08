@@ -121,7 +121,7 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
         ? MAX_PARALLEL_LINES_PRO
         : MAX_PARALLEL_LINES_FREE;
-    if (parallelLinesCount == maximumParallelLines) {
+    if (parallelLinesCount >= maximumParallelLines) {
         dispatch(setAutoParallel(false));
     }
     if (parallelLinesCount > maximumParallelLines) {
