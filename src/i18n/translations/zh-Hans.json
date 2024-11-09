@@ -621,8 +621,9 @@
                         "Station": "车站"
                     },
                     "importTitle": "上传大师节点参数",
-                    "importFrom": "导入自",
-                    "importLabel": "从RMP设计器粘贴JSON"
+                    "importFrom": "使用导入的样式",
+                    "importOther": "导入新样式",
+                    "importParam": "粘贴配置信息"
                 }
             },
             "telemetry": {

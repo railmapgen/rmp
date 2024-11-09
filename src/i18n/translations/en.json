@@ -622,8 +622,9 @@
                         "Station": "Station"
                     },
                     "importTitle": "Upload master parameter",
-                    "importFrom": "Import from",
-                    "importLabel": "Paste JSON from RMP Designer"
+                    "importFrom": "Use imported styles",
+                    "importOther": "Import new style",
+                    "importParam": "Paste configuration"
                 }
             },
             "telemetry": {

@@ -1,5 +1,5 @@
-import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { Button, Flex, IconButton, Spacer, useToast } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
+import { Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdSettings, MdUpload } from 'react-icons/md';
@@ -11,6 +11,7 @@ import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../../panels/theme-button';
 import { MasterManager } from '../../page-header/master-manager';
 import { MasterImport } from '../../page-header/master-import';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 
 const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -145,7 +146,6 @@ const defaultMasterAttributes: MasterAttributes = {
 const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
-    const toast = useToast();
     const {
         paletteAppClip: { output },
     } = useRootSelector(state => state.runtime);
@@ -158,29 +158,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         return p ? p.value ?? p.defaultValue : undefined;
     };
 
-    const handleImportParam = (s: string) => {
-        const p = JSON.parse(s);
-        const rid = p.id ? p.id : p.randomId;
-        const param: MasterParam = {
-            randomId: rid,
-            label: p.label ?? rid,
-            nodeType: p.nodeType ?? p.type,
-            transform: p.transform ?? defaultMasterTransform,
-            svgs: p.svgs,
-            components: p.components,
-            color: p.color,
-            core: p.core,
-            version: p.version,
-        };
-        if (!param.version || param.version < 2) {
-            toast({
-                title: 'Outdated configuration!',
-                status: 'error' as const,
-                duration: 9000,
-                isClosable: true,
-            });
-            return;
-        }
+    const handleImportParam = (param: MasterParam) => {
         param.components.forEach((c, i) => {
             param.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
         });
@@ -257,8 +235,27 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     return (
         <>
             <Flex direction="row" mr="auto" width="100%">
-                <RmgLabel label={t('panel.details.nodes.master.type')}>
-                    {attrs.label ?? t('panel.details.nodes.master.undefined')}
+                <RmgLabel width="100%" overflow="hidden" label={t('panel.details.nodes.master.type')}>
+                    <Flex width="100%" overflow="hidden">
+                        <RmgLineBadge
+                            name={attrs.label ?? t('panel.details.nodes.master.undefined')}
+                            fg={attrs.labelColorFg ?? MonoColour.white}
+                            bg={attrs.labelColorBg ?? '#000000'}
+                            sx={{
+                                display: 'inline-block',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            }}
+                            mr={1}
+                        />
+                        <RmgLineBadge
+                            name={attrs.randomId ?? 'UNDEFINED'}
+                            fg={MonoColour.white}
+                            bg={attrs.randomId ? '#19B3EA' : '#000000'}
+                            sx={{ display: 'inline-block' }}
+                            mr={1}
+                        />
+                    </Flex>
                 </RmgLabel>
                 <Spacer />
                 <IconButton icon={<MdUpload />} onClick={() => setOpenImport(true)} aria-label="upload" />
