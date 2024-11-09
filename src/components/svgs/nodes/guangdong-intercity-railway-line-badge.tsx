@@ -49,7 +49,7 @@ const GuangdongIntercityRailwayLineBadge = (
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
                     y="3"
-                    fontSize="10"
+                    fontSize="8.63"
                     fill={color[3]}
                 >
                     {names[0]}
@@ -60,7 +60,7 @@ const GuangdongIntercityRailwayLineBadge = (
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
                     y="14"
-                    fontSize="5"
+                    fontSize="3.54"
                     fill={color[3]}
                 >
                     {names[1]}
