@@ -113,9 +113,9 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -123,9 +123,9 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
