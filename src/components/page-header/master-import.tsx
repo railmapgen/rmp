@@ -69,12 +69,8 @@ export const MasterImport = (props: {
     const [list, setList] = React.useState<MasterTypeList[]>([]);
     const [selectedParam, setSelectedParam] = React.useState<MasterTypeList>(defaultMasterSelected);
     const [param, setParam] = React.useState('');
-    const paramRef = React.useRef(param);
     const [useTextarea, setUseTextarea] = React.useState(false);
     const [textareaInvalid, setTextareaInvalid] = React.useState(false);
-    React.useEffect(() => {
-        paramRef.current = param;
-    }, [param]);
 
     React.useEffect(() => {
         if (isOpen) {
@@ -97,10 +93,9 @@ export const MasterImport = (props: {
         }
     }, [isOpen]);
 
-    const handleChange = () => {
+    const handleChange = (importedParam: string) => {
         try {
-            const s = selectedParam.param === null ? paramRef.current : JSON.stringify(selectedParam.param);
-            const p = JSON.parse(s);
+            const p = selectedParam.param ?? JSON.parse(importedParam);
             const rid = p.id ? p.id : p.randomId;
             const hex = p.labelColorBg ?? getRandomHexColor();
             const param: MasterParam = {
@@ -143,9 +138,8 @@ export const MasterImport = (props: {
         const handleMaster = (e: MessageEvent) => {
             const { event, data } = e.data;
             if (event === RMP_MASTER_CHANNEL_POST && isOpenRef.current) {
-                setParam(data);
                 setAppClipOpen(false);
-                handleChange();
+                handleChange(data);
             }
         };
         CHN.addEventListener('message', handleMaster);
@@ -242,7 +236,7 @@ export const MasterImport = (props: {
                             colorScheme="blue"
                             variant="solid"
                             mr="1"
-                            onClick={handleChange}
+                            onClick={() => handleChange(param)}
                             isDisabled={selectedParam.id === 'null' && param === ''}
                         >
                             {t('apply')}
