@@ -24,6 +24,7 @@ import tokyoMetroBasicStation from './tokyo-metro-basic';
 import tokyoMetroIntStation from './tokyo-metro-int';
 import londonTubeBasicStation from './london-tube-basic';
 import londonTubeIntStation from './london-tube-int';
+import guangdongIntercityRailwayStation from './guangdong-intercity-railway';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -51,6 +52,7 @@ const stations = {
     [StationType.TokyoMetroInt]: tokyoMetroIntStation,
     [StationType.LondonTubeBasic]: londonTubeBasicStation,
     [StationType.LondonTubeInt]: londonTubeIntStation,
+    [StationType.GuangdongIntercityRailway]: guangdongIntercityRailwayStation,
 };
 
 export default stations;

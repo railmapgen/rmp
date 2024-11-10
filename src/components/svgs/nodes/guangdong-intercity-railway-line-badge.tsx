@@ -3,13 +3,17 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
-import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { AttributesWithColor } from '../../panels/details/color-field';
 
-const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
+const GuangdongIntercityRailwayLineBadge = (
+    props: NodeComponentProps<GuangdongIntercityRailwayLineBadgeAttributes>
+) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { names = defaultShmetroTextLineBadgeAttributes.names, color = defaultShmetroTextLineBadgeAttributes.color } =
-        attrs ?? defaultShmetroTextLineBadgeAttributes;
+    const {
+        names = defaultGuangdongIntercityRailwayLineBadgeAttributes.names,
+        color = defaultGuangdongIntercityRailwayLineBadgeAttributes.color,
+    } = attrs ?? defaultGuangdongIntercityRailwayLineBadgeAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
@@ -37,17 +41,16 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
         >
-            <rect fill={color[2]} x="0" width={bBox.width + 7} height="21" />
+            <rect rx="2" ry="2" fill={color[2]} x="0" width={bBox.width + 7} height="21" />
             <g ref={textLineEl}>
                 <text
                     className="rmp-name__zh"
                     textAnchor="middle"
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
-                    y="4"
-                    fontSize="10"
+                    y="3"
+                    fontSize="8.63"
                     fill={color[3]}
-                    letterSpacing="-0.25"
                 >
                     {names[0]}
                 </text>
@@ -56,10 +59,9 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                     textAnchor="middle"
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
-                    y="13"
-                    fontSize="5"
+                    y="14"
+                    fontSize="3.54"
                     fill={color[3]}
-                    letterSpacing="-0.25"
                 >
                     {names[1]}
                 </text>
@@ -69,18 +71,20 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
 };
 
 /**
- * ShmetroTextLineBadge specific props.
+ * GuangdongIntercityRailwayLineBadge specific props.
  */
-export interface ShmetroTextLineBadgeAttributes extends AttributesWithColor {
+export interface GuangdongIntercityRailwayLineBadgeAttributes extends AttributesWithColor {
     names: [string, string];
 }
 
-const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
-    names: ['浦江线', 'Pujiang Line'],
-    color: [CityCode.Shanghai, 'pjl', '#B5B5B6', MonoColour.white],
+const defaultGuangdongIntercityRailwayLineBadgeAttributes: GuangdongIntercityRailwayLineBadgeAttributes = {
+    names: ['广清城际', 'Guangzhou-Qingyuan Intercity'],
+    color: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],
 };
 
-const shmetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBadgeAttributes>) => {
+const guangdongIntercityRailwayLineBadgeAttrsComponent = (
+    props: AttrsProps<GuangdongIntercityRailwayLineBadgeAttributes>
+) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -105,42 +109,32 @@ const shmetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBad
             },
             minW: 'full',
         },
-        {
-            type: 'custom',
-            label: t('color'),
-            component: (
-                <ColorField
-                    type={MiscNodeType.ShmetroTextLineBadge}
-                    defaultTheme={defaultShmetroTextLineBadgeAttributes.color}
-                />
-            ),
-        },
     ];
 
     return <RmgFields fields={fields} />;
 };
 
-const shmetroTextLineBadgeIcon = (
+const guangdongIntercityRailwayLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" width="20" height="12" />
-        <text x="5" y="11" fontSize="5" fill="white">
-            浦江线
+        <text x="4.5" y="11" fontSize="4" fill="white">
+            广清城际
         </text>
-        <text x="3" y="16" fontSize="4" fill="white">
-            Pujiang Line
+        <text x="3" y="16" fontSize="2" fill="white">
+            Guangzhou-Qingyuan Intercity
         </text>
     </svg>
 );
 
-const shmetroTextLineBadge: Node<ShmetroTextLineBadgeAttributes> = {
-    component: ShmetroTextLineBadge,
-    icon: shmetroTextLineBadgeIcon,
-    defaultAttrs: defaultShmetroTextLineBadgeAttributes,
-    attrsComponent: shmetroTextLineBadgeAttrsComponent,
+const guangdongIntercityRailwayLineBadge: Node<GuangdongIntercityRailwayLineBadgeAttributes> = {
+    component: GuangdongIntercityRailwayLineBadge,
+    icon: guangdongIntercityRailwayLineBadgeIcon,
+    defaultAttrs: defaultGuangdongIntercityRailwayLineBadgeAttributes,
+    attrsComponent: guangdongIntercityRailwayLineBadgeAttrsComponent,
     metadata: {
-        displayName: 'panel.details.nodes.shmetroTextLineBadge.displayName',
+        displayName: 'panel.details.nodes.guangdongIntercityRailwayLineBadge.displayName',
         tags: [],
     },
 };
 
-export default shmetroTextLineBadge;
+export default guangdongIntercityRailwayLineBadge;

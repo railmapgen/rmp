@@ -129,9 +129,12 @@
                     "crosshatchPatternFill": "Fill with crosshatch pattern"
                 },
                 "qingdaoMetroNumLineBadge": {
-                    "displayName": "Qingdao Metro Num Line Badge",
+                    "displayName": "Qingdao Metro Num line badge",
                     "numEn": "Line number in English",
                     "showText": "Show text"
+                },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "Guangdong Intercity Railway line badge"
                 },
                 "master": {
                     "displayName": "Master node",
@@ -336,6 +339,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "London Tube interchange station"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "Guangdong Intercity Railway station"
                 }
             },
             "lines": {
@@ -433,6 +439,9 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "London Tube terminal style"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "Guangdong Intercity Railway style"
                 }
             },
             "edge": {},

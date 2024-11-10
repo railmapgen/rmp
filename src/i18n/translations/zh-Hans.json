@@ -133,6 +133,9 @@
                     "numEn": "英文线路号",
                     "showText": "显示文字"
                 },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "广东城际铁路线路标识"
+                },
                 "master": {
                     "displayName": "大师节点",
                     "type": "大师节点类型",
@@ -335,6 +338,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "伦敦地铁换乘车站"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "广东城际铁路车站"
                 }
             },
             "lines": {
@@ -432,6 +438,9 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "伦敦地铁终点站样式"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "广东城际铁路样式"
                 }
             },
             "edges": {},

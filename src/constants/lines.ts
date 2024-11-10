@@ -26,6 +26,7 @@ import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-si
 import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
 import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
 import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
+import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -64,6 +65,7 @@ export enum LineStyleType {
     LondonTubeTerminal = 'london-tube-terminal',
     LondonTubeInternalInt = 'london-tube-internal-int',
     LondonTube10MinWalk = 'london-tube-10-min-walk',
+    GuangdongIntercityRailway = 'gd-intercity-rwy',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -89,6 +91,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.LondonTubeTerminal]?: LondonTubeTerminalAttributes;
     [LineStyleType.LondonTubeInternalInt]?: LondonTubeInternalIntAttributes;
     [LineStyleType.LondonTube10MinWalk]?: LondonTube10MinWalkAttributes;
+    [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
 }
 
 export const LineStylesWithColor = [

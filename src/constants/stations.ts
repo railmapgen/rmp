@@ -24,6 +24,7 @@ import { TokyoMetroBasicStationAttributes } from '../components/svgs/stations/to
 import { TokyoMetroIntStationAttributes } from '../components/svgs/stations/tokyo-metro-int';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { LondonTubeIntStationAttributes } from '../components/svgs/stations/london-tube-int';
+import { GuangdongIntercityRailwayStationAttributes } from '../components/svgs/stations/guangdong-intercity-railway';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -51,6 +52,7 @@ export enum StationType {
     TokyoMetroInt = 'tokyo-metro-int',
     LondonTubeBasic = 'london-tube-basic',
     LondonTubeInt = 'london-tube-int',
+    GuangdongIntercityRailway = 'gd-intercity-rwy',
 }
 
 export interface ExternalStationAttributes {
@@ -79,6 +81,7 @@ export interface ExternalStationAttributes {
     [StationType.TokyoMetroInt]?: TokyoMetroIntStationAttributes;
     [StationType.LondonTubeBasic]?: LondonTubeBasicStationAttributes;
     [StationType.LondonTubeInt]?: LondonTubeIntStationAttributes;
+    [StationType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayStationAttributes;
 }
 
 export const StationWithColor = [
