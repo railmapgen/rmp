@@ -81,9 +81,9 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <g
-                transform="scale(0.6)"
+                transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -101,15 +101,15 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\\')}
-                    fontSize={16}
-                    lineHeight={16}
+                    fontSize={tram ? 7.29 : 13.13}
+                    lineHeight={tram ? 7.29 : 13.13}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
                     text={names[1].split('\\')}
-                    fontSize={10}
-                    lineHeight={10}
+                    fontSize={tram ? 5.08 : 6.56}
+                    lineHeight={tram ? 5.08 : 6.56}
                     grow="down"
                     className="rmp-name__en"
                 />
@@ -117,7 +117,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
             {secondaryNames.join('') !== '' && (
                 <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
                     <text
-                        fontSize="20"
+                        fontSize="13.13"
                         dx={-(secondaryTextWidth + 5) / 2}
                         textAnchor="end"
                         dominantBaseline="middle"
@@ -126,7 +126,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         （
                     </text>
                     <text
-                        fontSize="20"
+                        fontSize="13.13"
                         dx={(secondaryTextWidth + 5) / 2}
                         textAnchor="start"
                         dominantBaseline="middle"
@@ -135,10 +135,10 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                         ）
                     </text>
                     <g ref={secondaryTextRef}>
-                        <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        <text fontSize="10" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                             {secondaryNames[0]}
                         </text>
-                        <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" className="rmp-name__en">
                             {secondaryNames[1]}
                         </text>
                     </g>
@@ -149,10 +149,10 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
                     transform={`translate(${textX + underConstructionDx}, ${textY})`}
                     textAnchor={nameOffsetX === 'middle' ? 'start' : textAnchor}
                 >
-                    <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                         （未开通）
                     </text>
-                    <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
                         (Under Construction)
                     </text>
                 </g>

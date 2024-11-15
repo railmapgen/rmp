@@ -131,6 +131,22 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Text>
                             </TagLabel>
                         </Tag>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => window.open('https://github.com/Minwtraft', '_blank')}
+                            cursor="pointer"
+                        >
+                            <Avatar src="https://github.com/Minwtraft.png" size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%">
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    Minwtraft
+                                </Text>
+                                <Text fontSize="sm" mb={1}>
+                                    {t('header.about.Minwtraft')}
+                                </Text>
+                            </TagLabel>
+                        </Tag>
                     </VStack>
 
                     <Heading as="h5" size="sm" mt={3} mb={2}>
