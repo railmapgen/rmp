@@ -20,9 +20,9 @@ export default function OpenActions() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const {
-        telemetry: { project: isAllowAppTelemetry },
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);

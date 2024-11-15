@@ -8,7 +8,7 @@ import { IoMdHeart } from 'react-icons/io';
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { redoAction, saveGraph, undoAction } from '../../redux/param/param-slice';
+import { redoAction, undoAction } from '../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setIsDonationModalOpen } from '../../redux/runtime/runtime-slice';
 import AboutModal from './about-modal';
 import DonationModal from './donation-modal';
@@ -21,12 +21,9 @@ import { ZoomPopover } from './zoom-popover';
 export default function WindowHeader() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const {
-        telemetry: { app: isAllowAppTelemetry },
-    } = useRootSelector(state => state.app);
     const { past, future } = useRootSelector(state => state.param);
     const { isDonationModalOpen } = useRootSelector(state => state.runtime);
-    const graph = React.useRef(window.graph);
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);

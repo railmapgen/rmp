@@ -8,10 +8,13 @@ export interface AppState {
     telemetry: {
         /**
          * App level telemetry such as app load and import/export works/images.
+         *
+         * WARNING! Use rmgRuntime.isAllowAnalytics() instead.
+         * This is not read or write currently, but kept in the localstorage due to previous versions.
          */
         app: boolean;
         /**
-         * Project level telemetry such as stations' type and count.
+         * Project level telemetry such as stations'/lines' addition and their count.
          */
         project: boolean;
     };

@@ -25,14 +25,11 @@ import { TfiGallery } from 'react-icons/tfi';
 import { Events } from '../../constants/constants';
 import AfdianIcon from '../../images/afdian.png';
 import OpenCollectiveIcon from '../../images/opencollective-icon.webp';
-import { useRootSelector } from '../../redux';
 
 const DonationModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { t } = useTranslation();
-    const {
-        telemetry: { project: isAllowAppTelemetry },
-    } = useRootSelector(state => state.app);
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const handleGalleryDonationOpen = () => {
         if (rmgRuntime.isStandaloneWindow()) {

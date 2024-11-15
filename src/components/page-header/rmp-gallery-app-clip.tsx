@@ -39,8 +39,9 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const {
-        telemetry: { app: isAllowAppTelemetry, project: isAllowProjectTelemetry },
+        telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const graph = React.useRef(window.graph);
 

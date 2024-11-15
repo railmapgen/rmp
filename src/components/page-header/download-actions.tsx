@@ -40,9 +40,10 @@ export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
     const {
-        telemetry: { app: isAllowAppTelemetry, project: isAllowProjectTelemetry },
+        telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
     const param = useRootSelector(state => state.param);
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
 
     const graph = React.useRef(window.graph);

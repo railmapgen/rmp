@@ -30,7 +30,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setAutoParallel, setTelemetryApp } from '../../redux/app/app-slice';
+import { setAutoParallel, setTelemetryProject } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -56,7 +56,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
-        telemetry: { app: isAllowAppTelemetry },
+        telemetry: { project: isAllowProjectTelemetry },
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
     const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
@@ -72,8 +72,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
     const [isManagerOpen, setIsManagerOpen] = React.useState(false);
 
-    const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
-    const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
+    const handleAdditionalTelemetry = (allowTelemetry: boolean) => {
+        dispatch(setTelemetryProject(allowTelemetry));
+    };
 
     const maximumParallelLines = activeSubscriptions.RMP_CLOUD ? MAX_PARALLEL_LINES_PRO : MAX_PARALLEL_LINES_FREE;
     const isParallelLineDisabled = parallelLinesCount >= maximumParallelLines;
@@ -355,33 +357,43 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 {t('header.settings.telemetry.title')}
                             </Text>
                             <Box mt="3">
-                                <Box display="flex" mb="1">
-                                    <Text flex="1">{t('header.settings.telemetry.essential')}</Text>
-                                    <Switch isChecked={isAllowAnalytics} isDisabled />
-                                </Box>
                                 <Text fontSize="sm" lineHeight="100%" color="gray.600">
-                                    {t('header.settings.telemetry.essentialInfo')}
+                                    {t('header.settings.telemetry.info')}
                                 </Text>
-                                <Link
-                                    color={linkColour}
-                                    fontSize="sm"
-                                    lineHeight="100%"
-                                    href="https://support.google.com/analytics/answer/11593727"
-                                    isExternal={true}
-                                >
-                                    {t('header.settings.telemetry.essentialLink')} <Icon as={MdOpenInNew} />
-                                </Link>
 
-                                <Box display="flex" mb="1">
-                                    <Text flex="1">{t('header.settings.telemetry.additional')}</Text>
-                                    <Switch
-                                        isChecked={isAllowAppTelemetry}
-                                        onChange={({ target: { checked } }) => handleAdditionalTelemetry(checked)}
-                                    />
+                                <Box mt="3" mb="1">
+                                    <Box display="flex" mb="1">
+                                        <Text flex="1">{t('header.settings.telemetry.essential')}</Text>
+                                        <Tooltip label={t('header.settings.telemetry.essentialTooltip')}>
+                                            <Switch isChecked={isAllowAppTelemetry} isDisabled />
+                                        </Tooltip>
+                                    </Box>
+                                    <Text fontSize="sm" lineHeight="100%" color="gray.600">
+                                        {t('header.settings.telemetry.essentialInfo')}
+                                    </Text>
+                                    <Link
+                                        color={linkColour}
+                                        fontSize="sm"
+                                        lineHeight="100%"
+                                        href="https://support.google.com/analytics/answer/11593727"
+                                        isExternal={true}
+                                    >
+                                        {t('header.settings.telemetry.essentialLink')} <Icon as={MdOpenInNew} />
+                                    </Link>
                                 </Box>
-                                <Text fontSize="sm" lineHeight="100%" color="gray.600">
-                                    {t('header.settings.telemetry.additionalInfo')}
-                                </Text>
+
+                                <Box mt="1" mb="1">
+                                    <Box display="flex">
+                                        <Text flex="1">{t('header.settings.telemetry.additional')}</Text>
+                                        <Switch
+                                            isChecked={isAllowProjectTelemetry}
+                                            onChange={({ target: { checked } }) => handleAdditionalTelemetry(checked)}
+                                        />
+                                    </Box>
+                                    <Text fontSize="sm" lineHeight="100%" color="gray.600">
+                                        {t('header.settings.telemetry.additionalInfo')}
+                                    </Text>
+                                </Box>
                             </Box>
                         </Box>
                     </VStack>

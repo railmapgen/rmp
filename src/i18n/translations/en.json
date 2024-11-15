@@ -638,11 +638,13 @@
             },
             "telemetry": {
                 "title": "Telemetry",
+                "info": "To help improve Rail Map Painter and keep contributors motivated to enhance the project, anonymous usage data is collected through Google Analytics. This data is used solely for enhancing the user experience and optimizing the tool's functionality and is never shared with third parties.",
                 "essential": "Basic",
-                "essentialInfo": "Rail Map Painter uses Google Analytics to collect data that helps the contributors know how and when our users visit this project. Since there is no user registration and backend service in Rail Map Painter, this is the only feedback that contributors can get and be motivated to keep updating the project. Be assured that all the data transferred will not contain any personal identifiable information and data from your project.",
+                "essentialTooltip": "Change this global setting in Rail Map Toolkit",
+                "essentialInfo": "Rail Map Painter collects essential usage data that helps us understand how and when users interact with the tool. Rest assured, no personally identifiable information or data from your projects is ever collected.",
                 "essentialLink": "Click this link to see detailed fields that Google Analytics may collect.",
                 "additional": "Additional",
-                "additionalInfo": "Rail Map Painter also sends additional events when you interact with your mouse or keyboard such as project creation or station addition. As always, they do not contain any personal identifiable information and are only used for statistics purpose."
+                "additionalInfo": "Rail Map Painter also gathers data on interactions, such as project creation or station addition, when you input. These additional data is also anonymous and are only used for statistical analysis to help us make the tool better."
             }
         },
         "about": {
