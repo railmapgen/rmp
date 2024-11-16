@@ -4,6 +4,7 @@ import { languageToFontsCss } from '../components/svgs/nodes/text';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import i18n from '../i18n/config';
 import { FONTS_CSS, makeBase64EncodedFontsStyle } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
@@ -46,7 +47,7 @@ export const makeRenderReadySVGElement = async (
 
     const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
     // append rmp info if user does not want to share rmp info
-    if (!generateRMPInfo) elem.appendChild(generateRmpInfo(xMax - 400, yMax - 120));
+    if (!generateRMPInfo) elem.appendChild(await generateRmpInfo(xMax - 400, yMax - 120));
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -228,29 +229,37 @@ const loadFacilitiesSvg = async (
     }
 };
 
-const generateRmpInfo = (x: number, y: number) => {
+const generateRmpInfo = async (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     info.setAttribute('transform', `translate(${x}, ${y})scale(2)`);
 
-    const logo = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    // FIXME: return after image is loaded
-    // logo.setAttribute('href', 'https://uat-railmapgen.github.io/rmp/logo192.png');
-    // logo.setAttribute('href', logoImg);
-    logo.setAttribute('width', '40');
-    logo.setAttribute('height', '40');
-    logo.setAttribute('x', '-50');
-    logo.setAttribute('y', '-20');
+    const logoSVGRep = await fetch(import.meta.env.BASE_URL + `/logo.svg`);
+    const logoSVG = await logoSVGRep.text();
+    const temp = document.createElement('div');
+    temp.innerHTML = logoSVG;
+    const svg = temp.querySelector('svg')!;
+    const logo = document.createElement('g');
+    logo.setAttribute('transform', `translate(-60, -25)scale(0.1)`);
+    logo.setAttribute('font-family', 'Arial, sans-serif');
+    logo.innerHTML = svg.innerHTML;
+    info.appendChild(logo);
 
     const rmp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     rmp.setAttribute('font-family', 'Arial, sans-serif');
     rmp.setAttribute('font-size', '16');
-    rmp.appendChild(document.createTextNode('Rail Map Painter'));
+    const appName = i18n.t('Rail Map Painter');
+    rmp.appendChild(document.createTextNode(appName));
 
     const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     link.setAttribute('font-family', 'Arial, sans-serif');
     link.setAttribute('font-size', '10');
     link.setAttribute('y', '10');
-    link.appendChild(document.createTextNode('https://railmapgen.github.io/rmp/'));
+    const origin = window.location.origin;
+    let url = 'https://railmapgen.org/';
+    if (origin.includes('github')) url = 'https://railmapgen.github.io/';
+    else if (origin.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
+    url += '?app=rmp';
+    link.appendChild(document.createTextNode(url));
 
     info.appendChild(logo);
     info.appendChild(rmp);
