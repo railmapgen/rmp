@@ -56,7 +56,19 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         () => setBBox(textLineEl.current!.getBBox()),
         // Watch content to get update of bBox's width and height.
         // Watch textAnchor and dominantBaseline to get update of bBox's x and y.
-        [content, textAnchor, dominantBaseline, setBBox, textLineEl]
+        [
+            content,
+            fontSize,
+            lineHeight,
+            textAnchor,
+            dominantBaseline,
+            language,
+            rotate,
+            italic,
+            bold,
+            setBBox,
+            textLineEl,
+        ]
     );
 
     // Add fonts css to the document for the language selected.
