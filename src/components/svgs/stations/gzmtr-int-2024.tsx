@@ -16,8 +16,16 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
+
+const FONT_SIZE = {
+    en: 6.56,
+    zh: 13.13,
+};
+const NAME_DY = structuredClone(DEFAULT_NAME_DY);
+NAME_DY.top.lineHeight = FONT_SIZE.en;
+NAME_DY.bottom.lineHeight = FONT_SIZE.zh;
 
 const GzmtrInt2024Station = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -68,7 +76,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? iconBBox.x1 + textDX : nameOffsetX === 'right' ? iconBBox.x2 - textDX : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
             (iconBBox.y2 - iconBBox.y1) / 2) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor =
