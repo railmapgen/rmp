@@ -1,4 +1,5 @@
 import { Theme } from './constants';
+import { Translation } from '@railmapgen/rmg-translate';
 
 /**
  * @property {string} 0 - Chinese characters
@@ -71,8 +72,8 @@ export interface StationInfo {
     /**
      * Station name in two languages.
      */
-    name: Name;
-    secondaryName?: Name;
+    localisedName: Translation;
+    localisedSecondaryName?: Translation;
     /**
      * Station number. (GZMTR specific)
      */

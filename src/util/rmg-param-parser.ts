@@ -31,7 +31,7 @@ export const parseRmgParam = (
             const nodes = graph.filterNodes(
                 (node, attr) =>
                     Object.values(StationType).includes(attr.type as StationType) &&
-                    (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
+                    (attr[attr.type] as StationAttributes).names[0] === stnInfo.localisedName.zh
             );
             if (nodes.length !== 0) stnIdMap[id] = nodes[0] as StnId;
         });
@@ -44,7 +44,7 @@ export const parseRmgParam = (
                 graph.filterNodes(
                     (node, attr) =>
                         Object.values(StationType).includes(attr.type as StationType) &&
-                        (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
+                        (attr[attr.type] as StationAttributes).names[0] === stnInfo.localisedName.zh
                 ).length === 0
         )
         .forEach(([id, stnInfo], i) => {
@@ -67,7 +67,7 @@ export const parseRmgParam = (
             const attr = {
                 // deep copy to prevent mutual reference
                 ...structuredClone(stations[type].defaultAttrs),
-                names: stnInfo.name,
+                names: [stnInfo.localisedName.zh ?? '', stnInfo.localisedName.en ?? ''],
             };
 
             // add style specific attrs from RMG save
