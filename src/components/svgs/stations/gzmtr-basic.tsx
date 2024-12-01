@@ -14,7 +14,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const GzmtrBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -47,9 +47,33 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     const iconEl = React.useRef<SVGGElement | null>(null);
     iconEl.current?.querySelector('path')?.setAttribute('id', `stn_core_${id}`);
 
-    const textX = nameOffsetX === 'left' ? -18 : nameOffsetX === 'right' ? 18 : 0;
+    const FONT_SIZE = {
+        en: tram ? 5.08 : 6.56,
+        zh: tram ? 7.29 : 13.13,
+    };
+    const NAME_DY: typeof DEFAULT_NAME_DY = {
+        top: {
+            namesPos: 1,
+            lineHeight: FONT_SIZE.en,
+            polarity: -1,
+        },
+        middle: {
+            namesPos: 0,
+            lineHeight: 0,
+            polarity: 0,
+        },
+        bottom: {
+            namesPos: 0,
+            lineHeight: FONT_SIZE.zh,
+            polarity: 1,
+        },
+    };
+
+    const textXConst = tram ? 11 : 15;
+    const textX = nameOffsetX === 'left' ? -textXConst : nameOffsetX === 'right' ? textXConst : 0;
+    const textYConst = tram ? 8 : 10;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight + 11) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight + textYConst) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor =
         nameOffsetX === 'left'
@@ -64,11 +88,14 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
-    React.useEffect(() => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0), [...secondaryNames]);
+    React.useEffect(
+        () => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0),
+        [...secondaryNames, tram]
+    );
 
     const textRef = React.useRef<SVGGElement | null>(null);
     const [textWidth, setTextWidth] = React.useState(0);
-    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names]);
+    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names, tram]);
 
     const secondaryDx =
         nameOffsetX === 'middle'
@@ -101,15 +128,15 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\\')}
-                    fontSize={tram ? 7.29 : 13.13}
-                    lineHeight={tram ? 7.29 : 13.13}
+                    fontSize={FONT_SIZE.zh}
+                    lineHeight={FONT_SIZE.zh}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
                     text={names[1].split('\\')}
-                    fontSize={tram ? 5.08 : 6.56}
-                    lineHeight={tram ? 5.08 : 6.56}
+                    fontSize={FONT_SIZE.en}
+                    lineHeight={FONT_SIZE.en}
                     grow="down"
                     className="rmp-name__en"
                 />
