@@ -77,7 +77,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
     const textPolarity = nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0;
     const textX = (iconWidth / 2 + 5) * textPolarity;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SZ_BASIC[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_SZ_BASIC[nameOffsetY].lineHeight +
             NAME_DY_SZ_BASIC[nameOffsetY].offset +
             (nameOffsetY === 'middle' ? 0 : iconHeight / 2)) *
         NAME_DY_SZ_BASIC[nameOffsetY].polarity;
@@ -122,7 +122,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
             </g>
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={NAME_SZ_BASIC.zh.size}
                     lineHeight={NAME_SZ_BASIC.zh.size}
                     grow="up"
@@ -130,7 +130,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                     className="rmp-name__zh"
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={NAME_SZ_BASIC.en.size}
                     lineHeight={NAME_SZ_BASIC.en.size}
                     grow="down"
@@ -173,9 +173,9 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n') ?? defaultSuzhouRTIntStationAttributes.names[0],
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -183,9 +183,9 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n') ?? defaultSuzhouRTIntStationAttributes.names[1],
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

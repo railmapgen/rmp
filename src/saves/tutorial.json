@@ -1158,7 +1158,7 @@
                     "shmetro-basic-2020": {
                         "names": [
                             "上海科技馆",
-                            "Shanghai Science\\& Technology Museum"
+                            "Shanghai Science\n& Technology Museum"
                         ],
                         "rotate": 225,
                         "color": [
@@ -1225,7 +1225,7 @@
                     "shmetro-basic-2020": {
                         "names": [
                             "张江高科",
-                            "Zhangjiang High-Tech\\Park"
+                            "Zhangjiang High-Tech\nPark"
                         ],
                         "rotate": 0,
                         "color": [

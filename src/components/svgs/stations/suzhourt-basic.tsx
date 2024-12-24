@@ -70,14 +70,14 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -5 : nameOffsetX === 'right' ? 5 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SZ_BASIC[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_SZ_BASIC[nameOffsetY].lineHeight +
             NAME_DY_SZ_BASIC[nameOffsetY].offset) *
         NAME_DY_SZ_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     const textVerticalY = nameOffsetY === 'top' ? -2.5 - 2 : 2.5 + 2; // iconRadius + verticalOffset
     const textVerticalAnchor = nameOffsetY === 'top' ? 'end' : 'start';
-    const textVerticalEnX = (names[0].split('\\').length * NAME_SZ_BASIC.zh.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
+    const textVerticalEnX = (names[0].split('\n').length * NAME_SZ_BASIC.zh.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -95,7 +95,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
             {!textVertical ? (
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={NAME_SZ_BASIC.zh.size}
                         lineHeight={NAME_SZ_BASIC.zh.size}
                         grow="up"
@@ -103,7 +103,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         fontSize={NAME_SZ_BASIC.en.size}
                         lineHeight={NAME_SZ_BASIC.en.size}
                         grow="down"
@@ -116,7 +116,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                 <>
                     <g transform={`translate(-1, ${textVerticalY})`} textAnchor={textVerticalAnchor}>
                         <MultilineTextVertical
-                            text={names[0].split('\\')}
+                            text={names[0].split('\n')}
                             fontSize={NAME_SZ_BASIC.zh.size}
                             lineWidth={NAME_SZ_BASIC.zh.size}
                             grow="bidirectional"
@@ -130,7 +130,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                         textAnchor={textVerticalAnchor}
                     >
                         <MultilineText
-                            text={names[1].split('\\')}
+                            text={names[1].split('\n')}
                             fontSize={NAME_SZ_BASIC.en.size}
                             lineHeight={NAME_SZ_BASIC.en.size}
                             grow="up"
@@ -171,9 +171,9 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n') ?? defaultSuzhouRTBasicStationAttributes.names[0],
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -181,9 +181,9 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n') ?? defaultSuzhouRTBasicStationAttributes.names[1],
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

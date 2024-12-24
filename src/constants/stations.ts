@@ -109,7 +109,7 @@ export interface StationComponentProps {
 export interface StationAttributes {
     /**
      * The names (in different languages) of this station.
-     * If you need to break the line, use `\\` and display it with component MultilineText.
+     * If you need to break the line, use `\n` and display it with component MultilineText.
      */
     names: [string, ...string[]];
 }

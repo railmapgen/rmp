@@ -67,7 +67,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
         Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
 
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
-    const textJAHeight = names[0].split('\\').length * (nameOffsetY === 'middle' ? 0 : NAME_JRE_BASIC.ja.size);
+    const textJAHeight = names[0].split('\n').length * (nameOffsetY === 'middle' ? 0 : NAME_JRE_BASIC.ja.size);
     const textJAOffset = (nameOffsetY === 'middle' ? 0 : nameOffsetY === 'top' ? 2 : 1) + NAME_JRE_BASIC.ja.baseOffset;
     const textDY =
         (textJAHeight + textJAOffset) * NAME_DY[nameOffsetY].polarity +
@@ -83,8 +83,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
         en:
             (nameOffsetY === 'middle'
                 ? textOneLine
-                    ? (-names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 - 1
-                    : (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2
+                    ? (-names[0].split('\n').length * NAME_JRE_BASIC.ja.size) / 2 - 1
+                    : (names[0].split('\n').length * NAME_JRE_BASIC.ja.size) / 2
                 : 0) +
             (important && !textOneLine ? 2 : 0) +
             NAME_JRE_BASIC.en.baseOffset,
@@ -107,7 +107,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const textENX = textOneLine
         ? (Math.abs(textX) + bBox.width + 1 + (important ? textImportantSafeD : 0)) * (nameOffsetX === 'left' ? -1 : 1)
         : rotate % 90 !== 0 && nameOffsetX !== 'middle'
-          ? (names[0].split('\\').length / 2) * textBase * NAME_JRE_BASIC.ja.size +
+          ? (names[0].split('\n').length / 2) * textBase * NAME_JRE_BASIC.ja.size +
             (nameOffsetX === 'left' ? -1 : 1) * NAME_JRE_BASIC.ja.size
           : 0;
     const textENY = (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity;
@@ -143,10 +143,10 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const textVerticalBase = { 0: 0, 45: -1, 90: 0, 135: 1, 180: 0, 225: -1, 270: 0, 315: 1 }[rotate];
     const textVerticalBaseDY = textVerticalBase * NAME_JRE_BASIC.ja.size;
     const textVerticalENBaseOffset =
-        (names[0].split('\\').length * NAME_JRE_BASIC.ja.size) / 2 + NAME_JRE_BASIC.en.baseOffset;
+        (names[0].split('\n').length * NAME_JRE_BASIC.ja.size) / 2 + NAME_JRE_BASIC.en.baseOffset;
     const textVerticalENX = (important ? 1 : 0) * NAME_DY[nameOffsetY].polarity * -1;
     const textVerticalENY =
-        ((names[0].split('\\').length - 0) / 2) *
+        ((names[0].split('\n').length - 0) / 2) *
             (nameOffsetY === 'top' ? -1 : 1) *
             textVerticalBase *
             NAME_JRE_BASIC.ja.size +
@@ -183,17 +183,17 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         ref={textJAEl}
                         x={textX}
                         y={important && nameOffsetY !== 'middle' ? textJAImportantY : 0}
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={NAME_JRE_BASIC.ja.size}
                         lineHeight={NAME_JRE_BASIC.ja.size}
                         grow={textGrow.ja}
                         baseOffset={textBaseOffset.ja}
-                        funcDX={i => (i - (names[0].split('\\').length - 1) / 2) * textBaseDX}
+                        funcDX={i => (i - (names[0].split('\n').length - 1) / 2) * textBaseDX}
                         className="rmp-name__jreast_ja"
                         fill={important ? 'white' : 'black'}
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         x={textENX}
                         y={textENY}
                         fontSize={NAME_JRE_BASIC.en.size}
@@ -219,7 +219,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         )}
                         <MultilineTextVertical
                             ref={textJAEl}
-                            text={names[0].split('\\')}
+                            text={names[0].split('\n')}
                             fontSize={NAME_JRE_BASIC.ja.size}
                             lineWidth={NAME_JRE_BASIC.ja.size}
                             grow="bidirectional"
@@ -235,7 +235,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         textAnchor={textVerticalAnchor.en}
                     >
                         <MultilineText
-                            text={names[1].split('\\')}
+                            text={names[1].split('\n')}
                             fontSize={NAME_JRE_BASIC.en.size}
                             lineHeight={NAME_JRE_BASIC.en.size}
                             grow={nameOffsetY === 'top' ? 'down' : 'up'}
@@ -301,9 +301,9 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameJa'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 if (attrs.names[0].length > 1) {
                     attrs.textOneLine = false;
                     attrs.important = false;
@@ -315,9 +315,9 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val.toString();
                 if (attrs.names[1].length > 1) {
                     attrs.textOneLine = false;
                     attrs.important = false;
@@ -365,7 +365,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'switch',
             label: t('panel.details.stations.jrEastBasic.textOneLine'),
             isChecked: attrs.textOneLine,
-            isDisabled: attrs.nameOffsetY !== 'middle' || attrs.names.some(name => name.split('\\').length > 1),
+            isDisabled: attrs.nameOffsetY !== 'middle' || attrs.names.some(name => name.split('\n').length > 1),
             onChange: (val: boolean) => {
                 attrs.textOneLine = val;
                 handleAttrsUpdate(id, attrs);
@@ -389,7 +389,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'switch',
             label: t('panel.details.stations.jrEastBasic.important'),
             isChecked: attrs.important ?? false,
-            isDisabled: attrs.names.some(name => name.split('\\').length > 1),
+            isDisabled: attrs.names.some(name => name.split('\n').length > 1),
             onChange: (val: boolean) => {
                 attrs.important = val;
                 handleAttrsUpdate(id, attrs);
