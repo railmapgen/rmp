@@ -214,7 +214,7 @@ export const ToRmgEndSelectModal = (props: {
                                 whiteSpace="nowrap"
                                 display="ruby"
                             >
-                                {name1.replaceAll('\\', '⏎')}/{name2.replaceAll('\\', '⏎')}
+                                {name1.replaceAll('\n', '⏎')}/{name2.replaceAll('\n', '⏎')}
                             </Button>
                         ))}
                     </Stack>

@@ -38,7 +38,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
             NAME_DY_SH_BASIC[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
@@ -66,7 +66,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                     strokeWidth="1"
                 >
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={13.13}
                         lineHeight={13.13}
                         grow="up"
@@ -74,7 +74,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         dx={nameOffsetX === 'right' ? 1.67 : 0}
                         fontSize={5.83}
                         lineHeight={5.83}
