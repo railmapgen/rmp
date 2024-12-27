@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
@@ -11,7 +12,7 @@ import {
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
 
-const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>) => {
+const LondonSandwichPre = (props: LineStyleComponentProps<LondonSandwichAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultLondonSandwichAttributes.color } = styleAttrs ?? defaultLondonSandwichAttributes;
 
@@ -21,13 +22,13 @@ const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
+        <g id={`${id}.pre`} onPointerDown={onPointerDown} cursor="pointer">
+            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
         </g>
     );
 };
 
-const LondonSandwichPost = (props: LineStyleComponentProps<LondonSandwichAttributes>) => {
+const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultLondonSandwichAttributes.color } = styleAttrs ?? defaultLondonSandwichAttributes;
 
@@ -53,10 +54,12 @@ const defaultLondonSandwichAttributes: LondonSandwichAttributes = {
 };
 
 const LondonSandwichAttrsComponent = (props: AttrsProps<LondonSandwichAttributes>) => {
+    const { t } = useTranslation();
+
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField type={LineStyleType.LondonSandwich} defaultTheme={defaultLondonSandwichAttributes.color} />
             ),
@@ -68,7 +71,7 @@ const LondonSandwichAttrsComponent = (props: AttrsProps<LondonSandwichAttributes
 
 const londonSandwich: LineStyle<LondonSandwichAttributes> = {
     component: LondonSandwich,
-    postComponent: LondonSandwichPost,
+    preComponent: LondonSandwichPre,
     defaultAttrs: defaultLondonSandwichAttributes,
     attrsComponent: LondonSandwichAttrsComponent,
     metadata: {

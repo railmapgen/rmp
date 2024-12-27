@@ -29,6 +29,8 @@ import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/l
 import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
 import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
+import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
+import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -70,6 +72,8 @@ export enum LineStyleType {
     GuangdongIntercityRailway = 'gd-intercity-rwy',
     LondonRail = 'london-rail',
     LondonSandwich = 'london-sandwich',
+    LondonLutonAirportDART = 'london-DART',
+    LondonIFSCloudCableCar = 'london-dangleway',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -98,6 +102,8 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
     [LineStyleType.LondonRail]?: LondonRailAttributes;
     [LineStyleType.LondonSandwich]?: LondonSandwichAttributes;
+    [LineStyleType.LondonLutonAirportDART]?: LondonLutonAirportDARTAttributes;
+    [LineStyleType.LondonIFSCloudCableCar]?: LondonIFSCloudCableCarAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -114,6 +120,7 @@ export const LineStylesWithColor = [
     LineStyleType.LRTSingleColor,
     LineStyleType.LondonRail,
     LineStyleType.LondonSandwich,
+    LineStyleType.LondonLutonAirportDART,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */

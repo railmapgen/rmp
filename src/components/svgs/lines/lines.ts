@@ -28,6 +28,8 @@ import londonTubeTerminal from './styles/london-tube-terminal';
 import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
 import londonRail from './styles/london-rail';
 import londonSandwich from './styles/london-sandwich';
+import londonLutonAirportDART from './styles/london-DART';
+import londonIFSCloudCableCar from './styles/london-ifs-could-cable-car';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -62,4 +64,6 @@ export const lineStyles = {
     [LineStyleType.GuangdongIntercityRailway]: guangdongIntercityRailway,
     [LineStyleType.LondonRail]: londonRail,
     [LineStyleType.LondonSandwich]: londonSandwich,
+    [LineStyleType.LondonLutonAirportDART]: londonLutonAirportDART,
+    [LineStyleType.LondonIFSCloudCableCar]: londonIFSCloudCableCar,
 };
