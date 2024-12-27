@@ -26,11 +26,11 @@ import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-si
 import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
 import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
 import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
-import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
 import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
 import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
 import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
+import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -69,11 +69,11 @@ export enum LineStyleType {
     LondonTubeTerminal = 'london-tube-terminal',
     LondonTubeInternalInt = 'london-tube-internal-int',
     LondonTube10MinWalk = 'london-tube-10-min-walk',
-    GuangdongIntercityRailway = 'gd-intercity-rwy',
     LondonRail = 'london-rail',
     LondonSandwich = 'london-sandwich',
     LondonLutonAirportDART = 'london-DART',
     LondonIFSCloudCableCar = 'london-dangleway',
+    GuangdongIntercityRailway = 'gd-intercity-rwy',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -99,11 +99,11 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.LondonTubeTerminal]?: LondonTubeTerminalAttributes;
     [LineStyleType.LondonTubeInternalInt]?: LondonTubeInternalIntAttributes;
     [LineStyleType.LondonTube10MinWalk]?: LondonTube10MinWalkAttributes;
-    [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
     [LineStyleType.LondonRail]?: LondonRailAttributes;
     [LineStyleType.LondonSandwich]?: LondonSandwichAttributes;
     [LineStyleType.LondonLutonAirportDART]?: LondonLutonAirportDARTAttributes;
     [LineStyleType.LondonIFSCloudCableCar]?: LondonIFSCloudCableCarAttributes;
+    [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -118,6 +118,7 @@ export const LineStylesWithColor = [
     LineStyleType.JREastSingleColor,
     LineStyleType.JREastSingleColorPattern,
     LineStyleType.LRTSingleColor,
+    LineStyleType.GuangdongIntercityRailway,
     LineStyleType.LondonRail,
     LineStyleType.LondonSandwich,
     LineStyleType.LondonLutonAirportDART,
