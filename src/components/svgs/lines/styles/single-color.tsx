@@ -1,5 +1,7 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -8,11 +10,6 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
-import { CityCode } from '../../../../constants/constants';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -47,25 +44,24 @@ const defaultSingleColorAttributes: SingleColorAttributes = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
-const singleColorFields = [
-    {
-        type: 'custom',
-        label: 'color',
-        component: <ColorField type={LineStyleType.SingleColor} defaultTheme={defaultSingleColorAttributes.color} />,
-    },
-];
+const singleColorAttrsComponent = (props: AttrsProps<SingleColorAttributes>) => {
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'custom',
+            label: 'color',
+            component: (
+                <ColorField type={LineStyleType.SingleColor} defaultTheme={defaultSingleColorAttributes.color} />
+            ),
+        },
+    ];
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={singleColorFields as RmgFieldsFieldDetail<SingleColorAttributes>}
-        type="style"
-    />
-);
+    return <RmgFields fields={fields} />;
+};
 
 const singleColor: LineStyle<SingleColorAttributes> = {
     component: SingleColor,
     defaultAttrs: defaultSingleColorAttributes,
-    attrsComponent,
+    attrsComponent: singleColorAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.singleColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
