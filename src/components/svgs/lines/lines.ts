@@ -26,6 +26,8 @@ import londonTubeInternalInt from './styles/london-tube-internal-int';
 import londonTube10MinWalk from './styles/london-tube-10-min-walk';
 import londonTubeTerminal from './styles/london-tube-terminal';
 import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
+import londonRail from './styles/london-rail';
+import londonSandwich from './styles/london-sandwich';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -58,4 +60,6 @@ export const lineStyles = {
     [LineStyleType.LondonTubeInternalInt]: londonTubeInternalInt,
     [LineStyleType.LondonTube10MinWalk]: londonTube10MinWalk,
     [LineStyleType.GuangdongIntercityRailway]: guangdongIntercityRailway,
+    [LineStyleType.LondonRail]: londonRail,
+    [LineStyleType.LondonSandwich]: londonSandwich,
 };

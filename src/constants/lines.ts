@@ -27,6 +27,8 @@ import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/lo
 import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
 import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
 import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
+import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
+import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -66,6 +68,8 @@ export enum LineStyleType {
     LondonTubeInternalInt = 'london-tube-internal-int',
     LondonTube10MinWalk = 'london-tube-10-min-walk',
     GuangdongIntercityRailway = 'gd-intercity-rwy',
+    LondonRail = 'london-rail',
+    LondonSandwich = 'london-sandwich',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -92,6 +96,8 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.LondonTubeInternalInt]?: LondonTubeInternalIntAttributes;
     [LineStyleType.LondonTube10MinWalk]?: LondonTube10MinWalkAttributes;
     [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
+    [LineStyleType.LondonRail]?: LondonRailAttributes;
+    [LineStyleType.LondonSandwich]?: LondonSandwichAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -106,6 +112,8 @@ export const LineStylesWithColor = [
     LineStyleType.JREastSingleColor,
     LineStyleType.JREastSingleColorPattern,
     LineStyleType.LRTSingleColor,
+    LineStyleType.LondonRail,
+    LineStyleType.LondonSandwich,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
