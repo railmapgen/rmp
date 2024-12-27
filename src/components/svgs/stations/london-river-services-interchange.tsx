@@ -160,8 +160,8 @@ const londonRiverServicesIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <circle cx="12" cy="12" r="6" stroke="currentColor" fill="white" />
         <g transform="translate(12, 12)scale(0.18)">
-            <path d={D1} />
-            <path d={D2} />
+            <path stroke="currentColor" d={D1} />
+            <path stroke="currentColor" d={D2} />
         </g>
     </svg>
 );
