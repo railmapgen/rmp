@@ -125,8 +125,8 @@
                     "isTram": "是LRT线路标识"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR东日本线路标识",
-                  "crosshatchPatternFill": "用网状图案填充"
+                    "displayName": "JR东日本线路标识",
+                    "crosshatchPatternFill": "用网状图案填充"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青岛地铁数字线路标识",
@@ -135,6 +135,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "广东城际铁路线路标识"
+                },
+                "londonArrow": {
+                    "displayName": "伦敦箭头",
+                    "type": "类型",
+                    "continuation": "延续",
+                    "sandwich": "三明治",
+                    "tube": "地铁"
                 },
                 "master": {
                     "displayName": "大师节点",
@@ -339,6 +346,9 @@
                 "londonTubeInt": {
                     "displayName": "伦敦地铁换乘车站"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "伦敦河流服务换乘站"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路车站"
                 }
@@ -438,6 +448,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "伦敦地铁终点站样式"
+                },
+                "londonRail": {
+                    "displayName": "伦敦铁路样式",
+                    "limitedService": "有限服务/仅限高峰时段",
+                    "colorBackground": "背景颜色",
+                    "colorForeground": "前景颜色"
+                },
+                "londonSandwich": {
+                    "displayName": "伦敦三明治样式"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "伦敦卢顿机场DART样式"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "伦敦IFS云缆车样式"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路样式"

@@ -136,6 +136,13 @@
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "Guangdong Intercity Railway line badge"
                 },
+                "londonArrow": {
+                    "displayName": "London arrow",
+                    "type": "Type",
+                    "continuation": "Continuation",
+                    "sandwich": "Sandwich",
+                    "tube": "Tube"
+                },
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
@@ -340,6 +347,9 @@
                 "londonTubeInt": {
                     "displayName": "London Tube interchange station"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "London river services interchange station"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway station"
                 }
@@ -439,6 +449,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "London Tube terminal style"
+                },
+                "londonRail": {
+                    "displayName": "London rail style",
+                    "limitedService": "Limited service/Peak hours only",
+                    "colorBackground": "Color background",
+                    "colorForeground": "Color foreground"
+                },
+                "londonSandwich": {
+                    "displayName": "London sandwich style"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "London Luton Airport DART style"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "London IFS Cloud Cable Car style"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway style"
@@ -562,7 +587,7 @@
                 "undo": "Undo.",
                 "redo": "Redo."
             },
-            "procedures":{
+            "procedures": {
                 "title": "Procedures",
                 "translate": {
                     "title": "Translate nodes' coordinates",

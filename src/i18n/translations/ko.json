@@ -136,6 +136,13 @@
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "광동 시외 철도 노선 표지판"
                 },
+                "londonArrow": {
+                    "displayName": "런던 화살표",
+                    "type": "유형",
+                    "continuation": "계속",
+                    "sandwich": "샌드위치",
+                    "tube": "튜브"
+                },
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
@@ -339,6 +346,9 @@
                 "londonTubeInt": {
                     "displayName": "런던 지하철 환승역"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "런던 강 서비스 환승역"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "광둥 시외 기차역"
                 }
@@ -438,6 +448,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "런던 지하철 종착 스타일"
+                },
+                "londonRail": {
+                    "displayName": "런던 철도 스타일",
+                    "limitedService": "제한 서비스/혼잡 시간대만",
+                    "colorBackground": "배경 색상",
+                    "colorForeground": "전경 색상"
+                },
+                "londonSandwich": {
+                    "displayName": "런던 샌드위치 스타일"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "런던 루튼 공항 DART 스타일"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "런던 IFS 클라우드 케이블카 스타일"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "광동성 도시간 철도 스타일"

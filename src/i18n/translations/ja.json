@@ -127,8 +127,8 @@
                     "isTram": "LRT路線バッジです"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR東日本路線番号徽章",
-                  "crosshatchPatternFill": "網目模様で塗りつぶす"
+                    "displayName": "JR東日本路線番号徽章",
+                    "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青島地下鉄番号線徽章",
@@ -137,6 +137,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "広東省都市間鉄道線徽章"
+                },
+                "londonArrow": {
+                    "displayName": "ロンドン矢印",
+                    "type": "種類",
+                    "continuation": "継続",
+                    "sandwich": "サンドイッチ",
+                    "tube": "地下鉄"
                 },
                 "master": {
                     "displayName": "大師節点",
@@ -272,18 +279,18 @@
                     "displayName": "シンガポールMRT乗り換え駅"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR東日本基本駅",
-                  "nameOffset": "名前の補正値",
-                  "textOneLine": "1行での名前",
-                  "textVertical": "垂直の名前",
-                  "important": "重要な駅",
-                  "lines": "乗り換え線の補正値"
+                    "displayName": "JR東日本基本駅",
+                    "nameOffset": "名前の補正値",
+                    "textOneLine": "1行での名前",
+                    "textVertical": "垂直の名前",
+                    "important": "重要な駅",
+                    "lines": "乗り換え線の補正値"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR東日本重要駅",
-                  "textVertical": "垂直の名前",
-                  "mostImportant": "最も重要な駅",
-                  "minLength": "駅の最小長"
+                    "displayName": "JR東日本重要駅",
+                    "textVertical": "垂直の名前",
+                    "mostImportant": "最も重要な駅",
+                    "minLength": "駅の最小長"
                 },
                 "foshanMetroBasic": {
                     "displayName": "仏山地鐵基本車站",
@@ -339,6 +346,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "ロンドン地下鉄乗換駅"
+                },
+                "londonRiverServicesInt": {
+                    "displayName": "ロンドン川サービス乗換駅"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "広東省都市間鉄道駅"
@@ -439,6 +449,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "ロンドン地下鉄終着風格"
+                },
+                "londonRail": {
+                    "displayName": "ロンドン鉄道風格",
+                    "limitedService": "限定サービス/ピーク時のみ",
+                    "colorBackground": "背景色",
+                    "colorForeground": "前景色"
+                },
+                "londonSandwich": {
+                    "displayName": "ロンドンサンドイッチ風格"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "ロンドンルートン空港DART風格"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "広東省都市間鉄道風格"
