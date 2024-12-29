@@ -381,6 +381,9 @@
                 "gzmtrVirtualInt": {
                     "displayName": "広州地下鉄駅外乗り換え風格"
                 },
+                "gzmtrLoop": {
+                    "displayName": "広州地下鉄環状線風格"
+                },
                 "chinaRailway": {
                     "displayName": "中国鉄道風格"
                 },

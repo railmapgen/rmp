@@ -7,6 +7,7 @@ import singleColor from './styles/single-color';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
+import gzmtrLoop from './styles/gzmtr-loop';
 import chinaRailway from './styles/china-railway';
 import bjsubwaySingleColor from './styles/bjsubway-single-color';
 import bjsubwayTram from './styles/bjsubway-tram';
@@ -39,6 +40,7 @@ export const lineStyles = {
     [LineStyleType.ShmetroVirtualInt]: shmetroVirtualInt,
     [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,
+    [LineStyleType.GZMTRLoop]: gzmtrLoop,
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwaySingleColor]: bjsubwaySingleColor,
     [LineStyleType.BjsubwayTram]: bjsubwayTram,

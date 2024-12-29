@@ -381,6 +381,9 @@
                 "gzmtrVirtualInt": {
                     "displayName": "Guangzhou Metro out-of-station interchange style"
                 },
+                "gzmtrLoop": {
+                    "displayName": "Guangzhou Metro loop style"
+                },
                 "chinaRailway": {
                     "displayName": "China Railway style"
                 },
