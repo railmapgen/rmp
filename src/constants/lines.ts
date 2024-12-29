@@ -26,6 +26,10 @@ import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-si
 import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
 import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
 import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
+import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
+import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
+import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
+import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
 import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 
 export enum LinePathType {
@@ -65,6 +69,10 @@ export enum LineStyleType {
     LondonTubeTerminal = 'london-tube-terminal',
     LondonTubeInternalInt = 'london-tube-internal-int',
     LondonTube10MinWalk = 'london-tube-10-min-walk',
+    LondonRail = 'london-rail',
+    LondonSandwich = 'london-sandwich',
+    LondonLutonAirportDART = 'london-DART',
+    LondonIFSCloudCableCar = 'london-dangleway',
     GuangdongIntercityRailway = 'gd-intercity-rwy',
 }
 
@@ -91,6 +99,10 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.LondonTubeTerminal]?: LondonTubeTerminalAttributes;
     [LineStyleType.LondonTubeInternalInt]?: LondonTubeInternalIntAttributes;
     [LineStyleType.LondonTube10MinWalk]?: LondonTube10MinWalkAttributes;
+    [LineStyleType.LondonRail]?: LondonRailAttributes;
+    [LineStyleType.LondonSandwich]?: LondonSandwichAttributes;
+    [LineStyleType.LondonLutonAirportDART]?: LondonLutonAirportDARTAttributes;
+    [LineStyleType.LondonIFSCloudCableCar]?: LondonIFSCloudCableCarAttributes;
     [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
 }
 
@@ -106,6 +118,10 @@ export const LineStylesWithColor = [
     LineStyleType.JREastSingleColor,
     LineStyleType.JREastSingleColorPattern,
     LineStyleType.LRTSingleColor,
+    LineStyleType.GuangdongIntercityRailway,
+    LineStyleType.LondonRail,
+    LineStyleType.LondonSandwich,
+    LineStyleType.LondonLutonAirportDART,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */

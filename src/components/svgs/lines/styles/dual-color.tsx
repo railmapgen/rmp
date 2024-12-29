@@ -88,15 +88,17 @@ const DualColorSwitch = () => {
 };
 
 const dualColorAttrsComponent = (props: AttrsProps<DualColorAttributes>) => {
+    const { t } = useTranslation();
+
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'panel.details.lines.dualColor.swap',
+            label: t('panel.details.lines.dualColor.swap'),
             component: <DualColorSwitch />,
         },
         {
             type: 'custom',
-            label: 'panel.details.lines.dualColor.colorA',
+            label: t('panel.details.lines.dualColor.colorA'),
             component: (
                 <ColorField
                     type={LineStyleType.DualColor}
@@ -107,7 +109,7 @@ const dualColorAttrsComponent = (props: AttrsProps<DualColorAttributes>) => {
         },
         {
             type: 'custom',
-            label: 'panel.details.lines.dualColor.colorB',
+            label: t('panel.details.lines.dualColor.colorB'),
             component: (
                 <ColorField
                     type={LineStyleType.DualColor}

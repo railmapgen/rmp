@@ -16,6 +16,7 @@ import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line
 import { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
 import { MRTLineBadgeAttributes } from '../components/svgs/nodes/mrt-line-badge';
 import { GuangdongIntercityRailwayLineBadgeAttributes } from '../components/svgs/nodes/guangdong-intercity-railway-line-badge';
+import { LondonArrowAttributes } from '../components/svgs/nodes/london-arrow';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { I18nTextAttributes } from '../components/svgs/nodes/i18n-text';
@@ -39,6 +40,7 @@ export enum MiscNodeType {
     QingdaoMetroNumLineBadge = 'qingdao-metro-num-line-badge',
     MRTLineBadge = 'mrt-line-badge',
     GuangdongIntercityRailwayLineBadge = 'gd-intercity-rwy-line-badge',
+    LondonArrow = 'london-arrow',
     Facilities = 'facilities',
     Text = 'text',
     I18nText = 'i18n-text',
@@ -63,6 +65,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.QingdaoMetroNumLineBadge]?: QingdaoMetroNumLineBadgeAttributes;
     [MiscNodeType.MRTLineBadge]?: MRTLineBadgeAttributes;
     [MiscNodeType.GuangdongIntercityRailwayLineBadge]?: GuangdongIntercityRailwayLineBadgeAttributes;
+    [MiscNodeType.LondonArrow]?: LondonArrowAttributes;
     [MiscNodeType.Facilities]?: FacilitiesAttributes;
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.I18nText]?: I18nTextAttributes;

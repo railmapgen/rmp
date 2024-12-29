@@ -124,8 +124,8 @@
                     "isTram": "是LRT線路標識"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR東日本線路標識",
-                  "crosshatchPatternFill": "用網狀圖案填充"
+                    "displayName": "JR東日本線路標識",
+                    "crosshatchPatternFill": "用網狀圖案填充"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青島地鐵數位線路標識",
@@ -134,6 +134,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "廣東城際鐵路線標識"
+                },
+                "londonArrow": {
+                    "displayName": "倫敦箭頭",
+                    "type": "類型",
+                    "continuation": "延續",
+                    "sandwich": "三明治",
+                    "tube": "地鐵"
                 },
                 "master": {
                     "displayName": "大師節點",
@@ -268,18 +275,18 @@
                     "displayName": "新加坡MRT換乘車站"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR東日本基本車站",
-                  "nameOffset": "名稱偏移",
-                  "textOneLine": "名稱在一行中",
-                  "textVertical": "垂直名稱",
-                  "important": "重要車站",
-                  "lines": "轉乘線偏移"
+                    "displayName": "JR東日本基本車站",
+                    "nameOffset": "名稱偏移",
+                    "textOneLine": "名稱在一行中",
+                    "textVertical": "垂直名稱",
+                    "important": "重要車站",
+                    "lines": "轉乘線偏移"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR東日本重要車站",
-                  "textVertical": "垂直名稱",
-                  "mostImportant": "最重要車站",
-                  "minLength": "車站的最小長度"
+                    "displayName": "JR東日本重要車站",
+                    "textVertical": "垂直名稱",
+                    "mostImportant": "最重要車站",
+                    "minLength": "車站的最小長度"
                 },
                 "foshanMetroBasic": {
                     "displayName": "佛山地鐵基本車站",
@@ -337,6 +344,9 @@
                 },
                 "londonTubeInt": {
                     "displayName": "倫敦地鐵換乘車站"
+                },
+                "londonRiverServicesInt": {
+                    "displayName": "倫敦河流服務換乘站"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "廣東城際鐵路車站"
@@ -437,6 +447,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "倫敦地鐵終點站樣式"
+                },
+                "londonRail": {
+                    "displayName": "倫敦鐵路樣式",
+                    "limitedService": "有限服務/只限繁忙時段",
+                    "colorBackground": "背景顏色",
+                    "colorForeground": "前景顏色"
+                },
+                "londonSandwich": {
+                    "displayName": "倫敦三明治樣式"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "倫敦盧頓機場DART樣式"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "倫敦IFS雲纜車樣式"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "廣東城際鐵路樣式"

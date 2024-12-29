@@ -25,6 +25,10 @@ import lrtSingleColor from './styles/lrt-single-color';
 import londonTubeInternalInt from './styles/london-tube-internal-int';
 import londonTube10MinWalk from './styles/london-tube-10-min-walk';
 import londonTubeTerminal from './styles/london-tube-terminal';
+import londonRail from './styles/london-rail';
+import londonSandwich from './styles/london-sandwich';
+import londonLutonAirportDART from './styles/london-DART';
+import londonIFSCloudCableCar from './styles/london-ifs-could-cable-car';
 import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
 
 export const linePaths = {
@@ -57,5 +61,9 @@ export const lineStyles = {
     [LineStyleType.LondonTubeTerminal]: londonTubeTerminal,
     [LineStyleType.LondonTubeInternalInt]: londonTubeInternalInt,
     [LineStyleType.LondonTube10MinWalk]: londonTube10MinWalk,
+    [LineStyleType.LondonRail]: londonRail,
+    [LineStyleType.LondonSandwich]: londonSandwich,
+    [LineStyleType.LondonLutonAirportDART]: londonLutonAirportDART,
+    [LineStyleType.LondonIFSCloudCableCar]: londonIFSCloudCableCar,
     [LineStyleType.GuangdongIntercityRailway]: guangdongIntercityRailway,
 };

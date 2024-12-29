@@ -24,6 +24,7 @@ import tokyoMetroBasicStation from './tokyo-metro-basic';
 import tokyoMetroIntStation from './tokyo-metro-int';
 import londonTubeBasicStation from './london-tube-basic';
 import londonTubeIntStation from './london-tube-int';
+import londonRiverServicesIntStation from './london-river-services-interchange';
 import guangdongIntercityRailwayStation from './guangdong-intercity-railway';
 
 const stations = {
@@ -52,6 +53,7 @@ const stations = {
     [StationType.TokyoMetroInt]: tokyoMetroIntStation,
     [StationType.LondonTubeBasic]: londonTubeBasicStation,
     [StationType.LondonTubeInt]: londonTubeIntStation,
+    [StationType.LondonRiverServicesInt]: londonRiverServicesIntStation,
     [StationType.GuangdongIntercityRailway]: guangdongIntercityRailwayStation,
 };
 
