@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加车站！",
                 "misc-node": "了解如何添加节点！",
-                "line": "了解如何添加线段样式！",
-                "donate": "或捐赠！"
+                "line": "了解如何添加线段样式！"
             }
         },
         "details": {
@@ -509,19 +508,10 @@
         },
         "donation": {
             "title": "捐赠",
-            "content": "您的支持对我们来说意义重大！通过捐赠，您使我们能够继续工作并向每个人提供免费服务。从我们激动人心的奖励选项中选择，并今天就做出改变！",
-            "rewards": "奖励",
-            "gallery": "您的幻想作品在画廊中",
-            "galleryContent": "上传您的幻想作品并在画廊中展示它们。",
-            "nodes": "站点和其他节点",
-            "nodesContent": "请求添加站点和其他节点。",
-            "features": "功能请求",
-            "featuresContent": "请求添加新功能。",
-            "methods": "捐赠方式",
             "openCollective": "Open Collective",
-            "viaUSD": "通过Paypal或Visa卡以USD捐赠。",
+            "viaUSD": "通过Paypal或Visa卡以美元捐赠。",
             "afdian": "爱发电",
-            "viaCNY": "通过支付宝或微信支付以CNY捐赠。"
+            "viaCNY": "通过支付宝或微信支付以人民币捐赠。"
         },
         "settings": {
             "title": "设置",

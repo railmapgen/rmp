@@ -19,7 +19,6 @@ import {
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconContext } from 'react-icons';
-import { IoMdHeart } from 'react-icons/io';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { LinePathType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
@@ -27,7 +26,7 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
-import { openPaletteAppClip, setIsDonationModalOpen, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -281,7 +280,6 @@ export default ToolsPanel;
 export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line'; expand: boolean }) => {
     const { type, expand } = props;
     const { t } = useTranslation();
-    const dispatch = useRootDispatch();
 
     const doc = type === 'misc-node' ? 'nodes' : type === 'station' ? 'stations' : 'line-styles';
     const fontSize = type === 'line' ? 'xs' : undefined;
@@ -304,14 +302,6 @@ export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line'; e
                         {t(`panel.tools.learnHowToAdd.${type}`)}
                     </Link>
                     <Icon as={MdOpenInNew} color="teal.500" mr="auto" />
-                    <Link color="teal.500" onClick={() => dispatch(setIsDonationModalOpen(true))} isExternal>
-                        {t('panel.tools.learnHowToAdd.donate')}
-                    </Link>
-                    {type !== 'line' && (
-                        <IconContext.Provider value={{ style: { padding: 5 }, color: 'red', size }}>
-                            <IoMdHeart />
-                        </IconContext.Provider>
-                    )}
                 </>
             )}
         </HStack>
