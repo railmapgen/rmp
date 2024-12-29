@@ -41,7 +41,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         () => (
             <g id={id}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
-                    <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#666464" />
+                    <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#898989" />
                     {/* A mask for the end of shanghai subsurban railway style. */}
                     <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
                     <rect

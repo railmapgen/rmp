@@ -17,7 +17,7 @@ const ShanghaiSuburbanRailway = (props: LineStyleComponentProps<ShanghaiSuburban
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke="#666464" strokeWidth="5" strokeLinecap={outStrokeLinecap} />
+            <path d={path} fill="none" stroke="#898989" strokeWidth="5" strokeLinecap={outStrokeLinecap} />
             <path d={path} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
         </g>
     );
