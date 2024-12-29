@@ -51,7 +51,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
 
     const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
             NAME_DY_SH_BASIC[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
@@ -77,7 +77,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                     strokeWidth="1"
                 >
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={12.67}
                         lineHeight={12.67}
                         grow="up"
@@ -85,7 +85,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         dx={nameOffsetX === 'right' ? 1.67 : 0}
                         fontSize={6.67}
                         lineHeight={6.67}
@@ -122,9 +122,9 @@ const shmetroBasicAttrsComponent = (props: AttrsProps<ShmetroBasicStationAttribu
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -132,9 +132,9 @@ const shmetroBasicAttrsComponent = (props: AttrsProps<ShmetroBasicStationAttribu
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

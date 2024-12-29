@@ -100,7 +100,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
-        (names[ROTATE_CONST[rotate].namesPos].split('\\').length - 1) *
+        (names[ROTATE_CONST[rotate].namesPos].split('\n').length - 1) *
             ROTATE_CONST[rotate].lineHeight *
             ROTATE_CONST[rotate].polarity; // dynamic dy of n lines (either zh or en)
 
@@ -142,7 +142,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                     strokeWidth="1"
                 >
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={12.67}
                         lineHeight={12.67}
                         grow="up"
@@ -150,7 +150,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         dx={rotate >= 45 && rotate <= 135 ? 1.67 : 0}
                         fontSize={6.67}
                         lineHeight={6.67}
@@ -186,9 +186,9 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -196,9 +196,9 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

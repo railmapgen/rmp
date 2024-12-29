@@ -120,7 +120,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
             </text>
             <MultilineText
                 ref={textLineEl}
-                text={names[0].split('\\')}
+                text={names[0].split('\n')}
                 x={CIRCLE_X + CIRCLE_R + 1}
                 y="-1"
                 fill={color[3]}
@@ -130,7 +130,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 className="rmp-name__jreast_ja"
             />
             <MultilineText
-                text={names[1].split('\\')}
+                text={names[1].split('\n')}
                 textAnchor="middle"
                 dominantBaseline="hanging"
                 x={(bBox.width + CIRCLE_R + 10) / 2}
@@ -149,7 +149,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
  * JREastLineBadge specific props.
  */
 export interface JREastLineBadgeAttributes extends AttributesWithColor {
-    names: [string, string];
+    names: [string, ...string[]];
     num: number;
     crosshatchPatternFill: boolean;
 }
@@ -180,9 +180,9 @@ const jrEastLineBadgeAttrsComponent = (props: AttrsProps<JREastLineBadgeAttribut
         {
             type: 'textarea',
             label: t('panel.details.nodes.common.nameJa'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -190,9 +190,9 @@ const jrEastLineBadgeAttrsComponent = (props: AttrsProps<JREastLineBadgeAttribut
         {
             type: 'textarea',
             label: t('panel.details.nodes.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

@@ -100,7 +100,7 @@ export default function InfoMultipleSection() {
                                 whiteSpace="nowrap"
                                 display="ruby"
                             >
-                                {getName(id)?.replaceAll('\\', '⏎')}
+                                {getName(id)?.replaceAll('\n', '⏎')}
                             </Button>
                             <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
                                 <MdDeselect />

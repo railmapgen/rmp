@@ -107,7 +107,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
     const [textLength, setTextLength] = React.useState(0);
     React.useEffect(() => {
         let len = 0;
-        names[0].split('\\').forEach(s => {
+        names[0].split('\n').forEach(s => {
             len = Math.max(len, s.length);
         });
         setTextLength(len);
@@ -138,11 +138,11 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                 {!textVertical ? (
                     <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                         <MultilineText
-                            text={names[0].split('\\')}
+                            text={names[0].split('\n')}
                             fontSize={10}
                             lineHeight={10}
                             grow="up"
-                            funcDX={i => (i - (names[0].split('\\').length - 1) / 2) * 10}
+                            funcDX={i => (i - (names[0].split('\n').length - 1) / 2) * 10}
                             className="rmp-name__jreast_ja"
                             fill={'black'}
                         />
@@ -150,7 +150,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                 ) : (
                     <g transform={`translate(${textXVer}, ${textYVer})`} textAnchor={textAnchor}>
                         <MultilineTextVertical
-                            text={names[0].split('\\')}
+                            text={names[0].split('\n')}
                             fontSize={10}
                             lineWidth={10}
                             grow="bidirectional"
@@ -193,9 +193,9 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameJa'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
