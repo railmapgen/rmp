@@ -122,9 +122,9 @@ export const LineStylesWithColor = [
     LineStyleType.JREastSingleColorPattern,
     LineStyleType.LRTSingleColor,
     LineStyleType.GuangdongIntercityRailway,
-    LineStyleType.LondonRail,
     LineStyleType.LondonSandwich,
     LineStyleType.LondonLutonAirportDART,
+    LineStyleType.LondonIFSCloudCableCar,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
