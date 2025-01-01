@@ -58,6 +58,12 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     // temporary fix for the missing id on the top element of the station
     const iconEl = React.useRef<SVGGElement | null>(null);
     iconEl.current?.querySelectorAll('path')?.forEach(elem => elem.setAttribute('id', `stn_core_${id}`));
+    const iconOffset = iconEl.current
+        ?.querySelector('g')
+        ?.getAttribute('transform')
+        ?.slice(10, -1)
+        ?.split(',')
+        ?.map(s => Number(s)) ?? [0, 0];
 
     const [iconBBox, setIconBBox] = React.useState({ x1: 0, x2: 0, y1: 0, y2: 0 });
     React.useEffect(() => {
@@ -74,11 +80,17 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         strokeColour: s[2],
     }));
 
-    const textX = nameOffsetX === 'left' ? iconBBox.x1 + textDX : nameOffsetX === 'right' ? iconBBox.x2 - textDX : 0;
+    const textX =
+        nameOffsetX === 'left'
+            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + textDX
+            : nameOffsetX === 'right'
+              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - textDX
+              : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
             (iconBBox.y2 - iconBBox.y1) / 2) *
-        NAME_DY[nameOffsetY].polarity;
+            NAME_DY[nameOffsetY].polarity +
+        iconOffset[1] / 2;
     const textAnchor =
         nameOffsetX === 'left'
             ? 'end'
