@@ -390,6 +390,9 @@
                 "gzmtrVirtualInt": {
                     "displayName": "广州地铁出站换乘样式"
                 },
+                "gzmtrLoop": {
+                    "displayName": "广州地铁环线样式"
+                },
                 "chinaRailway": {
                     "displayName": "中国铁路样式"
                 },

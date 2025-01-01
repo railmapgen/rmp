@@ -390,6 +390,9 @@
                 "gzmtrVirtualInt": {
                     "displayName": "광저우 지하철 역 환승 모습"
                 },
+                "gzmtrLoop": {
+                    "displayName": "광저우 지하철 순환선 스타일"
+                },
                 "chinaRailway": {
                     "displayName": "중국 철도 모습"
                 },

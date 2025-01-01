@@ -31,6 +31,7 @@ import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london
 import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
 import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
 import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
+import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -51,6 +52,7 @@ export enum LineStyleType {
     ShanghaiSuburbanRailway = 'sh-sub-rwy',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
+    GZMTRLoop = 'gzmtr-loop',
     ChinaRailway = 'china-railway',
     BjsubwaySingleColor = 'bjsubway-single-color',
     BjsubwayTram = 'bjsubway-tram',
@@ -81,6 +83,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
+    [LineStyleType.GZMTRLoop]?: GZMTRLoopAttributes;
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     [LineStyleType.BjsubwaySingleColor]?: BjsubwaySingleColorAttributes;
     [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
