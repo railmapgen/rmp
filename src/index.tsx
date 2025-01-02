@@ -1,4 +1,4 @@
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -91,7 +91,7 @@ upgrade(param).then(param => {
     window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
 
     const accountStateTimeout = window.setTimeout(() => {
-        // console.log('Account state timeout');
+        logger.debug('Timeout 6s after start, logging out');
         store.dispatch(setState('logged-out'));
         store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
         store.dispatch(setLoginStateTimeout(undefined));
