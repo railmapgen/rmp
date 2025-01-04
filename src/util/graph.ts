@@ -113,6 +113,16 @@ export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, Edg
     return newList;
 };
 
+export const isNodeSupportPolyline = (
+    node: StnId | MiscNodeId,
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+) =>
+    node.startsWith('stn') ||
+    (node.startsWith('misc_node') && graph.getNodeAttribute(node, 'type') === MiscNodeType.Virtual) ||
+    (node.startsWith('misc_node') &&
+        graph.getNodeAttribute(node, 'type') === MiscNodeType.Master &&
+        graph.getNodeAttributes(node)[MiscNodeType.Master]!.nodeType === 'Station');
+
 export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Polylines => {
     const polylinesX: Polyline[] = [];
     const polylinesY: Polyline[] = [];
@@ -122,7 +132,7 @@ export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttri
     // const sortFunc = (x: Polyline, y: Polyline) => y.c - x.c;
 
     graph
-        .filterNodes(node => node.startsWith('stn'))
+        .filterNodes(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
         .forEach(node => {
             const x = graph.getNodeAttribute(node, 'x');
             const y = graph.getNodeAttribute(node, 'y');

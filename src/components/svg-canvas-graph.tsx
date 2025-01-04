@@ -19,6 +19,7 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import { getNearestPolyline, getPolylineDistance, isNodeSupportPolyline } from '../util/graph';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import SvgLayer from './svg-layer';
@@ -26,7 +27,6 @@ import { linePaths } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
-import { getNearestPolyline, getPolylineDistance } from '../util/graph';
 
 const connectableNodesType = [
     ...Object.values(StationType),
@@ -112,7 +112,7 @@ const SvgCanvas = () => {
                 let newX = toX;
                 let newY = toY;
 
-                if (node.startsWith('stn')) {
+                if (isNodeSupportPolyline(node, graph.current)) {
                     if (activePolylines.length !== 0) {
                         Object.values(activePolylines).forEach(p => {
                             const d = getPolylineDistance(p, toX, toY);
