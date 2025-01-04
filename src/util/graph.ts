@@ -3,10 +3,13 @@ import { AttributesWithColor } from '../components/panels/details/color-field';
 import {
     EdgeAttributes,
     GraphAttributes,
+    Id,
     LineId,
     MiscNodeId,
     NodeAttributes,
     NodeType,
+    Polyline,
+    Polylines,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -108,4 +111,49 @@ export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, Edg
             }
         });
     return newList;
+};
+
+export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Polylines => {
+    const polylinesX: Polyline[] = [];
+    const polylinesY: Polyline[] = [];
+    const polylinesP: Polyline[] = [];
+    const polylinesN: Polyline[] = [];
+
+    // const sortFunc = (x: Polyline, y: Polyline) => y.c - x.c;
+
+    graph
+        .filterNodes(node => node.startsWith('stn'))
+        .forEach(node => {
+            const x = graph.getNodeAttribute(node, 'x');
+            const y = graph.getNodeAttribute(node, 'y');
+            polylinesX.push({ a: 1, b: 0, c: -x, node } as Polyline);
+            polylinesY.push({ a: 0, b: 1, c: -y, node } as Polyline);
+            polylinesP.push({ a: 1, b: 1, c: -x - y, node } as Polyline);
+            polylinesN.push({ a: 1, b: -1, c: -x + y, node } as Polyline);
+        });
+    return {
+        x: polylinesX,
+        y: polylinesY,
+        p: polylinesP,
+        n: polylinesN,
+    };
+};
+
+export const getPolylineDistance = (line: Polyline, x: number, y: number) => {
+    return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
+};
+
+export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], nodes: Id[]) => {
+    let minDistance = Infinity,
+        minLine = { a: 0, b: 0, c: 0, node: 'stn_null' } as Polyline;
+    polylines
+        .filter(l => !nodes.includes(l.node))
+        .forEach((line, index) => {
+            const distance = getPolylineDistance(line, x, y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                minLine = line;
+            }
+        });
+    return { l: minLine, d: minDistance };
 };

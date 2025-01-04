@@ -85,6 +85,23 @@ export type RuntimeMode =
     | `station-${StationType}`
     | `misc-node-${MiscNodeType}`;
 
+export interface Polyline {
+    /**
+     * l: ax + by + c = 0
+     */
+    a: number;
+    b: number;
+    c: number;
+    node: StnId | MiscNodeId;
+}
+
+export interface Polylines {
+    x: Polyline[];
+    y: Polyline[];
+    p: Polyline[];
+    n: Polyline[];
+}
+
 /**
  * Stations and lines may be in different displaying format.
  * E.g. Station's icon of Rail map and platform are different in Shanghai metro.

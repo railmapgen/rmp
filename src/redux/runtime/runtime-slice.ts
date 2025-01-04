@@ -2,13 +2,14 @@ import { AlertStatus } from '@chakra-ui/react';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
-import { CityCode, Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, MiscNodeId, Polylines, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { redoAction, undoAction } from '../param/param-slice';
+import { getPolylines } from '../../util/graph';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -55,6 +56,7 @@ interface RuntimeState {
     parallelLinesCount: number;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
     isDonationModalOpen: boolean;
+    polylines: Polylines;
 }
 
 const initialState: RuntimeState = {
@@ -76,6 +78,12 @@ const initialState: RuntimeState = {
     parallelLinesCount: 0,
     globalAlerts: {},
     isDonationModalOpen: false,
+    polylines: {
+        x: [],
+        y: [],
+        p: [],
+        n: [],
+    },
 };
 
 /**
@@ -104,6 +112,8 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
             })
         );
     }
+
+    dispatch(setPolyLines(getPolylines(window.graph)));
 });
 
 /**
@@ -204,6 +214,9 @@ const runtimeSlice = createSlice({
         setIsDonationModalOpen: (state, action: PayloadAction<boolean>) => {
             state.isDonationModalOpen = action.payload;
         },
+        setPolyLines: (state, action: PayloadAction<Polylines>) => {
+            state.polylines = action.payload;
+        },
     },
     extraReducers: builder => {
         builder
@@ -237,5 +250,6 @@ export const {
     setGlobalAlert,
     closeGlobalAlert,
     setIsDonationModalOpen,
+    setPolyLines,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

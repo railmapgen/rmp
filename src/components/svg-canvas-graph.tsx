@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, StnId } from '../constants/constants';
+import { Events, LineId, MiscNodeId, Polyline, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -26,6 +26,7 @@ import { linePaths } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
+import { getNearestPolyline, getPolylineDistance } from '../util/graph';
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -47,12 +48,15 @@ const SvgCanvas = () => {
         active,
         keepLastPath,
         theme,
+        polylines,
     } = useRootSelector(state => state.runtime);
 
     // the position of pointer down
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
+
+    const [activePolylines, setActivePolylines] = React.useState<Polyline[]>([]);
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -63,6 +67,7 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
         el.setPointerCapture(e.pointerId);
 
+        setActivePolylines([]);
         setOffset({ x, y });
 
         dispatch(setActive(node));
@@ -91,18 +96,84 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            selected.forEach(s => {
-                if (graph.current.hasNode(s)) {
-                    graph.current.updateNodeAttributes(s, attr => ({
-                        ...attr,
-                        x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                        y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                    }));
+            if (!e.ctrlKey) {
+                const fromX = graph.current.getNodeAttribute(node, 'x');
+                const fromY = graph.current.getNodeAttribute(node, 'y');
+                const toX = fromX - ((offset.x - x) * svgViewBoxZoom) / 100;
+                const toY = fromY - ((offset.y - y) * svgViewBoxZoom) / 100;
+
+                let newX = toX;
+                let newY = toY;
+
+                if (node.startsWith('stn')) {
+                    if (activePolylines.length !== 0) {
+                        Object.values(activePolylines).forEach(p => {
+                            const d = getPolylineDistance(p, toX, toY);
+                            if (d >= 10) {
+                                setActivePolylines(activePolylines.filter(ap => ap !== p));
+                            }
+                        });
+                    }
+                    if (activePolylines.length < 2) {
+                        Object.values(polylines).forEach(p => {
+                            const { l, d } = getNearestPolyline(toX, toY, p, [
+                                ...selected,
+                                ...activePolylines.map(ap => ap.node),
+                            ]);
+                            const flag = !activePolylines.some(ap => ap.a === l.a && ap.b === l.b);
+                            if (d < 10 && activePolylines.length < 2 && flag) {
+                                setActivePolylines([...activePolylines, l]);
+                            }
+                        });
+                    }
+
+                    if (activePolylines.length === 1) {
+                        console.log(activePolylines);
+                        const l = activePolylines[0];
+                        if (l.a == 0) {
+                            newY = -l.c / l.b;
+                        } else if (l.b == 0) {
+                            newX = -l.c / l.a;
+                        } else {
+                            const k = -l.a / l.b;
+                            const b = -l.c / l.b;
+                            newY = k * newX + b;
+                        }
+                    } else if (activePolylines.length === 2) {
+                        const l1 = activePolylines[0];
+                        const l2 = activePolylines[1];
+                        const determinant = l1.a * l2.b - l2.a * l1.b;
+                        if (determinant !== 0) {
+                            newX = -(l1.c * l2.b - l2.c * l1.b) / determinant;
+                            newY = -(l1.a * l2.c - l2.a * l1.c) / determinant;
+                        }
+                    }
                 }
-            });
+                const offsetX = newX - fromX;
+                const offsetY = newY - fromY;
+                selected.forEach(s => {
+                    if (graph.current.hasNode(s)) {
+                        graph.current.updateNodeAttributes(s, attr => ({
+                            ...attr,
+                            x: roundToNearestN(attr.x + offsetX, 0.001),
+                            y: roundToNearestN(attr.y + offsetY, 0.001),
+                        }));
+                    }
+                });
+            } else {
+                setActivePolylines([]);
+                selected.forEach(s => {
+                    if (graph.current.hasNode(s)) {
+                        graph.current.updateNodeAttributes(s, attr => ({
+                            ...attr,
+                            x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                            y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                        }));
+                    }
+                });
+            }
             dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
-            // console.log('move ', graph.current.getNodeAttributes(node));
         } else if (mode.startsWith('line')) {
             setMovingPosition({
                 x: ((offset.x - x) * svgViewBoxZoom) / 100,
@@ -167,6 +238,7 @@ const SvgCanvas = () => {
                 // no-op for a new node is just placed, already added to selected in pointer down
             }
         }
+        setActivePolylines([]);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
@@ -246,6 +318,18 @@ const SvgCanvas = () => {
 
     const SingleColor = singleColor.component;
 
+    const getPolylinesPath = (p: Polyline): [number, number, number, number] => {
+        if (p.a === 0) {
+            return [-10000, 10000, -p.c / p.b, -p.c / p.b];
+        } else if (p.b === 0) {
+            return [-p.c / p.a, -p.c / p.a, -10000, 10000];
+        } else {
+            const k = -p.a / p.b;
+            const b = -p.c / p.b;
+            return [-10000, 10000, k * -10000 + b, k * 10000 + b];
+        }
+    };
+
     return (
         <>
             <SvgLayer
@@ -272,6 +356,18 @@ const SvgCanvas = () => {
                     handlePointerDown={() => {}} // no use
                 />
             )}
+            {activePolylines.length !== 0 &&
+                activePolylines.map((p, i) => (
+                    <path
+                        key={`line_polyline_${i}`}
+                        d={linePaths[LinePathType.Simple].generatePath(
+                            ...getPolylinesPath(p),
+                            linePaths[LinePathType.Simple].defaultAttrs
+                        )}
+                        stroke="cyan"
+                        strokeWidth={svgViewBoxZoom / 100}
+                    />
+                ))}
         </>
     );
 };
