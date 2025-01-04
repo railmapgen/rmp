@@ -88,11 +88,14 @@ export type RuntimeMode =
 export interface Polyline {
     /**
      * l: ax + by + c = 0
+     * node: (x, y)
      */
     a: number;
     b: number;
     c: number;
     node: StnId | MiscNodeId;
+    x: number;
+    y: number;
 }
 
 export interface Polylines {

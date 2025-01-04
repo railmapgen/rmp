@@ -136,10 +136,10 @@ export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttri
         .forEach(node => {
             const x = graph.getNodeAttribute(node, 'x');
             const y = graph.getNodeAttribute(node, 'y');
-            polylinesX.push({ a: 1, b: 0, c: -x, node } as Polyline);
-            polylinesY.push({ a: 0, b: 1, c: -y, node } as Polyline);
-            polylinesP.push({ a: 1, b: 1, c: -x - y, node } as Polyline);
-            polylinesN.push({ a: 1, b: -1, c: -x + y, node } as Polyline);
+            polylinesX.push({ a: 1, b: 0, c: -x, node, x, y } as Polyline);
+            polylinesY.push({ a: 0, b: 1, c: -y, node, x, y } as Polyline);
+            polylinesP.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
+            polylinesN.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
         });
     return {
         x: polylinesX,
@@ -154,16 +154,22 @@ export const getPolylineDistance = (line: Polyline, x: number, y: number) => {
 };
 
 export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], nodes: Id[]) => {
+    const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
+        Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+
     let minDistance = Infinity,
-        minLine = { a: 0, b: 0, c: 0, node: 'stn_null' } as Polyline;
+        retDistance = Infinity,
+        minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
     polylines
-        .filter(l => !nodes.includes(l.node))
-        .forEach((line, index) => {
-            const distance = getPolylineDistance(line, x, y);
-            if (distance < minDistance) {
-                minDistance = distance;
+        .filter(l => !nodes.includes(l.node) && pointDistance(x, y, l.x, l.y) < 100)
+        .forEach(line => {
+            const lineDis = getPolylineDistance(line, x, y);
+            const pointDis = pointDistance(x, y, line.x, line.y);
+            if (lineDis + pointDis < minDistance) {
+                minDistance = lineDis + pointDis;
+                retDistance = lineDis;
                 minLine = line;
             }
         });
-    return { l: minLine, d: minDistance };
+    return { l: minLine, d: retDistance };
 };

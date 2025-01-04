@@ -127,7 +127,9 @@ const SvgCanvas = () => {
                                 ...selected,
                                 ...activePolylines.map(ap => ap.node),
                             ]);
-                            const flag = !activePolylines.some(ap => ap.a === l.a && ap.b === l.b);
+                            const flag =
+                                activePolylines.length === 0 ||
+                                !activePolylines.some(ap => ap.a === l.a && ap.b === l.b);
                             if (d < 10 && activePolylines.length < 2 && flag) {
                                 setActivePolylines([...activePolylines, l]);
                             }
