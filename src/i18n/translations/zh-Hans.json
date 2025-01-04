@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加车站！",
                 "misc-node": "了解如何添加节点！",
-                "line": "了解如何添加线段样式！",
-                "donate": "或捐赠！"
+                "line": "了解如何添加线段样式！"
             }
         },
         "details": {
@@ -125,8 +124,8 @@
                     "isTram": "是LRT线路标识"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR东日本线路标识",
-                  "crosshatchPatternFill": "用网状图案填充"
+                    "displayName": "JR东日本线路标识",
+                    "crosshatchPatternFill": "用网状图案填充"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青岛地铁数字线路标识",
@@ -135,6 +134,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "广东城际铁路线路标识"
+                },
+                "londonArrow": {
+                    "displayName": "伦敦箭头",
+                    "type": "类型",
+                    "continuation": "延续",
+                    "sandwich": "三明治",
+                    "tube": "地铁"
                 },
                 "master": {
                     "displayName": "大师节点",
@@ -339,6 +345,9 @@
                 "londonTubeInt": {
                     "displayName": "伦敦地铁换乘车站"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "伦敦河流服务换乘站"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路车站"
                 }
@@ -380,6 +389,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "广州地铁出站换乘样式"
+                },
+                "gzmtrLoop": {
+                    "displayName": "广州地铁环线样式"
                 },
                 "chinaRailway": {
                     "displayName": "中国铁路样式"
@@ -438,6 +450,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "伦敦地铁终点站样式"
+                },
+                "londonRail": {
+                    "displayName": "伦敦铁路样式",
+                    "limitedService": "有限服务/仅限高峰时段",
+                    "colorBackground": "背景颜色",
+                    "colorForeground": "前景颜色"
+                },
+                "londonSandwich": {
+                    "displayName": "伦敦三明治样式"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "伦敦卢顿机场DART样式"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "伦敦IFS云缆车样式"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路样式"
@@ -509,19 +536,10 @@
         },
         "donation": {
             "title": "捐赠",
-            "content": "您的支持对我们来说意义重大！通过捐赠，您使我们能够继续工作并向每个人提供免费服务。从我们激动人心的奖励选项中选择，并今天就做出改变！",
-            "rewards": "奖励",
-            "gallery": "您的幻想作品在画廊中",
-            "galleryContent": "上传您的幻想作品并在画廊中展示它们。",
-            "nodes": "站点和其他节点",
-            "nodesContent": "请求添加站点和其他节点。",
-            "features": "功能请求",
-            "featuresContent": "请求添加新功能。",
-            "methods": "捐赠方式",
             "openCollective": "Open Collective",
-            "viaUSD": "通过Paypal或Visa卡以USD捐赠。",
+            "viaUSD": "通过Paypal或Visa卡以美元捐赠。",
             "afdian": "爱发电",
-            "viaCNY": "通过支付宝或微信支付以CNY捐赠。"
+            "viaCNY": "通过支付宝或微信支付以人民币捐赠。"
         },
         "settings": {
             "title": "设置",

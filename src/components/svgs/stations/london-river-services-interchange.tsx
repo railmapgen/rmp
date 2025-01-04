@@ -12,20 +12,23 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText } from '../common/multiline-text';
-import { AccessibleIcon } from './london-tube-basic';
 
 const X_HEIGHT = 5;
 const FONT_SIZE = 2 * X_HEIGHT;
 const LINE_HEIGHT = 0.85 * FONT_SIZE;
 
-const LondonTubeIntStation = (props: StationComponentProps) => {
+const D1 =
+    'M-18.2,12.6c2.4-0.6,5.8-1.6,11.5-0.4c2.9,0.6,5.6,1.3,8.3,1.3c3.5,0,5.4-0.6,8.1-1.2c2.4-0.6,5.2-1.2,7.4-1.1c3.8,0.1,6.6,0.7,8.2,1.4l-1.2-3.1C21,8.3,15.8,7.7,9.7,9.5c-2.6,0.7-5.2,1.3-7.9,1.2c-2.5,0-4.8-0.4-7.2-1C-13,8-15.9,9.3-19.8,10.3L-18.2,12.6z';
+const D2 =
+    'M23.8-2h-4.1l-1.8-4.8c0,0-0.1-0.6-1-1.3c-0.6-0.5-1.6-0.5-1.6-0.5H4v-2h-6.9l-1.1-1.5l0.8-1.9h-1.9l-1.5,3.5h-2.6v2h-5.8c0,0-0.8,0.1-1.2,0.3c-0.4,0.3-0.6,0.5-0.6,0.5l-4.4,5.8h-7.3l7.3,10c1.6-0.7,6.6-2,9.7-1.9c4.1,0.1,9.5,1.9,13.1,1.9c6.6,0,8.8-2,14.6-2.3c7.1-0.4,11.6,2.3,11.6,2.3L23.8-2z M-11.1-2h-7.1l1.9-2.5c0,0,0.8-1.1,1.2-1.3c0.7-0.4,1.2-0.5,1.2-0.5h2.8V-2z M-9.2-2v-4.3h7.4v4.4L-9.2-2z M7.4-2H0v-4.3h7.4V-2z M9.3-2v-4.3h5.1c0,0,0.4,0,0.8,0.4c0.3,0.2,0.5,0.7,0.5,0.7l1.2,3.3L9.3-2z';
+
+const LondonRiverServicesIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultLondonTubeIntStationAttributes.nameOffsetX,
-        nameOffsetY = defaultLondonTubeIntStationAttributes.nameOffsetY,
-        stepFreeAccess = defaultLondonTubeIntStationAttributes.stepFreeAccess,
-    } = attrs[StationType.LondonTubeInt] ?? defaultLondonTubeIntStationAttributes;
+        nameOffsetX = defaultLondonRiverServicesIntStationAttributes.nameOffsetX,
+        nameOffsetY = defaultLondonRiverServicesIntStationAttributes.nameOffsetY,
+    } = attrs[StationType.LondonRiverServicesInt] ?? defaultLondonRiverServicesIntStationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -40,8 +43,6 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    // rotate starts from top-middle while Math.sin/cos starts from middle-right
-    const height = 0.66 * X_HEIGHT + X_HEIGHT / 2;
     const textDx =
         nameOffsetX === 'left'
             ? -(X_HEIGHT / 2 + X_HEIGHT * 1.33)
@@ -67,19 +68,12 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             >
-                {stepFreeAccess === 'none' ? (
-                    <circle
-                        id={`stn_core_${id}`}
-                        r={1.25 * X_HEIGHT}
-                        width={X_HEIGHT * 0.66}
-                        height={height}
-                        stroke="black"
-                        strokeWidth={0.5 * X_HEIGHT}
-                        fill="white"
-                    />
-                ) : (
-                    <AccessibleIcon id={id} stepFreeAccess={stepFreeAccess} transform={`scale(0.2333)`} />
-                )}
+                <circle r={1.45 * X_HEIGHT} stroke="#003888" strokeWidth={0.1 * X_HEIGHT} fill="white" />
+                <g fill="#003888" transform="scale(0.222)">
+                    <path d={D1} />
+                    <path d={D2} />
+                </g>
+                <circle id={`stn_core_${id}`} r={1.5 * X_HEIGHT} fill="white" fillOpacity="0" />
             </g>
             <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
                 <MultilineText
@@ -97,22 +91,20 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * LondonTubeIntStation specific props.
+ * LondonRiverServicesIntStation specific props.
  */
-export interface LondonTubeIntStationAttributes extends StationAttributes {
+export interface LondonRiverServicesIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
-    stepFreeAccess: 'none' | 'train' | 'platform';
 }
 
-const defaultLondonTubeIntStationAttributes: LondonTubeIntStationAttributes = {
+const defaultLondonRiverServicesIntStationAttributes: LondonRiverServicesIntStationAttributes = {
     names: ['Station'],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
-    stepFreeAccess: 'none',
 };
 
-const londonTubeIntAttrsComponent = (props: AttrsProps<LondonTubeIntStationAttributes>) => {
+const londonRiverServicesIntAttrsComponent = (props: AttrsProps<LondonRiverServicesIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -159,39 +151,28 @@ const londonTubeIntAttrsComponent = (props: AttrsProps<LondonTubeIntStationAttri
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.londonTubeCommon.stepFreeAccess'),
-            value: attrs.stepFreeAccess,
-            options: {
-                none: t('panel.details.stations.londonTubeCommon.stepFreeAccessNone'),
-                train: t('panel.details.stations.londonTubeCommon.stepFreeAccessTrain'),
-                platform: t('panel.details.stations.londonTubeCommon.stepFreeAccessPlatform'),
-            },
-            onChange: val => {
-                attrs.stepFreeAccess = val as 'none' | 'train' | 'platform';
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
     ];
 
     return <RmgFields fields={fields} />;
 };
 
-const londonTubeIntStationIcon = (
+const londonRiverServicesIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2.5" fill="white" />
+        <circle cx="12" cy="12" r="6" stroke="currentColor" fill="white" />
+        <g transform="translate(12, 12)scale(0.18)">
+            <path stroke="currentColor" d={D1} />
+            <path stroke="currentColor" d={D2} />
+        </g>
     </svg>
 );
 
-const londonTubeIntStation: Station<LondonTubeIntStationAttributes> = {
-    component: LondonTubeIntStation,
-    icon: londonTubeIntStationIcon,
-    defaultAttrs: defaultLondonTubeIntStationAttributes,
-    attrsComponent: londonTubeIntAttrsComponent,
+const londonRiverServicesIntStation: Station<LondonRiverServicesIntStationAttributes> = {
+    component: LondonRiverServicesIntStation,
+    icon: londonRiverServicesIntStationIcon,
+    defaultAttrs: defaultLondonRiverServicesIntStationAttributes,
+    attrsComponent: londonRiverServicesIntAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.londonTubeInt.displayName',
+        displayName: 'panel.details.stations.londonRiverServicesInt.displayName',
         cities: [CityCode.London],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -199,4 +180,4 @@ const londonTubeIntStation: Station<LondonTubeIntStationAttributes> = {
     },
 };
 
-export default londonTubeIntStation;
+export default londonRiverServicesIntStation;

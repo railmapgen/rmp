@@ -127,7 +127,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
 
             <g transform={`translate(${textENDX * scale}, ${textENDY * scale})`} textAnchor={textENAnchor}>
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={NAME_JRE_IMPORTANT.en.size}
                     lineHeight={NAME_JRE_IMPORTANT.en.size}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
@@ -177,9 +177,9 @@ const jrEastImportantAttrsComponent = (props: AttrsProps<JREastImportantStationA
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

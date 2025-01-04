@@ -24,6 +24,7 @@ import { TokyoMetroBasicStationAttributes } from '../components/svgs/stations/to
 import { TokyoMetroIntStationAttributes } from '../components/svgs/stations/tokyo-metro-int';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { LondonTubeIntStationAttributes } from '../components/svgs/stations/london-tube-int';
+import { LondonRiverServicesIntStationAttributes } from '../components/svgs/stations/london-river-services-interchange';
 import { GuangdongIntercityRailwayStationAttributes } from '../components/svgs/stations/guangdong-intercity-railway';
 
 export enum StationType {
@@ -52,6 +53,7 @@ export enum StationType {
     TokyoMetroInt = 'tokyo-metro-int',
     LondonTubeBasic = 'london-tube-basic',
     LondonTubeInt = 'london-tube-int',
+    LondonRiverServicesInt = 'london-river-int',
     GuangdongIntercityRailway = 'gd-intercity-rwy',
 }
 
@@ -81,6 +83,7 @@ export interface ExternalStationAttributes {
     [StationType.TokyoMetroInt]?: TokyoMetroIntStationAttributes;
     [StationType.LondonTubeBasic]?: LondonTubeBasicStationAttributes;
     [StationType.LondonTubeInt]?: LondonTubeIntStationAttributes;
+    [StationType.LondonRiverServicesInt]?: LondonRiverServicesIntStationAttributes;
     [StationType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayStationAttributes;
 }
 
@@ -109,7 +112,7 @@ export interface StationComponentProps {
 export interface StationAttributes {
     /**
      * The names (in different languages) of this station.
-     * If you need to break the line, use `\\` and display it with component MultilineText.
+     * If you need to break the line, use `\n` and display it with component MultilineText.
      */
     names: [string, ...string[]];
 }

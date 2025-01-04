@@ -40,17 +40,17 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-5, -names[1].split('\\').length * LINE_HEIGHT[oY] - 4];
+            return [-5, -names[1].split('\n').length * LINE_HEIGHT[oY] - 4];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -names[1].split('\\').length * LINE_HEIGHT[oY] - 7];
+            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] - 7];
         } else if (oX === 'right' && oY === 'top') {
-            return [5, -names[1].split('\\').length * LINE_HEIGHT[oY] - 4];
+            return [5, -names[1].split('\n').length * LINE_HEIGHT[oY] - 4];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-5, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+            return [-5, names[0].split('\n').length * LINE_HEIGHT[oY] + 4];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\\').length * LINE_HEIGHT[oY] + 7];
+            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 7];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [5, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+            return [5, names[0].split('\n').length * LINE_HEIGHT[oY] + 4];
         } else if (oX === 'left' && oY === 'middle') {
             return [-8, 0];
         } else if (oX === 'right' && oY === 'middle') {
@@ -90,7 +90,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
             </g>
             <g transform={`translate(${x + textX}, ${y + textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={LINE_HEIGHT.zh}
                     lineHeight={LINE_HEIGHT.zh}
                     grow="up"
@@ -98,7 +98,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     baseOffset={1}
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={LINE_HEIGHT.en}
                     lineHeight={LINE_HEIGHT.en}
                     grow="down"
@@ -130,13 +130,12 @@ const bjsubwayIntStationFields = [
     {
         type: 'textarea',
         label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: BjsubwayIntStationAttributes) =>
-            (attrs ?? defaultBjsubwayIntStationAttributes).names[0].replaceAll('\\', '\n'),
+        value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).names[0],
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
             // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
+            attrs.names[0] = val.toString();
             // return modified attrs
             return attrs;
         },
@@ -144,13 +143,12 @@ const bjsubwayIntStationFields = [
     {
         type: 'textarea',
         label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: BjsubwayIntStationAttributes) =>
-            (attrs ?? defaultBjsubwayIntStationAttributes).names[1].replaceAll('\\', '\n'),
+        value: (attrs?: BjsubwayIntStationAttributes) => (attrs ?? defaultBjsubwayIntStationAttributes).names[1],
         onChange: (val: string | number, attrs_: BjsubwayIntStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayIntStationAttributes;
             // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
+            attrs.names[1] = val.toString();
             // return modified attrs
             return attrs;
         },

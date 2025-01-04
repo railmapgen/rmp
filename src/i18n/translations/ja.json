@@ -22,8 +22,7 @@
             "learnHowToAdd": {
                 "station": "駅を追加する方法を学ぶ！",
                 "misc-node": "節点を追加する方法を学ぶ！",
-                "line": "路線風格を追加する方法を学ぶ！",
-                "donate": "または寄付する！"
+                "line": "路線風格を追加する方法を学ぶ！"
             }
         },
         "details": {
@@ -127,8 +126,8 @@
                     "isTram": "LRT路線バッジです"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR東日本路線番号徽章",
-                  "crosshatchPatternFill": "網目模様で塗りつぶす"
+                    "displayName": "JR東日本路線番号徽章",
+                    "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青島地下鉄番号線徽章",
@@ -137,6 +136,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "広東省都市間鉄道線徽章"
+                },
+                "londonArrow": {
+                    "displayName": "ロンドン矢印",
+                    "type": "種類",
+                    "continuation": "継続",
+                    "sandwich": "サンドイッチ",
+                    "tube": "地下鉄"
                 },
                 "master": {
                     "displayName": "大師節点",
@@ -272,18 +278,18 @@
                     "displayName": "シンガポールMRT乗り換え駅"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR東日本基本駅",
-                  "nameOffset": "名前の補正値",
-                  "textOneLine": "1行での名前",
-                  "textVertical": "垂直の名前",
-                  "important": "重要な駅",
-                  "lines": "乗り換え線の補正値"
+                    "displayName": "JR東日本基本駅",
+                    "nameOffset": "名前の補正値",
+                    "textOneLine": "1行での名前",
+                    "textVertical": "垂直の名前",
+                    "important": "重要な駅",
+                    "lines": "乗り換え線の補正値"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR東日本重要駅",
-                  "textVertical": "垂直の名前",
-                  "mostImportant": "最も重要な駅",
-                  "minLength": "駅の最小長"
+                    "displayName": "JR東日本重要駅",
+                    "textVertical": "垂直の名前",
+                    "mostImportant": "最も重要な駅",
+                    "minLength": "駅の最小長"
                 },
                 "foshanMetroBasic": {
                     "displayName": "仏山地鐵基本車站",
@@ -340,6 +346,9 @@
                 "londonTubeInt": {
                     "displayName": "ロンドン地下鉄乗換駅"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "ロンドン川サービス乗換駅"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "広東省都市間鉄道駅"
                 }
@@ -381,6 +390,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "広州地下鉄駅外乗り換え風格"
+                },
+                "gzmtrLoop": {
+                    "displayName": "広州地下鉄環状線風格"
                 },
                 "chinaRailway": {
                     "displayName": "中国鉄道風格"
@@ -439,6 +451,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "ロンドン地下鉄終着風格"
+                },
+                "londonRail": {
+                    "displayName": "ロンドン鉄道風格",
+                    "limitedService": "限定サービス/ピーク時のみ",
+                    "colorBackground": "背景色",
+                    "colorForeground": "前景色"
+                },
+                "londonSandwich": {
+                    "displayName": "ロンドンサンドイッチ風格"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "ロンドンルートン空港DART風格"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "広東省都市間鉄道風格"
@@ -510,19 +537,10 @@
         },
         "donation": {
             "title": "寄付",
-            "content": "あなたのサポートは私たちにとって非常に重要です！ 寄付することで、私たちは活動を続け、誰にでも無料で提供できるようになります。 エキサイティングなリワードオプションから選んで、今日違いをつけてください！",
-            "rewards": "リワード",
-            "gallery": "ギャラリー内のあなたの幻想作品",
-            "galleryContent": "あなたの幻想作品をアップロードして、ギャラリーに表示します。",
-            "nodes": "駅とその他の節点",
-            "nodesContent": "駅とその他の節点の追加をリクエストします。",
-            "features": "機能リクエスト",
-            "featuresContent": "新しい機能の追加をリクエストします。",
-            "methods": "寄付方法",
             "openCollective": "Open Collective",
-            "viaUSD": "PaypalまたはVisaカードを使用してUSDで寄付する。",
+            "viaUSD": "PaypalまたはVisaカードを使用してドルで寄付する。",
             "afdian": "爱发电",
-            "viaCNY": "AlipayまたはWechat Payを使用してCNYで寄付する。"
+            "viaCNY": "AlipayまたはWechat Payを使用して人民元で寄付する。"
         },
         "settings": {
             "title": "設定",

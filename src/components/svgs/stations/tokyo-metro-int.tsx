@@ -50,7 +50,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
     const [textLength, setTextLength] = React.useState(0);
     React.useEffect(() => {
         let len = 0;
-        names[0].split('\\').forEach(s => {
+        names[0].split('\n').forEach(s => {
             len = Math.max(len, s.length);
         });
         setTextLength(len);
@@ -272,7 +272,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                 {!textVertical ? (
                     <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                         <MultilineText
-                            text={names[0].split('\\')}
+                            text={names[0].split('\n')}
                             fontSize={fontSize}
                             lineHeight={fontSize}
                             grow={nameOffsetY === 'top' || mereOffset === 'up' ? 'up' : 'down'}
@@ -284,7 +284,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                 ) : (
                     <g transform={`translate(${textXVer}, ${textYVer})`} textAnchor="middle">
                         <MultilineTextVertical
-                            text={names[0].split('\\')}
+                            text={names[0].split('\n')}
                             fontSize={fontSize}
                             lineWidth={fontSize}
                             grow="bidirectional"
@@ -361,9 +361,9 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameJa'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

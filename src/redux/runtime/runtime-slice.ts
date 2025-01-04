@@ -55,7 +55,6 @@ interface RuntimeState {
     masterNodesCount: number;
     parallelLinesCount: number;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
-    isDonationModalOpen: boolean;
     polylines: Polylines;
 }
 
@@ -77,7 +76,6 @@ const initialState: RuntimeState = {
     masterNodesCount: 0,
     parallelLinesCount: 0,
     globalAlerts: {},
-    isDonationModalOpen: false,
     polylines: {
         x: [],
         y: [],
@@ -211,9 +209,6 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
-        setIsDonationModalOpen: (state, action: PayloadAction<boolean>) => {
-            state.isDonationModalOpen = action.payload;
-        },
         setPolyLines: (state, action: PayloadAction<Polylines>) => {
             state.polylines = action.payload;
         },
@@ -249,7 +244,6 @@ export const {
     onPaletteAppClipEmit,
     setGlobalAlert,
     closeGlobalAlert,
-    setIsDonationModalOpen,
     setPolyLines,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

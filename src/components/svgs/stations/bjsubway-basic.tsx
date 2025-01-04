@@ -44,17 +44,17 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-4, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+            return [-4, -(names[1].split('\n').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
+            return [0, -(names[1].split('\n').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
         } else if (oX === 'right' && oY === 'top') {
-            return [4, -(names[1].split('\\').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+            return [4, -(names[1].split('\n').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-4, names[0].split('\\').length * LINE_HEIGHT[oY] + 1];
+            return [-4, names[0].split('\n').length * LINE_HEIGHT[oY] + 1];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\\').length * LINE_HEIGHT[oY] + 4];
+            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 4];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [4, names[0].split('\\').length * LINE_HEIGHT[oY] + 1];
+            return [4, names[0].split('\n').length * LINE_HEIGHT[oY] + 1];
         } else if (oX === 'left' && oY === 'middle') {
             return [-5, 0];
         } else if (oX === 'right' && oY === 'middle') {
@@ -81,7 +81,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
             />
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={LINE_HEIGHT.zh}
                     lineHeight={LINE_HEIGHT.zh}
                     grow="up"
@@ -89,7 +89,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                     baseOffset={1}
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={LINE_HEIGHT.en}
                     lineHeight={LINE_HEIGHT.en}
                     grow="down"
@@ -98,7 +98,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                 />
                 {!open && (
                     <text
-                        dy={names[1].split('\\').length * LINE_HEIGHT.en + 2}
+                        dy={names[1].split('\n').length * LINE_HEIGHT.en + 2}
                         fontSize={LINE_HEIGHT.en}
                         dominantBaseline="hanging"
                         className="rmp-name__zh"
@@ -134,13 +134,12 @@ const bjsubwayBasicStationFields = [
     {
         type: 'textarea',
         label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: BjsubwayBasicStationAttributes) =>
-            (attrs ?? defaultBjsubwayBasicStationAttributes).names[0].replaceAll('\\', '\n'),
+        value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).names[0],
         onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
             // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
+            attrs.names[0] = val.toString();
             // return modified attrs
             return attrs;
         },
@@ -148,13 +147,12 @@ const bjsubwayBasicStationFields = [
     {
         type: 'textarea',
         label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: BjsubwayBasicStationAttributes) =>
-            (attrs ?? defaultBjsubwayBasicStationAttributes).names[1].replaceAll('\\', '\n'),
+        value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).names[1],
         onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
             // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
+            attrs.names[1] = val.toString();
             // return modified attrs
             return attrs;
         },

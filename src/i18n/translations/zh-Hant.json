@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加車站！",
                 "misc-node": "了解如何添加節點！",
-                "line": "了解如何添加線條樣式！",
-                "donate": "或捐贈！"
+                "line": "了解如何添加線條樣式！"
             }
         },
         "details": {
@@ -125,8 +124,8 @@
                     "isTram": "是LRT線路標識"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR東日本線路標識",
-                  "crosshatchPatternFill": "用網狀圖案填充"
+                    "displayName": "JR東日本線路標識",
+                    "crosshatchPatternFill": "用網狀圖案填充"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青島地鐵數位線路標識",
@@ -135,6 +134,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "廣東城際鐵路線標識"
+                },
+                "londonArrow": {
+                    "displayName": "倫敦箭頭",
+                    "type": "類型",
+                    "continuation": "延續",
+                    "sandwich": "三明治",
+                    "tube": "地鐵"
                 },
                 "master": {
                     "displayName": "大師節點",
@@ -269,18 +275,18 @@
                     "displayName": "新加坡MRT換乘車站"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR東日本基本車站",
-                  "nameOffset": "名稱偏移",
-                  "textOneLine": "名稱在一行中",
-                  "textVertical": "垂直名稱",
-                  "important": "重要車站",
-                  "lines": "轉乘線偏移"
+                    "displayName": "JR東日本基本車站",
+                    "nameOffset": "名稱偏移",
+                    "textOneLine": "名稱在一行中",
+                    "textVertical": "垂直名稱",
+                    "important": "重要車站",
+                    "lines": "轉乘線偏移"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR東日本重要車站",
-                  "textVertical": "垂直名稱",
-                  "mostImportant": "最重要車站",
-                  "minLength": "車站的最小長度"
+                    "displayName": "JR東日本重要車站",
+                    "textVertical": "垂直名稱",
+                    "mostImportant": "最重要車站",
+                    "minLength": "車站的最小長度"
                 },
                 "foshanMetroBasic": {
                     "displayName": "佛山地鐵基本車站",
@@ -339,6 +345,9 @@
                 "londonTubeInt": {
                     "displayName": "倫敦地鐵換乘車站"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "倫敦河流服務換乘站"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "廣東城際鐵路車站"
                 }
@@ -380,6 +389,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "廣州地鐵出站換乘樣式"
+                },
+                "gzmtrLoop": {
+                    "displayName": "廣州地鐵環線樣式"
                 },
                 "chinaRailway": {
                     "displayName": "中國鐵路樣式"
@@ -438,6 +450,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "倫敦地鐵終點站樣式"
+                },
+                "londonRail": {
+                    "displayName": "倫敦鐵路樣式",
+                    "limitedService": "有限服務/只限繁忙時段",
+                    "colorBackground": "背景顏色",
+                    "colorForeground": "前景顏色"
+                },
+                "londonSandwich": {
+                    "displayName": "倫敦三明治樣式"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "倫敦盧頓機場DART樣式"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "倫敦IFS雲纜車樣式"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "廣東城際鐵路樣式"
@@ -509,19 +536,10 @@
         },
         "donation": {
             "title": "捐款",
-            "content": "您的支持對我們意義重大！通過捐款，您使我們能夠繼續工作並向每個人提供免費服務。從我們令人興奮的獎勵選擇中選擇，並今天做出改變！",
-            "rewards": "獎勵",
-            "gallery": "您的幻想作品在畫廊中",
-            "galleryContent": "上傳您的幻想作品並在畫廊中展示它們。",
-            "nodes": "站點和其他節點",
-            "nodesContent": "請求添加站點和其他節點。",
-            "features": "功能請求",
-            "featuresContent": "請求添加新功能。",
-            "methods": "捐款方式",
             "openCollective": "Open Collective",
-            "viaUSD": "通過Paypal或Visa卡以USD捐款。",
+            "viaUSD": "通過Paypal或Visa卡以美元捐款。",
             "afdian": "爱发电",
-            "viaCNY": "通過支付寶或微信支付以CNY捐款。"
+            "viaCNY": "通過支付寶或微信支付以人民幣捐款。"
         },
         "settings": {
             "title": "設置",

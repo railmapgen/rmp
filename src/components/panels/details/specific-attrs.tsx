@@ -1,6 +1,6 @@
 import { Text } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
-import { MiscNodeId, StnId } from '../../../constants/constants';
+import { AttrsProps, MiscNodeId, StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
@@ -18,7 +18,7 @@ export const NodeSpecificAttributes = () => {
     const [id] = selected;
 
     const type = window.graph.getNodeAttribute(id, 'type');
-    const AttrsComponent = type in nodes && nodes[type].attrsComponent;
+    const AttrsComponent = type in nodes && (nodes[type].attrsComponent as React.FC<AttrsProps<any>>);
     const attrs = (window.graph.getNodeAttribute(id, type) ?? {}) as any;
 
     const handleAttrsUpdate = (selectedFirst: string, attrs: any) => {

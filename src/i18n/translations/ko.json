@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "역을 추가하는 방법 배우기!",
                 "misc-node": "노드를 추가하는 방법 배우기!",
-                "line": "라인 스타일을 추가하는 방법 배우기!",
-                "donate": "또는 기부하기!"
+                "line": "라인 스타일을 추가하는 방법 배우기!"
             }
         },
         "details": {
@@ -135,6 +134,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "광동 시외 철도 노선 표지판"
+                },
+                "londonArrow": {
+                    "displayName": "런던 화살표",
+                    "type": "유형",
+                    "continuation": "계속",
+                    "sandwich": "샌드위치",
+                    "tube": "튜브"
                 },
                 "master": {
                     "displayName": "마스터 노드",
@@ -339,6 +345,9 @@
                 "londonTubeInt": {
                     "displayName": "런던 지하철 환승역"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "런던 강 서비스 환승역"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "광둥 시외 기차역"
                 }
@@ -380,6 +389,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "광저우 지하철 역 환승 모습"
+                },
+                "gzmtrLoop": {
+                    "displayName": "광저우 지하철 순환선 스타일"
                 },
                 "chinaRailway": {
                     "displayName": "중국 철도 모습"
@@ -438,6 +450,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "런던 지하철 종착 스타일"
+                },
+                "londonRail": {
+                    "displayName": "런던 철도 스타일",
+                    "limitedService": "제한 서비스/혼잡 시간대만",
+                    "colorBackground": "배경 색상",
+                    "colorForeground": "전경 색상"
+                },
+                "londonSandwich": {
+                    "displayName": "런던 샌드위치 스타일"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "런던 루튼 공항 DART 스타일"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "런던 IFS 클라우드 케이블카 스타일"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "광동성 도시간 철도 스타일"
@@ -509,19 +536,10 @@
         },
         "donation": {
             "title": "기부",
-            "content": "귀하의 지원은 우리에게 큰 의미를 갖습니다! 기부함으로써 우리는 우리의 작업을 계속할 수 있고 모든 이에게 무료로 제공할 수 있습니다. 흥미로운 보상 옵션 중에서 선택하고 오늘 변화를 만들어보세요!",
-            "rewards": "보상",
-            "gallery": "갤러리에 여러분의 판타지 작품",
-            "galleryContent": "여러분의 판타지 작품을 업로드하고 갤러리에 표시하세요.",
-            "nodes": "역 및 기타 노드",
-            "nodesContent": "역 및 기타 노드 추가 요청.",
-            "features": "기능 요청",
-            "featuresContent": "새로운 기능 추가를 요청하세요.",
-            "methods": "기부 방법",
             "openCollective": "Open Collective",
-            "viaUSD": "Paypal 또는 Visa 카드를 통해 USD로 기부하기.",
+            "viaUSD": "Paypal 또는 Visa 카드를 통해 달러로 기부하기.",
             "afdian": "爱发电",
-            "viaCNY": "Alipay 또는 Wechat Pay를 통해 CNY로 기부하기."
+            "viaCNY": "Alipay 또는 Wechat Pay를 통해 인민폐로 기부하기."
         },
         "settings": {
             "title": "설정",

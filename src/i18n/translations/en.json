@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "Learn how to add your stations!",
                 "misc-node": "Learn how to add your nodes!",
-                "line": "Learn how to add your line styles!",
-                "donate": "Or Donate!"
+                "line": "Learn how to add your line styles!"
             }
         },
         "details": {
@@ -135,6 +134,13 @@
                 },
                 "guangdongIntercityRailwayLineBadge": {
                     "displayName": "Guangdong Intercity Railway line badge"
+                },
+                "londonArrow": {
+                    "displayName": "London arrow",
+                    "type": "Type",
+                    "continuation": "Continuation",
+                    "sandwich": "Sandwich",
+                    "tube": "Tube"
                 },
                 "master": {
                     "displayName": "Master node",
@@ -340,6 +346,9 @@
                 "londonTubeInt": {
                     "displayName": "London Tube interchange station"
                 },
+                "londonRiverServicesInt": {
+                    "displayName": "London river services interchange station"
+                },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway station"
                 }
@@ -381,6 +390,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "Guangzhou Metro out-of-station interchange style"
+                },
+                "gzmtrLoop": {
+                    "displayName": "Guangzhou Metro loop style"
                 },
                 "chinaRailway": {
                     "displayName": "China Railway style"
@@ -439,6 +451,21 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "London Tube terminal style"
+                },
+                "londonRail": {
+                    "displayName": "London rail style",
+                    "limitedService": "Limited service/Peak hours only",
+                    "colorBackground": "Color background",
+                    "colorForeground": "Color foreground"
+                },
+                "londonSandwich": {
+                    "displayName": "London sandwich style"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "London Luton Airport DART style"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "London IFS Cloud Cable Car style"
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway style"
@@ -510,15 +537,6 @@
         },
         "donation": {
             "title": "Donation",
-            "content": "Your support means the world to us! By donating, you enable us to continue our work and provide this free to everyone. Choose from our exciting reward options and make a difference today!",
-            "rewards": "Rewards",
-            "gallery": "Your fantasy works in Gallery",
-            "galleryContent": "Upload your fantasy works and display them in Gallery.",
-            "nodes": "Stations and miscellaneous nodes",
-            "nodesContent": "Request to add stations and miscellaneous nodes.",
-            "features": "Features requests",
-            "featuresContent": "Request to add new features.",
-            "methods": "Donation Methods",
             "openCollective": "Open Collective",
             "viaUSD": "Donate in USD via Paypal or Visa card.",
             "afdian": "爱发电",
@@ -562,7 +580,7 @@
                 "undo": "Undo.",
                 "redo": "Redo."
             },
-            "procedures":{
+            "procedures": {
                 "title": "Procedures",
                 "translate": {
                     "title": "Translate nodes' coordinates",

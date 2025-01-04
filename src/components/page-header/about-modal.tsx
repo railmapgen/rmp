@@ -17,7 +17,9 @@ import {
 } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useTranslation } from 'react-i18next';
+import AfdianIcon from '../../images/afdian.png';
 import GithubIcon from '../../images/github-mark.svg';
+import OpenCollectiveIcon from '../../images/opencollective-icon.webp';
 import SlackIcon from '../../images/slack-mark.svg';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
@@ -188,6 +190,41 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="sm" as="i">
                                     #rmp, #gallery, #rmg, #palette-and-templates
                                 </Text>
+                            </TagLabel>
+                        </Tag>
+                    </VStack>
+
+                    <Heading as="h5" size="sm" mt={3} mb={2}>
+                        {t('header.donation.title')}
+                    </Heading>
+
+                    <VStack>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => window.open('https://afdian.com/a/rail-map-toolkit', '_blank')}
+                            cursor="pointer"
+                        >
+                            <Avatar src={AfdianIcon} size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%" pb={1}>
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    {t('header.donation.afdian')}
+                                </Text>
+                                <Text fontSize="sm">{t('header.donation.viaCNY')}</Text>
+                            </TagLabel>
+                        </Tag>
+                        <Tag
+                            size="lg"
+                            w="85%"
+                            onClick={() => window.open('https://opencollective.com/rail-map-toolkit', '_blank')}
+                            cursor="pointer"
+                        >
+                            <Avatar src={OpenCollectiveIcon} size="lg" my={2} ml={-1} mr={2} />
+                            <TagLabel display="block" width="100%" pb={1}>
+                                <Text fontSize="lg" fontWeight="bold" mb={1}>
+                                    {t('header.donation.openCollective')}
+                                </Text>
+                                <Text fontSize="sm">{t('header.donation.viaUSD')}</Text>
                             </TagLabel>
                         </Tag>
                     </VStack>

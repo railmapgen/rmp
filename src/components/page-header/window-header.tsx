@@ -4,14 +4,12 @@ import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { IoMdHeart } from 'react-icons/io';
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk, setIsDonationModalOpen } from '../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import AboutModal from './about-modal';
-import DonationModal from './donation-modal';
 import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
@@ -22,7 +20,6 @@ export default function WindowHeader() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { past, future } = useRootSelector(state => state.param);
-    const { isDonationModalOpen } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
@@ -132,17 +129,6 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Donation"
-                        color="red"
-                        icon={<IoMdHeart />}
-                        onClick={() => dispatch(setIsDonationModalOpen(true))}
-                    />
-                </WrapItem>
-
-                <WrapItem>
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
                         aria-label="Settings"
                         icon={<MdSettings />}
                         onClick={() => setIsSettingsModalOpen(true)}
@@ -160,7 +146,6 @@ export default function WindowHeader() {
                 </WrapItem>
             </Wrap>
 
-            <DonationModal isOpen={isDonationModalOpen} onClose={() => dispatch(setIsDonationModalOpen(false))} />
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
         </RmgWindowHeader>

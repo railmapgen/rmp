@@ -171,7 +171,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
 
     // rotate starts from top-middle while Math.sin/cos starts from middle-right
     const rad = ((rotate - 90) * Math.PI) / 180;
-    const height = (terminal ? 2 : 1) * (0.66 * X_HEIGHT + X_HEIGHT / 2);
+    // 0.5 cover the gap between the station icon and the line
+    const height = terminal ? 2 * (0.66 * X_HEIGHT + X_HEIGHT / 2) : 0.66 * X_HEIGHT + 0.5;
     const textDx =
         ROTATE_CONST[rotate].textDx + // fixed dx for each rotation
         Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
