@@ -119,27 +119,23 @@ const SvgCanvas = () => {
                 if (isNodeSupportPolyline(node, graph.current)) {
                     if (activePolylines.length !== 0) {
                         // remove the active polylines if the distance is larger than 5
-                        Object.values(activePolylines).forEach(p => {
-                            const d = getPolylineDistance(p, toX, toY);
-                            if (d >= 5) {
-                                setActivePolylines(activePolylines.filter(ap => ap !== p));
-                            }
-                        });
+                        setActivePolylines(activePolylines.filter(l => getPolylineDistance(l, toX, toY) <= 5));
                     }
                     if (activePolylines.length < 2) {
                         // add the nearest polylines if the distance is less than 3
+                        const nowPolylines = activePolylines;
                         Object.values(polylines).forEach(p => {
                             const { l, d } = getNearestPolyline(toX, toY, p, [
                                 ...selected,
-                                ...activePolylines.map(ap => ap.node),
+                                ...nowPolylines.map(ap => ap.node),
                             ]);
                             const flag =
-                                activePolylines.length === 0 ||
-                                !activePolylines.some(ap => ap.a === l.a && ap.b === l.b);
-                            if (d < 3 && activePolylines.length < 2 && flag) {
-                                setActivePolylines([...activePolylines, l]);
+                                nowPolylines.length === 0 || !nowPolylines.some(ap => ap.a === l.a && ap.b === l.b);
+                            if (d < 3 && nowPolylines.length < 2 && flag) {
+                                nowPolylines.push(l);
                             }
                         });
+                        setActivePolylines(nowPolylines);
                     }
 
                     if (activePolylines.length === 1) {
