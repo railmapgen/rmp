@@ -46,7 +46,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel },
+        preference: { autoParallel, usePolyline },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -64,6 +64,7 @@ const SvgCanvas = () => {
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
 
+    // the active polylines for the current dragging node (length <= 2)
     const [activePolylines, setActivePolylines] = React.useState<Polyline[]>([]);
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -105,7 +106,8 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            if (!e.ctrlKey) {
+            if (usePolyline !== e.altKey) {
+                // use polyline if usePolyline is on and alt key is not pressed
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');
                 const toX = fromX - ((offset.x - x) * svgViewBoxZoom) / 100;
@@ -116,6 +118,7 @@ const SvgCanvas = () => {
 
                 if (isNodeSupportPolyline(node, graph.current)) {
                     if (activePolylines.length !== 0) {
+                        // remove the active polylines if the distance is larger than 5
                         Object.values(activePolylines).forEach(p => {
                             const d = getPolylineDistance(p, toX, toY);
                             if (d >= 5) {
@@ -124,6 +127,7 @@ const SvgCanvas = () => {
                         });
                     }
                     if (activePolylines.length < 2) {
+                        // add the nearest polylines if the distance is less than 3
                         Object.values(polylines).forEach(p => {
                             const { l, d } = getNearestPolyline(toX, toY, p, [
                                 ...selected,
@@ -139,7 +143,6 @@ const SvgCanvas = () => {
                     }
 
                     if (activePolylines.length === 1) {
-                        console.log(activePolylines);
                         const l = activePolylines[0];
                         if (l.a == 0) {
                             newY = -l.c / l.b;
@@ -166,8 +169,8 @@ const SvgCanvas = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
                             ...attr,
-                            x: roundToNearestN(attr.x + offsetX, 0.001),
-                            y: roundToNearestN(attr.y + offsetY, 0.001),
+                            x: roundToNearestN(attr.x + offsetX, 0.01),
+                            y: roundToNearestN(attr.y + offsetY, 0.01),
                         }));
                     }
                 });
@@ -177,8 +180,8 @@ const SvgCanvas = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
                             ...attr,
-                            x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
-                            y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, e.altKey ? 1 : 5),
+                            x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, 5),
+                            y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, 5),
                         }));
                     }
                 });

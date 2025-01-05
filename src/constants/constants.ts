@@ -99,10 +99,10 @@ export interface Polyline {
 }
 
 export interface Polylines {
-    x: Polyline[];
-    y: Polyline[];
-    p: Polyline[];
-    n: Polyline[];
+    x: Polyline[]; // x = -c
+    y: Polyline[]; // y = -c
+    p: Polyline[]; // y = x + c  [positive slope]
+    n: Polyline[]; // y = -x - c [negative slope]
 }
 
 /**

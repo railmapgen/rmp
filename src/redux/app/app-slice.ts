@@ -37,6 +37,10 @@ export interface AppState {
          * Whether to enable parallel for new lines.
          */
         autoParallel: boolean;
+        /**
+         * Whether to use polyline when dragging a node.
+         */
+        usePolyline: boolean;
     };
 }
 
@@ -51,6 +55,7 @@ export const initialState: AppState = {
             expand: true,
         },
         autoParallel: true,
+        usePolyline: true,
     },
 };
 
@@ -73,9 +78,18 @@ const appSlice = createSlice({
         setAutoParallel: (state, action: PayloadAction<boolean>) => {
             state.preference.autoParallel = action.payload;
         },
+        setUsePolyline: (state, action: PayloadAction<boolean>) => {
+            state.preference.usePolyline = action.payload;
+        },
     },
 });
 
-export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath, setToolsPanelExpansion, setAutoParallel } =
-    appSlice.actions;
+export const {
+    setTelemetryApp,
+    setTelemetryProject,
+    setUnlockSimplePath,
+    setToolsPanelExpansion,
+    setAutoParallel,
+    setUsePolyline,
+} = appSlice.actions;
 export default appSlice.reducer;

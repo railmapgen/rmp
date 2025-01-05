@@ -560,7 +560,8 @@
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
-                "autoParallel": "自動將新段線設置為與現有線段平行"
+                "autoParallel": "自動將新段線設置為與現有線段平行",
+                "usePolyline": "自由拖曳節點並使用磁性佈局"
             },
             "shortcuts": {
                 "title": "捷徑",
@@ -571,7 +572,7 @@
                 "arrows": "稍微移動畫布。",
                 "ijkl": "稍微移動所選站點。",
                 "shift": "多選。",
-                "alt": "精確移動。",
+                "alt": "暫時使用或停用磁性佈局。",
                 "delete": "刪除所選站點。",
                 "cut": "剪切。",
                 "copy": "複製。",

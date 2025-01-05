@@ -129,8 +129,6 @@ export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttri
     const polylinesP: Polyline[] = [];
     const polylinesN: Polyline[] = [];
 
-    // const sortFunc = (x: Polyline, y: Polyline) => y.c - x.c;
-
     graph
         .filterNodes(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
         .forEach(node => {
@@ -138,8 +136,8 @@ export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttri
             const y = graph.getNodeAttribute(node, 'y');
             polylinesX.push({ a: 1, b: 0, c: -x, node, x, y } as Polyline);
             polylinesY.push({ a: 0, b: 1, c: -y, node, x, y } as Polyline);
-            polylinesP.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
-            polylinesN.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
+            polylinesP.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
+            polylinesN.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
         });
     return {
         x: polylinesX,
