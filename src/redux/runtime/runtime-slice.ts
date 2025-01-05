@@ -7,7 +7,6 @@ import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/maste
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
-import { getPolylines } from '../../util/graph';
 import { setAutoParallel } from '../app/app-slice';
 import { redoAction, undoAction } from '../param/param-slice';
 
@@ -110,8 +109,6 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
             })
         );
     }
-
-    dispatch(setPolyLines(getPolylines(window.graph)));
 });
 
 /**

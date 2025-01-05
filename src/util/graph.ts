@@ -161,7 +161,7 @@ export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], 
         retDistance = Infinity,
         minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
     polylines
-        .filter(l => !nodes.includes(l.node) && pointDistance(x, y, l.x, l.y) < 100)
+        .filter(l => !nodes.includes(l.node)) //  && pointDistance(x, y, l.x, l.y) < 100
         .forEach(line => {
             const lineDis = getPolylineDistance(line, x, y);
             const pointDis = pointDistance(x, y, line.x, line.y);

@@ -16,10 +16,11 @@ import {
     removeSelected,
     setActive,
     setMode,
+    setPolyLines,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
-import { getNearestPolyline, getPolylineDistance, isNodeSupportPolyline } from '../util/graph';
+import { getNearestPolyline, getPolylineDistance, getPolylines, isNodeSupportPolyline } from '../util/graph';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import SvgLayer from './svg-layer';
@@ -97,6 +98,7 @@ const SvgCanvas = () => {
                 dispatch(addSelected(node));
             }
         }
+        dispatch(setPolyLines(getPolylines(graph.current)));
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -116,7 +118,7 @@ const SvgCanvas = () => {
                     if (activePolylines.length !== 0) {
                         Object.values(activePolylines).forEach(p => {
                             const d = getPolylineDistance(p, toX, toY);
-                            if (d >= 10) {
+                            if (d >= 5) {
                                 setActivePolylines(activePolylines.filter(ap => ap !== p));
                             }
                         });
@@ -130,7 +132,7 @@ const SvgCanvas = () => {
                             const flag =
                                 activePolylines.length === 0 ||
                                 !activePolylines.some(ap => ap.a === l.a && ap.b === l.b);
-                            if (d < 10 && activePolylines.length < 2 && flag) {
+                            if (d < 3 && activePolylines.length < 2 && flag) {
                                 setActivePolylines([...activePolylines, l]);
                             }
                         });
