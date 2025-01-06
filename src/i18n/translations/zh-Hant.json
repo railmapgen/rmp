@@ -560,19 +560,18 @@
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
-                "autoParallel": "自動將新段線設置為與現有線段平行",
-                "usePolyline": "自由拖曳節點並使用磁性佈局"
+                "autoParallel": "自動將新段線設置為與現有線段平行"
             },
             "shortcuts": {
                 "title": "捷徑",
                 "keys": "按鍵",
                 "description": "描述",
                 "f": "使用上一個工具。",
-                "s": "多選。",
+                "s": "框選。",
                 "arrows": "稍微移動畫布。",
                 "ijkl": "稍微移動所選站點。",
                 "shift": "多選。",
-                "alt": "暫時使用或停用磁性佈局。",
+                "alt": "拖動時按下以臨時停用自動吸附。",
                 "delete": "刪除所選站點。",
                 "cut": "剪切。",
                 "copy": "複製。",

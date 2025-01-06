@@ -31,7 +31,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setAutoParallel, setTelemetryProject, setUsePolyline } from '../../redux/app/app-slice';
+import { setAutoParallel, setTelemetryProject } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -58,7 +58,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, usePolyline },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
     const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
@@ -122,18 +122,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         isDisabled={isParallelLineDisabled}
                                         isChecked={autoParallel}
                                         onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
-                                    />
-                                </Box>
-                                <Box display="flex" mb="1">
-                                    <Flex direction="row" width="100%">
-                                        <Text>{t('header.settings.preference.usePolyline')}</Text>
-                                        <Badge ml="1" colorScheme="green">
-                                            New
-                                        </Badge>
-                                    </Flex>
-                                    <Switch
-                                        isChecked={usePolyline}
-                                        onChange={({ target: { checked } }) => dispatch(setUsePolyline(checked))}
                                     />
                                 </Box>
                             </Box>

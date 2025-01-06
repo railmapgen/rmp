@@ -561,19 +561,18 @@
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
-                "autoParallel": "Automatically set new lines to be parallel to existing lines",
-                "usePolyline": "Drag nodes freely and use magnetic layout"
+                "autoParallel": "Automatically set new lines to be parallel to existing lines"
             },
             "shortcuts": {
                 "title": "Shortcuts",
                 "keys": "Keys",
                 "description": "Description",
                 "f": "Use the last tool.",
-                "s": "Select.",
+                "s": "Marquee selection.",
                 "arrows": "Move the canvas a little bit.",
                 "ijkl": "Move the selected station(s) a little bit.",
                 "shift": "Multiple selection.",
-                "alt": "Temporary use or deactivation of magnetic layouts.",
+                "alt": "Hold down while dragging to temporarily disable auto-snapping.",
                 "delete": "Delete the selected station(s).",
                 "cut": "Cut.",
                 "copy": "Copy.",

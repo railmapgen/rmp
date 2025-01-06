@@ -46,7 +46,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, usePolyline },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -106,8 +106,8 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            if (usePolyline !== e.altKey) {
-                // use polyline if usePolyline is on and alt key is not pressed
+            if (!e.altKey) {
+                // use polyline if alt key is not pressed
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');
                 const toX = fromX - ((offset.x - x) * svgViewBoxZoom) / 100;
