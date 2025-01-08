@@ -83,14 +83,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const textX =
         nameOffsetX === 'left'
-            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + columns * 5
+            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + columns * 7
             : nameOffsetX === 'right'
-              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - columns * 5
+              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - columns * 7
               : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
             (iconBBox.y2 - iconBBox.y1) / 2 -
-            (5 - columns) * 3) * // bbox doesn't reflect the actual size of the icon, some tweak
+            Math.floor(transferAll.length / columns) * 3) * // bbox doesn't reflect the actual size of the icon, some tweak
             NAME_DY[nameOffsetY].polarity +
         iconOffset[1] / 2;
     const textAnchor =
@@ -308,7 +308,7 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.gzmtrInt.topHeavy'),
+            label: t('panel.details.stations.gzmtrInt2024.topHeavy'),
             oneLine: true,
             isChecked: attrs.topHeavy,
             onChange: val => {
