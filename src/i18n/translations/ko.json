@@ -560,7 +560,12 @@
             "preference": {
                 "title": "선호",
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
-                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다"
+                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
+                "randomStationNames": {
+                    "title": "생성 시 역 이름을 랜덤으로 설정",
+                    "none": "없음",
+                    "shmetro": "상하이"
+                }
             },
             "shortcuts": {
                 "title": "바로 가기",

@@ -560,7 +560,12 @@
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
-                "autoParallel": "自动将新线段设置为与现有线段平行"
+                "autoParallel": "自动将新线段设置为与现有线段平行",
+                "randomStationNames": {
+                    "title": "创建时将站名随机化",
+                    "none": "无",
+                    "shmetro": "上海"
+                }
             },
             "shortcuts": {
                 "title": "快捷键",

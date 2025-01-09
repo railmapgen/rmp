@@ -561,7 +561,12 @@
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
-                "autoParallel": "Automatically set new lines to be parallel to existing lines"
+                "autoParallel": "Automatically set new lines to be parallel to existing lines",
+                "randomStationNames": {
+                    "title": "Set station names to random on creation",
+                    "none": "None",
+                    "shmetro": "Shanghai"
+                }
             },
             "shortcuts": {
                 "title": "Shortcuts",
