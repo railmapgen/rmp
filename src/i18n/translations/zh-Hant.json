@@ -239,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "廣州地鐵換乘站（2024）",
-                    "anchorAt": "定位於",
-                    "anchorAtNone": "中心",
-                    "preferVertical": "垂直佈局（僅限2個換乘）"
+                    "columns": "站點列數",
+                    "topHeavy": "優先將更多站點放在上方",
+                    "anchorAt": "錨點位置",
+                    "anchorAtNone": "居中",
+                    "osiPosition": "出站轉車",
+                    "osiPositionNone": "無",
+                    "osiPositionLeft": "左側",
+                    "osiPositionRight": "右側"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",

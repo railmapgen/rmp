@@ -4,7 +4,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { InterchangeStation2024 } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd } from 'react-icons/md';
+import { MdAdd, MdRemove } from 'react-icons/md';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -36,8 +36,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         transfer = defaultGzmtrInt2024StationAttributes.transfer,
         open = defaultGzmtrInt2024StationAttributes.open,
         secondaryNames = defaultGzmtrInt2024StationAttributes.secondaryNames,
-        preferVertical = defaultGzmtrInt2024StationAttributes.preferVertical,
+        columns = defaultGzmtrInt2024StationAttributes.columns,
+        topHeavy = defaultGzmtrInt2024StationAttributes.topHeavy,
         anchorAt = defaultGzmtrInt2024StationAttributes.anchorAt,
+        osiPosition = defaultGzmtrInt2024StationAttributes.osiPosition,
     } = attrs[StationType.GzmtrInt2024] ?? defaultGzmtrInt2024StationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -53,7 +55,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const transferAll = transfer.flat().slice(0, 4); // slice to make sure at most 4 transfers
+    const transferAll = transfer.flat().slice(0, 5); // slice to make sure at most 5 transfers
 
     // temporary fix for the missing id on the top element of the station
     const iconEl = React.useRef<SVGGElement | null>(null);
@@ -70,11 +72,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         const { height: iconHeight, width: iconWidth, x: iconX1, y: iconY1 } = iconEl.current!.getBBox();
         const [iconX2, iconY2] = [iconX1 + iconWidth, iconY1 + iconHeight];
         setIconBBox({ x1: iconX1, x2: iconX2, y1: iconY1, y2: iconY2 });
-    }, [JSON.stringify(transferAll), preferVertical, anchorAt, setIconBBox, iconEl]);
-    const textDX = preferVertical && transferAll.length === 2 ? 0 : 8;
+    }, [JSON.stringify(transferAll), columns, topHeavy, anchorAt, osiPosition, setIconBBox, iconEl]);
 
     const stations = transferAll.map(s => ({
-        style: s[6] === 'gz' ? 'gzmtr' : ('fmetro' as 'gzmtr' | 'fmetro'),
+        style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
         lineNum: s[4],
         stnNum: s[5],
         strokeColour: s[2],
@@ -82,13 +83,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const textX =
         nameOffsetX === 'left'
-            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + textDX
+            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + columns * 7
             : nameOffsetX === 'right'
-              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - textDX
+              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - columns * 7
               : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
-            (iconBBox.y2 - iconBBox.y1) / 2) *
+            (iconBBox.y2 - iconBBox.y1) / 2 -
+            Math.floor(transferAll.length / columns) * 3) * // bbox doesn't reflect the actual size of the icon, some tweak
             NAME_DY[nameOffsetY].polarity +
         iconOffset[1] / 2;
     const textAnchor =
@@ -127,8 +129,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                 <InterchangeStation2024
                     stations={stations}
                     textClassName="rmp-name__zh"
-                    preferVertical={preferVertical}
+                    columns={columns}
+                    topHeavy={topHeavy}
                     anchorAt={anchorAt >= 0 ? anchorAt : undefined}
+                    osiPosition={
+                        transfer.flat().length === 2 && columns === 1 && osiPosition !== 'none'
+                            ? osiPosition
+                            : undefined
+                    }
                 />
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
@@ -202,8 +210,10 @@ export interface GzmtrInt2024StationAttributes extends StationAttributes, Statio
      */
     open: boolean;
     secondaryNames: [string, string];
-    preferVertical: boolean;
+    columns: number;
+    topHeavy: boolean;
     anchorAt: number;
+    osiPosition: 'none' | 'left' | 'right';
 }
 
 const defaultGzmtrInt2024StationAttributes: GzmtrInt2024StationAttributes = {
@@ -218,8 +228,10 @@ const defaultGzmtrInt2024StationAttributes: GzmtrInt2024StationAttributes = {
     ],
     open: true,
     secondaryNames: ['', ''],
-    preferVertical: true,
+    columns: 2,
+    topHeavy: false,
     anchorAt: -1,
+    osiPosition: 'none',
 };
 
 const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024StationAttributes>) => {
@@ -280,6 +292,32 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
             minW: 'full',
         },
         {
+            type: 'slider',
+            label: t('panel.details.stations.gzmtrInt2024.columns'),
+            value: attrs.columns,
+            min: 1,
+            max: Math.min(5, attrs.transfer.flat().length),
+            step: 1,
+            onChange: val => {
+                attrs.columns = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            leftIcon: <MdRemove />,
+            rightIcon: <MdAdd />,
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrInt2024.topHeavy'),
+            oneLine: true,
+            isChecked: attrs.topHeavy,
+            onChange: val => {
+                attrs.topHeavy = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.gzmtrInt2024.anchorAt'),
             value: attrs.anchorAt ?? '-1',
@@ -296,14 +334,19 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
             minW: 'full',
         },
         {
-            type: 'switch',
-            label: t('panel.details.stations.gzmtrInt2024.preferVertical'),
-            oneLine: true,
-            isChecked: attrs.preferVertical,
+            type: 'select',
+            label: t('panel.details.stations.gzmtrInt2024.osiPosition'),
+            value: attrs.osiPosition,
+            options: {
+                none: t('panel.details.stations.gzmtrInt2024.osiPositionNone'),
+                left: t('panel.details.stations.gzmtrInt2024.osiPositionLeft'),
+                right: t('panel.details.stations.gzmtrInt2024.osiPositionRight'),
+            },
             onChange: val => {
-                attrs.preferVertical = val;
+                attrs.osiPosition = val as 'none' | 'left' | 'right';
                 handleAttrsUpdate(id, attrs);
             },
+            hidden: !(attrs.transfer.flat().length === 2 && attrs.columns === 1),
             minW: 'full',
         },
         {
@@ -339,7 +382,7 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
     ];
 
-    const maximumTransfers = [4, 4, 0];
+    const maximumTransfers = [5, 5, 0];
     const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
@@ -446,7 +489,7 @@ const gzmtrInt2024StationIcon = (
                 },
             ]}
             textClassName="rmp-name__zh"
-            preferVertical
+            columns={1}
             transform="translate(12,12)scale(0.3)"
         />
     </svg>

@@ -239,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "Guangzhou Metro interchange station (2024)",
+                    "columns": "Columns of stations",
+                    "topHeavy": "Prefer more stations on the top row",
                     "anchorAt": "Anchor at",
                     "anchorAtNone": "Center",
-                    "preferVertical": "Vertical layout (2 interchanges only)"
+                    "osiPosition": "Out-of-Station Interchange",
+                    "osiPositionNone": "None",
+                    "osiPositionLeft": "Left",
+                    "osiPositionRight": "Right"
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",

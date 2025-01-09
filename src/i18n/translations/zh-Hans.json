@@ -239,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "广州地铁换乘站（2024）",
-                    "anchorAt": "定位于",
-                    "anchorAtNone": "中心",
-                    "preferVertical": "垂直布局（仅限2个换乘）"
+                    "columns": "站点列数",
+                    "topHeavy": "优先将更多站点放在上方",
+                    "anchorAt": "锚点位置",
+                    "anchorAtNone": "居中",
+                    "osiPosition": "出站换乘",
+                    "osiPositionNone": "无",
+                    "osiPositionLeft": "左侧",
+                    "osiPositionRight": "右侧"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
