@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StnId } from '../constants/constants';
+import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -23,6 +23,7 @@ import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from 
 import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
+import { getOneStationName } from '../util/random-station-names';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -39,6 +40,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
+        preference: { randomStationsNames },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -58,6 +60,7 @@ const SvgWrapper = () => {
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
+    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
 
     // Find nodes existence on each update and load fonts if needed.
     React.useEffect(() => {
@@ -78,7 +81,7 @@ const SvgWrapper = () => {
     const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
 
-    const handleBackgroundDown = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+    const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station')) {
             dispatch(setMode('free'));
@@ -90,6 +93,21 @@ const SvgWrapper = () => {
             const attr = structuredClone(stations[type].defaultAttrs);
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
+            // Add random names for stations
+            if (!isRandomStationNamesDisabled) {
+                const namesActionResult = await dispatch(getOneStationName(StationCity.Shmetro));
+                // only proceed if there is no error returned
+                if (getOneStationName.fulfilled.match(namesActionResult)) {
+                    const names = namesActionResult.payload as [string, ...string[]];
+                    // fill or truncate the names array to the station name length
+                    if (attr.names.length > names.length) {
+                        names.push(...Array(attr.names.length - names.length).fill(names.at(-1)));
+                    } else if (attr.names.length < names.length) {
+                        names.splice(attr.names.length, names.length - attr.names.length);
+                    }
+                    attr.names = names;
+                }
+            }
 
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(id, {

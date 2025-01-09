@@ -144,3 +144,7 @@ export enum CityCode {
     Suzhou = 'suzhou',
     Tokyo = 'tokyo',
 }
+
+export enum StationCity {
+    Shmetro = 'shmetro',
+}

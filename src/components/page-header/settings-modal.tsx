@@ -11,6 +11,7 @@ import {
     ModalContent,
     ModalHeader,
     ModalOverlay,
+    Select,
     StackDivider,
     Switch,
     SystemStyleObject,
@@ -29,8 +30,9 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
+import { StationCity } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setAutoParallel, setTelemetryProject } from '../../redux/app/app-slice';
+import { setAutoParallel, setRandomStationsNames, setTelemetryProject } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -57,7 +59,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel },
+        preference: { autoParallel, randomStationsNames },
     } = useRootSelector(state => state.app);
     const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
@@ -79,6 +81,11 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
     const maximumParallelLines = activeSubscriptions.RMP_CLOUD ? MAX_PARALLEL_LINES_PRO : MAX_PARALLEL_LINES_FREE;
     const isParallelLineDisabled = parallelLinesCount >= maximumParallelLines;
+    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD;
+
+    const handleRandomStationNamesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        dispatch(setRandomStationsNames(event.target.value as 'none' | StationCity));
+    };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>
@@ -122,6 +129,34 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         isChecked={autoParallel}
                                         onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
                                     />
+                                </Box>
+                                <Box mb="1" display="flex">
+                                    <Text flex="1">{t('header.settings.preference.randomStationNames.title')}</Text>
+                                    <Badge ml="1" colorScheme="green">
+                                        New
+                                    </Badge>
+                                    <Tooltip label={t('header.settings.pro')}>
+                                        <Badge
+                                            ml="1"
+                                            color="gray.50"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                            mr="auto"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
+                                    <Select
+                                        size="xs"
+                                        value={randomStationsNames}
+                                        onChange={handleRandomStationNamesChange}
+                                    >
+                                        <option value="none">
+                                            {t('header.settings.preference.randomStationNames.none')}
+                                        </option>
+                                        <option value={StationCity.Shmetro} disabled={isRandomStationNamesDisabled}>
+                                            {t(`header.settings.preference.randomStationNames.${StationCity.Shmetro}`)}
+                                        </option>
+                                    </Select>
                                 </Box>
                             </Box>
                         </Box>
