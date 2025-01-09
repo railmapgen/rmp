@@ -111,7 +111,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Box>
                                 <Box display="flex" mb="1">
                                     <Text>{t('header.settings.preference.autoParallel')}</Text>
-                                    <Badge ml="1" colorScheme="green">
+                                    <Badge ml="auto" colorScheme="green">
                                         New
                                     </Badge>
                                     <Tooltip label={t('header.settings.proWithTrial')}>
@@ -119,12 +119,12 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             ml="1"
                                             color="gray.50"
                                             background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            mr="auto"
                                         >
                                             PRO
                                         </Badge>
                                     </Tooltip>
                                     <Switch
+                                        ml="1"
                                         isDisabled={isParallelLineDisabled}
                                         isChecked={autoParallel}
                                         onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
@@ -132,21 +132,22 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Box>
                                 <Box mb="1" display="flex">
                                     <Text flex="1">{t('header.settings.preference.randomStationNames.title')}</Text>
-                                    <Badge ml="1" colorScheme="green">
+                                    <Badge ml="auto" colorScheme="green">
                                         New
                                     </Badge>
                                     <Tooltip label={t('header.settings.pro')}>
                                         <Badge
-                                            ml="1"
                                             color="gray.50"
+                                            ml="1"
                                             background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            mr="auto"
                                         >
                                             PRO
                                         </Badge>
                                     </Tooltip>
                                     <Select
                                         size="xs"
+                                        width="auto"
+                                        ml="1"
                                         value={randomStationsNames}
                                         onChange={handleRandomStationNamesChange}
                                     >
