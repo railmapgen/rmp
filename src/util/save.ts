@@ -570,9 +570,13 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
                 const attr = graph.getNodeAttribute(node, type) as any;
+                // default values
                 attr.columns = 2;
                 attr.topHeavy = false;
                 attr.osiPosition = 'none';
+                // legacy compatibility
+                if (attr.preferVertical && attr.transfer.flat().length === 2) attr.columns = 1;
+                // remove legacy fields
                 delete attr.preferVertical;
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
