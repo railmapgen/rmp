@@ -2,6 +2,7 @@ import {
     Badge,
     Box,
     Button,
+    Flex,
     Icon,
     Kbd,
     Link,

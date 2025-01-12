@@ -2,7 +2,7 @@ import { AlertStatus } from '@chakra-ui/react';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
-import { CityCode, Id, MiscNodeId, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, MiscNodeId, Polylines, RuntimeMode, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
@@ -54,6 +54,7 @@ interface RuntimeState {
     masterNodesCount: number;
     parallelLinesCount: number;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
+    polylines: Polylines;
 }
 
 const initialState: RuntimeState = {
@@ -74,6 +75,12 @@ const initialState: RuntimeState = {
     masterNodesCount: 0,
     parallelLinesCount: 0,
     globalAlerts: {},
+    polylines: {
+        x: [],
+        y: [],
+        p: [],
+        n: [],
+    },
 };
 
 /**
@@ -199,6 +206,9 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
+        setPolyLines: (state, action: PayloadAction<Polylines>) => {
+            state.polylines = action.payload;
+        },
     },
     extraReducers: builder => {
         builder
@@ -231,5 +241,6 @@ export const {
     onPaletteAppClipEmit,
     setGlobalAlert,
     closeGlobalAlert,
+    setPolyLines,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

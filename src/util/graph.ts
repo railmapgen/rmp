@@ -3,10 +3,13 @@ import { AttributesWithColor } from '../components/panels/details/color-field';
 import {
     EdgeAttributes,
     GraphAttributes,
+    Id,
     LineId,
     MiscNodeId,
     NodeAttributes,
     NodeType,
+    Polyline,
+    Polylines,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -108,4 +111,63 @@ export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, Edg
             }
         });
     return newList;
+};
+
+export const isNodeSupportPolyline = (
+    node: StnId | MiscNodeId,
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+) =>
+    node.startsWith('stn') ||
+    (node.startsWith('misc_node') && graph.getNodeAttribute(node, 'type') === MiscNodeType.Virtual) ||
+    (node.startsWith('misc_node') &&
+        graph.getNodeAttribute(node, 'type') === MiscNodeType.Master &&
+        graph.getNodeAttributes(node)[MiscNodeType.Master]!.nodeType === 'Station');
+
+export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Polylines => {
+    const polylinesX: Polyline[] = [];
+    const polylinesY: Polyline[] = [];
+    const polylinesP: Polyline[] = [];
+    const polylinesN: Polyline[] = [];
+
+    graph
+        .filterNodes(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
+        .forEach(node => {
+            const x = graph.getNodeAttribute(node, 'x');
+            const y = graph.getNodeAttribute(node, 'y');
+            polylinesX.push({ a: 1, b: 0, c: -x, node, x, y } as Polyline);
+            polylinesY.push({ a: 0, b: 1, c: -y, node, x, y } as Polyline);
+            polylinesP.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
+            polylinesN.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
+        });
+    return {
+        x: polylinesX,
+        y: polylinesY,
+        p: polylinesP,
+        n: polylinesN,
+    };
+};
+
+export const getPolylineDistance = (line: Polyline, x: number, y: number) => {
+    return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
+};
+
+export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], nodes: Id[]) => {
+    const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
+        Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+
+    let minDistance = Infinity,
+        retDistance = Infinity,
+        minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
+    polylines
+        .filter(l => !nodes.includes(l.node)) //  && pointDistance(x, y, l.x, l.y) < 100
+        .forEach(line => {
+            const lineDis = getPolylineDistance(line, x, y);
+            const pointDis = pointDistance(x, y, line.x, line.y);
+            if (lineDis + pointDis < minDistance) {
+                minDistance = lineDis + pointDis;
+                retDistance = lineDis;
+                minLine = line;
+            }
+        });
+    return { l: minLine, d: retDistance };
 };
