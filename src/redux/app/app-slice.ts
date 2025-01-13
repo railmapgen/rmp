@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { StationCity } from '../../constants/constants';
 
 /**
  * AppState contains all the settings users want to preserve after restart.
@@ -37,6 +38,7 @@ export interface AppState {
          * Whether to enable parallel for new lines.
          */
         autoParallel: boolean;
+        randomStationsNames: 'none' | StationCity;
     };
 }
 
@@ -51,6 +53,7 @@ export const initialState: AppState = {
             expand: true,
         },
         autoParallel: true,
+        randomStationsNames: 'none',
     },
 };
 
@@ -73,9 +76,18 @@ const appSlice = createSlice({
         setAutoParallel: (state, action: PayloadAction<boolean>) => {
             state.preference.autoParallel = action.payload;
         },
+        setRandomStationsNames: (state, action: PayloadAction<'none' | StationCity>) => {
+            state.preference.randomStationsNames = action.payload;
+        },
     },
 });
 
-export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath, setToolsPanelExpansion, setAutoParallel } =
-    appSlice.actions;
+export const {
+    setTelemetryApp,
+    setTelemetryProject,
+    setUnlockSimplePath,
+    setToolsPanelExpansion,
+    setAutoParallel,
+    setRandomStationsNames,
+} = appSlice.actions;
 export default appSlice.reducer;

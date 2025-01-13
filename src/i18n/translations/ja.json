@@ -566,7 +566,13 @@
             "preference": {
                 "title": "設定",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
-                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定"
+                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定",
+                "randomStationNames": {
+                    "title": "作成時に駅名を乱数化する",
+                    "none": "なし",
+                    "shmetro": "上海",
+                    "bjsubway": "北京"
+                }
             },
             "shortcuts": {
                 "title": "ショートカット",
