@@ -565,7 +565,8 @@
                 "randomStationNames": {
                     "title": "Set station names to random on creation",
                     "none": "None",
-                    "shmetro": "Shanghai"
+                    "shmetro": "Shanghai",
+                    "bjsubway": "Beijing"
                 }
             },
             "shortcuts": {

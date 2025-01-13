@@ -70,6 +70,56 @@ const FALLBACK_STATION_NAMES: { [key in StationCity]: { [key in keyof Translatio
             en: 'Jianshe Xincun',
         },
     ],
+    [StationCity.Bjsubway]: [
+        {
+            'zh-Hans': '青松路',
+            en: 'Qingsonglu',
+        },
+        {
+            'zh-Hans': '星海广场',
+            en: 'Xinghai Guangchang',
+        },
+        {
+            'zh-Hans': '科技新城',
+            en: 'Keji Xincheng',
+        },
+        {
+            'zh-Hans': '东湖桥',
+            en: 'Donghuqiao',
+        },
+        {
+            'zh-Hans': '金融中心南',
+            en: 'Jinrongzhongxinnan',
+        },
+        {
+            'zh-Hans': '玉泉东路',
+            en: 'Yuquan Donglu',
+        },
+        {
+            'zh-Hans': '西山北街',
+            en: 'Xishan Beijie',
+        },
+        {
+            'zh-Hans': '天光西门',
+            en: 'Tianguangximen',
+        },
+        {
+            'zh-Hans': '翠竹园',
+            en: 'Cuizhuyuan',
+        },
+        {
+            'zh-Hans': '明月港',
+            en: 'Mingyuegang',
+        },
+        {
+            'zh-Hans': '春华街',
+            en: 'Chunhuajie',
+        },
+        {
+            'zh-Hans': '锦绣大道',
+            en: 'Jinxiu Dadao',
+        },
+    ],
 };
 
 const fallBackRandomStationNames = (city: StationCity) => {

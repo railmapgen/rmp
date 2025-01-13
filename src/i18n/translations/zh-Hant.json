@@ -564,7 +564,8 @@
                 "randomStationNames": {
                     "title": "創建時將站名隨機化",
                     "none": "無",
-                    "shmetro": "上海"
+                    "shmetro": "上海",
+                    "bjsubway": "北京"
                 }
             },
             "shortcuts": {

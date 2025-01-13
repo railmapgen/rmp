@@ -564,7 +564,8 @@
                 "randomStationNames": {
                     "title": "생성 시 역 이름을 랜덤으로 설정",
                     "none": "없음",
-                    "shmetro": "상하이"
+                    "shmetro": "상하이",
+                    "bjsubway": "베이징"
                 }
             },
             "shortcuts": {

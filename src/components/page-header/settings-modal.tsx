@@ -157,6 +157,9 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         <option value={StationCity.Shmetro} disabled={isRandomStationNamesDisabled}>
                                             {t(`header.settings.preference.randomStationNames.${StationCity.Shmetro}`)}
                                         </option>
+                                        <option value={StationCity.Bjsubway} disabled={isRandomStationNamesDisabled}>
+                                            {t(`header.settings.preference.randomStationNames.${StationCity.Bjsubway}`)}
+                                        </option>
                                     </Select>
                                 </Box>
                             </Box>

@@ -147,4 +147,5 @@ export enum CityCode {
 
 export enum StationCity {
     Shmetro = 'shmetro',
+    Bjsubway = 'bjsubway',
 }
