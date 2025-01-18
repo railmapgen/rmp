@@ -1,4 +1,5 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import { SvgAssetsContext, SvgAssetsContextProvider } from '@railmapgen/svg-assets/utils';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
@@ -72,6 +73,12 @@ const SvgWrapper = () => {
             // only type is needed
             .forEach(([type]) => loadFontCss(type as NodeType));
     }, [refreshNodes]);
+    // Update all components that requires a bbox after fonts are loaded.
+    // bbox calculated before fonts are loaded will be incorrect.
+    const { update } = React.useContext(SvgAssetsContext);
+    React.useEffect(() => {
+        document.fonts.load('12px Arial', 'ABCDEFG123456').finally(() => setTimeout(update, 100));
+    }, []);
 
     // select related
     const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
@@ -384,7 +391,9 @@ const SvgWrapper = () => {
             tabIndex={0}
             onKeyDown={handleKeyDown}
         >
-            <SvgCanvas />
+            <SvgAssetsContextProvider>
+                <SvgCanvas />
+            </SvgAssetsContextProvider>
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
                 <rect
                     x={selectCoord.sx}
