@@ -591,7 +591,7 @@
                 "redo": "重做。"
             },
             "procedures": {
-                "title": "过程",
+                "title": "過程",
                 "translate": {
                     "title": "轉化節點坐標",
                     "content": "將以下偏移加到所有節點的x和y上：",
