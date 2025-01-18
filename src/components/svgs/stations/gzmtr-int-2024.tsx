@@ -1,7 +1,8 @@
 import { Button, FormLabel, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { InterchangeStation2024 } from '@railmapgen/svg-assets/gzmtr';
+import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
+import { SvgAssetsContext, SvgAssetsContextProvider } from '@railmapgen/svg-assets/utils';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
@@ -26,6 +27,14 @@ const FONT_SIZE = {
 const NAME_DY = structuredClone(DEFAULT_NAME_DY);
 NAME_DY.top.lineHeight = FONT_SIZE.en;
 NAME_DY.bottom.lineHeight = FONT_SIZE.zh;
+
+const GzmtrInt2024StationWrapper = (props: StationComponentProps) => {
+    return (
+        <SvgAssetsContextProvider>
+            <GzmtrInt2024Station {...props} />
+        </SvgAssetsContextProvider>
+    );
+};
 
 const GzmtrInt2024Station = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -57,6 +66,20 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const transferAll = transfer.flat().slice(0, 5); // slice to make sure at most 5 transfers
 
+    const [borderBox, setBorderBox] = React.useState<SVGRect>();
+    const { update } = React.useContext(SvgAssetsContext);
+    const ref = React.useRef<InterchangeStation2024Handle>(null);
+    React.useEffect(() => {
+        document.fonts.load('12px Arial', 'ABCDEFG123456').finally(() => setTimeout(update, 100));
+    }, []);
+
+    React.useEffect(() => {
+        if (ref.current) {
+            setBorderBox(ref.current.getCorrectedBBox());
+        }
+    }, [ref.current, transferAll, columns, topHeavy, anchorAt]);
+    console.log(borderBox);
+
     // temporary fix for the missing id on the top element of the station
     const iconEl = React.useRef<SVGGElement | null>(null);
     iconEl.current?.querySelectorAll('path')?.forEach(elem => elem.setAttribute('id', `stn_core_${id}`));
@@ -83,14 +106,13 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const textX =
         nameOffsetX === 'left'
-            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + columns * 7
+            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2
             : nameOffsetX === 'right'
-              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - columns * 7
+              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2
               : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
-            (iconBBox.y2 - iconBBox.y1) / 2 -
-            Math.floor(transferAll.length / columns) * 3) * // bbox doesn't reflect the actual size of the icon, some tweak
+            (iconBBox.y2 - iconBBox.y1) / 2) *
             NAME_DY[nameOffsetY].polarity +
         iconOffset[1] / 2;
     const textAnchor =
@@ -127,6 +149,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                 ref={iconEl}
             >
                 <InterchangeStation2024
+                    ref={ref}
                     stations={stations}
                     textClassName="rmp-name__zh"
                     columns={columns}
@@ -496,7 +519,7 @@ const gzmtrInt2024StationIcon = (
 );
 
 const gzmtrInt2024Station: Station<GzmtrInt2024StationAttributes> = {
-    component: GzmtrInt2024Station,
+    component: GzmtrInt2024StationWrapper,
     icon: gzmtrInt2024StationIcon,
     defaultAttrs: defaultGzmtrInt2024StationAttributes,
     attrsComponent: gzmtrInt2024StationAttrsComponents,
