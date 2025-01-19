@@ -60,7 +60,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     );
 
     const transferAll = transfer.flat().slice(0, 5); // slice to make sure at most 5 transfers
+    const stations = transferAll.map(s => ({
+        style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
+        lineNum: s[4],
+        stnNum: s[5],
+        strokeColour: s[2],
+    }));
 
+    // use imperative handle to get the bbox of the icon (with the help from InterchangeStation2024Handle)
     const [borderBox, setBorderBox] = React.useState<SVGRect>();
     const [translate, setTranslate] = React.useState<Coordinates>([0, 0]);
     const ref = React.useRef<InterchangeStation2024Handle>(null);
@@ -84,17 +91,6 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     React.useEffect(() => {
         document.fonts.load('12px Arial', 'ABCDEFG123456').finally(() => setTimeout(update, 100));
     }, []);
-
-    // temporary fix for the missing id on the top element of the station
-    const iconEl = React.useRef<SVGGElement | null>(null);
-    iconEl.current?.querySelectorAll('path')?.forEach(elem => elem.setAttribute('id', `stn_core_${id}`));
-
-    const stations = transferAll.map(s => ({
-        style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
-        lineNum: s[4],
-        stnNum: s[5],
-        strokeColour: s[2],
-    }));
 
     const textX =
         (nameOffsetX === 'left' ? iconBBox.x1 : nameOffsetX === 'right' ? iconBBox.x2 : 0) * SCALE_WITH_PADDING;
@@ -128,14 +124,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            <g
-                transform={`scale(${SCALE})`}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
-                ref={iconEl}
-            >
+            <g transform={`scale(${SCALE})`}>
                 <InterchangeStation2024
                     ref={ref}
                     stations={stations}
@@ -148,6 +137,21 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                             ? osiPosition
                             : undefined
                     }
+                />
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
+                <rect
+                    id={`stn_core_${id}`}
+                    x={iconBBox.x1}
+                    y={iconBBox.y1}
+                    width={iconBBox.x2 - iconBBox.x1}
+                    height={iconBBox.y2 - iconBBox.y1}
+                    fill="white"
+                    fillOpacity="0"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
