@@ -309,6 +309,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
             </g>
 

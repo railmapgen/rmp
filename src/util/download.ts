@@ -84,10 +84,10 @@ export const makeRenderReadySVGElement = async (
     });
     // Remove masks that only help users find and click the elements, but should not be shown on final export.
     elem.querySelectorAll('[fill="url(#opaque)"]').forEach(el => {
-        el.setAttribute('fill', 'white');
-        el.setAttribute('fill-opacity', '0');
+        el.remove();
     });
     // remove virtual nodes and text hinting rect
+    // remove the overlay elements that are used for event handling or id info
     elem.querySelectorAll('.removeMe').forEach(el => {
         el.remove();
     });

@@ -47,6 +47,7 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <circle r={5} stroke="#393332" strokeWidth="1.33" fill="white" />
                 <circle r={2.3} stroke="#393332" strokeWidth="1.33" fill="white" />
+
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <circle
                     id={`stn_core_${id}`}
@@ -57,6 +58,7 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
                 <g
                     transform={`translate(${textX}, ${textY})`}
