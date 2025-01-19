@@ -78,7 +78,7 @@ const MTRStation = (props: StationComponentProps) => {
     // if icon grows the same direction of the text, add the extra icon length to text
     const textX = Math.sign(iconX) === Math.sign(textDX) ? iconX + textDX : textDX;
     const textDY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_LINE_HEIGHT[nameOffsetY] + 6) *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_LINE_HEIGHT[nameOffsetY] + 6) *
         NAME_DY[nameOffsetY].polarity;
     const textY = Math.sign(iconY) === Math.sign(textDY) ? iconY + textDY : textDY;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
@@ -111,6 +111,7 @@ const MTRStation = (props: StationComponentProps) => {
                                 strokeWidth="2"
                             />
                         ))}
+
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <path
                     id={`stn_core_${id}`}
@@ -122,6 +123,7 @@ const MTRStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
                 <g
                     transform={`translate(${textX}, ${textY})`}
@@ -130,7 +132,7 @@ const MTRStation = (props: StationComponentProps) => {
                     strokeWidth="1.25"
                 >
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={10}
                         lineHeight={10}
                         grow="up"
@@ -139,7 +141,7 @@ const MTRStation = (props: StationComponentProps) => {
                         className="rmp-name__mtr__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         fontSize={7.5}
                         lineHeight={7.5}
                         grow="down"
@@ -187,12 +189,12 @@ const mtrStationFields = [
     {
         type: 'textarea',
         label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).names[0].replaceAll('\\', '\n'),
+        value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).names[0],
         onChange: (val: string | number, attrs_: MTRStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultMTRStationAttributes;
             // set value
-            attrs.names[0] = val.toString().replaceAll('\n', '\\');
+            attrs.names[0] = val.toString();
             // return modified attrs
             return attrs;
         },
@@ -200,12 +202,12 @@ const mtrStationFields = [
     {
         type: 'textarea',
         label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).names[1].replaceAll('\\', '\n'),
+        value: (attrs?: MTRStationAttributes) => (attrs ?? defaultMTRStationAttributes).names[1],
         onChange: (val: string | number, attrs_: MTRStationAttributes | undefined) => {
             // set default value if switched from another type
             const attrs = attrs_ ?? defaultMTRStationAttributes;
             // set value
-            attrs.names[1] = val.toString().replaceAll('\n', '\\');
+            attrs.names[1] = val.toString();
             // return modified attrs
             return attrs;
         },

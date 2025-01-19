@@ -9,14 +9,10 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import i18n from './i18n/config';
 import './index.css';
 import store from './redux';
-import {
-    defaultActiveSubscriptions,
-    setActiveSubscriptions,
-    setLoginStateTimeout,
-    setState,
-} from './redux/account/account-slice';
+import { setActiveSubscriptions, setState } from './redux/account/account-slice';
 import {
     setAutoParallel,
+    setRandomStationsNames,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
@@ -24,7 +20,7 @@ import {
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './redux/runtime/runtime-slice';
-import { registerOnRMTTokenResponse, requestToken } from './util/rmt-save';
+import { onLocalStorageChangeRMT, requestToken } from './util/rmt-save';
 import { RMPSave, upgrade } from './util/save';
 
 declare global {
@@ -64,6 +60,8 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
         if ('toolsPanel' in app.preference && 'expand' in app.preference.toolsPanel)
             store.dispatch(setToolsPanelExpansion(app.preference.toolsPanel.expand));
         if ('autoParallel' in app.preference) store.dispatch(setAutoParallel(app.preference.autoParallel));
+        if ('randomStationsNames' in app.preference)
+            store.dispatch(setRandomStationsNames(app.preference.randomStationsNames));
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));
@@ -86,15 +84,7 @@ upgrade(param).then(param => {
     renderApp();
     rmgRuntime.injectUITools();
 
-    registerOnRMTTokenResponse(store);
+    onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
     requestToken();
     window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
-
-    const accountStateTimeout = window.setTimeout(() => {
-        // console.log('Account state timeout');
-        store.dispatch(setState('logged-out'));
-        store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
-        store.dispatch(setLoginStateTimeout(undefined));
-    }, 6000);
-    store.dispatch(setLoginStateTimeout(accountStateTimeout));
 });

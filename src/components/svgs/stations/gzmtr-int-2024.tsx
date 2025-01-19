@@ -4,7 +4,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { InterchangeStation2024 } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd } from 'react-icons/md';
+import { MdAdd, MdRemove } from 'react-icons/md';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -16,8 +16,16 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
+
+const FONT_SIZE = {
+    en: 6.56,
+    zh: 13.13,
+};
+const NAME_DY = structuredClone(DEFAULT_NAME_DY);
+NAME_DY.top.lineHeight = FONT_SIZE.en;
+NAME_DY.bottom.lineHeight = FONT_SIZE.zh;
 
 const GzmtrInt2024Station = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -28,8 +36,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         transfer = defaultGzmtrInt2024StationAttributes.transfer,
         open = defaultGzmtrInt2024StationAttributes.open,
         secondaryNames = defaultGzmtrInt2024StationAttributes.secondaryNames,
-        preferVertical = defaultGzmtrInt2024StationAttributes.preferVertical,
+        columns = defaultGzmtrInt2024StationAttributes.columns,
+        topHeavy = defaultGzmtrInt2024StationAttributes.topHeavy,
         anchorAt = defaultGzmtrInt2024StationAttributes.anchorAt,
+        osiPosition = defaultGzmtrInt2024StationAttributes.osiPosition,
     } = attrs[StationType.GzmtrInt2024] ?? defaultGzmtrInt2024StationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -45,32 +55,44 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const transferAll = transfer.flat().slice(0, 4); // slice to make sure at most 4 transfers
+    const transferAll = transfer.flat().slice(0, 5); // slice to make sure at most 5 transfers
 
     // temporary fix for the missing id on the top element of the station
     const iconEl = React.useRef<SVGGElement | null>(null);
     iconEl.current?.querySelectorAll('path')?.forEach(elem => elem.setAttribute('id', `stn_core_${id}`));
+    const iconOffset = iconEl.current
+        ?.querySelector('g')
+        ?.getAttribute('transform')
+        ?.slice(10, -1)
+        ?.split(',')
+        ?.map(s => Number(s)) ?? [0, 0];
 
     const [iconBBox, setIconBBox] = React.useState({ x1: 0, x2: 0, y1: 0, y2: 0 });
     React.useEffect(() => {
         const { height: iconHeight, width: iconWidth, x: iconX1, y: iconY1 } = iconEl.current!.getBBox();
         const [iconX2, iconY2] = [iconX1 + iconWidth, iconY1 + iconHeight];
         setIconBBox({ x1: iconX1, x2: iconX2, y1: iconY1, y2: iconY2 });
-    }, [JSON.stringify(transferAll), preferVertical, anchorAt, setIconBBox, iconEl]);
-    const textDX = preferVertical && transferAll.length === 2 ? 0 : 8;
+    }, [JSON.stringify(transferAll), columns, topHeavy, anchorAt, osiPosition, setIconBBox, iconEl]);
 
     const stations = transferAll.map(s => ({
-        style: s[6] === 'gz' ? 'gzmtr' : ('fmetro' as 'gzmtr' | 'fmetro'),
+        style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
         lineNum: s[4],
         stnNum: s[5],
         strokeColour: s[2],
     }));
 
-    const textX = nameOffsetX === 'left' ? iconBBox.x1 + textDX : nameOffsetX === 'right' ? iconBBox.x2 - textDX : 0;
+    const textX =
+        nameOffsetX === 'left'
+            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + columns * 7
+            : nameOffsetX === 'right'
+              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - columns * 7
+              : 0;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\\').length * NAME_DY[nameOffsetY].lineHeight +
-            (iconBBox.y2 - iconBBox.y1) / 2) *
-        NAME_DY[nameOffsetY].polarity;
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
+            (iconBBox.y2 - iconBBox.y1) / 2 -
+            Math.floor(transferAll.length / columns) * 3) * // bbox doesn't reflect the actual size of the icon, some tweak
+            NAME_DY[nameOffsetY].polarity +
+        iconOffset[1] / 2;
     const textAnchor =
         nameOffsetX === 'left'
             ? 'end'
@@ -107,22 +129,28 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                 <InterchangeStation2024
                     stations={stations}
                     textClassName="rmp-name__zh"
-                    preferVertical={preferVertical}
+                    columns={columns}
+                    topHeavy={topHeavy}
                     anchorAt={anchorAt >= 0 ? anchorAt : undefined}
+                    osiPosition={
+                        transfer.flat().length === 2 && columns === 1 && osiPosition !== 'none'
+                            ? osiPosition
+                            : undefined
+                    }
                 />
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={16}
-                    lineHeight={16}
+                    fontSize={13.13}
+                    lineHeight={13.13}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
                     text={names[1].split('\n')}
-                    fontSize={10}
-                    lineHeight={10}
+                    fontSize={6.56}
+                    lineHeight={6.56}
                     grow="down"
                     className="rmp-name__en"
                 />
@@ -130,7 +158,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
             {secondaryNames.join('') !== '' && (
                 <g transform={`translate(${textX + secondaryDx}, ${textY})`} textAnchor="middle">
                     <text
-                        fontSize="20"
+                        fontSize="13.13"
                         dx={-(secondaryTextWidth + 5) / 2}
                         textAnchor="end"
                         dominantBaseline="middle"
@@ -139,7 +167,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                         （
                     </text>
                     <text
-                        fontSize="20"
+                        fontSize="13.13"
                         dx={(secondaryTextWidth + 5) / 2}
                         textAnchor="start"
                         dominantBaseline="middle"
@@ -148,10 +176,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                         ）
                     </text>
                     <g ref={secondaryTextRef}>
-                        <text fontSize="14" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        <text fontSize="10" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                             {secondaryNames[0]}
                         </text>
-                        <text fontSize="8" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" className="rmp-name__en">
                             {secondaryNames[1]}
                         </text>
                     </g>
@@ -159,10 +187,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
             )}
             {!open && (
                 <g transform={`translate(${textX + underConstructionDx}, ${textY})`} textAnchor={textAnchor}>
-                    <text fontSize="8" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                         （未开通）
                     </text>
-                    <text fontSize="6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
                         (Under Construction)
                     </text>
                 </g>
@@ -182,8 +210,10 @@ export interface GzmtrInt2024StationAttributes extends StationAttributes, Statio
      */
     open: boolean;
     secondaryNames: [string, string];
-    preferVertical: boolean;
+    columns: number;
+    topHeavy: boolean;
     anchorAt: number;
+    osiPosition: 'none' | 'left' | 'right';
 }
 
 const defaultGzmtrInt2024StationAttributes: GzmtrInt2024StationAttributes = {
@@ -198,8 +228,10 @@ const defaultGzmtrInt2024StationAttributes: GzmtrInt2024StationAttributes = {
     ],
     open: true,
     secondaryNames: ['', ''],
-    preferVertical: true,
+    columns: 2,
+    topHeavy: false,
     anchorAt: -1,
+    osiPosition: 'none',
 };
 
 const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024StationAttributes>) => {
@@ -260,6 +292,32 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
             minW: 'full',
         },
         {
+            type: 'slider',
+            label: t('panel.details.stations.gzmtrInt2024.columns'),
+            value: attrs.columns,
+            min: 1,
+            max: Math.min(5, attrs.transfer.flat().length),
+            step: 1,
+            onChange: val => {
+                attrs.columns = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            leftIcon: <MdRemove />,
+            rightIcon: <MdAdd />,
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrInt2024.topHeavy'),
+            oneLine: true,
+            isChecked: attrs.topHeavy,
+            onChange: val => {
+                attrs.topHeavy = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.gzmtrInt2024.anchorAt'),
             value: attrs.anchorAt ?? '-1',
@@ -276,14 +334,19 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
             minW: 'full',
         },
         {
-            type: 'switch',
-            label: t('panel.details.stations.gzmtrInt2024.preferVertical'),
-            oneLine: true,
-            isChecked: attrs.preferVertical,
+            type: 'select',
+            label: t('panel.details.stations.gzmtrInt2024.osiPosition'),
+            value: attrs.osiPosition,
+            options: {
+                none: t('panel.details.stations.gzmtrInt2024.osiPositionNone'),
+                left: t('panel.details.stations.gzmtrInt2024.osiPositionLeft'),
+                right: t('panel.details.stations.gzmtrInt2024.osiPositionRight'),
+            },
             onChange: val => {
-                attrs.preferVertical = val;
+                attrs.osiPosition = val as 'none' | 'left' | 'right';
                 handleAttrsUpdate(id, attrs);
             },
+            hidden: !(attrs.transfer.flat().length === 2 && attrs.columns === 1),
             minW: 'full',
         },
         {
@@ -319,7 +382,7 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
     ];
 
-    const maximumTransfers = [4, 4, 0];
+    const maximumTransfers = [5, 5, 0];
     const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
@@ -426,7 +489,7 @@ const gzmtrInt2024StationIcon = (
                 },
             ]}
             textClassName="rmp-name__zh"
-            preferVertical
+            columns={1}
             transform="translate(12,12)scale(0.3)"
         />
     </svg>

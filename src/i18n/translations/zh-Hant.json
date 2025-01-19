@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加車站！",
                 "misc-node": "了解如何添加節點！",
-                "line": "了解如何添加線條樣式！",
-                "donate": "或捐贈！"
+                "line": "了解如何添加線條樣式！"
             }
         },
         "details": {
@@ -125,13 +124,23 @@
                     "isTram": "是LRT線路標識"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR東日本線路標識",
-                  "crosshatchPatternFill": "用網狀圖案填充"
+                    "displayName": "JR東日本線路標識",
+                    "crosshatchPatternFill": "用網狀圖案填充"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青島地鐵數位線路標識",
                     "numEn": "英文線路號",
                     "showText": "顯示文字"
+                },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "廣東城際鐵路線標識"
+                },
+                "londonArrow": {
+                    "displayName": "倫敦箭頭",
+                    "type": "類型",
+                    "continuation": "延續",
+                    "sandwich": "三明治",
+                    "tube": "地鐵"
                 },
                 "master": {
                     "displayName": "大師節點",
@@ -230,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "廣州地鐵換乘站（2024）",
-                    "anchorAt": "定位於",
-                    "anchorAtNone": "中心",
-                    "preferVertical": "垂直佈局（僅限2個換乘）"
+                    "columns": "站點列數",
+                    "topHeavy": "優先將更多站點放在上方",
+                    "anchorAt": "錨點位置",
+                    "anchorAtNone": "居中",
+                    "osiPosition": "出站轉車",
+                    "osiPositionNone": "無",
+                    "osiPositionLeft": "左側",
+                    "osiPositionRight": "右側"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",
@@ -266,18 +280,18 @@
                     "displayName": "新加坡MRT換乘車站"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR東日本基本車站",
-                  "nameOffset": "名稱偏移",
-                  "textOneLine": "名稱在一行中",
-                  "textVertical": "垂直名稱",
-                  "important": "重要車站",
-                  "lines": "轉乘線偏移"
+                    "displayName": "JR東日本基本車站",
+                    "nameOffset": "名稱偏移",
+                    "textOneLine": "名稱在一行中",
+                    "textVertical": "垂直名稱",
+                    "important": "重要車站",
+                    "lines": "轉乘線偏移"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR東日本重要車站",
-                  "textVertical": "垂直名稱",
-                  "mostImportant": "最重要車站",
-                  "minLength": "車站的最小長度"
+                    "displayName": "JR東日本重要車站",
+                    "textVertical": "垂直名稱",
+                    "mostImportant": "最重要車站",
+                    "minLength": "車站的最小長度"
                 },
                 "foshanMetroBasic": {
                     "displayName": "佛山地鐵基本車站",
@@ -335,6 +349,12 @@
                 },
                 "londonTubeInt": {
                     "displayName": "倫敦地鐵換乘車站"
+                },
+                "londonRiverServicesInt": {
+                    "displayName": "倫敦河流服務換乘站"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "廣東城際鐵路車站"
                 }
             },
             "lines": {
@@ -374,6 +394,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "廣州地鐵出站換乘樣式"
+                },
+                "gzmtrLoop": {
+                    "displayName": "廣州地鐵環線樣式"
                 },
                 "chinaRailway": {
                     "displayName": "中國鐵路樣式"
@@ -432,6 +455,24 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "倫敦地鐵終點站樣式"
+                },
+                "londonRail": {
+                    "displayName": "倫敦鐵路樣式",
+                    "limitedService": "有限服務/只限繁忙時段",
+                    "colorBackground": "背景顏色",
+                    "colorForeground": "前景顏色"
+                },
+                "londonSandwich": {
+                    "displayName": "倫敦三明治樣式"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "倫敦盧頓機場DART樣式"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "倫敦IFS雲纜車樣式"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "廣東城際鐵路樣式"
                 }
             },
             "edges": {},
@@ -500,19 +541,10 @@
         },
         "donation": {
             "title": "捐款",
-            "content": "您的支持對我們意義重大！通過捐款，您使我們能夠繼續工作並向每個人提供免費服務。從我們令人興奮的獎勵選擇中選擇，並今天做出改變！",
-            "rewards": "獎勵",
-            "gallery": "您的幻想作品在畫廊中",
-            "galleryContent": "上傳您的幻想作品並在畫廊中展示它們。",
-            "nodes": "站點和其他節點",
-            "nodesContent": "請求添加站點和其他節點。",
-            "features": "功能請求",
-            "featuresContent": "請求添加新功能。",
-            "methods": "捐款方式",
             "openCollective": "Open Collective",
-            "viaUSD": "通過Paypal或Visa卡以USD捐款。",
+            "viaUSD": "通過Paypal或Visa卡以美元捐款。",
             "afdian": "爱发电",
-            "viaCNY": "通過支付寶或微信支付以CNY捐款。"
+            "viaCNY": "通過支付寶或微信支付以人民幣捐款。"
         },
         "settings": {
             "title": "設置",
@@ -533,7 +565,13 @@
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
-                "autoParallel": "自動將新段線設置為與現有線段平行"
+                "autoParallel": "自動將新段線設置為與現有線段平行",
+                "randomStationNames": {
+                    "title": "創建時將站名隨機化",
+                    "none": "無",
+                    "shmetro": "上海",
+                    "bjsubway": "北京"
+                }
             },
             "shortcuts": {
                 "title": "捷徑",
@@ -553,7 +591,7 @@
                 "redo": "重做。"
             },
             "procedures": {
-                "title": "过程",
+                "title": "過程",
                 "translate": {
                     "title": "轉化節點坐標",
                     "content": "將以下偏移加到所有節點的x和y上：",
@@ -628,11 +666,13 @@
             },
             "telemetry": {
                 "title": "遙測",
+                "info": "為了協助改進地鐵路綫圖繪製器並激勵貢獻者提升項目，我們透過 Google Analytics 收集匿名使用數據。這些數據僅用於提升用戶體驗及優化工具功能，絕不會與第三方共享。",
                 "essential": "基本",
-                "essentialInfo": "地鐵線路圖繪製器使用 Google Analytics 收集數據，幫助貢獻者了解我們的用戶如何以及何時訪問該項目。由於地鐵線路圖繪製器中沒有用戶註冊和後端服務，因此這是貢獻者們唯一可以獲得並有動力繼續更新項目的反饋。請放心，所有傳輸的數據都不會包含您項目中的任何個人身份信息和數據。",
-                "essentialLink": "單擊此鏈接可查看 Google Analytics 可能收集的詳細字段。",
+                "essentialTooltip": "在地鐵路綫圖工具組中更改此全局設定",
+                "essentialInfo": "地鐵路綫圖繪製器收集一些基本使用數據，以協助我們了解用戶如何及何時與工具互動。請放心，我們絕不收集任何可識別個人身份的資訊或您的項目數據。",
+                "essentialLink": "點擊此鏈接查看 Google Analytics 可能收集的詳細字段。",
                 "additional": "額外",
-                "additionalInfo": "當您使用鼠標或鍵盤進行交互（例如項目創建或站點添加）時，地鐵線路圖繪製器還會發送其他事件。 一如既往，它們不包含任何個人身份信息，且僅用於統計目的。"
+                "additionalInfo": "地鐵路綫圖繪製器還會收集與互動有關的數據，例如創建項目或新增站點等操作。這些額外數據同樣是匿名的，僅用於統計分析以協助我們改進工具。"
             }
         },
         "about": {
@@ -648,6 +688,7 @@
             "langonginc": "活出值得銘記的人生。",
             "203IhzElttil": "特別感謝他勤奮工作，確保上海地鐵站與原始設計相符。",
             "Swiftiecott": "特別感謝他勤奮工作，確保北京地鐵站與原始設計相符。",
+            "Minwtraft": "特別感謝他勤奮工作，確保廣州地鐵站與原始設計相符。",
             "contactUs": "聯繫我們",
             "github": "項目倉庫",
             "githubContent": "遇到任何問題？在這裡搜索或提出一個問題！",

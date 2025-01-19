@@ -13,9 +13,19 @@ import { PanelTypeShmetro, RMGParam, RmgStyle } from '../constants/rmg';
 import { StationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex } from './parallel';
 
+/**
+ * Prase the rmg save format and add nodes/edges in the graph.
+ * @param graph The only global graph.
+ * @param rmgParam The rmg save in RMGParam type.
+ * @param x The current cavans center point (x).
+ * @param y The current cavans center point (y).
+ * @param autoParallel Whether to enable auto parallel.
+ */
 export const parseRmgParam = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     { info_panel_type, line_num, stn_list: stnList, style, theme }: RMGParam,
+    x: number,
+    y: number,
     autoParallel: boolean
 ) => {
     // generate stn id
@@ -31,10 +41,31 @@ export const parseRmgParam = (
             const nodes = graph.filterNodes(
                 (node, attr) =>
                     Object.values(StationType).includes(attr.type as StationType) &&
-                    (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
+                    (attr[attr.type] as StationAttributes).names[0] === stnInfo.localisedName.zh
             );
             if (nodes.length !== 0) stnIdMap[id] = nodes[0] as StnId;
         });
+    // BFS to calculate the coordination of each station, so that first stations come first
+    //
+    // note stations might be calculated multiple times if branches exist,
+    // this makes sure station on the main branch will always be right to
+    // stations on both branches (one might be long but the short one will
+    // queue stations in the main branches first, this will result in
+    // overlapped stations between long branch and mian branch)
+    const coordQueue: [string, number, number][] = [['linestart', -1, 0]];
+    const stnIdCoord: { [k: string]: { x: number; y: number } } = {};
+    while (coordQueue.length) {
+        const [cur, x, y] = coordQueue.shift()!;
+        const children = stnList[cur].children;
+        children
+            .filter(child => child != 'lineend')
+            .forEach((child, i) => {
+                // this temp y makes each branch on seperate horizontal level
+                const _ = Math.max(i, y + i);
+                stnIdCoord[child] = { x: x * 150, y: _ * 75 };
+                coordQueue.push([child, x + 1, _]);
+            });
+    }
 
     // only import stations that does not exist in the graph, filter by name[0]
     Object.entries(stnList)
@@ -44,10 +75,10 @@ export const parseRmgParam = (
                 graph.filterNodes(
                     (node, attr) =>
                         Object.values(StationType).includes(attr.type as StationType) &&
-                        (attr[attr.type] as StationAttributes).names[0] === stnInfo.name[0]
+                        (attr[attr.type] as StationAttributes).names[0] === stnInfo.localisedName.zh
                 ).length === 0
         )
-        .forEach(([id, stnInfo], i) => {
+        .map(([id, stnInfo]) => {
             // determine station type
             let type: StationType = StationType.ShmetroBasic;
             const interchangeGroups = stnInfo.transfer.groups;
@@ -67,7 +98,7 @@ export const parseRmgParam = (
             const attr = {
                 // deep copy to prevent mutual reference
                 ...structuredClone(stations[type].defaultAttrs),
-                names: stnInfo.name,
+                names: [stnInfo.localisedName.zh ?? '', stnInfo.localisedName.en ?? ''],
             };
 
             // add style specific attrs from RMG save
@@ -109,15 +140,19 @@ export const parseRmgParam = (
                 }
             }
 
-            graph.addNode(stnIdMap[id], {
-                visible: true,
-                zIndex: 0,
-                x: 100 + i * 50,
-                y: 1000,
-                type,
-                [type]: attr,
-            });
-        });
+            return {
+                node: stnIdMap[id],
+                attr: {
+                    visible: true,
+                    zIndex: 0,
+                    x: x + stnIdCoord[id].x,
+                    y: y + stnIdCoord[id].y,
+                    type,
+                    [type]: attr,
+                },
+            };
+        })
+        .forEach(({ node, attr }) => graph.addNode(node, attr));
 
     // import lines
     Object.entries(stnList)

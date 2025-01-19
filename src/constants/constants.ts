@@ -115,7 +115,6 @@ export enum Events {
     IMPORT_WORK_FROM_GALLERY = 'IMPORT_WORK_FROM_GALLERY',
     DOWNLOAD_PARAM = 'DOWNLOAD_PARAM',
     DOWNLOAD_IMAGES = 'DOWNLOAD_IMAGES',
-    OPEN_DONATION = 'OPEN_DONATION',
     LOAD_TUTORIAL = 'LOAD_TUTORIAL',
 }
 
@@ -144,4 +143,9 @@ export enum CityCode {
     Singapore = 'singapore',
     Suzhou = 'suzhou',
     Tokyo = 'tokyo',
+}
+
+export enum StationCity {
+    Shmetro = 'shmetro',
+    Bjsubway = 'bjsubway',
 }

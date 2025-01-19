@@ -76,19 +76,19 @@ export default function AppRoot() {
                                 .
                                 <br />
                                 <br />
-                                Offline applications also available via ghp.ci{' '}
+                                Offline applications also available via ghfast.top{' '}
                                 <a
-                                    href={`https://ghp.ci/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
+                                    href={`https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
                                 >
                                     Windows
                                 </a>{' '}
                                 <a
-                                    href={`https://ghp.ci/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_aarch64.dmg`}
+                                    href={`https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_aarch64.dmg`}
                                 >
                                     MacOS
                                 </a>{' '}
                                 <a
-                                    href={`https://ghp.ci/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
+                                    href={`https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
                                 >
                                     Linux
                                 </a>{' '}

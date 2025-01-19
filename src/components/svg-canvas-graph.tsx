@@ -27,6 +27,13 @@ import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
+const connectableNodesType = [
+    ...Object.values(StationType),
+    MiscNodeType.Virtual,
+    MiscNodeType.Master,
+    MiscNodeType.LondonArrow,
+];
+
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
@@ -114,7 +121,6 @@ const SvgCanvas = () => {
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
-            const connectableNodesType = [...Object.values(StationType), MiscNodeType.Virtual, MiscNodeType.Master];
             const couldActiveBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));

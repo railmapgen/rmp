@@ -44,7 +44,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                     textAnchor="middle"
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
-                    y="4"
+                    y="3"
                     fontSize="10"
                     fill={color[3]}
                     letterSpacing="-0.25"
@@ -56,7 +56,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
                     textAnchor="middle"
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
-                    y="13"
+                    y="14"
                     fontSize="5"
                     fill={color[3]}
                     letterSpacing="-0.25"
@@ -86,7 +86,7 @@ const shmetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBad
 
     const fields: RmgFieldsField[] = [
         {
-            type: 'textarea',
+            type: 'input',
             label: t('panel.details.nodes.common.nameZh'),
             value: attrs.names[0],
             onChange: val => {

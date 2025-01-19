@@ -22,8 +22,7 @@
             "learnHowToAdd": {
                 "station": "駅を追加する方法を学ぶ！",
                 "misc-node": "節点を追加する方法を学ぶ！",
-                "line": "路線風格を追加する方法を学ぶ！",
-                "donate": "または寄付する！"
+                "line": "路線風格を追加する方法を学ぶ！"
             }
         },
         "details": {
@@ -127,13 +126,23 @@
                     "isTram": "LRT路線バッジです"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR東日本路線番号徽章",
-                  "crosshatchPatternFill": "網目模様で塗りつぶす"
+                    "displayName": "JR東日本路線番号徽章",
+                    "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "青島地下鉄番号線徽章",
                     "numEn": "英語の行番号",
                     "showText": "テキストを表示"
+                },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "広東省都市間鉄道線徽章"
+                },
+                "londonArrow": {
+                    "displayName": "ロンドン矢印",
+                    "type": "種類",
+                    "continuation": "継続",
+                    "sandwich": "サンドイッチ",
+                    "tube": "地下鉄"
                 },
                 "master": {
                     "displayName": "大師節点",
@@ -232,9 +241,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "広州地下鉄乗り換え駅（令和6年）",
+                    "columns": "駅の列数",
+                    "topHeavy": "上段に多くの駅を優先配置",
                     "anchorAt": "錨位置",
                     "anchorAtNone": "中心",
-                    "preferVertical": "縦向き版面構成（乗り換え駅2つのみ）"
+                    "osiPosition": "改札外乗り換え",
+                    "osiPositionNone": "なし",
+                    "osiPositionLeft": "左",
+                    "osiPositionRight": "右"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
@@ -242,7 +256,7 @@
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地下鉄乗り換え駅",
-                    "outOfStation": "駅外の乗り換え"
+                    "outOfStation": "改札外乗り換え"
                 },
                 "mtr": {
                     "displayName": "香港MTR駅",
@@ -269,18 +283,18 @@
                     "displayName": "シンガポールMRT乗り換え駅"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR東日本基本駅",
-                  "nameOffset": "名前の補正値",
-                  "textOneLine": "1行での名前",
-                  "textVertical": "垂直の名前",
-                  "important": "重要な駅",
-                  "lines": "乗り換え線の補正値"
+                    "displayName": "JR東日本基本駅",
+                    "nameOffset": "名前の補正値",
+                    "textOneLine": "1行での名前",
+                    "textVertical": "垂直の名前",
+                    "important": "重要な駅",
+                    "lines": "乗り換え線の補正値"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR東日本重要駅",
-                  "textVertical": "垂直の名前",
-                  "mostImportant": "最も重要な駅",
-                  "minLength": "駅の最小長"
+                    "displayName": "JR東日本重要駅",
+                    "textVertical": "垂直の名前",
+                    "mostImportant": "最も重要な駅",
+                    "minLength": "駅の最小長"
                 },
                 "foshanMetroBasic": {
                     "displayName": "仏山地鐵基本車站",
@@ -336,6 +350,12 @@
                 },
                 "londonTubeInt": {
                     "displayName": "ロンドン地下鉄乗換駅"
+                },
+                "londonRiverServicesInt": {
+                    "displayName": "ロンドン川サービス乗換駅"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "広東省都市間鉄道駅"
                 }
             },
             "lines": {
@@ -375,6 +395,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "広州地下鉄駅外乗り換え風格"
+                },
+                "gzmtrLoop": {
+                    "displayName": "広州地下鉄環状線風格"
                 },
                 "chinaRailway": {
                     "displayName": "中国鉄道風格"
@@ -433,6 +456,24 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "ロンドン地下鉄終着風格"
+                },
+                "londonRail": {
+                    "displayName": "ロンドン鉄道風格",
+                    "limitedService": "限定サービス/ピーク時のみ",
+                    "colorBackground": "背景色",
+                    "colorForeground": "前景色"
+                },
+                "londonSandwich": {
+                    "displayName": "ロンドンサンドイッチ風格"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "ロンドンルートン空港DART風格"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "ロンドンIF雲索道風格"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "広東省都市間鉄道風格"
                 }
             },
             "edges": {},
@@ -501,19 +542,10 @@
         },
         "donation": {
             "title": "寄付",
-            "content": "あなたのサポートは私たちにとって非常に重要です！ 寄付することで、私たちは活動を続け、誰にでも無料で提供できるようになります。 エキサイティングなリワードオプションから選んで、今日違いをつけてください！",
-            "rewards": "リワード",
-            "gallery": "ギャラリー内のあなたの幻想作品",
-            "galleryContent": "あなたの幻想作品をアップロードして、ギャラリーに表示します。",
-            "nodes": "駅とその他の節点",
-            "nodesContent": "駅とその他の節点の追加をリクエストします。",
-            "features": "機能リクエスト",
-            "featuresContent": "新しい機能の追加をリクエストします。",
-            "methods": "寄付方法",
             "openCollective": "Open Collective",
-            "viaUSD": "PaypalまたはVisaカードを使用してUSDで寄付する。",
+            "viaUSD": "PaypalまたはVisaカードを使用してドルで寄付する。",
             "afdian": "爱发电",
-            "viaCNY": "AlipayまたはWechat Payを使用してCNYで寄付する。"
+            "viaCNY": "AlipayまたはWechat Payを使用して人民元で寄付する。"
         },
         "settings": {
             "title": "設定",
@@ -534,7 +566,13 @@
             "preference": {
                 "title": "設定",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
-                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定"
+                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定",
+                "randomStationNames": {
+                    "title": "作成時に駅名を乱数化する",
+                    "none": "なし",
+                    "shmetro": "上海",
+                    "bjsubway": "北京"
+                }
             },
             "shortcuts": {
                 "title": "ショートカット",
@@ -628,12 +666,14 @@
                 }
             },
             "telemetry": {
-                "title": "テレメトリ",
+                "title": "テレメトリー",
+                "info": "鉄道路線図画家を改善し、貢献者がプロジェクトを向上させる意欲を維持するため、Google Analytics を通じて匿名の使用データを収集しています。このデータはユーザー体験の向上とツールの最適化のためだけに使用され、第三者と共有されることはありません。",
                 "essential": "基本",
-                "essentialInfo": "Rail Map Painterでは、Google Analyticsを使用してデータを収集し、貢献者がユーザーがこのプロジェクトを訪れる方法やタイミングを知るのに役立ちます。Rail Map Painterにはユーザー登録やバックエンドサービスがないため、これが貢献者がフィードバックを得てプロジェクトを更新し続けることにつながる唯一の手段です。転送されるすべてのデータには、個人を特定できる情報やプロジェクトのデータは含まれませんので、安心してください。",
-                "essentialLink": "Google Analyticsが収集する詳細なフィールドを確認するには、このリンクをクリックしてください。",
+                "essentialTooltip": "鉄道路線図ツールキットでこのグローバル設定を変更する",
+                "essentialInfo": "鉄道路線図画家は、ツールがどのように、またいつ使用されるかを理解するための基本的な使用データを収集します。ご安心ください。個人を特定できる情報やプロジェクトデータは一切収集されません。",
+                "essentialLink": "Google Analytics が収集する可能性のある詳細フィールドを表示するには、こちらのリンクをクリックしてください。",
                 "additional": "追加",
-                "additionalInfo": "Rail Map Painterでは、マウスやキーボードとのやり取り（作品の作成や駅の追加など）時に、追加のイベントも送信されます。これらのイベントも個人を特定できる情報は含まれず、統計目的にのみ使用されます。"
+                "additionalInfo": "鉄道路線図画家は、プロジェクトの作成や駅の追加など、入力時のインタラクションに関するデータも収集します。これらの追加データも匿名であり、ツールを改善するための統計分析にのみ使用されます。"
             }
         },
         "about": {
@@ -648,6 +688,7 @@
             "styleContributors": "風格の貢献者",
             "203IhzElttil": "上海地下鉄の駅がオリジナルの設計と一致するように、彼の勤勉な仕事に特別な感謝を述べます。",
             "Swiftiecott": "北京地下鉄の駅がオリジナルの設計と一致するように、彼の勤勉な仕事に特別な感謝を述べます。",
+            "Minwtraft": "広州地下鉄の駅がオリジナルの設計と一致するように、彼の勤勉な仕事に特別な感謝を述べます。",
             "contactUs": "お問い合わせ",
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",

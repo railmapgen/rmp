@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "Learn how to add your stations!",
                 "misc-node": "Learn how to add your nodes!",
-                "line": "Learn how to add your line styles!",
-                "donate": "Or Donate!"
+                "line": "Learn how to add your line styles!"
             }
         },
         "details": {
@@ -129,9 +128,19 @@
                     "crosshatchPatternFill": "Fill with crosshatch pattern"
                 },
                 "qingdaoMetroNumLineBadge": {
-                    "displayName": "Qingdao Metro Num Line Badge",
+                    "displayName": "Qingdao Metro Num line badge",
                     "numEn": "Line number in English",
                     "showText": "Show text"
+                },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "Guangdong Intercity Railway line badge"
+                },
+                "londonArrow": {
+                    "displayName": "London arrow",
+                    "type": "Type",
+                    "continuation": "Continuation",
+                    "sandwich": "Sandwich",
+                    "tube": "Tube"
                 },
                 "master": {
                     "displayName": "Master node",
@@ -230,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "Guangzhou Metro interchange station (2024)",
+                    "columns": "Columns of stations",
+                    "topHeavy": "Prefer more stations on the top row",
                     "anchorAt": "Anchor at",
                     "anchorAtNone": "Center",
-                    "preferVertical": "Vertical layout (2 interchanges only)"
+                    "osiPosition": "Out-of-Station Interchange",
+                    "osiPositionNone": "None",
+                    "osiPositionLeft": "Left",
+                    "osiPositionRight": "Right"
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
@@ -336,6 +350,12 @@
                 },
                 "londonTubeInt": {
                     "displayName": "London Tube interchange station"
+                },
+                "londonRiverServicesInt": {
+                    "displayName": "London river services interchange station"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "Guangdong Intercity Railway station"
                 }
             },
             "lines": {
@@ -375,6 +395,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "Guangzhou Metro out-of-station interchange style"
+                },
+                "gzmtrLoop": {
+                    "displayName": "Guangzhou Metro loop style"
                 },
                 "chinaRailway": {
                     "displayName": "China Railway style"
@@ -433,6 +456,24 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "London Tube terminal style"
+                },
+                "londonRail": {
+                    "displayName": "London rail style",
+                    "limitedService": "Limited service/Peak hours only",
+                    "colorBackground": "Color background",
+                    "colorForeground": "Color foreground"
+                },
+                "londonSandwich": {
+                    "displayName": "London sandwich style"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "London Luton Airport DART style"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "London IFS Cloud Cable Car style"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "Guangdong Intercity Railway style"
                 }
             },
             "edge": {},
@@ -501,15 +542,6 @@
         },
         "donation": {
             "title": "Donation",
-            "content": "Your support means the world to us! By donating, you enable us to continue our work and provide this free to everyone. Choose from our exciting reward options and make a difference today!",
-            "rewards": "Rewards",
-            "gallery": "Your fantasy works in Gallery",
-            "galleryContent": "Upload your fantasy works and display them in Gallery.",
-            "nodes": "Stations and miscellaneous nodes",
-            "nodesContent": "Request to add stations and miscellaneous nodes.",
-            "features": "Features requests",
-            "featuresContent": "Request to add new features.",
-            "methods": "Donation Methods",
             "openCollective": "Open Collective",
             "viaUSD": "Donate in USD via Paypal or Visa card.",
             "afdian": "爱发电",
@@ -534,7 +566,13 @@
             "preference": {
                 "title": "Preference",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
-                "autoParallel": "Automatically set new lines to be parallel to existing lines"
+                "autoParallel": "Automatically set new lines to be parallel to existing lines",
+                "randomStationNames": {
+                    "title": "Set station names to random on creation",
+                    "none": "None",
+                    "shmetro": "Shanghai",
+                    "bjsubway": "Beijing"
+                }
             },
             "shortcuts": {
                 "title": "Shortcuts",
@@ -553,7 +591,7 @@
                 "undo": "Undo.",
                 "redo": "Redo."
             },
-            "procedures":{
+            "procedures": {
                 "title": "Procedures",
                 "translate": {
                     "title": "Translate nodes' coordinates",
@@ -629,11 +667,13 @@
             },
             "telemetry": {
                 "title": "Telemetry",
+                "info": "To help improve Rail Map Painter and keep contributors motivated to enhance the project, anonymous usage data is collected through Google Analytics. This data is used solely for enhancing the user experience and optimizing the tool's functionality and is never shared with third parties.",
                 "essential": "Basic",
-                "essentialInfo": "Rail Map Painter uses Google Analytics to collect data that helps the contributors know how and when our users visit this project. Since there is no user registration and backend service in Rail Map Painter, this is the only feedback that contributors can get and be motivated to keep updating the project. Be assured that all the data transferred will not contain any personal identifiable information and data from your project.",
+                "essentialTooltip": "Change this global setting in Rail Map Toolkit",
+                "essentialInfo": "Rail Map Painter collects essential usage data that helps us understand how and when users interact with the tool. Rest assured, no personally identifiable information or data from your projects is ever collected.",
                 "essentialLink": "Click this link to see detailed fields that Google Analytics may collect.",
                 "additional": "Additional",
-                "additionalInfo": "Rail Map Painter also sends additional events when you interact with your mouse or keyboard such as project creation or station addition. As always, they do not contain any personal identifiable information and are only used for statistics purpose."
+                "additionalInfo": "Rail Map Painter also gathers data on interactions, such as project creation or station addition, when you input. These additional data is also anonymous and are only used for statistical analysis to help us make the tool better."
             }
         },
         "about": {
@@ -649,6 +689,7 @@
             "langonginc": "Live a life you will remember.",
             "203IhzElttil": "Special thanks for his diligent work in ensuring that the stations of Shanghai Metro match the original design.",
             "Swiftiecott": "Special thanks for his diligent work in ensuring that the stations of Beijing Subway match the original design.",
+            "Minwtraft": "Special thanks for his diligent work in ensuring that the stations of Guangzhou Metro match the original design.",
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",

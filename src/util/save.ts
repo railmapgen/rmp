@@ -3,6 +3,28 @@ import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
+import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
+import { FoshanMetroBasicStationAttributes } from '../components/svgs/stations/foshan-metro-basic';
+import { GuangdongIntercityRailwayStationAttributes } from '../components/svgs/stations/guangdong-intercity-railway';
+import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
+import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
+import { JREastBasicStationAttributes } from '../components/svgs/stations/jr-east-basic';
+import { JREastImportantStationAttributes } from '../components/svgs/stations/jr-east-important';
+import { KunmingRTBasicStationAttributes } from '../components/svgs/stations/kunmingrt-basic';
+import { KunmingRTIntStationAttributes } from '../components/svgs/stations/kunmingrt-int';
+import { MRTBasicStationAttributes } from '../components/svgs/stations/mrt-basic';
+import { MRTIntStationAttributes } from '../components/svgs/stations/mrt-int';
+import { MTRStationAttributes } from '../components/svgs/stations/mtr';
+import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
+import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
+import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
+import { ShmetroOsysiStationAttributes } from '../components/svgs/stations/shmetro-osysi';
+import { SuzhouRTBasicStationAttributes } from '../components/svgs/stations/suzhourt-basic';
+import { SuzhouRTIntStationAttributes } from '../components/svgs/stations/suzhourt-int';
+import { TokyoMetroBasicStationAttributes } from '../components/svgs/stations/tokyo-metro-basic';
+import { TokyoMetroIntStationAttributes } from '../components/svgs/stations/tokyo-metro-int';
 import {
     CityCode,
     EdgeAttributes,
@@ -30,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 40;
+export const CURRENT_VERSION = 43;
 
 /**
  * Load the tutorial.
@@ -474,5 +496,90 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 40, graph: graph.export() });
+    },
+    40: param =>
+        // Bump save version to support Guangdong Intercity Railway.
+        JSON.stringify({ ...JSON.parse(param), version: 41 }),
+    41: param => {
+        // Bump save version to replace all \\ to \n.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        const replaceFunc = (names: [string, ...string[]]) =>
+            names.map(name => name.replaceAll('\\', '\n')) as [string, ...string[]];
+        graph.forEachNode((node, attr) => {
+            const type = graph.getNodeAttribute(node, 'type');
+            let names;
+            if (type === StationType.BjsubwayBasic)
+                names = replaceFunc((attr[type] as BjsubwayBasicStationAttributes).names);
+            else if (type === StationType.BjsubwayInt)
+                names = replaceFunc((attr[type] as BjsubwayIntStationAttributes).names);
+            else if (type === StationType.FoshanMetroBasic)
+                names = replaceFunc((attr[type] as FoshanMetroBasicStationAttributes).names);
+            else if (type === StationType.GuangdongIntercityRailway)
+                names = replaceFunc((attr[type] as GuangdongIntercityRailwayStationAttributes).names);
+            else if (type === StationType.GzmtrBasic)
+                names = replaceFunc((attr[type] as GzmtrBasicStationAttributes).names);
+            else if (type === StationType.GzmtrInt)
+                names = replaceFunc((attr[type] as GzmtrIntStationAttributes).names);
+            else if (type === StationType.JREastBasic)
+                names = replaceFunc((attr[type] as JREastBasicStationAttributes).names);
+            else if (type === StationType.JREastImportant)
+                names = replaceFunc((attr[type] as JREastImportantStationAttributes).names);
+            else if (type === StationType.KunmingRTBasic)
+                names = replaceFunc((attr[type] as KunmingRTBasicStationAttributes).names);
+            else if (type === StationType.KunmingRTInt)
+                names = replaceFunc((attr[type] as KunmingRTIntStationAttributes).names);
+            else if (type === StationType.MRTBasic)
+                names = replaceFunc((attr[type] as MRTBasicStationAttributes).names);
+            else if (type === StationType.MRTInt) names = replaceFunc((attr[type] as MRTIntStationAttributes).names);
+            else if (type === StationType.MTR) names = replaceFunc((attr[type] as MTRStationAttributes).names);
+            else if (type === StationType.ShanghaiSuburbanRailway)
+                names = replaceFunc((attr[type] as ShanghaiSuburbanRailwayStationAttributes).names);
+            else if (type === StationType.ShmetroBasic2020)
+                names = replaceFunc((attr[type] as ShmetroBasic2020StationAttributes).names);
+            else if (type === StationType.ShmetroBasic)
+                names = replaceFunc((attr[type] as ShmetroBasicStationAttributes).names);
+            else if (type === StationType.ShmetroInt)
+                names = replaceFunc((attr[type] as ShmetroIntStationAttributes).names);
+            else if (type === StationType.ShmetroOutOfSystemInt)
+                names = replaceFunc((attr[type] as ShmetroOsysiStationAttributes).names);
+            else if (type === StationType.SuzhouRTBasic)
+                names = replaceFunc((attr[type] as SuzhouRTBasicStationAttributes).names);
+            else if (type === StationType.SuzhouRTInt)
+                names = replaceFunc((attr[type] as SuzhouRTIntStationAttributes).names);
+            else if (type === StationType.TokyoMetroBasic)
+                names = replaceFunc((attr[type] as TokyoMetroBasicStationAttributes).names);
+            else if (type === StationType.TokyoMetroInt)
+                names = replaceFunc((attr[type] as TokyoMetroIntStationAttributes).names);
+            if (names) {
+                // only selected types above will reach here and they all have names field in attr[type]
+                (attr[type] as any).names = names;
+                graph.mergeNodeAttributes(node, attr);
+            }
+        });
+        return JSON.stringify({ ...p, version: 42, graph: graph.export() });
+    },
+    42: param => {
+        // Bump save version to upgrade gzmtr-int-2024 new fields.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GzmtrInt2024)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                // default values
+                attr.columns = 2;
+                attr.topHeavy = false;
+                attr.osiPosition = 'none';
+                // legacy compatibility
+                if (attr.preferVertical && attr.transfer.flat().length === 2) attr.columns = 1;
+                // remove legacy fields
+                delete attr.preferVertical;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 43, graph: graph.export() });
     },
 };

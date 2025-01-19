@@ -4,25 +4,22 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
-import { RMGParam } from '../../constants/rmg';
-import { useRootDispatch, useRootSelector } from '../../redux';
+import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
-import { parseRmgParam } from '../../util/rmg-param-parser';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, RMPSave, upgrade } from '../../util/save';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
 export default function OpenActions() {
-    const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const {
-        telemetry: { project: isAllowAppTelemetry },
-        preference: { autoParallel },
-    } = useRootSelector(state => state.app);
+    const { t } = useTranslation();
+
+    const size = useWindowSize();
+    const { height } = getCanvasSize(size);
 
     const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -42,19 +39,6 @@ export default function OpenActions() {
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
         refreshAndSave();
-    };
-
-    const handleImportRMGProject = (param: RMGParam) => {
-        try {
-            if (isAllowAppTelemetry) rmgRuntime.event(Events.IMPORT_RMG_PARAM, {});
-            parseRmgParam(graph.current, param, autoParallel);
-            refreshAndSave();
-        } catch (err) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
-            console.error('OpenActions.handleUploadRMG():: Unknown error occurred while parsing the RMG project', err);
-        } finally {
-            setIsRmgParamAppClipOpen(false);
-        }
     };
 
     const loadParam = async (paramStr: string) => {
@@ -131,9 +115,6 @@ export default function OpenActions() {
         return () => saveManagerChannel.removeEventListener('message', rmtSaveHandler);
     }, []);
 
-    const size = useWindowSize();
-    const { height } = getCanvasSize(size);
-
     return (
         <Menu>
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
@@ -171,11 +152,7 @@ export default function OpenActions() {
                 </MenuItem>
             </MenuList>
 
-            <RmgParamAppClip
-                isOpen={isRmgParamAppClipOpen}
-                onClose={() => setIsRmgParamAppClipOpen(false)}
-                onImport={handleImportRMGProject}
-            />
+            <RmgParamAppClip isOpen={isRmgParamAppClipOpen} onClose={() => setIsRmgParamAppClipOpen(false)} />
             <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
         </Menu>
     );

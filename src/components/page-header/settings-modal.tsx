@@ -11,6 +11,7 @@ import {
     ModalContent,
     ModalHeader,
     ModalOverlay,
+    Select,
     StackDivider,
     Switch,
     SystemStyleObject,
@@ -29,8 +30,9 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
+import { StationCity } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setAutoParallel, setTelemetryApp } from '../../redux/app/app-slice';
+import { setAutoParallel, setRandomStationsNames, setTelemetryProject } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -56,8 +58,8 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
-        telemetry: { app: isAllowAppTelemetry },
-        preference: { autoParallel },
+        telemetry: { project: isAllowProjectTelemetry },
+        preference: { autoParallel, randomStationsNames },
     } = useRootSelector(state => state.app);
     const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
@@ -72,11 +74,18 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
     const [isManagerOpen, setIsManagerOpen] = React.useState(false);
 
-    const isAllowAnalytics = rmgRuntime.isAllowAnalytics();
-    const handleAdditionalTelemetry = (allowAppTelemetry: boolean) => dispatch(setTelemetryApp(allowAppTelemetry));
+    const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
+    const handleAdditionalTelemetry = (allowTelemetry: boolean) => {
+        dispatch(setTelemetryProject(allowTelemetry));
+    };
 
     const maximumParallelLines = activeSubscriptions.RMP_CLOUD ? MAX_PARALLEL_LINES_PRO : MAX_PARALLEL_LINES_FREE;
     const isParallelLineDisabled = parallelLinesCount >= maximumParallelLines;
+    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD;
+
+    const handleRandomStationNamesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        dispatch(setRandomStationsNames(event.target.value as 'none' | StationCity));
+    };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside" trapFocus={false}>
@@ -102,7 +111,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Box>
                                 <Box display="flex" mb="1">
                                     <Text>{t('header.settings.preference.autoParallel')}</Text>
-                                    <Badge ml="1" colorScheme="green">
+                                    <Badge ml="auto" colorScheme="green">
                                         New
                                     </Badge>
                                     <Tooltip label={t('header.settings.proWithTrial')}>
@@ -110,16 +119,48 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             ml="1"
                                             color="gray.50"
                                             background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            mr="auto"
                                         >
                                             PRO
                                         </Badge>
                                     </Tooltip>
                                     <Switch
+                                        ml="1"
                                         isDisabled={isParallelLineDisabled}
                                         isChecked={autoParallel}
                                         onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
                                     />
+                                </Box>
+                                <Box mb="1" display="flex">
+                                    <Text flex="1">{t('header.settings.preference.randomStationNames.title')}</Text>
+                                    <Badge ml="auto" colorScheme="green">
+                                        New
+                                    </Badge>
+                                    <Tooltip label={t('header.settings.pro')}>
+                                        <Badge
+                                            color="gray.50"
+                                            ml="1"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
+                                    <Select
+                                        size="xs"
+                                        width="auto"
+                                        ml="1"
+                                        value={randomStationsNames}
+                                        onChange={handleRandomStationNamesChange}
+                                    >
+                                        <option value="none">
+                                            {t('header.settings.preference.randomStationNames.none')}
+                                        </option>
+                                        <option value={StationCity.Shmetro} disabled={isRandomStationNamesDisabled}>
+                                            {t(`header.settings.preference.randomStationNames.${StationCity.Shmetro}`)}
+                                        </option>
+                                        <option value={StationCity.Bjsubway} disabled={isRandomStationNamesDisabled}>
+                                            {t(`header.settings.preference.randomStationNames.${StationCity.Bjsubway}`)}
+                                        </option>
+                                    </Select>
                                 </Box>
                             </Box>
                         </Box>
@@ -355,33 +396,43 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 {t('header.settings.telemetry.title')}
                             </Text>
                             <Box mt="3">
-                                <Box display="flex" mb="1">
-                                    <Text flex="1">{t('header.settings.telemetry.essential')}</Text>
-                                    <Switch isChecked={isAllowAnalytics} isDisabled />
-                                </Box>
                                 <Text fontSize="sm" lineHeight="100%" color="gray.600">
-                                    {t('header.settings.telemetry.essentialInfo')}
+                                    {t('header.settings.telemetry.info')}
                                 </Text>
-                                <Link
-                                    color={linkColour}
-                                    fontSize="sm"
-                                    lineHeight="100%"
-                                    href="https://support.google.com/analytics/answer/11593727"
-                                    isExternal={true}
-                                >
-                                    {t('header.settings.telemetry.essentialLink')} <Icon as={MdOpenInNew} />
-                                </Link>
 
-                                <Box display="flex" mb="1">
-                                    <Text flex="1">{t('header.settings.telemetry.additional')}</Text>
-                                    <Switch
-                                        isChecked={isAllowAppTelemetry}
-                                        onChange={({ target: { checked } }) => handleAdditionalTelemetry(checked)}
-                                    />
+                                <Box mt="3" mb="1">
+                                    <Box display="flex" mb="1">
+                                        <Text flex="1">{t('header.settings.telemetry.essential')}</Text>
+                                        <Tooltip label={t('header.settings.telemetry.essentialTooltip')}>
+                                            <Switch isChecked={isAllowAppTelemetry} isDisabled />
+                                        </Tooltip>
+                                    </Box>
+                                    <Text fontSize="sm" lineHeight="100%" color="gray.600">
+                                        {t('header.settings.telemetry.essentialInfo')}
+                                    </Text>
+                                    <Link
+                                        color={linkColour}
+                                        fontSize="sm"
+                                        lineHeight="100%"
+                                        href="https://support.google.com/analytics/answer/11593727"
+                                        isExternal={true}
+                                    >
+                                        {t('header.settings.telemetry.essentialLink')} <Icon as={MdOpenInNew} />
+                                    </Link>
                                 </Box>
-                                <Text fontSize="sm" lineHeight="100%" color="gray.600">
-                                    {t('header.settings.telemetry.additionalInfo')}
-                                </Text>
+
+                                <Box mt="1" mb="1">
+                                    <Box display="flex">
+                                        <Text flex="1">{t('header.settings.telemetry.additional')}</Text>
+                                        <Switch
+                                            isChecked={isAllowProjectTelemetry}
+                                            onChange={({ target: { checked } }) => handleAdditionalTelemetry(checked)}
+                                        />
+                                    </Box>
+                                    <Text fontSize="sm" lineHeight="100%" color="gray.600">
+                                        {t('header.settings.telemetry.additionalInfo')}
+                                    </Text>
+                                </Box>
                             </Box>
                         </Box>
                     </VStack>

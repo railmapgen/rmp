@@ -123,7 +123,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
                 </g>
                 <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={STATION_NAME_FONT_SIZE}
                         lineHeight={STATION_NAME_FONT_SIZE}
                         grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
@@ -180,9 +180,9 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

@@ -15,6 +15,8 @@ import mrtDestinationNumbers from './mrt-dest-num';
 import mrtLineBadge from './mrt-line-badge';
 import jrEastLineBadge from './jr-east-line-badge';
 import qingdaoMetroNumLineBadge from './qingdao-metro-num-line-badge';
+import guangdongIntercityRailwayLineBadge from './guangdong-intercity-railway-line-badge';
+import londonArrow from './london-arrow';
 import facilities from './facilities';
 import text from './text';
 import i18nText from './i18n-text';
@@ -37,6 +39,8 @@ const miscNodes = {
     [MiscNodeType.MRTLineBadge]: mrtLineBadge,
     [MiscNodeType.JREastLineBadge]: jrEastLineBadge,
     [MiscNodeType.QingdaoMetroNumLineBadge]: qingdaoMetroNumLineBadge,
+    [MiscNodeType.GuangdongIntercityRailwayLineBadge]: guangdongIntercityRailwayLineBadge,
+    [MiscNodeType.LondonArrow]: londonArrow,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
     [MiscNodeType.I18nText]: i18nText,

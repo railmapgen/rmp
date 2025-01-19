@@ -51,7 +51,7 @@ interface RMGInterchange {
 }
 
 const defRMGLeft: StationInfo = {
-    name: ['LEFT END', 'LEFT END'],
+    localisedName: { en: 'LEFT END' },
     num: '00',
     services: [Services.local],
     parents: [],
@@ -67,7 +67,7 @@ const defRMGLeft: StationInfo = {
 };
 
 const defRMGRight: StationInfo = {
-    name: ['RIGHT END', 'RIGHT END'],
+    localisedName: { en: 'RIGHT END' },
     num: '00',
     services: [Services.local],
     parents: [],
@@ -125,7 +125,7 @@ export const newParamTemplate: RMGParam = {
 };
 
 const newRMGStn: StationInfo = {
-    name: ['', ''],
+    localisedName: {},
     num: '',
     services: [Services.local],
     parents: [],
@@ -397,13 +397,16 @@ const generateNewStn = (
         const uType = graph.getNodeAttributes(u).type as StationType;
         const uAttr = graph.getNodeAttributes(u)[uType] as StationAttributes;
         newParam.stn_list[u] = structuredClone(newRMGStn);
-        newParam.stn_list[u].name = [uAttr.names[0], uAttr.names[1]];
+        newParam.stn_list[u].localisedName = { zh: uAttr.names[0], en: uAttr.names[1] };
         newParam.stn_list[u].num = String(counter);
         if (graph.getNodeAttributes(u).type == StationType.GzmtrBasic) {
             const gzAttr = uAttr as GzmtrBasicStationAttributes;
             newParam.stn_list[u].num = gzAttr.stationCode;
             if (gzAttr.secondaryNames[0] !== '' || gzAttr.secondaryNames[1] !== '') {
-                newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
+                newParam.stn_list[u].localisedSecondaryName = {
+                    zh: gzAttr.secondaryNames[0],
+                    en: gzAttr.secondaryNames[1],
+                };
             }
         }
         if (graph.getNodeAttributes(u).type == StationType.GzmtrInt) {
@@ -415,7 +418,12 @@ const generateNewStn = (
                     break;
                 }
             }
-            newParam.stn_list[u].secondaryName = gzAttr.secondaryNames;
+            if (gzAttr.secondaryNames[0] !== '' || gzAttr.secondaryNames[1] !== '') {
+                newParam.stn_list[u].localisedSecondaryName = {
+                    zh: gzAttr.secondaryNames[0],
+                    en: gzAttr.secondaryNames[1],
+                };
+            }
         }
         if (newChild.length != 0) {
             newParam.stn_list[u].children = structuredClone(newChild).reverse();
@@ -569,8 +577,8 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
             if (newParam != undefined) {
                 nowResult.push([
                     newParam,
-                    newParam.stn_list[newParam.current_stn_idx].name[0],
-                    newParam.stn_list[newParam.current_stn_idx].name[1],
+                    newParam.stn_list[newParam.current_stn_idx].localisedName.zh ?? '',
+                    newParam.stn_list[newParam.current_stn_idx].localisedName.en ?? '',
                 ]);
             }
         }

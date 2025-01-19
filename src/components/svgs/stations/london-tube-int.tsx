@@ -181,7 +181,7 @@ const londonTubeIntAttrsComponent = (props: AttrsProps<LondonTubeIntStationAttri
 
 const londonTubeIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="6" stroke="currentColor" fill="white" />
+        <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2.5" fill="white" />
     </svg>
 );
 

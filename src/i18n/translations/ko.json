@@ -20,8 +20,7 @@
             "learnHowToAdd": {
                 "station": "역을 추가하는 방법 배우기!",
                 "misc-node": "노드를 추가하는 방법 배우기!",
-                "line": "라인 스타일을 추가하는 방법 배우기!",
-                "donate": "또는 기부하기!"
+                "line": "라인 스타일을 추가하는 방법 배우기!"
             }
         },
         "details": {
@@ -133,6 +132,16 @@
                     "numEn": "영어로 된 줄 번호",
                     "showText": "텍스트 표시"
                 },
+                "guangdongIntercityRailwayLineBadge": {
+                    "displayName": "광동 시외 철도 노선 표지판"
+                },
+                "londonArrow": {
+                    "displayName": "런던 화살표",
+                    "type": "유형",
+                    "continuation": "계속",
+                    "sandwich": "샌드위치",
+                    "tube": "튜브"
+                },
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
@@ -230,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "광저우 지하철 환승역 (2024)",
+                    "columns": "역 열 수",
+                    "topHeavy": "상단에 더 많은 역 우선 배치",
                     "anchorAt": "앵커 위치",
                     "anchorAtNone": "중앙",
-                    "preferVertical": "세로 레이아웃 (환승 2개만)"
+                    "osiPosition": "역을 나가 환승",
+                    "osiPositionNone": "없음",
+                    "osiPositionLeft": "왼쪽",
+                    "osiPositionRight": "오른쪽"
                 },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
@@ -335,6 +349,12 @@
                 },
                 "londonTubeInt": {
                     "displayName": "런던 지하철 환승역"
+                },
+                "londonRiverServicesInt": {
+                    "displayName": "런던 강 서비스 환승역"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "광둥 시외 기차역"
                 }
             },
             "lines": {
@@ -374,6 +394,9 @@
                 },
                 "gzmtrVirtualInt": {
                     "displayName": "광저우 지하철 역 환승 모습"
+                },
+                "gzmtrLoop": {
+                    "displayName": "광저우 지하철 순환선 스타일"
                 },
                 "chinaRailway": {
                     "displayName": "중국 철도 모습"
@@ -432,6 +455,24 @@
                 },
                 "londonTubeTerminal": {
                     "displayName": "런던 지하철 종착 스타일"
+                },
+                "londonRail": {
+                    "displayName": "런던 철도 스타일",
+                    "limitedService": "제한 서비스/혼잡 시간대만",
+                    "colorBackground": "배경 색상",
+                    "colorForeground": "전경 색상"
+                },
+                "londonSandwich": {
+                    "displayName": "런던 샌드위치 스타일"
+                },
+                "londonLutonAirportDART": {
+                    "displayName": "런던 루튼 공항 DART 스타일"
+                },
+                "londonIFSCloudCableCar": {
+                    "displayName": "런던 IFS 클라우드 케이블카 스타일"
+                },
+                "guangdongIntercityRailway": {
+                    "displayName": "광동성 도시간 철도 스타일"
                 }
             },
             "edges": {},
@@ -500,19 +541,10 @@
         },
         "donation": {
             "title": "기부",
-            "content": "귀하의 지원은 우리에게 큰 의미를 갖습니다! 기부함으로써 우리는 우리의 작업을 계속할 수 있고 모든 이에게 무료로 제공할 수 있습니다. 흥미로운 보상 옵션 중에서 선택하고 오늘 변화를 만들어보세요!",
-            "rewards": "보상",
-            "gallery": "갤러리에 여러분의 판타지 작품",
-            "galleryContent": "여러분의 판타지 작품을 업로드하고 갤러리에 표시하세요.",
-            "nodes": "역 및 기타 노드",
-            "nodesContent": "역 및 기타 노드 추가 요청.",
-            "features": "기능 요청",
-            "featuresContent": "새로운 기능 추가를 요청하세요.",
-            "methods": "기부 방법",
             "openCollective": "Open Collective",
-            "viaUSD": "Paypal 또는 Visa 카드를 통해 USD로 기부하기.",
+            "viaUSD": "Paypal 또는 Visa 카드를 통해 달러로 기부하기.",
             "afdian": "爱发电",
-            "viaCNY": "Alipay 또는 Wechat Pay를 통해 CNY로 기부하기."
+            "viaCNY": "Alipay 또는 Wechat Pay를 통해 인민폐로 기부하기."
         },
         "settings": {
             "title": "설정",
@@ -533,7 +565,13 @@
             "preference": {
                 "title": "선호",
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
-                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다"
+                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
+                "randomStationNames": {
+                    "title": "생성 시 역 이름을 랜덤으로 설정",
+                    "none": "없음",
+                    "shmetro": "상하이",
+                    "bjsubway": "베이징"
+                }
             },
             "shortcuts": {
                 "title": "바로 가기",
@@ -627,12 +665,14 @@
                 }
             },
             "telemetry": {
-                "title": "원격 계측",
+                "title": "원격 측정",
+                "info": "지하철 노선도 그리기를 개선하고 기여자가 프로젝트를 향상시키는 데 동기를 부여하기 위해 Google Analytics를 통해 익명의 사용 데이터를 수집합니다. 이 데이터는 사용자 경험을 향상하고 도구 기능을 최적화하는 데에만 사용되며, 제3자와 절대 공유되지 않습니다.",
                 "essential": "기본",
-                "essentialInfo": "지하철 노선도 그리기기는 Google Analytics를 사용하여 데이터를 수집하여 사용자가 프로젝트에 액세스하는 방법과 시기를 이해하는 데 도움이 됩니다.지하철 노선도 그리기 장치에는 사용자 등록과 백엔드 서비스가 없기 때문에 프로젝트를 계속 업데이트할 수 있는 기여자의 유일한 피드백입니다.전송되는 모든 데이터에는 프로젝트에 포함된 개인 정보 및 데이터가 포함되어 있지 않습니다.",
-                "essentialLink": "Google Analytics에서 수집할 수 있는 세부 필드를 보려면 이 링크를 클릭하십시오.",
-                "additional": "별도",
-                "additionalInfo": "마우스나 키보드를 사용하여 상호 작용할 때(보기: 프로젝트 생성 또는 사이트 추가), 지하철 노선도 그리기기는 다른 이벤트도 보냅니다. 항상 그렇듯이 개인 신원 정보를 포함하지 않으며 통계 목적으로만 사용됩니다."
+                "essentialTooltip": "지하철 노선도 툴킷에서 이 전역 설정을 변경하세요",
+                "essentialInfo": "지하철 노선도 그리기는 도구를 언제, 어떻게 사용하는지 이해하기 위해 기본적인 사용 데이터를 수집합니다. 안심하세요. 개인 식별이 가능한 정보나 프로젝트 데이터는 절대 수집되지 않습니다.",
+                "essentialLink": "Google Analytics에서 수집할 수 있는 세부 필드를 보려면 이 링크를 클릭하세요.",
+                "additional": "추가",
+                "additionalInfo": "지하철 노선도 그리기는 프로젝트 생성이나 역 추가와 같은 입력 시의 상호작용 데이터도 수집합니다. 이러한 추가 데이터도 익명으로 처리되며, 도구를 개선하기 위한 통계 분석에만 사용됩니다."
             }
         },
         "about": {
@@ -648,6 +688,7 @@
             "langonginc": "기억에 남을 삶을 살아보세요.",
             "203IhzElttil": "상하이 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
             "Swiftiecott": "베이징 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
+            "Minwtraft": "광저우 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
             "contactUs": "우리에게 연락하기",
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",

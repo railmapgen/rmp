@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { StationCity } from '../../constants/constants';
 
 /**
  * AppState contains all the settings users want to preserve after restart.
@@ -8,10 +9,13 @@ export interface AppState {
     telemetry: {
         /**
          * App level telemetry such as app load and import/export works/images.
+         *
+         * WARNING! Use rmgRuntime.isAllowAnalytics() instead.
+         * This is not read or write currently, but kept in the localstorage due to previous versions.
          */
         app: boolean;
         /**
-         * Project level telemetry such as stations' type and count.
+         * Project level telemetry such as stations'/lines' addition and their count.
          */
         project: boolean;
     };
@@ -34,6 +38,7 @@ export interface AppState {
          * Whether to enable parallel for new lines.
          */
         autoParallel: boolean;
+        randomStationsNames: 'none' | StationCity;
     };
 }
 
@@ -48,6 +53,7 @@ export const initialState: AppState = {
             expand: true,
         },
         autoParallel: true,
+        randomStationsNames: 'none',
     },
 };
 
@@ -70,9 +76,18 @@ const appSlice = createSlice({
         setAutoParallel: (state, action: PayloadAction<boolean>) => {
             state.preference.autoParallel = action.payload;
         },
+        setRandomStationsNames: (state, action: PayloadAction<'none' | StationCity>) => {
+            state.preference.randomStationsNames = action.payload;
+        },
     },
 });
 
-export const { setTelemetryApp, setTelemetryProject, setUnlockSimplePath, setToolsPanelExpansion, setAutoParallel } =
-    appSlice.actions;
+export const {
+    setTelemetryApp,
+    setTelemetryProject,
+    setUnlockSimplePath,
+    setToolsPanelExpansion,
+    setAutoParallel,
+    setRandomStationsNames,
+} = appSlice.actions;
 export default appSlice.reducer;

@@ -20,7 +20,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
-        (names[ROTATE_CONST[rotate].namesPos].split('\\').length - 1) *
+        (names[ROTATE_CONST[rotate].namesPos].split('\n').length - 1) *
             ROTATE_CONST[rotate].lineHeight *
             ROTATE_CONST[rotate].polarity; // dynamic dy of n lines (either zh or en)
 
@@ -41,8 +41,8 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         () => (
             <g id={id}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
-                    <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#666464" />
-                    {/* A mask for the end of shanghai subsurban railway style. */}
+                    <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#898989" />
+                    {/* A mask for the end of shanghai suburban railway style. */}
                     <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
                     <rect
                         x={-2 + 1.1675}
@@ -52,6 +52,8 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                         stroke="none"
                         fill="white"
                     />
+
+                    {/* Below is an overlay element that has all event hooks but can not be seen. */}
                     <rect
                         id={`stn_core_${id}`}
                         x="-2"
@@ -65,6 +67,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                         onPointerMove={onPointerMove}
                         onPointerUp={onPointerUp}
                         style={{ cursor: 'move' }}
+                        className="removeMe"
                     />
                 </g>
                 <g
@@ -74,7 +77,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                     strokeWidth="2.5"
                 >
                     <MultilineText
-                        text={names[0].split('\\')}
+                        text={names[0].split('\n')}
                         fontSize={12.67}
                         lineHeight={12.67}
                         grow="up"
@@ -82,7 +85,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                         className="rmp-name__zh"
                     />
                     <MultilineText
-                        text={names[1].split('\\')}
+                        text={names[1].split('\n')}
                         dx={rotate >= 45 && rotate <= 135 ? 1.67 : 0}
                         fontSize={6.67}
                         lineHeight={6.67}
@@ -117,9 +120,9 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0].replaceAll('\\', '\n'),
+            value: attrs.names[0],
             onChange: val => {
-                attrs.names[0] = val.toString().replaceAll('\n', '\\');
+                attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -127,9 +130,9 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1].replaceAll('\\', '\n'),
+            value: attrs.names[1],
             onChange: val => {
-                attrs.names[1] = val.toString().replaceAll('\n', '\\');
+                attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

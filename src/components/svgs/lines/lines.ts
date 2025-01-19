@@ -7,6 +7,7 @@ import singleColor from './styles/single-color';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
+import gzmtrLoop from './styles/gzmtr-loop';
 import chinaRailway from './styles/china-railway';
 import bjsubwaySingleColor from './styles/bjsubway-single-color';
 import bjsubwayTram from './styles/bjsubway-tram';
@@ -25,6 +26,11 @@ import lrtSingleColor from './styles/lrt-single-color';
 import londonTubeInternalInt from './styles/london-tube-internal-int';
 import londonTube10MinWalk from './styles/london-tube-10-min-walk';
 import londonTubeTerminal from './styles/london-tube-terminal';
+import londonRail from './styles/london-rail';
+import londonSandwich from './styles/london-sandwich';
+import londonLutonAirportDART from './styles/london-DART';
+import londonIFSCloudCableCar from './styles/london-ifs-could-cable-car';
+import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -38,6 +44,7 @@ export const lineStyles = {
     [LineStyleType.ShmetroVirtualInt]: shmetroVirtualInt,
     [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,
+    [LineStyleType.GZMTRLoop]: gzmtrLoop,
     [LineStyleType.ChinaRailway]: chinaRailway,
     [LineStyleType.BjsubwaySingleColor]: bjsubwaySingleColor,
     [LineStyleType.BjsubwayTram]: bjsubwayTram,
@@ -56,4 +63,9 @@ export const lineStyles = {
     [LineStyleType.LondonTubeTerminal]: londonTubeTerminal,
     [LineStyleType.LondonTubeInternalInt]: londonTubeInternalInt,
     [LineStyleType.LondonTube10MinWalk]: londonTube10MinWalk,
+    [LineStyleType.LondonRail]: londonRail,
+    [LineStyleType.LondonSandwich]: londonSandwich,
+    [LineStyleType.LondonLutonAirportDART]: londonLutonAirportDART,
+    [LineStyleType.LondonIFSCloudCableCar]: londonIFSCloudCableCar,
+    [LineStyleType.GuangdongIntercityRailway]: guangdongIntercityRailway,
 };

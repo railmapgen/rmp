@@ -26,6 +26,12 @@ import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-si
 import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
 import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
 import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
+import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
+import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
+import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
+import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
+import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
+import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -46,6 +52,7 @@ export enum LineStyleType {
     ShanghaiSuburbanRailway = 'sh-sub-rwy',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
+    GZMTRLoop = 'gzmtr-loop',
     ChinaRailway = 'china-railway',
     BjsubwaySingleColor = 'bjsubway-single-color',
     BjsubwayTram = 'bjsubway-tram',
@@ -64,6 +71,11 @@ export enum LineStyleType {
     LondonTubeTerminal = 'london-tube-terminal',
     LondonTubeInternalInt = 'london-tube-internal-int',
     LondonTube10MinWalk = 'london-tube-10-min-walk',
+    LondonRail = 'london-rail',
+    LondonSandwich = 'london-sandwich',
+    LondonLutonAirportDART = 'london-DART',
+    LondonIFSCloudCableCar = 'london-dangleway',
+    GuangdongIntercityRailway = 'gd-intercity-rwy',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -71,6 +83,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
+    [LineStyleType.GZMTRLoop]?: GZMTRLoopAttributes;
     [LineStyleType.ChinaRailway]?: ChinaRailwayAttributes;
     [LineStyleType.BjsubwaySingleColor]?: BjsubwaySingleColorAttributes;
     [LineStyleType.BjsubwayTram]?: BjsubwayTramAttributes;
@@ -89,6 +102,11 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.LondonTubeTerminal]?: LondonTubeTerminalAttributes;
     [LineStyleType.LondonTubeInternalInt]?: LondonTubeInternalIntAttributes;
     [LineStyleType.LondonTube10MinWalk]?: LondonTube10MinWalkAttributes;
+    [LineStyleType.LondonRail]?: LondonRailAttributes;
+    [LineStyleType.LondonSandwich]?: LondonSandwichAttributes;
+    [LineStyleType.LondonLutonAirportDART]?: LondonLutonAirportDARTAttributes;
+    [LineStyleType.LondonIFSCloudCableCar]?: LondonIFSCloudCableCarAttributes;
+    [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
 }
 
 export const LineStylesWithColor = [
@@ -103,6 +121,9 @@ export const LineStylesWithColor = [
     LineStyleType.JREastSingleColor,
     LineStyleType.JREastSingleColorPattern,
     LineStyleType.LRTSingleColor,
+    LineStyleType.LondonSandwich,
+    LineStyleType.LondonLutonAirportDART,
+    LineStyleType.LondonIFSCloudCableCar,
 ];
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */

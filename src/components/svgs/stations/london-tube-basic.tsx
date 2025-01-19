@@ -131,6 +131,8 @@ export const AccessibleIcon = React.memo(
 	C-12.8-1-13.2,0-13.2,0l-7,14.2c0,0-0.8,1.8,1.2,2.9c2,1.1,3.3-1,3.3-1l5.5-11.3c0,0,0.5-0.7,1-1c0.6-0.3,1.1-0.3,1.1-0.3H3.4
 	c0,0,1.2,0,2.2-0.9c0.9-0.9,1.1-2,1.1-2l1.7-12.4c0,0,0-2.6-2.7-2.7C3.6-14.5,3-12.4,3-12.4"
                 />
+
+                {/* Below is an overlay element that has the id info but can not be seen. */}
                 <path
                     id={`stn_core_${id}`}
                     fill={stepFreeAccess === 'train' ? '#1C3E93' : 'white'}
@@ -139,6 +141,7 @@ export const AccessibleIcon = React.memo(
                     strokeWidth={0.5 * X_HEIGHT}
                     strokeOpacity="0"
                     d="M0-31c17.1,0,31,13.9,31,31S17.1,31,0,31S-31,17.1-31,0S-17.1-31,0-31"
+                    className="removeMe"
                 />
             </g>
         );
@@ -171,7 +174,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
 
     // rotate starts from top-middle while Math.sin/cos starts from middle-right
     const rad = ((rotate - 90) * Math.PI) / 180;
-    const height = (terminal ? 2 : 1) * (0.66 * X_HEIGHT + X_HEIGHT / 2);
+    // 0.5 cover the gap between the station icon and the line
+    const height = terminal ? 2 * (0.66 * X_HEIGHT + X_HEIGHT / 2) : 0.66 * X_HEIGHT + 0.5;
     const textDx =
         ROTATE_CONST[rotate].textDx + // fixed dx for each rotation
         Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
