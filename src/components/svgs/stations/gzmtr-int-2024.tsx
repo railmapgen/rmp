@@ -1,7 +1,8 @@
 import { Button, FormLabel, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { InterchangeStation2024 } from '@railmapgen/svg-assets/gzmtr';
+import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
+import { SvgAssetsContext } from '@railmapgen/svg-assets/utils';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
@@ -26,6 +27,9 @@ const FONT_SIZE = {
 const NAME_DY = structuredClone(DEFAULT_NAME_DY);
 NAME_DY.top.lineHeight = FONT_SIZE.en;
 NAME_DY.bottom.lineHeight = FONT_SIZE.zh;
+
+const SCALE = 0.56; // scale the InterchangeStation2024 to match the global line width 5
+const SCALE_WITH_PADDING = 0.6; // station names uses the coordinates from the icon and also need some padding
 
 const GzmtrInt2024Station = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -56,24 +60,6 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     );
 
     const transferAll = transfer.flat().slice(0, 5); // slice to make sure at most 5 transfers
-
-    // temporary fix for the missing id on the top element of the station
-    const iconEl = React.useRef<SVGGElement | null>(null);
-    iconEl.current?.querySelectorAll('path')?.forEach(elem => elem.setAttribute('id', `stn_core_${id}`));
-    const iconOffset = iconEl.current
-        ?.querySelector('g')
-        ?.getAttribute('transform')
-        ?.slice(10, -1)
-        ?.split(',')
-        ?.map(s => Number(s)) ?? [0, 0];
-
-    const [iconBBox, setIconBBox] = React.useState({ x1: 0, x2: 0, y1: 0, y2: 0 });
-    React.useEffect(() => {
-        const { height: iconHeight, width: iconWidth, x: iconX1, y: iconY1 } = iconEl.current!.getBBox();
-        const [iconX2, iconY2] = [iconX1 + iconWidth, iconY1 + iconHeight];
-        setIconBBox({ x1: iconX1, x2: iconX2, y1: iconY1, y2: iconY2 });
-    }, [JSON.stringify(transferAll), columns, topHeavy, anchorAt, osiPosition, setIconBBox, iconEl]);
-
     const stations = transferAll.map(s => ({
         style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
         lineNum: s[4],
@@ -81,18 +67,38 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         strokeColour: s[2],
     }));
 
+    // use imperative handle to get the bbox of the icon (with the help from InterchangeStation2024Handle)
+    const [borderBox, setBorderBox] = React.useState<SVGRect>();
+    const [translate, setTranslate] = React.useState<Coordinates>([0, 0]);
+    const ref = React.useRef<InterchangeStation2024Handle>(null);
+    React.useEffect(() => {
+        if (ref.current) {
+            setBorderBox(ref.current.getCorrectedBBox());
+            setTranslate(ref.current.getTranslate());
+        }
+    }, [ref.current, transferAll.length, columns, topHeavy, anchorAt]);
+    const iconBBox = {
+        x1: borderBox?.x ?? 0 + translate[0],
+        y1: borderBox?.y ?? 0 + translate[1],
+        x2: (borderBox?.x ?? 0) + (borderBox?.width ?? 0) + translate[0],
+        y2: (borderBox?.y ?? 0) + (borderBox?.height ?? 0) + translate[1],
+    };
+
+    // Update all components that requires a bbox after fonts are loaded.
+    // bbox calculated before fonts are loaded will be incorrect.
+    // Also see SvgAssetsContextProvider in src/components/svg-wrapper.tsx
+    const { update } = React.useContext(SvgAssetsContext);
+    React.useEffect(() => {
+        document.fonts.load('12px Arial', 'ABCDEFG123456').finally(() => setTimeout(update, 100));
+    }, []);
+
     const textX =
-        nameOffsetX === 'left'
-            ? -(iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 + columns * 7
-            : nameOffsetX === 'right'
-              ? (iconBBox.x2 - iconBBox.x1) / 2 + iconOffset[0] / 2 - columns * 7
-              : 0;
+        (nameOffsetX === 'left' ? iconBBox.x1 : nameOffsetX === 'right' ? iconBBox.x2 : 0) * SCALE_WITH_PADDING;
     const textY =
-        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight +
-            (iconBBox.y2 - iconBBox.y1) / 2 -
-            Math.floor(transferAll.length / columns) * 3) * // bbox doesn't reflect the actual size of the icon, some tweak
+        names[NAME_DY[nameOffsetY].namesPos].split('\n').length *
+            NAME_DY[nameOffsetY].lineHeight *
             NAME_DY[nameOffsetY].polarity +
-        iconOffset[1] / 2;
+        (nameOffsetY === 'top' ? iconBBox.y1 : nameOffsetY === 'bottom' ? iconBBox.y2 : 0) * SCALE_WITH_PADDING;
     const textAnchor =
         nameOffsetX === 'left'
             ? 'end'
@@ -118,15 +124,9 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            <g
-                transform="scale(0.56)"
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
-                ref={iconEl}
-            >
+            <g transform={`scale(${SCALE})`}>
                 <InterchangeStation2024
+                    ref={ref}
                     stations={stations}
                     textClassName="rmp-name__zh"
                     columns={columns}
@@ -137,6 +137,21 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                             ? osiPosition
                             : undefined
                     }
+                />
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
+                <rect
+                    id={`stn_core_${id}`}
+                    x={iconBBox.x1}
+                    y={iconBBox.y1}
+                    width={iconBBox.x2 - iconBBox.x1}
+                    height={iconBBox.y2 - iconBBox.y1}
+                    fill="white"
+                    fillOpacity="0"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>

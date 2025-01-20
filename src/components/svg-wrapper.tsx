@@ -1,4 +1,5 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import { SvgAssetsContextProvider } from '@railmapgen/svg-assets/utils';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
@@ -384,7 +385,10 @@ const SvgWrapper = () => {
             tabIndex={0}
             onKeyDown={handleKeyDown}
         >
-            <SvgCanvas />
+            {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+            <SvgAssetsContextProvider>
+                <SvgCanvas />
+            </SvgAssetsContextProvider>
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
                 <rect
                     x={selectCoord.sx}
