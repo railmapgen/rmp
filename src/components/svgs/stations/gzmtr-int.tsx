@@ -132,7 +132,10 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 
     const secondaryDx = (textWidth + (secondaryTextWidth + 12 * 2) / 2) * (nameOffsetX === 'left' ? -1 : 1);
     const underConstructionDx =
-        (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) * (nameOffsetX === 'left' ? -1 : 1);
+        (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) * // 12 is the width of the brackets
+        // when nameOffsetX === 'middle' and no secondaryNames, no dx is needed
+        (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : secondaryTextWidth !== 0 ? 1 : 0);
+    const underConstructionTextAnchor = nameOffsetX === 'middle' ? 'start' : textAnchor;
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -360,7 +363,10 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                 </g>
             )}
             {!open && (
-                <g transform={`translate(${textX + underConstructionDx}, ${textY})`} textAnchor={textAnchor}>
+                <g
+                    transform={`translate(${textX + underConstructionDx}, ${textY})`}
+                    textAnchor={underConstructionTextAnchor}
+                >
                     <text fontSize="6.04" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
                         （未开通）
                     </text>
