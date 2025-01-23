@@ -3,7 +3,7 @@ import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../constants/constants';
 import { LinePathType, Path } from '../constants/lines';
-import { checkSimplePathAvailability } from './auto-simple';
+import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
 
 /**
  * Only lines have a reconcileId will be considered.
@@ -124,17 +124,17 @@ export const makeReconciledPath = (
         const [source, target] = graph.extremities(line);
         const sourceAttr = graph.getNodeAttributes(source);
         const targetAttr = graph.getNodeAttributes(target);
-        const { type, parallelIndex } = graph.getEdgeAttributes(line);
+        const { type } = graph.getEdgeAttributes(line);
         const attr = graph.getEdgeAttribute(line, type) ?? linePaths[type].defaultAttrs;
 
+        // TODO: disable parallel on reconciled lines, use offsetFrom to offsetTo instead
         const simplePathAvailability = checkSimplePathAvailability(
             type,
             sourceAttr.x,
             sourceAttr.y,
             targetAttr.x,
             targetAttr.y,
-            attr,
-            parallelIndex
+            attr
         );
         if (simplePathAvailability) {
             // simple path hook on matched situation

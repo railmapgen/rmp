@@ -12,21 +12,26 @@ export type NonSimpleLinePathAttributes = NonNullable<
 
 const MIN_ROUND_CORNER_FACTOR = 1;
 
-export const extractParallelLines = (
+/**
+ * Classify all the lines between source and target of the provided line
+ * into lines that should be parallel to the provided line and lines that should not.
+ * Based on parallelIndex, type, and startFrom of the provided line.
+ * @param graph The graph.
+ * @param lineEntry The line entry.
+ * @returns An object containing normal and parallel lines.
+ */
+export const classifyParallelLines = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     lineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
 ) => {
-    const lineID = lineEntry.edge as LineId;
-    const type = lineEntry.attributes.type;
-    const attr = lineEntry.attributes[type];
-    const parallelIndex = lineEntry.attributes.parallelIndex;
-
+    const { type, parallelIndex } = lineEntry.attributes;
+    // TODO: might be redundant to check this
     if (type === LinePathType.Simple || parallelIndex < 0) {
         return { normal: [lineEntry], parallel: [] };
     }
 
+    const { source, target } = lineEntry;
     const normal: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
-    const [source, target] = graph.extremities(lineID);
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
         if (lineEntry.attributes.parallelIndex < 0) {
@@ -34,20 +39,8 @@ export const extractParallelLines = (
             continue;
         }
 
-        // edgeEntries will also return edges from target to source
-        if (
-            lineEntry.attributes.type === type &&
-            source === lineEntry.source &&
-            (lineEntry.attributes[type] as NonSimpleLinePathAttributes).startFrom ===
-                (attr as NonSimpleLinePathAttributes).startFrom
-        ) {
-            parallelLines.push(lineEntry);
-        } else if (
-            lineEntry.attributes.type === type &&
-            source === lineEntry.target &&
-            (lineEntry.attributes[type] as NonSimpleLinePathAttributes).startFrom !==
-                (attr as NonSimpleLinePathAttributes).startFrom
-        ) {
+        const { startFrom } = lineEntry.attributes[type] as NonSimpleLinePathAttributes;
+        if (checkParallels(type, source as StnId | MiscNodeId, startFrom, lineEntry)) {
             parallelLines.push(lineEntry);
         }
     }
@@ -135,6 +128,40 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
     return parallelPaths;
 };
 
+/**
+ * Check if the given lineEntry is in the same parallel group as the baseLineEntry.
+ * Which are either (source, target, from) or (target, source, to).
+ * Base line entry is determined by type, source, and startFrom.
+ * @param type The base line type.
+ * @param source The base line source.
+ * @param startFrom The base line startFrom.
+ * @param lineEntry The line entry to check.
+ * @returns Whether the lineEntry is in the same parallel group as the baseLineEntry.
+ */
+const checkParallels = (
+    type: LinePathType,
+    source: StnId | MiscNodeId,
+    startFrom: 'from' | 'to',
+    lineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
+) => {
+    const lineEntryType = lineEntry.attributes.type;
+    if (
+        type === lineEntry.attributes.type &&
+        source === lineEntry.source &&
+        startFrom === (lineEntry.attributes[lineEntryType] as NonSimpleLinePathAttributes).startFrom
+    ) {
+        return true;
+    } else if (
+        // edgeEntries will also return edges from target to source
+        type === lineEntry.attributes.type &&
+        source === lineEntry.target &&
+        startFrom !== (lineEntry.attributes[lineEntryType] as NonSimpleLinePathAttributes).startFrom
+    ) {
+        return true;
+    }
+    return false;
+};
+
 export const makeParallelIndex = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     type: LinePathType,
@@ -147,19 +174,7 @@ export const makeParallelIndex = (
     // find all parallel lines that are either (source, target, from) or (target, source, to)
     const existingParallelIndex: number[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
-        const attr = lineEntry.attributes;
-        if (
-            type === attr.type &&
-            source === lineEntry.source &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom
-        ) {
-            existingParallelIndex.push(lineEntry.attributes.parallelIndex);
-        } else if (
-            type === attr.type &&
-            // edgeEntries will also return edges from target to source
-            source === lineEntry.target &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom !== startFrom
-        ) {
+        if (checkParallels(type, source, startFrom, lineEntry)) {
             existingParallelIndex.push(lineEntry.attributes.parallelIndex);
         }
     }
@@ -187,16 +202,16 @@ export const getBaseParallelLineID = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     type: LinePathType,
     lineID: LineId
-) => {
+): LineId => {
     if (type === LinePathType.Simple) return lineID;
 
     const parallelIndex = graph.getEdgeAttribute(lineID, 'parallelIndex');
     if (parallelIndex < 0) return lineID;
 
-    const startFrom = graph.getEdgeAttribute(lineID, type)!['startFrom'];
+    const { startFrom } = graph.getEdgeAttribute(lineID, type)!;
     const [source, target] = graph.extremities(lineID);
 
-    let minParallelIndex = Number.MAX_VALUE;
+    let minParallelIndex = parallelIndex;
     let minLineID = lineID;
     for (const lineEntry of graph.edgeEntries(source, target)) {
         const attr = lineEntry.attributes;
@@ -222,7 +237,7 @@ export const getBaseParallelLineID = (
             minLineID = lineEntry.edge as LineId;
         }
     }
-    return minParallelIndex == parallelIndex ? lineID : minLineID;
+    return minLineID;
 };
 
 export const MAX_PARALLEL_LINES_FREE = 5;

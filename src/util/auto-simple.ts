@@ -1,4 +1,3 @@
-import { LineId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
 
 /**
@@ -16,8 +15,7 @@ export const checkSimplePathAvailability = (
     y1: number,
     x2: number,
     y2: number,
-    attrs: NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>,
-    parallelIndex: number
+    attrs: NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>
 ): { x1: number; y1: number; x2: number; y2: number; offset: number } | undefined => {
     // Check if offsetFrom and offsetTo are defined and are numbers.
     if (!('offsetFrom' in attrs) || !('offsetTo' in attrs)) return;
@@ -27,24 +25,7 @@ export const checkSimplePathAvailability = (
     // It is just parallel to the line from (x1,y1) to (x2,y2).
     if (attrs['offsetFrom'] === attrs['offsetTo']) {
         if (checkKAndType(type, x1, y1, x2, y2)) {
-            if (parallelIndex < 0) {
-                return { x1, y1, x2, y2, offset: attrs['offsetFrom'] };
-            }
-
-            // auto parallel instead of manual offset tweaks when parallelIndex >= 0 (enabled)
-            if (x1 === x2) {
-                return { x1: x1 + 5 * parallelIndex, y1, x2: x2 + 5 * parallelIndex, y2, offset: attrs['offsetFrom'] };
-            }
-            if (y1 === y2) {
-                return { x1, y1: y1 + 5 * parallelIndex, x2, y2: y2 + 5 * parallelIndex, offset: attrs['offsetFrom'] };
-            }
-            return {
-                x1: x1 + 5 * Math.SQRT1_2 * parallelIndex,
-                y1: y1 + 5 * Math.SQRT1_2 * parallelIndex,
-                x2: x2 + 5 * Math.SQRT1_2 * parallelIndex,
-                y2: y2 + 5 * Math.SQRT1_2 * parallelIndex,
-                offset: attrs['offsetFrom'],
-            };
+            return { x1, y1, x2, y2, offset: attrs['offsetFrom'] };
         }
         return;
     }
@@ -72,6 +53,32 @@ export const checkSimplePathAvailability = (
             }
         }
     }
+};
+
+/**
+ * Auto parallel instead of manual offset tweaks when parallelIndex > 0 (non base parallel line).
+ */
+export const reconcileSimplePathWithParallel = (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    offset: number,
+    parallelIndex: number
+) => {
+    if (x1 === x2) {
+        return { x1: x1 + 5 * parallelIndex, y1, x2: x2 + 5 * parallelIndex, y2, offset };
+    }
+    if (y1 === y2) {
+        return { x1, y1: y1 + 5 * parallelIndex, x2, y2: y2 + 5 * parallelIndex, offset };
+    }
+    return {
+        x1: x1 + 5 * Math.SQRT1_2 * parallelIndex,
+        y1: y1 + 5 * Math.SQRT1_2 * parallelIndex,
+        x2: x2 + 5 * Math.SQRT1_2 * parallelIndex,
+        y2: y2 + 5 * Math.SQRT1_2 * parallelIndex,
+        offset,
+    };
 };
 
 /**
