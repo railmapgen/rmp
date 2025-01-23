@@ -108,6 +108,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     </text>
                 )}
 
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <rect
                     id={`stn_core_${id}`}
                     fill="black"
@@ -122,6 +123,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
             </g>
 

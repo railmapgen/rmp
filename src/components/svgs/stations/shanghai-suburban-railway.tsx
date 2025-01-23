@@ -42,7 +42,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
             <g id={id}>
                 <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
                     <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#898989" />
-                    {/* A mask for the end of shanghai subsurban railway style. */}
+                    {/* A mask for the end of shanghai suburban railway style. */}
                     <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
                     <rect
                         x={-2 + 1.1675}
@@ -52,6 +52,8 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                         stroke="none"
                         fill="white"
                     />
+
+                    {/* Below is an overlay element that has all event hooks but can not be seen. */}
                     <rect
                         id={`stn_core_${id}`}
                         x="-2"
@@ -65,6 +67,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                         onPointerMove={onPointerMove}
                         onPointerUp={onPointerUp}
                         style={{ cursor: 'move' }}
+                        className="removeMe"
                     />
                 </g>
                 <g

@@ -72,6 +72,8 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 />
+
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <circle
                     id={`stn_core_${id}`}
                     cx="6"
@@ -86,6 +88,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
             </g>
             <g transform={`translate(${x + textX}, ${y + textY})`} textAnchor={textAnchor}>

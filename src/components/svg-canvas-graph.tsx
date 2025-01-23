@@ -208,7 +208,7 @@ const SvgCanvas = () => {
 
                 if (couldActiveBeConnected && couldIDBeConnected) {
                     const type = mode.slice(5) as LinePathType;
-                    const newLineId = `line_${nanoid(10)}`;
+                    const newLineId: LineId = `line_${nanoid(10)}`;
                     const [source, target] = [
                         active! as StnId | MiscNodeId,
                         id!.slice(prefix.length) as StnId | MiscNodeId,
@@ -227,6 +227,7 @@ const SvgCanvas = () => {
                         reconcileId: '',
                         parallelIndex,
                     });
+                    dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
             });

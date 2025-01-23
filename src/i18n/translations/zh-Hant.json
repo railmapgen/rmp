@@ -239,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "廣州地鐵換乘站（2024）",
-                    "anchorAt": "定位於",
-                    "anchorAtNone": "中心",
-                    "preferVertical": "垂直佈局（僅限2個換乘）"
+                    "columns": "站點列數",
+                    "topHeavy": "優先將更多站點放在上方",
+                    "anchorAt": "錨點位置",
+                    "anchorAtNone": "居中",
+                    "osiPosition": "出站轉車",
+                    "osiPositionNone": "無",
+                    "osiPositionLeft": "左側",
+                    "osiPositionRight": "右側"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",
@@ -560,7 +565,13 @@
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
-                "autoParallel": "自動將新段線設置為與現有線段平行"
+                "autoParallel": "自動將新段線設置為與現有線段平行",
+                "randomStationNames": {
+                    "title": "創建時將站名隨機化",
+                    "none": "無",
+                    "shmetro": "上海",
+                    "bjsubway": "北京"
+                }
             },
             "shortcuts": {
                 "title": "捷徑",
@@ -580,7 +591,7 @@
                 "redo": "重做。"
             },
             "procedures": {
-                "title": "过程",
+                "title": "過程",
                 "translate": {
                     "title": "轉化節點坐標",
                     "content": "將以下偏移加到所有節點的x和y上：",

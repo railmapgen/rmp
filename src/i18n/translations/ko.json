@@ -239,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "광저우 지하철 환승역 (2024)",
+                    "columns": "역 열 수",
+                    "topHeavy": "상단에 더 많은 역 우선 배치",
                     "anchorAt": "앵커 위치",
                     "anchorAtNone": "중앙",
-                    "preferVertical": "세로 레이아웃 (환승 2개만)"
+                    "osiPosition": "역을 나가 환승",
+                    "osiPositionNone": "없음",
+                    "osiPositionLeft": "왼쪽",
+                    "osiPositionRight": "오른쪽"
                 },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
@@ -560,7 +565,13 @@
             "preference": {
                 "title": "선호",
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
-                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다"
+                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
+                "randomStationNames": {
+                    "title": "생성 시 역 이름을 랜덤으로 설정",
+                    "none": "없음",
+                    "shmetro": "상하이",
+                    "bjsubway": "베이징"
+                }
             },
             "shortcuts": {
                 "title": "바로 가기",

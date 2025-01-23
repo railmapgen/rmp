@@ -58,7 +58,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
 
-        // rest graph with new data
+        // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
 
@@ -105,6 +105,8 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                 isClosable: true,
             });
         }
+        // clear the search params in rmt, otherwise it will be preserved and re-imported every time
+        rmgRuntime.updateAppMetadata({ hash: '' });
     };
 
     // A one time url match to see if it is a work share link and apply the work if needed.

@@ -8,7 +8,6 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
     const { id, path, styleAttrs, handlePointerDown } = props;
     const { color = defaultGuangdongIntercityRailwayAttributes.color } =
         styleAttrs ?? defaultGuangdongIntercityRailwayAttributes;
-    console.log(styleAttrs);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

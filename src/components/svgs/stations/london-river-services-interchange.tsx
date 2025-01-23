@@ -73,7 +73,9 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
                     <path d={D1} />
                     <path d={D2} />
                 </g>
-                <circle id={`stn_core_${id}`} r={1.5 * X_HEIGHT} fill="white" fillOpacity="0" />
+
+                {/* Below is an overlay element that has the id info but can not be seen. */}
+                <circle id={`stn_core_${id}`} r={1.5 * X_HEIGHT} fill="white" fillOpacity="0" className="removeMe" />
             </g>
             <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
                 <MultilineText

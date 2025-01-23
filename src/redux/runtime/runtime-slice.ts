@@ -1,8 +1,9 @@
 import { AlertStatus } from '@chakra-ui/react';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
-import { CityCode, Id, MiscNodeId, Polylines, RuntimeMode, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, MiscNodeId, Polylines, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
@@ -53,6 +54,10 @@ interface RuntimeState {
     };
     masterNodesCount: number;
     parallelLinesCount: number;
+    /**
+     * Cached random station names.
+     */
+    stationNames: { [key in StationCity]?: { [key in keyof Translation]: string }[] };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
     polylines: Polylines;
 }
@@ -74,6 +79,7 @@ const initialState: RuntimeState = {
     },
     masterNodesCount: 0,
     parallelLinesCount: 0,
+    stationNames: {},
     globalAlerts: {},
     polylines: {
         x: [],
@@ -89,9 +95,6 @@ const initialState: RuntimeState = {
 export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     dispatch(setRefreshNodes());
-
-    // no check on the first load
-    if (state.account.timeout) return;
 
     let masterNodesCount = 0;
     window.graph.forEachNode((_, attr) => {
@@ -117,9 +120,6 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
 export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
     dispatch(setRefreshEdges());
-
-    // no check on the first load
-    if (state.account.timeout) return;
 
     const parallelLinesCount = countParallelLines(window.graph);
     dispatch(setParallelLinesCount(parallelLinesCount));
@@ -191,6 +191,12 @@ const runtimeSlice = createSlice({
         setParallelLinesCount: (state, action: PayloadAction<number>) => {
             state.parallelLinesCount = action.payload;
         },
+        setStationNames: (
+            state,
+            action: PayloadAction<{ cityName: StationCity; names: { [key in keyof Translation]: string }[] }>
+        ) => {
+            state.stationNames[action.payload.cityName] = action.payload.names;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -239,6 +245,7 @@ export const {
     openPaletteAppClip,
     closePaletteAppClip,
     onPaletteAppClipEmit,
+    setStationNames,
     setGlobalAlert,
     closeGlobalAlert,
     setPolyLines,

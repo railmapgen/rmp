@@ -18,25 +18,20 @@ export interface AccountState {
     state: 'logged-out' | 'free' | 'subscriber' | 'expired';
     activeSubscriptions: ActiveSubscriptions;
     /**
-     * This timeout is used to reset the account state to 'logged-out' after a certain time.
-     * Without this, no matter user subscribed or not, the 'logged-out' state right after
-     * the initial load will show the proLimitExceed alert. This is not desired.
+     * Use this token to communicate with server.
+     * Must be up to date as it is updated on storage event in onLocalStorageChangeRMT.
+     * Undefined means not logged in.
      *
-     * So we first read the previous state from localstorage, and use it in the first few seconds
-     * before we get a reply from rmt. It is saved in localstorage `rmp__login_state`.
-     *
-     * If there is a reply from rmt, registerOnRMTTokenResponse will clear this timeout and
-     * state will be updated there.
-     * If there is no reply from rmt, this timeout will set the state to 'logged-out',
-     * making sure the subscription info saved in localstorage is not used forever.
+     * (Optional) If the subsequent request returns 401, call requestToken to refresh
+     * it on RMT side, and then retry the request.
      */
-    timeout: number | undefined;
+    token: string | undefined;
 }
 
 export const initialState: AccountState = {
     state: 'logged-out',
     activeSubscriptions: defaultActiveSubscriptions,
-    timeout: undefined,
+    token: undefined,
 };
 
 const accountSlice = createSlice({
@@ -49,11 +44,11 @@ const accountSlice = createSlice({
         setActiveSubscriptions: (state, action: PayloadAction<ActiveSubscriptions>) => {
             state.activeSubscriptions = action.payload;
         },
-        setLoginStateTimeout: (state, action: PayloadAction<number | undefined>) => {
-            state.timeout = action.payload;
+        setToken: (state, action: PayloadAction<string | undefined>) => {
+            state.token = action.payload;
         },
     },
 });
 
-export const { setState, setActiveSubscriptions, setLoginStateTimeout } = accountSlice.actions;
+export const { setState, setActiveSubscriptions, setToken } = accountSlice.actions;
 export default accountSlice.reducer;

@@ -48,7 +48,7 @@ export default function OpenActions() {
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
 
-        // rest graph with new data
+        // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
 

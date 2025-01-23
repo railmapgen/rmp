@@ -239,9 +239,14 @@
                 },
                 "gzmtrInt2024": {
                     "displayName": "广州地铁换乘站（2024）",
-                    "anchorAt": "定位于",
-                    "anchorAtNone": "中心",
-                    "preferVertical": "垂直布局（仅限2个换乘）"
+                    "columns": "站点列数",
+                    "topHeavy": "优先将更多站点放在上方",
+                    "anchorAt": "锚点位置",
+                    "anchorAtNone": "居中",
+                    "osiPosition": "出站换乘",
+                    "osiPositionNone": "无",
+                    "osiPositionLeft": "左侧",
+                    "osiPositionRight": "右侧"
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
@@ -560,7 +565,13 @@
             "preference": {
                 "title": "偏好",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
-                "autoParallel": "自动将新线段设置为与现有线段平行"
+                "autoParallel": "自动将新线段设置为与现有线段平行",
+                "randomStationNames": {
+                    "title": "创建时将站名随机化",
+                    "none": "无",
+                    "shmetro": "上海",
+                    "bjsubway": "北京"
+                }
             },
             "shortcuts": {
                 "title": "快捷键",

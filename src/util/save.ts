@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 42;
+export const CURRENT_VERSION = 43;
 
 /**
  * Load the tutorial.
@@ -559,5 +559,27 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             }
         });
         return JSON.stringify({ ...p, version: 42, graph: graph.export() });
+    },
+    42: param => {
+        // Bump save version to upgrade gzmtr-int-2024 new fields.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GzmtrInt2024)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                // default values
+                attr.columns = 2;
+                attr.topHeavy = false;
+                attr.osiPosition = 'none';
+                // legacy compatibility
+                if (attr.preferVertical && attr.transfer.flat().length === 2) attr.columns = 1;
+                // remove legacy fields
+                delete attr.preferVertical;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 43, graph: graph.export() });
     },
 };

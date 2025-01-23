@@ -111,6 +111,7 @@ const MTRStation = (props: StationComponentProps) => {
                                 strokeWidth="2"
                             />
                         ))}
+
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <path
                     id={`stn_core_${id}`}
@@ -122,6 +123,7 @@ const MTRStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
                 <g
                     transform={`translate(${textX}, ${textY})`}

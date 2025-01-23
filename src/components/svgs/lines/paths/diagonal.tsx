@@ -1,7 +1,7 @@
-import { Button, Text } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { LineId, MiscNodeId, StnId } from '../../../../constants/constants';
+import { LineId } from '../../../../constants/constants';
 import {
     LinePath,
     LinePathAttributes,
@@ -9,9 +9,9 @@ import {
     LinePathType,
     PathGenerator,
 } from '../../../../constants/lines';
-import { useRootDispatch, useRootSelector } from '../../../../redux';
+import { useRootDispatch } from '../../../../redux';
 import { setSelected } from '../../../../redux/runtime/runtime-slice';
-import { getBaseParallelLineID, makeParallelIndex } from '../../../../util/parallel';
+import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (

@@ -48,6 +48,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
             <g id={id} transform={`translate(${x}, ${y})`}>
                 <circle r={5} stroke="#2559a8" strokeWidth="1.5" fill="white" />
                 {interchange && <circle r={2.5} stroke="#2559a8" strokeWidth="1" fill="white" />}
+
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <circle
                     id={`stn_core_${id}`}
@@ -58,6 +59,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
                 <g
                     transform={`translate(${textX}, ${textY})`}
