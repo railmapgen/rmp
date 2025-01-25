@@ -29,7 +29,7 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
         [id, handlePointerUp]
     );
 
-    const fgColor = color[3] === MonoColour.black ? '#003670' : MonoColour.white;
+    const fgColor = color[3];
     const chX = isBranch ? 10 : NUM_WIDTH + (num > 9 ? 6.5 : 3);
     const chLetSp = isBranch ? -1 : 0;
     const enX = isBranch ? 11 : NUM_WIDTH + (num > 9 ? 7 : 3.5);
