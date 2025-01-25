@@ -19,8 +19,15 @@ import {
     setPolyLines,
     setSelected,
 } from '../redux/runtime/runtime-slice';
-import { getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
-import { getNearestPolyline, getPolylineDistance, getPolylines, isNodeSupportPolyline } from '../util/graph';
+import { getCanvasSize, getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import {
+    findNodesInRectangle,
+    getNearestPolyline,
+    getPolylineDistance,
+    getPolylines,
+    isNodeSupportPolyline,
+} from '../util/graph';
+import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import SvgLayer from './svg-layer';
@@ -58,6 +65,19 @@ const SvgCanvas = () => {
         theme,
         polylines,
     } = useRootSelector(state => state.runtime);
+    const size = useWindowSize();
+    // nodes in the current svg view
+    const { svgViewRange, nodesInViewRange } = React.useMemo(() => {
+        const { height, width } = getCanvasSize(size);
+        const svgViewRange: [number, number, number, number] = [
+            svgViewBoxMin.x,
+            svgViewBoxMin.y,
+            (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+            (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+        ];
+        const nodesInViewRange = findNodesInRectangle(graph.current, ...svgViewRange);
+        return { svgViewRange, nodesInViewRange };
+    }, [svgViewBoxMin, svgViewBoxZoom]);
 
     // the position of pointer down
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
@@ -107,28 +127,34 @@ const SvgCanvas = () => {
 
         if (mode === 'free' && active === node) {
             if (!e.altKey) {
-                // use polyline if alt key is not pressed
+                // start position (fromX, fromY)
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');
+                // cursor position (toX, toY)
                 const toX = fromX - ((offset.x - x) * svgViewBoxZoom) / 100;
                 const toY = fromY - ((offset.y - y) * svgViewBoxZoom) / 100;
-
+                // final position (newX, newY)
                 let newX = toX;
                 let newY = toY;
 
                 if (isNodeSupportPolyline(node, graph.current)) {
+                    // check if cursor left the polyline and remove it from activePolylines
                     if (activePolylines.length !== 0) {
-                        // remove the active polylines if the distance is larger than 5
                         setActivePolylines(activePolylines.filter(l => getPolylineDistance(l, toX, toY) <= 5));
                     }
+
+                    // find the nearest polyline to the cursor and add it to activePolylines
                     if (activePolylines.length < 2) {
-                        // add the nearest polylines if the distance is less than 3
                         const nowPolylines = activePolylines;
                         Object.values(polylines).forEach(p => {
-                            const { l, d } = getNearestPolyline(toX, toY, p, [
-                                ...selected,
-                                ...nowPolylines.map(ap => ap.node),
-                            ]);
+                            const { l, d } = getNearestPolyline(
+                                toX,
+                                toY,
+                                p,
+                                nodesInViewRange.filter(
+                                    node => !selected.has(node) && !nowPolylines.some(ap => ap.node === node)
+                                )
+                            );
                             const flag =
                                 nowPolylines.length === 0 || !nowPolylines.some(ap => ap.a === l.a && ap.b === l.b);
                             if (d < 3 && nowPolylines.length < 2 && flag) {
@@ -138,6 +164,7 @@ const SvgCanvas = () => {
                         setActivePolylines(nowPolylines);
                     }
 
+                    // calculate the final position based on the activePolylines
                     if (activePolylines.length === 1) {
                         const l = activePolylines[0];
                         if (l.a == 0) {
@@ -329,14 +356,15 @@ const SvgCanvas = () => {
     const SingleColor = singleColor.component;
 
     const getPolylinesPath = (p: Polyline): [number, number, number, number] => {
+        const [xMin, yMin, xMax, yMax] = svgViewRange;
         if (p.a === 0) {
-            return [-10000, 10000, -p.c / p.b, -p.c / p.b];
+            return [xMin, xMax, -p.c / p.b, -p.c / p.b];
         } else if (p.b === 0) {
-            return [-p.c / p.a, -p.c / p.a, -10000, 10000];
+            return [-p.c / p.a, -p.c / p.a, yMin, yMax];
         } else {
             const k = -p.a / p.b;
             const b = -p.c / p.b;
-            return [-10000, 10000, k * -10000 + b, k * 10000 + b];
+            return [-xMin, xMax, k * -xMin + b, k * xMax + b];
         }
     };
 
@@ -367,9 +395,9 @@ const SvgCanvas = () => {
                 />
             )}
             {activePolylines.length !== 0 &&
-                activePolylines.map((p, i) => (
+                activePolylines.map(p => (
                     <path
-                        key={`line_polyline_${i}`}
+                        key={`line_polyline_${p.a}_${p.b}_${p.c}_${p.node}`}
                         d={linePaths[LinePathType.Simple].generatePath(
                             ...getPolylinesPath(p),
                             linePaths[LinePathType.Simple].defaultAttrs

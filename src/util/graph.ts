@@ -151,6 +151,12 @@ export const getPolylineDistance = (line: Polyline, x: number, y: number) => {
     return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
 };
 
+/**
+ * Find the nearest polyline to the point (x, y) in the polylines.
+ * The nearest polyline is the one which minimizes the sum of lineDis and pointDis.
+ * - lineDis: the distance from the point (x, y) to the polyline.
+ * - pointDis: the distance from the point (x, y) to the node of the polyline (l.node).
+ */
 export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], nodes: Id[]) => {
     const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
         Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
@@ -159,7 +165,7 @@ export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], 
         retDistance = Infinity,
         minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
     polylines
-        .filter(l => !nodes.includes(l.node)) //  && pointDistance(x, y, l.x, l.y) < 100
+        .filter(l => nodes.includes(l.node))
         .forEach(line => {
             const lineDis = getPolylineDistance(line, x, y);
             const pointDis = pointDistance(x, y, line.x, line.y);
