@@ -78,8 +78,8 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         }
     }, [ref.current, transferAll.length, columns, topHeavy, anchorAt]);
     const iconBBox = {
-        x1: borderBox?.x ?? 0 + translate[0],
-        y1: borderBox?.y ?? 0 + translate[1],
+        x1: (borderBox?.x ?? 0) + translate[0],
+        y1: (borderBox?.y ?? 0) + translate[1],
         x2: (borderBox?.x ?? 0) + (borderBox?.width ?? 0) + translate[0],
         y2: (borderBox?.y ?? 0) + (borderBox?.height ?? 0) + translate[1],
     };
