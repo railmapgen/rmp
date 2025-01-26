@@ -25,7 +25,10 @@ export default function StationTypeSection() {
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, saveGraph]);
 
-    const { selected } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        refresh: { nodes: refreshNodes },
+    } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
@@ -33,7 +36,13 @@ export default function StationTypeSection() {
     const cancelRef = React.useRef(null);
     const [newType, setNewType] = React.useState<StationType | undefined>(undefined);
 
-    const currentStationType = graph.current.getNodeAttribute(selectedFirst, 'type') as StationType;
+    const [currentStationType, setCurrentStationType] = React.useState<StationType>(StationType.ShmetroBasic);
+    React.useEffect(() => {
+        if (selectedFirst?.startsWith('stn')) {
+            const type = graph.current.getNodeAttribute(selectedFirst, 'type') as StationType;
+            setCurrentStationType(type);
+        }
+    }, [refreshNodes, selected]);
     // type options for stations and others
     const availableStationOptions = Object.fromEntries(
         Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
