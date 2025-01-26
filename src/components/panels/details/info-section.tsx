@@ -3,6 +3,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MiscNodeId, StnId } from '../../../constants/constants';
+import { LinePathType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
@@ -82,11 +83,12 @@ export default function InfoSection() {
         });
         if (graph.current.hasEdge(selectedFirst)) {
             const attr = graph.current.getEdgeAttributes(selectedFirst);
-            const parallelIndex = attr.parallelIndex;
+            const { parallelIndex, type } = attr;
             const maximumParallelLines = activeSubscriptions.RMP_CLOUD
                 ? MAX_PARALLEL_LINES_PRO
                 : MAX_PARALLEL_LINES_FREE;
-            const isParallelSwitchDisabled = parallelLinesCount > maximumParallelLines && parallelIndex < 0;
+            const isParallelSwitchDisabled =
+                (parallelLinesCount > maximumParallelLines && parallelIndex < 0) || type === LinePathType.Simple;
             const isParallelInputDisabled = parallelLinesCount > maximumParallelLines && parallelIndex >= 0;
             fields.push({
                 type: 'switch',
