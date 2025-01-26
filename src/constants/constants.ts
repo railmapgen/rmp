@@ -99,16 +99,6 @@ export interface Polyline {
 }
 
 /**
- * Polylines in different directions.
- */
-export interface Polylines {
-    x: Polyline[]; // vertical lines
-    y: Polyline[]; // horizontal lines
-    p: Polyline[]; // lines with a 45-degree angle of inclination (p for positive slope)
-    n: Polyline[]; // lines with a 135-degree angle of inclination (n for negative slope)
-}
-
-/**
  * Stations and lines may be in different displaying format.
  * E.g. Station's icon of Rail map and platform are different in Shanghai metro.
  */

@@ -9,7 +9,6 @@ import {
     NodeAttributes,
     NodeType,
     Polyline,
-    Polylines,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -113,41 +112,41 @@ export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, Edg
     return newList;
 };
 
+/**
+ * Supported: station, virtual node, master node (station only)
+ */
 export const isNodeSupportPolyline = (
     node: StnId | MiscNodeId,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
-) =>
+): boolean =>
     node.startsWith('stn') ||
     (node.startsWith('misc_node') && graph.getNodeAttribute(node, 'type') === MiscNodeType.Virtual) ||
     (node.startsWith('misc_node') &&
         graph.getNodeAttribute(node, 'type') === MiscNodeType.Master &&
         graph.getNodeAttributes(node)[MiscNodeType.Master]!.nodeType === 'Station');
 
-export const getPolylines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Polylines => {
-    const polylinesX: Polyline[] = [];
-    const polylinesY: Polyline[] = [];
-    const polylinesP: Polyline[] = [];
-    const polylinesN: Polyline[] = [];
-
-    graph
-        .filterNodes(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
+/**
+ * Get polylines in the range of nodes
+ */
+export const getPolylines = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodes: (StnId | MiscNodeId)[]
+): Polyline[] => {
+    const polylines: Polyline[] = [];
+    nodes
+        .filter(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
         .forEach(node => {
             const x = graph.getNodeAttribute(node, 'x');
             const y = graph.getNodeAttribute(node, 'y');
-            polylinesX.push({ a: 1, b: 0, c: -x, node, x, y } as Polyline);
-            polylinesY.push({ a: 0, b: 1, c: -y, node, x, y } as Polyline);
-            polylinesP.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
-            polylinesN.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
+            polylines.push({ a: 1, b: 0, c: -x, node, x, y } as Polyline);
+            polylines.push({ a: 0, b: 1, c: -y, node, x, y } as Polyline);
+            polylines.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
+            polylines.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
         });
-    return {
-        x: polylinesX,
-        y: polylinesY,
-        p: polylinesP,
-        n: polylinesN,
-    };
+    return polylines;
 };
 
-export const getPolylineDistance = (line: Polyline, x: number, y: number) => {
+export const getPolylineDistance = (line: Polyline, x: number, y: number): number => {
     return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
 };
 
@@ -157,13 +156,18 @@ export const getPolylineDistance = (line: Polyline, x: number, y: number) => {
  * - lineDis: the distance from the point (x, y) to the polyline.
  * - pointDis: the distance from the point (x, y) to the node of the polyline (l.node).
  */
-export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], nodes: Id[]) => {
+export const getNearestPolyline = (
+    x: number,
+    y: number,
+    polylines: Polyline[],
+    nodes: (StnId | MiscNodeId)[]
+): { l: Polyline; d: number } => {
     const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
         Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 
     let minDistance = Infinity,
         retDistance = Infinity,
-        minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
+        retLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
     polylines
         .filter(l => nodes.includes(l.node))
         .forEach(line => {
@@ -172,8 +176,8 @@ export const getNearestPolyline = (x: number, y: number, polylines: Polyline[], 
             if (lineDis + pointDis < minDistance) {
                 minDistance = lineDis + pointDis;
                 retDistance = lineDis;
-                minLine = line;
+                retLine = line;
             }
         });
-    return { l: minLine, d: retDistance };
+    return { l: retLine, d: retDistance };
 };

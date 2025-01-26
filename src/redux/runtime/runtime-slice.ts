@@ -3,7 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
-import { CityCode, Id, MiscNodeId, Polylines, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, MiscNodeId, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
@@ -59,7 +59,6 @@ interface RuntimeState {
      */
     stationNames: { [key in StationCity]?: { [key in keyof Translation]: string }[] };
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
-    polylines: Polylines;
 }
 
 const initialState: RuntimeState = {
@@ -81,12 +80,6 @@ const initialState: RuntimeState = {
     parallelLinesCount: 0,
     stationNames: {},
     globalAlerts: {},
-    polylines: {
-        x: [],
-        y: [],
-        p: [],
-        n: [],
-    },
 };
 
 /**
@@ -212,9 +205,6 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
-        setPolyLines: (state, action: PayloadAction<Polylines>) => {
-            state.polylines = action.payload;
-        },
     },
     extraReducers: builder => {
         builder
@@ -248,6 +238,5 @@ export const {
     setStationNames,
     setGlobalAlert,
     closeGlobalAlert,
-    setPolyLines,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

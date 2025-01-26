@@ -16,7 +16,6 @@ import {
     removeSelected,
     setActive,
     setMode,
-    setPolyLines,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getCanvasSize, getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
@@ -63,27 +62,21 @@ const SvgCanvas = () => {
         active,
         keepLastPath,
         theme,
-        polylines,
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
+    const { height, width } = getCanvasSize(size);
+    // the range of the current svg view
+    const [svgViewRange, setSvgViewRange] = React.useState<[number, number, number, number]>([0, 0, 0, 0]);
     // nodes in the current svg view
-    const { svgViewRange, nodesInViewRange } = React.useMemo(() => {
-        const { height, width } = getCanvasSize(size);
-        const svgViewRange: [number, number, number, number] = [
-            svgViewBoxMin.x,
-            svgViewBoxMin.y,
-            (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-            (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-        ];
-        const nodesInViewRange = findNodesInRectangle(graph.current, ...svgViewRange);
-        return { svgViewRange, nodesInViewRange };
-    }, [svgViewBoxMin, svgViewBoxZoom]);
+    const [nodesInViewRange, setNodesInViewRange] = React.useState<(StnId | MiscNodeId)[]>([]);
 
     // the position of pointer down
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
 
+    // all polylines in the current view
+    const [polylines, setPolyLines] = React.useState<Polyline[]>([]);
     // the active polylines for the current dragging node (length <= 2)
     const [activePolylines, setActivePolylines] = React.useState<Polyline[]>([]);
 
@@ -119,7 +112,17 @@ const SvgCanvas = () => {
                 dispatch(addSelected(node));
             }
         }
-        dispatch(setPolyLines(getPolylines(graph.current)));
+
+        const svgViewRange: [number, number, number, number] = [
+            svgViewBoxMin.x,
+            svgViewBoxMin.y,
+            (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+            (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+        ];
+        const nodesInViewRange = findNodesInRectangle(graph.current, ...svgViewRange);
+        setSvgViewRange(svgViewRange);
+        setNodesInViewRange(nodesInViewRange);
+        setPolyLines(getPolylines(graph.current, nodesInViewRange));
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -138,35 +141,35 @@ const SvgCanvas = () => {
                 let newY = toY;
 
                 if (isNodeSupportPolyline(node, graph.current)) {
-                    // check if cursor left the polyline and remove it from activePolylines
-                    if (activePolylines.length !== 0) {
-                        setActivePolylines(activePolylines.filter(l => getPolylineDistance(l, toX, toY) <= 5));
+                    let nowPolylines = activePolylines;
+
+                    // check if cursor left the polyline and remove it from active polylines
+                    if (nowPolylines.length !== 0) {
+                        nowPolylines = nowPolylines.filter(l => getPolylineDistance(l, toX, toY) <= 6);
                     }
 
-                    // find the nearest polyline to the cursor and add it to activePolylines
-                    if (activePolylines.length < 2) {
-                        const nowPolylines = activePolylines;
-                        Object.values(polylines).forEach(p => {
-                            const { l, d } = getNearestPolyline(
-                                toX,
-                                toY,
-                                p,
-                                nodesInViewRange.filter(
-                                    node => !selected.has(node) && !nowPolylines.some(ap => ap.node === node)
-                                )
-                            );
-                            const flag =
-                                nowPolylines.length === 0 || !nowPolylines.some(ap => ap.a === l.a && ap.b === l.b);
-                            if (d < 3 && nowPolylines.length < 2 && flag) {
-                                nowPolylines.push(l);
-                            }
-                        });
-                        setActivePolylines(nowPolylines);
+                    // find the nearest polyline to the cursor and add it to active polylines
+                    if (nowPolylines.length < 2) {
+                        const { l, d } = getNearestPolyline(
+                            toX,
+                            toY,
+                            polylines,
+                            nodesInViewRange.filter(
+                                node => !selected.has(node) && !nowPolylines.some(ap => ap.node === node)
+                            )
+                        );
+                        // two parallel lines cannot intersect at a point
+                        const flag =
+                            nowPolylines.length === 0 || !nowPolylines.some(ap => ap.a === l.a && ap.b === l.b);
+                        // Two non-parallel lines intersect at a point
+                        if (d < 3 && nowPolylines.length < 2 && flag) {
+                            nowPolylines.push(l);
+                        }
                     }
 
                     // calculate the final position based on the activePolylines
-                    if (activePolylines.length === 1) {
-                        const l = activePolylines[0];
+                    if (nowPolylines.length === 1) {
+                        const l = nowPolylines[0];
                         if (l.a == 0) {
                             newY = -l.c / l.b;
                         } else if (l.b == 0) {
@@ -176,15 +179,16 @@ const SvgCanvas = () => {
                             const b = -l.c / l.b;
                             newY = k * newX + b;
                         }
-                    } else if (activePolylines.length === 2) {
-                        const l1 = activePolylines[0];
-                        const l2 = activePolylines[1];
+                    } else if (nowPolylines.length === 2) {
+                        const l1 = nowPolylines[0];
+                        const l2 = nowPolylines[1];
                         const determinant = l1.a * l2.b - l2.a * l1.b;
                         if (determinant !== 0) {
                             newX = -(l1.c * l2.b - l2.c * l1.b) / determinant;
                             newY = -(l1.a * l2.c - l2.a * l1.c) / determinant;
                         }
                     }
+                    setActivePolylines(nowPolylines);
                 }
                 const offsetX = newX - fromX;
                 const offsetY = newY - fromY;
