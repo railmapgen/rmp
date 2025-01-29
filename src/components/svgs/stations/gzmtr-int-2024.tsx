@@ -403,7 +403,7 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
     ];
 
-    const maximumTransfers = [5, 5, 0];
+    const maximumTransfers = [5, 0, 0];
     const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
@@ -450,8 +450,6 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         }
     };
 
-    const handleAddInterchangeGroup = () => handleAdd(transfer.length)(defaultGZMTRTransferInfo);
-
     return (
         <>
             <RmgFields fields={fields} />
@@ -476,18 +474,6 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
                             />
                         </React.Fragment>
                     ))}
-
-                    {maximumTransfers[transfer.length] > 0 && (
-                        <Button
-                            size="xs"
-                            variant="ghost"
-                            alignSelf="flex-end"
-                            leftIcon={<MdAdd />}
-                            onClick={handleAddInterchangeGroup}
-                        >
-                            {t('panel.details.stations.interchange.addGroup')}
-                        </Button>
-                    )}
                 </VStack>
             </RmgLabel>
         </>
