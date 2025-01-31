@@ -67,17 +67,18 @@ const SvgCanvas = () => {
     const { height, width } = getCanvasSize(size);
     // the range of the current svg view
     const [svgViewRange, setSvgViewRange] = React.useState<[number, number, number, number]>([0, 0, 0, 0]);
-    // nodes in the current svg view
-    const [nodesInViewRange, setNodesInViewRange] = React.useState<(StnId | MiscNodeId)[]>([]);
 
     // the position of pointer down
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
 
-    // all polylines in the current view
+    // all polylines in the current view, pre-calculated for performance in pointer down
     const [polylines, setPolyLines] = React.useState<Polyline[]>([]);
-    // the active polylines for the current dragging node (length <= 2)
+    // nodes in the current svg view, pre-calculated for performance in pointer down
+    const [nodesInViewRange, setNodesInViewRange] = React.useState<(StnId | MiscNodeId)[]>([]);
+    // the active (drawn) polylines for the current dragging node (length <= 2)
+    // it is only valid in one dragging operation and will be reset in pointer up
     const [activePolylines, setActivePolylines] = React.useState<Polyline[]>([]);
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -113,6 +114,8 @@ const SvgCanvas = () => {
             }
         }
 
+        // calculate all possible polylines in the current view
+        // note only the nearest 2 of them will be drawn
         const svgViewRange: [number, number, number, number] = [
             svgViewBoxMin.x,
             svgViewBoxMin.y,
@@ -130,17 +133,19 @@ const SvgCanvas = () => {
 
         if (mode === 'free' && active === node) {
             if (!e.altKey) {
-                // start position (fromX, fromY)
+                // node start position (fromX, fromY)
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');
-                // cursor position (toX, toY)
+                // current cursor position (toX, toY)
                 const toX = fromX - ((offset.x - x) * svgViewBoxZoom) / 100;
                 const toY = fromY - ((offset.y - y) * svgViewBoxZoom) / 100;
-                // final position (newX, newY)
+                // node final position (newX, newY)
                 let newX = toX;
                 let newY = toY;
 
                 if (isNodeSupportPolyline(node, graph.current)) {
+                    // previous move operation may have active polylines
+                    // use and check if they are still valid, if not, remove and recalculate
                     let nowPolylines = activePolylines;
 
                     // check if cursor left the polyline and remove it from active polylines
@@ -190,6 +195,8 @@ const SvgCanvas = () => {
                     }
                     setActivePolylines(nowPolylines);
                 }
+
+                // update all the selected nodes' position based on the offset of the current moving node
                 const offsetX = newX - fromX;
                 const offsetY = newY - fromY;
                 selected.forEach(s => {
@@ -202,6 +209,7 @@ const SvgCanvas = () => {
                     }
                 });
             } else {
+                // legacy round position to nearest 5 mode
                 setActivePolylines([]);
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {

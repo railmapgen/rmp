@@ -138,10 +138,10 @@ export const getPolylines = (
         .forEach(node => {
             const x = graph.getNodeAttribute(node, 'x');
             const y = graph.getNodeAttribute(node, 'y');
-            polylines.push({ a: 1, b: 0, c: -x, node, x, y } as Polyline);
-            polylines.push({ a: 0, b: 1, c: -y, node, x, y } as Polyline);
-            polylines.push({ a: 1, b: -1, c: -x + y, node, x, y } as Polyline);
-            polylines.push({ a: 1, b: 1, c: -x - y, node, x, y } as Polyline);
+            polylines.push({ a: 1, b: 0, c: -x, node, x, y });
+            polylines.push({ a: 0, b: 1, c: -y, node, x, y });
+            polylines.push({ a: 1, b: -1, c: -x + y, node, x, y });
+            polylines.push({ a: 1, b: 1, c: -x - y, node, x, y });
         });
     return polylines;
 };
