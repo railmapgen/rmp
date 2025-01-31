@@ -1,6 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, SnapLine } from '../constants/constants';
 import { Size } from './hooks';
 
 export const getMousePosition = (e: React.MouseEvent) => {
@@ -78,6 +78,22 @@ export const getViewpointSize = (
     xMax: (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
     yMax: (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
 });
+
+export const makeSnapLinesPath = (
+    p: SnapLine,
+    viewpointSize: ReturnType<typeof getViewpointSize>
+): [number, number, number, number] => {
+    const { xMin, yMin, xMax, yMax } = viewpointSize;
+    if (p.a === 0) {
+        return [xMin, xMax, -p.c / p.b, -p.c / p.b];
+    } else if (p.b === 0) {
+        return [-p.c / p.a, -p.c / p.a, yMin, yMax];
+    } else {
+        const k = -p.a / p.b;
+        const b = -p.c / p.b;
+        return [-xMin, xMax, k * -xMin + b, k * xMax + b];
+    }
+};
 
 /**
  * Calculate the bounding box of the current element, with respect to its own transformation attribute.

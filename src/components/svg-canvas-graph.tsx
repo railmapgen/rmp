@@ -29,6 +29,7 @@ import {
     getCanvasSize,
     getMousePosition,
     getViewpointSize,
+    makeSnapLinesPath,
     pointerPosToSVGCoord,
     roundToNearestN,
 } from '../util/helpers';
@@ -368,19 +369,6 @@ const SvgCanvas = () => {
 
     const SingleColor = singleColor.component;
 
-    const makeSnapLinesPath = (p: SnapLine): [number, number, number, number] => {
-        const { xMin, yMin, xMax, yMax } = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
-        if (p.a === 0) {
-            return [xMin, xMax, -p.c / p.b, -p.c / p.b];
-        } else if (p.b === 0) {
-            return [-p.c / p.a, -p.c / p.a, yMin, yMax];
-        } else {
-            const k = -p.a / p.b;
-            const b = -p.c / p.b;
-            return [-xMin, xMax, k * -xMin + b, k * xMax + b];
-        }
-    };
-
     return (
         <>
             <SvgLayer
@@ -412,7 +400,7 @@ const SvgCanvas = () => {
                     <path
                         key={`line_polyline_${p.a}_${p.b}_${p.c}_${p.node}`}
                         d={linePaths[LinePathType.Simple].generatePath(
-                            ...makeSnapLinesPath(p),
+                            ...makeSnapLinesPath(p, getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height)),
                             linePaths[LinePathType.Simple].defaultAttrs
                         )}
                         stroke="cyan"
