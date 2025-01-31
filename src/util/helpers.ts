@@ -91,7 +91,7 @@ export const makeSnapLinesPath = (
     } else {
         const k = -p.a / p.b;
         const b = -p.c / p.b;
-        return [-xMin, xMax, k * -xMin + b, k * xMax + b];
+        return [xMin, xMax, k * xMin + b, k * xMax + b];
     }
 };
 
