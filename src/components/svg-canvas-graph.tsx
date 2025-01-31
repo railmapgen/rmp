@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, Polyline, StnId } from '../constants/constants';
+import { Events, LineId, MiscNodeId, SnapLine, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -77,13 +77,13 @@ const SvgCanvas = () => {
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
 
-    // all polylines in the current view, pre-calculated for performance in pointer down
-    const [polylines, setPolyLines] = React.useState<Polyline[]>([]);
+    // all possible snap lines in the current view, pre-calculated for performance in pointer down
+    const [snapLines, setPolyLines] = React.useState<SnapLine[]>([]);
     // nodes in the current svg view, pre-calculated for performance in pointer down
     const [nodesInViewRange, setNodesInViewRange] = React.useState<(StnId | MiscNodeId)[]>([]);
-    // the active (drawn) polylines for the current dragging node (length <= 2)
+    // the active (drawn) snap lines for the current dragging node (length <= 2)
     // it is only valid in one dragging operation and will be reset in pointer up
-    const [activePolylines, setActivePolylines] = React.useState<Polyline[]>([]);
+    const [activeSnapLines, setActiveSnapLines] = React.useState<SnapLine[]>([]);
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -94,7 +94,7 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
         el.setPointerCapture(e.pointerId);
 
-        setActivePolylines([]);
+        setActiveSnapLines([]);
         setOffset({ x, y });
 
         dispatch(setActive(node));
@@ -147,7 +147,7 @@ const SvgCanvas = () => {
                 if (isNodeSupportPolyline(node, graph.current)) {
                     // previous move operation may have active polylines
                     // use and check if they are still valid, if not, remove and recalculate
-                    let nowPolylines = activePolylines;
+                    let nowPolylines = activeSnapLines;
 
                     // check if cursor left the polyline and remove it from active polylines
                     if (nowPolylines.length !== 0) {
@@ -159,7 +159,7 @@ const SvgCanvas = () => {
                         const { l, d } = getNearestPolyline(
                             toX,
                             toY,
-                            polylines,
+                            snapLines,
                             nodesInViewRange.filter(
                                 node => !selected.has(node) && !nowPolylines.some(ap => ap.node === node)
                             )
@@ -194,7 +194,7 @@ const SvgCanvas = () => {
                             newY = -(l1.a * l2.c - l2.a * l1.c) / determinant;
                         }
                     }
-                    setActivePolylines(nowPolylines);
+                    setActiveSnapLines(nowPolylines);
                 }
 
                 // update all the selected nodes' position based on the offset of the current moving node
@@ -211,7 +211,7 @@ const SvgCanvas = () => {
                 });
             } else {
                 // legacy round position to nearest 5 mode
-                setActivePolylines([]);
+                setActiveSnapLines([]);
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
@@ -288,7 +288,7 @@ const SvgCanvas = () => {
                 // no-op for a new node is just placed, already added to selected in pointer down
             }
         }
-        setActivePolylines([]);
+        setActiveSnapLines([]);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
@@ -368,7 +368,7 @@ const SvgCanvas = () => {
 
     const SingleColor = singleColor.component;
 
-    const getPolylinesPath = (p: Polyline): [number, number, number, number] => {
+    const makeSnapLinesPath = (p: SnapLine): [number, number, number, number] => {
         const { xMin, yMin, xMax, yMax } = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
         if (p.a === 0) {
             return [xMin, xMax, -p.c / p.b, -p.c / p.b];
@@ -407,12 +407,12 @@ const SvgCanvas = () => {
                     handlePointerDown={() => {}} // no use
                 />
             )}
-            {activePolylines.length !== 0 &&
-                activePolylines.map(p => (
+            {activeSnapLines.length !== 0 &&
+                activeSnapLines.map(p => (
                     <path
                         key={`line_polyline_${p.a}_${p.b}_${p.c}_${p.node}`}
                         d={linePaths[LinePathType.Simple].generatePath(
-                            ...getPolylinesPath(p),
+                            ...makeSnapLinesPath(p),
                             linePaths[LinePathType.Simple].defaultAttrs
                         )}
                         stroke="cyan"

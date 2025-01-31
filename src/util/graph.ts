@@ -8,7 +8,7 @@ import {
     MiscNodeId,
     NodeAttributes,
     NodeType,
-    Polyline,
+    SnapLine,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -131,8 +131,8 @@ export const isNodeSupportPolyline = (
 export const getPolylines = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     nodes: (StnId | MiscNodeId)[]
-): Polyline[] => {
-    const polylines: Polyline[] = [];
+): SnapLine[] => {
+    const polylines: SnapLine[] = [];
     nodes
         .filter(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
         .forEach(node => {
@@ -146,7 +146,7 @@ export const getPolylines = (
     return polylines;
 };
 
-export const getPolylineDistance = (line: Polyline, x: number, y: number): number => {
+export const getPolylineDistance = (line: SnapLine, x: number, y: number): number => {
     return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
 };
 
@@ -159,15 +159,15 @@ export const getPolylineDistance = (line: Polyline, x: number, y: number): numbe
 export const getNearestPolyline = (
     x: number,
     y: number,
-    polylines: Polyline[],
+    polylines: SnapLine[],
     nodes: (StnId | MiscNodeId)[]
-): { l: Polyline; d: number } => {
+): { l: SnapLine; d: number } => {
     const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
         Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 
     let minDistance = Infinity,
         retDistance = Infinity,
-        retLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as Polyline;
+        retLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as SnapLine;
     polylines
         .filter(l => nodes.includes(l.node))
         .forEach(line => {
