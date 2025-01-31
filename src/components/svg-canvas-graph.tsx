@@ -73,10 +73,10 @@ const SvgCanvas = () => {
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
-    // the position of pointer down
-    const [offset, setOffset] = React.useState({ x: 0, y: 0 });
-    // the position of pointer move
-    const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
+    // the position of pointer down, defined by the pointer down event, undefined if on pointer up
+    const [pointerPosition, setPointerPosition] = React.useState<{ x: number; y: number }>();
+    // the offset between the pointer down and the current pointer position
+    const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
 
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
@@ -87,15 +87,23 @@ const SvgCanvas = () => {
     const [activeSnapLines, setActiveSnapLines] = React.useState<SnapLine[]>([]);
     // calculate all possible snap lines in the current view
     // note only the nearest 2 of them will be drawn
-    React.useEffect(() => {
-        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
-        const nodesInViewRange = findNodesInRectangle(
-            graph.current,
-            ...(Object.values(svgViewRange) as [number, number, number, number])
-        );
-        setNodesInViewRange(nodesInViewRange);
-        setSnapLines(getSnapLines(graph.current, nodesInViewRange));
-    }, [refreshNodes, svgViewBoxMin, svgViewBoxZoom, width, height, offset]);
+    React.useEffect(
+        () => {
+            if (!pointerPosition) return;
+            console.log('refresh snap lines');
+            const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
+            const nodesInViewRange = findNodesInRectangle(
+                graph.current,
+                ...(Object.values(svgViewRange) as [number, number, number, number])
+            );
+            setNodesInViewRange(nodesInViewRange);
+            setSnapLines(getSnapLines(graph.current, nodesInViewRange));
+        },
+        // the dependency array is carefully selected to prevent unnecessary recalculation
+        // it will only be calculated on the pointer down event, or every times the view box
+        // changes when the pointer is down
+        [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition]
+    );
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -107,7 +115,7 @@ const SvgCanvas = () => {
         el.setPointerCapture(e.pointerId);
 
         setActiveSnapLines([]);
-        setOffset({ x, y });
+        setPointerPosition({ x, y });
 
         dispatch(setActive(node));
 
@@ -139,9 +147,12 @@ const SvgCanvas = () => {
                 // node start position (fromX, fromY)
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');
-                // current cursor position (toX, toY)
-                const toX = fromX - ((offset.x - x) * svgViewBoxZoom) / 100;
-                const toY = fromY - ((offset.y - y) * svgViewBoxZoom) / 100;
+                // current pointer position (toX, toY)
+                // this is similar to the pointer offset but different to line_create_in_progress
+                // the final position is calculated based on the offset and the snap lines,
+                // so we need to save here for further calculation instead of directly using it
+                const toX = fromX - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100;
+                const toY = fromY - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100;
                 // node final position (newX, newY)
                 let newX = toX;
                 let newY = toY;
@@ -218,8 +229,8 @@ const SvgCanvas = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
                             ...attr,
-                            x: roundToNearestN(attr.x - ((offset.x - x) * svgViewBoxZoom) / 100, 5),
-                            y: roundToNearestN(attr.y - ((offset.y - y) * svgViewBoxZoom) / 100, 5),
+                            x: roundToNearestN(attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, 5),
+                            y: roundToNearestN(attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, 5),
                         }));
                     }
                 });
@@ -227,9 +238,9 @@ const SvgCanvas = () => {
             dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line')) {
-            setMovingPosition({
-                x: ((offset.x - x) * svgViewBoxZoom) / 100,
-                y: ((offset.y - y) * svgViewBoxZoom) / 100,
+            setPointerOffset({
+                dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
+                dy: ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
             });
         }
     });
@@ -280,7 +291,7 @@ const SvgCanvas = () => {
                 // the node is pointed down before
                 // check the offset and if it's not 0, it must be a click not move
                 const { x, y } = getMousePosition(e);
-                if (offset.x - x === 0 && offset.y - y === 0) {
+                if (pointerPosition!.x - x === 0 && pointerPosition!.y - y === 0) {
                     // no-op for click as the node is already added in pointer down
                 } else {
                     // its a moving node operation, save the final coordinate
@@ -291,6 +302,7 @@ const SvgCanvas = () => {
             }
         }
         setActiveSnapLines([]);
+        setPointerPosition(undefined);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
@@ -385,9 +397,9 @@ const SvgCanvas = () => {
                     type={mode.slice(5) as LinePathType}
                     path={linePaths[mode.slice(5) as LinePathType].generatePath(
                         graph.current.getNodeAttribute(active, 'x'),
-                        graph.current.getNodeAttribute(active, 'x') - movingPosition.x,
+                        graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
                         graph.current.getNodeAttribute(active, 'y'),
-                        graph.current.getNodeAttribute(active, 'y') - movingPosition.y,
+                        graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                         // @ts-expect-error
                         linePaths[mode.slice(5) as LinePathType].defaultAttrs
                     )}
