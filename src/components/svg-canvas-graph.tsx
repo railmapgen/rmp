@@ -20,10 +20,10 @@ import {
 } from '../redux/runtime/runtime-slice';
 import {
     findNodesInRectangle,
-    getNearestPolyline,
-    getPolylineDistance,
-    getPolylines,
-    isNodeSupportPolyline,
+    getNearestSnapLine,
+    getSnapLineDistance,
+    getSnapLines,
+    isNodeSupportSnapLine,
 } from '../util/graph';
 import {
     getCanvasSize,
@@ -78,13 +78,24 @@ const SvgCanvas = () => {
     // the position of pointer move
     const [movingPosition, setMovingPosition] = React.useState({ x: 0, y: 0 });
 
-    // all possible snap lines in the current view, pre-calculated for performance in pointer down
-    const [snapLines, setPolyLines] = React.useState<SnapLine[]>([]);
-    // nodes in the current svg view, pre-calculated for performance in pointer down
+    // all possible snap lines in the current view, pre-calculated for performance
+    const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
+    // nodes in the current svg view, pre-calculated for performance
     const [nodesInViewRange, setNodesInViewRange] = React.useState<(StnId | MiscNodeId)[]>([]);
     // the active (drawn) snap lines for the current dragging node (length <= 2)
     // it is only valid in one dragging operation and will be reset in pointer up
     const [activeSnapLines, setActiveSnapLines] = React.useState<SnapLine[]>([]);
+    // calculate all possible snap lines in the current view
+    // note only the nearest 2 of them will be drawn
+    React.useEffect(() => {
+        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
+        const nodesInViewRange = findNodesInRectangle(
+            graph.current,
+            ...(Object.values(svgViewRange) as [number, number, number, number])
+        );
+        setNodesInViewRange(nodesInViewRange);
+        setSnapLines(getSnapLines(graph.current, nodesInViewRange));
+    }, [refreshNodes, svgViewBoxMin, svgViewBoxZoom, width, height, offset]);
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -118,16 +129,6 @@ const SvgCanvas = () => {
                 dispatch(addSelected(node));
             }
         }
-
-        // calculate all possible polylines in the current view
-        // note only the nearest 2 of them will be drawn
-        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
-        const nodesInViewRange = findNodesInRectangle(
-            graph.current,
-            ...(Object.values(svgViewRange) as [number, number, number, number])
-        );
-        setNodesInViewRange(nodesInViewRange);
-        setPolyLines(getPolylines(graph.current, nodesInViewRange));
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
@@ -145,19 +146,19 @@ const SvgCanvas = () => {
                 let newX = toX;
                 let newY = toY;
 
-                if (isNodeSupportPolyline(node, graph.current)) {
+                if (isNodeSupportSnapLine(node, graph.current)) {
                     // previous move operation may have active polylines
                     // use and check if they are still valid, if not, remove and recalculate
                     let nowPolylines = activeSnapLines;
 
                     // check if cursor left the polyline and remove it from active polylines
                     if (nowPolylines.length !== 0) {
-                        nowPolylines = nowPolylines.filter(l => getPolylineDistance(l, toX, toY) <= 6);
+                        nowPolylines = nowPolylines.filter(l => getSnapLineDistance(l, toX, toY) <= 6);
                     }
 
                     // find the nearest polyline to the cursor and add it to active polylines
                     if (nowPolylines.length < 2) {
-                        const { l, d } = getNearestPolyline(
+                        const { l, d } = getNearestSnapLine(
                             toX,
                             toY,
                             snapLines,

@@ -115,7 +115,7 @@ export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, Edg
 /**
  * Supported: station, virtual node, master node (station only)
  */
-export const isNodeSupportPolyline = (
+export const isNodeSupportSnapLine = (
     node: StnId | MiscNodeId,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
 ): boolean =>
@@ -126,40 +126,40 @@ export const isNodeSupportPolyline = (
         graph.getNodeAttributes(node)[MiscNodeType.Master]!.nodeType === 'Station');
 
 /**
- * Get polylines in the range of nodes
+ * Get snap lines in the range of nodes
  */
-export const getPolylines = (
+export const getSnapLines = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     nodes: (StnId | MiscNodeId)[]
 ): SnapLine[] => {
-    const polylines: SnapLine[] = [];
+    const snapLines: SnapLine[] = [];
     nodes
-        .filter(node => isNodeSupportPolyline(node as StnId | MiscNodeId, graph))
+        .filter(node => isNodeSupportSnapLine(node as StnId | MiscNodeId, graph))
         .forEach(node => {
             const x = graph.getNodeAttribute(node, 'x');
             const y = graph.getNodeAttribute(node, 'y');
-            polylines.push({ a: 1, b: 0, c: -x, node, x, y });
-            polylines.push({ a: 0, b: 1, c: -y, node, x, y });
-            polylines.push({ a: 1, b: -1, c: -x + y, node, x, y });
-            polylines.push({ a: 1, b: 1, c: -x - y, node, x, y });
+            snapLines.push({ a: 1, b: 0, c: -x, node, x, y });
+            snapLines.push({ a: 0, b: 1, c: -y, node, x, y });
+            snapLines.push({ a: 1, b: -1, c: -x + y, node, x, y });
+            snapLines.push({ a: 1, b: 1, c: -x - y, node, x, y });
         });
-    return polylines;
+    return snapLines;
 };
 
-export const getPolylineDistance = (line: SnapLine, x: number, y: number): number => {
+export const getSnapLineDistance = (line: SnapLine, x: number, y: number): number => {
     return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
 };
 
 /**
- * Find the nearest polyline to the point (x, y) in the polylines.
- * The nearest polyline is the one which minimizes the sum of lineDis and pointDis.
- * - lineDis: the distance from the point (x, y) to the polyline.
- * - pointDis: the distance from the point (x, y) to the node of the polyline (l.node).
+ * Find the nearest snap line to the point (x, y) in the snap lines.
+ * The nearest snap line is the one which minimizes the sum of lineDis and pointDis.
+ * - lineDis: the distance from the point (x, y) to the snap line.
+ * - pointDis: the distance from the point (x, y) to the node of the snap line (l.node).
  */
-export const getNearestPolyline = (
+export const getNearestSnapLine = (
     x: number,
     y: number,
-    polylines: SnapLine[],
+    snapLines: SnapLine[],
     nodes: (StnId | MiscNodeId)[]
 ): { l: SnapLine; d: number } => {
     const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
@@ -168,10 +168,10 @@ export const getNearestPolyline = (
     let minDistance = Infinity,
         retDistance = Infinity,
         retLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as SnapLine;
-    polylines
+    snapLines
         .filter(l => nodes.includes(l.node))
         .forEach(line => {
-            const lineDis = getPolylineDistance(line, x, y);
+            const lineDis = getSnapLineDistance(line, x, y);
             const pointDis = pointDistance(x, y, line.x, line.y);
             if (lineDis + pointDis < minDistance) {
                 minDistance = lineDis + pointDis;
