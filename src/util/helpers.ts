@@ -65,6 +65,21 @@ export const getCanvasSize = (size: Size) => ({
 });
 
 /**
+ * Return the svg viewpoint size from the canvas size returned in `getCanvasSize`.
+ */
+export const getViewpointSize = (
+    svgViewBoxMin: { x: number; y: number },
+    svgViewBoxZoom: number,
+    width: number,
+    height: number
+) => ({
+    xMin: svgViewBoxMin.x,
+    yMin: svgViewBoxMin.y,
+    xMax: (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+    yMax: (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+});
+
+/**
  * Calculate the bounding box of the current element, with respect to its own transformation attribute.
  *
  * The SVGRect returned by `SVGGraphicsElement.getBBox()` will be irrespective of any

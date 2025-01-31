@@ -18,7 +18,6 @@ import {
     setMode,
     setSelected,
 } from '../redux/runtime/runtime-slice';
-import { getCanvasSize, getMousePosition, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
 import {
     findNodesInRectangle,
     getNearestPolyline,
@@ -26,6 +25,13 @@ import {
     getPolylines,
     isNodeSupportPolyline,
 } from '../util/graph';
+import {
+    getCanvasSize,
+    getMousePosition,
+    getViewpointSize,
+    pointerPosToSVGCoord,
+    roundToNearestN,
+} from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
@@ -65,8 +71,6 @@ const SvgCanvas = () => {
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
-    // the range of the current svg view
-    const [svgViewRange, setSvgViewRange] = React.useState<[number, number, number, number]>([0, 0, 0, 0]);
 
     // the position of pointer down
     const [offset, setOffset] = React.useState({ x: 0, y: 0 });
@@ -116,14 +120,11 @@ const SvgCanvas = () => {
 
         // calculate all possible polylines in the current view
         // note only the nearest 2 of them will be drawn
-        const svgViewRange: [number, number, number, number] = [
-            svgViewBoxMin.x,
-            svgViewBoxMin.y,
-            (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
-            (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
-        ];
-        const nodesInViewRange = findNodesInRectangle(graph.current, ...svgViewRange);
-        setSvgViewRange(svgViewRange);
+        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
+        const nodesInViewRange = findNodesInRectangle(
+            graph.current,
+            ...(Object.values(svgViewRange) as [number, number, number, number])
+        );
         setNodesInViewRange(nodesInViewRange);
         setPolyLines(getPolylines(graph.current, nodesInViewRange));
         // console.log('down ', graph.current.getNodeAttributes(node));
@@ -368,7 +369,7 @@ const SvgCanvas = () => {
     const SingleColor = singleColor.component;
 
     const getPolylinesPath = (p: Polyline): [number, number, number, number] => {
-        const [xMin, yMin, xMax, yMax] = svgViewRange;
+        const { xMin, yMin, xMax, yMax } = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
         if (p.a === 0) {
             return [xMin, xMax, -p.c / p.b, -p.c / p.b];
         } else if (p.b === 0) {
