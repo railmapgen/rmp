@@ -11,7 +11,7 @@
         "@chakra-ui/react": "^2.10.5",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.0",
-        "@railmapgen/rmg-components": "^10.1.9",
+        "@railmapgen/rmg-components": "^10.1.11",
         "@railmapgen/rmg-palette-resources": "^2.2.5",
         "@railmapgen/rmg-runtime": "^10.3.2",
         "@railmapgen/rmg-translate": "^3.2.3",
@@ -28,7 +28,6 @@
         "react-redux": "^9.2.0",
         "react-router-dom": "^7.1.5",
         "react-use-event-hook": "^0.9.6",
-        "rollup": "^4.34.0",
         "vite-plugin-svgr": "^4.3.0"
     },
     "devDependencies": {
