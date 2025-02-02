@@ -30,6 +30,8 @@ export default [
             '@typescript-eslint/no-non-null-assertion': 'off',
             // We may add `_` to ignore pattern but that will decrease clarity if we later need it.
             '@typescript-eslint/no-unused-vars': 'off',
+            // Allow empty object type for base interfaces.
+            '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'always' }],
         },
         settings: {
             react: {

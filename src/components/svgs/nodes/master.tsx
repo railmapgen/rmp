@@ -45,7 +45,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                         ...varValues.map((v, varI) =>
                             varType[varI] === 'number' && !Number.isNaN(Number(v)) ? Number(v) : v
                         ),
-                        attrs.color ? attrs.color.value ?? attrs.color.defaultValue : ''
+                        attrs.color ? (attrs.color.value ?? attrs.color.defaultValue) : ''
                     );
                 } catch (e) {
                     modifiedAttrs[key] = '' as any;
@@ -155,7 +155,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
 
     const getComponentValue = (query: string) => {
         const p = attrs.components.find(c => c.id === query);
-        return p ? p.value ?? p.defaultValue : undefined;
+        return p ? (p.value ?? p.defaultValue) : undefined;
     };
 
     const handleImportParam = (param: MasterParam) => {
