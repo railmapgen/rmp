@@ -10,7 +10,7 @@ export default [
     ...tseslint.config(
         eslint.configs.recommended,
         ...tseslint.configs.recommended,
-        importPlugin.flatConfigs?.recommended,
+        importPlugin.flatConfigs?.recommended
     ),
     {
         plugins: { react: reactlint, prettier: prettier },
@@ -37,6 +37,9 @@ export default [
             '@typescript-eslint/no-unused-vars': 'off',
             // Allow empty object type for base interfaces.
             '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'always' }],
+            // Imports need to be sorted.
+            'import/order': 'error',
+            'import/no-unassigned-import': 'error',
         },
         settings: {
             react: {
