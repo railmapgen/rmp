@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 import AppRoot from './components/app-root';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from './constants/constants';
 import i18n from './i18n/config';
+// eslint-disable-next-line import/no-unassigned-import
 import './index.css';
 import store from './redux';
 import { setActiveSubscriptions, setState } from './redux/account/account-slice';

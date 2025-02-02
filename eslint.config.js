@@ -4,9 +4,14 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactlint from 'eslint-plugin-react';
 import prettier from 'eslint-plugin-prettier';
+import * as importPlugin from 'eslint-plugin-import';
 
 export default [
-    ...tseslint.config(eslint.configs.recommended, ...tseslint.configs.recommended),
+    ...tseslint.config(
+        eslint.configs.recommended,
+        ...tseslint.configs.recommended,
+        importPlugin.flatConfigs?.recommended,
+    ),
     {
         plugins: { react: reactlint, prettier: prettier },
         rules: {
@@ -36,6 +41,12 @@ export default [
         settings: {
             react: {
                 version: 'detect',
+            },
+            // eslint-plugin-import needs this resolver to know the import base path (./src).
+            'import/resolver': {
+                typescript: {
+                    project: './tsconfig.json',
+                },
             },
         },
         languageOptions: {

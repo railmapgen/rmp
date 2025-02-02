@@ -1,3 +1,4 @@
+/* eslint-disable import/order */
 import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId } from './constants';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';

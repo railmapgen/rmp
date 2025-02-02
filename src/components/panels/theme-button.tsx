@@ -1,9 +1,8 @@
-import React from 'react';
-import ColourUtil from './colour-util';
-import { MdCircle } from 'react-icons/md';
 import { IconButton } from '@chakra-ui/react';
-import { Theme } from '../../constants/constants';
 import { useTranslation } from 'react-i18next';
+import { MdCircle } from 'react-icons/md';
+import { Theme } from '../../constants/constants';
+import ColourUtil from './colour-util';
 
 interface ThemeButtonProps {
     theme: Theme;

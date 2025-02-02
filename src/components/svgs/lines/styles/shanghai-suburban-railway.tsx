@@ -1,8 +1,8 @@
-import React from 'react';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { AttrsProps } from '../../../../constants/constants';
-import { useTranslation } from 'react-i18next';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps } from '../../../../constants/constants';
+import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSuburbanRailwayAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;

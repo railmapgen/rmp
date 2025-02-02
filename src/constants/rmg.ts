@@ -1,5 +1,5 @@
-import { Theme } from './constants';
 import { Translation } from '@railmapgen/rmg-translate';
+import { Theme } from './constants';
 
 /**
  * @property {string} 0 - Chinese characters
