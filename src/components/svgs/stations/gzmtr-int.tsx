@@ -318,14 +318,14 @@ const GzmtrIntStation = (props: StationComponentProps) => {
 
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
-                    text={names[0].split('\\')}
+                    text={names[0].split('\n')}
                     fontSize={FONT_SIZE.zh}
                     lineHeight={FONT_SIZE.zh}
                     grow="up"
                     className="rmp-name__zh"
                 />
                 <MultilineText
-                    text={names[1].split('\\')}
+                    text={names[1].split('\n')}
                     fontSize={FONT_SIZE.en}
                     lineHeight={FONT_SIZE.en}
                     grow="down"
