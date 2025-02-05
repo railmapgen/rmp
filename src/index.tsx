@@ -21,7 +21,7 @@ import {
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './redux/runtime/runtime-slice';
-import { onLocalStorageChangeRMT, requestToken } from './util/rmt-save';
+import { onLocalStorageChangeRMT } from './util/rmt-save';
 import { RMPSave, upgrade } from './util/save';
 
 declare global {
@@ -86,6 +86,4 @@ upgrade(param).then(param => {
     rmgRuntime.injectUITools();
 
     onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
-    requestToken();
-    window.setInterval(() => requestToken(), 15 * 60 * 1000); // 15 mins
 });
