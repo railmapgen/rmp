@@ -67,6 +67,7 @@ export const FACILITIES = {
 };
 export type Facilities = keyof typeof FACILITIES;
 
+export type TEMP = 'temp';
 export interface StationInfo {
     title?: string;
     /**
@@ -111,11 +112,18 @@ export interface StationInfo {
      */
     one_line: boolean;
     /**
-     * Padding between int box and station name. Default to 355 in updateParam.
+     * Padding between int box and station name in shmetro/station.
+     * Default to 355 in updateParam.
      * This is calculated from (svg_height - 200) * 1.414 where typical svg_height
      * is 450 and station element is tilted at a 45-degree angle.
      */
     int_padding: number;
+    /**
+     * Controls spacing between text characters in station names.
+     * Default to 20 in updateParam.
+     */
+    character_spacing: number;
+    underConstruction?: boolean | TEMP;
 }
 
 export enum CanvasType {
@@ -225,7 +233,9 @@ export interface RMGParam {
         terminal: false | Name;
     };
     line_num: string;
+    spanLineNum?: boolean;
     psd_num: string;
+    coachNum: string;
     info_panel_type: PanelTypeGZMTR | PanelTypeShmetro;
     notesGZMTR?: Note[];
     direction_gz_x: number;
@@ -239,14 +249,16 @@ export interface RMGParam {
         bank: boolean;
         /**
          * Station size on the left and right side. Integer only, will be `Math.floor`ed.
-         * Also, this factor is subject to several rules, see loop-shmetro for more info.
+         * Also, this factor is subject to several rules, see shmetro-loop for more info.
          */
         left_and_right_factor: number;
         /**
          * Station size on the bottom side. Integer only, will be `Math.floor`ed.
-         * Also, this factor is subject to several rules, see loop-shmetro for more info.
+         * Also, this factor is subject to several rules, see shmetro-loop for more info.
          */
         bottom_factor: number;
+        midpoint_station?: string;
+        clockwise?: boolean;
     };
-    version?: string;
+    version?: string; // RMG version
 }
