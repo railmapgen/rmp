@@ -28,73 +28,21 @@ export default function AppRoot() {
         }
     }, []);
 
-    const d = new Date();
-    const tag = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}01`;
-    const ver = `${String(d.getFullYear()).slice(-2)}.${d.getMonth() + 1}.1`;
-
     return (
         <RmgThemeProvider>
             <RmgWindow>
                 <React.Suspense
                     fallback={
-                        <>
-                            <p
-                                style={{
-                                    position: 'absolute',
-                                    top: '50%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                }}
-                            >
-                                Rail Map Toolkit protocol... checked
-                            </p>
-                            <p
-                                style={{
-                                    position: 'absolute',
-                                    top: '75%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                    fontSize: 'small',
-                                    color: 'gray',
-                                }}
-                            >
-                                Seeing this page for too long? Try another mirror{' '}
-                                <a href="https://railmapgen.github.io/?app=rmp" target="_blank" rel="noreferrer">
-                                    GitHub
-                                </a>{' '}
-                                <a href="https://railmapgen.gitlab.io/?app=rmp" target="_blank" rel="noreferrer">
-                                    Gitlab
-                                </a>{' '}
-                                or the{' '}
-                                <a
-                                    href="https://github.com/railmapgen/railmapgen.github.io/releases"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                >
-                                    offline application
-                                </a>{' '}
-                                .
-                                <br />
-                                <br />
-                                Offline applications also available via ghfast.top{' '}
-                                <a
-                                    href={`https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_x64-setup.exe`}
-                                >
-                                    Windows
-                                </a>{' '}
-                                <a
-                                    href={`https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_aarch64.dmg`}
-                                >
-                                    MacOS
-                                </a>{' '}
-                                <a
-                                    href={`https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download/tauri-${tag}/railmapgen_${ver}_amd64.deb`}
-                                >
-                                    Linux
-                                </a>{' '}
-                                if you are blocked by GFW :)
-                            </p>
-                        </>
+                        <p
+                            style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                            }}
+                        >
+                            Rail Map Painter protocol... checked
+                        </p>
                     }
                 >
                     <PageHeader />

@@ -1,7 +1,9 @@
+import { Button, HStack, IconButton, VStack } from '@chakra-ui/react';
 import { RmgDebouncedInput, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdAdd, MdDelete } from 'react-icons/md';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -12,14 +14,12 @@ import {
     StationComponentProps,
     StationType,
 } from '../../../constants/stations';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
+import ThemeButton from '../../panels/theme-button';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 import { TokyoMetroBasicSvg, TokyoMetroBasicSvgAttributes } from './tokyo-metro-basic';
-import { Button, HStack, IconButton, VStack } from '@chakra-ui/react';
-import { MdAdd, MdDelete } from 'react-icons/md';
-import ThemeButton from '../../panels/theme-button';
-import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
-import { useRootDispatch, useRootSelector } from '../../../redux';
 
 const TokyoMetroIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;

@@ -1,3 +1,4 @@
+/* eslint-disable import/order */
 import { AttrsProps, MiscNodeId } from './constants';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';

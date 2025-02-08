@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-unassigned-import
 import '@testing-library/jest-dom';
 import { Store } from '@reduxjs/toolkit';
 import { render, RenderOptions } from '@testing-library/react';

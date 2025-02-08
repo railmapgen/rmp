@@ -30,13 +30,13 @@ const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke="black" strokeWidth={STROKE_WIDTH_OUTER} />
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={STROKE_WIDTH_INNER} />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth={STROKE_WIDTH_INNER} strokeLinecap="round" />
         </g>
     );
 };
 
 /**
- * GZMTRLoop specific props.
+ * GZMTRLoop has no specific props.
  */
 export interface GZMTRLoopAttributes extends LinePathAttributes, AttributesWithColor {}
 

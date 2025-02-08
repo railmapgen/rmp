@@ -1,17 +1,17 @@
-import { RmgFields, RmgFieldsField, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
 import { Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdSettings, MdUpload } from 'react-icons/md';
 import { AttrsProps } from '../../../constants/constants';
-import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
+import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
-import ThemeButton from '../../panels/theme-button';
-import { MasterManager } from '../../page-header/master-manager';
 import { MasterImport } from '../../page-header/master-import';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { MasterManager } from '../../page-header/master-manager';
+import ThemeButton from '../../panels/theme-button';
 
 const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -45,7 +45,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                         ...varValues.map((v, varI) =>
                             varType[varI] === 'number' && !Number.isNaN(Number(v)) ? Number(v) : v
                         ),
-                        attrs.color ? attrs.color.value ?? attrs.color.defaultValue : ''
+                        attrs.color ? (attrs.color.value ?? attrs.color.defaultValue) : ''
                     );
                 } catch (e) {
                     modifiedAttrs[key] = '' as any;
@@ -155,7 +155,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
 
     const getComponentValue = (query: string) => {
         const p = attrs.components.find(c => c.id === query);
-        return p ? p.value ?? p.defaultValue : undefined;
+        return p ? (p.value ?? p.defaultValue) : undefined;
     };
 
     const handleImportParam = (param: MasterParam) => {

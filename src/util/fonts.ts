@@ -1,7 +1,7 @@
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import { NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import rmgRuntime from '@railmapgen/rmg-runtime';
 
 export const isSafari = () => {
     return navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');

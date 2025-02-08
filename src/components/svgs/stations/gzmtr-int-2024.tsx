@@ -1,6 +1,7 @@
-import { Button, FormLabel, VStack } from '@chakra-ui/react';
+import { FormLabel, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+// eslint-disable-next-line import/named
 import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
 import { SvgAssetsContext } from '@railmapgen/svg-assets/utils';
 import React from 'react';
@@ -95,8 +96,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     const textX =
         (nameOffsetX === 'left' ? iconBBox.x1 : nameOffsetX === 'right' ? iconBBox.x2 : 0) * SCALE_WITH_PADDING;
     const textY =
-        names[NAME_DY[nameOffsetY].namesPos].split('\n').length *
-            NAME_DY[nameOffsetY].lineHeight *
+        (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY[nameOffsetY].lineHeight + 2) *
             NAME_DY[nameOffsetY].polarity +
         (nameOffsetY === 'top' ? iconBBox.y1 : nameOffsetY === 'bottom' ? iconBBox.y2 : 0) * SCALE_WITH_PADDING;
     const textAnchor =
@@ -403,7 +403,7 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
     ];
 
-    const maximumTransfers = [5, 5, 0];
+    const maximumTransfers = [5, 0, 0];
     const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
@@ -450,8 +450,6 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         }
     };
 
-    const handleAddInterchangeGroup = () => handleAdd(transfer.length)(defaultGZMTRTransferInfo);
-
     return (
         <>
             <RmgFields fields={fields} />
@@ -476,18 +474,6 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
                             />
                         </React.Fragment>
                     ))}
-
-                    {maximumTransfers[transfer.length] > 0 && (
-                        <Button
-                            size="xs"
-                            variant="ghost"
-                            alignSelf="flex-end"
-                            leftIcon={<MdAdd />}
-                            onClick={handleAddInterchangeGroup}
-                        >
-                            {t('panel.details.stations.interchange.addGroup')}
-                        </Button>
-                    )}
                 </VStack>
             </RmgLabel>
         </>

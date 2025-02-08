@@ -3,7 +3,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
 import { subscription_endpoint } from '../constants/server';
-import { createStore } from '../redux';
+import { createStore, RootDispatch } from '../redux';
 import {
     ActiveSubscriptions,
     defaultActiveSubscriptions,
@@ -16,7 +16,6 @@ import { createHash } from './helpers';
 export const SAVE_MANAGER_CHANNEL_NAME = 'rmt-save-manager';
 export enum SaveManagerEventType {
     SAVE_CHANGED = 'SAVE_CHANGED',
-    TOKEN_REQUEST = 'TOKEN_REQUEST',
 }
 export interface SaveManagerEvent {
     type: SaveManagerEventType;
@@ -60,15 +59,6 @@ export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, Edg
     previousGraphHash = graphHash;
 };
 
-// Token returned from will be handled in registerOnRMTTokenResponse.
-export const requestToken = async () => {
-    logger.debug('Requesting token from RMT');
-    saveManagerChannel.postMessage({
-        type: SaveManagerEventType.TOKEN_REQUEST,
-        from: 'rmp',
-    } as SaveManagerEvent);
-};
-
 export interface APISubscription {
     type: 'RMP' | 'RMP_CLOUD' | 'RMP_EXPORT';
     expires: string;
@@ -79,7 +69,7 @@ const updateToken = async (store: ReturnType<typeof createStore>, token: string)
     store.dispatch(setToken(token));
 };
 
-const updateLoginStateAndSubscriptions = async (store: ReturnType<typeof createStore>, token: string) => {
+export const updateLoginStateAndSubscriptions = async (dispatch: RootDispatch, token: string) => {
     const rep = await fetch(subscription_endpoint, {
         headers: {
             accept: 'application/json',
@@ -89,23 +79,23 @@ const updateLoginStateAndSubscriptions = async (store: ReturnType<typeof createS
     });
     if (rep.status !== 200) {
         logger.debug('Token is invalid, expiring the login state');
-        store.dispatch(setState('expired'));
-        store.dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
+        dispatch(setState('expired'));
+        dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
         return;
     }
 
-    store.dispatch(setState('free'));
+    dispatch(setState('free'));
     const subscriptions = (await rep.json()).subscriptions as APISubscription[];
 
     const activeSubscriptions = structuredClone(defaultActiveSubscriptions);
     for (const subscription of subscriptions) {
         const type = subscription.type;
         if (type in activeSubscriptions) {
-            store.dispatch(setState('subscriber'));
+            dispatch(setState('subscriber'));
             activeSubscriptions[type as keyof ActiveSubscriptions] = true;
         }
     }
-    store.dispatch(setActiveSubscriptions(activeSubscriptions));
+    dispatch(setActiveSubscriptions(activeSubscriptions));
     logger.debug(`Token is valid, setting active subscriptions: ${JSON.stringify(activeSubscriptions)}`);
 };
 
@@ -139,7 +129,7 @@ export const onLocalStorageChangeRMT = (store: ReturnType<typeof createStore>) =
         const accountState = JSON.parse(accountString) as AccountState;
         const { token } = accountState;
         updateToken(store, token);
-        updateLoginStateAndSubscriptions(store, token);
+        updateLoginStateAndSubscriptions(store.dispatch, token);
     };
 
     // Record the previous account string and only handle the change.

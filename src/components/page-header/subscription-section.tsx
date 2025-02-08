@@ -2,35 +2,37 @@ import { Box, IconButton, Text } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdRefresh } from 'react-icons/md';
-import { useRootSelector } from '../../redux';
-import { requestToken } from '../../util/rmt-save';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { updateLoginStateAndSubscriptions } from '../../util/rmt-save';
 
 const refreshInterval = 1;
 
 const SubscriptionSection = () => {
-    const { state } = useRootSelector(state => state.account);
+    const dispatch = useRootDispatch();
+    const { state, token } = useRootSelector(state => state.account);
     const { t } = useTranslation();
 
     const [isRefreshDisabled, setIsRefreshDisabled] = React.useState(false);
-    const [refreshDisabledseconds, setRefreshDisabledSeconds] = React.useState(refreshInterval);
+    const [refreshDisabledSeconds, setRefreshDisabledSeconds] = React.useState(refreshInterval);
 
     React.useEffect(() => {
         let timer: number;
-        if (isRefreshDisabled && refreshDisabledseconds > 0) {
+        if (isRefreshDisabled && refreshDisabledSeconds > 0) {
             timer = window.setTimeout(() => {
-                setRefreshDisabledSeconds(refreshDisabledseconds - 1);
+                setRefreshDisabledSeconds(refreshDisabledSeconds - 1);
             }, 1000);
-        } else if (refreshDisabledseconds === 0) {
+        } else if (refreshDisabledSeconds === 0) {
             setIsRefreshDisabled(false);
         }
 
         return () => clearTimeout(timer);
-    }, [isRefreshDisabled, refreshDisabledseconds]);
+    }, [isRefreshDisabled, refreshDisabledSeconds]);
 
     const handleClick = () => {
         setIsRefreshDisabled(true);
         setRefreshDisabledSeconds(refreshInterval);
-        requestToken();
+        if (!token) return;
+        updateLoginStateAndSubscriptions(dispatch, token);
     };
 
     const stateText = {

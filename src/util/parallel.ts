@@ -25,7 +25,7 @@ export const classifyParallelLines = (
     lineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
 ) => {
     const { type, parallelIndex } = lineEntry.attributes;
-    // TODO: might be redundant to check this
+    // safe guard for invalid cases
     if (type === LinePathType.Simple || parallelIndex < 0) {
         return { normal: [lineEntry], parallel: [] };
     }
@@ -34,7 +34,9 @@ export const classifyParallelLines = (
     const normal: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
-        if (lineEntry.attributes.parallelIndex < 0) {
+        const { type, parallelIndex } = lineEntry.attributes;
+
+        if (type === LinePathType.Simple || parallelIndex < 0) {
             normal.push(lineEntry);
             continue;
         }

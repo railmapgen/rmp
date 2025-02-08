@@ -4,9 +4,14 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactlint from 'eslint-plugin-react';
 import prettier from 'eslint-plugin-prettier';
+import * as importPlugin from 'eslint-plugin-import';
 
 export default [
-    ...tseslint.config(eslint.configs.recommended, ...tseslint.configs.recommended),
+    ...tseslint.config(
+        eslint.configs.recommended,
+        ...tseslint.configs.recommended,
+        importPlugin.flatConfigs?.recommended
+    ),
     {
         plugins: { react: reactlint, prettier: prettier },
         rules: {
@@ -30,10 +35,21 @@ export default [
             '@typescript-eslint/no-non-null-assertion': 'off',
             // We may add `_` to ignore pattern but that will decrease clarity if we later need it.
             '@typescript-eslint/no-unused-vars': 'off',
+            // Allow empty object type for base interfaces.
+            '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'always' }],
+            // Imports need to be sorted.
+            'import/order': 'error',
+            'import/no-unassigned-import': 'error',
         },
         settings: {
             react: {
                 version: 'detect',
+            },
+            // eslint-plugin-import needs this resolver to know the import base path (./src).
+            'import/resolver': {
+                typescript: {
+                    project: './tsconfig.json',
+                },
             },
         },
         languageOptions: {
