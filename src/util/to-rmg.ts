@@ -573,7 +573,9 @@ export const toRmg = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
         }
         if (entrance.length == 0) {
             typeInfo = 'LOOP';
-            entrance.push(colorStart.get(color) as string);
+            outDegree.forEach((_, u) => {
+                entrance.push(u);
+            });
         }
         const nowResult: [RMGParam, ...Name][] = [];
         for (const start of entrance) {
