@@ -54,7 +54,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
         (document.getElementById('2RMG_' + type + '_' + id) as HTMLInputElement).value.trim();
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="2xl" scrollBehavior="inside" blockScrollOnMount={false}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>
