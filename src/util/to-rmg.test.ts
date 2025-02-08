@@ -68,6 +68,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -79,6 +80,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -91,6 +93,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -102,6 +105,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -122,7 +126,8 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
-                        },
+                            coachNum: "1",
+                            },
                         '车站',
                         'Stn',
                     ],
@@ -142,6 +147,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -153,6 +159,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -165,6 +172,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -176,6 +184,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -196,6 +205,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -290,6 +300,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -301,6 +312,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -313,6 +325,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_3'],
@@ -324,6 +337,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -335,6 +349,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -355,6 +370,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: true,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -457,6 +473,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -468,6 +485,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_1', 'stn_2'],
@@ -480,6 +498,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_a'],
@@ -491,6 +510,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_a'],
@@ -502,6 +522,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_a: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_3'],
@@ -514,6 +535,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -534,6 +556,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -554,6 +577,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -565,6 +589,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_1', 'stn_3'],
@@ -577,6 +602,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_a'],
@@ -588,6 +614,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_a'],
@@ -599,6 +626,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_a: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -611,6 +639,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -631,6 +660,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -651,6 +681,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -662,6 +693,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_2', 'stn_3'],
@@ -674,6 +706,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_a'],
@@ -685,6 +718,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_a'],
@@ -696,6 +730,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_a: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -708,6 +743,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -728,6 +764,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -840,6 +877,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -851,6 +889,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_4'],
@@ -863,6 +902,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '3',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -874,6 +914,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_4: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '4',
                                     services: ['local'],
                                     parents: ['stn_3', 'stn_2'],
@@ -886,6 +927,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -898,6 +940,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -918,6 +961,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -1132,6 +1176,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -1143,6 +1188,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -1155,6 +1201,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -1166,6 +1213,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -1186,6 +1234,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -1206,6 +1255,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -1217,6 +1267,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_2'],
@@ -1229,6 +1280,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_2: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_1'],
@@ -1240,6 +1292,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_1: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -1260,6 +1313,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -1287,6 +1341,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -1298,6 +1353,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_3'],
@@ -1310,6 +1366,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_4'],
@@ -1321,6 +1378,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_4: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -1341,6 +1399,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
@@ -1361,6 +1420,7 @@ describe('Unit tests for to rmg function', () => {
                             stn_list: {
                                 linestart: {
                                     localisedName: { en: 'LEFT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: [],
@@ -1372,6 +1432,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 lineend: {
                                     localisedName: { en: 'RIGHT END' },
+                                    character_spacing: 0,
                                     num: '00',
                                     services: ['local'],
                                     parents: ['stn_4'],
@@ -1384,6 +1445,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_4: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '2',
                                     services: ['local'],
                                     parents: ['stn_3'],
@@ -1395,6 +1457,7 @@ describe('Unit tests for to rmg function', () => {
                                 },
                                 stn_3: {
                                     localisedName: { zh: '车站', en: 'Stn' },
+                                    character_spacing: 0,
                                     num: '1',
                                     services: ['local'],
                                     parents: ['linestart'],
@@ -1415,6 +1478,7 @@ describe('Unit tests for to rmg function', () => {
                             coline: {},
                             loop: false,
                             loop_info: { bank: true, left_and_right_factor: 0, bottom_factor: 1 },
+                            coachNum: "1",
                         },
                         '车站',
                         'Stn',
