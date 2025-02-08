@@ -64,6 +64,7 @@ const defRMGLeft: StationInfo = {
     loop_pivot: false,
     one_line: true,
     int_padding: 355,
+    character_spacing: 0,
 };
 
 const defRMGRight: StationInfo = {
@@ -80,6 +81,7 @@ const defRMGRight: StationInfo = {
     loop_pivot: false,
     one_line: true,
     int_padding: 355,
+    character_spacing: 0,
 };
 
 const useStn: any = {};
@@ -122,6 +124,7 @@ export const newParamTemplate: RMGParam = {
         left_and_right_factor: 0,
         bottom_factor: 1,
     },
+    coachNum: '1',
 };
 
 const newRMGStn: StationInfo = {
@@ -138,6 +141,7 @@ const newRMGStn: StationInfo = {
     loop_pivot: false,
     one_line: true,
     int_padding: 355,
+    character_spacing: 0,
 };
 
 // convert color['shanghai', 'sh1', ...] to a string (for compare)

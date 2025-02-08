@@ -79,7 +79,7 @@ export const ToRmgModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             <tbody>
                                 {toRmgRes.map(({ id, theme, param, type }) => {
                                     return (
-                                        <tr key={JSON.stringify(theme)}>
+                                        <tr key={id}>
                                             <td>
                                                 <RmgLineBadge
                                                     name={
