@@ -3,10 +3,12 @@ import { AttributesWithColor } from '../components/panels/details/color-field';
 import {
     EdgeAttributes,
     GraphAttributes,
+    Id,
     LineId,
     MiscNodeId,
     NodeAttributes,
     NodeType,
+    SnapLine,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -108,4 +110,74 @@ export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, Edg
             }
         });
     return newList;
+};
+
+/**
+ * Supported: station, virtual node, master node (station only)
+ */
+export const isNodeSupportSnapLine = (
+    node: StnId | MiscNodeId,
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+): boolean =>
+    node.startsWith('stn') ||
+    (node.startsWith('misc_node') && graph.getNodeAttribute(node, 'type') === MiscNodeType.Virtual) ||
+    (node.startsWith('misc_node') &&
+        graph.getNodeAttribute(node, 'type') === MiscNodeType.Master &&
+        graph.getNodeAttributes(node)[MiscNodeType.Master]!.nodeType === 'Station');
+
+/**
+ * Get snap lines in the range of nodes
+ */
+export const getSnapLines = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodes: (StnId | MiscNodeId)[]
+): SnapLine[] => {
+    const snapLines: SnapLine[] = [];
+    nodes
+        .filter(node => isNodeSupportSnapLine(node as StnId | MiscNodeId, graph))
+        .forEach(node => {
+            const x = graph.getNodeAttribute(node, 'x');
+            const y = graph.getNodeAttribute(node, 'y');
+            snapLines.push({ a: 1, b: 0, c: -x, node, x, y });
+            snapLines.push({ a: 0, b: 1, c: -y, node, x, y });
+            snapLines.push({ a: 1, b: -1, c: -x + y, node, x, y });
+            snapLines.push({ a: 1, b: 1, c: -x - y, node, x, y });
+        });
+    return snapLines;
+};
+
+export const getSnapLineDistance = (line: SnapLine, x: number, y: number): number => {
+    return Math.abs(line.a * x + line.b * y + line.c) / Math.sqrt(line.a ** 2 + line.b ** 2);
+};
+
+/**
+ * Find the nearest snap line to the point (x, y) in the snap lines.
+ * The nearest snap line is the one which minimizes the sum of lineDis and pointDis.
+ * - lineDis: the distance from the point (x, y) to the snap line.
+ * - pointDis: the distance from the point (x, y) to the node of the snap line (l.node).
+ */
+export const getNearestSnapLine = (
+    x: number,
+    y: number,
+    snapLines: SnapLine[],
+    nodes: (StnId | MiscNodeId)[]
+): { l: SnapLine; d: number } => {
+    const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
+        Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+
+    let minDistance = Infinity,
+        retDistance = Infinity,
+        retLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as SnapLine;
+    snapLines
+        .filter(l => nodes.includes(l.node))
+        .forEach(line => {
+            const lineDis = getSnapLineDistance(line, x, y);
+            const pointDis = pointDistance(x, y, line.x, line.y);
+            if (lineDis + pointDis < minDistance) {
+                minDistance = lineDis + pointDis;
+                retDistance = lineDis;
+                retLine = line;
+            }
+        });
+    return { l: retLine, d: retDistance };
 };

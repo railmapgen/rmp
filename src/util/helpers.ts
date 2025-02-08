@@ -1,6 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, SnapLine } from '../constants/constants';
 import { Size } from './hooks';
 
 export const getMousePosition = (e: React.MouseEvent) => {
@@ -63,6 +63,37 @@ export const getCanvasSize = (size: Size) => ({
     width: (size.width ?? 720) - 40,
     height: (size.height ?? 1280) - 40,
 });
+
+/**
+ * Return the svg viewpoint size from the canvas size returned in `getCanvasSize`.
+ */
+export const getViewpointSize = (
+    svgViewBoxMin: { x: number; y: number },
+    svgViewBoxZoom: number,
+    width: number,
+    height: number
+) => ({
+    xMin: svgViewBoxMin.x,
+    yMin: svgViewBoxMin.y,
+    xMax: (width * svgViewBoxZoom) / 100 + svgViewBoxMin.x,
+    yMax: (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
+});
+
+export const makeSnapLinesPath = (
+    p: SnapLine,
+    viewpointSize: ReturnType<typeof getViewpointSize>
+): [number, number, number, number] => {
+    const { xMin, yMin, xMax, yMax } = viewpointSize;
+    if (p.a === 0) {
+        return [xMin, xMax, -p.c / p.b, -p.c / p.b];
+    } else if (p.b === 0) {
+        return [-p.c / p.a, -p.c / p.a, yMin, yMax];
+    } else {
+        const k = -p.a / p.b;
+        const b = -p.c / p.b;
+        return [xMin, xMax, k * xMin + b, k * xMax + b];
+    }
+};
 
 /**
  * Calculate the bounding box of the current element, with respect to its own transformation attribute.
