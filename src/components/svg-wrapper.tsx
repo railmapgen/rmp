@@ -21,7 +21,14 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS, loadFontCss } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import {
+    getCanvasSize,
+    getMousePosition,
+    getViewpointSize,
+    isMacClient,
+    pointerPosToSVGCoord,
+    roundToNearestN,
+} from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { getOneStationName } from '../util/random-station-names';
@@ -41,7 +48,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { randomStationsNames },
+        preference: { randomStationsNames, useGridLines },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -365,6 +372,30 @@ const SvgWrapper = () => {
         });
     }, [selectMoving.x, selectMoving.y]);
 
+    const gridLines = React.useMemo(() => {
+        console.log('calc gridline', nanoid(5));
+        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
+        const step = svgViewBoxZoom > 30 ? (svgViewBoxZoom > 120 ? 50 : 25) : 5;
+        const standardWidth = svgViewBoxZoom / 200;
+        const r = {
+            sX: roundToNearestN(svgViewRange.xMin - step, step),
+            eX: roundToNearestN(svgViewRange.xMax + step, step),
+            sY: roundToNearestN(svgViewRange.yMin - step, step),
+            eY: roundToNearestN(svgViewRange.yMax + step, step),
+        };
+        const verticalLines = Array.from({ length: (r.eX - r.sX) / step + 1 }, (_, i) => {
+            const pos = r.sX + i * step;
+            const width = pos % (step * 5) === 0 ? 2 * standardWidth : standardWidth;
+            return <rect key={`v${pos}`} x={pos} y={r.sY} width={width} height={r.eY - r.sY} fill="black" />;
+        });
+        const horizontalLines = Array.from({ length: (r.eY - r.sY) / step + 1 }, (_, i) => {
+            const pos = r.sY + i * step;
+            const width = pos % (step * 5) === 0 ? 2 * standardWidth : standardWidth;
+            return <rect key={`h${pos}`} x={r.sX} y={pos} width={r.eX - r.sX} height={width} fill="black" />;
+        });
+        return [...verticalLines, ...horizontalLines];
+    }, [svgViewBoxMin, svgViewBoxZoom, width, height]);
+
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -385,6 +416,7 @@ const SvgWrapper = () => {
             tabIndex={0}
             onKeyDown={handleKeyDown}
         >
+            {useGridLines && gridLines}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <SvgAssetsContextProvider>
                 <SvgCanvas />
