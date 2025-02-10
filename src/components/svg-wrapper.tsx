@@ -49,7 +49,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { randomStationsNames, useGridLines },
+        preference: { randomStationsNames, gridLines },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -393,7 +393,7 @@ const SvgWrapper = () => {
             tabIndex={0}
             onKeyDown={handleKeyDown}
         >
-            {useGridLines && (
+            {gridLines && (
                 <GridLines
                     svgViewBoxMin={svgViewBoxMin}
                     svgViewBoxZoom={svgViewBoxZoom}

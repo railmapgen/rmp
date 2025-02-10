@@ -18,7 +18,7 @@ import {
     setTelemetryProject,
     setToolsPanelExpansion,
     setUnlockSimplePath,
-    setUseGridLines,
+    setGridLines,
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './redux/runtime/runtime-slice';
@@ -64,7 +64,7 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
         if ('autoParallel' in app.preference) store.dispatch(setAutoParallel(app.preference.autoParallel));
         if ('randomStationsNames' in app.preference)
             store.dispatch(setRandomStationsNames(app.preference.randomStationsNames));
-        if ('useGridLines' in app.preference) store.dispatch(setUseGridLines(app.preference.useGridLines));
+        if ('useGridLines' in app.preference) store.dispatch(setGridLines(app.preference.useGridLines));
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));
