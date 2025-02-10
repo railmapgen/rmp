@@ -162,22 +162,16 @@ export const getNearestSnapLine = (
     snapLines: SnapLine[],
     nodes: (StnId | MiscNodeId)[]
 ): { l: SnapLine; d: number } => {
-    const pointDistance = (x1: number, y1: number, x2: number, y2: number) =>
-        Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
-
     let minDistance = Infinity,
-        retDistance = Infinity,
-        retLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as SnapLine;
+        minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as SnapLine;
     snapLines
         .filter(l => nodes.includes(l.node))
         .forEach(line => {
             const lineDis = getSnapLineDistance(line, x, y);
-            const pointDis = pointDistance(x, y, line.x, line.y);
-            if (lineDis + pointDis < minDistance) {
-                minDistance = lineDis + pointDis;
-                retDistance = lineDis;
-                retLine = line;
+            if (lineDis < minDistance) {
+                minDistance = lineDis;
+                minLine = line;
             }
         });
-    return { l: retLine, d: retDistance };
+    return { l: minLine, d: minDistance };
 };

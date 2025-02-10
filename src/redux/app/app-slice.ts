@@ -39,6 +39,7 @@ export interface AppState {
          */
         autoParallel: boolean;
         randomStationsNames: 'none' | StationCity;
+        gridLines: boolean;
     };
 }
 
@@ -54,6 +55,7 @@ export const initialState: AppState = {
         },
         autoParallel: true,
         randomStationsNames: 'none',
+        gridLines: false,
     },
 };
 
@@ -79,6 +81,9 @@ const appSlice = createSlice({
         setRandomStationsNames: (state, action: PayloadAction<'none' | StationCity>) => {
             state.preference.randomStationsNames = action.payload;
         },
+        setGridLines: (state, action: PayloadAction<boolean>) => {
+            state.preference.gridLines = action.payload;
+        },
     },
 });
 
@@ -89,5 +94,6 @@ export const {
     setToolsPanelExpansion,
     setAutoParallel,
     setRandomStationsNames,
+    setGridLines,
 } = appSlice.actions;
 export default appSlice.reducer;

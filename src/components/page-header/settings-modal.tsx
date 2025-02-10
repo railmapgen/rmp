@@ -32,7 +32,7 @@ import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { StationCity } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setAutoParallel, setRandomStationsNames, setTelemetryProject } from '../../redux/app/app-slice';
+import { setAutoParallel, setGridLines, setRandomStationsNames, setTelemetryProject } from '../../redux/app/app-slice';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -59,7 +59,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames },
+        preference: { autoParallel, randomStationsNames, gridLines },
     } = useRootSelector(state => state.app);
     const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
@@ -161,6 +161,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             {t(`header.settings.preference.randomStationNames.${StationCity.Bjsubway}`)}
                                         </option>
                                     </Select>
+                                </Box>
+                                <Box display="flex" mb="1">
+                                    <Text flex="1">{t('header.settings.preference.gridline')}</Text>
+                                    <Switch
+                                        isChecked={gridLines}
+                                        onChange={({ target: { checked } }) => dispatch(setGridLines(checked))}
+                                    />
                                 </Box>
                             </Box>
                         </Box>

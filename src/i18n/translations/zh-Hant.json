@@ -573,7 +573,8 @@
                     "none": "無",
                     "shmetro": "上海",
                     "bjsubway": "北京"
-                }
+                },
+                "gridline": "顯示網格參考線並停用自動吸附"
             },
             "shortcuts": {
                 "title": "捷徑",

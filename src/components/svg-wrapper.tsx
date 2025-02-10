@@ -21,11 +21,19 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS, loadFontCss } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToNearestN } from '../util/helpers';
+import {
+    getCanvasSize,
+    getMousePosition,
+    getViewpointSize,
+    isMacClient,
+    pointerPosToSVGCoord,
+    roundToNearestN,
+} from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { getOneStationName } from '../util/random-station-names';
 import SvgCanvas from './svg-canvas-graph';
+import GridLines from './grid-lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
 
@@ -41,7 +49,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { randomStationsNames },
+        preference: { randomStationsNames, gridLines },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -385,6 +393,14 @@ const SvgWrapper = () => {
             tabIndex={0}
             onKeyDown={handleKeyDown}
         >
+            {gridLines && (
+                <GridLines
+                    svgViewBoxMin={svgViewBoxMin}
+                    svgViewBoxZoom={svgViewBoxZoom}
+                    svgWidth={width}
+                    svgHeight={height}
+                />
+            )}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <SvgAssetsContextProvider>
                 <SvgCanvas />

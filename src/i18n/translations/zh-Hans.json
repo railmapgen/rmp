@@ -573,7 +573,8 @@
                     "none": "无",
                     "shmetro": "上海",
                     "bjsubway": "北京"
-                }
+                },
+                "gridline": "显示网格参考线并不启用磁性布局"
             },
             "shortcuts": {
                 "title": "快捷键",
