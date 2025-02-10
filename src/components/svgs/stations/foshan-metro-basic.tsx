@@ -43,9 +43,9 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    // temporary fix for the missing id on the top element of the station
     const iconEl = React.useRef<SVGGElement | null>(null);
-    iconEl.current?.querySelector('path')?.setAttribute('id', `stn_core_${id}`);
+    const [iconBBox, setIconBBox] = React.useState({ x: -18.5, y: -9.25, width: 37, height: 18.5 } as DOMRect);
+    React.useEffect(() => setIconBBox(iconEl.current!.getBBox()), []);
 
     const FONT_SIZE = {
         en: tram ? 5.08 : 6.56,
@@ -106,20 +106,29 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            <g
-                transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
-                ref={iconEl}
-            >
+            <g transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}>
                 <StationNumber
                     id={`stn_core_${id}`}
                     strokeColour={color[2]}
                     lineNum={lineCode === '' ? undefined : lineCode}
                     stnNum={stationCode === '' ? undefined : stationCode}
                     textClassName="rmp-name__zh"
+                    ref={iconEl}
+                />
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
+                <rect
+                    id={`stn_core_${id}`}
+                    x={iconBBox.x}
+                    y={iconBBox.y}
+                    width={iconBBox.width}
+                    height={iconBBox.height}
+                    fill="white"
+                    fillOpacity="0"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                    className="removeMe"
                 />
             </g>
             <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
