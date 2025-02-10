@@ -3,7 +3,6 @@ import { SvgAssetsContextProvider } from '@railmapgen/svg-assets/utils';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { useColorMode } from '@chakra-ui/react';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
@@ -34,6 +33,7 @@ import { useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { getOneStationName } from '../util/random-station-names';
 import SvgCanvas from './svg-canvas-graph';
+import GridLines from './grid-lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
 
@@ -64,7 +64,6 @@ const SvgWrapper = () => {
         parallelLinesCount,
     } = useRootSelector(state => state.runtime);
 
-    const colorMode = useColorMode();
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
@@ -374,60 +373,6 @@ const SvgWrapper = () => {
         });
     }, [selectMoving.x, selectMoving.y]);
 
-    const gridLines = React.useMemo(() => {
-        const color = colorMode.colorMode === 'light' ? '#666464' : '#D3D3D4';
-        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
-        const step = svgViewBoxZoom > 30 ? (svgViewBoxZoom > 120 ? 50 : 25) : 5;
-        const standardWidth = svgViewBoxZoom / 200;
-        const r = {
-            sX: roundToNearestN(svgViewRange.xMin - step, step),
-            eX: roundToNearestN(svgViewRange.xMax + step, step),
-            sY: roundToNearestN(svgViewRange.yMin - step, step),
-            eY: roundToNearestN(svgViewRange.yMax + step, step),
-        };
-        const verticalLines = Array.from({ length: (r.eX - r.sX) / step + 1 }, (_, i) => {
-            const pos = r.sX + i * step;
-            const width = pos % (step * 5) === 0 ? 2 * standardWidth : standardWidth;
-            return <rect key={`grid_vl_${pos}`} x={pos} y={r.sY} width={width} height={r.eY - r.sY} fill={color} />;
-        });
-        const horizontalLines = Array.from({ length: (r.eY - r.sY) / step + 1 }, (_, i) => {
-            const pos = r.sY + i * step;
-            const width = pos % (step * 5) === 0 ? 2 * standardWidth : standardWidth;
-            return <rect key={`grid_hl_${pos}`} x={r.sX} y={pos} width={r.eX - r.sX} height={width} fill={color} />;
-        });
-        const verticalCoords = Array.from({ length: (r.eX - r.sX) / step / 5 + 1 }, (_, i) => {
-            const pos = roundToNearestN(r.sX, 5 * step) + i * 5 * step;
-            return (
-                <text
-                    key={`grid_vc_${pos}`}
-                    x={pos}
-                    y={svgViewRange.yMin + svgViewBoxZoom / 5}
-                    fontSize={standardWidth * 25}
-                    fill={color}
-                    textAnchor="middle"
-                >
-                    {pos}
-                </text>
-            );
-        });
-        const horizontalCoords = Array.from({ length: (r.eY - r.sY) / step / 5 + 1 }, (_, i) => {
-            const pos = roundToNearestN(r.sY, 5 * step) + i * 5 * step;
-            return (
-                <text
-                    key={`grid_hc_${pos}`}
-                    x={svgViewRange.xMin + svgViewBoxZoom / 8}
-                    y={pos}
-                    fontSize={standardWidth * 25}
-                    fill={color}
-                    textAnchor="start"
-                >
-                    {pos}
-                </text>
-            );
-        });
-        return [...verticalLines, ...horizontalLines, ...verticalCoords, ...horizontalCoords];
-    }, [svgViewBoxMin, svgViewBoxZoom, width, height]);
-
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -448,7 +393,14 @@ const SvgWrapper = () => {
             tabIndex={0}
             onKeyDown={handleKeyDown}
         >
-            {useGridLines && gridLines}
+            {useGridLines && (
+                <GridLines
+                    svgViewBoxMin={svgViewBoxMin}
+                    svgViewBoxZoom={svgViewBoxZoom}
+                    svgWidth={width}
+                    svgHeight={height}
+                />
+            )}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <SvgAssetsContextProvider>
                 <SvgCanvas />

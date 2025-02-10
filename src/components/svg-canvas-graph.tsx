@@ -59,7 +59,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel },
+        preference: { autoParallel, useGridLines },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -143,7 +143,7 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            if (!e.altKey) {
+            if (!e.altKey && !useGridLines) {
                 // node start position (fromX, fromY)
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');
