@@ -7,7 +7,7 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-
+    
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -172,6 +172,8 @@
                     "mrt": "新加坡地鐵",
                     "jreast_ja": "JR 東日本日文",
                     "jreast_en": "JR 東日本英文",
+                    "tokyo_en": "東京地鐵英文",
+                    "tube": "倫敦地鐵",
                     "rotate": "旋轉",
                     "italic": "斜體",
                     "bold": "粗體"

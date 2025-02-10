@@ -172,6 +172,8 @@
                     "mrt": "Singapore MRT",
                     "jreast_ja": "JR East Japanese",
                     "jreast_en": "JR East English",
+                    "tokyo_en": "Tokyo Metro English",
+                    "tube": "London Underground",
                     "rotate": "Rotation",
                     "italic": "Italic",
                     "bold": "Bold"
@@ -343,13 +345,13 @@
                     "stepFreeAccessPlatform": "From street to platform"
                 },
                 "londonTubeBasic": {
-                    "displayName": "London Tube basic station",
+                    "displayName": "London Underground basic station",
                     "terminal": "Terminal station",
                     "shareTracks": "Track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {
-                    "displayName": "London Tube interchange station"
+                    "displayName": "London Underground interchange station"
                 },
                 "londonRiverServicesInt": {
                     "displayName": "London river services interchange station"
@@ -449,13 +451,13 @@
                     "displayName": "Singapore LRT single color style"
                 },
                 "londonTubeInternalInt": {
-                    "displayName": "London Tube internal interchange style"
+                    "displayName": "London Underground internal interchange style"
                 },
                 "londonTube10MinWalk": {
-                    "displayName": "London Tube under a 10 minute walk interchange style"
+                    "displayName": "London Underground under a 10 minute walk interchange style"
                 },
                 "londonTubeTerminal": {
-                    "displayName": "London Tube terminal style"
+                    "displayName": "London Underground terminal style"
                 },
                 "londonRail": {
                     "displayName": "London rail style",
