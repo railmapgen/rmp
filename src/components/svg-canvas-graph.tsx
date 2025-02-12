@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, SnapLine, StnId } from '../constants/constants';
+import { Events, LineId, MiscNodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -21,6 +21,7 @@ import {
 import {
     findNodesInRectangle,
     getNearestSnapLine,
+    getNearestSnapPoints,
     getSnapLineDistance,
     getSnapLines,
     isNodeSupportSnapLine,
@@ -105,6 +106,9 @@ const SvgCanvas = () => {
         [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition]
     );
 
+    // the active snap points (only a pair of them and length == 2)
+    const [activeSnapPoints, setActiveSnapPoints] = React.useState<SnapPoint | undefined>(undefined);
+
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
 
@@ -115,6 +119,7 @@ const SvgCanvas = () => {
         el.setPointerCapture(e.pointerId);
 
         setActiveSnapLines([]);
+        setActiveSnapPoints(undefined);
         setPointerPosition({ x, y });
 
         dispatch(setActive(node));
@@ -160,54 +165,85 @@ const SvgCanvas = () => {
                 if (isNodeSupportSnapLine(node, graph.current)) {
                     // previous move operation may have active polylines
                     // use and check if they are still valid, if not, remove and recalculate
-                    let nowPolylines = activeSnapLines;
+                    let nowSnapLines = activeSnapLines;
+                    let nowSnapPoints = activeSnapPoints;
 
                     // check if cursor left the polyline and remove it from active polylines
-                    if (nowPolylines.length !== 0) {
-                        nowPolylines = nowPolylines.filter(l => getSnapLineDistance(l, toX, toY) <= 6);
+                    if (nowSnapLines.length !== 0) {
+                        nowSnapLines = nowSnapLines.filter(l => getSnapLineDistance(l, toX, toY) <= 6);
+                    }
+
+                    if (nowSnapPoints) {
+                        if (nowSnapLines.length === 0) {
+                            nowSnapPoints = undefined;
+                        } else if (Math.hypot(toX - nowSnapPoints.x, toY - nowSnapPoints.y) > 6) {
+                            nowSnapPoints = undefined;
+                        }
+                    }
+
+                    if (!nowSnapPoints && nowSnapLines.length === 1) {
+                        const l = nowSnapLines[0];
+                        const { snapPoint, distance } = getNearestSnapPoints(
+                            graph.current,
+                            nodesInViewRange.filter(node => !selected.has(node)),
+                            toX,
+                            toY,
+                            l
+                        );
+                        console.log(snapPoint, distance);
+                        if (distance <= 3) {
+                            nowSnapPoints = snapPoint;
+                        }
+                        console.info(nowSnapPoints);
                     }
 
                     // find the nearest polyline to the cursor and add it to active polylines
-                    if (nowPolylines.length < 2) {
+                    if ((nowSnapLines.length === 1 && !nowSnapPoints) || nowSnapLines.length === 0) {
                         const { l, d } = getNearestSnapLine(
                             toX,
                             toY,
                             snapLines,
                             nodesInViewRange.filter(
-                                node => !selected.has(node) && !nowPolylines.some(ap => ap.node === node)
+                                node => !selected.has(node) && !nowSnapLines.some(ap => ap.node === node)
                             )
                         );
                         // two parallel lines cannot intersect at a point
                         const flag =
-                            nowPolylines.length === 0 || !nowPolylines.some(ap => ap.a === l.a && ap.b === l.b);
+                            nowSnapLines.length === 0 || !nowSnapLines.some(ap => ap.a === l.a && ap.b === l.b);
                         // Two non-parallel lines intersect at a point
-                        if (d < 3 && nowPolylines.length < 2 && flag) {
-                            nowPolylines.push(l);
+                        if (d < 3 && nowSnapLines.length < 2 && flag) {
+                            nowSnapLines.push(l);
                         }
                     }
 
                     // calculate the final position based on the activePolylines
-                    if (nowPolylines.length === 1) {
-                        const l = nowPolylines[0];
-                        if (l.a == 0) {
-                            newY = -l.c / l.b;
-                        } else if (l.b == 0) {
-                            newX = -l.c / l.a;
+                    if (nowSnapLines.length === 1) {
+                        if (nowSnapPoints) {
+                            newX = nowSnapPoints.x;
+                            newY = nowSnapPoints.y;
                         } else {
-                            const k = -l.a / l.b;
-                            const b = -l.c / l.b;
-                            newY = k * newX + b;
+                            const l = nowSnapLines[0];
+                            if (l.a == 0) {
+                                newY = -l.c / l.b;
+                            } else if (l.b == 0) {
+                                newX = -l.c / l.a;
+                            } else {
+                                const k = -l.a / l.b;
+                                const b = -l.c / l.b;
+                                newY = k * newX + b;
+                            }
                         }
-                    } else if (nowPolylines.length === 2) {
-                        const l1 = nowPolylines[0];
-                        const l2 = nowPolylines[1];
+                    } else if (nowSnapLines.length === 2) {
+                        const l1 = nowSnapLines[0];
+                        const l2 = nowSnapLines[1];
                         const determinant = l1.a * l2.b - l2.a * l1.b;
                         if (determinant !== 0) {
                             newX = -(l1.c * l2.b - l2.c * l1.b) / determinant;
                             newY = -(l1.a * l2.c - l2.a * l1.c) / determinant;
                         }
                     }
-                    setActiveSnapLines(nowPolylines);
+                    setActiveSnapLines(nowSnapLines);
+                    setActiveSnapPoints(nowSnapPoints);
                 }
 
                 // update all the selected nodes' position based on the offset of the current moving node
@@ -225,12 +261,19 @@ const SvgCanvas = () => {
             } else {
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
+                setActiveSnapPoints(undefined);
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
                             ...attr,
-                            x: roundToMultiple(attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, 5),
-                            y: roundToMultiple(attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, 5),
+                            x: roundToMultiple(
+                                attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
+                                e.altKey ? 0.01 : 5
+                            ),
+                            y: roundToMultiple(
+                                attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
+                                e.altKey ? 0.01 : 5
+                            ),
                         }));
                     }
                 });
@@ -302,6 +345,7 @@ const SvgCanvas = () => {
             }
         }
         setActiveSnapLines([]);
+        setActiveSnapPoints(undefined);
         setPointerPosition(undefined);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
@@ -420,6 +464,26 @@ const SvgCanvas = () => {
                         strokeWidth={svgViewBoxZoom / 100}
                     />
                 ))}
+            {activeSnapPoints && (
+                <>
+                    <line
+                        x1={activeSnapPoints.originalNodesPos[0].x}
+                        y1={activeSnapPoints.originalNodesPos[0].y}
+                        x2={activeSnapPoints.x}
+                        y2={activeSnapPoints.y}
+                        stroke="yellow"
+                        strokeWidth={svgViewBoxZoom / 100}
+                    />
+                    <line
+                        x1={activeSnapPoints.originalNodesPos[0].x}
+                        y1={activeSnapPoints.originalNodesPos[0].y}
+                        x2={activeSnapPoints.originalNodesPos[1].x}
+                        y2={activeSnapPoints.originalNodesPos[1].y}
+                        stroke="yellow"
+                        strokeWidth={svgViewBoxZoom / 100}
+                    />
+                </>
+            )}
         </>
     );
 };
