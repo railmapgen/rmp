@@ -148,7 +148,7 @@ const newRMGStn: StationInfo = {
 export const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
 // verify the line whether is needed to add
-const isColorLine = (type: LineStyleType) => LineStylesWithColor.includes(type);
+const isColorLine = (type: LineStyleType) => LineStylesWithColor.has(type);
 
 // get line color array
 const getColor = (attr: EdgeAttributes) => {

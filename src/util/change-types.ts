@@ -178,10 +178,9 @@ export const changeLineStyleType = (
         const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
         graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
         const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
-        if (LineStylesWithColor.includes(currentLineStyleType) && LineStylesWithColor.includes(newLineStyleType))
+        if (LineStylesWithColor.has(currentLineStyleType) && LineStylesWithColor.has(newLineStyleType))
             (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-        else if (LineStylesWithColor.includes(newLineStyleType) && theme)
-            (newAttrs as AttributesWithColor).color = theme;
+        else if (LineStylesWithColor.has(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
@@ -227,7 +226,7 @@ export const changeLinesColorInBatch = (
     lines: LineId[]
 ) =>
     lines
-        .filter(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
+        .filter(edge => LineStylesWithColor.has(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);
             const color = (attr[attr.style] as AttributesWithColor).color;

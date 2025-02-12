@@ -110,7 +110,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
 }
 
-export const LineStylesWithColor = [
+export const LineStylesWithColor = new Set([
     LineStyleType.SingleColor,
     LineStyleType.BjsubwaySingleColor,
     LineStyleType.BjsubwayTram,
@@ -125,7 +125,8 @@ export const LineStylesWithColor = [
     LineStyleType.LondonSandwich,
     LineStyleType.LondonLutonAirportDART,
     LineStyleType.LondonIFSCloudCableCar,
-];
+    LineStyleType.GZMTRLoop,
+]);
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
