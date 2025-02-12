@@ -1,6 +1,6 @@
 import React from 'react';
 import { useColorMode } from '@chakra-ui/react';
-import { getViewpointSize, roundToNearestN } from '../util/helpers';
+import { getViewpointSize, roundToMultiple } from '../util/helpers';
 
 export interface GridLinesProps {
     svgViewBoxMin: {
@@ -21,10 +21,10 @@ const GridLines = React.memo(
         const step = svgViewBoxZoom > 30 ? (svgViewBoxZoom > 120 ? 50 : 25) : 5;
         const standardWidth = svgViewBoxZoom / 200;
         const r = {
-            startX: roundToNearestN(svgViewRange.xMin - step, step),
-            endX: roundToNearestN(svgViewRange.xMax + step, step),
-            startY: roundToNearestN(svgViewRange.yMin - step, step),
-            endY: roundToNearestN(svgViewRange.yMax + step, step),
+            startX: roundToMultiple(svgViewRange.xMin - step, step),
+            endX: roundToMultiple(svgViewRange.xMax + step, step),
+            startY: roundToMultiple(svgViewRange.yMin - step, step),
+            endY: roundToMultiple(svgViewRange.yMax + step, step),
         };
         const verticalLines = Array.from({ length: (r.endX - r.startX) / step + 1 }, (_, i) => {
             const pos = r.startX + i * step;
@@ -59,7 +59,7 @@ const GridLines = React.memo(
             );
         });
         const verticalCoords = Array.from({ length: (r.endX - r.startX) / step / 5 + 1 }, (_, i) => {
-            const pos = roundToNearestN(r.startX, 5 * step) + i * 5 * step;
+            const pos = roundToMultiple(r.startX, 5 * step) + i * 5 * step;
             return (
                 <text
                     key={`grid_vc_${pos}`}
@@ -75,7 +75,7 @@ const GridLines = React.memo(
             );
         });
         const horizontalCoords = Array.from({ length: (r.endY - r.startY) / step / 5 + 1 }, (_, i) => {
-            const pos = roundToNearestN(r.startY, 5 * step) + i * 5 * step;
+            const pos = roundToMultiple(r.startY, 5 * step) + i * 5 * step;
             return (
                 <text
                     key={`grid_hc_${pos}`}

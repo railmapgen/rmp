@@ -26,7 +26,28 @@ export const pointerPosToSVGCoord = (
     svgViewBoxMin: { x: number; y: number }
 ) => ({ x: (x * svgViewBoxZoom) / 100 + svgViewBoxMin.x, y: (y * svgViewBoxZoom) / 100 + svgViewBoxMin.y });
 
-export const roundToNearestN = (x: number, n: number) => Math.round(x / n) * n;
+/** Helper to auto-calculate decimal places from base value */
+const calculateDecimals = (base: number): number => {
+    if (base >= 1) return 0;
+    const baseString = base.toString().split('.')[1] || '';
+    return baseString.replace(/0+$/, '').length; // Ignore trailing zeros
+};
+
+/**
+ * Rounds a number to the nearest multiple of a specified base value, with optional decimal precision control.
+ * e.g. roundToMultiple(114.514, 5) = 115
+ *      roundToMultiple(114.514, 0.01) = 114.51
+ * @param value The number to round
+ * @param base The base multiple to round to (e.g., 5, 0.1, 0.25)
+ * @returns The rounded value with precise decimal handling
+ */
+export const roundToMultiple = (value: number, base: number): number => {
+    // round to nearest base multiple
+    const intermediate = Math.round(value / base) * base;
+    // apply decimal precision control
+    const factor = Math.pow(10, calculateDecimals(base));
+    return Math.round(intermediate * factor) / factor;
+};
 
 /**
  * Calculate the canvas size from DOMRect of each node.

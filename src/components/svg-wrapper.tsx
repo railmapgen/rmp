@@ -27,7 +27,7 @@ import {
     getViewpointSize,
     isMacClient,
     pointerPosToSVGCoord,
-    roundToNearestN,
+    roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
@@ -122,8 +122,8 @@ const SvgWrapper = () => {
             graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
-                x: roundToNearestN(svgX, 5),
-                y: roundToNearestN(svgY, 5),
+                x: roundToMultiple(svgX, 5),
+                y: roundToMultiple(svgY, 5),
                 type,
                 [type]: attr,
             });
@@ -140,8 +140,8 @@ const SvgWrapper = () => {
             graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
-                x: roundToNearestN(svgX, 5),
-                y: roundToNearestN(svgY, 5),
+                x: roundToMultiple(svgX, 5),
+                y: roundToMultiple(svgY, 5),
                 type,
                 // deep copy to prevent mutual reference
                 [type]: structuredClone(miscNodes[type].defaultAttrs),
@@ -302,8 +302,8 @@ const SvgWrapper = () => {
                 graph.current,
                 isMasterDisabled,
                 isParallelDisabled,
-                roundToNearestN(svgMidX, 5),
-                roundToNearestN(svgMidY, 5)
+                roundToMultiple(svgMidX, 5),
+                roundToMultiple(svgMidY, 5)
             );
             refreshAndSave();
             // select copied nodes automatically

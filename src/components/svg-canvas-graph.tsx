@@ -31,7 +31,7 @@ import {
     getViewpointSize,
     makeSnapLinesPath,
     pointerPosToSVGCoord,
-    roundToNearestN,
+    roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
@@ -217,8 +217,8 @@ const SvgCanvas = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
                             ...attr,
-                            x: roundToNearestN(attr.x + offsetX, 0.01),
-                            y: roundToNearestN(attr.y + offsetY, 0.01),
+                            x: roundToMultiple(attr.x + offsetX, 0.01),
+                            y: roundToMultiple(attr.y + offsetY, 0.01),
                         }));
                     }
                 });
@@ -229,8 +229,8 @@ const SvgCanvas = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
                             ...attr,
-                            x: roundToNearestN(attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, 5),
-                            y: roundToNearestN(attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, 5),
+                            x: roundToMultiple(attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, 5),
+                            y: roundToMultiple(attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, 5),
                         }));
                     }
                 });
@@ -329,8 +329,8 @@ const SvgCanvas = () => {
             graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
-                x: roundToNearestN(svgX, 5),
-                y: roundToNearestN(svgY, 5),
+                x: roundToMultiple(svgX, 5),
+                y: roundToMultiple(svgY, 5),
                 type: stnType,
                 [stnType]: attr,
             });
