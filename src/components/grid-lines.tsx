@@ -90,7 +90,14 @@ const GridLines = React.memo(
                 </text>
             );
         });
-        return [...verticalLines, ...horizontalLines, ...verticalCoords, ...horizontalCoords];
+        return (
+            <g id="grid-lines" className="removeMe">
+                {verticalLines}
+                {horizontalLines}
+                {verticalCoords}
+                {horizontalCoords}
+            </g>
+        );
     },
     (prev, next) => {
         return (
