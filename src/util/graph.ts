@@ -178,6 +178,12 @@ export const getNearestSnapLine = (
 
 /**
  * Find nearest snap point to the point (x, y) in an active snap line.
+ * Time complexity: O(n^2)           n is the number of nodes on the active snap line
+ *
+ * Snap points (S) contain:
+ * - the mid point of A and B        A---S---B
+ * - Doubling points of A and B      A---B---S and S---A---B
+ * (A and B are two nodes in the active snap line)
  */
 export const getNearestSnapPoints = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -191,13 +197,23 @@ export const getNearestSnapPoints = (
         const nodeY = graph.getNodeAttribute(node, 'y');
         return Math.abs(activeSnapLine.a * nodeX + activeSnapLine.b * nodeY + activeSnapLine.c) <= 0.01;
     });
+
+    // functions to calculate snap point coordinate
     const funcs = [
         (x1: number, y1: number, x2: number, y2: number) => [(x1 + x2) / 2, (y1 + y2) / 2],
         (x1: number, y1: number, x2: number, y2: number) => [2 * x1 - x2, 2 * y1 - y2],
         (x1: number, y1: number, x2: number, y2: number) => [2 * x2 - x1, 2 * y2 - y1],
     ];
+
     let minDistance: number = Infinity;
-    let minPoint: SnapPoint = { x: 0, y: 0, originalNodesPos: [] };
+    let minPoint: SnapPoint = {
+        x: 0,
+        y: 0,
+        originalNodesPos: [
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
+        ],
+    };
     for (let i = 0; i < nodesInLine.length; i++) {
         const n1 = nodesInLine[i];
         const n1x = graph.getNodeAttribute(n1, 'x');

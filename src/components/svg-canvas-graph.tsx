@@ -173,28 +173,32 @@ const SvgCanvas = () => {
                         nowSnapLines = nowSnapLines.filter(l => getSnapLineDistance(l, toX, toY) <= 6);
                     }
 
+                    // check if the current snap point should be removed
                     if (nowSnapPoints) {
                         if (nowSnapLines.length === 0) {
+                            // no active snap line, remove the snap point
                             nowSnapPoints = undefined;
                         } else if (Math.hypot(toX - nowSnapPoints.x, toY - nowSnapPoints.y) > 6) {
+                            // cursor left the snap point, remove it
                             nowSnapPoints = undefined;
                         }
                     }
 
+                    // when there is no snap point and only one snap line, add a snap point from this snap line to give visual hint
                     if (!nowSnapPoints && nowSnapLines.length === 1) {
-                        const l = nowSnapLines[0];
+                        const snapLine = nowSnapLines[0];
                         const { snapPoint, distance } = getNearestSnapPoints(
                             graph.current,
                             nodesInViewRange.filter(node => !selected.has(node)),
                             toX,
                             toY,
-                            l
+                            snapLine
                         );
-                        console.log(snapPoint, distance);
+
+                        // the cursor is close enough to the snap point, make it active snap point
                         if (distance <= 3) {
                             nowSnapPoints = snapPoint;
                         }
-                        console.info(nowSnapPoints);
                     }
 
                     // find the nearest polyline to the cursor and add it to active polylines

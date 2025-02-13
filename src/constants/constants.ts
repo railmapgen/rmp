@@ -110,7 +110,7 @@ export interface SnapPoint {
     y: number;
 
     // from which nodes the snap point is generated (length === 2).
-    originalNodesPos: { x: number; y: number }[];
+    originalNodesPos: [{ x: number; y: number }, { x: number; y: number }];
 }
 
 /**
