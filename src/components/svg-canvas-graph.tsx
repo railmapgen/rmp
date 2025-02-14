@@ -38,6 +38,7 @@ import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import SvgLayer from './svg-layer';
+import SnapPointGuideLines from './snap-point-guide-lines';
 import { linePaths } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -106,8 +107,8 @@ const SvgCanvas = () => {
         [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition]
     );
 
-    // the active snap points (only a pair of them and length == 2)
-    const [activeSnapPoints, setActiveSnapPoints] = React.useState<SnapPoint | undefined>(undefined);
+    // the active snap points, only used when there is only one active snap line
+    const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -119,7 +120,7 @@ const SvgCanvas = () => {
         el.setPointerCapture(e.pointerId);
 
         setActiveSnapLines([]);
-        setActiveSnapPoints(undefined);
+        setActiveSnapPoint(undefined);
         setPointerPosition({ x, y });
 
         dispatch(setActive(node));
@@ -166,7 +167,7 @@ const SvgCanvas = () => {
                     // previous move operation may have active polylines
                     // use and check if they are still valid, if not, remove and recalculate
                     let nowSnapLines = activeSnapLines;
-                    let nowSnapPoints = activeSnapPoints;
+                    let nowSnapPoint = activeSnapPoint;
 
                     // check if cursor left the polyline and remove it from active polylines
                     if (nowSnapLines.length !== 0) {
@@ -174,18 +175,18 @@ const SvgCanvas = () => {
                     }
 
                     // check if the current snap point should be removed
-                    if (nowSnapPoints) {
+                    if (nowSnapPoint) {
                         if (nowSnapLines.length === 0) {
                             // no active snap line, remove the snap point
-                            nowSnapPoints = undefined;
-                        } else if (Math.hypot(toX - nowSnapPoints.x, toY - nowSnapPoints.y) > 6) {
+                            nowSnapPoint = undefined;
+                        } else if (Math.hypot(toX - nowSnapPoint.x, toY - nowSnapPoint.y) > 6) {
                             // cursor left the snap point, remove it
-                            nowSnapPoints = undefined;
+                            nowSnapPoint = undefined;
                         }
                     }
 
                     // when there is no snap point and only one snap line, add a snap point from this snap line to give visual hint
-                    if (!nowSnapPoints && nowSnapLines.length === 1) {
+                    if (!nowSnapPoint && nowSnapLines.length === 1) {
                         const snapLine = nowSnapLines[0];
                         const { snapPoint, distance } = getNearestSnapPoints(
                             graph.current,
@@ -197,12 +198,12 @@ const SvgCanvas = () => {
 
                         // the cursor is close enough to the snap point, make it active snap point
                         if (distance <= 3) {
-                            nowSnapPoints = snapPoint;
+                            nowSnapPoint = snapPoint;
                         }
                     }
 
                     // find the nearest polyline to the cursor and add it to active polylines
-                    if ((nowSnapLines.length === 1 && !nowSnapPoints) || nowSnapLines.length === 0) {
+                    if ((nowSnapLines.length === 1 && !nowSnapPoint) || nowSnapLines.length === 0) {
                         const { l, d } = getNearestSnapLine(
                             toX,
                             toY,
@@ -222,9 +223,9 @@ const SvgCanvas = () => {
 
                     // calculate the final position based on the activePolylines
                     if (nowSnapLines.length === 1) {
-                        if (nowSnapPoints) {
-                            newX = nowSnapPoints.x;
-                            newY = nowSnapPoints.y;
+                        if (nowSnapPoint) {
+                            newX = nowSnapPoint.x;
+                            newY = nowSnapPoint.y;
                         } else {
                             const l = nowSnapLines[0];
                             if (l.a == 0) {
@@ -247,7 +248,7 @@ const SvgCanvas = () => {
                         }
                     }
                     setActiveSnapLines(nowSnapLines);
-                    setActiveSnapPoints(nowSnapPoints);
+                    setActiveSnapPoint(nowSnapPoint);
                 }
 
                 // update all the selected nodes' position based on the offset of the current moving node
@@ -265,7 +266,7 @@ const SvgCanvas = () => {
             } else {
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
-                setActiveSnapPoints(undefined);
+                setActiveSnapPoint(undefined);
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
                         graph.current.updateNodeAttributes(s, attr => ({
@@ -349,7 +350,7 @@ const SvgCanvas = () => {
             }
         }
         setActiveSnapLines([]);
-        setActiveSnapPoints(undefined);
+        setActiveSnapPoint(undefined);
         setPointerPosition(undefined);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
@@ -459,34 +460,17 @@ const SvgCanvas = () => {
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path
-                        key={`line_polyline_${p.a}_${p.b}_${p.c}_${p.node}`}
+                        key={`snap_line_${p.a}_${p.b}_${p.c}_${p.node}`}
                         d={linePaths[LinePathType.Simple].generatePath(
                             ...makeSnapLinesPath(p, getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height)),
                             linePaths[LinePathType.Simple].defaultAttrs
                         )}
                         stroke="cyan"
-                        strokeWidth={svgViewBoxZoom / 100}
+                        strokeWidth={svgViewBoxZoom / 75}
                     />
                 ))}
-            {activeSnapPoints && (
-                <>
-                    <line
-                        x1={activeSnapPoints.originalNodesPos[0].x}
-                        y1={activeSnapPoints.originalNodesPos[0].y}
-                        x2={activeSnapPoints.x}
-                        y2={activeSnapPoints.y}
-                        stroke="yellow"
-                        strokeWidth={svgViewBoxZoom / 100}
-                    />
-                    <line
-                        x1={activeSnapPoints.originalNodesPos[0].x}
-                        y1={activeSnapPoints.originalNodesPos[0].y}
-                        x2={activeSnapPoints.originalNodesPos[1].x}
-                        y2={activeSnapPoints.originalNodesPos[1].y}
-                        stroke="yellow"
-                        strokeWidth={svgViewBoxZoom / 100}
-                    />
-                </>
+            {activeSnapPoint && (
+                <SnapPointGuideLines activeSnapPoint={activeSnapPoint} svgViewBoxZoom={svgViewBoxZoom} />
             )}
         </>
     );
