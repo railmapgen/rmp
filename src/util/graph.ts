@@ -85,7 +85,7 @@ export const findThemes = (
         }
     });
     edges
-        .filter(edge => LineStylesWithColor.includes(graph.getEdgeAttribute(edge, 'style')))
+        .filter(edge => LineStylesWithColor.has(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);
             const color = (attr[attr.style] as AttributesWithColor).color;
