@@ -85,11 +85,7 @@ export const makeShortPathOutline = (
     if (!m || !end) return;
 
     // Check whether it is a linear line and process it specifically.
-    if (
-        m[0] === end[0] ||
-        m[1] === end[1] ||
-        (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
-    ) {
+    if (m[0] === end[0] || m[1] === end[1] || Math.abs(Math.abs(m[1] - end[1]) - Math.abs(m[0] - end[0])) < 0.001) {
         const d = Math.abs(d1);
         const [pA, pB] = makeStraightParallel(m, end, d);
         return { outline: makeStraightOutline(m, end, d), pA, pB };
