@@ -1,12 +1,13 @@
 import { SnapPoint } from '../constants/constants';
+import { useRootSelector } from '../redux';
 
 interface SnapPointGuideLinesProps {
     activeSnapPoint: SnapPoint;
-    svgViewBoxZoom: number;
 }
 
 const SnapPointGuideLines = (props: SnapPointGuideLinesProps) => {
-    const { activeSnapPoint, svgViewBoxZoom } = props;
+    const { activeSnapPoint } = props;
+    const { svgViewBoxZoom } = useRootSelector(state => state.param);
     const getSnapPointGuideLineProps = (snap: SnapPoint) => {
         const coords = [{ x: snap.x, y: snap.y }, ...snap.originalNodesPos];
         const sortedCoords = coords.sort((a, b) => (a.x === b.x ? a.y - b.y : a.x - b.x));

@@ -469,9 +469,7 @@ const SvgCanvas = () => {
                         strokeWidth={svgViewBoxZoom / 75}
                     />
                 ))}
-            {activeSnapPoint && (
-                <SnapPointGuideLines activeSnapPoint={activeSnapPoint} svgViewBoxZoom={svgViewBoxZoom} />
-            )}
+            {activeSnapPoint && <SnapPointGuideLines activeSnapPoint={activeSnapPoint} />}
         </>
     );
 };
