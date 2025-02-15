@@ -102,6 +102,18 @@ export interface SnapLine {
 }
 
 /**
+ * Structure for guide points when dragging / moving the nodes.
+ */
+export interface SnapPoint {
+    // snap to the point.
+    x: number;
+    y: number;
+
+    // from which nodes the snap point is generated (length === 2).
+    originalNodesPos: [{ x: number; y: number }, { x: number; y: number }];
+}
+
+/**
  * Stations and lines may be in different displaying format.
  * E.g. Station's icon of Rail map and platform are different in Shanghai metro.
  */

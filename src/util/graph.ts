@@ -3,12 +3,12 @@ import { AttributesWithColor } from '../components/panels/details/color-field';
 import {
     EdgeAttributes,
     GraphAttributes,
-    Id,
     LineId,
     MiscNodeId,
     NodeAttributes,
     NodeType,
     SnapLine,
+    SnapPoint,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -174,4 +174,70 @@ export const getNearestSnapLine = (
             }
         });
     return { l: minLine, d: minDistance };
+};
+
+/**
+ * Find nearest snap point to the point (x, y) in an active snap line.
+ * Time complexity: O(n^2)           n is the number of nodes on the active snap line
+ *
+ * Snap points (S) contain:
+ * - the mid point of A and B        A---S---B
+ * - Doubling points of A and B      A---B---S and S---A---B
+ * (A and B are two nodes in the active snap line)
+ */
+export const getNearestSnapPoints = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodes: (MiscNodeId | StnId)[],
+    x: number,
+    y: number,
+    activeSnapLine: SnapLine
+): { snapPoint: SnapPoint; distance: number } => {
+    const nodesInLine = nodes.filter(node => {
+        const nodeX = graph.getNodeAttribute(node, 'x');
+        const nodeY = graph.getNodeAttribute(node, 'y');
+        return Math.abs(activeSnapLine.a * nodeX + activeSnapLine.b * nodeY + activeSnapLine.c) <= 0.01;
+    });
+
+    // functions to calculate snap point coordinate
+    const funcs = [
+        (x1: number, y1: number, x2: number, y2: number) => [(x1 + x2) / 2, (y1 + y2) / 2],
+        (x1: number, y1: number, x2: number, y2: number) => [2 * x1 - x2, 2 * y1 - y2],
+        (x1: number, y1: number, x2: number, y2: number) => [2 * x2 - x1, 2 * y2 - y1],
+    ];
+
+    let minDistance: number = Infinity;
+    let minPoint: SnapPoint = {
+        x: 0,
+        y: 0,
+        originalNodesPos: [
+            { x: 0, y: 0 },
+            { x: 0, y: 0 },
+        ],
+    };
+    for (let i = 0; i < nodesInLine.length; i++) {
+        const n1 = nodesInLine[i];
+        const n1x = graph.getNodeAttribute(n1, 'x');
+        const n1y = graph.getNodeAttribute(n1, 'y');
+        for (let j = i + 1; j < nodesInLine.length; j++) {
+            const n2 = nodesInLine[j];
+            const n2x = graph.getNodeAttribute(n2, 'x');
+            const n2y = graph.getNodeAttribute(n2, 'y');
+            funcs.forEach(func => {
+                const [px, py] = func(n1x, n1y, n2x, n2y);
+                const distance = Math.hypot(x - px, y - py);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minPoint = {
+                        x: px,
+                        y: py,
+                        originalNodesPos: [
+                            { x: n1x, y: n1y },
+                            { x: n2x, y: n2y },
+                        ],
+                    };
+                }
+            });
+        }
+    }
+    return { snapPoint: minPoint, distance: minDistance };
 };
