@@ -61,7 +61,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, gridLines: useGridLines },
+        preference: { autoParallel, gridLines: useGridLines, snapLines: useSnapLines },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -91,8 +91,7 @@ const SvgCanvas = () => {
     // note only the nearest 2 of them will be drawn
     React.useEffect(
         () => {
-            if (!pointerPosition) return;
-            console.log('refresh snap lines');
+            if (!pointerPosition || !useSnapLines) return;
             const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
             const nodesInViewRange = findNodesInRectangle(
                 graph.current,
@@ -149,7 +148,7 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'free' && active === node) {
-            if (!e.altKey && !useGridLines) {
+            if (!e.altKey && useSnapLines) {
                 // node start position (fromX, fromY)
                 const fromX = graph.current.getNodeAttribute(node, 'x');
                 const fromY = graph.current.getNodeAttribute(node, 'y');

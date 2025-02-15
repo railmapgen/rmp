@@ -19,6 +19,7 @@ import {
     setToolsPanelExpansion,
     setUnlockSimplePath,
     setGridLines,
+    setSnapLines,
 } from './redux/app/app-slice';
 import { ParamState, setFullState } from './redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './redux/runtime/runtime-slice';
@@ -65,6 +66,7 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
         if ('randomStationsNames' in app.preference)
             store.dispatch(setRandomStationsNames(app.preference.randomStationsNames));
         if ('gridLines' in app.preference) store.dispatch(setGridLines(app.preference.gridLines));
+        if ('snapLines' in app.preference) store.dispatch(setSnapLines(app.preference.snapLines));
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));

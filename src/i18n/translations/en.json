@@ -575,7 +575,8 @@
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
                 },
-                "gridline": "Show grid guide lines and disable auto-snapping"
+                "gridline": "Show grid guide lines",
+                "snapline": "Auto snapping to the guide lines and points"
             },
             "shortcuts": {
                 "title": "Shortcuts",
