@@ -40,6 +40,7 @@ export interface AppState {
         autoParallel: boolean;
         randomStationsNames: 'none' | StationCity;
         gridLines: boolean;
+        snapLines: boolean;
     };
 }
 
@@ -56,6 +57,7 @@ export const initialState: AppState = {
         autoParallel: true,
         randomStationsNames: 'none',
         gridLines: false,
+        snapLines: true,
     },
 };
 
@@ -84,6 +86,9 @@ const appSlice = createSlice({
         setGridLines: (state, action: PayloadAction<boolean>) => {
             state.preference.gridLines = action.payload;
         },
+        setSnapLines: (state, action: PayloadAction<boolean>) => {
+            state.preference.snapLines = action.payload;
+        },
     },
 });
 
@@ -95,5 +100,6 @@ export const {
     setAutoParallel,
     setRandomStationsNames,
     setGridLines,
+    setSnapLines,
 } = appSlice.actions;
 export default appSlice.reducer;

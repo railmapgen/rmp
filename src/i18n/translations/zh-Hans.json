@@ -574,7 +574,8 @@
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
-                "gridline": "显示网格参考线并不启用磁性布局"
+                "gridline": "显示网格参考线",
+                "snapline": "磁性吸附到参考线"
             },
             "shortcuts": {
                 "title": "快捷键",

@@ -574,7 +574,8 @@
                     "shmetro": "상하이",
                     "bjsubway": "베이징"
                 },
-                "gridline": "그리드 가이드라인 표시 및 자동 스냅 비활성화"
+                "gridline": "격자 가이드 라인 표시",
+                "snapline": "가이드 라인과 포인트에 자동 스냅"
             },
             "shortcuts": {
                 "title": "바로 가기",
