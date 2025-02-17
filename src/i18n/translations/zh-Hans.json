@@ -346,6 +346,7 @@
                 "londonTubeBasic": {
                     "displayName": "伦敦地铁基本车站",
                     "terminal": "终点站",
+                    "terminalNameRotate": "终点站名旋转",
                     "shareTracks": "轨道共享",
                     "shareTracksIndex": "轨道共享索引"
                 },
