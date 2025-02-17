@@ -346,6 +346,7 @@
                 "londonTubeBasic": {
                     "displayName": "런던 지하철 기본역",
                     "terminal": "종착역",
+                    "terminalNameRotate": "터미널 이름 회전",
                     "shareTracks": "선로 공유",
                     "shareTracksIndex": "선로 공유 지수"
                 },

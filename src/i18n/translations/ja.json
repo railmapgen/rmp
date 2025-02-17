@@ -347,6 +347,7 @@
                 "londonTubeBasic": {
                     "displayName": "ロンドン地下鉄基本駅",
                     "terminal": "終着駅",
+                    "terminalNameRotate": "終着駅名回転",
                     "shareTracks": "線路共有",
                     "shareTracksIndex": "線路共有索引"
                 },
