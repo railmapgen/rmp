@@ -358,6 +358,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "広東省都市間鉄道駅"
+                },
+                "chongqingRTBasic": {
+                    "displayName": "重庆軌道交通基本駅"
+                },
+                "chongqingRTInt": {
+                    "displayName": "重庆軌道交通乗り換え駅"
                 }
             },
             "lines": {

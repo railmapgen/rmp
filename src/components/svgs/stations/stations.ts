@@ -26,6 +26,8 @@ import londonTubeBasicStation from './london-tube-basic';
 import londonTubeIntStation from './london-tube-int';
 import londonRiverServicesIntStation from './london-river-services-interchange';
 import guangdongIntercityRailwayStation from './guangdong-intercity-railway';
+import chongqingRTBasicStation from './chongqingrt-basic';
+import chongqingRTIntStation from './chongqingrt-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -55,6 +57,8 @@ const stations = {
     [StationType.LondonTubeInt]: londonTubeIntStation,
     [StationType.LondonRiverServicesInt]: londonRiverServicesIntStation,
     [StationType.GuangdongIntercityRailway]: guangdongIntercityRailwayStation,
+    [StationType.ChongqingRTBasic]: chongqingRTBasicStation,
+    [StationType.ChongqingRTInt]: chongqingRTIntStation,
 };
 
 export default stations;
