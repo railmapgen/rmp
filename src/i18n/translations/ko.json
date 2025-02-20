@@ -357,6 +357,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "광둥 시외 기차역"
+                },
+                "chongqingRTBasic": {
+                    "displayName": "충칭 궤도교통 기본역"
+                },
+                "chongqingRTInt": {
+                    "displayName": "충칭 궤도교통 환승역"
                 }
             },
             "lines": {
