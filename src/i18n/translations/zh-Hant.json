@@ -359,10 +359,10 @@
                     "displayName": "廣東城際鐵路車站"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "昆明軌道交通基本車站"
+                    "displayName": "重庆軌道交通基本車站"
                 },
                 "chongqingRTInt": {
-                    "displayName": "昆明軌道交通換乘車站"
+                    "displayName": "重庆軌道交通換乘車站"
                 }
             },
             "lines": {
