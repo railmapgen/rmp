@@ -358,6 +358,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway station"
+                },
+                "chongqingRTBasic": {
+                    "displayName": "Chongqing Rail Transit basic station"
+                },
+                "chongqingRTInt": {
+                    "displayName": "Chongqing Rail Transit interchange station"
                 }
             },
             "lines": {

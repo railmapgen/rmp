@@ -27,6 +27,8 @@ import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/lo
 import { LondonTubeIntStationAttributes } from '../components/svgs/stations/london-tube-int';
 import { LondonRiverServicesIntStationAttributes } from '../components/svgs/stations/london-river-services-interchange';
 import { GuangdongIntercityRailwayStationAttributes } from '../components/svgs/stations/guangdong-intercity-railway';
+import { ChongqingRTBasicStationAttributes } from '../components/svgs/stations/chongqingrt-basic';
+import { ChongqingRTIntStationAttributes } from '../components/svgs/stations/chongqingrt-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -56,6 +58,8 @@ export enum StationType {
     LondonTubeInt = 'london-tube-int',
     LondonRiverServicesInt = 'london-river-int',
     GuangdongIntercityRailway = 'gd-intercity-rwy',
+    ChongqingRTBasic = 'chongqingrt-basic',
+    ChongqingRTInt = 'chongqingrt-int',
 }
 
 export interface ExternalStationAttributes {
@@ -86,6 +90,8 @@ export interface ExternalStationAttributes {
     [StationType.LondonTubeInt]?: LondonTubeIntStationAttributes;
     [StationType.LondonRiverServicesInt]?: LondonRiverServicesIntStationAttributes;
     [StationType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayStationAttributes;
+    [StationType.ChongqingRTBasic]?: ChongqingRTBasicStationAttributes;
+    [StationType.ChongqingRTInt]?: ChongqingRTIntStationAttributes;
 }
 
 export const StationWithColor = [
@@ -96,6 +102,7 @@ export const StationWithColor = [
     StationType.MRTBasic,
     StationType.FoshanMetroBasic,
     StationType.QingdaoMetroStation,
+    StationType.ChongqingRTBasic,
 ];
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
