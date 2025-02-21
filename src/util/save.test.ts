@@ -555,4 +555,18 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_n0TfQ0Xk6X","attributes":{"visible":true,"zIndex":0,"x":630,"y":335,"type":"gzmtr-int-2024","gzmtr-int-2024":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","gz1","#F3D03E","#fff","1","14","gz"],["guangzhou","gz3","#ECA154","#fff","3","11","gz"]]],"open":true,"secondaryNames":["",""],"anchorAt":-1,"columns":1,"topHeavy":false,"osiPosition":"none"}}},{"key":"stn_HBR6YZ_MRm","attributes":{"visible":true,"zIndex":0,"x":630,"y":335,"type":"gzmtr-int-2024","gzmtr-int-2024":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","gz1","#F3D03E","#fff","1","14","gz"],["guangzhou","gz3","#ECA154","#fff","3","11","gz"]]],"open":true,"secondaryNames":["",""],"anchorAt":-1,"columns":2,"topHeavy":false,"osiPosition":"none"}}}],"edges":[]},"version":43}';
         expect(newParam).toEqual(expectParam);
     });
+    it('43 -> 44', () => {
+        // Bump save version to support Chongqing Rail Transit stations.
+        // Prepare an empty save.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":43}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[43](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":44}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });
