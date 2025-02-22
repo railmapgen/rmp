@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 44;
+export const CURRENT_VERSION = 45;
 
 /**
  * Load the tutorial.
@@ -585,4 +585,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     43: param =>
         // Bump save version to support Chongqing Rail Transit stations.
         JSON.stringify({ ...JSON.parse(param), version: 44 }),
+    44: param =>
+        // Bump save version to support Chongqing Rail Transit 2021 stations and facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 45 }),
 };
