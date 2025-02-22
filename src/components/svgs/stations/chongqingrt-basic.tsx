@@ -59,9 +59,9 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
         } else if (oX === 'right' && oY === 'bottom') {
             return [5, names[0].split('\n').length * LINE_HEIGHT[oY] + 3];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-6, 2];
+            return [-5, 0];
         } else if (oX === 'right' && oY === 'middle') {
-            return [6, 2];
+            return [5, 0];
         } else return [0, 0];
     };
 
