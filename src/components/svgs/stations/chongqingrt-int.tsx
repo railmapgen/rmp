@@ -25,6 +25,7 @@ export const LINE_HEIGHT = {
 
 const SCALE = 2.5;
 const ORIGINAL_SIZE = 6.9233;
+const HALF_SIZE = (ORIGINAL_SIZE * SCALE) / 2;
 
 const ChongqingRTIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -50,21 +51,21 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] + 3];
+            return [-HALF_SIZE, -names[1].split('\n').length * LINE_HEIGHT[oY] - HALF_SIZE];
         } else if (oX === 'middle' && oY === 'top') {
-            return [9, -names[1].split('\n').length * LINE_HEIGHT[oY] - 1];
+            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] - HALF_SIZE - 2];
         } else if (oX === 'right' && oY === 'top') {
-            return [18, -names[1].split('\n').length * LINE_HEIGHT[oY] + 3];
+            return [HALF_SIZE, -names[1].split('\n').length * LINE_HEIGHT[oY] - HALF_SIZE];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 14];
+            return [-HALF_SIZE, names[0].split('\n').length * LINE_HEIGHT[oY] + HALF_SIZE];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [9, names[0].split('\n').length * LINE_HEIGHT[oY] + 18];
+            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + HALF_SIZE + 2];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [18, names[0].split('\n').length * LINE_HEIGHT[oY] + 14];
+            return [HALF_SIZE, names[0].split('\n').length * LINE_HEIGHT[oY] + HALF_SIZE];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-2, 9];
+            return [-HALF_SIZE - 2, 0];
         } else if (oX === 'right' && oY === 'middle') {
-            return [20, 9];
+            return [HALF_SIZE + 2, 0];
         } else return [0, 0];
     };
 
@@ -73,7 +74,7 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            <g transform={`translate(${(-ORIGINAL_SIZE * SCALE) / 2},${(-ORIGINAL_SIZE * SCALE) / 2})scale(${SCALE})`}>
+            <g transform={`translate(${-HALF_SIZE},${-HALF_SIZE})scale(${SCALE})`}>
                 <path
                     style={{
                         fill: 'white',
