@@ -169,9 +169,9 @@ const chongqingRT2021TextLineBadgeIcon = (
             className="rmp-name__en"
             textAnchor="middle"
             x="10.5"
-            y="9.75"
+            y="13.75"
             fill="white"
-            fontSize="2.2"
+            fontSize="2"
             letterSpacing="0"
         >
             Konggang Line
