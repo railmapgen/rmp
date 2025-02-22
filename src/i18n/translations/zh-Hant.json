@@ -112,6 +112,13 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "重慶軌道交通文字線路標識"
                 },
+                "chongqingRT2021NumLineBadge": {
+                    "displayName": "重慶軌道交通數字線路標識（2021）"
+                },
+                "chongqingRT2021TextLineBadge": {
+                    "displayName": "重慶軌道交通文字線路標識（2021）",
+                    "isRapid": "快速/直快車標識"
+                },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "深圳地鐵數字線路標識",
                     "branch": "是否支線"
@@ -359,10 +366,24 @@
                     "displayName": "廣東城際鐵路車站"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "重庆軌道交通基本車站"
+                    "displayName": "重慶軌道交通基本車站"
                 },
                 "chongqingRTInt": {
-                    "displayName": "重庆軌道交通換乘車站"
+                    "displayName": "重慶軌道交通換乘車站"
+                },
+                "chongqingRT2021Basic": {
+                    "displayName": "重慶軌道交通基本車站（2021）",
+                    "open": "是否開通"
+                },
+                "chongqingRT2021Int": {
+                    "displayName": "重慶軌道交通換乘車站（2021）",
+                    "isRapid": "快速/直快車停靠站",
+                    "isWide": "宽形站",
+                    "wideDirection":{
+                        "displayName": "方向",
+                        "vertical": "縱向",
+                        "horizontal": "橫向"
+                    }
                 }
             },
             "lines": {

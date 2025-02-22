@@ -17,8 +17,8 @@ import { AttributesWithColor, ColorField } from '../../panels/details/color-fiel
 
 export const LINE_HEIGHT = {
     zh: 9,
-    en: 6.2,
-    top: 6.2 + 1,
+    en: 5,
+    top: 5 + 1,
     middle: 0,
     bottom: 9 + 1,
 };
@@ -59,9 +59,9 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
         } else if (oX === 'right' && oY === 'bottom') {
             return [5, names[0].split('\n').length * LINE_HEIGHT[oY] + 3];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-5, 0];
+            return [-6, 2];
         } else if (oX === 'right' && oY === 'middle') {
-            return [5, 0];
+            return [6, 2];
         } else return [0, 0];
     };
 

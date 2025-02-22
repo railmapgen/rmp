@@ -112,6 +112,13 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "Chongqing Rail Transit text line badge"
                 },
+                "chongqingRT2021NumLineBadge": {
+                    "displayName": "Chongqing Rail Transit num line badge（2021）"
+                },
+                "chongqingRT2021TextLineBadge": {
+                    "displayName": "Chongqing Rail Transit text line badge（2021）",
+                    "isRapid": "Is rapid or express train badge"
+                },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "Shenzhen Metro num line badge",
                     "branch": "Is branch line"
@@ -364,6 +371,20 @@
                 },
                 "chongqingRTInt": {
                     "displayName": "Chongqing Rail Transit interchange station"
+                },
+                "chongqingRT2021Basic": {
+                    "displayName": "Chongqing Rail Transit basic station (2021)",
+                    "open": "Is opened"
+                },
+                "chongqingRT2021Int": {
+                    "displayName": "Chongqing Rail Transit interchange station (2021)",
+                    "isRapid": "Is rapid or express train station",
+                    "isWide": "Is a wide station",
+                    "wideDirection":{
+                        "displayName": "Direction",
+                        "vertical": "Vertical",
+                        "horizontal": "Horizontal"
+                    }
                 }
             },
             "lines": {

@@ -114,6 +114,13 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "重慶鉄道交通テキスト路線徽章"
                 },
+                "chongqingRT2021NumLineBadge": {
+                    "displayName": "重慶鉄道交通路線番号徽章（令和3年）"
+                },
+                "chongqingRT2021TextLineBadge": {
+                    "displayName": "重慶鉄道交通テキスト路線徽章（令和3年）",
+                    "isRapid": "特急/直通特急徽章"
+                },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "深セン地下鉄路線番号徽章",
                     "branch": "支線"
@@ -360,10 +367,24 @@
                     "displayName": "広東省都市間鉄道駅"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "重庆軌道交通基本駅"
+                    "displayName": "重慶鉄道交通基本駅"
                 },
                 "chongqingRTInt": {
-                    "displayName": "重庆軌道交通乗り換え駅"
+                    "displayName": "重慶鉄道交通乗り換え駅"
+                },
+                "chongqingRT2021Basic": {
+                    "displayName": "重慶鉄道交通基本駅（令和3年）",
+                    "open": "開業済み"
+                },
+                "chongqingRT2021Int": {
+                    "displayName": "重慶鉄道交通乗り換え駅（令和3年）",
+                    "isRapid": "特急/直通特急ドッキング",
+                    "isWide": "ワイド駅",
+                    "wideDirection":{
+                        "displayName": "方向",
+                        "vertical": "垂直",
+                        "horizontal": "水平"
+                    }
                 }
             },
             "lines": {

@@ -48,6 +48,11 @@ export enum FacilitiesType {
     RiverCraftLondon = 'river_craft',
     AirportLondon = 'airport_london',
     CoachStationLondon = 'coach_station_london',
+    AirportChongqing = 'airport_chongqing',
+    RailwayChongqing = 'railway_chongqing',
+    CoachStationChongqing = 'coach_station_chongqing',
+    BusStationChongqing = 'bus_station_chongqing',
+    ShippingStationChongqing = 'shipping_station_chongqing',
 }
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
@@ -145,6 +150,11 @@ const attrsComponent = (props: AttrsProps<FacilitiesAttributes>) => {
                 [FacilitiesType.RiverCraftLondon]: 'River services interchange',
                 [FacilitiesType.AirportLondon]: 'Airport London',
                 [FacilitiesType.CoachStationLondon]: 'Victoria Coach Station',
+                [FacilitiesType.AirportChongqing]: 'Airport Chongqing',
+                [FacilitiesType.RailwayChongqing]: 'Railway Chongqing',
+                [FacilitiesType.CoachStationChongqing]: 'Coach Station Chongqing',
+                [FacilitiesType.BusStationChongqing]: 'Bus Station Chongqing',
+                [FacilitiesType.ShippingStationChongqing]: 'Shipping Station Chongqing',
             },
             onChange: val => {
                 attrs.type = val as FacilitiesType;
