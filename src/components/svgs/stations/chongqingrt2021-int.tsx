@@ -353,24 +353,21 @@ const ChongqingRT2021IntAttrsComponent = (props: AttrsProps<ChongqingRT2021IntSt
             },
             minW: 'full',
         },
-        ...((attrs.isWide
-            ? [
-                  {
-                      type: 'select',
-                      label: t('panel.details.stations.chongqingRT2021Int.wideDirection.displayName'),
-                      options: {
-                          vertical: t('panel.details.stations.chongqingRT2021Int.wideDirection.vertical'),
-                          horizontal: t('panel.details.stations.chongqingRT2021Int.wideDirection.horizontal'),
-                      },
-                      value: (attrs ?? defaultChongqingRT2021IntStationAttributes).wideDirection,
-                      onChange: val => {
-                          attrs.wideDirection = val as 'vertical' | 'horizontal';
-                          handleAttrsUpdate(id, attrs);
-                      },
-                      minW: 'full',
-                  },
-              ]
-            : []) as RmgFieldsField[]),
+        {
+            type: 'select',
+            label: t('panel.details.stations.chongqingRT2021Int.wideDirection.displayName'),
+            options: {
+                vertical: t('panel.details.stations.chongqingRT2021Int.wideDirection.vertical'),
+                horizontal: t('panel.details.stations.chongqingRT2021Int.wideDirection.horizontal'),
+            },
+            value: (attrs ?? defaultChongqingRT2021IntStationAttributes).wideDirection,
+            onChange: val => {
+                attrs.wideDirection = val as 'vertical' | 'horizontal';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            hidden: !attrs.isWide,
+        },
     ];
     return <RmgFields fields={fields} />;
 };
