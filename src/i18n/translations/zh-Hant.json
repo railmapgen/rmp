@@ -366,7 +366,8 @@
                     "displayName": "廣東城際鐵路車站"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "重慶軌道交通基本車站"
+                    "displayName": "重慶軌道交通基本車站",
+                    "isLoop": "環線車站"
                 },
                 "chongqingRTInt": {
                     "displayName": "重慶軌道交通換乘車站"
@@ -502,6 +503,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "廣東城際鐵路樣式"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "重慶軌道交通線路標識連接線樣式"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "重慶軌道交通環線樣式"
                 }
             },
             "edges": {},

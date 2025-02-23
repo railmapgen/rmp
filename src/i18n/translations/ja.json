@@ -367,7 +367,8 @@
                     "displayName": "広東省都市間鉄道駅"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "重慶鉄道交通基本駅"
+                    "displayName": "重慶鉄道交通基本駅",
+                    "isLoop": "環状線駅"
                 },
                 "chongqingRTInt": {
                     "displayName": "重慶鉄道交通乗り換え駅"
@@ -503,6 +504,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "広東省都市間鉄道風格"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "重慶鉄道交通路線標識接続線風格"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "重慶鉄道交通環状線風格"
                 }
             },
             "edges": {},

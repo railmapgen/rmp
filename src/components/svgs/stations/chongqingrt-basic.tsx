@@ -30,6 +30,7 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
         nameOffsetX = defaultChongqingRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultChongqingRTBasicStationAttributes.nameOffsetY,
         color = defaultChongqingRTBasicStationAttributes.color,
+        isLoop = defaultChongqingRTBasicStationAttributes.isLoop,
     } = attrs[StationType.ChongqingRTBasic] ?? defaultChongqingRTBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -59,9 +60,9 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
         } else if (oX === 'right' && oY === 'bottom') {
             return [5, names[0].split('\n').length * LINE_HEIGHT[oY] + 3];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-5, 0];
+            return [-5, 2];
         } else if (oX === 'right' && oY === 'middle') {
-            return [5, 0];
+            return [5, 2];
         } else return [0, 0];
     };
 
@@ -72,7 +73,7 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
-                r="3"
+                r={isLoop ? 4 : 3}
                 stroke={color[2]}
                 strokeWidth="1"
                 fill="white"
@@ -109,6 +110,7 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
 export interface ChongqingRTBasicStationAttributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    isLoop: boolean;
 }
 
 const defaultChongqingRTBasicStationAttributes: ChongqingRTBasicStationAttributes = {
@@ -116,6 +118,7 @@ const defaultChongqingRTBasicStationAttributes: ChongqingRTBasicStationAttribute
     color: [CityCode.Chongqing, 'cq1', '#e4002b', MonoColour.white],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    isLoop: false,
 };
 
 const ChongqingRTBasicAttrsComponent = (props: AttrsProps<ChongqingRTBasicStationAttributes>) => {
@@ -175,6 +178,17 @@ const ChongqingRTBasicAttrsComponent = (props: AttrsProps<ChongqingRTBasicStatio
                     defaultTheme={defaultChongqingRTBasicStationAttributes.color}
                 />
             ),
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.chongqingRTBasic.isLoop'),
+            isChecked: (attrs ?? defaultChongqingRTBasicStationAttributes).isLoop,
+            onChange: val => {
+                attrs.isLoop = val as boolean;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            oneLine: true,
         },
     ];
     return <RmgFields fields={fields} />;

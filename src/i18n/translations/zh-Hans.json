@@ -366,7 +366,8 @@
                     "displayName": "广东城际铁路车站"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "重庆轨道交通基本车站"
+                    "displayName": "重庆轨道交通基本车站",
+                    "isLoop": "环线车站"
                 },
                 "chongqingRTInt": {
                     "displayName": "重庆轨道交通换乘车站"
@@ -502,6 +503,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路样式"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "重庆轨道交通线路标识连接线样式"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "重庆轨道交通环线样式"
                 }
             },
             "edges": {},

@@ -367,7 +367,8 @@
                     "displayName": "Guangdong Intercity Railway station"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "Chongqing Rail Transit basic station"
+                    "displayName": "Chongqing Rail Transit basic station",
+                    "isLoop": "Loop line station"
                 },
                 "chongqingRTInt": {
                     "displayName": "Chongqing Rail Transit interchange station"
@@ -503,6 +504,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway style"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "Chongqing Rail Transit line badge style"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "Chongqing Rail Transit loop line style"
                 }
             },
             "edge": {},

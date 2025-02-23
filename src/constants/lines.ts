@@ -33,6 +33,8 @@ import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/style
 import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
 import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
+import { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
+import { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -77,6 +79,8 @@ export enum LineStyleType {
     LondonLutonAirportDART = 'london-DART',
     LondonIFSCloudCableCar = 'london-dangleway',
     GuangdongIntercityRailway = 'gd-intercity-rwy',
+    ChongqingRTLoop = 'chongqingrt-loop',
+    ChongqingRTLineBadge = 'chongqingrt-line-badge',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -108,6 +112,8 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.LondonLutonAirportDART]?: LondonLutonAirportDARTAttributes;
     [LineStyleType.LondonIFSCloudCableCar]?: LondonIFSCloudCableCarAttributes;
     [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
+    [LineStyleType.ChongqingRTLoop]?: ChongqingRTLoopAttributes;
+    [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
 }
 
 export const LineStylesWithColor = new Set([
@@ -126,6 +132,8 @@ export const LineStylesWithColor = new Set([
     LineStyleType.LondonLutonAirportDART,
     LineStyleType.LondonIFSCloudCableCar,
     LineStyleType.GZMTRLoop,
+    LineStyleType.ChongqingRTLoop,
+    LineStyleType.ChongqingRTLineBadge,
 ]);
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
