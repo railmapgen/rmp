@@ -27,7 +27,7 @@ const ChongqingRT2021NumLineBadge = (props: NodeComponentProps<ChongqingRT2021Nu
     );
 
     const fgColor = color[3];
-    const fontSize = !Number.isInteger(num) ? 15 : 16;
+    const fontSize = !Number.isInteger(num) ? 15 : Number(num) >= 10 ? 15 : 16;
     const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.2, 1.5] : [0, 5.5]) : [0, 2.55];
 
     return (
