@@ -70,6 +70,7 @@ const ChongqingRT2021BasicStation = (props: StationComponentProps) => {
 
     const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+    const isTextLine = new RegExp('[\\u4E00-\\u9FFF]+', 'g').test(lineCode);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -90,16 +91,16 @@ const ChongqingRT2021BasicStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             <text
-                fontSize={new RegExp('[\\u4E00-\\u9FFF]+', 'g').test(lineCode) ? 5 : 7}
+                fontSize={isTextLine ? 5 : 7}
                 textAnchor="middle"
                 x={0}
-                y={new RegExp('[\\u4E00-\\u9FFF]+', 'g').test(lineCode) ? -1.5 : -1}
+                y={isTextLine ? -1.5 : -1}
                 style={{ pointerEvents: 'none' }}
             >
                 {lineCode}
             </text>
             <text fontSize={7} textAnchor="middle" x={0} y={6} style={{ pointerEvents: 'none' }}>
-                {Number(stationCode) < 10 ? `0${Number(stationCode)}` : stationCode}
+                {Number.isInteger(stationCode) && Number(stationCode) < 10 ? `0${Number(stationCode)}` : stationCode}
             </text>
             <line
                 x1={-5.5}

@@ -1,9 +1,10 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ChongqingRT2021NumLineBadge = (props: NodeComponentProps<ChongqingRT2021NumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -57,7 +58,7 @@ const ChongqingRT2021NumLineBadge = (props: NodeComponentProps<ChongqingRT2021Nu
 };
 
 /**
- * BerlinUBahnLineBadge specific props.
+ * ChongqingRT2021NumLineBadge specific props.
  */
 export interface ChongqingRT2021NumLineBadgeAttributes extends AttributesWithColor {
     num: number | string;
@@ -68,43 +69,39 @@ const defaultChongqingRT2021NumLineBadgeAttributes: ChongqingRT2021NumLineBadgeA
     color: [CityCode.Chongqing, 'cq1', '#e4002b', MonoColour.white],
 };
 
-const chongqingRT2021NumLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.num',
-        value: (attrs?: ChongqingRT2021NumLineBadgeAttributes) =>
-            (attrs ?? defaultChongqingRT2021NumLineBadgeAttributes).num,
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: ChongqingRT2021NumLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultChongqingRT2021NumLineBadgeAttributes;
-            // set value
-            if (Number.isNaN(Number(val))) {
-                attrs.num = val;
-            } else {
-                attrs.num = Number(val);
-            }
-            // return modified attrs
-            return attrs;
+const ChongqingRT2021NumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRT2021NumLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.num'),
+            value: (attrs ?? defaultChongqingRT2021NumLineBadgeAttributes).num as string,
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: (val: string | number) => {
+                if (Number.isNaN(Number(val))) {
+                    attrs.num = val;
+                } else {
+                    attrs.num = Number(val);
+                }
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.ChongqingRT2021NumLineBadge}
-                defaultTheme={defaultChongqingRT2021NumLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
-
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={chongqingRT2021NumLineBadgeFields as RmgFieldsFieldDetail<ChongqingRT2021NumLineBadgeAttributes>}
-    />
-);
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.ChongqingRT2021NumLineBadge}
+                    defaultTheme={defaultChongqingRT2021NumLineBadgeAttributes.color}
+                />
+            ),
+            minW: 'full',
+        },
+    ];
+    return <RmgFields fields={fields} />;
+};
 
 const chongqingRT2021NumLineBadgeIcon = (
     <svg viewBox="0 0 21 21" height={40} width={40} focusable={false} style={{ padding: 3 }}>
@@ -120,7 +117,7 @@ const chongqingRT2021NumLineBadge: Node<ChongqingRT2021NumLineBadgeAttributes> =
     component: ChongqingRT2021NumLineBadge,
     icon: chongqingRT2021NumLineBadgeIcon,
     defaultAttrs: defaultChongqingRT2021NumLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: ChongqingRT2021NumLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.chongqingRT2021NumLineBadge.displayName',
         tags: [],

@@ -330,21 +330,18 @@ const ChongqingRT2021IntAttrsComponent = (props: AttrsProps<ChongqingRT2021IntSt
             },
             minW: 'full',
         },
-        ...((attrs.isRapid
-            ? [
-                  {
-                      type: 'custom',
-                      label: t('color'),
-                      component: (
-                          <ColorField
-                              type={StationType.ChongqingRT2021Int}
-                              defaultTheme={defaultChongqingRT2021IntStationAttributes.rapidColor}
-                              colorKey="rapidColor"
-                          />
-                      ),
-                  },
-              ]
-            : []) as RmgFieldsField[]),
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={StationType.ChongqingRT2021Int}
+                    defaultTheme={defaultChongqingRT2021IntStationAttributes.rapidColor}
+                    colorKey="rapidColor"
+                />
+            ),
+            hidden: !attrs.isRapid,
+        },
         {
             type: 'switch',
             label: t('panel.details.stations.chongqingRT2021Int.isWide'),
