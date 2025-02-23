@@ -139,84 +139,36 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                     {names[0].slice(0, 5)}
                 </text>
             ) : names[0].length <= 2 ? (
-                <text
-                    fontSize={8}
-                    textAnchor="middle"
-                    x={0}
-                    y={2}
-                    fill={isRapid ? fgColor : 'black'}
-                >
+                <text fontSize={8} textAnchor="middle" x={0} y={2} fill={isRapid ? fgColor : 'black'}>
                     {names[0]}
                 </text>
             ) : names[0].length <= 4 ? (
                 <>
-                    <text
-                        fontSize={8}
-                        textAnchor="middle"
-                        x={0}
-                        y={-1}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={8} textAnchor="middle" x={0} y={-1} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(0, 2)}
                     </text>
-                    <text
-                        fontSize={8}
-                        textAnchor="middle"
-                        x={0}
-                        y={7}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={8} textAnchor="middle" x={0} y={7} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(2)}
                     </text>
                 </>
             ) : names[0].length <= 6 ? (
                 <>
-                    <text
-                        fontSize={5.5}
-                        textAnchor="middle"
-                        x={0}
-                        y={-1}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={5.5} textAnchor="middle" x={0} y={-1} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(0, 3)}
                     </text>
-                    <text
-                        fontSize={5.5}
-                        textAnchor="middle"
-                        x={0}
-                        y={5}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={5.5} textAnchor="middle" x={0} y={5} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(3)}
                     </text>
                 </>
             ) : (
                 <>
-                    <text
-                        fontSize={5.5}
-                        textAnchor="middle"
-                        x={0}
-                        y={-4}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={5.5} textAnchor="middle" x={0} y={-4} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(0, 3)}
                     </text>
-                    <text
-                        fontSize={5.5}
-                        textAnchor="middle"
-                        x={0}
-                        y={2}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={5.5} textAnchor="middle" x={0} y={2} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(3, 6)}
                     </text>
-                    <text
-                        fontSize={5.5}
-                        textAnchor="middle"
-                        x={0}
-                        y={8}
-                        fill={isRapid ? fgColor : 'black'}
-                    >
+                    <text fontSize={5.5} textAnchor="middle" x={0} y={8} fill={isRapid ? fgColor : 'black'}>
                         {names[0].slice(6, 9)}
                     </text>
                 </>
@@ -224,10 +176,10 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
             {/* Below is an overlay element that has all event hooks but can not be seen. */}
             <rect
                 id={`stn_core_${id}`}
-                x={-width / 2-1}
-                y={-height / 2-1}
-                width={width+2}
-                height={height+2}
+                x={-width / 2 - 1}
+                y={-height / 2 - 1}
+                width={width + 2}
+                height={height + 2}
                 fill="white"
                 fillOpacity="0"
                 stroke="#231815"
