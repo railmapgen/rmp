@@ -117,7 +117,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
     return (
         <g id={id} transform={`translate(${x}, ${y})`} textAnchor="middle">
             <rect
-                id={`stn_core_${id}`}
                 x={-width / 2}
                 y={-height / 2}
                 width={width}
@@ -127,10 +126,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                 rx={3}
                 ry={3}
                 fill={isRapid ? rapidColor[2] : 'white'}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                style={{ cursor: 'move' }}
             />
             {isWide ? (
                 <text
@@ -139,7 +134,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                     writingMode={wideDirection == 'horizontal' ? 'lr-tb' : 'tb'}
                     x={0}
                     y={wideDirection == 'horizontal' ? 2.5 : 0}
-                    style={{ pointerEvents: 'none' }}
                     fill={isRapid ? fgColor : 'black'}
                 >
                     {names[0].slice(0, 5)}
@@ -150,7 +144,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                     textAnchor="middle"
                     x={0}
                     y={2}
-                    style={{ pointerEvents: 'none' }}
                     fill={isRapid ? fgColor : 'black'}
                 >
                     {names[0]}
@@ -162,7 +155,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={-1}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(0, 2)}
@@ -172,7 +164,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={7}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(2)}
@@ -185,7 +176,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={-1}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(0, 3)}
@@ -195,7 +185,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={5}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(3)}
@@ -208,7 +197,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={-4}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(0, 3)}
@@ -218,7 +206,6 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={2}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(3, 6)}
@@ -228,13 +215,30 @@ const ChongqingRT2021IntStation = (props: StationComponentProps) => {
                         textAnchor="middle"
                         x={0}
                         y={8}
-                        style={{ pointerEvents: 'none' }}
                         fill={isRapid ? fgColor : 'black'}
                     >
                         {names[0].slice(6, 9)}
                     </text>
                 </>
             )}
+            {/* Below is an overlay element that has all event hooks but can not be seen. */}
+            <rect
+                id={`stn_core_${id}`}
+                x={-width / 2-1}
+                y={-height / 2-1}
+                width={width+2}
+                height={height+2}
+                fill="white"
+                fillOpacity="0"
+                stroke="#231815"
+                strokeMiterlimit="22.9"
+                strokeWidth="0.232"
+                strokeOpacity="0"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[1].split('\n')}

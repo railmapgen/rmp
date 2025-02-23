@@ -75,7 +75,6 @@ const ChongqingRT2021BasicStation = (props: StationComponentProps) => {
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <rect
-                id={`stn_core_${id}`}
                 x={-7.5}
                 y={-7.5}
                 width={15}
@@ -85,31 +84,31 @@ const ChongqingRT2021BasicStation = (props: StationComponentProps) => {
                 rx={2}
                 ry={2}
                 fill="white"
+            />
+            <text fontSize={isTextLine ? 5 : 7} textAnchor="middle" x={0} y={isTextLine ? -1.5 : -1}>
+                {lineCode}
+            </text>
+            <text fontSize={7} textAnchor="middle" x={0} y={6}>
+                {Number.isInteger(stationCode) && Number(stationCode) < 10 ? `0${Number(stationCode)}` : stationCode}
+            </text>
+            {(lineCode || stationCode) && <line x1={-5.5} y1={0} x2={5.5} y2={0} stroke={'black'} strokeWidth={0.6} />}
+            {/* Below is an overlay element that has all event hooks but can not be seen. */}
+            <rect
+                id={`stn_core_${id}`}
+                x={-8.5}
+                y={-8.5}
+                width={17}
+                height={17}
+                fill="white"
+                fillOpacity="0"
+                stroke="#231815"
+                strokeMiterlimit="22.9"
+                strokeWidth="0.232"
+                strokeOpacity="0"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
-            />
-            <text
-                fontSize={isTextLine ? 5 : 7}
-                textAnchor="middle"
-                x={0}
-                y={isTextLine ? -1.5 : -1}
-                style={{ pointerEvents: 'none' }}
-            >
-                {lineCode}
-            </text>
-            <text fontSize={7} textAnchor="middle" x={0} y={6} style={{ pointerEvents: 'none' }}>
-                {Number.isInteger(stationCode) && Number(stationCode) < 10 ? `0${Number(stationCode)}` : stationCode}
-            </text>
-            <line
-                x1={-5.5}
-                y1={0}
-                x2={5.5}
-                y2={0}
-                stroke={'black'}
-                strokeWidth={0.6}
-                style={{ pointerEvents: 'none' }}
             />
             <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
@@ -271,13 +270,13 @@ const chongqingRT2021BasicStationIcon = (
             fill="white"
             style={{ cursor: 'move' }}
         />
-        <text fontSize={5.5} textAnchor="middle" x={6} y={5} style={{ pointerEvents: 'none' }}>
+        <text fontSize={5.5} textAnchor="middle" x={6} y={5}>
             1
         </text>
-        <text fontSize={5.5} textAnchor="middle" x={6} y={11} style={{ pointerEvents: 'none' }}>
+        <text fontSize={5.5} textAnchor="middle" x={6} y={11}>
             01
         </text>
-        <line x1={1.5} y1={6} x2={10.5} y2={6} stroke={'black'} strokeWidth={0.6} style={{ pointerEvents: 'none' }} />
+        <line x1={1.5} y1={6} x2={10.5} y2={6} stroke={'black'} strokeWidth={0.6} />
     </svg>
 );
 
