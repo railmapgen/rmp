@@ -88,7 +88,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
               [colorKey]: defaultTheme,
           })[colorKey] as Theme)
         : defaultTheme;
-    
+
     return (
         <>
             <ThemeButton

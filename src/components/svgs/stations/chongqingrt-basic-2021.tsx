@@ -89,7 +89,9 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
                 {lineCode}
             </text>
             <text fontSize={7} textAnchor="middle" x={0} y={6}>
-                {Number.isInteger(stationCode) && Number(stationCode) < 10 ? `0${Number(stationCode)}` : stationCode}
+                {/^\d+$/.test(stationCode) && Number.isInteger(Number(stationCode)) && Number(stationCode) < 10
+                    ? `0${Number(stationCode)}`
+                    : stationCode}
             </text>
             {(lineCode || stationCode) && <line x1={-5.5} y1={0} x2={5.5} y2={0} stroke={'black'} strokeWidth={0.6} />}
             {/* Below is an overlay element that has all event hooks but can not be seen. */}
