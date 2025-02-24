@@ -17,8 +17,8 @@ import { AttributesWithColor, ColorField } from '../../panels/details/color-fiel
 
 export const LINE_HEIGHT = {
     zh: 9,
-    en: 5,
-    top: 5 + 1,
+    en: 4,
+    top: 4 + 1,
     middle: 0,
     bottom: 9 + 1,
 };
@@ -138,7 +138,7 @@ const ChongqingRTBasicAttrsComponent = (props: AttrsProps<ChongqingRTBasicStatio
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: (attrs ?? defaultChongqingRTBasicStationAttributes).names[1],
+            value: attrs.names.at(1) ?? defaultChongqingRTBasicStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);

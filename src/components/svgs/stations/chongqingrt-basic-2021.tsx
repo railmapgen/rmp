@@ -23,17 +23,17 @@ export const LINE_HEIGHT = {
     bottom: 9 + 1,
 };
 
-const ChongqingRT2021BasicStation = (props: StationComponentProps) => {
+const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultChongqingRT2021BasicStationAttributes.nameOffsetX,
-        nameOffsetY = defaultChongqingRT2021BasicStationAttributes.nameOffsetY,
-        color = defaultChongqingRT2021BasicStationAttributes.color,
-        lineCode = defaultChongqingRT2021BasicStationAttributes.lineCode,
-        stationCode = defaultChongqingRT2021BasicStationAttributes.stationCode,
-        open = defaultChongqingRT2021BasicStationAttributes.open,
-    } = attrs[StationType.ChongqingRT2021Basic] ?? defaultChongqingRT2021BasicStationAttributes;
+        nameOffsetX = defaultChongqingRTBasicStation2021Attributes.nameOffsetX,
+        nameOffsetY = defaultChongqingRTBasicStation2021Attributes.nameOffsetY,
+        color = defaultChongqingRTBasicStation2021Attributes.color,
+        lineCode = defaultChongqingRTBasicStation2021Attributes.lineCode,
+        stationCode = defaultChongqingRTBasicStation2021Attributes.stationCode,
+        open = defaultChongqingRTBasicStation2021Attributes.open,
+    } = attrs[StationType.ChongqingRTBasic2021] ?? defaultChongqingRTBasicStation2021Attributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -143,9 +143,9 @@ const ChongqingRT2021BasicStation = (props: StationComponentProps) => {
 };
 
 /**
- * ChongqingRT2021BasicStation specific props.
+ * ChongqingRTBasicStation2021 specific props.
  */
-export interface ChongqingRT2021BasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface ChongqingRTBasicStation2021Attributes extends StationAttributes, AttributesWithColor {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     lineCode: string;
@@ -153,7 +153,7 @@ export interface ChongqingRT2021BasicStationAttributes extends StationAttributes
     open: boolean;
 }
 
-const defaultChongqingRT2021BasicStationAttributes: ChongqingRT2021BasicStationAttributes = {
+const defaultChongqingRTBasicStation2021Attributes: ChongqingRTBasicStation2021Attributes = {
     ...defaultStationAttributes,
     color: [CityCode.Chongqing, 'cq1', '#e4002b', MonoColour.white],
     nameOffsetX: 'right',
@@ -163,14 +163,14 @@ const defaultChongqingRT2021BasicStationAttributes: ChongqingRT2021BasicStationA
     open: true,
 };
 
-const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021BasicStationAttributes>) => {
+const ChongqingRTBasic2021AttrsComponent = (props: AttrsProps<ChongqingRTBasicStation2021Attributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs ?? defaultChongqingRT2021BasicStationAttributes).names[0],
+            value: (attrs ?? defaultChongqingRTBasicStation2021Attributes).names[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -180,7 +180,7 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: (attrs ?? defaultChongqingRT2021BasicStationAttributes).names[1],
+            value: attrs.names.at(1) ?? defaultChongqingRTBasicStation2021Attributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -190,7 +190,7 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: (attrs ?? defaultChongqingRT2021BasicStationAttributes).nameOffsetX,
+            value: (attrs ?? defaultChongqingRTBasicStation2021Attributes).nameOffsetX,
             options: { left: 'left', middle: 'middle', right: 'right' },
             disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -202,7 +202,7 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: (attrs ?? defaultChongqingRT2021BasicStationAttributes).nameOffsetY,
+            value: (attrs ?? defaultChongqingRTBasicStation2021Attributes).nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
             disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -214,7 +214,7 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
         {
             type: 'input',
             label: t('panel.details.stations.common.lineCode'),
-            value: (attrs ?? defaultChongqingRT2021BasicStationAttributes).lineCode,
+            value: (attrs ?? defaultChongqingRTBasicStation2021Attributes).lineCode,
             onChange: val => {
                 attrs.lineCode = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -224,7 +224,7 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
         {
             type: 'input',
             label: t('panel.details.stations.common.stationCode'),
-            value: (attrs ?? defaultChongqingRT2021BasicStationAttributes).stationCode,
+            value: (attrs ?? defaultChongqingRTBasicStation2021Attributes).stationCode,
             onChange: val => {
                 attrs.stationCode = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -236,16 +236,16 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
             label: t('color'),
             component: (
                 <ColorField
-                    type={StationType.ChongqingRT2021Basic}
-                    defaultTheme={defaultChongqingRT2021BasicStationAttributes.color}
+                    type={StationType.ChongqingRTBasic2021}
+                    defaultTheme={defaultChongqingRTBasicStation2021Attributes.color}
                 />
             ),
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.chongqingRT2021Basic.open'),
+            label: t('panel.details.stations.chongqingRTBasic2021.open'),
             oneLine: true,
-            isChecked: (attrs ?? defaultChongqingRT2021BasicStationAttributes).open,
+            isChecked: (attrs ?? defaultChongqingRTBasicStation2021Attributes).open,
             onChange: (val: boolean) => {
                 attrs.open = val;
                 handleAttrsUpdate(id, attrs);
@@ -256,7 +256,7 @@ const ChongqingRT2021BasicAttrsComponent = (props: AttrsProps<ChongqingRT2021Bas
     return <RmgFields fields={fields} />;
 };
 
-const chongqingRT2021BasicStationIcon = (
+const chongqingRTBasicStation2021Icon = (
     <svg viewBox="-1 -1 14 14" width={40} height={40} focusable={false} style={{ padding: 5 }}>
         <rect
             x={0}
@@ -280,13 +280,13 @@ const chongqingRT2021BasicStationIcon = (
     </svg>
 );
 
-const chongqingRT2021BasicStation: Station<ChongqingRT2021BasicStationAttributes> = {
-    component: ChongqingRT2021BasicStation,
-    icon: chongqingRT2021BasicStationIcon,
-    defaultAttrs: defaultChongqingRT2021BasicStationAttributes,
-    attrsComponent: ChongqingRT2021BasicAttrsComponent,
+const chongqingRTBasicStation2021: Station<ChongqingRTBasicStation2021Attributes> = {
+    component: ChongqingRTBasicStation2021,
+    icon: chongqingRTBasicStation2021Icon,
+    defaultAttrs: defaultChongqingRTBasicStation2021Attributes,
+    attrsComponent: ChongqingRTBasic2021AttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.chongqingRT2021Basic.displayName',
+        displayName: 'panel.details.stations.chongqingRTBasic2021.displayName',
         cities: [CityCode.Chongqing],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -294,4 +294,4 @@ const chongqingRT2021BasicStation: Station<ChongqingRT2021BasicStationAttributes
     },
 };
 
-export default chongqingRT2021BasicStation;
+export default chongqingRTBasicStation2021;

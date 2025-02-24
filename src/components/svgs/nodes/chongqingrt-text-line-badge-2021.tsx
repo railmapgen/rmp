@@ -7,13 +7,13 @@ import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
-const ChongqingRT2021TextLineBadge = (props: NodeComponentProps<ChongqingRT2021TextLineBadgeAttributes>) => {
+const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextLineBadge2021Attributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
-        names = defaultChongqingRT2021TextLineBadgeAttributes.names,
-        color = defaultChongqingRT2021TextLineBadgeAttributes.color,
-        isRapid = defaultChongqingRT2021TextLineBadgeAttributes.isRapid,
-    } = attrs ?? defaultChongqingRT2021TextLineBadgeAttributes;
+        names = defaultChongqingRTTextLineBadge2021Attributes.names,
+        color = defaultChongqingRTTextLineBadge2021Attributes.color,
+        isRapid = defaultChongqingRTTextLineBadge2021Attributes.isRapid,
+    } = attrs ?? defaultChongqingRTTextLineBadge2021Attributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
 
@@ -83,27 +83,27 @@ const ChongqingRT2021TextLineBadge = (props: NodeComponentProps<ChongqingRT2021T
 };
 
 /**
- * ChongqingRT2021NumLineBadge specific props.
+ * ChongqingRTNumLineBadge2021 specific props.
  */
-export interface ChongqingRT2021TextLineBadgeAttributes extends AttributesWithColor {
+export interface ChongqingRTTextLineBadge2021Attributes extends AttributesWithColor {
     names: [string, string];
     isRapid: boolean;
 }
 
-const defaultChongqingRT2021TextLineBadgeAttributes: ChongqingRT2021TextLineBadgeAttributes = {
+const defaultChongqingRTTextLineBadge2021Attributes: ChongqingRTTextLineBadge2021Attributes = {
     names: ['空港线', 'Konggang Line'],
     color: [CityCode.Chongqing, 'cq3', '#003da5', MonoColour.white],
     isRapid: false,
 };
 
-const ChongqingRT2021NumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRT2021TextLineBadgeAttributes>) => {
+const ChongqingRTNumLineBadge2021AttrsComponent = (props: AttrsProps<ChongqingRTTextLineBadge2021Attributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.nodes.common.nameZh'),
-            value: (attrs ?? defaultChongqingRT2021TextLineBadgeAttributes).names[0],
+            value: (attrs ?? defaultChongqingRTTextLineBadge2021Attributes).names[0],
             onChange: (val: string | number) => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -113,7 +113,7 @@ const ChongqingRT2021NumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRT
         {
             type: 'textarea',
             label: t('panel.details.nodes.common.nameEn'),
-            value: (attrs ?? defaultChongqingRT2021TextLineBadgeAttributes).names[1],
+            value: (attrs ?? defaultChongqingRTTextLineBadge2021Attributes).names[1],
             onChange: (val: string | number) => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -125,16 +125,16 @@ const ChongqingRT2021NumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRT
             label: t('color'),
             component: (
                 <ColorField
-                    type={MiscNodeType.ChongqingRT2021TextLineBadge}
-                    defaultTheme={defaultChongqingRT2021TextLineBadgeAttributes.color}
+                    type={MiscNodeType.ChongqingRTTextLineBadge2021}
+                    defaultTheme={defaultChongqingRTTextLineBadge2021Attributes.color}
                 />
             ),
             minW: 'full',
         },
         {
             type: 'switch',
-            label: t('panel.details.nodes.chongqingRT2021TextLineBadge.isRapid'),
-            isChecked: (attrs ?? defaultChongqingRT2021TextLineBadgeAttributes).isRapid,
+            label: t('panel.details.nodes.chongqingRTTextLineBadge2021.isRapid'),
+            isChecked: (attrs ?? defaultChongqingRTTextLineBadge2021Attributes).isRapid,
             onChange: (val: boolean) => {
                 attrs.isRapid = val;
                 handleAttrsUpdate(id, attrs);
@@ -146,7 +146,7 @@ const ChongqingRT2021NumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRT
     return <RmgFields fields={fields} />;
 };
 
-const chongqingRT2021TextLineBadgeIcon = (
+const chongqingRTTextLineBadge2021Icon = (
     <svg viewBox="0 0 21 21" height={40} width={40} focusable={false} style={{ padding: 3 }}>
         <rect fill="currentColor" x="0" width="21" height="21" rx="3" ry="3" />
         <rect strokeWidth="1.5" stroke="white" fill="none" x="1.5" y="1.5" width="18" height="18" rx="2" ry="2" />
@@ -167,15 +167,15 @@ const chongqingRT2021TextLineBadgeIcon = (
     </svg>
 );
 
-const chongqingRT2021TextLineBadge: Node<ChongqingRT2021TextLineBadgeAttributes> = {
-    component: ChongqingRT2021TextLineBadge,
-    icon: chongqingRT2021TextLineBadgeIcon,
-    defaultAttrs: defaultChongqingRT2021TextLineBadgeAttributes,
-    attrsComponent: ChongqingRT2021NumLineBadgeAttrsComponent,
+const chongqingRTTextLineBadge2021: Node<ChongqingRTTextLineBadge2021Attributes> = {
+    component: ChongqingRTTextLineBadge2021,
+    icon: chongqingRTTextLineBadge2021Icon,
+    defaultAttrs: defaultChongqingRTTextLineBadge2021Attributes,
+    attrsComponent: ChongqingRTNumLineBadge2021AttrsComponent,
     metadata: {
-        displayName: 'panel.details.nodes.chongqingRT2021TextLineBadge.displayName',
+        displayName: 'panel.details.nodes.chongqingRTTextLineBadge2021.displayName',
         tags: [],
     },
 };
 
-export default chongqingRT2021TextLineBadge;
+export default chongqingRTTextLineBadge2021;

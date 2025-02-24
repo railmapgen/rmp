@@ -112,10 +112,10 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "충칭 철도 교통 텍스트 라인 표시"
                 },
-                "chongqingRT2021NumLineBadge": {
+                "chongqingRTNumLineBadge2021": {
                     "displayName": "충칭 철도 교통 디지털 노선 식별（2021）"
                 },
-                "chongqingRT2021TextLineBadge": {
+                "chongqingRTTextLineBadge2021": {
                     "displayName": "충칭 철도 교통 텍스트 라인 표시（2021）",
                     "isRapid": "고속 / 직속 열차 식별"
                 },
@@ -372,11 +372,11 @@
                 "chongqingRTInt": {
                     "displayName": "충칭 궤도교통 환승역"
                 },
-                "chongqingRT2021Basic": {
+                "chongqingRTBasic2021": {
                     "displayName": "충칭 궤도교통 기본역（2021）",
                     "open": "개통여부"
                 },
-                "chongqingRT2021Int": {
+                "chongqingRTInt2021": {
                     "displayName": "충칭 도시철도 환승역 (2021)",
                     "isRapid": "급행/직통 열차 정차역",
                     "isWide": "광폭 역",

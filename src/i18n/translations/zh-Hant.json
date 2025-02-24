@@ -112,10 +112,10 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "重慶軌道交通文字線路標識"
                 },
-                "chongqingRT2021NumLineBadge": {
+                "chongqingRTNumLineBadge2021": {
                     "displayName": "重慶軌道交通數字線路標識（2021）"
                 },
-                "chongqingRT2021TextLineBadge": {
+                "chongqingRTTextLineBadge2021": {
                     "displayName": "重慶軌道交通文字線路標識（2021）",
                     "isRapid": "快速/直快車標識"
                 },
@@ -372,11 +372,11 @@
                 "chongqingRTInt": {
                     "displayName": "重慶軌道交通換乘車站"
                 },
-                "chongqingRT2021Basic": {
+                "chongqingRTBasic2021": {
                     "displayName": "重慶軌道交通基本車站（2021）",
                     "open": "是否開通"
                 },
-                "chongqingRT2021Int": {
+                "chongqingRTInt2021": {
                     "displayName": "重慶軌道交通換乘車站（2021）",
                     "isRapid": "快速/直快車停靠站",
                     "isWide": "宽形站",

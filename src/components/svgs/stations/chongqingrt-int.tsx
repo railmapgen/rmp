@@ -17,8 +17,8 @@ import { InterchangeField, StationAttributesWithInterchange } from '../../panels
 
 export const LINE_HEIGHT = {
     zh: 9,
-    en: 5,
-    top: 5 + 1,
+    en: 4,
+    top: 4 + 1,
     middle: 0,
     bottom: 9 + 1,
 };
@@ -211,7 +211,7 @@ const ChongqingRTIntAttrsComponent = (props: AttrsProps<ChongqingRTIntStationAtt
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: (attrs ?? defaultChongqingRTIntStationAttributes).names[1],
+            value: attrs.names.at(1) ?? defaultChongqingRTIntStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);

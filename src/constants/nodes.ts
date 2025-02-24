@@ -11,8 +11,8 @@ import { BerlinUBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-
 import { BerlinSBahnLineBadgeAttributes } from '../components/svgs/nodes/berlin-s-bahn-line-badge';
 import { ChongqingRTNumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-num-line-badge';
 import { ChongqingRTTextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt-text-line-badge';
-import { ChongqingRT2021NumLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt2021-num-line-badge';
-import { ChongqingRT2021TextLineBadgeAttributes } from '../components/svgs/nodes/chongqingrt2021-text-line-badge';
+import { ChongqingRTNumLineBadge2021Attributes } from '../components/svgs/nodes/chongqingrt-num-line-badge-2021';
+import { ChongqingRTTextLineBadge2021Attributes } from '../components/svgs/nodes/chongqingrt-text-line-badge-2021';
 import { ShenzhenMetroNumLineBadgeAttributes } from '../components/svgs/nodes/shenzhenmetro-num-line-badge';
 import { MRTDestinationNumbersAttributes } from '../components/svgs/nodes/mrt-dest-num';
 import { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east-line-badge';
@@ -37,8 +37,8 @@ export enum MiscNodeType {
     BerlinUBahnLineBadge = 'berlin-u-bahn-line-badge',
     ChongqingRTNumLineBadge = 'chongqingrt-num-line-badge',
     ChongqingRTTextLineBadge = 'chongqingrt-text-line-badge',
-    ChongqingRT2021NumLineBadge = 'chongqingrt2021-num-line-badge',
-    ChongqingRT2021TextLineBadge = 'chongqingrt2021-text-line-badge',
+    ChongqingRTNumLineBadge2021 = 'chongqingrt-num-line-badge-2021',
+    ChongqingRTTextLineBadge2021 = 'chongqingrt-text-line-badge-2021',
     ShenzhenMetroNumLineBadge = 'shenzhen-metro-num-line-badge',
     MRTDestinationNumbers = 'mrt-num-line-badge',
     JREastLineBadge = 'jr-east-line-badge',
@@ -64,8 +64,8 @@ export interface MiscNodeAttributes {
     [MiscNodeType.BerlinUBahnLineBadge]?: BerlinUBahnLineBadgeAttributes;
     [MiscNodeType.ChongqingRTNumLineBadge]?: ChongqingRTNumLineBadgeAttributes;
     [MiscNodeType.ChongqingRTTextLineBadge]?: ChongqingRTTextLineBadgeAttributes;
-    [MiscNodeType.ChongqingRT2021NumLineBadge]?: ChongqingRT2021NumLineBadgeAttributes;
-    [MiscNodeType.ChongqingRT2021TextLineBadge]?: ChongqingRT2021TextLineBadgeAttributes;
+    [MiscNodeType.ChongqingRTNumLineBadge2021]?: ChongqingRTNumLineBadge2021Attributes;
+    [MiscNodeType.ChongqingRTTextLineBadge2021]?: ChongqingRTTextLineBadge2021Attributes;
     [MiscNodeType.ShenzhenMetroNumLineBadge]?: ShenzhenMetroNumLineBadgeAttributes;
     [MiscNodeType.MRTDestinationNumbers]?: MRTDestinationNumbersAttributes;
     [MiscNodeType.JREastLineBadge]?: JREastLineBadgeAttributes;
@@ -90,6 +90,7 @@ export interface NodeComponentProps<T> {
     handlePointerMove: (node: MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
 }
+
 export interface Node<T> {
     /**
      * The core node component.

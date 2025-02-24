@@ -67,6 +67,7 @@ export type Theme = [CityCode, string, ColourHex, MonoColour];
 export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
+export type ConnectableMiscNodeId = `misc_node_connectable_${string}`;
 
 export type Id = StnId | MiscNodeId | LineId;
 

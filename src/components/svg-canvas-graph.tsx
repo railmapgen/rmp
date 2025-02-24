@@ -299,7 +299,7 @@ const SvgCanvas = () => {
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
-            const prefixes = ['stn_core_', 'virtual_circle_'];
+            const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
             prefixes.forEach(prefix => {
                 const elems = document.elementsFromPoint(e.clientX, e.clientY);
                 const id = elems[0].attributes?.getNamedItem('id')?.value;
