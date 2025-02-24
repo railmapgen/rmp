@@ -72,6 +72,26 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
     const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
+    const zhRef = React.useRef<SVGGElement>(null);
+    const elRef = React.useRef<SVGGElement>(null);
+    const [elOffset, setElOffset] = React.useState(0);
+
+    React.useEffect(() => {
+        if (elRef.current && zhRef.current) {
+            if (nameOffsetX !== 'middle') {
+                const elWidth = elRef.current.getBBox().width;
+                const zhWidth = zhRef.current.getBBox().width;
+                if (zhWidth > elWidth) {
+                    setElOffset((zhWidth - elWidth) / 2);
+                } else {
+                    setElOffset(0);
+                }
+            } else {
+                setElOffset(0);
+            }
+        }
+    }, [names[0], names[1], nameOffsetX]);
+
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <g transform={`translate(${-HALF_SIZE},${-HALF_SIZE})scale(${SCALE})`}>
@@ -159,6 +179,7 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
                     grow="up"
                     className="rmp-name__zh"
                     baseOffset={1}
+                    ref={zhRef}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
@@ -167,6 +188,8 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
                     grow="down"
                     className="rmp-name__en"
                     baseOffset={1}
+                    ref={elRef}
+                    transform={`translate(${nameOffsetX == 'right' ? elOffset : -elOffset}, 0)`}
                 />
             </g>
         </g>

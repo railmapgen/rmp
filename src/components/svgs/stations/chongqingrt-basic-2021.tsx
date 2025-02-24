@@ -72,6 +72,37 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     const isTextLine = new RegExp('[\\u4E00-\\u9FFF]+', 'g').test(lineCode);
 
+    const zhRef = React.useRef<SVGGElement>(null);
+    const elRef = React.useRef<SVGGElement>(null);
+    const opRef = React.useRef<SVGGElement>(null);
+    const [elOffset, setElOffset] = React.useState(0);
+    const [opOffset, setOpOffset] = React.useState(0);
+
+    React.useEffect(() => {
+        if (elRef.current && zhRef.current) {
+            if (nameOffsetX !== 'middle') {
+                const elWidth = elRef.current.getBBox().width;
+                const zhWidth = zhRef.current.getBBox().width;
+                if (zhWidth > elWidth) {
+                    setElOffset((zhWidth - elWidth) / 2);
+                } else {
+                    setElOffset(0);
+                }
+            } else {
+                setElOffset(0);
+            }
+        }
+        if (!open && opRef.current && zhRef.current) {
+            const opWidth = opRef.current.getBBox().width;
+            const zhWidth = zhRef.current.getBBox().width;
+            if (zhWidth > opWidth) {
+                setOpOffset((zhWidth - opWidth) / 2);
+            } else {
+                setOpOffset(0);
+            }
+        }
+    }, [names[0], names[1], nameOffsetX]);
+
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <rect
@@ -120,6 +151,7 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
                     grow="up"
                     className="rmp-name__zh"
                     baseOffset={1}
+                    ref={zhRef}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
@@ -128,16 +160,20 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
                     grow="down"
                     className="rmp-name__en"
                     baseOffset={1}
+                    ref={elRef}
+                    transform={`translate(${nameOffsetX == 'right' ? elOffset : -elOffset}, 0)`}
                 />
                 {!open && (
-                    <text
-                        dy={names[1].split('\n').length * LINE_HEIGHT.en + 2}
-                        fontSize={LINE_HEIGHT.en}
-                        dominantBaseline="hanging"
-                        className="rmp-name__zh"
-                    >
-                        (暂缓开通)
-                    </text>
+                    <g ref={opRef} transform={`translate(${nameOffsetX == 'right' ? opOffset : -opOffset},0)`}>
+                        <text
+                            dy={names[1].split('\n').length * LINE_HEIGHT.en + 2}
+                            fontSize={LINE_HEIGHT.en}
+                            dominantBaseline="hanging"
+                            className="rmp-name__zh"
+                        >
+                            (暂缓开通)
+                        </text>
+                    </g>
                 )}
             </g>
         </g>
