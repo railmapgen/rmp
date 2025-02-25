@@ -29,6 +29,8 @@ import { LondonRiverServicesIntStationAttributes } from '../components/svgs/stat
 import { GuangdongIntercityRailwayStationAttributes } from '../components/svgs/stations/guangdong-intercity-railway';
 import { ChongqingRTBasicStationAttributes } from '../components/svgs/stations/chongqingrt-basic';
 import { ChongqingRTIntStationAttributes } from '../components/svgs/stations/chongqingrt-int';
+import { ChongqingRTBasicStation2021Attributes } from '../components/svgs/stations/chongqingrt-basic-2021';
+import { ChongqingRTIntStation2021Attributes } from '../components/svgs/stations/chongqingrt-int-2021';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -60,6 +62,8 @@ export enum StationType {
     GuangdongIntercityRailway = 'gd-intercity-rwy',
     ChongqingRTBasic = 'chongqingrt-basic',
     ChongqingRTInt = 'chongqingrt-int',
+    ChongqingRTBasic2021 = 'chongqingrt-basic-2021',
+    ChongqingRTInt2021 = 'chongqingrt-int-2021',
 }
 
 export interface ExternalStationAttributes {
@@ -92,6 +96,8 @@ export interface ExternalStationAttributes {
     [StationType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayStationAttributes;
     [StationType.ChongqingRTBasic]?: ChongqingRTBasicStationAttributes;
     [StationType.ChongqingRTInt]?: ChongqingRTIntStationAttributes;
+    [StationType.ChongqingRTBasic2021]?: ChongqingRTBasicStation2021Attributes;
+    [StationType.ChongqingRTInt2021]?: ChongqingRTIntStation2021Attributes;
 }
 
 export const StationWithColor = [
@@ -103,6 +109,8 @@ export const StationWithColor = [
     StationType.FoshanMetroBasic,
     StationType.QingdaoMetroStation,
     StationType.ChongqingRTBasic,
+    StationType.ChongqingRTBasic2021,
+    StationType.ChongqingRTInt2021,
 ];
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */

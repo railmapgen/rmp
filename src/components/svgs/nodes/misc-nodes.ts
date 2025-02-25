@@ -10,6 +10,8 @@ import berlinUBahnLineBadge from './berlin-u-bahn-line-badge';
 import berlinSBahnLineBadge from './berlin-s-bahn-line-badge';
 import chongqingRTNumLineBadge from './chongqingrt-num-line-badge';
 import chongqingRTTextLineBadge from './chongqingrt-text-line-badge';
+import chongqingRTNumLineBadge2021 from './chongqingrt-num-line-badge-2021';
+import chongqingRTTextLineBadge2021 from './chongqingrt-text-line-badge-2021';
 import shenzhenMetroNumLineBadge from './shenzhenmetro-num-line-badge';
 import mrtDestinationNumbers from './mrt-dest-num';
 import mrtLineBadge from './mrt-line-badge';
@@ -34,6 +36,8 @@ const miscNodes = {
     [MiscNodeType.BerlinUBahnLineBadge]: berlinUBahnLineBadge,
     [MiscNodeType.ChongqingRTNumLineBadge]: chongqingRTNumLineBadge,
     [MiscNodeType.ChongqingRTTextLineBadge]: chongqingRTTextLineBadge,
+    [MiscNodeType.ChongqingRTNumLineBadge2021]: chongqingRTNumLineBadge2021,
+    [MiscNodeType.ChongqingRTTextLineBadge2021]: chongqingRTTextLineBadge2021,
     [MiscNodeType.ShenzhenMetroNumLineBadge]: shenzhenMetroNumLineBadge,
     [MiscNodeType.MRTDestinationNumbers]: mrtDestinationNumbers,
     [MiscNodeType.MRTLineBadge]: mrtLineBadge,

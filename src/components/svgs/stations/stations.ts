@@ -28,6 +28,8 @@ import londonRiverServicesIntStation from './london-river-services-interchange';
 import guangdongIntercityRailwayStation from './guangdong-intercity-railway';
 import chongqingRTBasicStation from './chongqingrt-basic';
 import chongqingRTIntStation from './chongqingrt-int';
+import chongqingRTBasicStation2021 from './chongqingrt-basic-2021';
+import chongqingRTIntStation2021 from './chongqingrt-int-2021';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -59,6 +61,8 @@ const stations = {
     [StationType.GuangdongIntercityRailway]: guangdongIntercityRailwayStation,
     [StationType.ChongqingRTBasic]: chongqingRTBasicStation,
     [StationType.ChongqingRTInt]: chongqingRTIntStation,
+    [StationType.ChongqingRTBasic2021]: chongqingRTBasicStation2021,
+    [StationType.ChongqingRTInt2021]: chongqingRTIntStation2021,
 };
 
 export default stations;

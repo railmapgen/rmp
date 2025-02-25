@@ -112,6 +112,13 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "Chongqing Rail Transit text line badge"
                 },
+                "chongqingRTNumLineBadge2021": {
+                    "displayName": "Chongqing Rail Transit num line badge（2021）"
+                },
+                "chongqingRTTextLineBadge2021": {
+                    "displayName": "Chongqing Rail Transit text line badge（2021）",
+                    "isRapid": "Is rapid or express train badge"
+                },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "Shenzhen Metro num line badge",
                     "branch": "Is branch line"
@@ -360,10 +367,25 @@
                     "displayName": "Guangdong Intercity Railway station"
                 },
                 "chongqingRTBasic": {
-                    "displayName": "Chongqing Rail Transit basic station"
+                    "displayName": "Chongqing Rail Transit basic station",
+                    "isLoop": "Loop line station"
                 },
                 "chongqingRTInt": {
                     "displayName": "Chongqing Rail Transit interchange station"
+                },
+                "chongqingRTBasic2021": {
+                    "displayName": "Chongqing Rail Transit basic station (2021)",
+                    "open": "Is opened"
+                },
+                "chongqingRTInt2021": {
+                    "displayName": "Chongqing Rail Transit interchange station (2021)",
+                    "isRapid": "Is rapid or express train station",
+                    "isWide": "Is a wide station",
+                    "wideDirection":{
+                        "displayName": "Direction",
+                        "vertical": "Vertical",
+                        "horizontal": "Horizontal"
+                    }
                 }
             },
             "lines": {
@@ -482,6 +504,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway style"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "Chongqing Rail Transit line badge style"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "Chongqing Rail Transit loop line style"
                 }
             },
             "edge": {},

@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 44;
+export const CURRENT_VERSION = 45;
 
 /**
  * Load the tutorial.
@@ -585,4 +585,20 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     43: param =>
         // Bump save version to support Chongqing Rail Transit stations.
         JSON.stringify({ ...JSON.parse(param), version: 44 }),
+    44: param => {
+        // Bump save version to support Chongqing Rail Transit 2021 stations and facilities.
+        // Add isLoop attributes to Chongqing Rail Transit Basic stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.ChongqingRTBasic)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.isLoop = false;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 45, graph: graph.export() });
+    },
 };

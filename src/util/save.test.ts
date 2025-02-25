@@ -569,4 +569,19 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+    it('44 -> 45', () => {
+        // Bump save version to support Chongqing Rail Transit stations.
+        // Add isLoop attributes to Chongqing Rail Transit Basic stations.
+        // Prepare an empty save.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chongqingrt-basic","chongqingrt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":44}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[44](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chongqingrt-basic","chongqingrt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false,"isLoop":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":45}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });
