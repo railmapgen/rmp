@@ -354,6 +354,7 @@
                 "londonTubeBasic": {
                     "displayName": "London Underground basic station",
                     "terminal": "Terminal station",
+                    "terminalNameRotate": "Terminal station name rotation",
                     "shareTracks": "Track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },

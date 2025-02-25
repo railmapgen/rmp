@@ -555,6 +555,7 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_n0TfQ0Xk6X","attributes":{"visible":true,"zIndex":0,"x":630,"y":335,"type":"gzmtr-int-2024","gzmtr-int-2024":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","gz1","#F3D03E","#fff","1","14","gz"],["guangzhou","gz3","#ECA154","#fff","3","11","gz"]]],"open":true,"secondaryNames":["",""],"anchorAt":-1,"columns":1,"topHeavy":false,"osiPosition":"none"}}},{"key":"stn_HBR6YZ_MRm","attributes":{"visible":true,"zIndex":0,"x":630,"y":335,"type":"gzmtr-int-2024","gzmtr-int-2024":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["guangzhou","gz1","#F3D03E","#fff","1","14","gz"],["guangzhou","gz3","#ECA154","#fff","3","11","gz"]]],"open":true,"secondaryNames":["",""],"anchorAt":-1,"columns":2,"topHeavy":false,"osiPosition":"none"}}}],"edges":[]},"version":43}';
         expect(newParam).toEqual(expectParam);
     });
+
     it('43 -> 44', () => {
         // Bump save version to support Chongqing Rail Transit stations.
         // Prepare an empty save.
@@ -569,6 +570,7 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
     it('44 -> 45', () => {
         // Bump save version to support Chongqing Rail Transit stations.
         // Add isLoop attributes to Chongqing Rail Transit Basic stations.
@@ -582,6 +584,18 @@ describe('Unit tests for param upgrade function', () => {
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chongqingrt-basic","chongqingrt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false,"isLoop":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":45}';
         // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('45 -> 46', () => {
+        // Bump save version to add terminalNameRotate to london-tube-basic.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_qO95TqrmPQ","attributes":{"visible":true,"zIndex":0,"x":555,"y":405,"type":"london-tube-basic","london-tube-basic":{"names":["Station"],"transfer":[[["london","central","#DC241F","#fff",0]]],"rotate":0,"terminal":false,"stepFreeAccess":"none"}}}],"edges":[]},"version":45}';
+        const newParam = UPGRADE_COLLECTION[45](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_qO95TqrmPQ","attributes":{"visible":true,"zIndex":0,"x":555,"y":405,"type":"london-tube-basic","london-tube-basic":{"names":["Station"],"transfer":[[["london","central","#DC241F","#fff",0]]],"rotate":0,"terminal":false,"stepFreeAccess":"none","terminalNameRotate":0}}}],"edges":[]},"version":46}';
         expect(newParam).toEqual(expectParam);
     });
 });

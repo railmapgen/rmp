@@ -25,6 +25,14 @@ const ROTATE_CONST: {
     [rotate: number]: {
         textDx: number;
         textDy: number;
+        /**
+         * Used when terminal is true and rotate !== terminalNameRotate.
+         */
+        textTerminalDx: number;
+        /**
+         * Used when terminal is true and rotate !== terminalNameRotate.
+         */
+        textTerminalDy: number;
         textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
         dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
         polarity: -1 | 0 | 1;
@@ -34,6 +42,8 @@ const ROTATE_CONST: {
     0: {
         textDx: 0,
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33),
+        textTerminalDx: 0,
+        textTerminalDy: -(X_HEIGHT / 2),
         textAnchor: 'middle',
         dominantBaseline: 'auto',
         polarity: -1,
@@ -42,6 +52,8 @@ const ROTATE_CONST: {
     45: {
         textDx: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textTerminalDx: (X_HEIGHT / 2) * Math.SQRT1_2,
+        textTerminalDy: -(X_HEIGHT / 2) * Math.SQRT1_2,
         textAnchor: 'start',
         dominantBaseline: 'auto',
         polarity: -1,
@@ -50,6 +62,8 @@ const ROTATE_CONST: {
     90: {
         textDx: X_HEIGHT / 2 + X_HEIGHT * 1.33,
         textDy: 0,
+        textTerminalDx: X_HEIGHT / 2,
+        textTerminalDy: 0,
         textAnchor: 'start',
         dominantBaseline: 'middle',
         polarity: 0,
@@ -58,6 +72,8 @@ const ROTATE_CONST: {
     135: {
         textDx: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textDy: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textTerminalDx: (X_HEIGHT / 2) * Math.SQRT1_2,
+        textTerminalDy: (X_HEIGHT / 2) * Math.SQRT1_2,
         textAnchor: 'start',
         dominantBaseline: 'hanging',
         polarity: 1,
@@ -66,6 +82,8 @@ const ROTATE_CONST: {
     180: {
         textDx: 0,
         textDy: X_HEIGHT / 2 + X_HEIGHT * 1.33,
+        textTerminalDx: 0,
+        textTerminalDy: X_HEIGHT / 2,
         textAnchor: 'middle',
         dominantBaseline: 'hanging',
         polarity: 1,
@@ -74,6 +92,8 @@ const ROTATE_CONST: {
     225: {
         textDx: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textDy: (X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textTerminalDx: -(X_HEIGHT / 2) * Math.SQRT1_2,
+        textTerminalDy: (X_HEIGHT / 2) * Math.SQRT1_2,
         textAnchor: 'end',
         dominantBaseline: 'hanging',
         polarity: 1,
@@ -82,6 +102,8 @@ const ROTATE_CONST: {
     270: {
         textDx: -(X_HEIGHT / 2 + X_HEIGHT * 1.33),
         textDy: 0,
+        textTerminalDx: -(X_HEIGHT / 2),
+        textTerminalDy: 0,
         textAnchor: 'end',
         dominantBaseline: 'middle',
         polarity: 0,
@@ -90,6 +112,8 @@ const ROTATE_CONST: {
     315: {
         textDx: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
         textDy: -(X_HEIGHT / 2 + X_HEIGHT * 1.33) * Math.SQRT1_2,
+        textTerminalDx: -(X_HEIGHT / 2) * Math.SQRT1_2,
+        textTerminalDy: -(X_HEIGHT / 2) * Math.SQRT1_2,
         textAnchor: 'end',
         dominantBaseline: 'auto',
         polarity: -1,
@@ -156,6 +180,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
         transfer = defaultLondonTubeBasicStationAttributes.transfer,
         rotate = defaultLondonTubeBasicStationAttributes.rotate,
         terminal = defaultLondonTubeBasicStationAttributes.terminal,
+        terminalNameRotate = defaultLondonTubeBasicStationAttributes.terminalNameRotate,
         stepFreeAccess = defaultLondonTubeBasicStationAttributes.stepFreeAccess,
     } = attrs[StationType.LondonTubeBasic] ?? defaultLondonTubeBasicStationAttributes;
 
@@ -176,11 +201,12 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const rad = ((rotate - 90) * Math.PI) / 180;
     // 0.5 cover the gap between the station icon and the line
     const height = terminal ? 2 * (0.66 * X_HEIGHT + X_HEIGHT / 2) : 0.66 * X_HEIGHT + 0.5;
+    const textRotate = terminal ? terminalNameRotate : rotate;
     const textDx =
-        ROTATE_CONST[rotate].textDx + // fixed dx for each rotation
+        (rotate !== terminalNameRotate ? ROTATE_CONST[textRotate].textTerminalDx : ROTATE_CONST[textRotate].textDx) + // fixed dx for each rotation
         Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
     const textDy =
-        ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
+        (rotate !== terminalNameRotate ? ROTATE_CONST[textRotate].textTerminalDy : ROTATE_CONST[textRotate].textDy) + // fixed dy for each rotation
         Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
 
     const accessibleD =
@@ -221,15 +247,15 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
             </g>
             <g
                 transform={`translate(${x + textDx}, ${y + textDy})`}
-                textAnchor={ROTATE_CONST[rotate].textAnchor}
+                textAnchor={ROTATE_CONST[textRotate].textAnchor}
                 fill="#003888"
             >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE}
                     lineHeight={LINE_HEIGHT}
-                    dominantBaseline={ROTATE_CONST[rotate].dominantBaseline}
-                    grow={ROTATE_CONST[rotate].grow}
+                    dominantBaseline={ROTATE_CONST[textRotate].dominantBaseline}
+                    grow={ROTATE_CONST[textRotate].grow}
                     baseOffset={0}
                     className="rmp-name__tube"
                 />
@@ -245,6 +271,10 @@ export interface LondonTubeBasicStationAttributes extends StationAttributes {
     transfer: InterchangeInfo[][];
     rotate: Rotate;
     terminal: boolean;
+    /**
+     * When terminal is set, station name position is controlled by terminalNameRotate.
+     */
+    terminalNameRotate: Rotate;
     stepFreeAccess: 'none' | 'train' | 'platform';
 }
 
@@ -253,12 +283,19 @@ const defaultLondonTubeBasicStationAttributes: LondonTubeBasicStationAttributes 
     transfer: [[defaultTransferInfo]],
     rotate: 0,
     terminal: false,
+    terminalNameRotate: 0,
     stepFreeAccess: 'none',
 };
 
 const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+
+    const terminalNameRotateOptions: Record<number, string> = Object.fromEntries([
+        [(attrs.rotate + 0) % 360, ((attrs.rotate + 0) % 360).toString()],
+        [(attrs.rotate + 90) % 360, ((attrs.rotate + 90) % 360).toString()],
+        [(attrs.rotate + 270) % 360, ((attrs.rotate + 270) % 360).toString()],
+    ]);
 
     const fields: RmgFieldsField[] = [
         {
@@ -278,6 +315,7 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
+                if (attrs.terminal) attrs.terminalNameRotate = attrs.rotate;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -289,9 +327,22 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             isDisabled: attrs.transfer[0].length > 1,
             onChange: (val: boolean) => {
                 attrs.terminal = val;
+                attrs.terminalNameRotate = attrs.rotate;
                 handleAttrsUpdate(id, attrs);
             },
             oneLine: true,
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.londonTubeBasic.terminalNameRotate'),
+            value: attrs.terminalNameRotate,
+            options: terminalNameRotateOptions,
+            onChange: val => {
+                attrs.terminalNameRotate = val as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
+            hidden: !attrs.terminal || attrs.stepFreeAccess !== 'none',
             minW: 'full',
         },
         {
@@ -305,6 +356,7 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             },
             onChange: val => {
                 attrs.stepFreeAccess = val as 'none' | 'train' | 'platform';
+                attrs.terminal = false;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
