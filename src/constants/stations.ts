@@ -27,6 +27,10 @@ import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/lo
 import { LondonTubeIntStationAttributes } from '../components/svgs/stations/london-tube-int';
 import { LondonRiverServicesIntStationAttributes } from '../components/svgs/stations/london-river-services-interchange';
 import { GuangdongIntercityRailwayStationAttributes } from '../components/svgs/stations/guangdong-intercity-railway';
+import { ChongqingRTBasicStationAttributes } from '../components/svgs/stations/chongqingrt-basic';
+import { ChongqingRTIntStationAttributes } from '../components/svgs/stations/chongqingrt-int';
+import { ChongqingRTBasicStation2021Attributes } from '../components/svgs/stations/chongqingrt-basic-2021';
+import { ChongqingRTIntStation2021Attributes } from '../components/svgs/stations/chongqingrt-int-2021';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -56,6 +60,10 @@ export enum StationType {
     LondonTubeInt = 'london-tube-int',
     LondonRiverServicesInt = 'london-river-int',
     GuangdongIntercityRailway = 'gd-intercity-rwy',
+    ChongqingRTBasic = 'chongqingrt-basic',
+    ChongqingRTInt = 'chongqingrt-int',
+    ChongqingRTBasic2021 = 'chongqingrt-basic-2021',
+    ChongqingRTInt2021 = 'chongqingrt-int-2021',
 }
 
 export interface ExternalStationAttributes {
@@ -86,6 +94,10 @@ export interface ExternalStationAttributes {
     [StationType.LondonTubeInt]?: LondonTubeIntStationAttributes;
     [StationType.LondonRiverServicesInt]?: LondonRiverServicesIntStationAttributes;
     [StationType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayStationAttributes;
+    [StationType.ChongqingRTBasic]?: ChongqingRTBasicStationAttributes;
+    [StationType.ChongqingRTInt]?: ChongqingRTIntStationAttributes;
+    [StationType.ChongqingRTBasic2021]?: ChongqingRTBasicStation2021Attributes;
+    [StationType.ChongqingRTInt2021]?: ChongqingRTIntStation2021Attributes;
 }
 
 export const StationWithColor = [
@@ -96,6 +108,9 @@ export const StationWithColor = [
     StationType.MRTBasic,
     StationType.FoshanMetroBasic,
     StationType.QingdaoMetroStation,
+    StationType.ChongqingRTBasic,
+    StationType.ChongqingRTBasic2021,
+    StationType.ChongqingRTInt2021,
 ];
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */

@@ -112,6 +112,13 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "重庆轨道交通文字线路标识"
                 },
+                "chongqingRTNumLineBadge2021": {
+                    "displayName": "重庆轨道交通数字线路标识（2021）"
+                },
+                "chongqingRTTextLineBadge2021": {
+                    "displayName": "重庆轨道交通文字线路标识（2021）",
+                    "isRapid": "快速/直快车标识"
+                },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "深圳地铁数字线路标识",
                     "branch": "是否为支线"
@@ -358,6 +365,27 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路车站"
+                },
+                "chongqingRTBasic": {
+                    "displayName": "重庆轨道交通基本车站",
+                    "isLoop": "环线车站"
+                },
+                "chongqingRTInt": {
+                    "displayName": "重庆轨道交通换乘车站"
+                },
+                "chongqingRTBasic2021": {
+                    "displayName": "重庆轨道交通基本车站（2021）",
+                    "open": "是否开通"
+                },
+                "chongqingRTInt2021": {
+                    "displayName": "重庆轨道交通换乘车站（2021）",
+                    "isRapid": "快速/直快车停靠站",
+                    "isWide": "宽形站",
+                    "wideDirection":{
+                        "displayName": "方向",
+                        "vertical": "纵向",
+                        "horizontal": "横向"
+                    }
                 }
             },
             "lines": {
@@ -476,6 +504,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路样式"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "重庆轨道交通线路标识连接线样式"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "重庆轨道交通环线样式"
                 }
             },
             "edges": {},

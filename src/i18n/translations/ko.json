@@ -112,6 +112,13 @@
                 "chongqingRTTextLineBadge": {
                     "displayName": "충칭 철도 교통 텍스트 라인 표시"
                 },
+                "chongqingRTNumLineBadge2021": {
+                    "displayName": "충칭 철도 교통 디지털 노선 식별（2021）"
+                },
+                "chongqingRTTextLineBadge2021": {
+                    "displayName": "충칭 철도 교통 텍스트 라인 표시（2021）",
+                    "isRapid": "고속 / 직속 열차 식별"
+                },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "심천 지하철 번호 라인 배지",
                     "branch": "지선입니다"
@@ -358,6 +365,27 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "광둥 시외 기차역"
+                },
+                "chongqingRTBasic": {
+                    "displayName": "충칭 궤도교통 기본역",
+                    "isLoop": "순환역"
+                },
+                "chongqingRTInt": {
+                    "displayName": "충칭 궤도교통 환승역"
+                },
+                "chongqingRTBasic2021": {
+                    "displayName": "충칭 궤도교통 기본역（2021）",
+                    "open": "개통여부"
+                },
+                "chongqingRTInt2021": {
+                    "displayName": "충칭 도시철도 환승역 (2021)",
+                    "isRapid": "급행/직통 열차 정차역",
+                    "isWide": "광폭 역",
+                    "wideDirection": {
+                        "displayName": "방향",
+                        "vertical": "세로",
+                        "horizontal": "가로"
+                    }
                 }
             },
             "lines": {
@@ -476,6 +504,12 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "광동성 도시간 철도 스타일"
+                },
+                "chongqingRTLineBadge": {
+                    "displayName": "충칭 궤도교통 노선 표지 연결선 스타일"
+                },
+                "chongqingRTLoop": {
+                    "displayName": "충칭 궤도교통 순환선 스타일"
                 }
             },
             "edges": {},

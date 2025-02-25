@@ -56,7 +56,7 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
 };
 
 /**
- * BerlinUBahnLineBadge specific props.
+ * ChongqingRTNumLineBadge specific props.
  */
 export interface ChongqingRTNumLineBadgeAttributes extends AttributesWithColor {
     num: number | string;
