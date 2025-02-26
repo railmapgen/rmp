@@ -202,11 +202,13 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     // 0.5 cover the gap between the station icon and the line
     const height = terminal ? 2 * (0.66 * X_HEIGHT + X_HEIGHT / 2) : 0.66 * X_HEIGHT + 0.5;
     const textRotate = terminal ? terminalNameRotate : rotate;
+    // whether the text in the terminal station is positioned other than the rotation
+    const isTextTerminal = terminal && rotate !== terminalNameRotate;
     const textDx =
-        (rotate !== terminalNameRotate ? ROTATE_CONST[textRotate].textTerminalDx : ROTATE_CONST[textRotate].textDx) + // fixed dx for each rotation
+        (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDx : ROTATE_CONST[textRotate].textDx) + // fixed dx for each rotation
         Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
     const textDy =
-        (rotate !== terminalNameRotate ? ROTATE_CONST[textRotate].textTerminalDy : ROTATE_CONST[textRotate].textDy) + // fixed dy for each rotation
+        (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDy : ROTATE_CONST[textRotate].textDy) + // fixed dy for each rotation
         Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
 
     const accessibleD =
