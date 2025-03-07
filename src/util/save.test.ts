@@ -598,4 +598,18 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_qO95TqrmPQ","attributes":{"visible":true,"zIndex":0,"x":555,"y":405,"type":"london-tube-basic","london-tube-basic":{"names":["Station"],"transfer":[[["london","central","#DC241F","#fff",0]]],"rotate":0,"terminal":false,"stepFreeAccess":"none","terminalNameRotate":0}}}],"edges":[]},"version":46}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('46 -> 47', () => {
+        // Bump save version to add textDistance to chongqingrt-int.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_mwvAhFz1r1","attributes":{"visible":true,"zIndex":0,"x":-130,"y":25,"type":"chongqingrt-int","chongqingrt-int":{"names":["大坪","Daping"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["chongqing","cq1","#e4002b","#fff","",""],["chongqing","cq2","#007a33","#fff","",""]]]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":46}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[46](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_mwvAhFz1r1","attributes":{"visible":true,"zIndex":0,"x":-130,"y":25,"type":"chongqingrt-int","chongqingrt-int":{"names":["大坪","Daping"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[["chongqing","cq1","#e4002b","#fff","",""],["chongqing","cq2","#007a33","#fff","",""]]],"textDistance":["near","near"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":47}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

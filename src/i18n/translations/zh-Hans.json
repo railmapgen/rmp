@@ -371,7 +371,13 @@
                     "isLoop": "环线车站"
                 },
                 "chongqingRTInt": {
-                    "displayName": "重庆轨道交通换乘车站"
+                    "displayName": "重庆轨道交通换乘车站",
+                    "textDistance": {
+                        "x": "横向文字距离",
+                        "y": "纵向文字距离",
+                        "near": "近",
+                        "far": "远"
+                    } 
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重庆轨道交通基本车站（2021）",

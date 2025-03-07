@@ -371,7 +371,13 @@
                     "isLoop": "環線車站"
                 },
                 "chongqingRTInt": {
-                    "displayName": "重慶軌道交通換乘車站"
+                    "displayName": "重慶軌道交通換乘車站",
+                    "textDistance": {
+                        "x": "橫向文字距離",
+                        "y": "縱向文字距離",
+                        "near": "近",
+                        "far": "遠"
+                    } 
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重慶軌道交通基本車站（2021）",

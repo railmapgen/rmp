@@ -336,7 +336,7 @@ const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStatio
 const chongqingRTIntStation2021Icon = (
     <svg viewBox="-1 -1 22 22" height={40} width={40} focusable={false} style={{ padding: 5 }}>
         <g textAnchor="middle">
-            <rect x={0} y={0} width={20} height={20} stroke="black" strokeWidth={2} rx={2.5} ry={2.5} fill="none" />
+            <rect x={0} y={0} width={20} height={20} stroke="black" strokeWidth={2} rx={2.5} ry={2.5} fill="white" />
             <text fontSize={8} textAnchor="middle" x={10} y={9} fill="black">
                 两路
             </text>
