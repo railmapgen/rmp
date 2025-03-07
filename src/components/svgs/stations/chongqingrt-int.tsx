@@ -34,6 +34,7 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
         nameOffsetX = defaultChongqingRTIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultChongqingRTIntStationAttributes.nameOffsetY,
         transfer = defaultChongqingRTIntStationAttributes.transfer,
+        textDistance = defaultChongqingRTIntStationAttributes.textDistance,
     } = attrs[StationType.ChongqingRTInt] ?? defaultChongqingRTIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -49,27 +50,30 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
+    const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY, textDistance: TextDistance[]) => {
+        const offsetX = textDistance[0] == 'far' ? HALF_SIZE : 5;
+        const offsetY = textDistance[1] == 'far' ? HALF_SIZE : textDistance[0] == 'far' ? 5 : 7;
+        const offsetM = HALF_SIZE;
         if (oX === 'left' && oY === 'top') {
-            return [-HALF_SIZE, -names[1].split('\n').length * LINE_HEIGHT[oY] - HALF_SIZE];
+            return [-offsetX, -names[1].split('\n').length * LINE_HEIGHT[oY] - offsetY];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] - HALF_SIZE - 2];
+            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] - offsetY - 2];
         } else if (oX === 'right' && oY === 'top') {
-            return [HALF_SIZE, -names[1].split('\n').length * LINE_HEIGHT[oY] - HALF_SIZE];
+            return [offsetX, -names[1].split('\n').length * LINE_HEIGHT[oY] - offsetY];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-HALF_SIZE, names[0].split('\n').length * LINE_HEIGHT[oY] + HALF_SIZE];
+            return [-offsetX, names[0].split('\n').length * LINE_HEIGHT[oY] + offsetY];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + HALF_SIZE + 2];
+            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + offsetY + 2];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [HALF_SIZE, names[0].split('\n').length * LINE_HEIGHT[oY] + HALF_SIZE];
+            return [offsetX, names[0].split('\n').length * LINE_HEIGHT[oY] + offsetY];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-HALF_SIZE - 2, 0];
+            return [-offsetM - 2, 0];
         } else if (oX === 'right' && oY === 'middle') {
-            return [HALF_SIZE + 2, 0];
+            return [offsetM + 2, 0];
         } else return [0, 0];
     };
 
-    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
+    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY, textDistance);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     const zhRef = React.useRef<SVGGElement>(null);
@@ -199,9 +203,13 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
 /**
  * ChongqingRTIntStation specific props.
  */
+
+export type TextDistance = 'near' | 'far';
+
 export interface ChongqingRTIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    textDistance: TextDistance[];
 }
 
 const defaultChongqingRTIntStationAttributes: ChongqingRTIntStationAttributes = {
@@ -215,6 +223,7 @@ const defaultChongqingRTIntStationAttributes: ChongqingRTIntStationAttributes = 
             [CityCode.Chongqing, 'cq6', '#f67599', MonoColour.white, '', ''],
         ],
     ],
+    textDistance: ['near', 'near'],
 };
 
 const ChongqingRTIntAttrsComponent = (props: AttrsProps<ChongqingRTIntStationAttributes>) => {
@@ -266,6 +275,36 @@ const ChongqingRTIntAttrsComponent = (props: AttrsProps<ChongqingRTIntStationAtt
             minW: 'full',
         },
         {
+            type: 'select',
+            label: t('panel.details.stations.chongqingRTInt.textDistance.x'),
+            value: (attrs ?? defaultChongqingRTIntStationAttributes).textDistance[0],
+            options: {
+                far: t('panel.details.stations.chongqingRTInt.textDistance.far'),
+                near: t('panel.details.stations.chongqingRTInt.textDistance.near'),
+            },
+            isDisabled: attrs?.nameOffsetX === 'middle' || attrs?.nameOffsetY === 'middle',
+            onChange: val => {
+                attrs.textDistance[0] = val as TextDistance;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.chongqingRTInt.textDistance.y'),
+            value: (attrs ?? defaultChongqingRTIntStationAttributes).textDistance[1],
+            options: {
+                far: t('panel.details.stations.chongqingRTInt.textDistance.far'),
+                near: t('panel.details.stations.chongqingRTInt.textDistance.near'),
+            },
+            isDisabled: attrs?.nameOffsetX === 'middle' || attrs?.nameOffsetY === 'middle',
+            onChange: val => {
+                attrs.textDistance[1] = val as TextDistance;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
             type: 'custom',
             label: t('panel.details.stations.interchange.title'),
             component: (
@@ -285,7 +324,7 @@ const chongqingRTIntStationIcon = (
         <svg viewBox="0 0 7 7" height={30} width={30} focusable={false}>
             <path
                 style={{
-                    fill: 'none',
+                    fill: 'white',
                     stroke: '#231815',
                     strokeMiterlimit: 22.9,
                     strokeWidth: 0.232,

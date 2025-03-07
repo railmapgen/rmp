@@ -372,7 +372,13 @@
                     "isLoop": "環状線駅"
                 },
                 "chongqingRTInt": {
-                    "displayName": "重慶鉄道交通乗り換え駅"
+                    "displayName": "重慶鉄道交通乗り換え駅",
+                    "textDistance": {
+                        "x": "橫文字距離",
+                        "y": "縦文字距離",
+                        "near": "近い",
+                        "far": "遠い"
+                    } 
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重慶鉄道交通基本駅（令和3年）",
