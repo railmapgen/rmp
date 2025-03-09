@@ -131,8 +131,8 @@
                     "isTram": "LRT 노선 배지입니다"
                 },
                 "jrEastLineBadge": {
-                  "displayName": "JR 동일본 라인 배지",
-                  "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
+                    "displayName": "JR 동일본 라인 배지",
+                    "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
                 },
                 "qingdaoMetroNumLineBadge": {
                     "displayName": "칭다오 지하철 번호 라인 배지",
@@ -148,6 +148,15 @@
                     "continuation": "계속",
                     "sandwich": "샌드위치",
                     "tube": "튜브"
+                },
+                "cdMetroLineBadge": {
+                    "displayName": "청두 지하철 노선 표식",
+                    "type": {
+                        "displayName": "유형",
+                        "normal": "일반",
+                        "suburban": "교외 철도",
+                        "tram": "노면 전차"
+                    }
                 },
                 "master": {
                     "displayName": "마스터 노드",
@@ -289,18 +298,18 @@
                     "displayName": "싱가포르MRT환승역"
                 },
                 "jrEastBasic": {
-                  "displayName": "JR 동일본 기본 역",
-                  "nameOffset": "이름 오프셋",
-                  "textOneLine": "한 줄로 표시된 이름",
-                  "textVertical": "수직 이름",
-                  "important": "중요한 역",
-                  "lines": "환승 노선 오프셋"
+                    "displayName": "JR 동일본 기본 역",
+                    "nameOffset": "이름 오프셋",
+                    "textOneLine": "한 줄로 표시된 이름",
+                    "textVertical": "수직 이름",
+                    "important": "중요한 역",
+                    "lines": "환승 노선 오프셋"
                 },
                 "jrEastImportant": {
-                  "displayName": "JR 동일본 중요 역",
-                  "textVertical": "수직 이름",
-                  "mostImportant": "가장 중요한 역",
-                  "minLength": "스테이션의 최소 길이"
+                    "displayName": "JR 동일본 중요 역",
+                    "textVertical": "수직 이름",
+                    "mostImportant": "가장 중요한 역",
+                    "minLength": "스테이션의 최소 길이"
                 },
                 "foshanMetroBasic": {
                     "displayName": "포산 지하철 기본역",
@@ -377,7 +386,7 @@
                         "y": "세로 문자 거리",
                         "near": "가까이",
                         "far": "멀리"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "충칭 궤도교통 기본역 (2021)",
@@ -392,6 +401,20 @@
                         "vertical": "세로",
                         "horizontal": "가로"
                     }
+                },
+                "cdMetroBasic": {
+                    "displayName": "청두 지하철 기본 역",
+                    "isVertical": "종관 역",
+                    "type": {
+                        "displayName": "역 유형",
+                        "normal": "일반 역",
+                        "branchTerminal": "지선 종점역",
+                        "joint": "공선 환승역",
+                        "tram": "노면 전차역"
+                    }
+                },
+                "cdMetroInt": {
+                    "displayName": "청두 지하철 환승역"
                 }
             },
             "lines": {
@@ -516,6 +539,9 @@
                 },
                 "chongqingRTLoop": {
                     "displayName": "충칭 궤도교통 순환선 스타일"
+                },
+                "cdMetroOutsideFareGates": {
+                    "displayName": "청두 지하철 개찰구 환승 방식"
                 }
             },
             "edges": {},

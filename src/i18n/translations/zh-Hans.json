@@ -149,6 +149,15 @@
                     "sandwich": "三明治",
                     "tube": "地铁"
                 },
+                "cdMetroLineBadge": {
+                    "displayName": "成都地铁线路标识",
+                    "type":{
+                        "displayName": "类型",
+                        "normal": "普通",
+                        "suburban": "市域铁路",
+                        "tram": "有轨电车"
+                    }
+                },
                 "master": {
                     "displayName": "大师节点",
                     "type": "大师节点类型",
@@ -392,6 +401,20 @@
                         "vertical": "纵向",
                         "horizontal": "横向"
                     }
+                },
+                "cdMetroBasic": {
+                    "displayName": "成都地铁基本车站",
+                    "isVertical": "纵向车站",
+                    "type": {
+                        "displayName": "车站类型",
+                        "normal": "普通站",
+                        "branchTerminal": "支线终点站",
+                        "joint": "共线换乘站",
+                        "tram": "有轨电车站"
+                    }
+                },
+                "cdMetroInt": {
+                    "displayName": "成都地铁换乘车站"
                 }
             },
             "lines": {
@@ -516,6 +539,9 @@
                 },
                 "chongqingRTLoop": {
                     "displayName": "重庆轨道交通环线样式"
+                },
+                "cdMetroOutsideFareGates": {
+                    "displayName": "成都地铁出闸换乘样式"
                 }
             },
             "edges": {},

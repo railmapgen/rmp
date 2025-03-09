@@ -51,6 +51,7 @@ const connectableNodesType = [
     MiscNodeType.LondonArrow,
     MiscNodeType.ChongqingRTNumLineBadge2021,
     MiscNodeType.ChongqingRTTextLineBadge2021,
+    MiscNodeType.CDMetroLineBadge,
 ];
 
 const SvgCanvas = () => {
