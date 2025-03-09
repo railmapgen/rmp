@@ -386,7 +386,7 @@
                         "y": "세로 문자 거리",
                         "near": "가까이",
                         "far": "멀리"
-                    }
+                    } 
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "충칭 궤도교통 기본역 (2021)",
