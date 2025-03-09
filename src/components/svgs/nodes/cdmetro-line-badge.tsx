@@ -29,7 +29,7 @@ const CDMetroLineBadge = (props: NodeComponentProps<CDMetroLineBadgeAttributes>)
     );
 
     const fgColor = color[3];
-    const fontSize = 18;
+    const fontSize = 16;
 
     return (
         <g
