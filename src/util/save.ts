@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 46;
+export const CURRENT_VERSION = 48;
 
 /**
  * Load the tutorial.
@@ -616,4 +616,22 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 46, graph: graph.export() });
     },
+    46: param => {
+        // Bump save version to add textDistance to chongqingrt-int.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.ChongqingRTInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.textDistance = ['near', 'near'];
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 47, graph: graph.export() });
+    },
+    47: param =>
+        // Bump save version to support Chengdu Metro stations.
+        JSON.stringify({ ...JSON.parse(param), version: 48 }),
 };
