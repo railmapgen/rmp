@@ -149,7 +149,7 @@
                     "sandwich": "三明治",
                     "tube": "地铁"
                 },
-                "cdMetroLineBadge": {
+                "chengduMetroLineBadge": {
                     "displayName": "成都地铁线路标识",
                     "type":{
                         "displayName": "类型",
@@ -402,7 +402,7 @@
                         "horizontal": "横向"
                     }
                 },
-                "cdMetroBasic": {
+                "chengduMetroBasic": {
                     "displayName": "成都地铁基本车站",
                     "isVertical": "纵向车站",
                     "type": {
@@ -413,7 +413,7 @@
                         "tram": "有轨电车站"
                     }
                 },
-                "cdMetroInt": {
+                "chengduMetroInt": {
                     "displayName": "成都地铁换乘车站"
                 }
             },
@@ -540,7 +540,7 @@
                 "chongqingRTLoop": {
                     "displayName": "重庆轨道交通环线样式"
                 },
-                "cdMetroOutsideFareGates": {
+                "chengduMetroOutsideFareGates": {
                     "displayName": "成都地铁出闸换乘样式"
                 }
             },

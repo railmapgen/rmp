@@ -23,7 +23,7 @@ import facilities from './facilities';
 import text from './text';
 import i18nText from './i18n-text';
 import Master from './master';
-import cdMetroLineBadge from './cdmetro-line-badge';
+import chengduMetroLineBadge from './chengdumetro-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -46,7 +46,7 @@ const miscNodes = {
     [MiscNodeType.QingdaoMetroNumLineBadge]: qingdaoMetroNumLineBadge,
     [MiscNodeType.GuangdongIntercityRailwayLineBadge]: guangdongIntercityRailwayLineBadge,
     [MiscNodeType.LondonArrow]: londonArrow,
-    [MiscNodeType.CDMetroLineBadge]: cdMetroLineBadge,
+    [MiscNodeType.ChengduMetroLineBadge]: chengduMetroLineBadge,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
     [MiscNodeType.I18nText]: i18nText,

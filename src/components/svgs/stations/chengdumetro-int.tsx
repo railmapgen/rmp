@@ -22,14 +22,14 @@ export const LINE_HEIGHT = {
     bottom: 3.5 + 1,
 };
 
-const CDMetroIntStation = (props: StationComponentProps) => {
+const ChengduMetroIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultCDMetroIntStationAttributes.nameOffsetX,
-        nameOffsetY = defaultCDMetroIntStationAttributes.nameOffsetY,
-        direction = defaultCDMetroIntStationAttributes.direction,
-    } = attrs[StationType.CDMetroInt] ?? defaultCDMetroIntStationAttributes;
+        nameOffsetX = defaultChengduMetroIntStationAttributes.nameOffsetX,
+        nameOffsetY = defaultChengduMetroIntStationAttributes.nameOffsetY,
+        direction = defaultChengduMetroIntStationAttributes.direction,
+    } = attrs[StationType.ChengduMetroInt] ?? defaultChengduMetroIntStationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -71,21 +71,21 @@ const CDMetroIntStation = (props: StationComponentProps) => {
             } else return [0, 0];
         } else {
             if (oX === 'left' && oY === 'top') {
-                return [-names[1].split('\n').length * (LINE_HEIGHT.en + 1) - 4, -6];
+                return [-names[1].split('\n').length * LINE_HEIGHT.en - 9, -6];
             } else if (oX === 'middle' && oY === 'top') {
-                return [0, -(height / 2 + 3)];
+                return [-1.5, -(height / 2 + 3)];
             } else if (oX === 'right' && oY === 'top') {
-                return [names[1].split('\n').length * (LINE_HEIGHT.en + 1) + 4, -6];
+                return [names[1].split('\n').length * LINE_HEIGHT.en + 9, -6];
             } else if (oX === 'left' && oY === 'bottom') {
-                return [-names[1].split('\n').length * (LINE_HEIGHT.en + 1) - 4, 6];
+                return [-names[1].split('\n').length * LINE_HEIGHT.en - 9, 6];
             } else if (oX === 'middle' && oY === 'bottom') {
-                return [0, height / 2 + 3];
+                return [-1.5, height / 2 + 3];
             } else if (oX === 'right' && oY === 'bottom') {
-                return [names[1].split('\n').length * (LINE_HEIGHT.en + 1) + 4, 6];
+                return [names[1].split('\n').length * LINE_HEIGHT.en + 9, 6];
             } else if (oX === 'left' && oY === 'middle') {
-                return [-names[1].split('\n').length * (LINE_HEIGHT.en + 1) - 4, 0];
+                return [-names[1].split('\n').length * LINE_HEIGHT.en - 9, 0];
             } else if (oX === 'right' && oY === 'middle') {
-                return [names[1].split('\n').length * (LINE_HEIGHT.en + 1) + 4, 0];
+                return [names[1].split('\n').length * LINE_HEIGHT.en + 9, 0];
             } else return [0, 0];
         }
     };
@@ -175,29 +175,29 @@ const CDMetroIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * CDMetroIntStation specific props.
+ * ChengduMetroIntStation specific props.
  */
-export interface CDMetroIntStationAttributes extends StationAttributes {
+export interface ChengduMetroIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     direction: 'vertical' | 'horizontal';
 }
 
-const defaultCDMetroIntStationAttributes: CDMetroIntStationAttributes = {
+const defaultChengduMetroIntStationAttributes: ChengduMetroIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     direction: 'horizontal',
 };
 
-const CDMetroIntAttrsComponent = (props: AttrsProps<CDMetroIntStationAttributes>) => {
+const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs ?? defaultCDMetroIntStationAttributes).names[0],
+            value: (attrs ?? defaultChengduMetroIntStationAttributes).names[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -207,7 +207,7 @@ const CDMetroIntAttrsComponent = (props: AttrsProps<CDMetroIntStationAttributes>
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names.at(1) ?? defaultCDMetroIntStationAttributes.names[1],
+            value: attrs.names.at(1) ?? defaultChengduMetroIntStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -217,7 +217,7 @@ const CDMetroIntAttrsComponent = (props: AttrsProps<CDMetroIntStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: (attrs ?? defaultCDMetroIntStationAttributes).nameOffsetX,
+            value: (attrs ?? defaultChengduMetroIntStationAttributes).nameOffsetX,
             options: { left: 'left', middle: 'middle', right: 'right' },
             disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -229,7 +229,7 @@ const CDMetroIntAttrsComponent = (props: AttrsProps<CDMetroIntStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: (attrs ?? defaultCDMetroIntStationAttributes).nameOffsetY,
+            value: (attrs ?? defaultChengduMetroIntStationAttributes).nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
             disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -240,8 +240,8 @@ const CDMetroIntAttrsComponent = (props: AttrsProps<CDMetroIntStationAttributes>
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.cdMetroBasic.isVertical'),
-            isChecked: (attrs ?? defaultCDMetroIntStationAttributes).direction == 'vertical',
+            label: t('panel.details.stations.chengduMetroBasic.isVertical'),
+            isChecked: (attrs ?? defaultChengduMetroIntStationAttributes).direction == 'vertical',
             onChange: val => {
                 attrs.direction = val ? 'vertical' : 'horizontal';
                 handleAttrsUpdate(id, attrs);
@@ -252,7 +252,7 @@ const CDMetroIntAttrsComponent = (props: AttrsProps<CDMetroIntStationAttributes>
     return <RmgFields fields={fields} />;
 };
 
-const cdMetroIntStationIcon = (
+const chengduMetroIntStationIcon = (
     <svg viewBox="-1 -1 61 16" height={40} width={40} focusable={false} style={{ padding: 5 }}>
         <g textAnchor="middle">
             <rect x={0} y={-5} width={60} height={30} stroke={'black'} strokeWidth={2} rx={15} ry={15} fill={'white'} />
@@ -263,13 +263,13 @@ const cdMetroIntStationIcon = (
     </svg>
 );
 
-const cdMetroIntStation: Station<CDMetroIntStationAttributes> = {
-    component: CDMetroIntStation,
-    icon: cdMetroIntStationIcon,
-    defaultAttrs: defaultCDMetroIntStationAttributes,
-    attrsComponent: CDMetroIntAttrsComponent,
+const chengduMetroIntStation: Station<ChengduMetroIntStationAttributes> = {
+    component: ChengduMetroIntStation,
+    icon: chengduMetroIntStationIcon,
+    defaultAttrs: defaultChengduMetroIntStationAttributes,
+    attrsComponent: ChengduMetroIntAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.cdMetroInt.displayName',
+        displayName: 'panel.details.stations.chengduMetroInt.displayName',
         cities: [CityCode.Chengdu],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -277,4 +277,4 @@ const cdMetroIntStation: Station<CDMetroIntStationAttributes> = {
     },
 };
 
-export default cdMetroIntStation;
+export default chengduMetroIntStation;

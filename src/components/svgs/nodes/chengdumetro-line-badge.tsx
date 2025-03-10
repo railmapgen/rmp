@@ -7,13 +7,13 @@ import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
-const CDMetroLineBadge = (props: NodeComponentProps<CDMetroLineBadgeAttributes>) => {
+const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
-        num = defaultCDMetroLineBadgeAttributes.num,
-        color = defaultCDMetroLineBadgeAttributes.color,
-        type = defaultCDMetroLineBadgeAttributes.type,
-    } = attrs ?? defaultCDMetroLineBadgeAttributes;
+        num = defaultChengduMetroLineBadgeAttributes.num,
+        color = defaultChengduMetroLineBadgeAttributes.color,
+        type = defaultChengduMetroLineBadgeAttributes.type,
+    } = attrs ?? defaultChengduMetroLineBadgeAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -51,7 +51,6 @@ const CDMetroLineBadge = (props: NodeComponentProps<CDMetroLineBadgeAttributes>)
                         fill={fgColor}
                         fontSize={fontSize}
                         dominantBaseline="central"
-                        style={{ fontFamily: '"Microsoft YaHei","Sogoe UI",Arial,sans-serif' }}
                     >
                         {num}
                     </text>
@@ -89,7 +88,6 @@ const CDMetroLineBadge = (props: NodeComponentProps<CDMetroLineBadgeAttributes>)
                         textAnchor="middle"
                         grow="down"
                         dominantBaseline="middle"
-                        style={{ fontFamily: '"Microsoft YaHei","Sogoe UI",Arial,sans-serif' }}
                     />
                 </>
             )}
@@ -98,27 +96,27 @@ const CDMetroLineBadge = (props: NodeComponentProps<CDMetroLineBadgeAttributes>)
 };
 
 /**
- * CDMetroLineBadge specific props.
+ * ChengduMetroLineBadge specific props.
  */
-export interface CDMetroLineBadgeAttributes extends AttributesWithColor {
+export interface ChengduMetroLineBadgeAttributes extends AttributesWithColor {
     num: number | string;
     type: 'normal' | 'suburban' | 'tram';
 }
 
-const defaultCDMetroLineBadgeAttributes: CDMetroLineBadgeAttributes = {
+const defaultChengduMetroLineBadgeAttributes: ChengduMetroLineBadgeAttributes = {
     num: 1,
     color: [CityCode.Chengdu, 'cd1', '#222a8c', MonoColour.white],
     type: 'normal',
 };
 
-const CDMetroLineBadgeAttrsComponent = (props: AttrsProps<CDMetroLineBadgeAttributes>) => {
+const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineBadgeAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.nodes.common.num'),
-            value: (attrs ?? defaultCDMetroLineBadgeAttributes).num as string,
+            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).num as string,
             validator: (val: string) => !Number.isNaN(val),
             onChange: (val: string | number) => {
                 if (Number.isNaN(Number(val))) {
@@ -135,20 +133,20 @@ const CDMetroLineBadgeAttrsComponent = (props: AttrsProps<CDMetroLineBadgeAttrib
             label: t('color'),
             component: (
                 <ColorField
-                    type={MiscNodeType.CDMetroLineBadge}
-                    defaultTheme={defaultCDMetroLineBadgeAttributes.color}
+                    type={MiscNodeType.ChengduMetroLineBadge}
+                    defaultTheme={defaultChengduMetroLineBadgeAttributes.color}
                 />
             ),
             minW: 'full',
         },
         {
             type: 'select',
-            label: t('panel.details.nodes.cdMetroLineBadge.type.displayName'),
-            value: (attrs ?? defaultCDMetroLineBadgeAttributes).type,
+            label: t('panel.details.nodes.chengduMetroLineBadge.type.displayName'),
+            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).type,
             options: {
-                normal: t('panel.details.nodes.cdMetroLineBadge.type.normal'),
-                suburban: t('panel.details.nodes.cdMetroLineBadge.type.suburban'),
-                tram: t('panel.details.nodes.cdMetroLineBadge.type.tram'),
+                normal: t('panel.details.nodes.chengduMetroLineBadge.type.normal'),
+                suburban: t('panel.details.nodes.chengduMetroLineBadge.type.suburban'),
+                tram: t('panel.details.nodes.chengduMetroLineBadge.type.tram'),
             },
             onChange: val => {
                 attrs.type = val as 'normal' | 'suburban' | 'tram';
@@ -160,7 +158,7 @@ const CDMetroLineBadgeAttrsComponent = (props: AttrsProps<CDMetroLineBadgeAttrib
     return <RmgFields fields={fields} />;
 };
 
-const cdMetroLineBadgeIcon = (
+const chengduMetroLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
         <text x="9" y="17" fill="white" fontSize="14">
@@ -169,15 +167,15 @@ const cdMetroLineBadgeIcon = (
     </svg>
 );
 
-const cdMetroLineBadge: Node<CDMetroLineBadgeAttributes> = {
-    component: CDMetroLineBadge,
-    icon: cdMetroLineBadgeIcon,
-    defaultAttrs: defaultCDMetroLineBadgeAttributes,
-    attrsComponent: CDMetroLineBadgeAttrsComponent,
+const chengduMetroLineBadge: Node<ChengduMetroLineBadgeAttributes> = {
+    component: ChengduMetroLineBadge,
+    icon: chengduMetroLineBadgeIcon,
+    defaultAttrs: defaultChengduMetroLineBadgeAttributes,
+    attrsComponent: ChengduMetroLineBadgeAttrsComponent,
     metadata: {
-        displayName: 'panel.details.nodes.cdMetroLineBadge.displayName',
+        displayName: 'panel.details.nodes.chengduMetroLineBadge.displayName',
         tags: [],
     },
 };
 
-export default cdMetroLineBadge;
+export default chengduMetroLineBadge;

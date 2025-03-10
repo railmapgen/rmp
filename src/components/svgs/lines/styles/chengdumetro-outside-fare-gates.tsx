@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../../constants/constants';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
-const CDMetroOutsideFareGates = (props: LineStyleComponentProps<CDMetroOutsideFareGatesAttributes>) => {
+const ChengduMetroOutsideFareGates = (props: LineStyleComponentProps<ChengduMetroOutsideFareGatesAttributes>) => {
     const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
@@ -18,7 +18,7 @@ const CDMetroOutsideFareGates = (props: LineStyleComponentProps<CDMetroOutsideFa
             d={path}
             fill="none"
             stroke="#b4b4b5"
-            strokeWidth="6"
+            strokeWidth="5"
             strokeDasharray="6 5"
             cursor="pointer"
             onPointerDown={newLine ? undefined : onPointerDown}
@@ -28,11 +28,11 @@ const CDMetroOutsideFareGates = (props: LineStyleComponentProps<CDMetroOutsideFa
 };
 
 /**
- * CDMetroOutsideFareGates specific props.
+ * ChengduMetroOutsideFareGates specific props.
  */
-export interface CDMetroOutsideFareGatesAttributes extends LinePathAttributes {}
+export interface ChengduMetroOutsideFareGatesAttributes extends LinePathAttributes {}
 
-const cdMetroOutsideFareGatesAttrsComponent = (props: AttrsProps<CDMetroOutsideFareGatesAttributes>) => {
+const chengduMetroOutsideFareGatesAttrsComponent = (props: AttrsProps<ChengduMetroOutsideFareGatesAttributes>) => {
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [];
@@ -40,14 +40,14 @@ const cdMetroOutsideFareGatesAttrsComponent = (props: AttrsProps<CDMetroOutsideF
     return <RmgFields fields={fields} />;
 };
 
-const cdMetroOutsideFareGates: LineStyle<CDMetroOutsideFareGatesAttributes> = {
-    component: CDMetroOutsideFareGates,
-    attrsComponent: cdMetroOutsideFareGatesAttrsComponent,
+const chengduMetroOutsideFareGates: LineStyle<ChengduMetroOutsideFareGatesAttributes> = {
+    component: ChengduMetroOutsideFareGates,
+    attrsComponent: chengduMetroOutsideFareGatesAttrsComponent,
     defaultAttrs: {},
     metadata: {
-        displayName: 'panel.details.lines.cdMetroOutsideFareGates.displayName',
+        displayName: 'panel.details.lines.chengduMetroOutsideFareGates.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 
-export default cdMetroOutsideFareGates;
+export default chengduMetroOutsideFareGates;
