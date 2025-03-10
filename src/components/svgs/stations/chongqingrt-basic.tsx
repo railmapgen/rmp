@@ -93,9 +93,9 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
-                r={isLoop ? 4 : 3}
+                r={isLoop ? 4 : 2.5}
                 stroke={color[2]}
-                strokeWidth="1"
+                strokeWidth=".8"
                 fill="white"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -219,7 +219,7 @@ const ChongqingRTBasicAttrsComponent = (props: AttrsProps<ChongqingRTBasicStatio
 
 const chongqingRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1" fill="none" />
+        <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth=".8" fill="none" />
     </svg>
 );
 

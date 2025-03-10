@@ -35,6 +35,7 @@ import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/st
 import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
 import { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
+import { ChengduMetroOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdumetro-outside-fare-gates';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -81,6 +82,7 @@ export enum LineStyleType {
     GuangdongIntercityRailway = 'gd-intercity-rwy',
     ChongqingRTLoop = 'chongqingrt-loop',
     ChongqingRTLineBadge = 'chongqingrt-line-badge',
+    ChengduMetroOutsideFareGates = 'chengdumetro-outside-fare-gates',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -114,6 +116,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.GuangdongIntercityRailway]?: GuangdongIntercityRailwayAttributes;
     [LineStyleType.ChongqingRTLoop]?: ChongqingRTLoopAttributes;
     [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
+    [LineStyleType.ChengduMetroOutsideFareGates]?: ChengduMetroOutsideFareGatesAttributes;
 }
 
 export const LineStylesWithColor = new Set([
