@@ -44,13 +44,8 @@ const ChengduMetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const getTextOffset = (
-        oX: NameOffsetX,
-        oY: NameOffsetY,
-        direction: 'vertical' | 'horizontal',
-        width: number,
-        height: number
-    ) => {
+    const getTextOffset = () => {
+        const [oX, oY] = [nameOffsetX, nameOffsetY];
         if (direction == 'horizontal') {
             if (oX === 'left' && oY === 'top') {
                 return [-10, -names[1].split('\n').length * LINE_HEIGHT.en - 9];
@@ -93,7 +88,7 @@ const ChengduMetroIntStation = (props: StationComponentProps) => {
     const width =
         direction == 'horizontal' ? (names[0].length > 5 ? 60 + (names[0].length - 5) * LINE_HEIGHT.zh : 60) : 15;
     const height = direction == 'horizontal' ? 15 : 60;
-    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY, direction, width, height);
+    const [textX, textY] = getTextOffset();
     const textAnchor =
         direction == 'vertical'
             ? nameOffsetY === 'top'

@@ -151,7 +151,7 @@
                 },
                 "chengduMetroLineBadge": {
                     "displayName": "청두 지하철 노선 표식",
-                    "type": {
+                    "badgeType": {
                         "displayName": "유형",
                         "normal": "일반",
                         "suburban": "교외 철도",
@@ -405,7 +405,7 @@
                 "chengduMetroBasic": {
                     "displayName": "청두 지하철 기본 역",
                     "isVertical": "종관 역",
-                    "type": {
+                    "stationType": {
                         "displayName": "역 유형",
                         "normal": "일반 역",
                         "branchTerminal": "지선 종점역",

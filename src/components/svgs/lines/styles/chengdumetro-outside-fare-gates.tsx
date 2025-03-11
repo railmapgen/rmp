@@ -32,13 +32,7 @@ const ChengduMetroOutsideFareGates = (props: LineStyleComponentProps<ChengduMetr
  */
 export interface ChengduMetroOutsideFareGatesAttributes extends LinePathAttributes {}
 
-const chengduMetroOutsideFareGatesAttrsComponent = (props: AttrsProps<ChengduMetroOutsideFareGatesAttributes>) => {
-    const { t } = useTranslation();
-
-    const fields: RmgFieldsField[] = [];
-
-    return <RmgFields fields={fields} />;
-};
+const chengduMetroOutsideFareGatesAttrsComponent = () => undefined;
 
 const chengduMetroOutsideFareGates: LineStyle<ChengduMetroOutsideFareGatesAttributes> = {
     component: ChengduMetroOutsideFareGates,

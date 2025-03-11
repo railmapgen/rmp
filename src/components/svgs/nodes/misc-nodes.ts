@@ -19,11 +19,11 @@ import jrEastLineBadge from './jr-east-line-badge';
 import qingdaoMetroNumLineBadge from './qingdao-metro-num-line-badge';
 import guangdongIntercityRailwayLineBadge from './guangdong-intercity-railway-line-badge';
 import londonArrow from './london-arrow';
+import chengduMetroLineBadge from './chengdumetro-line-badge';
 import facilities from './facilities';
 import text from './text';
 import i18nText from './i18n-text';
 import Master from './master';
-import chengduMetroLineBadge from './chengdumetro-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,

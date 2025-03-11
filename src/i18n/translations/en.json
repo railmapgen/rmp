@@ -151,7 +151,7 @@
                 },
                 "chengduMetroLineBadge": {
                     "displayName": "Chengdu Metro Line Badge",
-                    "type":{
+                    "badgeType":{
                         "displayName": "Type",
                         "normal": "Normal",
                         "suburban": "Suburban railway",
@@ -406,7 +406,7 @@
                 "chengduMetroBasic": {
                     "displayName": "Chengdu Metro basic station",
                     "isVertical": "Is vertical station",
-                    "type": {
+                    "stationType": {
                         "displayName": "Station type",
                         "normal": "Normal",
                         "branchTerminal": "Branch terminal",

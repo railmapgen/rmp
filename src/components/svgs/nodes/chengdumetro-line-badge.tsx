@@ -10,9 +10,9 @@ import { MultilineText } from '../common/multiline-text';
 const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
-        num = defaultChengduMetroLineBadgeAttributes.num,
+        content = defaultChengduMetroLineBadgeAttributes.content,
         color = defaultChengduMetroLineBadgeAttributes.color,
-        type = defaultChengduMetroLineBadgeAttributes.type,
+        badgeType = defaultChengduMetroLineBadgeAttributes.badgeType,
     } = attrs ?? defaultChengduMetroLineBadgeAttributes;
 
     const onPointerDown = React.useCallback(
@@ -34,63 +34,65 @@ const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAt
     return (
         <g
             id={id}
-            transform={`translate(${x - 12.5}, ${y - 12.5})`}
+            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
         >
-            {type == 'normal' ? (
-                <>
-                    <rect fill={color[2]} x="0" width="25" height="25" rx="12.5" ry="12.5" />
-                    <text
-                        className="rmp-name__zh"
-                        textAnchor="middle"
-                        x="12.5"
-                        y="12.5"
-                        fill={fgColor}
-                        fontSize={fontSize}
-                        dominantBaseline="central"
-                    >
-                        {num}
-                    </text>
-                </>
-            ) : type == 'suburban' ? (
-                <>
-                    <rect fill={color[2]} x="0" y="0" width="20" height="25" rx="0" ry="0" />
-                    <rect fill={color[2]} x="19" y="0" width="6" height="5" rx="0" ry="0" />
-                    <rect fill={color[2]} x="19" y="10" width="6" height="5" rx="0" ry="0" />
-                    <rect fill={color[2]} x="19" y="20" width="6" height="5" rx="0" ry="0" />
-                    <text
-                        className="rmp-name__zh"
-                        textAnchor="left"
-                        x="0"
-                        y="12.5"
-                        fill={fgColor}
-                        fontSize={fontSize}
-                        dominantBaseline="central"
-                        style={{ fontFamily: '"Microsoft YaHei","Sogoe UI",Arial,sans-serif' }}
-                    >
-                        {num}
-                    </text>
-                </>
-            ) : (
-                <>
-                    <rect fill={color[2]} x="-1.25" y="0" width="27.5" height="7.5" rx="0" ry="0" />
-                    <rect fill={color[2]} x="7.5" y="0" width="10" height="25" rx="0" ry="0" />
-                    <MultilineText
-                        text={num.toString().split('')}
-                        lineHeight={10.5}
-                        x={12.5}
-                        y={6.5}
-                        fill="white"
-                        fontSize={10}
-                        textAnchor="middle"
-                        grow="down"
-                        dominantBaseline="middle"
-                    />
-                </>
-            )}
+            <g transform={`translate(${-12.5}, ${-12.5})`}>
+                {badgeType == 'normal' ? (
+                    <>
+                        <rect fill={color[2]} x="0" width="25" height="25" rx="12.5" ry="12.5" />
+                        <text
+                            className="rmp-name__zh"
+                            textAnchor="middle"
+                            x="12.5"
+                            y="12.5"
+                            fill={fgColor}
+                            fontSize={fontSize}
+                            dominantBaseline="central"
+                        >
+                            {content}
+                        </text>
+                    </>
+                ) : badgeType == 'suburban' ? (
+                    <>
+                        <rect fill={color[2]} x="0" y="0" width="20" height="25" rx="0" ry="0" />
+                        <rect fill={color[2]} x="19" y="0" width="6" height="5" rx="0" ry="0" />
+                        <rect fill={color[2]} x="19" y="10" width="6" height="5" rx="0" ry="0" />
+                        <rect fill={color[2]} x="19" y="20" width="6" height="5" rx="0" ry="0" />
+                        <text
+                            className="rmp-name__zh"
+                            textAnchor="left"
+                            x="0"
+                            y="12.5"
+                            fill={fgColor}
+                            fontSize={fontSize}
+                            dominantBaseline="central"
+                            style={{ fontFamily: '"Microsoft YaHei","Sogoe UI",Arial,sans-serif' }}
+                        >
+                            {content}
+                        </text>
+                    </>
+                ) : (
+                    <>
+                        <rect fill={color[2]} x="-1.25" y="0" width="27.5" height="7.5" rx="0" ry="0" />
+                        <rect fill={color[2]} x="7.5" y="0" width="10" height="25" rx="0" ry="0" />
+                        <MultilineText
+                            text={content.toString().split('')}
+                            lineHeight={10.5}
+                            x={12.5}
+                            y={6.5}
+                            fill="white"
+                            fontSize={10}
+                            textAnchor="middle"
+                            grow="down"
+                            dominantBaseline="middle"
+                        />
+                    </>
+                )}
+            </g>
         </g>
     );
 };
@@ -99,14 +101,14 @@ const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAt
  * ChengduMetroLineBadge specific props.
  */
 export interface ChengduMetroLineBadgeAttributes extends AttributesWithColor {
-    num: number | string;
-    type: 'normal' | 'suburban' | 'tram';
+    content: number | string;
+    badgeType: 'normal' | 'suburban' | 'tram';
 }
 
 const defaultChengduMetroLineBadgeAttributes: ChengduMetroLineBadgeAttributes = {
-    num: 1,
+    content: 1,
     color: [CityCode.Chengdu, 'cd1', '#222a8c', MonoColour.white],
-    type: 'normal',
+    badgeType: 'normal',
 };
 
 const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineBadgeAttributes>) => {
@@ -115,14 +117,14 @@ const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineB
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
-            label: t('panel.details.nodes.common.num'),
-            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).num as string,
+            label: t('panel.details.nodes.text.content'),
+            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).content as string,
             validator: (val: string) => !Number.isNaN(val),
             onChange: (val: string | number) => {
                 if (Number.isNaN(Number(val))) {
-                    attrs.num = val;
+                    attrs.content = val;
                 } else {
-                    attrs.num = Number(val);
+                    attrs.content = Number(val);
                 }
                 handleAttrsUpdate(id, attrs);
             },
@@ -141,15 +143,15 @@ const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineB
         },
         {
             type: 'select',
-            label: t('panel.details.nodes.chengduMetroLineBadge.type.displayName'),
-            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).type,
+            label: t('panel.details.nodes.chengduMetroLineBadge.badgeType.displayName'),
+            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).badgeType,
             options: {
-                normal: t('panel.details.nodes.chengduMetroLineBadge.type.normal'),
-                suburban: t('panel.details.nodes.chengduMetroLineBadge.type.suburban'),
-                tram: t('panel.details.nodes.chengduMetroLineBadge.type.tram'),
+                normal: t('panel.details.nodes.chengduMetroLineBadge.badgeType.normal'),
+                suburban: t('panel.details.nodes.chengduMetroLineBadge.badgeType.suburban'),
+                tram: t('panel.details.nodes.chengduMetroLineBadge.badgeType.tram'),
             },
             onChange: val => {
-                attrs.type = val as 'normal' | 'suburban' | 'tram';
+                attrs.badgeType = val as 'normal' | 'suburban' | 'tram';
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

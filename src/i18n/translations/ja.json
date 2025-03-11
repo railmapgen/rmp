@@ -153,7 +153,7 @@
                 },
                 "chengduMetroLineBadge": {
                     "displayName": "成都地下鉄路線標識",
-                    "type": {
+                    "badgeType": {
                         "displayName": "種類",
                         "normal": "普通",
                         "suburban": "郊外鉄道",
@@ -406,7 +406,7 @@
                 "chengduMetroBasic": {
                     "displayName": "成都地下鉄基本駅",
                     "isVertical": "縦型駅",
-                    "type": {
+                    "stationType": {
                         "displayName": "駅の種類",
                         "normal": "普通駅",
                         "branchTerminal": "支線終着駅",
