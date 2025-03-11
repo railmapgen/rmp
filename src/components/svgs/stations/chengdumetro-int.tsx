@@ -192,7 +192,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'input',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs ?? defaultChengduMetroIntStationAttributes).names[0],
+            value: (attrs.names ?? defaultChengduMetroIntStationAttributes.names)[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -202,7 +202,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names.at(1) ?? defaultChengduMetroIntStationAttributes.names[1],
+            value: (attrs.names ?? defaultChengduMetroIntStationAttributes.names)[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -212,7 +212,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: (attrs ?? defaultChengduMetroIntStationAttributes).nameOffsetX,
+            value: attrs.nameOffsetX ?? defaultChengduMetroIntStationAttributes.nameOffsetX,
             options: { left: 'left', middle: 'middle', right: 'right' },
             disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -224,7 +224,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: (attrs ?? defaultChengduMetroIntStationAttributes).nameOffsetY,
+            value: attrs.nameOffsetY ?? defaultChengduMetroIntStationAttributes.nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
             disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -236,7 +236,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'switch',
             label: t('panel.details.stations.chengduMetroBasic.isVertical'),
-            isChecked: (attrs ?? defaultChengduMetroIntStationAttributes).direction == 'vertical',
+            isChecked: (attrs.direction ?? defaultChengduMetroIntStationAttributes.direction) == 'vertical',
             onChange: val => {
                 attrs.direction = val ? 'vertical' : 'horizontal';
                 handleAttrsUpdate(id, attrs);

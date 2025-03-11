@@ -32,14 +32,7 @@ const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAt
     const fontSize = 16;
 
     return (
-        <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={{ cursor: 'move' }}
-        >
+        <g transform={`translate(${x}, ${y})`}>
             <g transform={`translate(${-12.5}, ${-12.5})`}>
                 {badgeType == 'normal' ? (
                     <>
@@ -92,6 +85,20 @@ const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAt
                         />
                     </>
                 )}
+                <rect
+                    id={`misc_node_connectable_${id}`}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move', zIndex: 1000 }}
+                    x={0}
+                    y={0}
+                    width={25}
+                    height={25}
+                    fill="white"
+                    opacity={0}
+                    stroke="none"
+                />
             </g>
         </g>
     );

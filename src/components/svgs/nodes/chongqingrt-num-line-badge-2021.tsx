@@ -31,28 +31,47 @@ const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLin
     const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.2, 1.5] : [0, 5.5]) : [0, 2.55];
 
     return (
-        <g
-            id={id}
-            transform={`translate(${x - 10.5}, ${y - 10.5})`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={{ cursor: 'move' }}
-        >
-            <rect fill={color[2]} x="0" width="21" height="21" rx="3" ry="3" />
-            <rect strokeWidth="1.5" stroke="white" fill="none" x="1.5" y="1.5" width="18" height="18" rx="2" ry="2" />
-            <text
-                className="rmp-name__zh"
-                textAnchor="left"
-                x={sX + 0.5}
-                y="10.5"
-                fill={fgColor}
-                fontSize={fontSize}
-                letterSpacing={letterSpacing}
-                dominantBaseline="central"
-            >
-                {num}
-            </text>
+        <g transform={`translate(${x}, ${y})`}>
+            <g transform="translate(-10.5, -10.5)">
+                <rect fill={color[2]} x="0" width="21" height="21" rx="3" ry="3" />
+                <rect
+                    strokeWidth="1.5"
+                    stroke="white"
+                    fill="none"
+                    x="1.5"
+                    y="1.5"
+                    width="18"
+                    height="18"
+                    rx="2"
+                    ry="2"
+                />
+                <text
+                    className="rmp-name__zh"
+                    textAnchor="left"
+                    x={sX + 0.5}
+                    y="10.5"
+                    fill={fgColor}
+                    fontSize={fontSize}
+                    letterSpacing={letterSpacing}
+                    dominantBaseline="central"
+                >
+                    {num}
+                </text>
+                <rect
+                    id={`misc_node_connectable_${id}`}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move', zIndex: 1000 }}
+                    x={0}
+                    y={0}
+                    width={21}
+                    height={21}
+                    fill="white"
+                    opacity={0}
+                    stroke="none"
+                />
+            </g>
         </g>
     );
 };

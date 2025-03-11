@@ -149,30 +149,17 @@ const ChengduMetroBasicStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 />
             ) : stationType == 'joint' ? (
-                <g
-                    transform={direction == 'vertical' ? 'rotate(90)' : ''}
-                    id={`stn_core_${id}`}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                >
+                <g transform={direction == 'vertical' ? 'rotate(90)' : ''}>
                     <circle r={2.25} fill="black" transform="translate(-1.5,0)" />
                     <circle r={2.25} fill="black" transform="translate(1.5,0)" />
                     <circle r={1.75} fill="white" transform="translate(-1.5,0)" />
                     <circle r={1.75} fill="white" transform="translate(1.5,0)" />
-                </g>
-            ) : (
-                <g>
                     {/* It's a overlay */}
                     <rect
                         id={`stn_core_${id}`}
                         fill="white"
                         fillOpacity="0"
-                        stroke="#231815"
-                        strokeMiterlimit="22.9"
-                        strokeWidth="0.232"
-                        strokeOpacity="0"
+                        stroke="none"
                         onPointerDown={onPointerDown}
                         onPointerMove={onPointerMove}
                         onPointerUp={onPointerUp}
@@ -182,7 +169,25 @@ const ChengduMetroBasicStation = (props: StationComponentProps) => {
                         width={8}
                         height={8}
                     />
+                </g>
+            ) : (
+                <g>
                     <line x1={tramX1} y1={tramY1} x2={tramX2} y2={tramY2} stroke={color[2]} strokeWidth={1} />
+                    {/* It's a overlay */}
+                    <rect
+                        id={`stn_core_${id}`}
+                        fill="white"
+                        fillOpacity="0"
+                        stroke="none"
+                        onPointerDown={onPointerDown}
+                        onPointerMove={onPointerMove}
+                        onPointerUp={onPointerUp}
+                        style={{ cursor: 'move' }}
+                        x={-6}
+                        y={-6}
+                        width={12}
+                        height={12}
+                    />
                 </g>
             )}
             {direction == 'horizontal' ? (
@@ -271,7 +276,7 @@ const ChengduMetroBasicAttrsComponent = (props: AttrsProps<ChengduMetroBasicStat
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names.at(1) ?? defaultChengduMetroBasicStationAttributes.names[1],
+            value: (attrs.names ?? defaultChengduMetroBasicStationAttributes.names)[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -281,7 +286,7 @@ const ChengduMetroBasicAttrsComponent = (props: AttrsProps<ChengduMetroBasicStat
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: (attrs ?? defaultChengduMetroBasicStationAttributes).nameOffsetX,
+            value: attrs.nameOffsetX ?? defaultChengduMetroBasicStationAttributes.nameOffsetX,
             options: { left: 'left', middle: 'middle', right: 'right' },
             disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -296,7 +301,7 @@ const ChengduMetroBasicAttrsComponent = (props: AttrsProps<ChengduMetroBasicStat
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: (attrs ?? defaultChengduMetroBasicStationAttributes).nameOffsetY,
+            value: attrs.nameOffsetY ?? defaultChengduMetroBasicStationAttributes.nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
             disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -321,20 +326,19 @@ const ChengduMetroBasicAttrsComponent = (props: AttrsProps<ChengduMetroBasicStat
         {
             type: 'switch',
             label: t('panel.details.stations.chengduMetroBasic.isVertical'),
-            isChecked: (attrs ?? defaultChengduMetroBasicStationAttributes).direction == 'vertical',
+            isChecked: (attrs.direction ?? defaultChengduMetroBasicStationAttributes.direction) == 'vertical',
             onChange: val => {
                 attrs.direction = val ? 'vertical' : 'horizontal';
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
-            isDisabled:
-                (attrs ?? defaultChengduMetroBasicStationAttributes).nameOffsetX != 'middle' ||
-                (attrs ?? defaultChengduMetroBasicStationAttributes).nameOffsetY == 'middle',
+            isDisabled: attrs.nameOffsetX != 'middle' || attrs.nameOffsetY == 'middle',
+            // In fact, if it is undefined, it will be disable so we don't need to check it:)
         },
         {
             type: 'select',
             label: t('panel.details.stations.chengduMetroBasic.stationType.displayName'),
-            value: (attrs ?? defaultChengduMetroBasicStationAttributes).stationType,
+            value: attrs.stationType ?? defaultChengduMetroBasicStationAttributes.stationType,
             options: {
                 normal: t('panel.details.stations.chengduMetroBasic.stationType.normal'),
                 joint: t('panel.details.stations.chengduMetroBasic.stationType.joint'),
