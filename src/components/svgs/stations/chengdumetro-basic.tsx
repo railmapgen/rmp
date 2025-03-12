@@ -333,7 +333,7 @@ const ChengduMetroBasicAttrsComponent = (props: AttrsProps<ChengduMetroBasicStat
             },
             minW: 'full',
             isDisabled: attrs.nameOffsetX != 'middle' || attrs.nameOffsetY == 'middle',
-            // In fact, if it is undefined, it will be disable so we don't need to check it:)
+            // In fact, if it is undefined, it will be disabled so we don't need to check it:)
         },
         {
             type: 'select',

@@ -63,7 +63,6 @@ const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAt
                             fill={fgColor}
                             fontSize={fontSize}
                             dominantBaseline="central"
-                            style={{ fontFamily: '"Microsoft YaHei","Sogoe UI",Arial,sans-serif' }}
                         >
                             {content}
                         </text>
