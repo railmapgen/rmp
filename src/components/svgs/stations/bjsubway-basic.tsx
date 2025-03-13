@@ -1,5 +1,7 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
-import { CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
     NameOffsetY,
@@ -9,7 +11,6 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
@@ -130,86 +131,77 @@ const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
     open: true,
 };
 
-const bjsubwayBasicStationFields = [
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameZh',
-        value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).names[0],
-        onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
-            // set value
-            attrs.names[0] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.stations.common.nameEn',
-        value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).names[1],
-        onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
-            // set value
-            attrs.names[1] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetX',
-        value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).nameOffsetX,
-        options: { left: 'left', middle: 'middle', right: 'right' },
-        disabledOptions: (attrs?: BjsubwayBasicStationAttributes) =>
-            attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
-        onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
-            // set value
-            attrs.nameOffsetX = val as NameOffsetX;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'select',
-        label: 'panel.details.stations.common.nameOffsetY',
-        value: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).nameOffsetY,
-        options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-        disabledOptions: (attrs?: BjsubwayBasicStationAttributes) =>
-            attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
-        onChange: (val: string | number, attrs_: BjsubwayBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
-            // set value
-            attrs.nameOffsetY = val as NameOffsetY;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.stations.bjsubwayBasic.open',
-        oneLine: true,
-        isChecked: (attrs?: BjsubwayBasicStationAttributes) => (attrs ?? defaultBjsubwayBasicStationAttributes).open,
-        onChange: (val: boolean, attrs_: BjsubwayBasicStationAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayBasicStationAttributes;
-            // set value
-            attrs.open = val;
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={bjsubwayBasicStationFields as RmgFieldsFieldDetail<BjsubwayBasicStationAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameZh'),
+            value: attrs.names[0],
+            onChange: val => {
+                attrs.names[0] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'textarea',
+            label: t('panel.details.stations.common.nameEn'),
+            value: attrs.names.at(1) ?? defaultBjsubwayBasicStationAttributes.names[1],
+            onChange: val => {
+                attrs.names[1] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: attrs.nameOffsetX,
+            options: {
+                left: t('panel.details.stations.common.left'),
+                middle: t('panel.details.stations.common.middle'),
+                right: t('panel.details.stations.common.right'),
+            },
+            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetX = val as NameOffsetX;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: attrs.nameOffsetY,
+            options: {
+                top: t('panel.details.stations.common.top'),
+                middle: t('panel.details.stations.common.middle'),
+                bottom: t('panel.details.stations.common.bottom'),
+            },
+            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            onChange: val => {
+                attrs.nameOffsetY = val as NameOffsetY;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.bjsubwayBasic.open'),
+            oneLine: true,
+            isChecked: attrs.open ?? defaultBjsubwayBasicStationAttributes.open,
+            onChange: val => {
+                attrs.open = val;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const bjsubwayBasicStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -221,7 +213,7 @@ const bjsubwayBasicStation: Station<BjsubwayBasicStationAttributes> = {
     component: BjsubwayBasicStation,
     icon: bjsubwayBasicStationIcon,
     defaultAttrs: defaultBjsubwayBasicStationAttributes,
-    attrsComponent,
+    attrsComponent: BJSubwayBasicAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.bjsubwayBasic.displayName',
         cities: [CityCode.Beijing],

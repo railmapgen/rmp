@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const SuzhouRTNumLineBadge = (props: NodeComponentProps<SuzhouRTNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -76,54 +77,44 @@ const defaultSuzhouRTNumLineBadgeAttributes: SuzhouRTNumLineBadgeAttributes = {
     color: [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white],
 };
 
-const suzhouRTNumLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.num',
-        value: (attrs?: SuzhouRTNumLineBadgeAttributes) => (attrs ?? defaultSuzhouRTNumLineBadgeAttributes).num,
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: SuzhouRTNumLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSuzhouRTNumLineBadgeAttributes;
-            // return if invalid
-            if (Number.isNaN(val)) return attrs;
-            // set value
-            attrs.num = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'switch',
-        label: 'panel.details.nodes.suzhouRTNumLineBadge.branch',
-        isChecked: (attrs?: SuzhouRTNumLineBadgeAttributes) =>
-            attrs?.branch ?? defaultSuzhouRTNumLineBadgeAttributes.branch,
-        onChange: (val: boolean, attrs_: SuzhouRTNumLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultSuzhouRTNumLineBadgeAttributes;
-            // set value
-            attrs.branch = val;
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.SuzhouRTNumLineBadge}
-                defaultTheme={defaultSuzhouRTNumLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const SuzhouRTNumLineBadgeAttrsComponent = (props: AttrsProps<SuzhouRTNumLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={suzhouRTNumLineBadgeFields as RmgFieldsFieldDetail<SuzhouRTNumLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.num'),
+            value: (attrs.num ?? defaultSuzhouRTNumLineBadgeAttributes.num).toString(),
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: val => {
+                attrs.num = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.nodes.suzhouRTNumLineBadge.branch'),
+            isChecked: attrs?.branch ?? defaultSuzhouRTNumLineBadgeAttributes.branch,
+            onChange: val => {
+                attrs.branch = val;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.SuzhouRTNumLineBadge}
+                    defaultTheme={defaultSuzhouRTNumLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const suzhouRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -138,7 +129,7 @@ const suzhouRTNumLineBadge: Node<SuzhouRTNumLineBadgeAttributes> = {
     component: SuzhouRTNumLineBadge,
     icon: suzhouRTNumLineBadgeIcon,
     defaultAttrs: defaultSuzhouRTNumLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: SuzhouRTNumLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.suzhouRTNumLineBadge.displayName',
         tags: [],

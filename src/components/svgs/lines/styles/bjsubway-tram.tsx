@@ -1,5 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -8,11 +11,6 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
-import { CityCode } from '../../../../constants/constants';
 
 const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -40,25 +38,27 @@ const defaultBjsubwayTramAttributes: BjsubwayTramAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const bjsubwayTramFields = [
-    {
-        type: 'custom',
-        label: 'color',
-        component: <ColorField type={LineStyleType.BjsubwayTram} defaultTheme={defaultBjsubwayTramAttributes.color} />,
-    },
-];
+const BJSubwayTramAttrsComponent = (props: AttrsProps<BjsubwayTramAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={bjsubwayTramFields as RmgFieldsFieldDetail<BjsubwayTramAttributes>}
-        type="style"
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField type={LineStyleType.BjsubwayTram} defaultTheme={defaultBjsubwayTramAttributes.color} />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const bjsubwayTram: LineStyle<BjsubwayTramAttributes> = {
     component: BjsubwayTram,
     defaultAttrs: defaultBjsubwayTramAttributes,
-    attrsComponent,
+    attrsComponent: BJSubwayTramAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwayTram.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

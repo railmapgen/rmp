@@ -111,14 +111,14 @@ const myStationAttrs = (props: AttrsProps<MyStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
-    const [someAttribute, setSomeAttribute] = React.useState(attrs.someAttribute);
+    const [someAttribute, setSomeAttribute] = React.useState(attrs.someAttribute ?? defaultMyStationAttributes.someAttribute);
     React.useEffect(() => setSomeAttribute(attrs.someAttribute), [attrs.someAttribute]);
     const handleSomeAttributeChange = (val: string) => {
         attrs.someAttribute = val;
         handleAttrsUpdate(id, attrs);
     };
 
-    const [anotherAttribute, setAnotherAttribute] = React.useState(attrs.anotherAttribute);
+    const [anotherAttribute, setAnotherAttribute] = React.useState(attrs.anotherAttribute ?? defaultMyStationAttributes.anotherAttribute);
     React.useEffect(() => setAnotherAttribute(attrs.anotherAttribute), [attrs.anotherAttribute]);
     const handleAnotherAttributeChange = (val: string) => {
         attrs.anotherAttribute = Number(val);
@@ -166,7 +166,7 @@ const myStationAttrs = (props: AttrsProps<MyStationAttributes>) => {
         {
             type: 'textarea',
             label: t('panel.details.stations.myStation.someAttribute'),
-            value: attrs.someAttribute,
+            value: attrs.someAttribute ?? defaultMyStationAttributes.someAttribute,
             onChange: val => {
                 attrs.someAttribute = val;
                 handleAttrsUpdate(id, attrs);
@@ -176,7 +176,7 @@ const myStationAttrs = (props: AttrsProps<MyStationAttributes>) => {
         {
             type: 'select',
             label: t('panel.details.stations.myStation.anotherAttribute'),
-            value: attrs.anotherAttribute,
+            value: attrs.anotherAttribute ?? defaultMyStationAttributes.anotherAttribute,
             options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
             onChange: val => {
                 attrs.anotherAttribute = Number(val);

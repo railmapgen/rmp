@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 import { MultilineText } from '../common/multiline-text';
 
 const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineBadgeAttributes>) => {
@@ -80,53 +81,43 @@ const defaultChongqingRTTextLineBadgeAttributes: ChongqingRTTextLineBadgeAttribu
     color: [CityCode.Chongqing, 'cq3', '#003da5', MonoColour.white],
 };
 
-const chongqingRTTextLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.nameZh',
-        value: (attrs?: ChongqingRTTextLineBadgeAttributes) =>
-            (attrs ?? defaultChongqingRTTextLineBadgeAttributes).names[0],
-        onChange: (val: string | number, attrs_: ChongqingRTTextLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultChongqingRTTextLineBadgeAttributes;
-            // set value
-            attrs.names[0] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'textarea',
-        label: 'panel.details.nodes.common.nameEn',
-        value: (attrs?: ChongqingRTTextLineBadgeAttributes) =>
-            (attrs ?? defaultChongqingRTTextLineBadgeAttributes).names[1],
-        onChange: (val: string | number, attrs_: ChongqingRTTextLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultChongqingRTTextLineBadgeAttributes;
-            // return if invalid
-            // set value
-            attrs.names[1] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.ChongqingRTTextLineBadge}
-                defaultTheme={defaultChongqingRTTextLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const ChongqingRTTextLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTTextLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={chongqingRTTextLineBadgeFields as RmgFieldsFieldDetail<ChongqingRTTextLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.nameZh'),
+            value: attrs.names[0],
+            onChange: val => {
+                attrs.names[0] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.nameEn'),
+            value: attrs.names.at(1) ?? defaultChongqingRTTextLineBadgeAttributes.names[1],
+            onChange: val => {
+                attrs.names[1] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.ChongqingRTTextLineBadge}
+                    defaultTheme={defaultChongqingRTTextLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const chongqingRTTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -144,7 +135,7 @@ const chongqingRTTextLineBadge: Node<ChongqingRTTextLineBadgeAttributes> = {
     component: ChongqingRTTextLineBadge,
     icon: chongqingRTTextLineBadgeIcon,
     defaultAttrs: defaultChongqingRTTextLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: ChongqingRTTextLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.chongqingRTTextLineBadge.displayName',
         tags: [],

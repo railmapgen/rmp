@@ -208,7 +208,7 @@ const ChongqingRTBasic2021AttrsComponent = (props: AttrsProps<ChongqingRTBasicSt
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs ?? defaultChongqingRTBasicStation2021Attributes).names[0],
+            value: attrs.names[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);

@@ -94,14 +94,14 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
-    const [someAttribute, setSomeAttribute] = React.useState(attrs.someAttribute);
+    const [someAttribute, setSomeAttribute] = React.useState(attrs.someAttribute ?? defaultMyLineStyleAttributes.someAttribute);
     React.useEffect(() => setSomeAttribute(attrs.someAttribute), [attrs.someAttribute]);
     const handleSomeAttributeChange = (val: string) => {
         attrs.someAttribute = val;
         handleAttrsUpdate(id, attrs);
     };
 
-    const [anotherAttribute, setAnotherAttribute] = React.useState(attrs.anotherAttribute);
+    const [anotherAttribute, setAnotherAttribute] = React.useState(attrs.anotherAttribute ?? defaultMyLineStyleAttributes.anotherAttribute);
     React.useEffect(() => setAnotherAttribute(attrs.anotherAttribute), [attrs.anotherAttribute]);
     const handleAnotherAttributeChange = (val: string) => {
         attrs.anotherAttribute = Number(val);
@@ -149,7 +149,7 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
         {
             type: 'textarea',
             label: t('panel.details.stations.myLineStyle.someAttribute'),
-            value: attrs.someAttribute,
+            value: attrs.someAttribute ?? defaultMyLineStyleAttributes.someAttribute,
             onChange: val => {
                 attrs.someAttribute = val;
                 handleAttrsUpdate(id, attrs);
@@ -159,7 +159,7 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
         {
             type: 'select',
             label: t('panel.details.stations.myLineStyle.anotherAttribute'),
-            value: attrs.anotherAttribute,
+            value: attrs.anotherAttribute ?? defaultMyLineStyleAttributes.anotherAttribute,
             options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
             onChange: val => {
                 attrs.anotherAttribute = Number(val);
