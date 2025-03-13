@@ -149,7 +149,7 @@
                     "sandwich": "Sandwich",
                     "tube": "Tube"
                 },
-                "chengduMetroLineBadge": {
+                "chengduRTLineBadge": {
                     "displayName": "Chengdu Metro Line Badge",
                     "badgeType":{
                         "displayName": "Type",
@@ -403,7 +403,7 @@
                         "horizontal": "Horizontal"
                     }
                 },
-                "chengduMetroBasic": {
+                "chengduRTBasic": {
                     "displayName": "Chengdu Metro basic station",
                     "isVertical": "Is vertical station",
                     "stationType": {
@@ -414,7 +414,7 @@
                         "tram": "Tram station"
                     }
                 },
-                "chengduMetroInt": {
+                "chengduRTInt": {
                     "displayName": "Chengdu Metro interchange station"
                 }
             },
@@ -541,7 +541,7 @@
                 "chongqingRTLoop": {
                     "displayName": "Chongqing Rail Transit loop line style"
                 },
-                "chengduMetroOutsideFareGates": {
+                "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Metro outside fare gates transfer style"
                 }
             },

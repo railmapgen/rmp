@@ -31,8 +31,8 @@ import { ChongqingRTBasicStationAttributes } from '../components/svgs/stations/c
 import { ChongqingRTIntStationAttributes } from '../components/svgs/stations/chongqingrt-int';
 import { ChongqingRTBasicStation2021Attributes } from '../components/svgs/stations/chongqingrt-basic-2021';
 import { ChongqingRTIntStation2021Attributes } from '../components/svgs/stations/chongqingrt-int-2021';
-import { ChengduMetroBasicStationAttributes } from '../components/svgs/stations/chengdumetro-basic';
-import { ChengduMetroIntStationAttributes } from '../components/svgs/stations/chengdumetro-int';
+import { ChengduRTBasicStationAttributes } from '../components/svgs/stations/chengdurt-basic';
+import { ChengduRTIntStationAttributes } from '../components/svgs/stations/chengdurt-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -66,8 +66,8 @@ export enum StationType {
     ChongqingRTInt = 'chongqingrt-int',
     ChongqingRTBasic2021 = 'chongqingrt-basic-2021',
     ChongqingRTInt2021 = 'chongqingrt-int-2021',
-    ChengduMetroBasic = 'chengdumetro-basic',
-    ChengduMetroInt = 'chengdumetro-int',
+    ChengduRTBasic = 'chengdurt-basic',
+    ChengduRTInt = 'chengdurt-int',
 }
 
 export interface ExternalStationAttributes {
@@ -102,8 +102,8 @@ export interface ExternalStationAttributes {
     [StationType.ChongqingRTInt]?: ChongqingRTIntStationAttributes;
     [StationType.ChongqingRTBasic2021]?: ChongqingRTBasicStation2021Attributes;
     [StationType.ChongqingRTInt2021]?: ChongqingRTIntStation2021Attributes;
-    [StationType.ChengduMetroBasic]?: ChengduMetroBasicStationAttributes;
-    [StationType.ChengduMetroInt]?: ChengduMetroIntStationAttributes;
+    [StationType.ChengduRTBasic]?: ChengduRTBasicStationAttributes;
+    [StationType.ChengduRTInt]?: ChengduRTIntStationAttributes;
 }
 
 export const StationWithColor = [
@@ -117,7 +117,7 @@ export const StationWithColor = [
     StationType.ChongqingRTBasic,
     StationType.ChongqingRTBasic2021,
     StationType.ChongqingRTInt2021,
-    StationType.ChengduMetroBasic,
+    StationType.ChengduRTBasic,
 ];
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */

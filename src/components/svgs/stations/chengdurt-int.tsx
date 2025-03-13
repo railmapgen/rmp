@@ -22,14 +22,14 @@ export const LINE_HEIGHT = {
     bottom: 3.5 + 1,
 };
 
-const ChengduMetroIntStation = (props: StationComponentProps) => {
+const ChengduRTIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
-        nameOffsetX = defaultChengduMetroIntStationAttributes.nameOffsetX,
-        nameOffsetY = defaultChengduMetroIntStationAttributes.nameOffsetY,
-        direction = defaultChengduMetroIntStationAttributes.direction,
-    } = attrs[StationType.ChengduMetroInt] ?? defaultChengduMetroIntStationAttributes;
+        nameOffsetX = defaultChengduRTIntStationAttributes.nameOffsetX,
+        nameOffsetY = defaultChengduRTIntStationAttributes.nameOffsetY,
+        direction = defaultChengduRTIntStationAttributes.direction,
+    } = attrs[StationType.ChengduRTInt] ?? defaultChengduRTIntStationAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -170,29 +170,29 @@ const ChengduMetroIntStation = (props: StationComponentProps) => {
 };
 
 /**
- * ChengduMetroIntStation specific props.
+ * ChengduRTIntStation specific props.
  */
-export interface ChengduMetroIntStationAttributes extends StationAttributes {
+export interface ChengduRTIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     direction: 'vertical' | 'horizontal';
 }
 
-const defaultChengduMetroIntStationAttributes: ChengduMetroIntStationAttributes = {
+const defaultChengduRTIntStationAttributes: ChengduRTIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     direction: 'horizontal',
 };
 
-const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationAttributes>) => {
+const ChengduRTIntAttrsComponent = (props: AttrsProps<ChengduRTIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs.names ?? defaultChengduMetroIntStationAttributes.names)[0],
+            value: (attrs.names ?? defaultChengduRTIntStationAttributes.names)[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -202,7 +202,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: (attrs.names ?? defaultChengduMetroIntStationAttributes.names)[1],
+            value: (attrs.names ?? defaultChengduRTIntStationAttributes.names)[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -212,7 +212,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultChengduMetroIntStationAttributes.nameOffsetX,
+            value: attrs.nameOffsetX ?? defaultChengduRTIntStationAttributes.nameOffsetX,
             options: { left: 'left', middle: 'middle', right: 'right' },
             disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -224,7 +224,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultChengduMetroIntStationAttributes.nameOffsetY,
+            value: attrs.nameOffsetY ?? defaultChengduRTIntStationAttributes.nameOffsetY,
             options: { top: 'top', middle: 'middle', bottom: 'bottom' },
             disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
@@ -235,8 +235,8 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.chengduMetroBasic.isVertical'),
-            isChecked: (attrs.direction ?? defaultChengduMetroIntStationAttributes.direction) == 'vertical',
+            label: t('panel.details.stations.chengduRTBasic.isVertical'),
+            isChecked: (attrs.direction ?? defaultChengduRTIntStationAttributes.direction) == 'vertical',
             onChange: val => {
                 attrs.direction = val ? 'vertical' : 'horizontal';
                 handleAttrsUpdate(id, attrs);
@@ -247,7 +247,7 @@ const ChengduMetroIntAttrsComponent = (props: AttrsProps<ChengduMetroIntStationA
     return <RmgFields fields={fields} />;
 };
 
-const chengduMetroIntStationIcon = (
+const chengduRTIntStationIcon = (
     <svg viewBox="-1 -1 61 16" height={40} width={40} focusable={false} style={{ padding: 5 }}>
         <g textAnchor="middle">
             <rect x={0} y={-5} width={60} height={30} stroke={'black'} strokeWidth={2} rx={15} ry={15} fill={'white'} />
@@ -258,13 +258,13 @@ const chengduMetroIntStationIcon = (
     </svg>
 );
 
-const chengduMetroIntStation: Station<ChengduMetroIntStationAttributes> = {
-    component: ChengduMetroIntStation,
-    icon: chengduMetroIntStationIcon,
-    defaultAttrs: defaultChengduMetroIntStationAttributes,
-    attrsComponent: ChengduMetroIntAttrsComponent,
+const chengduRTIntStation: Station<ChengduRTIntStationAttributes> = {
+    component: ChengduRTIntStation,
+    icon: chengduRTIntStationIcon,
+    defaultAttrs: defaultChengduRTIntStationAttributes,
+    attrsComponent: ChengduRTIntAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.chengduMetroInt.displayName',
+        displayName: 'panel.details.stations.chengduRTInt.displayName',
         cities: [CityCode.Chengdu],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
@@ -272,4 +272,4 @@ const chengduMetroIntStation: Station<ChengduMetroIntStationAttributes> = {
     },
 };
 
-export default chengduMetroIntStation;
+export default chengduRTIntStation;

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../../constants/constants';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
-const ChengduMetroOutsideFareGates = (props: LineStyleComponentProps<ChengduMetroOutsideFareGatesAttributes>) => {
+const ChengduRTOutsideFareGates = (props: LineStyleComponentProps<ChengduRTOutsideFareGatesAttributes>) => {
     const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
@@ -28,20 +28,20 @@ const ChengduMetroOutsideFareGates = (props: LineStyleComponentProps<ChengduMetr
 };
 
 /**
- * ChengduMetroOutsideFareGates specific props.
+ * ChengduRTOutsideFareGates specific props.
  */
-export interface ChengduMetroOutsideFareGatesAttributes extends LinePathAttributes {}
+export interface ChengduRTOutsideFareGatesAttributes extends LinePathAttributes {}
 
-const chengduMetroOutsideFareGatesAttrsComponent = () => undefined;
+const chengduRTOutsideFareGatesAttrsComponent = () => undefined;
 
-const chengduMetroOutsideFareGates: LineStyle<ChengduMetroOutsideFareGatesAttributes> = {
-    component: ChengduMetroOutsideFareGates,
-    attrsComponent: chengduMetroOutsideFareGatesAttrsComponent,
+const chengduRTOutsideFareGates: LineStyle<ChengduRTOutsideFareGatesAttributes> = {
+    component: ChengduRTOutsideFareGates,
+    attrsComponent: chengduRTOutsideFareGatesAttrsComponent,
     defaultAttrs: {},
     metadata: {
-        displayName: 'panel.details.lines.chengduMetroOutsideFareGates.displayName',
+        displayName: 'panel.details.lines.chengduRTOutsideFareGates.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 
-export default chengduMetroOutsideFareGates;
+export default chengduRTOutsideFareGates;

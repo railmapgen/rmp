@@ -7,13 +7,13 @@ import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
-const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAttributes>) => {
+const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
-        content = defaultChengduMetroLineBadgeAttributes.content,
-        color = defaultChengduMetroLineBadgeAttributes.color,
-        badgeType = defaultChengduMetroLineBadgeAttributes.badgeType,
-    } = attrs ?? defaultChengduMetroLineBadgeAttributes;
+        content = defaultChengduRTLineBadgeAttributes.content,
+        color = defaultChengduRTLineBadgeAttributes.color,
+        badgeType = defaultChengduRTLineBadgeAttributes.badgeType,
+    } = attrs ?? defaultChengduRTLineBadgeAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -104,27 +104,27 @@ const ChengduMetroLineBadge = (props: NodeComponentProps<ChengduMetroLineBadgeAt
 };
 
 /**
- * ChengduMetroLineBadge specific props.
+ * ChengduRTLineBadge specific props.
  */
-export interface ChengduMetroLineBadgeAttributes extends AttributesWithColor {
+export interface ChengduRTLineBadgeAttributes extends AttributesWithColor {
     content: number | string;
     badgeType: 'normal' | 'suburban' | 'tram';
 }
 
-const defaultChengduMetroLineBadgeAttributes: ChengduMetroLineBadgeAttributes = {
+const defaultChengduRTLineBadgeAttributes: ChengduRTLineBadgeAttributes = {
     content: 1,
     color: [CityCode.Chengdu, 'cd1', '#222a8c', MonoColour.white],
     badgeType: 'normal',
 };
 
-const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineBadgeAttributes>) => {
+const ChengduRTLineBadgeAttrsComponent = (props: AttrsProps<ChengduRTLineBadgeAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.nodes.text.content'),
-            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).content as string,
+            value: (attrs ?? defaultChengduRTLineBadgeAttributes).content as string,
             validator: (val: string) => !Number.isNaN(val),
             onChange: (val: string | number) => {
                 if (Number.isNaN(Number(val))) {
@@ -141,20 +141,20 @@ const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineB
             label: t('color'),
             component: (
                 <ColorField
-                    type={MiscNodeType.ChengduMetroLineBadge}
-                    defaultTheme={defaultChengduMetroLineBadgeAttributes.color}
+                    type={MiscNodeType.ChengduRTLineBadge}
+                    defaultTheme={defaultChengduRTLineBadgeAttributes.color}
                 />
             ),
             minW: 'full',
         },
         {
             type: 'select',
-            label: t('panel.details.nodes.chengduMetroLineBadge.badgeType.displayName'),
-            value: (attrs ?? defaultChengduMetroLineBadgeAttributes).badgeType,
+            label: t('panel.details.nodes.chengduRTLineBadge.badgeType.displayName'),
+            value: (attrs ?? defaultChengduRTLineBadgeAttributes).badgeType,
             options: {
-                normal: t('panel.details.nodes.chengduMetroLineBadge.badgeType.normal'),
-                suburban: t('panel.details.nodes.chengduMetroLineBadge.badgeType.suburban'),
-                tram: t('panel.details.nodes.chengduMetroLineBadge.badgeType.tram'),
+                normal: t('panel.details.nodes.chengduRTLineBadge.badgeType.normal'),
+                suburban: t('panel.details.nodes.chengduRTLineBadge.badgeType.suburban'),
+                tram: t('panel.details.nodes.chengduRTLineBadge.badgeType.tram'),
             },
             onChange: val => {
                 attrs.badgeType = val as 'normal' | 'suburban' | 'tram';
@@ -166,7 +166,7 @@ const ChengduMetroLineBadgeAttrsComponent = (props: AttrsProps<ChengduMetroLineB
     return <RmgFields fields={fields} />;
 };
 
-const chengduMetroLineBadgeIcon = (
+const chengduRTLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
         <text x="9" y="17" fill="white" fontSize="14">
@@ -175,15 +175,15 @@ const chengduMetroLineBadgeIcon = (
     </svg>
 );
 
-const chengduMetroLineBadge: Node<ChengduMetroLineBadgeAttributes> = {
-    component: ChengduMetroLineBadge,
-    icon: chengduMetroLineBadgeIcon,
-    defaultAttrs: defaultChengduMetroLineBadgeAttributes,
-    attrsComponent: ChengduMetroLineBadgeAttrsComponent,
+const chengduRTLineBadge: Node<ChengduRTLineBadgeAttributes> = {
+    component: ChengduRTLineBadge,
+    icon: chengduRTLineBadgeIcon,
+    defaultAttrs: defaultChengduRTLineBadgeAttributes,
+    attrsComponent: ChengduRTLineBadgeAttrsComponent,
     metadata: {
-        displayName: 'panel.details.nodes.chengduMetroLineBadge.displayName',
+        displayName: 'panel.details.nodes.chengduRTLineBadge.displayName',
         tags: [],
     },
 };
 
-export default chengduMetroLineBadge;
+export default chengduRTLineBadge;
