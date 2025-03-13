@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -68,40 +69,35 @@ const defaultShmetroNumLineBadgeAttributes: ShmetroNumLineBadgeAttributes = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
 };
 
-const shmetroNumLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.num',
-        value: (attrs?: ShmetroNumLineBadgeAttributes) => (attrs ?? defaultShmetroNumLineBadgeAttributes).num,
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: ShmetroNumLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultShmetroNumLineBadgeAttributes;
-            // return if invalid
-            if (Number.isNaN(val)) return attrs;
-            // set value
-            attrs.num = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.ShmetroNumLineBadge}
-                defaultTheme={defaultShmetroNumLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const SHMetroNumLineBadgeAttrsComponent = (props: AttrsProps<ShmetroNumLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={shmetroNumLineBadgeFields as RmgFieldsFieldDetail<ShmetroNumLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.num'),
+            value: (attrs.num ?? defaultShmetroNumLineBadgeAttributes.num).toString(),
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: val => {
+                attrs.num = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.ShmetroNumLineBadge}
+                    defaultTheme={defaultShmetroNumLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const shmetroNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -122,7 +118,7 @@ const shmetroNumLineBadge: Node<ShmetroNumLineBadgeAttributes> = {
     component: ShmetroNumLineBadge,
     icon: shmetroNumLineBadgeIcon,
     defaultAttrs: defaultShmetroNumLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: SHMetroNumLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.shmetroNumLineBadge.displayName',
         tags: [],

@@ -1,6 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LinePathAttributes,
     LinePathType,
@@ -9,10 +11,6 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
 
 const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -47,25 +45,27 @@ const defaultMTRRaceDaysAttributes: MTRRaceDaysAttributes = {
     color: [CityCode.Hongkong, 'twl', '#E2231A', MonoColour.white],
 };
 
-const mtrRaceDaysFields = [
-    {
-        type: 'custom',
-        label: 'color',
-        component: <ColorField type={LineStyleType.MTRRaceDays} defaultTheme={defaultMTRRaceDaysAttributes.color} />,
-    },
-];
+const MTRRaceDaysAttrsComponent = (props: AttrsProps<MTRRaceDaysAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={mtrRaceDaysFields as RmgFieldsFieldDetail<MTRRaceDaysAttributes>}
-        type="style"
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField type={LineStyleType.MTRRaceDays} defaultTheme={defaultMTRRaceDaysAttributes.color} />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
     component: MTRRaceDays,
     defaultAttrs: defaultMTRRaceDaysAttributes,
-    attrsComponent,
+    attrsComponent: MTRRaceDaysAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mtrRaceDays.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

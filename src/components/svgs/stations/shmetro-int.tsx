@@ -138,7 +138,7 @@ const defaultShmetroIntStationAttributes: ShmetroIntStationAttributes = {
     width: 13,
 };
 
-const shmetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>) => {
+const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -156,7 +156,7 @@ const shmetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultShmetroIntStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
@@ -243,7 +243,7 @@ const shmetroIntStation: Station<ShmetroIntStationAttributes> = {
     component: ShmetroIntStation,
     icon: shmetroIntStationIcon,
     defaultAttrs: defaultShmetroIntStationAttributes,
-    attrsComponent: shmetroIntAttrsComponent,
+    attrsComponent: SHMetroIntAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.shmetroInt.displayName',
         cities: [CityCode.Shanghai],

@@ -190,7 +190,7 @@ const jrEastLineBadgeAttrsComponent = (props: AttrsProps<JREastLineBadgeAttribut
         {
             type: 'textarea',
             label: t('panel.details.nodes.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultJREastLineBadgeAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);

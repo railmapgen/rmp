@@ -233,7 +233,7 @@ const ChongqingRTIntAttrsComponent = (props: AttrsProps<ChongqingRTIntStationAtt
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs ?? defaultChongqingRTIntStationAttributes).names[0],
+            value: attrs.names[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);

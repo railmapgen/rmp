@@ -102,7 +102,7 @@ const guangdongIntercityRailwayLineBadgeAttrsComponent = (
         {
             type: 'input',
             label: t('panel.details.nodes.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultGuangdongIntercityRailwayLineBadgeAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);

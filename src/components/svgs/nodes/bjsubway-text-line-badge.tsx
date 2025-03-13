@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const MIN_WIDTH = 28.84375;
 
@@ -82,51 +83,43 @@ const defaultBjsubwayTextLineBadgeAttributes: BjsubwayTextLineBadgeAttributes = 
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const bjSubwayTextLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.nameZh',
-        value: (attrs?: BjsubwayTextLineBadgeAttributes) => (attrs ?? defaultBjsubwayTextLineBadgeAttributes).names[0],
-        onChange: (val: string | number, attrs_: BjsubwayTextLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayTextLineBadgeAttributes;
-            // set value
-            attrs.names[0] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.nameEn',
-        value: (attrs?: BjsubwayTextLineBadgeAttributes) => (attrs ?? defaultBjsubwayTextLineBadgeAttributes).names[1],
-        onChange: (val: string | number, attrs_: BjsubwayTextLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayTextLineBadgeAttributes;
-            // return if invalid
-            // set value
-            attrs.names[1] = val.toString();
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.BjsubwayTextLineBadge}
-                defaultTheme={defaultBjsubwayTextLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const BJSubwayTextLineBadgeAttrsComponent = (props: AttrsProps<BjsubwayTextLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={bjSubwayTextLineBadgeFields as RmgFieldsFieldDetail<BjsubwayTextLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.nameZh'),
+            value: attrs.names[0],
+            onChange: val => {
+                attrs.names[0] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.nameEn'),
+            value: attrs.names.at(1) ?? defaultBjsubwayTextLineBadgeAttributes.names[1],
+            onChange: val => {
+                attrs.names[1] = val;
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.BjsubwayTextLineBadge}
+                    defaultTheme={defaultBjsubwayTextLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const bjSubwayTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -144,7 +137,7 @@ const bjsubwayTextLineBadge: Node<BjsubwayTextLineBadgeAttributes> = {
     component: BjsubwayTextLineBadge,
     icon: bjSubwayTextLineBadgeIcon,
     defaultAttrs: defaultBjsubwayTextLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: BJSubwayTextLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.bjsubwayTextLineBadge.displayName',
         tags: [],

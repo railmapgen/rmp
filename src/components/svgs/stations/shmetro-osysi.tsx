@@ -122,7 +122,7 @@ const shmetroOsysiAttrsComponent = (props: AttrsProps<ShmetroOsysiStationAttribu
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultShmetroOsysiStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);

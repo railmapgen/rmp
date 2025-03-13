@@ -80,7 +80,7 @@ const defaultShmetroTextLineBadgeAttributes: ShmetroTextLineBadgeAttributes = {
     color: [CityCode.Shanghai, 'pjl', '#B5B5B6', MonoColour.white],
 };
 
-const shmetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBadgeAttributes>) => {
+const SHMetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBadgeAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -136,7 +136,7 @@ const shmetroTextLineBadge: Node<ShmetroTextLineBadgeAttributes> = {
     component: ShmetroTextLineBadge,
     icon: shmetroTextLineBadgeIcon,
     defaultAttrs: defaultShmetroTextLineBadgeAttributes,
-    attrsComponent: shmetroTextLineBadgeAttrsComponent,
+    attrsComponent: SHMetroTextLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.shmetroTextLineBadge.displayName',
         tags: [],
