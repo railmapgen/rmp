@@ -34,50 +34,60 @@ const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextL
     const width = isRapid ? 42 : 21;
     const height = 21;
     return (
-        <g
-            id={id}
-            transform={`translate(${x - width / 2}, ${y - height / 2})`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={{ cursor: 'move' }}
-        >
-            <rect fill={color[2]} x="0" width={width} height={height} rx="3" ry="3" />
-            <rect
-                strokeWidth="1.5"
-                stroke="white"
-                fill="none"
-                x="1.5"
-                y="1.5"
-                width={width - 3}
-                height={height - 3}
-                rx="2"
-                ry="2"
-            />
-            <text
-                className="rmp-name__zh"
-                textAnchor="middle"
-                x={width / 2}
-                y={height / 2 + 0.5}
-                fill={fgColor}
-                fontSize={isRapid ? 8 : 5}
-                letterSpacing="0"
-            >
-                {names[0]}
-            </text>
-            <MultilineText
-                ref={textLineEl}
-                text={names[1].split('\n')}
-                className="rmp-name__en"
-                textAnchor="middle"
-                x={width / 2}
-                y={height / 2 - Number(!isRapid) * 0.75}
-                fill={fgColor}
-                fontSize={isRapid ? 4 : 2.2}
-                letterSpacing="0"
-                lineHeight={2.25}
-                grow={'down'}
-            />
+        <g transform={`translate(${x}, ${y})`}>
+            <g transform={`translate(${-width / 2}, ${-height / 2})`}>
+                <rect fill={color[2]} x="0" width={width} height={height} rx="3" ry="3" />
+                <rect
+                    strokeWidth="1.5"
+                    stroke="white"
+                    fill="none"
+                    x="1.5"
+                    y="1.5"
+                    width={width - 3}
+                    height={height - 3}
+                    rx="2"
+                    ry="2"
+                />
+                <text
+                    className="rmp-name__zh"
+                    textAnchor="middle"
+                    x={width / 2}
+                    y={height / 2 + 0.5}
+                    fill={fgColor}
+                    fontSize={isRapid ? 8 : 5}
+                    letterSpacing="0"
+                >
+                    {names[0]}
+                </text>
+                <MultilineText
+                    ref={textLineEl}
+                    text={names[1].split('\n')}
+                    className="rmp-name__en"
+                    textAnchor="middle"
+                    x={width / 2}
+                    y={height / 2 - Number(!isRapid) * 0.75}
+                    fill={fgColor}
+                    fontSize={isRapid ? 4 : 2.2}
+                    letterSpacing="0"
+                    lineHeight={2.25}
+                    grow={'down'}
+                />
+
+                <rect
+                    id={`misc_node_connectable_${id}`}
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move', zIndex: 1000 }}
+                    x={0}
+                    y={0}
+                    width={21}
+                    height={21}
+                    fill="white"
+                    opacity={0}
+                    stroke="none"
+                />
+            </g>
         </g>
     );
 };

@@ -149,6 +149,15 @@
                     "sandwich": "三明治",
                     "tube": "地鐵"
                 },
+                "chengduRTLineBadge": {
+                    "displayName": "成都地鐵線路標識",
+                    "badgeType": {
+                        "displayName": "類型",
+                        "normal": "普通",
+                        "suburban": "市域鐵路",
+                        "tram": "有軌電車"
+                    }
+                },
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
@@ -392,6 +401,20 @@
                         "vertical": "縱向",
                         "horizontal": "橫向"
                     }
+                },
+                "chengduRTBasic": {
+                    "displayName": "成都地鐵基本車站",
+                    "isVertical": "縱向車站",
+                    "stationType": {
+                        "displayName": "車站類型",
+                        "normal": "普通站",
+                        "branchTerminal": "支線終點站",
+                        "joint": "共線換乘站",
+                        "tram": "有軌電車站"
+                    }
+                },
+                "chengduRTInt": {
+                    "displayName": "成都地鐵換乘車站"
                 }
             },
             "lines": {
@@ -516,6 +539,9 @@
                 },
                 "chongqingRTLoop": {
                     "displayName": "重慶軌道交通環線樣式"
+                },
+                "chengduRTOutsideFareGates": {
+                    "displayName": "成都地鐵出閘換乘樣式"
                 }
             },
             "edges": {},

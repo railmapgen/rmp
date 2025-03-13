@@ -160,6 +160,7 @@ export enum CityCode {
     Beijing = 'beijing',
     Berlin = 'berlin',
     Chongqing = 'chongqing',
+    Chengdu = 'chengdu',
     Foshan = 'foshan',
     Guangzhou = 'guangzhou',
     Hongkong = 'hongkong',

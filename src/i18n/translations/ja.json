@@ -151,6 +151,15 @@
                     "sandwich": "サンドイッチ",
                     "tube": "地下鉄"
                 },
+                "chengduRTLineBadge": {
+                    "displayName": "成都地下鉄路線標識",
+                    "badgeType": {
+                        "displayName": "種類",
+                        "normal": "普通",
+                        "suburban": "郊外鉄道",
+                        "tram": "路面電車"
+                    }
+                },
                 "master": {
                     "displayName": "大師節点",
                     "type": "大師節点種類",
@@ -378,7 +387,7 @@
                         "y": "縦文字距離",
                         "near": "近い",
                         "far": "遠い"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重慶鉄道交通基本駅（令和3年）",
@@ -388,11 +397,25 @@
                     "displayName": "重慶鉄道交通乗り換え駅（令和3年）",
                     "isRapid": "特急/直通特急ドッキング",
                     "isWide": "ワイド駅",
-                    "wideDirection":{
+                    "wideDirection": {
                         "displayName": "方向",
                         "vertical": "垂直",
                         "horizontal": "水平"
                     }
+                },
+                "chengduRTBasic": {
+                    "displayName": "成都地下鉄基本駅",
+                    "isVertical": "縦型駅",
+                    "stationType": {
+                        "displayName": "駅の種類",
+                        "normal": "普通駅",
+                        "branchTerminal": "支線終着駅",
+                        "joint": "共線乗換駅",
+                        "tram": "路面電車駅"
+                    }
+                },
+                "chengduRTInt": {
+                    "displayName": "成都地下鉄乗換駅"
                 }
             },
             "lines": {
@@ -517,6 +540,9 @@
                 },
                 "chongqingRTLoop": {
                     "displayName": "重慶鉄道交通環状線風格"
+                },
+                "chengduRTOutsideFareGates": {
+                    "displayName": "成都地下鉄改札乗換風格"
                 }
             },
             "edges": {},
