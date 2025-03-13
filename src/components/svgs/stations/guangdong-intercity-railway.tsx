@@ -125,7 +125,7 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultGuangdongIntercityRailwayStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);

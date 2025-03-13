@@ -239,7 +239,7 @@ const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStatio
         {
             type: 'input',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs ?? defaultChongqingRTIntStation2021Attributes).names[0],
+            value: attrs.names[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);

@@ -85,7 +85,7 @@ const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttribute
         {
             type: 'input',
             label: t('panel.details.nodes.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultGzmtrLineBadgeAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);

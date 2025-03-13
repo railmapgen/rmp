@@ -315,7 +315,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultJREastBasicStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 if (attrs.names[1].length > 1) {

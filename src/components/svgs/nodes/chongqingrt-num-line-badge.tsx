@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -67,42 +68,35 @@ const defaultChongqingRTNumLineBadgeAttributes: ChongqingRTNumLineBadgeAttribute
     color: [CityCode.Chongqing, 'cq1', '#e4002b', MonoColour.white],
 };
 
-const chongqingRTNumLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.num',
-        value: (attrs?: ChongqingRTNumLineBadgeAttributes) => (attrs ?? defaultChongqingRTNumLineBadgeAttributes).num,
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: ChongqingRTNumLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultChongqingRTNumLineBadgeAttributes;
-            // set value
-            if (Number.isNaN(Number(val))) {
-                attrs.num = val;
-            } else {
-                attrs.num = Number(val);
-            }
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.ChongqingRTNumLineBadge}
-                defaultTheme={defaultChongqingRTNumLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const ChongqingRTNumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTNumLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={chongqingRTNumLineBadgeFields as RmgFieldsFieldDetail<ChongqingRTNumLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.num'),
+            value: (attrs.num ?? defaultChongqingRTNumLineBadgeAttributes.num).toString(),
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: val => {
+                attrs.num = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.ChongqingRTNumLineBadge}
+                    defaultTheme={defaultChongqingRTNumLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const chongqingRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -117,7 +111,7 @@ const chongqingRTNumLineBadge: Node<ChongqingRTNumLineBadgeAttributes> = {
     component: ChongqingRTNumLineBadge,
     icon: chongqingRTNumLineBadgeIcon,
     defaultAttrs: defaultChongqingRTNumLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: ChongqingRTNumLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.chongqingRTNumLineBadge.displayName',
         tags: [],

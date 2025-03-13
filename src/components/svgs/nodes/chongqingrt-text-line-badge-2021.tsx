@@ -113,7 +113,7 @@ const ChongqingRTNumLineBadge2021AttrsComponent = (props: AttrsProps<ChongqingRT
         {
             type: 'input',
             label: t('panel.details.nodes.common.nameZh'),
-            value: (attrs ?? defaultChongqingRTTextLineBadge2021Attributes).names[0],
+            value: attrs.names[0],
             onChange: (val: string | number) => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);
@@ -123,7 +123,7 @@ const ChongqingRTNumLineBadge2021AttrsComponent = (props: AttrsProps<ChongqingRT
         {
             type: 'textarea',
             label: t('panel.details.nodes.common.nameEn'),
-            value: (attrs ?? defaultChongqingRTTextLineBadge2021Attributes).names[1],
+            value: attrs.names.at(1) ?? defaultChongqingRTTextLineBadge2021Attributes.names[1],
             onChange: (val: string | number) => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);

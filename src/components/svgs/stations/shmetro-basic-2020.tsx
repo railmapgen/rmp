@@ -196,7 +196,7 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names.at(1) ?? defaultShmetroBasic2020StationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);

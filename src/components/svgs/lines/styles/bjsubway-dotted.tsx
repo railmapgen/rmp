@@ -41,14 +41,14 @@ const defaultBjsubwayDottedAttributes: BjsubwayDottedAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const attrsComponent = (props: AttrsProps<BjsubwayDottedAttributes>) => {
+const BJSubwayDottedAttrsComponent = (props: AttrsProps<BjsubwayDottedAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField type={LineStyleType.BjsubwayDotted} defaultTheme={defaultBjsubwayDottedAttributes.color} />
             ),
@@ -61,7 +61,7 @@ const attrsComponent = (props: AttrsProps<BjsubwayDottedAttributes>) => {
 const bjsubwayDotted: LineStyle<BjsubwayDottedAttributes> = {
     component: BjsubwayDotted,
     defaultAttrs: defaultBjsubwayDottedAttributes,
-    attrsComponent,
+    attrsComponent: BJSubwayDottedAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwayDotted.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

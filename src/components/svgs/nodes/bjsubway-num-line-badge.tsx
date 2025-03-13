@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
-import { RmgFieldsFieldDetail, RmgFieldsFieldSpecificAttributes } from '../../panels/details/rmg-field-specific-attrs';
 
 const NUM_WIDTH = 11.84375;
 
@@ -70,40 +71,35 @@ const defaultBjsubwayNumLineBadgeAttributes: BjsubwayNumLineBadgeAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
 };
 
-const bjSubwayNumLineBadgeFields = [
-    {
-        type: 'input',
-        label: 'panel.details.nodes.common.num',
-        value: (attrs?: BjsubwayNumLineBadgeAttributes) => (attrs ?? defaultBjsubwayNumLineBadgeAttributes).num,
-        validator: (val: string) => !Number.isNaN(val),
-        onChange: (val: string | number, attrs_: BjsubwayNumLineBadgeAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultBjsubwayNumLineBadgeAttributes;
-            // return if invalid
-            if (Number.isNaN(val)) return attrs;
-            // set value
-            attrs.num = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-    {
-        type: 'custom',
-        label: 'color',
-        component: (
-            <ColorField
-                type={MiscNodeType.BjsubwayNumLineBadge}
-                defaultTheme={defaultBjsubwayNumLineBadgeAttributes.color}
-            />
-        ),
-    },
-];
+const BJSubwayNumLineBadgeAttrsComponent = (props: AttrsProps<BjsubwayNumLineBadgeAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes
-        fields={bjSubwayNumLineBadgeFields as RmgFieldsFieldDetail<BjsubwayNumLineBadgeAttributes>}
-    />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('panel.details.nodes.common.num'),
+            value: (attrs.num ?? defaultBjsubwayNumLineBadgeAttributes.num).toString(),
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: val => {
+                attrs.num = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={MiscNodeType.BjsubwayNumLineBadge}
+                    defaultTheme={defaultBjsubwayNumLineBadgeAttributes.color}
+                />
+            ),
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const bjSubwayNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
@@ -124,7 +120,7 @@ const bjsubwayNumLineBadge: Node<BjsubwayNumLineBadgeAttributes> = {
     component: BjsubwayNumLineBadge,
     icon: bjSubwayNumLineBadgeIcon,
     defaultAttrs: defaultBjsubwayNumLineBadgeAttributes,
-    attrsComponent,
+    attrsComponent: BJSubwayNumLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.nodes.bjsubwayNumLineBadge.displayName',
         tags: [],

@@ -1,12 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode } from '../../../../constants/constants';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 import { AttributesWithColor } from '../../../panels/details/color-field';
-import {
-    RmgFieldsFieldDetail,
-    RmgFieldsFieldSpecificAttributes,
-} from '../../../panels/details/rmg-field-specific-attrs';
 
 const River = (props: LineStyleComponentProps<RiverAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -44,31 +42,31 @@ const defaultRiverAttributes: RiverAttributes = {
     width: 20,
 };
 
-const riverFields = [
-    {
-        type: 'input',
-        label: 'panel.details.lines.river.width',
-        variant: 'number',
-        value: (attrs?: RiverAttributes) => (attrs ?? defaultRiverAttributes).width,
-        onChange: (val: string | number, attrs_: RiverAttributes | undefined) => {
-            // set default value if switched from another type
-            const attrs = attrs_ ?? defaultRiverAttributes;
-            // set value
-            attrs.width = Number(val);
-            // return modified attrs
-            return attrs;
-        },
-    },
-];
+const RiverAttrsComponent = (props: AttrsProps<RiverAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
 
-const attrsComponent = () => (
-    <RmgFieldsFieldSpecificAttributes fields={riverFields as RmgFieldsFieldDetail<RiverAttributes>} type="style" />
-);
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: 'panel.details.lines.river.width',
+            variant: 'number',
+            value: (attrs.width ?? defaultRiverAttributes.width).toString(),
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: val => {
+                attrs.width = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const river: LineStyle<RiverAttributes> = {
     component: River,
     defaultAttrs: defaultRiverAttributes,
-    attrsComponent,
+    attrsComponent: RiverAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.river.displayName',
         supportLinePathType: [
