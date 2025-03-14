@@ -152,7 +152,7 @@
                     "tube": "地下鉄"
                 },
                 "chengduRTLineBadge": {
-                    "displayName": "成都地下鉄路線標識",
+                    "displayName": "成都鉄道交通路線標識",
                     "badgeType": {
                         "displayName": "種類",
                         "normal": "普通",
@@ -404,7 +404,7 @@
                     }
                 },
                 "chengduRTBasic": {
-                    "displayName": "成都地下鉄基本駅",
+                    "displayName": "成都鉄道交通基本駅",
                     "isVertical": "縦型駅",
                     "stationType": {
                         "displayName": "駅の種類",
@@ -415,7 +415,7 @@
                     }
                 },
                 "chengduRTInt": {
-                    "displayName": "成都地下鉄乗換駅"
+                    "displayName": "成都鉄道交通乗換駅"
                 }
             },
             "lines": {
@@ -542,7 +542,7 @@
                     "displayName": "重慶鉄道交通環状線風格"
                 },
                 "chengduRTOutsideFareGates": {
-                    "displayName": "成都地下鉄改札乗換風格"
+                    "displayName": "成都鉄道交通改札乗換風格"
                 }
             },
             "edges": {},

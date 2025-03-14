@@ -150,7 +150,7 @@
                     "tube": "튜브"
                 },
                 "chengduRTLineBadge": {
-                    "displayName": "청두 지하철 노선 표식",
+                    "displayName": "청두 도시철도 노선 표식",
                     "badgeType": {
                         "displayName": "유형",
                         "normal": "일반",
@@ -403,7 +403,7 @@
                     }
                 },
                 "chengduRTBasic": {
-                    "displayName": "청두 지하철 기본 역",
+                    "displayName": "청두 도시철도 기본 역",
                     "isVertical": "종관 역",
                     "stationType": {
                         "displayName": "역 유형",
@@ -414,7 +414,7 @@
                     }
                 },
                 "chengduRTInt": {
-                    "displayName": "청두 지하철 환승역"
+                    "displayName": "청두 도시철도 환승역"
                 }
             },
             "lines": {
@@ -541,7 +541,7 @@
                     "displayName": "충칭 궤도교통 순환선 스타일"
                 },
                 "chengduRTOutsideFareGates": {
-                    "displayName": "청두 지하철 개찰구 환승 방식"
+                    "displayName": "청두 도시철도 개찰구 환승 방식"
                 }
             },
             "edges": {},
