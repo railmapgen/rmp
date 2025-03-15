@@ -266,7 +266,7 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: (attrs.names[1] ?? defaultChengduRTBasicStationAttributes.names)[0],
+            value: (attrs.names ?? defaultChengduRTBasicStationAttributes.names)[0],
             onChange: val => {
                 attrs.names[0] = val.toString();
                 handleAttrsUpdate(id, attrs);

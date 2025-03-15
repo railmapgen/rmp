@@ -28,7 +28,7 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
 
     const fgColor = color[3];
     const fontSize = !Number.isInteger(num) ? 15 : 16;
-    const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.2, 1.5] : [0, 5.5]) : [0, 2.55];
+    const letterSpacing = Number.isInteger(num) ? (Number(num) >= 10 ? -1.2 : 0) : 0;
 
     return (
         <g
@@ -42,8 +42,8 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
             <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
             <text
                 className="rmp-name__zh"
-                textAnchor="left"
-                x={sX}
+                textAnchor="middle"
+                x="10"
                 y="10"
                 fill={fgColor}
                 fontSize={fontSize}
@@ -77,9 +77,8 @@ const ChongqingRTNumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTNumL
             type: 'input',
             label: t('panel.details.nodes.common.num'),
             value: (attrs.num ?? defaultChongqingRTNumLineBadgeAttributes.num).toString(),
-            validator: (val: string) => !Number.isNaN(val),
             onChange: val => {
-                attrs.num = Number(val);
+                attrs.num = val;
                 handleAttrsUpdate(id, attrs);
             },
         },
