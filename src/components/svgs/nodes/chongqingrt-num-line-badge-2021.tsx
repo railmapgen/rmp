@@ -28,7 +28,8 @@ const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLin
 
     const fgColor = color[3];
     const fontSize = !Number.isInteger(num) ? 15 : Number(num) >= 10 ? 15 : 16;
-    const [letterSpacing, sX] = Number.isInteger(num) ? (Number(num) >= 10 ? [-1.2, 1.5] : [0, 5.5]) : [0, 2.55];
+    const letterSpacing = Number.isInteger(num) ? (Number(num) >= 10 ? -1.0 : 0) : 0;
+    const sX = Number.isInteger(num) ? (Number(num) >= 10 ? 9.5 : 10.5) : 10.5;
 
     return (
         <g transform={`translate(${x}, ${y})`}>
@@ -47,8 +48,8 @@ const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLin
                 />
                 <text
                     className="rmp-name__zh"
-                    textAnchor="left"
-                    x={sX + 0.5}
+                    textAnchor="middle"
+                    x={sX}
                     y="10.5"
                     fill={fgColor}
                     fontSize={fontSize}
