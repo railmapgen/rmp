@@ -150,7 +150,7 @@ const qingdaoMetroStationAttrsComponent = (props: AttrsProps<QingdaoMetroStation
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[0],
+            value: attrs.names[1],
             onChange: val => {
                 attrs.names[1] = val.toString();
                 handleAttrsUpdate(id, attrs);
