@@ -1,5 +1,6 @@
-import React from 'react';
 import { useColorMode } from '@chakra-ui/react';
+import React from 'react';
+import { useRootSelector } from '../redux';
 import { getViewpointSize, roundToMultiple } from '../util/helpers';
 
 export interface GridLinesProps {
@@ -15,14 +16,20 @@ export interface GridLinesProps {
 const GridLines = React.memo(
     (props: GridLinesProps) => {
         const { svgViewBoxMin, svgViewBoxZoom, svgWidth, svgHeight } = props;
+        const {
+            preference: {
+                toolsPanel: { expand: isToolsExpanded },
+            },
+        } = useRootSelector(state => state.app);
         const colorMode = useColorMode();
         const color = colorMode.colorMode === 'light' ? '#666464' : '#D3D3D4';
         const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, svgWidth, svgHeight);
+        const offset = isToolsExpanded ? (410 * svgViewBoxZoom) / 100 : 0;
         const step = svgViewBoxZoom > 30 ? (svgViewBoxZoom > 120 ? 50 : 25) : 5;
         const standardWidth = svgViewBoxZoom / 200;
         const r = {
-            startX: roundToMultiple(svgViewRange.xMin - step, step),
-            endX: roundToMultiple(svgViewRange.xMax + step, step),
+            startX: roundToMultiple(svgViewRange.xMin + offset - step, step),
+            endX: roundToMultiple(svgViewRange.xMax + offset + step, step),
             startY: roundToMultiple(svgViewRange.yMin - step, step),
             endY: roundToMultiple(svgViewRange.yMax + step, step),
         };
@@ -79,7 +86,7 @@ const GridLines = React.memo(
             return (
                 <text
                     key={`grid_hc_${pos}`}
-                    x={svgViewRange.xMin + svgViewBoxZoom / 8}
+                    x={svgViewRange.xMin + svgViewBoxZoom / 8 + offset}
                     y={pos}
                     fontSize={standardWidth * 25}
                     fill={color}
