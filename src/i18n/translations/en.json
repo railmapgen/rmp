@@ -192,7 +192,8 @@
                     "tube": "London Underground",
                     "rotate": "Rotation",
                     "italic": "Italic",
-                    "bold": "Bold"
+                    "bold": "Bold",
+                    "outline": "Outline"
                 }
             },
             "stations": {

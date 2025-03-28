@@ -627,4 +627,18 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
+    it('48 -> 49', () => {
+        // Bump save version to add outline to text.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_tHfBvMnWQW","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal"}}}],"edges":[]},"version":48}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[48](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_tHfBvMnWQW","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}}],"edges":[]},"version":49}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

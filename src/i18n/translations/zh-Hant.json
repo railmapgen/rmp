@@ -192,7 +192,8 @@
                     "tube": "倫敦地鐵",
                     "rotate": "旋轉",
                     "italic": "斜體",
-                    "bold": "粗體"
+                    "bold": "粗體",
+                    "outline": "描邊"
                 }
             },
             "stations": {

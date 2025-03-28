@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 48;
+export const CURRENT_VERSION = 49;
 
 /**
  * Load the tutorial.
@@ -634,4 +634,19 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     47: param =>
         // Bump save version to support Chengdu Metro stations.
         JSON.stringify({ ...JSON.parse(param), version: 48 }),
+    48: param => {
+        // Bump save version to add outline to text.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.Text)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.outline = 0;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 49, graph: graph.export() });
+    },
 };

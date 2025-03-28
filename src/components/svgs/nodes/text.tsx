@@ -48,6 +48,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         rotate = defaultTextAttributes.rotate,
         italic = defaultTextAttributes.italic,
         bold = defaultTextAttributes.bold,
+        outline = defaultTextAttributes.outline,
     } = attrs ?? defaultTextAttributes;
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
@@ -113,7 +114,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                 text={content.split('\n')}
                 lineHeight={lineHeight}
                 grow="down" // this will be ignored
-                className={`rmp-name__${language}`}
+                className={`rmp-name__${language} ${outline > 0 ? 'rmp-name-outline' : ''}`}
+                strokeWidth={outline > 0 ? outline : undefined}
                 fontSize={fontSize}
                 textAnchor={textAnchor}
                 dominantBaseline={dominantBaseline}
@@ -138,6 +140,7 @@ export interface TextAttributes extends AttributesWithColor {
     rotate: Rotate;
     italic: string | number;
     bold: string | number;
+    outline: number;
 }
 
 export const defaultTextAttributes: TextAttributes = {
@@ -151,6 +154,7 @@ export const defaultTextAttributes: TextAttributes = {
     rotate: 0,
     italic: 'normal',
     bold: 'normal',
+    outline: 0,
 };
 
 const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
@@ -269,6 +273,17 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             isChecked: attrs.bold === 'bold',
             onChange: val => {
                 attrs.bold = val ? 'bold' : 'normal';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.nodes.text.outline'),
+            value: (attrs.outline ?? defaultTextAttributes.outline).toString(),
+            validator: (val: string) => Number.isInteger(val) && Number(val) > 0,
+            onChange: val => {
+                attrs.outline = Math.abs(Number(val));
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

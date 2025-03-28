@@ -194,7 +194,8 @@
                     "tube": "ロンドン地下鉄",
                     "rotate": "回転",
                     "italic": "イタリック体",
-                    "bold": "太字"
+                    "bold": "太字",
+                    "outline": "縁取り"
                 }
             },
             "stations": {

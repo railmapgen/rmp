@@ -192,7 +192,8 @@
                     "tube": "런던 지하철",
                     "rotate": "회전",
                     "italic": "이탤릭체",
-                    "bold": "굵게"
+                    "bold": "굵게",
+                    "outline": "테두리"
                 }
             },
             "stations": {

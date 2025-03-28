@@ -192,7 +192,8 @@
                     "tube": "伦敦地铁",
                     "rotate": "旋转",
                     "italic": "斜体",
-                    "bold": "粗体"
+                    "bold": "粗体",
+                    "outline": "描边"
                 }
             },
             "stations": {
