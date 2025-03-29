@@ -641,4 +641,18 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
+    it('49 -> ', () => {
+        // Bump save version to add outline to text.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_mwvAhFz1r1","attributes":{"visible":true,"zIndex":0,"x":-130,"y":25,"type":"chongqingrt-int-2021","chongqingrt-int-2021":{"names":["大坪","Daping"],"nameOffsetX":"right","nameOffsetY":"top","isRapid":true,"rapidColor":["chongqing","cq1","#e4002b","#fff","",""]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":49}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[49](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_mwvAhFz1r1","attributes":{"visible":true,"zIndex":0,"x":-130,"y":25,"type":"chongqingrt-int-2021","chongqingrt-int-2021":{"names":["大坪","Daping"],"nameOffsetX":"right","nameOffsetY":"top","isRapid":true,"color":["chongqing","cq1","#e4002b","#fff","",""]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":50}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 49;
+export const CURRENT_VERSION = 50;
 
 /**
  * Load the tutorial.
@@ -648,5 +648,21 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 49, graph: graph.export() });
+    },
+    49: param => {
+        // Bump save version to rename rapidColor to color for chongqingrt-int-2021
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.ChongqingRTInt2021)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.color = attr.rapidColor;
+                attr.rapidColor = undefined;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 50, graph: graph.export() });
     },
 };

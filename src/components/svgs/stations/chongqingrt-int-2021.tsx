@@ -31,7 +31,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
         nameOffsetY = defaultChongqingRTIntStation2021Attributes.nameOffsetY,
         isRapid = defaultChongqingRTIntStation2021Attributes.isRapid,
         isWide = defaultChongqingRTIntStation2021Attributes.isWide,
-        rapidColor = defaultChongqingRTIntStation2021Attributes.rapidColor,
+        color = defaultChongqingRTIntStation2021Attributes.color,
         wideDirection = defaultChongqingRTIntStation2021Attributes.wideDirection,
     } = attrs[StationType.ChongqingRTInt2021] ?? defaultChongqingRTIntStation2021Attributes;
 
@@ -117,7 +117,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     const width = isWide ? (wideDirection == 'horizontal' ? 40 : 12) : 20;
     const height = isWide ? (wideDirection == 'horizontal' ? 12 : 40) : 20;
-    const fgColor = rapidColor[3];
+    const fgColor = color[3];
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`} textAnchor="middle">
@@ -130,7 +130,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
                 strokeWidth={2}
                 rx={3}
                 ry={3}
-                fill={isRapid ? rapidColor[2] : 'white'}
+                fill={isRapid ? color[2] : 'white'}
             />
             {isWide ? (
                 <text
@@ -219,7 +219,7 @@ export interface ChongqingRTIntStation2021Attributes extends StationAttributes {
     isRapid: boolean;
     isWide: boolean;
     wideDirection: 'vertical' | 'horizontal';
-    rapidColor: Theme;
+    color: Theme;
 }
 
 const defaultChongqingRTIntStation2021Attributes: ChongqingRTIntStation2021Attributes = {
@@ -229,7 +229,7 @@ const defaultChongqingRTIntStation2021Attributes: ChongqingRTIntStation2021Attri
     isRapid: false,
     isWide: false,
     wideDirection: 'horizontal',
-    rapidColor: [CityCode.Chongqing, 'cq10', '#5f249f', MonoColour.white],
+    color: [CityCode.Chongqing, 'cq10', '#5f249f', MonoColour.white],
 };
 
 const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStation2021Attributes>) => {
@@ -297,8 +297,7 @@ const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStatio
             component: (
                 <ColorField
                     type={StationType.ChongqingRTInt2021}
-                    defaultTheme={defaultChongqingRTIntStation2021Attributes.rapidColor}
-                    colorKey="rapidColor"
+                    defaultTheme={defaultChongqingRTIntStation2021Attributes.color}
                 />
             ),
             hidden: !attrs.isRapid,

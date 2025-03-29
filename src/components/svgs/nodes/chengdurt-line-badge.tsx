@@ -30,6 +30,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
 
     const fgColor = color[3];
     const fontSize = 16;
+    const widthOffset = badgeType == 'suburban' ? ((content.toString().length - 2) * fontSize) / 2 : 0;
 
     return (
         <g transform={`translate(${x}, ${y})`}>
@@ -51,14 +52,22 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
                     </>
                 ) : badgeType == 'suburban' ? (
                     <>
-                        <rect fill={color[2]} x="0" y="0" width="20" height="25" rx="0" ry="0" />
-                        <rect fill={color[2]} x="19" y="0" width="6" height="5" rx="0" ry="0" />
-                        <rect fill={color[2]} x="19" y="10" width="6" height="5" rx="0" ry="0" />
-                        <rect fill={color[2]} x="19" y="20" width="6" height="5" rx="0" ry="0" />
+                        <rect
+                            fill={color[2]}
+                            x={-widthOffset / 2}
+                            y="0"
+                            width={20 + widthOffset}
+                            height="25"
+                            rx="0"
+                            ry="0"
+                        />
+                        <rect fill={color[2]} x={19 + widthOffset / 2} y="0" width="6" height="5" rx="0" ry="0" />
+                        <rect fill={color[2]} x={19 + widthOffset / 2} y="10" width="6" height="5" rx="0" ry="0" />
+                        <rect fill={color[2]} x={19 + widthOffset / 2} y="20" width="6" height="5" rx="0" ry="0" />
                         <text
                             className="rmp-name__zh"
                             textAnchor="left"
-                            x="0"
+                            x={-widthOffset / 2}
                             y="12.5"
                             fill={fgColor}
                             fontSize={fontSize}
@@ -90,9 +99,9 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
                     onPointerMove={onPointerMove}
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move', zIndex: 1000 }}
-                    x={0}
+                    x={0 - widthOffset / 2}
                     y={0}
-                    width={25}
+                    width={25 + widthOffset}
                     height={25}
                     fill="white"
                     opacity={0}
