@@ -49,7 +49,7 @@ const RiverAttrsComponent = (props: AttrsProps<RiverAttributes>) => {
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
-            label: 'panel.details.lines.river.width',
+            label: t('panel.details.lines.river.width'),
             variant: 'number',
             value: (attrs.width ?? defaultRiverAttributes.width).toString(),
             validator: (val: string) => !Number.isNaN(val),
