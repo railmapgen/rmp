@@ -6,7 +6,7 @@ import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
-import { StationType } from '../constants/stations';
+import { StationAttributes, StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
@@ -92,33 +92,36 @@ const SvgWrapper = () => {
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
-        if (mode.startsWith('station')) {
+        if (mode.startsWith('station') || mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
             const rand = nanoid(10);
-            const id: StnId = `stn_${rand}`;
-            const type = mode.slice(8) as StationType;
+            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+
+            const isStation = mode.startsWith('station');
+            const id: StnId | MiscNodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
+            const type = (isStation ? mode.slice(8) : mode.slice(10)) as StationType | MiscNodeType;
 
             // deep copy to prevent mutual reference
-            const attr = structuredClone(stations[type].defaultAttrs);
+            const attr = structuredClone({ ...stations, ...miscNodes }[type].defaultAttrs);
             // special tweaks for AttributesWithColor
             if ('color' in attr) attr.color = theme;
             // Add random names for stations
-            if (!isRandomStationNamesDisabled) {
+            if (isStation && !isRandomStationNamesDisabled) {
+                const attrNames = (attr as StationAttributes).names;
                 const namesActionResult = await dispatch(getOneStationName(StationCity.Shmetro));
                 // only proceed if there is no error returned
                 if (getOneStationName.fulfilled.match(namesActionResult)) {
                     const names = namesActionResult.payload as [string, ...string[]];
                     // fill or truncate the names array to the station name length
-                    if (attr.names.length > names.length) {
-                        names.push(...Array(attr.names.length - names.length).fill(names.at(-1)));
-                    } else if (attr.names.length < names.length) {
-                        names.splice(attr.names.length, names.length - attr.names.length);
+                    if (attrNames.length > names.length) {
+                        names.push(...Array(attrNames.length - names.length).fill(names.at(-1)));
+                    } else if (attrNames.length < names.length) {
+                        names.splice(attrNames.length, names.length - attrNames.length);
                     }
-                    attr.names = names;
+                    (attr as StationAttributes).names = names;
                 }
             }
 
-            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             graph.current.addNode(id, {
                 visible: true,
                 zIndex: 0,
@@ -128,24 +131,6 @@ const SvgWrapper = () => {
                 [type]: attr,
             });
             // console.log('down', active, offset);
-            refreshAndSave();
-            if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
-            dispatch(setSelected(new Set([id])));
-        } else if (mode.startsWith('misc-node')) {
-            dispatch(setMode('free'));
-            const rand = nanoid(10);
-            const id: MiscNodeId = `misc_node_${rand}`;
-            const type = mode.slice(10) as MiscNodeType;
-            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
-            graph.current.addNode(id, {
-                visible: true,
-                zIndex: 0,
-                x: roundToMultiple(svgX, 5),
-                y: roundToMultiple(svgY, 5),
-                type,
-                // deep copy to prevent mutual reference
-                [type]: structuredClone(miscNodes[type].defaultAttrs),
-            });
             refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
             dispatch(setSelected(new Set([id])));
