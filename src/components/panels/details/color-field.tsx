@@ -33,7 +33,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
     const dispatch = useRootDispatch();
     const {
         selected,
-        paletteAppClip: { output },
+        paletteAppClip: { input, output },
     } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
@@ -71,11 +71,19 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
-        if (isThemeRequested && output) {
+        if (!isThemeRequested) {
+            // theme change is not requested by this component, ignore
+            return;
+        }
+        if (output) {
+            // receive theme from the palette app clip, update the color
             handleChangeColor(output);
             setIsThemeRequested(false);
+        } else if (!input) {
+            // theme change is canceled, reset the state
+            setIsThemeRequested(false);
         }
-    }, [output?.toString()]);
+    }, [output?.toString(), input]);
 
     const isCurrentSelectedValid =
         selectedFirst &&

@@ -71,18 +71,26 @@ const ToolsPanel = () => {
     const {
         mode,
         theme,
-        paletteAppClip: { output },
+        paletteAppClip: { input, output },
         masterNodesCount,
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const [isThemeRequested, setIsThemeRequested] = React.useState(false);
     React.useEffect(() => {
-        if (isThemeRequested && output) {
+        if (!isThemeRequested) {
+            // theme change is not requested by this component, ignore
+            return;
+        }
+        if (output) {
+            // receive theme from the palette app clip, update the runtime
             dispatch(setTheme(output));
             setIsThemeRequested(false);
+        } else if (!input) {
+            // theme change is canceled, reset the state
+            setIsThemeRequested(false);
         }
-    }, [output?.toString()]);
+    }, [output?.toString(), input]);
 
     // text should only be appended after the expansion animation is complete
     const [isTextShown, setIsTextShown] = React.useState(isToolsExpanded);
