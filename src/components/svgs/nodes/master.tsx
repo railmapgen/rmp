@@ -4,11 +4,10 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdSettings, MdUpload } from 'react-icons/md';
-import { AttrsProps } from '../../../constants/constants';
+import { AttrsProps, Theme } from '../../../constants/constants';
 import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
-import { useRootDispatch, useRootSelector } from '../../../redux';
-import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
+import { usePaletteTheme } from '../../../util/hooks';
 import { MasterImport } from '../../page-header/master-import';
 import { MasterManager } from '../../page-header/master-manager';
 import ThemeButton from '../../panels/theme-button';
@@ -145,10 +144,6 @@ const defaultMasterAttributes: MasterAttributes = {
 
 const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
-    const dispatch = useRootDispatch();
-    const {
-        paletteAppClip: { output },
-    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const [openImport, setOpenImport] = React.useState(false);
     const [openManager, setOpenManager] = React.useState(false);
@@ -207,28 +202,23 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         }
     });
 
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-    React.useEffect(() => {
-        if (attrs.color && isThemeRequested && output) {
-            attrs.color.value = output;
+    const handleChangeColor = (theme: Theme) => {
+        if (attrs.color) {
+            attrs.color.value = theme;
             handleAttrsUpdate(id, { ...attrs, color: attrs.color });
-            setIsThemeRequested(false);
         }
-    }, [output?.toString()]);
+    };
+
+    const { theme, requestThemeChange } = usePaletteTheme({
+        theme: attrs.color?.value,
+        onThemeApplied: handleChangeColor,
+    });
 
     const colorField: RmgFieldsField[] = [
         {
             type: 'custom',
             label: t('color'),
-            component: (
-                <ThemeButton
-                    theme={attrs.color?.value}
-                    onClick={() => {
-                        setIsThemeRequested(true);
-                        dispatch(openPaletteAppClip(attrs.color?.value));
-                    }}
-                />
-            ),
+            component: <ThemeButton theme={theme} onClick={requestThemeChange} />,
         },
     ];
 

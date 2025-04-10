@@ -11,31 +11,20 @@ import {
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LineStylesWithColor } from '../../../constants/lines';
-import { useRootDispatch, useRootSelector } from '../../../redux';
+import { useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
+import { usePaletteTheme } from '../../../util/hooks';
 import { AttributesWithColor } from '../../panels/details/color-field';
 import ThemeButton from '../../panels/theme-button';
 
 export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
     const dispatch = useRootDispatch();
-    const {
-        theme: runtimeTheme,
-        paletteAppClip: { output },
-    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
     const graph = React.useRef(window.graph);
 
-    const [theme, setTheme] = React.useState(runtimeTheme);
-
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-    React.useEffect(() => {
-        if (isThemeRequested && output) {
-            setTheme(output);
-            setIsThemeRequested(false);
-        }
-    }, [output?.toString()]);
+    const { theme, requestThemeChange } = usePaletteTheme();
 
     const handleChange = () => {
         graph.current
@@ -65,13 +54,7 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
 
                 <ModalBody>
                     {t('header.settings.procedures.removeLines.content')}
-                    <ThemeButton
-                        theme={theme}
-                        onClick={() => {
-                            setIsThemeRequested(true);
-                            dispatch(openPaletteAppClip(theme));
-                        }}
-                    />
+                    <ThemeButton theme={theme} onClick={requestThemeChange} />
                 </ModalBody>
 
                 <ModalFooter>

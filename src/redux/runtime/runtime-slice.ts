@@ -45,8 +45,8 @@ interface RuntimeState {
     theme: Theme;
     /**
      * The state for color picker modal from rmg-palette.
-     * prevTheme is used to save the temporary value and display in the app clip after clicking the theme button.
-     * nextTheme is used to save the temporary value and let the component decide how to do with the newly selected.
+     * input is used to save the temporary value and display in the app clip after clicking the theme button.
+     * output is used to save the temporary value and let the component decide how to do with the newly selected.
      */
     paletteAppClip: {
         input: Theme | undefined;

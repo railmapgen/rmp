@@ -461,19 +461,23 @@ function InterchangeCard(props: InterchangeCardProps) {
     const { interchangeList, onAdd, onDelete, onUpdate } = props;
     const dispatch = useRootDispatch();
     const {
-        paletteAppClip: { output },
+        paletteAppClip: { input, output },
     } = useRootSelector(state => state.runtime);
 
     const { t } = useTranslation();
 
     const [indexRequestedTheme, setIndexRequestedTheme] = React.useState<number>();
-
     React.useEffect(() => {
-        if (indexRequestedTheme !== undefined && output) {
+        if (indexRequestedTheme === undefined) {
+            return;
+        }
+        if (output) {
             onUpdate?.(indexRequestedTheme, [...output, interchangeList[indexRequestedTheme][4]]);
             setIndexRequestedTheme(undefined);
+        } else if (!input) {
+            setIndexRequestedTheme(undefined);
         }
-    }, [output?.toString()]);
+    }, [input, output]);
 
     return (
         <RmgCard direction="column">

@@ -26,11 +26,13 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
-import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { usePaletteTheme } from '../../../util/hooks';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
+import { Theme } from '../../../constants/constants';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -68,21 +70,13 @@ const ToolsPanel = () => {
             toolsPanel: { expand: isToolsExpanded },
         },
     } = useRootSelector(state => state.app);
-    const {
-        mode,
-        theme,
-        paletteAppClip: { output },
-        masterNodesCount,
-    } = useRootSelector(state => state.runtime);
+    const { mode, masterNodesCount } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-    React.useEffect(() => {
-        if (isThemeRequested && output) {
-            dispatch(setTheme(output));
-            setIsThemeRequested(false);
-        }
-    }, [output?.toString()]);
+    const handleThemeApplied = React.useCallback((theme: Theme) => {
+        dispatch(setTheme(theme));
+    }, []);
+    const { theme, requestThemeChange } = usePaletteTheme({ onThemeApplied: handleThemeApplied });
 
     // text should only be appended after the expansion animation is complete
     const [isTextShown, setIsTextShown] = React.useState(isToolsExpanded);
@@ -146,13 +140,7 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             <Flex>
-                                <ThemeButton
-                                    theme={theme}
-                                    onClick={() => {
-                                        setIsThemeRequested(true);
-                                        dispatch(openPaletteAppClip(theme));
-                                    }}
-                                />
+                                <ThemeButton theme={theme} onClick={requestThemeChange} />
                                 <Text fontWeight="600" pl="1" alignSelf="center">
                                     {isTextShown ? t('color') : undefined}
                                 </Text>
