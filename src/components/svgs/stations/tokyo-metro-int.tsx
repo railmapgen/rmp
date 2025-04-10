@@ -353,7 +353,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
     const {
-        paletteAppClip: { output },
+        paletteAppClip: { input, output },
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -471,12 +471,17 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
 
     const [themeRequested, setThemeRequested] = React.useState<number | undefined>(undefined);
     React.useEffect(() => {
-        if (themeRequested !== undefined && output) {
+        if (themeRequested === undefined) {
+            return;
+        }
+        if (output) {
             attrs.interchanges[themeRequested].color = output;
             handleAttrsUpdate(id, attrs);
             setThemeRequested(undefined);
+        } else if (!input) {
+            setThemeRequested(undefined);
         }
-    }, [output?.toString()]);
+    }, [input, output]);
 
     const handleAdd = (index: number) => {
         const newInterchanges = structuredClone(attrs.interchanges);

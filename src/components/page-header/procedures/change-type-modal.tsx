@@ -38,6 +38,7 @@ import { findThemes } from '../../../util/graph';
 import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
+import { usePaletteTheme } from '../../../util/hooks';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
@@ -63,11 +64,7 @@ export const ChangeTypeModal = (props: {
     const { isOpen, onClose, isSelect, filter } = props;
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const {
-        selected,
-        theme,
-        paletteAppClip: { output },
-    } = useRootSelector(state => state.runtime);
+    const { selected } = useRootSelector(state => state.runtime);
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
@@ -118,17 +115,8 @@ export const ChangeTypeModal = (props: {
     const [newLinePathType, setNewLinePathType] = React.useState(LinePathType.Diagonal);
     const [isColorSwitch, setIsColorSwitch] = React.useState(false);
     const [selectedColor, setSelectedColor] = React.useState(defaultSelectedTheme);
-    const [newColor, setNewColor] = React.useState(theme);
 
-    const [isNewThemeRequested, setIsNewThemeRequested] = React.useState(false);
-
-    React.useEffect(() => {
-        if (isNewThemeRequested && output) {
-            setNewColor(output);
-            setIsNewThemeRequested(false);
-        }
-    }, [output?.toString()]);
-
+    const { theme: newTheme, requestThemeChange } = usePaletteTheme();
     const [themeList, setThemeList] = React.useState<ChangeTypeTheme[]>([]);
 
     const changeTypeField: ChangeTypeField[] = [
@@ -251,15 +239,7 @@ export const ChangeTypeModal = (props: {
                 {
                     type: 'custom',
                     label: t('header.settings.procedures.changeColor.changeTo'),
-                    component: (
-                        <ThemeButton
-                            theme={newColor}
-                            onClick={() => {
-                                setIsNewThemeRequested(true);
-                                dispatch(openPaletteAppClip(theme));
-                            }}
-                        />
-                    ),
+                    component: <ThemeButton theme={newTheme} onClick={requestThemeChange} />,
                 },
             ],
         },
@@ -312,7 +292,7 @@ export const ChangeTypeModal = (props: {
             changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
-            changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, theme, lines);
+            changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines);
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
             changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel);
@@ -322,14 +302,14 @@ export const ChangeTypeModal = (props: {
                 changeLinesColorInBatch(
                     graph.current,
                     selectedColor.id === 'any' ? 'any' : selectedColor.theme,
-                    newColor,
+                    newTheme,
                     lines
                 );
             if (!filter || filter.includes('misc-node') || filter.includes('station'))
                 changeNodesColorInBatch(
                     graph.current,
                     selectedColor.id === 'any' ? 'any' : selectedColor.theme,
-                    newColor,
+                    newTheme,
                     stations,
                     miscNodes
                 );

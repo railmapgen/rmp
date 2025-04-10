@@ -26,11 +26,13 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
-import { openPaletteAppClip, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { usePaletteTheme } from '../../../util/hooks';
 import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
+import { Theme } from '../../../constants/constants';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -68,29 +70,13 @@ const ToolsPanel = () => {
             toolsPanel: { expand: isToolsExpanded },
         },
     } = useRootSelector(state => state.app);
-    const {
-        mode,
-        theme,
-        paletteAppClip: { input, output },
-        masterNodesCount,
-    } = useRootSelector(state => state.runtime);
+    const { mode, masterNodesCount } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-    React.useEffect(() => {
-        if (!isThemeRequested) {
-            // theme change is not requested by this component, ignore
-            return;
-        }
-        if (output) {
-            // receive theme from the palette app clip, update the runtime
-            dispatch(setTheme(output));
-            setIsThemeRequested(false);
-        } else if (!input) {
-            // theme change is canceled, reset the state
-            setIsThemeRequested(false);
-        }
-    }, [output?.toString(), input]);
+    const handleThemeApplied = React.useCallback((theme: Theme) => {
+        dispatch(setTheme(theme));
+    }, []);
+    const { theme, requestThemeChange } = usePaletteTheme({ onThemeApplied: handleThemeApplied });
 
     // text should only be appended after the expansion animation is complete
     const [isTextShown, setIsTextShown] = React.useState(isToolsExpanded);
@@ -154,13 +140,7 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             <Flex>
-                                <ThemeButton
-                                    theme={theme}
-                                    onClick={() => {
-                                        setIsThemeRequested(true);
-                                        dispatch(openPaletteAppClip(theme));
-                                    }}
-                                />
+                                <ThemeButton theme={theme} onClick={requestThemeChange} />
                                 <Text fontWeight="600" pl="1" alignSelf="center">
                                     {isTextShown ? t('color') : undefined}
                                 </Text>

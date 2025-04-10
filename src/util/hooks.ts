@@ -1,4 +1,10 @@
-import { useState, useEffect } from 'react';
+import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { useRootSelector } from '../redux';
+import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
+import { Theme } from '../constants/constants';
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {
@@ -38,9 +44,6 @@ export const useWindowSize = (): Size => {
     return windowSize;
 };
 
-import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
-import { useTranslation } from 'react-i18next';
-
 export default function useTranslatedName(): (name: Translation) => string {
     const { i18n } = useTranslation();
 
@@ -52,3 +55,58 @@ export default function useTranslatedName(): (name: Translation) => string {
         );
     };
 }
+
+interface UsePaletteThemeOptions {
+    /**
+     * The theme displayed on the ThemeButton.
+     * If not provided, the theme from the runtime store will be used.
+     */
+    theme?: Theme;
+    /**
+     * This callback is called when the theme is selected.
+     * @param theme The new theme selected from the palette app clip.
+     */
+    onThemeApplied?: (theme: Theme) => void;
+}
+/**
+ * Use this hook with `ThemeButton` to open the palette app clip and change the theme.
+ */
+export const usePaletteTheme = (options?: UsePaletteThemeOptions) => {
+    const { theme: providedTheme, onThemeApplied } = options ?? {};
+    const {
+        theme: runtimeTheme, // The default/initial theme from the store
+        paletteAppClip: { input, output }, // State related to the app clip interaction
+    } = useRootSelector(state => state.runtime);
+
+    const dispatch = useDispatch();
+
+    const [theme, setTheme] = useState(providedTheme ?? runtimeTheme);
+    const [isThemeRequested, setIsThemeRequested] = useState(false);
+
+    useEffect(() => {
+        if (!isThemeRequested) {
+            // theme change is not requested by this component, ignore
+            return;
+        }
+
+        if (output) {
+            // receive theme from the palette app clip, update the color
+            setTheme(output);
+            setIsThemeRequested(false);
+
+            if (onThemeApplied) {
+                onThemeApplied(output);
+            }
+        } else if (!input) {
+            // theme change is canceled, reset the state
+            setIsThemeRequested(false);
+        }
+    }, [input, output, isThemeRequested]);
+
+    const requestThemeChange = useCallback(() => {
+        setIsThemeRequested(true);
+        dispatch(openPaletteAppClip(theme));
+    }, [dispatch, theme]);
+
+    return { theme, requestThemeChange };
+};
