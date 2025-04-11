@@ -158,6 +158,10 @@
                         "tram": "有轨电车"
                     }
                 },
+                "taipeiMetroLineBadge": {
+                    "displayName": "台北捷运线路标志",
+                    "tram": "轻轨"
+                },
                 "master": {
                     "displayName": "大师节点",
                     "type": "大师节点类型",
@@ -326,9 +330,7 @@
                 "tokyoMetroBasic": {
                     "displayName": "东京地铁基本车站",
                     "nameOffset": "名称偏移",
-                    "textVertical": "垂直站名",
-                    "lineCode": "线路编号",
-                    "stationCode": "车站编号"
+                    "textVertical": "垂直站名"
                 },
                 "tokyoMetroInt": {
                     "displayName": "东京地铁换乘车站",

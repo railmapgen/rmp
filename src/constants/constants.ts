@@ -171,6 +171,7 @@ export enum CityCode {
     Shenzhen = 'shenzhen',
     Singapore = 'singapore',
     Suzhou = 'suzhou',
+    Taipei = 'taipei',
     Tokyo = 'tokyo',
 }
 
