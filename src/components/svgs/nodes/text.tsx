@@ -20,6 +20,7 @@ export enum TextLanguage {
     jreast_en = 'jreast_en',
     tokyo_en = 'tokyo_en',
     tube = 'tube',
+    taipei = 'taipei',
 }
 
 export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
@@ -33,6 +34,7 @@ export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
     jreast_en: StationType.JREastBasic,
     tokyo_en: StationType.TokyoMetroBasic,
     tube: StationType.LondonTubeBasic,
+    taipei: MiscNodeType.TaiPeiMetroLineBadege,
 };
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
@@ -239,6 +241,7 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
                 jreast_en: t('panel.details.nodes.text.jreast_en'),
                 tokyo_en: t('panel.details.nodes.text.tokyo_en'),
                 tube: t('panel.details.nodes.text.tube'),
+                taipei: t('panel.details.nodes.text.taipei'),
             } as { [key in TextLanguage]: string },
             onChange: val => {
                 attrs.language = val.toString() as TextLanguage;

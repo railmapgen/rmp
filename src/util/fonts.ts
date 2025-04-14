@@ -20,6 +20,10 @@ const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', des
 const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
 const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', descriptors: { display: 'swap' } };
 const Railway: FontFaceConfig = { source: 'url("./fonts/Railway-PlyE.otf")', descriptors: { display: 'swap' } };
+const TaipeiSansTC: FontFaceConfig = {
+    source: 'url("./fonts/TaipeiSansTCBeta-Regular.ttf")',
+    descriptors: { display: 'swap' },
+};
 
 /**
  * Node type to fonts' css related data.
@@ -100,6 +104,11 @@ export const FONTS_CSS: {
         className: ['.rmp-name__tube'],
         cssFont: { Railway },
         cssName: 'fonts_tube',
+    },
+    [MiscNodeType.TaiPeiMetroLineBadege]: {
+        className: ['.rmp-name__taipei'],
+        cssFont: { 'Taipei Sans TC Beta': TaipeiSansTC },
+        cssName: 'fonts_taipei',
     },
 };
 

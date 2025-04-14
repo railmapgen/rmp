@@ -158,6 +158,10 @@
                         "tram": "有軌電車"
                     }
                 },
+                "taipeiMetroLineBadge": {
+                    "displayName": "台北捷運線路標識",
+                    "tram": "輕軌"
+                },
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
@@ -326,9 +330,7 @@
                 "tokyoMetroBasic": {
                     "displayName": "東京地鐵基本車站",
                     "nameOffset": "名稱偏移",
-                    "textVertical": "垂直站名",
-                    "lineCode": "線路編號",
-                    "stationCode": "車站編號"
+                    "textVertical": "垂直站名"
                 },
                 "tokyoMetroInt": {
                     "displayName": "東京地鐵轉乘車站",

@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 50;
+export const CURRENT_VERSION = 51;
 
 /**
  * Load the tutorial.
@@ -665,4 +665,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 50, graph: graph.export() });
     },
+    50: param =>
+        // Bump save version to support Taipei Metro line badge.
+        JSON.stringify({ ...JSON.parse(param), version: 51 }),
 };

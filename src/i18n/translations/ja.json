@@ -82,67 +82,67 @@
                     "displayName": "仮想節点"
                 },
                 "shmetroNumLineBadge": {
-                    "displayName": "上海地下鉄路線番号徽章"
+                    "displayName": "上海地下鉄番号路線記号"
                 },
                 "shmetroTextLineBadge": {
-                    "displayName": "上海地下鉄テキスト路線徽章"
+                    "displayName": "上海地下鉄文字路線記号"
                 },
                 "gzmtrLineBadge": {
-                    "displayName": "広州地下鉄路線徽章",
+                    "displayName": "広州地下鉄路線記号",
                     "tram": "路面電車",
                     "span": "行にまたがる数字"
                 },
                 "bjsubwayNumLineBadge": {
-                    "displayName": "北京地下鉄路線番号徽章"
+                    "displayName": "北京地下鉄番号路線記号"
                 },
                 "bjsubwayTextLineBadge": {
-                    "displayName": "北京地下鉄テキスト路線徽章"
+                    "displayName": "北京地下鉄文字路線記号"
                 },
                 "berlinSBahnLineBadge": {
-                    "displayName": "ベルリンSバーン番号徽章"
+                    "displayName": "ベルリンSバーン路線記号"
                 },
                 "berlinUBahnLineBadge": {
-                    "displayName": "ベルリン地下鉄番号徽章"
+                    "displayName": "ベルリン地下鉄路線記号"
                 },
                 "suzhouRTNumLineBadge": {
-                    "displayName": "蘇州軌道交通路線番号徽章",
+                    "displayName": "蘇州軌道交通路線番号路線記号",
                     "branch": "支線"
                 },
                 "chongqingRTNumLineBadge": {
-                    "displayName": "重慶鉄道交通路線番号徽章"
+                    "displayName": "重慶鉄道交通路線番号路線記号"
                 },
                 "chongqingRTTextLineBadge": {
-                    "displayName": "重慶鉄道交通テキスト路線徽章"
+                    "displayName": "重慶鉄道交通文字路線記号"
                 },
                 "chongqingRTNumLineBadge2021": {
-                    "displayName": "重慶鉄道交通路線番号徽章（令和3年）"
+                    "displayName": "重慶鉄道交通番号路線記号（令和3年）"
                 },
                 "chongqingRTTextLineBadge2021": {
-                    "displayName": "重慶鉄道交通テキスト路線徽章（令和3年）",
+                    "displayName": "重慶鉄道交通文字路線記号（令和3年）",
                     "isRapid": "特急/直通特急徽章"
                 },
                 "shenzhenMetroNumLineBadge": {
-                    "displayName": "深セン地下鉄路線番号徽章",
+                    "displayName": "深セン地下鉄番号路線記号",
                     "branch": "支線"
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "シンガポールMRTの目的地番号"
                 },
                 "mrtLineBadge": {
-                    "displayName": "シンガポールMRT路線バッジ",
-                    "isTram": "LRT路線バッジです"
+                    "displayName": "シンガポールMRT路線記号",
+                    "isTram": "路面電車"
                 },
                 "jrEastLineBadge": {
-                    "displayName": "JR東日本路線番号徽章",
+                    "displayName": "JR東日本番号路線記号",
                     "crosshatchPatternFill": "網目模様で塗りつぶす"
                 },
                 "qingdaoMetroNumLineBadge": {
-                    "displayName": "青島地下鉄番号線徽章",
+                    "displayName": "青島地下鉄番号路線記号",
                     "numEn": "英語の行番号",
-                    "showText": "テキストを表示"
+                    "showText": "文字を表示"
                 },
                 "guangdongIntercityRailwayLineBadge": {
-                    "displayName": "広東省都市間鉄道線徽章"
+                    "displayName": "広東省都市間鉄道路線記号"
                 },
                 "londonArrow": {
                     "displayName": "ロンドン矢印",
@@ -152,13 +152,17 @@
                     "tube": "地下鉄"
                 },
                 "chengduRTLineBadge": {
-                    "displayName": "成都鉄道交通路線標識",
+                    "displayName": "成都鉄道交通路線記号",
                     "badgeType": {
                         "displayName": "種類",
                         "normal": "普通",
                         "suburban": "郊外鉄道",
                         "tram": "路面電車"
                     }
+                },
+                "taipeiMetroLineBadge": {
+                    "displayName": "台北地下鉄路線記号",
+                    "tram": "路面電車"
                 },
                 "master": {
                     "displayName": "大師節点",
@@ -170,11 +174,11 @@
                     "type": "種類"
                 },
                 "text": {
-                    "displayName": "任意のテキスト",
+                    "displayName": "任意の文字",
                     "content": "コンテンツ",
                     "fontSize": "書体サイズ",
                     "lineHeight": "行の高さ",
-                    "textAnchor": "テキストのアンカー",
+                    "textAnchor": "文字のアンカー",
                     "start": "開始",
                     "middle": "中央",
                     "end": "終了",
@@ -296,7 +300,7 @@
                 },
                 "MRTBasic": {
                     "displayName": "シンガポールMRT基本駅",
-                    "isTram": "LRTの駅です"
+                    "isTram": "路面電車"
                 },
                 "MRTInt": {
                     "displayName": "シンガポールMRT乗り換え駅"
@@ -586,7 +590,7 @@
                     "lineCode": "路線番号"
                 },
                 "info1": "この機能は、RMP作品をRMG作品に変換するために設計されています。",
-                "info2": "以下のリストの行は、変換用に利用できます。左側のテキストボックスに中国語の行名、中央に英語の行名、右側に（広州メトロ風格用の）行コードを入力し、ダウンロードボタンをクリックしてRMG作品を保存できます。",
+                "info2": "以下のリストの行は、変換用に利用できます。左側の文字ボックスに中国語の行名、中央に英語の行名、右側に（広州メトロ風格用の）行コードを入力し、ダウンロードボタンをクリックしてRMG作品を保存できます。",
                 "noline": "利用可能な回線が見つかりません。",
                 "download": "ダウンロード",
                 "downloadInfo": "出発駅を選択してクリックしてください。"

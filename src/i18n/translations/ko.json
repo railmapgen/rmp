@@ -158,6 +158,10 @@
                         "tram": "노면 전차"
                     }
                 },
+                "taipeiMetroLineBadge": {
+                    "displayName": "타이페이 지하철 노선 뱃지",
+                    "tram": "트램"
+                },
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
@@ -326,9 +330,7 @@
                 "tokyoMetroBasic": {
                     "displayName": "도쿄메트로 기본역",
                     "nameOffset": "이름 오프셋",
-                    "textVertical": "업종명",
-                    "lineCode": "라인 코드",
-                    "stationCode": "역 코드"
+                    "textVertical": "업종명"
                 },
                 "tokyoMetroInt": {
                     "displayName": "도쿄메트로 환승역",

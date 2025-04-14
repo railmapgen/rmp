@@ -158,6 +158,10 @@
                         "tram": "Tram"
                     }
                 },
+                "taipeiMetroLineBadge": {
+                    "displayName": "Taipei Metro line badge",
+                    "tram": "Tram"
+                },
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
@@ -327,9 +331,7 @@
                 "tokyoMetroBasic": {
                     "displayName": "Tokyo Metro basic station",
                     "nameOffset": "Names offset",
-                    "textVertical": "Vertical names",
-                    "lineCode": "Line code",
-                    "stationCode": "Station code"
+                    "textVertical": "Vertical names"
                 },
                 "tokyoMetroInt": {
                     "displayName": "Tokyo Metro interchange station",
