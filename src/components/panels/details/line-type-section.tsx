@@ -8,6 +8,7 @@ import {
     Button,
 } from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
+import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
@@ -16,10 +17,11 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { localizedLineStyles } from '../tools/localized-order';
 import { LearnHowToAdd } from '../tools/tools';
 
 export default function LineTypeSection() {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
         dispatch(refreshEdgesThunk());
@@ -45,7 +47,10 @@ export default function LineTypeSection() {
     const [newLinePathType, setNewLinePathType] = React.useState<LinePathType | undefined>(undefined);
 
     const availableLineStyleOptions = Object.fromEntries(
-        Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        localizedLineStyles[i18n.language as LanguageCode]?.map(lineStyle => [
+            lineStyle,
+            t(lineStyles[lineStyle].metadata.displayName).toString(),
+        ]) ?? []
     ) as { [k in LineStyleType]: string };
     const [currentLineStyleType, setCurrentLineStyleType] = React.useState(
         graph.current.getEdgeAttribute(selectedFirst, 'style')

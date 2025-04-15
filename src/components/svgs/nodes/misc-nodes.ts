@@ -1,5 +1,9 @@
 import { MiscNodeType } from '../../../constants/nodes';
 import virtual from './virtual';
+import facilities from './facilities';
+import text from './text';
+import i18nText from './i18n-text';
+import Master from './master';
 import shmetroNumLineBadge from './shmetro-num-line-badge';
 import shmetroTextLineBadge from './shmetro-text-line-badge';
 import gzmtrLineBadge from './gzmtr-line-badge';
@@ -21,13 +25,13 @@ import guangdongIntercityRailwayLineBadge from './guangdong-intercity-railway-li
 import londonArrow from './london-arrow';
 import chengduRTLineBadge from './chengdurt-line-badge';
 import taipeiMetroLineBadge from './taipei-metro-line-badge';
-import facilities from './facilities';
-import text from './text';
-import i18nText from './i18n-text';
-import Master from './master';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
+    [MiscNodeType.Facilities]: facilities,
+    [MiscNodeType.Text]: text,
+    [MiscNodeType.I18nText]: i18nText,
+    [MiscNodeType.Master]: Master,
     [MiscNodeType.ShmetroNumLineBadge]: shmetroNumLineBadge,
     [MiscNodeType.ShmetroTextLineBadge]: shmetroTextLineBadge,
     [MiscNodeType.GzmtrLineBadge]: gzmtrLineBadge,
@@ -49,10 +53,6 @@ const miscNodes = {
     [MiscNodeType.LondonArrow]: londonArrow,
     [MiscNodeType.ChengduRTLineBadge]: chengduRTLineBadge,
     [MiscNodeType.TaiPeiMetroLineBadege]: taipeiMetroLineBadge,
-    [MiscNodeType.Facilities]: facilities,
-    [MiscNodeType.Text]: text,
-    [MiscNodeType.I18nText]: i18nText,
-    [MiscNodeType.Master]: Master,
 };
 
 export default miscNodes;

@@ -16,10 +16,12 @@ import {
     Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
+import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconContext } from 'react-icons';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
+import { Theme } from '../../../constants/constants';
 import { LinePathType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
@@ -32,7 +34,7 @@ import { linePaths } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
-import { Theme } from '../../../constants/constants';
+import { localizedMiscNodes, localizedStaions } from './localized-order';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -61,7 +63,7 @@ const selectIcon = (
 const EXPAND_ANIMATION_DURATION = 0.3; // in second
 
 const ToolsPanel = () => {
-    const { t } = useTranslation();
+    const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
@@ -182,7 +184,7 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            {Object.values(StationType).map(type => (
+                            {localizedStaions[i18n.language as LanguageCode]?.map(type => (
                                 <Button
                                     key={type}
                                     aria-label={type}
@@ -235,8 +237,8 @@ const ToolsPanel = () => {
                                     </>
                                 ) : undefined}
                             </Button>
-                            {Object.values(MiscNodeType)
-                                .filter(
+                            {localizedMiscNodes[i18n.language as LanguageCode]
+                                ?.filter(
                                     type =>
                                         type !== MiscNodeType.Virtual &&
                                         type !== MiscNodeType.I18nText &&
