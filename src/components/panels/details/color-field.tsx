@@ -5,7 +5,8 @@ import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { usePaletteTheme } from '../../../util/hooks';
 import ThemeButton from '../theme-button';
 
 /**
@@ -33,7 +34,7 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
     const dispatch = useRootDispatch();
     const {
         selected,
-        paletteAppClip: { output },
+        paletteAppClip: { input, output },
     } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
@@ -69,35 +70,26 @@ export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: s
         }
     };
 
-    const [isThemeRequested, setIsThemeRequested] = React.useState(false);
-    React.useEffect(() => {
-        if (isThemeRequested && output) {
-            handleChangeColor(output);
-            setIsThemeRequested(false);
-        }
-    }, [output?.toString()]);
-
     const isCurrentSelectedValid =
         selectedFirst &&
         hasNodeOrEdge.bind(graph.current)(selectedFirst) &&
         (selectedFirst.startsWith('stn') || selectedFirst.startsWith('misc_node')
             ? graph.current.getNodeAttribute(selectedFirst, 'type') === type
             : graph.current.getEdgeAttribute(selectedFirst, 'style') === type);
-    const theme = isCurrentSelectedValid
+    const safeTheme = isCurrentSelectedValid
         ? ((getNodeOrEdgeAttribute.bind(graph.current)(selectedFirst, type) ?? {
               [colorKey]: defaultTheme,
           })[colorKey] as Theme)
         : defaultTheme;
 
+    const { theme, requestThemeChange } = usePaletteTheme({
+        theme: safeTheme,
+        onThemeApplied: handleChangeColor,
+    });
+
     return (
         <>
-            <ThemeButton
-                theme={theme}
-                onClick={() => {
-                    setIsThemeRequested(true);
-                    dispatch(openPaletteAppClip(theme));
-                }}
-            />
+            <ThemeButton theme={theme} onClick={requestThemeChange} />
         </>
     );
 };
