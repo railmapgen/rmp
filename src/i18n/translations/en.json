@@ -628,12 +628,22 @@
                 "parallel": "Parallel lines exceed the free tier.",
                 "solution": "Remove them to dismiss this warning, or subscribe to unlock more!"
             },
-            "subscription": {
-                "title": "Subscription Status",
-                "logged-out": "You are currently logged out.",
-                "free": "Logged In! Subscribe to unlock more features!",
-                "subscriber": "Thanks for your subscription! Enjoy all features!",
-                "expired": "Login status expired. Please log out and log in again."
+            "status": {
+                "title": "Status",
+                "count": {
+                    "stations": "Stations count:",
+                    "miscNodes": "Miscellaneous nodes count:",
+                    "lines": "Lines count:",
+                    "masters": "Master nodes count:",
+                    "parallel": "Parallel lines count:"
+                },
+                "subscription": {
+                    "content": "Subscription:",
+                    "logged-out": "You are currently logged out.",
+                    "free": "Logged In! Subscribe to unlock more features!",
+                    "subscriber": "Thanks for your subscription! Enjoy all features!",
+                    "expired": "Login status expired. Please log out and log in again."
+                }
             },
             "preference": {
                 "title": "Preference",

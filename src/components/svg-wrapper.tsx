@@ -60,8 +60,7 @@ const SvgWrapper = () => {
         keepLastPath,
         theme,
         refresh: { nodes: refreshNodes },
-        masterNodesCount,
-        parallelLinesCount,
+        count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();

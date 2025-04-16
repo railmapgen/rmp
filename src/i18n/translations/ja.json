@@ -35,8 +35,8 @@
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
                 "type": "種類",
-                "parallel": "平行路線",
-                "parallelIndex": "平行路線索引"
+                "parallel": "並列路線",
+                "parallelIndex": "並列路線索引"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -432,7 +432,7 @@
                     "roundCornerFactor": "角の丸め係数",
                     "from": "から",
                     "to": "まで",
-                    "parallelDisabled": "この路線が平行であるため、一部の属性が無効になっています。",
+                    "parallelDisabled": "この路線が並列であるため、一部の属性が無効になっています。",
                     "changeInBaseLine": "基準線で変更してください："
                 },
                 "simple": {
@@ -627,20 +627,30 @@
             "proWithTrial": "これはPRO機能で、無料の限定トライアルが利用可能です。",
             "proLimitExceed": {
                 "master": "大師節点が無料枠を超えています。",
-                "parallel": "平行路線が無料枠を超えています。",
+                "parallel": "並列路線が無料枠を超えています。",
                 "solution": "これらを削除して警告を解除するか、サブスクリプションに登録してさらに多くの機能を利用してください！"
             },
-            "subscription": {
-                "title": "サブスクリプションステータス",
-                "logged-out": "現在ログアウトしています。",
-                "free": "ログイン済み！さらに多くの機能をアンロックするにはサブスクリプションを登録してください！",
-                "subscriber": "サブスクリプションありがとうございます！すべての機能をお楽しみください！",
-                "expired": "ログインステータスの有効期限が切れました。ログアウトして再度ログインしてください。"
+            "status": {
+                "title": "ステータス",
+                "count": {
+                    "stations": "駅の数：",
+                    "miscNodes": "その他の節点の数：",
+                    "lines": "路線の数：",
+                    "masters": "大師節点の数：",
+                    "parallel": "並列路線の数："
+                },
+                "subscription": {
+                    "content": "サブスクリプション：",
+                    "logged-out": "現在ログアウトしています。",
+                    "free": "ログイン済み！さらに多くの機能をアンロックするにはサブスクリプションを登録してください！",
+                    "subscriber": "サブスクリプションありがとうございます！すべての機能をお楽しみください！",
+                    "expired": "ログインステータスの有効期限が切れました。ログアウトして再度ログインしてください。"
+                }
             },
             "preference": {
                 "title": "設定",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
-                "autoParallel": "新しい路線を既存の路線と平行に自動的に設定",
+                "autoParallel": "新しい路線を既存の路線と並列に自動的に設定",
                 "randomStationNames": {
                     "title": "作成時に駅名を乱数化する",
                     "none": "なし",

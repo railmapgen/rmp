@@ -72,7 +72,10 @@ const ToolsPanel = () => {
             toolsPanel: { expand: isToolsExpanded },
         },
     } = useRootSelector(state => state.app);
-    const { mode, masterNodesCount } = useRootSelector(state => state.runtime);
+    const {
+        mode,
+        count: { masters: masterNodesCount },
+    } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     const handleThemeApplied = React.useCallback((theme: Theme) => {

@@ -25,7 +25,12 @@ const DetailsPanel = () => {
         dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const { selected, mode, active, masterNodesCount } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        mode,
+        active,
+        count: { masters: masterNodesCount },
+    } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;

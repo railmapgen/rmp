@@ -29,7 +29,10 @@ export default function InfoSection() {
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const { selected, parallelLinesCount } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        count: { parallel: parallelLinesCount },
+    } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 

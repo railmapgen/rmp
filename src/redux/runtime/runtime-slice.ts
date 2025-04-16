@@ -52,8 +52,13 @@ interface RuntimeState {
         input: Theme | undefined;
         output: Theme | undefined;
     };
-    masterNodesCount: number;
-    parallelLinesCount: number;
+    count: {
+        stations: number;
+        miscNodes: number;
+        lines: number;
+        masters: number;
+        parallel: number;
+    };
     /**
      * Cached random station names.
      */
@@ -76,8 +81,13 @@ const initialState: RuntimeState = {
         input: undefined,
         output: undefined,
     },
-    masterNodesCount: 0,
-    parallelLinesCount: 0,
+    count: {
+        stations: 0,
+        miscNodes: 0,
+        lines: 0,
+        masters: 0,
+        parallel: 0,
+    },
     stationNames: {},
     globalAlerts: {},
 };
@@ -89,15 +99,20 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     const state = getState() as RootState;
     dispatch(setRefreshNodes());
 
-    let masterNodesCount = 0;
-    window.graph.forEachNode((_, attr) => {
+    let [stations, miscNodes, masters] = [0, 0, 0];
+    window.graph.forEachNode((id, attr) => {
+        if (id.startsWith('stn')) {
+            stations += 1;
+        } else if (id.startsWith('misc_node')) {
+            miscNodes += 1;
+        }
         if (attr.type === MiscNodeType.Master) {
-            masterNodesCount += 1;
+            masters += 1;
         }
     });
-    dispatch(setMasterNodesCount(masterNodesCount));
+    dispatch(setNodesCount({ stations, miscNodes, masters }));
     const maximumMasterNodes = state.account.activeSubscriptions.RMP_CLOUD ? MAX_MASTER_NODE_PRO : MAX_MASTER_NODE_FREE;
-    if (masterNodesCount > maximumMasterNodes) {
+    if (masters > maximumMasterNodes) {
         dispatch(
             setGlobalAlert({
                 status: 'warning',
@@ -114,8 +129,10 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     const state = getState() as RootState;
     dispatch(setRefreshEdges());
 
+    const lines = window.graph.size;
+
     const parallelLinesCount = countParallelLines(window.graph);
-    dispatch(setParallelLinesCount(parallelLinesCount));
+    dispatch(setEdgesCount({ lines, parallel: parallelLinesCount }));
     const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
         ? MAX_PARALLEL_LINES_PRO
         : MAX_PARALLEL_LINES_FREE;
@@ -178,11 +195,16 @@ const runtimeSlice = createSlice({
             state.paletteAppClip.input = undefined;
             state.paletteAppClip.output = action.payload;
         },
-        setMasterNodesCount: (state, action: PayloadAction<number>) => {
-            state.masterNodesCount = action.payload;
+        setNodesCount: (state, action: PayloadAction<{ stations: number; miscNodes: number; masters: number }>) => {
+            const { stations, miscNodes, masters } = action.payload;
+            state.count.stations = stations;
+            state.count.miscNodes = miscNodes;
+            state.count.masters = masters;
         },
-        setParallelLinesCount: (state, action: PayloadAction<number>) => {
-            state.parallelLinesCount = action.payload;
+        setEdgesCount: (state, action: PayloadAction<{ lines: number; parallel: number }>) => {
+            const { lines, parallel } = action.payload;
+            state.count.lines = lines;
+            state.count.parallel = parallel;
         },
         setStationNames: (
             state,
@@ -219,7 +241,7 @@ const runtimeSlice = createSlice({
     },
 });
 
-const { setMasterNodesCount, setParallelLinesCount } = runtimeSlice.actions;
+const { setNodesCount, setEdgesCount } = runtimeSlice.actions;
 
 export const {
     setSelected,

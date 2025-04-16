@@ -7,9 +7,12 @@ import { updateLoginStateAndSubscriptions } from '../../util/rmt-save';
 
 const refreshInterval = 1;
 
-const SubscriptionSection = () => {
+export const StatusSection = () => {
     const dispatch = useRootDispatch();
     const { state, token } = useRootSelector(state => state.account);
+    const {
+        count: { stations, miscNodes, masters, lines, parallel },
+    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
     const [isRefreshDisabled, setIsRefreshDisabled] = React.useState(false);
@@ -36,20 +39,44 @@ const SubscriptionSection = () => {
     };
 
     const stateText = {
-        'logged-out': t('header.settings.subscription.logged-out'),
-        free: t('header.settings.subscription.free'),
-        subscriber: t('header.settings.subscription.subscriber'),
-        expired: t('header.settings.subscription.expired'),
+        'logged-out': t('header.settings.status.subscription.logged-out'),
+        free: t('header.settings.status.subscription.free'),
+        subscriber: t('header.settings.status.subscription.subscriber'),
+        expired: t('header.settings.status.subscription.expired'),
     };
 
     return (
         <Box width="100%" mb="3">
             <Text as="b" fontSize="xl">
-                {t('header.settings.subscription.title')}
+                {t('header.settings.status.title')}
             </Text>
             <Box mt="3">
+                <Box mb="1">
+                    <Box display="flex" mb="1">
+                        <Text flex="1">{t('header.settings.status.count.stations')}</Text>
+                        <Text>{stations}</Text>
+                    </Box>
+                    <Box display="flex" mb="1">
+                        <Text flex="1">{t('header.settings.status.count.miscNodes')}</Text>
+                        <Text>{miscNodes}</Text>
+                    </Box>
+                    <Box display="flex" mb="1">
+                        <Text flex="1">{t('header.settings.status.count.masters')}</Text>
+                        <Text>{masters}</Text>
+                    </Box>
+                    <Box display="flex" mb="1">
+                        <Text flex="1">{t('header.settings.status.count.lines')}</Text>
+                        <Text>{lines}</Text>
+                    </Box>
+                    <Box display="flex" mb="1">
+                        <Text flex="1">{t('header.settings.status.count.parallel')}</Text>
+                        <Text>{parallel}</Text>
+                    </Box>
+                </Box>
                 <Box display="flex" mb="1">
-                    <Text flex="1">{stateText[state]}</Text>
+                    <Text flex="1">
+                        {t('header.settings.status.subscription.content')} {stateText[state]}
+                    </Text>
                     <IconButton
                         aria-label="refresh"
                         variant="ghost"
@@ -63,5 +90,3 @@ const SubscriptionSection = () => {
         </Box>
     );
 };
-
-export default SubscriptionSection;

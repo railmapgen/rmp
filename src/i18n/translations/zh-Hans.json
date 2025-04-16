@@ -627,12 +627,22 @@
                 "parallel": "平行线段超出了免费额度。",
                 "solution": "移除它们以消除此警告，或订阅以解锁更多功能！"
             },
-            "subscription": {
-                "title": "订阅状态",
-                "logged-out": "您当前已登出。",
-                "free": "已登录！订阅以解锁更多功能！",
-                "subscriber": "感谢您的订阅！享受所有功能吧！",
-                "expired": "登录状态已过期。请登出后重新登录。"
+            "status": {
+                "title": "状态",
+                "count": {
+                    "stations": "车站数量：",
+                    "miscNodes": "杂项节点数量：",
+                    "lines": "线路数量：",
+                    "masters": "大师节点数量：",
+                    "parallel": "平行线段数量："
+                },
+                "subscription": {
+                    "content": "订阅状态：",
+                    "logged-out": "您当前已登出。",
+                    "free": "已登录！订阅以解锁更多功能！",
+                    "subscriber": "感谢您的订阅！享受所有功能吧！",
+                    "expired": "登录状态已过期。请登出后重新登录。"
+                }
             },
             "preference": {
                 "title": "偏好",

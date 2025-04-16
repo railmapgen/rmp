@@ -49,7 +49,7 @@ import { ScaleNodesModal } from './procedures/scale-nodes-modal';
 import { TranslateNodesModal } from './procedures/translate-nodes-modal';
 import { UnlockSimplePathModal } from './procedures/unlock-simple-path-modal';
 import { UpdateColorModal } from './procedures/update-color-modal';
-import SubscriptionSection from './subscription-section';
+import { StatusSection } from './status-section';
 
 const procedureButtonStyle: SystemStyleObject = {
     width: '100%',
@@ -67,7 +67,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { autoParallel, randomStationsNames, gridLines, snapLines },
     } = useRootSelector(state => state.app);
-    const { keepLastPath, parallelLinesCount } = useRootSelector(state => state.runtime);
+    const {
+        keepLastPath,
+        count: { parallel: parallelLinesCount },
+    } = useRootSelector(state => state.runtime);
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
@@ -102,7 +105,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
                 <ModalBody>
                     <VStack divider={<StackDivider borderColor="gray.200" />}>
-                        <SubscriptionSection />
+                        <StatusSection />
                         <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">
                                 {t('header.settings.preference.title')}
