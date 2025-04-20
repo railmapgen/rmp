@@ -1,5 +1,10 @@
 import {
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
     Badge,
+    Box,
     Button,
     Checkbox,
     HStack,
@@ -41,6 +46,9 @@ export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
     const {
+        activeSubscriptions: { RMP_EXPORT },
+    } = useRootSelector(state => state.account);
+    const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
     const param = useRootSelector(state => state.param);
@@ -56,9 +64,9 @@ export default function DownloadActions() {
     const [svgVersion, setSvgVersion] = React.useState(2 as 1.1 | 2);
     const [maxArea, setMaxArea] = React.useState({ width: 1, height: 1, benchmark: 0.001 });
     const [scale, setScale] = React.useState(200);
-    const scales = [10, 25, 33, 50, 67, 75, 100, 125, 150, 175, 200, 250, 300, 400, 500, 750, 1000];
+    const scales = [25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000];
     const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
-    const [disabledScaleOptions, setDisabledScaleOptions] = React.useState<number[]>([]);
+    const [resvgScaleOptions, setResvgScaleOptions] = React.useState<number[]>([]);
     const [isTransparent, setIsTransparent] = React.useState(false);
     const fields: RmgFieldsField[] = [
         {
@@ -87,7 +95,6 @@ export default function DownloadActions() {
             label: t('header.download.scale'),
             value: scale,
             options: scaleOptions,
-            disabledOptions: disabledScaleOptions,
             onChange: value => setScale(value as number),
         },
         {
@@ -118,13 +125,13 @@ export default function DownloadActions() {
     }, []);
     // disable some scale options that are too big for the current browser to generate
     React.useEffect(() => {
-        if (isDownloadModalOpen && !isTauri) {
+        if (isDownloadModalOpen) {
             const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
             const [width, height] = [xMax - xMin, yMax - yMin];
             const disabledScales = scales.filter(
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
             );
-            setDisabledScaleOptions(disabledScales);
+            setResvgScaleOptions(disabledScales);
         }
     }, [isDownloadModalOpen]);
 
@@ -162,8 +169,8 @@ export default function DownloadActions() {
             return;
         }
 
-        // always use tauri to render the svg to png if possible
-        if (isTauri) {
+        // use tauri to render the svg to png if it is too big
+        if (isTauri && resvgScaleOptions.includes(scale)) {
             // @ts-expect-error
             window.parent.__TAURI__.core
                 .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsUsed })
@@ -243,24 +250,6 @@ export default function DownloadActions() {
                         <RmgFields fields={fields} />
                         {format === 'svg' && <RmgFields fields={svgFields} />}
                         {format === 'png' && <RmgFields fields={pngFields} />}
-                        {format === 'png' && disabledScaleOptions.length > 0 && (
-                            <>
-                                <Text as="i" fontSize="sm">
-                                    {t('header.download.disabledScaleOptions')}
-                                </Text>
-                                <br />
-                                <Text as="i" fontSize="sm">
-                                    {t('header.download.disabledScaleOptionsWorkarounds')}
-                                </Text>
-                                <Link
-                                    color="teal.500"
-                                    onClick={() => window.open('https://github.com/RazrFalcon/resvg', '_blank')}
-                                >
-                                    RazrFalcon/resvg <Icon as={MdOpenInNew} />
-                                </Link>
-                                <br />
-                            </>
-                        )}
                         <br />
                         <Checkbox
                             isChecked={isSystemFontsUsed}
@@ -293,6 +282,24 @@ export default function DownloadActions() {
                                 {t('header.download.period')}
                             </Text>
                         </Checkbox>
+
+                        {resvgScaleOptions.includes(scale) && !isTauri && (
+                            <Alert status="error" mt="4">
+                                <AlertIcon />
+                                <Box>
+                                    <AlertTitle>{t('header.download.disabledScaleOptions')}</AlertTitle>
+                                    <AlertDescription>
+                                        {t('header.download.disabledScaleOptionsSolution')}
+                                    </AlertDescription>
+                                </Box>
+                            </Alert>
+                        )}
+                        {resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT && (
+                            <Alert status="error" mt="4">
+                                <AlertIcon />
+                                <AlertTitle>{t('header.settings.pro')}</AlertTitle>
+                            </Alert>
+                        )}
                     </ModalBody>
 
                     <ModalFooter>
@@ -303,7 +310,10 @@ export default function DownloadActions() {
                                 size="sm"
                                 isDisabled={
                                     !isTermsAndConditionsSelected ||
-                                    (format === 'png' && disabledScaleOptions.includes(scale))
+                                    // disable if the user is using a scale that is too big for the current browser
+                                    (format === 'png' && resvgScaleOptions.includes(scale) && !isTauri) ||
+                                    // disable if the user is in Tauri and the scale is too big to render without a subscription
+                                    (format === 'png' && resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT)
                                 }
                                 isLoading={isDownloadRunning}
                                 onClick={handleDownload}
