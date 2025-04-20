@@ -2,7 +2,7 @@ import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
-import { subscription_endpoint } from '../constants/server';
+import { fetch, subscription_endpoint } from '../constants/server';
 import { createStore, RootDispatch } from '../redux';
 import {
     ActiveSubscriptions,

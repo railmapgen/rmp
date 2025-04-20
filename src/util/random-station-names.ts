@@ -2,7 +2,7 @@ import { logger } from '@railmapgen/rmg-runtime';
 import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { StationCity } from '../constants/constants';
-import { random_station_names_endpoint } from '../constants/server';
+import { fetch, random_station_names_endpoint } from '../constants/server';
 import { StationAttributes } from '../constants/stations';
 import { RootState } from '../redux';
 import { setStationNames } from '../redux/runtime/runtime-slice';

@@ -27,6 +27,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
 import { Events } from '../../constants/constants';
+import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs, makeRenderReadySVGElement } from '../../util/download';
@@ -76,7 +77,7 @@ export default function DownloadActions() {
             options: { 1.1: t('header.download.svg1.1'), 2: t('header.download.svg2') },
             onChange: value => {
                 setSvgVersion(value as 1.1 | 2);
-                if (value === 1.1) setIsUseSystemFontsSelected(true);
+                if (value === 1.1) setIsSystemFontsUsed(true);
             },
         },
     ];
@@ -98,9 +99,10 @@ export default function DownloadActions() {
     ];
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
-    const [isUseSystemFontsSelected, setIsUseSystemFontsSelected] = React.useState(false);
+    const [isSystemFontsUsed, setIsSystemFontsUsed] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
+    const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
 
     // calculate the max canvas area the current browser can support
@@ -116,7 +118,7 @@ export default function DownloadActions() {
     }, []);
     // disable some scale options that are too big for the current browser to generate
     React.useEffect(() => {
-        if (isDownloadModalOpen) {
+        if (isDownloadModalOpen && !isTauri) {
             const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
             const [width, height] = [xMax - xMin, yMax - yMin];
             const disabledScales = scales.filter(
@@ -137,7 +139,7 @@ export default function DownloadActions() {
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = async () => {
-        setIsDownloadModalOpen(false);
+        setIsDownloadRunning(true);
         if (isAllowAppTelemetry)
             rmgRuntime.event(
                 Events.DOWNLOAD_IMAGES,
@@ -147,7 +149,7 @@ export default function DownloadActions() {
         const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
             isAttachSelected,
-            isUseSystemFontsSelected,
+            isSystemFontsUsed,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
@@ -156,8 +158,21 @@ export default function DownloadActions() {
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
+            setIsDownloadRunning(false);
             return;
         }
+
+        // always use tauri to render the svg to png if possible
+        if (isTauri) {
+            // @ts-expect-error
+            window.parent.__TAURI__.core
+                .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsUsed })
+                // @ts-expect-error
+                .then(_ => setIsDownloadRunning(false));
+            return;
+        }
+
+        // fall back to canvas rendering
 
         // append to document to render the svg
         document.body.appendChild(elem);
@@ -185,10 +200,9 @@ export default function DownloadActions() {
                 () => {
                     ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
                     canvas.toBlob(blob => {
+                        setIsDownloadRunning(false);
                         if (!blob) {
                             // The canvas size is bigger than the current browser can support.
-                            // See #301 for more discussion and more on https://github.com/jhildenbiddle/canvas-size#test-results
-                            // Possible solutions include RazrFalcon/resvg and yisibl/resvg-js.
                             dispatch(setGlobalAlert({ status: 'error', message: t('header.download.imageTooBig') }));
                             return;
                         }
@@ -249,9 +263,9 @@ export default function DownloadActions() {
                         )}
                         <br />
                         <Checkbox
-                            isChecked={isUseSystemFontsSelected}
+                            isChecked={isSystemFontsUsed}
                             isDisabled={format === 'svg' && svgVersion === 1.1}
-                            onChange={e => setIsUseSystemFontsSelected(e.target.checked)}
+                            onChange={e => setIsSystemFontsUsed(e.target.checked)}
                         >
                             <Text>{t('header.download.useSystemFonts')}</Text>
                         </Checkbox>
@@ -291,6 +305,7 @@ export default function DownloadActions() {
                                     !isTermsAndConditionsSelected ||
                                     (format === 'png' && disabledScaleOptions.includes(scale))
                                 }
+                                isLoading={isDownloadRunning}
                                 onClick={handleDownload}
                             >
                                 {t('header.download.confirm')}
