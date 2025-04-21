@@ -169,8 +169,8 @@ export default function DownloadActions() {
             return;
         }
 
-        // use tauri to render the svg to png if it is too big
-        if (isTauri && resvgScaleOptions.includes(scale)) {
+        // always use resvg as mac has saving issues with downloadAs tauri-apps/tauri#4633
+        if (isTauri) {
             // @ts-expect-error
             window.parent.__TAURI__.core
                 .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsUsed })
