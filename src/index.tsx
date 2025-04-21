@@ -48,25 +48,25 @@ const renderApp = () => {
 // Load localstorage first or they will be overwritten after first store.dispatch.
 // A change in redux store will trigger the store.subscribe and will write states.
 const loginState = JSON.parse(localStorage.getItem(LocalStorageKey.LOGIN_STATE) ?? '{}');
-const app = JSON.parse(localStorage.getItem(LocalStorageKey.APP) ?? '{}');
-const param = localStorage.getItem(LocalStorageKey.PARAM);
+const appState = JSON.parse(localStorage.getItem(LocalStorageKey.APP) ?? '{}');
+const paramState = localStorage.getItem(LocalStorageKey.PARAM);
 
 // Load AppState.
 (() => {
-    if ('telemetry' in app) {
-        if ('app' in app.telemetry) store.dispatch(setTelemetryApp(app.telemetry.app));
-        if ('project' in app.telemetry) store.dispatch(setTelemetryProject(app.telemetry.project));
+    if ('telemetry' in appState) {
+        if ('app' in appState.telemetry) store.dispatch(setTelemetryApp(appState.telemetry.app));
+        if ('project' in appState.telemetry) store.dispatch(setTelemetryProject(appState.telemetry.project));
     }
-    if ('preference' in app) {
-        if ('unlockSimplePathAttempts' in app.preference)
-            store.dispatch(setUnlockSimplePath(app.preference.unlockSimplePathAttempts));
-        if ('toolsPanel' in app.preference && 'expand' in app.preference.toolsPanel)
-            store.dispatch(setToolsPanelExpansion(app.preference.toolsPanel.expand));
-        if ('autoParallel' in app.preference) store.dispatch(setAutoParallel(app.preference.autoParallel));
-        if ('randomStationsNames' in app.preference)
-            store.dispatch(setRandomStationsNames(app.preference.randomStationsNames));
-        if ('gridLines' in app.preference) store.dispatch(setGridLines(app.preference.gridLines));
-        if ('snapLines' in app.preference) store.dispatch(setSnapLines(app.preference.snapLines));
+    if ('preference' in appState) {
+        if ('unlockSimplePathAttempts' in appState.preference)
+            store.dispatch(setUnlockSimplePath(appState.preference.unlockSimplePathAttempts));
+        if ('toolsPanel' in appState.preference && 'expand' in appState.preference.toolsPanel)
+            store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
+        if ('autoParallel' in appState.preference) store.dispatch(setAutoParallel(appState.preference.autoParallel));
+        if ('randomStationsNames' in appState.preference)
+            store.dispatch(setRandomStationsNames(appState.preference.randomStationsNames));
+        if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
+        if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));
@@ -76,9 +76,12 @@ const param = localStorage.getItem(LocalStorageKey.PARAM);
     }
 })();
 
-// Upgrade param and inject to ParamState.
 // top-level await is not possible here
-upgrade(param).then(param => {
+// also wait for the rmgRuntime to be ready for info.json
+rmgRuntime.ready().then(async () => {
+    // Upgrade param and inject to ParamState.
+    const param = await upgrade(paramState);
+
     const { version, graph, ...save } = JSON.parse(param) as RMPSave;
     window.graph = MultiDirectedGraph.from(graph);
     const state: ParamState = { ...save, present: graph, past: [], future: [] };
