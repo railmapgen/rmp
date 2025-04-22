@@ -297,7 +297,10 @@ export default function DownloadActions() {
                         {resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />
-                                <AlertTitle>{t('header.settings.pro')}</AlertTitle>
+                                <Box>
+                                    <AlertTitle>{t('header.download.disabledScaleOptions')}</AlertTitle>
+                                    <AlertDescription>{t('header.settings.pro')}</AlertDescription>
+                                </Box>
                             </Alert>
                         )}
                     </ModalBody>
