@@ -185,13 +185,9 @@ const loadFacilitiesSvg = async (
             .filter(([_, v]) => v.length > 0)
             .map(([k, _]) => k as FacilitiesType);
         const svgs = await Promise.all(
-            (
-                await Promise.all(
-                    facilitiesTypesExists.map(
-                        async t => await fetch(import.meta.env.BASE_URL + `/images/facilities/${t}.svg`)
-                    )
-                )
-            ).map(rep => rep.text())
+            (await Promise.all(facilitiesTypesExists.map(async t => await fetch(`images/facilities/${t}.svg`)))).map(
+                rep => rep.text()
+            )
         );
         // extract the svg element from the svg file and append it as symbol to elem
         facilitiesTypesExists.forEach((t, i) => {
@@ -233,7 +229,7 @@ const generateRmpInfo = async (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     info.setAttribute('transform', `translate(${x}, ${y})scale(2)`);
 
-    const logoSVGRep = await fetch(import.meta.env.BASE_URL + `/logo.svg`);
+    const logoSVGRep = await fetch('logo.svg');
     const logoSVG = await logoSVGRep.text();
     const temp = document.createElement('div');
     temp.innerHTML = logoSVG;
