@@ -604,7 +604,7 @@
             "disabledScaleOptions": "Image too large for this browser.",
             "disabledScaleOptionsSolution": "Subscribe and download our desktop app to render large images.",
             "imageTooBig": "The image is too big for your browser to generate!",
-            "useSystemFonts": "Use system fonts instead of fonts previewed in the canvas.",
+            "useSystemFonts": "Use system font only (font display may vary).",
             "shareInfo1": "I will attach ",
             "shareInfo2": " and its link when I share this image.",
             "termsAndConditions": "Terms and Conditions",

@@ -603,7 +603,7 @@
             "disabledScaleOptions": "이미지가 이 브라우저에는 너무 큽니다.",
             "disabledScaleOptionsSolution": "구독하고 데스크톱 앱을 다운로드하여 큰 이미지를 렌더링하세요.",
             "imageTooBig": "이미지가 너무 크기 때문에 브라우저에서 생성할 수 없습니다!",
-            "useSystemFonts": "캔버스에서 미리보기된 글꼴 대신 시스템 글꼴 사용",
+            "useSystemFonts": "시스템 글꼴만 사용하십시오 (글꼴 표시가 다를 수 있습니다).",
             "shareInfo1": "이 사진을 공유할 때",
             "shareInfo2": "링크를 첨부할 것입니다.",
             "termsAndConditions": "약관 및 세칙",

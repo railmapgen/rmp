@@ -603,7 +603,7 @@
             "disabledScaleOptions": "图像对于此浏览器来说太大。",
             "disabledScaleOptionsSolution": "订阅并下载我们的桌面应用程序以渲染大型图像。",
             "imageTooBig": "图像太大，无法在您的浏览器中生成！",
-            "useSystemFonts": "使用系统字体而不是在画布上预览的字体",
+            "useSystemFonts": "仅用系统字体（字体显示可能不一致）。 ",
             "shareInfo1": "当我分享此图片时我会附上",
             "shareInfo2": "和它的链接。",
             "termsAndConditions": "条款及细则",
