@@ -606,7 +606,7 @@
             "disabledScaleOptions": "画像がこのブラウザには大きすぎます。",
             "disabledScaleOptionsSolution": "購読してデスクトップアプリをダウンロードし、大きな画像を渲染してください。",
             "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
-            "useSystemFonts": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
+            "isSystemFontsOnly": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",
             "shareInfo2": " とリンクを添付します。",
             "termsAndConditions": "利用規約",

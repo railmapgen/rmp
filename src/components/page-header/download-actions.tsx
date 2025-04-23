@@ -85,7 +85,7 @@ export default function DownloadActions() {
             options: { 1.1: t('header.download.svg1.1'), 2: t('header.download.svg2') },
             onChange: value => {
                 setSvgVersion(value as 1.1 | 2);
-                if (value === 1.1) setIsSystemFontsUsed(true);
+                if (value === 1.1) setIsSystemFontsOnly(true);
             },
         },
     ];
@@ -106,7 +106,7 @@ export default function DownloadActions() {
     ];
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
-    const [isSystemFontsUsed, setIsSystemFontsUsed] = React.useState(false);
+    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
@@ -156,7 +156,7 @@ export default function DownloadActions() {
         const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
             isAttachSelected,
-            isSystemFontsUsed,
+            isSystemFontsOnly,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
@@ -173,7 +173,7 @@ export default function DownloadActions() {
         if (isTauri) {
             // @ts-expect-error
             window.parent.__TAURI__.core
-                .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsUsed })
+                .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsOnly })
                 // @ts-expect-error
                 .then(_ => setIsDownloadRunning(false));
             return;
@@ -252,11 +252,11 @@ export default function DownloadActions() {
                         {format === 'png' && <RmgFields fields={pngFields} />}
                         <br />
                         <Checkbox
-                            isChecked={isSystemFontsUsed}
+                            isChecked={isSystemFontsOnly}
                             isDisabled={format === 'svg' && svgVersion === 1.1}
-                            onChange={e => setIsSystemFontsUsed(e.target.checked)}
+                            onChange={e => setIsSystemFontsOnly(e.target.checked)}
                         >
-                            <Text>{t('header.download.useSystemFonts')}</Text>
+                            <Text>{t('header.download.isSystemFontsOnly')}</Text>
                         </Checkbox>
                         <Checkbox isChecked={isAttachSelected} onChange={e => setIsAttachSelected(e.target.checked)}>
                             <Text>

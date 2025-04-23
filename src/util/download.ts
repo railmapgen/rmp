@@ -32,13 +32,13 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * The returned svg should be opened and displayed correctly in any svg viewer.
  * @param graph The graph.
  * @param generateRMPInfo Whether to call `generateRmpInfo`.
- * @param useSystemFonts Whether to add font-family to elements with fonts classes.
+ * @param isSystemFontsOnly Whether to add font-family to elements with fonts classes.
  * @returns The all in one SVGSVGElement and the size of canvas.
  */
 export const makeRenderReadySVGElement = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     generateRMPInfo: boolean,
-    useSystemFonts: boolean,
+    isSystemFontsOnly: boolean,
     svgVersion: 1.1 | 2
 ) => {
     // get the minimum and maximum of the graph
@@ -94,7 +94,7 @@ export const makeRenderReadySVGElement = async (
 
     const nodesExist = findNodesExist(graph);
 
-    await loadFonts(elem, graph, nodesExist, useSystemFonts);
+    await loadFonts(elem, graph, nodesExist, isSystemFontsOnly);
 
     await loadFacilitiesSvg(elem, graph, nodesExist);
 
@@ -105,7 +105,7 @@ const loadFonts = async (
     elem: SVGSVGElement,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     nodesExist: ReturnType<typeof findNodesExist>,
-    useSystemFonts: boolean
+    isSystemFontsOnly: boolean
 ) => {
     // TODO: add fonts by language (mtr__zh/mtr__en/mrt/jreast_ja) instead of node type
     // this will reduce the fonts loaded as some node types (e.g. mtr) have two languages which might import two fonts
@@ -122,7 +122,7 @@ const loadFonts = async (
         // default fonts do not exist in FONTS_CSS but will be loaded definitely
         .filter(nodeType => nodeType !== StationType.ShmetroBasic)
         .forEach(nodeType => fontsByNodeType.add(nodeType));
-    if (!useSystemFonts) {
+    if (!isSystemFontsOnly) {
         // add rmp-name__zh and rmp-name__en every time as they are the default fonts
         const s = document.createElement('style');
         for (let i = 0; i < document.styleSheets.length; i = i + 1) {
