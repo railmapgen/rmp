@@ -670,4 +670,19 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
+    it('51 -> 52', () => {
+        // Bump save version to support Taipei Metro line badge.
+        // Prepare an empty save.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":51}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[51](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":52}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });
