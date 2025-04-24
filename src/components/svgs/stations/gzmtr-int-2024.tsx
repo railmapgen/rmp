@@ -3,7 +3,7 @@ import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components'
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 // eslint-disable-next-line import/named
 import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
-import { SvgAssetsContext } from '@railmapgen/svg-assets/utils';
+import { utils } from '@railmapgen/svg-assets';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
@@ -88,7 +88,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     // Update all components that requires a bbox after fonts are loaded.
     // bbox calculated before fonts are loaded will be incorrect.
     // Also see SvgAssetsContextProvider in src/components/svg-wrapper.tsx
-    const { update } = React.useContext(SvgAssetsContext);
+    const { update } = React.useContext(utils.SvgAssetsContext);
     React.useEffect(() => {
         document.fonts.load('12px Arial', 'ABCDEFG123456').finally(() => setTimeout(update, 100));
     }, []);
