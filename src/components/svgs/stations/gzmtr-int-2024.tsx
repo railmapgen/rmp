@@ -1,7 +1,6 @@
 import { FormLabel, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-// eslint-disable-next-line import/named
 import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
 import { utils } from '@railmapgen/svg-assets';
 import React from 'react';
