@@ -12,7 +12,7 @@ export type FontFaceConfig = {
     descriptors?: FontFaceDescriptors;
 };
 
-const IdentityFont: FontFaceConfig = {
+const LTAIdentity: FontFaceConfig = {
     source: 'url("./fonts/LTAIdentity-Medium.woff")',
     descriptors: { display: 'swap' },
 };
@@ -42,12 +42,12 @@ export const FONTS_CSS: {
     },
     [StationType.MRTBasic]: {
         className: ['.rmp-name__mrt'],
-        cssFont: { IdentityFont },
+        cssFont: { LTAIdentity },
         cssName: 'fonts_mrt',
     },
     [StationType.MRTInt]: {
         className: ['.rmp-name__mrt'],
-        cssFont: { IdentityFont },
+        cssFont: { LTAIdentity },
         cssName: 'fonts_mrt',
     },
     [StationType.JREastBasic]: {
@@ -77,12 +77,12 @@ export const FONTS_CSS: {
     },
     [MiscNodeType.MRTDestinationNumbers]: {
         className: ['.rmp-name__mrt'],
-        cssFont: { IdentityFont },
+        cssFont: { LTAIdentity },
         cssName: 'fonts_mrt',
     },
     [MiscNodeType.MRTLineBadge]: {
         className: ['.rmp-name__mrt'],
-        cssFont: { IdentityFont },
+        cssFont: { LTAIdentity },
         cssName: 'fonts_mrt',
     },
     [StationType.TokyoMetroBasic]: {

@@ -171,9 +171,11 @@ export default function DownloadActions() {
 
         // always use resvg as mac has saving issues with downloadAs tauri-apps/tauri#4633
         if (isTauri) {
+            // TODO: use font family instead of custom font name, require rmg-runtime fonts/config.json to be updated
+            const replacedSvgString = svgString.replaceAll('GenYoMinTW-SB', '源樣明體');
             // @ts-expect-error
             window.parent.__TAURI__.core
-                .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsOnly })
+                .invoke('render_image', { svgString: replacedSvgString, scale, isTransparent, isSystemFontsOnly })
                 // @ts-expect-error
                 .then(_ => setIsDownloadRunning(false));
             return;
@@ -283,7 +285,7 @@ export default function DownloadActions() {
                             </Text>
                         </Checkbox>
 
-                        {resvgScaleOptions.includes(scale) && !isTauri && (
+                        {format === 'png' && resvgScaleOptions.includes(scale) && !isTauri && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />
                                 <Box>
@@ -294,7 +296,7 @@ export default function DownloadActions() {
                                 </Box>
                             </Alert>
                         )}
-                        {resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT && (
+                        {format === 'png' && resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />
                                 <Box>
