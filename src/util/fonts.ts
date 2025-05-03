@@ -13,7 +13,7 @@ export type FontFaceConfig = {
 };
 
 const LTAIdentity: FontFaceConfig = {
-    source: 'url("./fonts/LTAIdentity-Medium.woff")',
+    source: 'url("./fonts/LTAIdentity-Medium.ttf")',
     descriptors: { display: 'swap' },
 };
 const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
