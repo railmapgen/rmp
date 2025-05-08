@@ -11,7 +11,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -35,7 +35,7 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
 /**
  * BjsubwayDotted specific props.
  */
-export interface BjsubwayDottedAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface BjsubwayDottedAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultBjsubwayDottedAttributes: BjsubwayDottedAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],

@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructionAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -39,7 +39,7 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
 /**
  * MRTUnderConstruction specific props.
  */
-export interface MRTUnderConstructionAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface MRTUnderConstructionAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultMRTUnderConstructionAttributes: MRTUnderConstructionAttributes = {
     color: [CityCode.Singapore, 'ewl', '#009739', MonoColour.white],

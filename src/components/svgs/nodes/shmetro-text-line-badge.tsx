@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -71,7 +71,7 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
 /**
  * ShmetroTextLineBadge specific props.
  */
-export interface ShmetroTextLineBadgeAttributes extends AttributesWithColor {
+export interface ShmetroTextLineBadgeAttributes extends ColorAttribute {
     names: [string, string];
 }
 

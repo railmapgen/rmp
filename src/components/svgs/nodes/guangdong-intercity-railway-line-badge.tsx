@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor } from '../../panels/details/color-field';
+import { ColorAttribute } from '../../panels/details/color-field';
 
 const GuangdongIntercityRailwayLineBadge = (
     props: NodeComponentProps<GuangdongIntercityRailwayLineBadgeAttributes>
@@ -73,7 +73,7 @@ const GuangdongIntercityRailwayLineBadge = (
 /**
  * GuangdongIntercityRailwayLineBadge specific props.
  */
-export interface GuangdongIntercityRailwayLineBadgeAttributes extends AttributesWithColor {
+export interface GuangdongIntercityRailwayLineBadgeAttributes extends ColorAttribute {
     names: [string, string];
 }
 

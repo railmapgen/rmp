@@ -12,7 +12,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const STATION_CODE_FONT_SIZE = 5.2;
@@ -154,7 +154,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
 /**
  * MRTBasicStation specific props.
  */
-export interface MRTBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface MRTBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     lineCode: string;

@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -32,7 +32,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
 /**
  * JREastSingleColor specific props.
  */
-export interface JREastSingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface JREastSingleColorAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultJREastSingleColorAttributes: JREastSingleColorAttributes = {
     color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],

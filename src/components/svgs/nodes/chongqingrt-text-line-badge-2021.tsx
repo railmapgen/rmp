@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextLineBadge2021Attributes>) => {
@@ -95,7 +95,7 @@ const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextL
 /**
  * ChongqingRTNumLineBadge2021 specific props.
  */
-export interface ChongqingRTTextLineBadge2021Attributes extends AttributesWithColor {
+export interface ChongqingRTTextLineBadge2021Attributes extends ColorAttribute {
     names: [string, string];
     isRapid: boolean;
 }

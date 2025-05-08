@@ -12,7 +12,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const NAME_DY_KM_BASIC = {
@@ -103,7 +103,7 @@ const KunmingRTBasicStation = (props: StationComponentProps) => {
 /**
  * KunmingRTBasicStation specific props.
  */
-export interface KunmingRTBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface KunmingRTBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
 }

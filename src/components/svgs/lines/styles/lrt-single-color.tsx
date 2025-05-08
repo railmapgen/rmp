@@ -9,7 +9,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -37,7 +37,7 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
 /**
  * LRT Single Color specific props.
  */
-export interface LRTSingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface LRTSingleColorAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultLRTSingleColorAttributes: LRTSingleColorAttributes = {
     color: [CityCode.Singapore, 'lrt', '#708573', MonoColour.white],

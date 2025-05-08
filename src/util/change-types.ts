@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { AttributesWithColor } from '../components/panels/details/color-field';
+import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
@@ -14,8 +14,8 @@ import {
     StnId,
     Theme,
 } from '../constants/constants';
-import { LinePathType, LineStylesWithColor, LineStyleType } from '../constants/lines';
-import { ExternalStationAttributes, StationType, StationWithColor } from '../constants/stations';
+import { LinePathType, LineStyleType } from '../constants/lines';
+import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
 const stationsWithoutNameOffset = [
@@ -76,9 +76,9 @@ export const changeStationType = (
             currentStnType as Exclude<StationType, StationsWithoutNameOffset>
         )!.nameOffsetY;
     }
-    if (StationWithColor.includes(newStnType) && StationWithColor.includes(currentStnType)) {
+    if (dynamicColorInjection.has(newStnType) && dynamicColorInjection.has(currentStnType)) {
         (newAttrs as AttributesWithColor).color = structuredClone(
-            (graph.getNodeAttribute(selectedFirst, currentStnType) as AttributesWithColor)!.color
+            (graph.getNodeAttribute(selectedFirst, currentStnType) as AttributesWithColor).color
         );
     }
     graph.removeNodeAttribute(selectedFirst, currentStnType);
@@ -178,9 +178,9 @@ export const changeLineStyleType = (
         const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
         graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
         const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
-        if (LineStylesWithColor.has(currentLineStyleType) && LineStylesWithColor.has(newLineStyleType))
+        if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
             (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-        else if (LineStylesWithColor.has(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
+        else if (dynamicColorInjection.has(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
@@ -226,7 +226,7 @@ export const changeLinesColorInBatch = (
     lines: LineId[]
 ) =>
     lines
-        .filter(edge => LineStylesWithColor.has(graph.getEdgeAttribute(edge, 'style')))
+        .filter(edge => dynamicColorInjection.has(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);
             const color = (attr[attr.style] as AttributesWithColor).color;

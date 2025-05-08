@@ -21,19 +21,13 @@ import {
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { FONTS_CSS, loadFontCss } from '../util/fonts';
 import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
-import {
-    getCanvasSize,
-    getMousePosition,
-    getViewpointSize,
-    isMacClient,
-    pointerPosToSVGCoord,
-    roundToMultiple,
-} from '../util/helpers';
+import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { getOneStationName } from '../util/random-station-names';
-import SvgCanvas from './svg-canvas-graph';
 import GridLines from './grid-lines';
+import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
+import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
 
@@ -102,8 +96,8 @@ const SvgWrapper = () => {
 
             // deep copy to prevent mutual reference
             const attr = structuredClone({ ...stations, ...miscNodes }[type].defaultAttrs);
-            // special tweaks for AttributesWithColor
-            if ('color' in attr) attr.color = theme;
+            // inject runtime color if registered in dynamicColorInjection
+            if (dynamicColorInjection.has(type)) (attr as AttributesWithColor).color = theme;
             // Add random names for stations
             if (isStation && !isRandomStationNamesDisabled) {
                 const attrNames = (attr as StationAttributes).names;

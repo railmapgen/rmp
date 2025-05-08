@@ -1,11 +1,11 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { AttributesWithColor } from '../components/panels/details/color-field';
+import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { LineStyleType, LineStylesWithColor } from '../constants/lines';
+import { LineStyleType } from '../constants/lines';
 import {
     BranchStyle,
     Name,
@@ -148,7 +148,7 @@ const newRMGStn: StationInfo = {
 export const colorToString = (color: Theme) => `${color[0]}/${color[1]}=${color[2]}${color[3]}`;
 
 // verify the line whether is needed to add
-const isColorLine = (type: LineStyleType) => LineStylesWithColor.has(type);
+const isColorLine = (type: LineStyleType) => dynamicColorInjection.has(type);
 
 // get line color array
 const getColor = (attr: EdgeAttributes) => {

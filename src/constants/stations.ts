@@ -39,7 +39,7 @@ export enum StationType {
     ShmetroBasic2020 = 'shmetro-basic-2020',
     ShmetroInt = 'shmetro-int',
     ShmetroOutOfSystemInt = 'shmetro-osysi',
-    ShanghaiSuburbanRailway = 'sh-sub-rwy',
+    ShanghaiSuburbanRailway = 'shanghai-sub-rwy',
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
     GzmtrInt2024 = 'gzmtr-int-2024',
@@ -61,7 +61,7 @@ export enum StationType {
     LondonTubeBasic = 'london-tube-basic',
     LondonTubeInt = 'london-tube-int',
     LondonRiverServicesInt = 'london-river-int',
-    GuangdongIntercityRailway = 'gd-intercity-rwy',
+    GuangdongIntercityRailway = 'guangdong-intercity-rwy',
     ChongqingRTBasic = 'chongqingrt-basic',
     ChongqingRTInt = 'chongqingrt-int',
     ChongqingRTBasic2021 = 'chongqingrt-basic-2021',
@@ -105,20 +105,6 @@ export interface ExternalStationAttributes {
     [StationType.ChengduRTBasic]?: ChengduRTBasicStationAttributes;
     [StationType.ChengduRTInt]?: ChengduRTIntStationAttributes;
 }
-
-export const StationWithColor = [
-    StationType.ShmetroBasic2020,
-    StationType.GzmtrBasic,
-    StationType.SuzhouRTBasic,
-    StationType.KunmingRTBasic,
-    StationType.MRTBasic,
-    StationType.FoshanMetroBasic,
-    StationType.QingdaoMetroStation,
-    StationType.ChongqingRTBasic,
-    StationType.ChongqingRTBasic2021,
-    StationType.ChongqingRTInt2021,
-    StationType.ChengduRTBasic,
-];
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 

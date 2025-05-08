@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const NUM_WIDTH = 11.84375;
 
@@ -69,7 +69,7 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
 /**
  * ShenzhenMetroNumLineBadge specific props.
  */
-export interface ShenzhenMetroNumLineBadgeAttributes extends AttributesWithColor {
+export interface ShenzhenMetroNumLineBadgeAttributes extends ColorAttribute {
     num: number;
     isBranch: boolean;
 }

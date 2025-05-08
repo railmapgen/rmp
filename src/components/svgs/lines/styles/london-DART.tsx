@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LondonLutonAirportDART = (props: LineStyleComponentProps<LondonLutonAirportDARTAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -40,7 +40,7 @@ const LondonLutonAirportDART = (props: LineStyleComponentProps<LondonLutonAirpor
 /**
  * LondonLutonAirportDART specific props.
  */
-export interface LondonLutonAirportDARTAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface LondonLutonAirportDARTAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultLondonLutonAirportDARTAttributes: LondonLutonAirportDARTAttributes = {
     color: [CityCode.London, 'rail', '#d6ae00', MonoColour.white],

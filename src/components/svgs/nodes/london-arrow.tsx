@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { Rotate } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const X = 5;
 const D = `M0,0 L${-X * 2},${-X * 2} L${Math.SQRT2 * X - 2 * X},${2 * -X} L${Math.SQRT2 * X},0 L${Math.SQRT2 * X - 2 * X},${2 * X} L${2 * -X},${2 * X} Z`;
@@ -61,7 +61,7 @@ const LondonArrow = (props: NodeComponentProps<LondonArrowAttributes>) => {
 /**
  * LondonArrow specific props.
  */
-export interface LondonArrowAttributes extends AttributesWithColor {
+export interface LondonArrowAttributes extends ColorAttribute {
     rotate: Rotate;
     type: 'continuation' | 'sandwich' | 'tube';
 }

@@ -13,7 +13,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const GzmtrBasicStation = (props: StationComponentProps) => {
@@ -199,7 +199,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 /**
  * GzmtrBasicStation specific props.
  */
-export interface GzmtrBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface GzmtrBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     lineCode: string;

@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -32,7 +32,7 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
 /**
  * ChinaRailway specific props.
  */
-export interface ChinaRailwayAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface ChinaRailwayAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultChinaRailwayAttributes: ChinaRailwayAttributes = {
     color: [CityCode.Shanghai, 'jsr', '#000000', MonoColour.white],

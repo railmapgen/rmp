@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const STATION_ICON_HEIGHT = 9.25 * 2;
 const STATION_ICON_STROKE = 1.3;
@@ -38,7 +38,7 @@ const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
 /**
  * GZMTRLoop has no specific props.
  */
-export interface GZMTRLoopAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface GZMTRLoopAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultGZMTRLoopAttributes: GZMTRLoopAttributes = {
     color: [CityCode.Guangzhou, 'gz11', '#ffb00a', MonoColour.black],

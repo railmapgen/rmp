@@ -11,7 +11,7 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LINE_WIDTH = 5;
 const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
@@ -84,7 +84,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
 /**
  * JREastSingleColorPattern specific props.
  */
-export interface JREastSingleColorPatternAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface JREastSingleColorPatternAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultJREastSingleColorPatternAttributes: JREastSingleColorPatternAttributes = {
     color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],

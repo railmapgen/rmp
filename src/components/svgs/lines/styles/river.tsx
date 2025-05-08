@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { AttributesWithColor } from '../../../panels/details/color-field';
+import { ColorAttribute } from '../../../panels/details/color-field';
 
 const River = (props: LineStyleComponentProps<RiverAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -33,7 +33,7 @@ const River = (props: LineStyleComponentProps<RiverAttributes>) => {
 /**
  * River specific props.
  */
-export interface RiverAttributes extends LinePathAttributes, AttributesWithColor {
+export interface RiverAttributes extends LinePathAttributes, ColorAttribute {
     width: number;
 }
 

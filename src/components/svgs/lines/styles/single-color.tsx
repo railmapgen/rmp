@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -39,7 +39,7 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
 /**
  * SingleColor specific props.
  */
-export interface SingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface SingleColorAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultSingleColorAttributes: SingleColorAttributes = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],

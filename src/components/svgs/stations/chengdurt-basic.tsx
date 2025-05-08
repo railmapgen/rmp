@@ -13,7 +13,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText } from '../common/multiline-text';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
 export const LINE_HEIGHT = {
@@ -243,7 +243,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
 /**
  * ChengduRTBasicStation specific props.
  */
-export interface ChengduRTBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface ChengduRTBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     direction: 'vertical' | 'horizontal';

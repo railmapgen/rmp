@@ -119,26 +119,6 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
 }
 
-export const LineStylesWithColor = new Set([
-    LineStyleType.SingleColor,
-    LineStyleType.BjsubwaySingleColor,
-    LineStyleType.BjsubwayTram,
-    LineStyleType.BjsubwayDotted,
-    LineStyleType.ChinaRailway,
-    LineStyleType.MTRRaceDays,
-    LineStyleType.MTRLightRail,
-    LineStyleType.MRTUnderConstruction,
-    LineStyleType.JREastSingleColor,
-    LineStyleType.JREastSingleColorPattern,
-    LineStyleType.LRTSingleColor,
-    LineStyleType.LondonSandwich,
-    LineStyleType.LondonLutonAirportDART,
-    LineStyleType.LondonIFSCloudCableCar,
-    LineStyleType.GZMTRLoop,
-    LineStyleType.ChongqingRTLoop,
-    LineStyleType.ChongqingRTLineBadge,
-]);
-
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
 export type Path = `M${string}`;

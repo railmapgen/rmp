@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const ChongqingRTLineBadge = (props: LineStyleComponentProps<ChongqingRTLineBadgeAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -39,7 +39,7 @@ const ChongqingRTLineBadge = (props: LineStyleComponentProps<ChongqingRTLineBadg
 /**
  * ChongqingRTLineBadge specific props.
  */
-export interface ChongqingRTLineBadgeAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface ChongqingRTLineBadgeAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultChongqingRTLineBadgeAttributes: ChongqingRTLineBadgeAttributes = {
     color: [CityCode.Chongqing, 'cq1', '#E4002B', MonoColour.white],

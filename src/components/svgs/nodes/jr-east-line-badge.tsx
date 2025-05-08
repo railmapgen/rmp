@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const CIRCLE_R = 4;
@@ -148,7 +148,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
 /**
  * JREastLineBadge specific props.
  */
-export interface JREastLineBadgeAttributes extends AttributesWithColor {
+export interface JREastLineBadgeAttributes extends ColorAttribute {
     names: [string, ...string[]];
     num: number;
     crosshatchPatternFill: boolean;

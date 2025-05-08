@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LondonIFSCloudCableCar = (props: LineStyleComponentProps<LondonIFSCloudCableCarAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -34,7 +34,7 @@ const LondonIFSCloudCableCar = (props: LineStyleComponentProps<LondonIFSCloudCab
 /**
  * LondonIFSCloudCableCar specific props.
  */
-export interface LondonIFSCloudCableCarAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface LondonIFSCloudCableCarAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultLondonIFSCloudCableCarAttributes: LondonIFSCloudCableCarAttributes = {
     color: [CityCode.London, 'dangleway', '#dc241f', MonoColour.white],

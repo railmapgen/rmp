@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 52;
+export const CURRENT_VERSION = 53;
 
 /**
  * Load the tutorial.
@@ -671,4 +671,36 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     51: param =>
         // Bump save version to support Taiwan railway and hsr facilities.
         JSON.stringify({ ...JSON.parse(param), version: 52 }),
+    52: param => {
+        // Bump save version to rename some type.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            // @ts-expect-error Rename sh-sub-rwy to shanghai-sub-rwy.
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === 'sh-sub-rwy')
+            .forEach(node => {
+                graph.setNodeAttribute(node, 'type', StationType.ShanghaiSuburbanRailway);
+                // @ts-expect-error Rename sh-sub-rwy to shanghai-sub-rwy.
+                const attr = graph.getNodeAttribute(node, 'sh-sub-rwy') as ShanghaiSuburbanRailwayStationAttributes;
+                graph.setNodeAttribute(node, StationType.ShanghaiSuburbanRailway, attr);
+                // @ts-expect-error Rename sh-sub-rwy to shanghai-sub-rwy.
+                graph.removeNodeAttribute(node, 'sh-sub-rwy');
+            });
+        graph
+            // @ts-expect-error Rename gd-intercity-rwy to guangdong-intercity-rwy.
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === 'gd-intercity-rwy')
+            .forEach(node => {
+                graph.setNodeAttribute(node, 'type', StationType.GuangdongIntercityRailway);
+                const attr = graph.getNodeAttribute(
+                    node,
+                    // @ts-expect-error Rename gd-intercity-rwy to guangdong-intercity-rwy.
+                    'gd-intercity-rwy'
+                ) as GuangdongIntercityRailwayStationAttributes;
+                graph.setNodeAttribute(node, StationType.GuangdongIntercityRailway, attr);
+                // @ts-expect-error Rename gd-intercity-rwy to guangdong-intercity-rwy.
+                graph.removeNodeAttribute(node, 'gd-intercity-rwy');
+            });
+        return JSON.stringify({ ...p, version: 53, graph: graph.export() });
+    },
 };

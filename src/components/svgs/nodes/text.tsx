@@ -6,7 +6,7 @@ import { AttrsProps, CityCode, NodeType } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { Rotate, StationType } from '../../../constants/stations';
 import { loadFontCss } from '../../../util/fonts';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 export enum TextLanguage {
@@ -132,7 +132,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 /**
  * Text specific props.
  */
-export interface TextAttributes extends AttributesWithColor {
+export interface TextAttributes extends ColorAttribute {
     content: string;
     fontSize: number;
     lineHeight: number;

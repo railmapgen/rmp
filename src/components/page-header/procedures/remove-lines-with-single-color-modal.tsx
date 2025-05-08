@@ -10,12 +10,11 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineStylesWithColor } from '../../../constants/lines';
 import { useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
-import { AttributesWithColor } from '../../panels/details/color-field';
+import { AttributesWithColor, dynamicColorInjection } from '../../panels/details/color-field';
 import ThemeButton from '../../panels/theme-button';
 
 export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
@@ -30,8 +29,8 @@ export const RemoveLinesWithSingleColorModal = (props: { isOpen: boolean; onClos
         graph.current
             .filterEdges(
                 (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-                    LineStylesWithColor.has(attr.style) &&
-                    JSON.stringify((attr[attr.style] as AttributesWithColor)!.color) === JSON.stringify(theme)
+                    dynamicColorInjection.has(attr.style) &&
+                    JSON.stringify((attr[attr.style] as AttributesWithColor).color) === JSON.stringify(theme)
             )
             .forEach(edge => graph.current.dropEdge(edge));
         dispatch(refreshEdgesThunk());

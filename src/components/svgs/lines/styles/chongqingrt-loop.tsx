@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const ChongqingRTLoop = (props: LineStyleComponentProps<ChongqingRTLoopAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -39,7 +39,7 @@ const ChongqingRTLoop = (props: LineStyleComponentProps<ChongqingRTLoopAttribute
 /**
  * ChongqingRTLoop specific props.
  */
-export interface ChongqingRTLoopAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface ChongqingRTLoopAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultChongqingRTLoopAttributes: ChongqingRTLoopAttributes = {
     color: [CityCode.Chongqing, 'cq1', '#E4002B', MonoColour.white],

@@ -12,7 +12,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -149,7 +149,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
 /**
  * SuzhouRTBasicStation specific props.
  */
-export interface SuzhouRTBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface SuzhouRTBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     textVertical: boolean;

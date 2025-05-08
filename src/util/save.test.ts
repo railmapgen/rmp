@@ -685,4 +685,19 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
+    it('52 -> 53', () => {
+        // Bump save version to support Taipei Metro line badge.
+        // Prepare an empty save.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":-807.5,"y":-210.5},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_HF4IR3Cy_s","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top"}}},{"key":"stn_7qZmnoU1-G","attributes":{"visible":true,"zIndex":0,"x":0,"y":50,"type":"sh-sub-rwy","sh-sub-rwy":{"names":["车站","Stn"],"rotate":0}}},{"key":"stn_auLwhQdP_M","attributes":{"visible":true,"zIndex":0,"x":0,"y":100,"type":"gd-intercity-rwy","gd-intercity-rwy":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false}}}],"edges":[]},"version":52}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[52](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":-807.5,"y":-210.5},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_HF4IR3Cy_s","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top"}}},{"key":"stn_7qZmnoU1-G","attributes":{"visible":true,"zIndex":0,"x":0,"y":50,"type":"shanghai-sub-rwy","shanghai-sub-rwy":{"names":["车站","Stn"],"rotate":0}}},{"key":"stn_auLwhQdP_M","attributes":{"visible":true,"zIndex":0,"x":0,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false}}}],"edges":[]},"version":53}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

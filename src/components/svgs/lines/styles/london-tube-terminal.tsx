@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -37,7 +37,7 @@ const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAtt
 /**
  * LondonTubeTerminal specific props.
  */
-export interface LondonTubeTerminalAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface LondonTubeTerminalAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultLondonTubeTerminalAttributes: LondonTubeTerminalAttributes = {
     color: [CityCode.London, 'central', '#DC241F', MonoColour.white],

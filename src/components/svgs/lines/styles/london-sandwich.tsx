@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LondonSandwichPre = (props: LineStyleComponentProps<LondonSandwichAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -47,7 +47,7 @@ const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>
 /**
  * LondonSandwich specific props.
  */
-export interface LondonSandwichAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface LondonSandwichAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultLondonSandwichAttributes: LondonSandwichAttributes = {
     color: [CityCode.London, 'elizabeth', '#9364cc', MonoColour.white],

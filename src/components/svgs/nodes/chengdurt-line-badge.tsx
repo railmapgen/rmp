@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttributes>) => {
@@ -115,7 +115,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
 /**
  * ChengduRTLineBadge specific props.
  */
-export interface ChengduRTLineBadgeAttributes extends AttributesWithColor {
+export interface ChengduRTLineBadgeAttributes extends ColorAttribute {
     content: number | string;
     badgeType: 'normal' | 'suburban' | 'tram';
 }

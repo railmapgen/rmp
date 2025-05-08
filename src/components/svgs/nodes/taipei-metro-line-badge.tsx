@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -57,7 +57,7 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
 /**
  * TaipeiMetroLineBadge specific props.
  */
-export interface TaipeiMetroLineBadgeAttributes extends AttributesWithColor {
+export interface TaipeiMetroLineBadgeAttributes extends ColorAttribute {
     code: string;
     tram: boolean;
 }

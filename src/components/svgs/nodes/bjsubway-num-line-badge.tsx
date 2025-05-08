@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const NUM_WIDTH = 11.84375;
 
@@ -62,7 +62,7 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
 /**
  * BjsubwayNumLineBadge specific props.
  */
-export interface BjsubwayNumLineBadgeAttributes extends AttributesWithColor {
+export interface BjsubwayNumLineBadgeAttributes extends ColorAttribute {
     num: number;
 }
 

@@ -11,7 +11,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 export const ROTATE_CONST: {
@@ -168,7 +168,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
 /**
  * ShmetroBasic2020Station specific props.
  */
-export interface ShmetroBasic2020StationAttributes extends StationAttributes, AttributesWithColor {
+export interface ShmetroBasic2020StationAttributes extends StationAttributes, ColorAttribute {
     rotate: Rotate;
 }
 

@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { AttributesWithColor } from '../components/panels/details/color-field';
+import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import {
     EdgeAttributes,
     GraphAttributes,
@@ -12,10 +12,9 @@ import {
     StnId,
     Theme,
 } from '../constants/constants';
-import { LineStylesWithColor } from '../constants/lines';
+import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { MasterParam } from '../constants/master';
 
 /**
  * Finds all edges that both its source and targets are in the nodes.
@@ -85,7 +84,7 @@ export const findThemes = (
         }
     });
     edges
-        .filter(edge => LineStylesWithColor.has(graph.getEdgeAttribute(edge, 'style')))
+        .filter(edge => dynamicColorInjection.has(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
             const attr = graph.getEdgeAttributes(edge);
             const color = (attr[attr.style] as AttributesWithColor).color;

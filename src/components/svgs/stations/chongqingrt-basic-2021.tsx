@@ -13,7 +13,7 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { MultilineText } from '../common/multiline-text';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 export const LINE_HEIGHT = {
     zh: 9,
@@ -183,7 +183,7 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
 /**
  * ChongqingRTBasicStation2021 specific props.
  */
-export interface ChongqingRTBasicStation2021Attributes extends StationAttributes, AttributesWithColor {
+export interface ChongqingRTBasicStation2021Attributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     lineCode: string;

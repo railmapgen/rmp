@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineBadgeAttributes>) => {
@@ -72,7 +72,7 @@ const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineB
 /**
  * ChongqingRTTextLineBadge specific props.
  */
-export interface ChongqingRTTextLineBadgeAttributes extends AttributesWithColor {
+export interface ChongqingRTTextLineBadgeAttributes extends ColorAttribute {
     names: [string, string];
 }
 

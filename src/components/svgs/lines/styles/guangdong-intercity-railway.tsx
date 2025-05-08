@@ -2,7 +2,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { CityCode } from '../../../../constants/constants';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
-import { AttributesWithColor } from '../../../panels/details/color-field';
+import { ColorAttribute } from '../../../panels/details/color-field';
 
 const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongIntercityRailwayAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -25,7 +25,7 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
 /**
  * GuangdongIntercityRailway specific props.
  */
-export interface GuangdongIntercityRailwayAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface GuangdongIntercityRailwayAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultGuangdongIntercityRailwayAttributes: GuangdongIntercityRailwayAttributes = {
     color: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],

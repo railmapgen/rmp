@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -58,7 +58,7 @@ const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAt
 /**
  * MRTDestinationNumbers specific props.
  */
-export interface MRTDestinationNumbersAttributes extends AttributesWithColor {
+export interface MRTDestinationNumbersAttributes extends ColorAttribute {
     num: number;
 }
 

@@ -12,7 +12,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const LineHeight = {
@@ -118,7 +118,7 @@ const QingdaoMetroStation = (props: StationComponentProps) => {
 /**
  * Qingdao Metro station specific props.
  */
-export interface QingdaoMetroStationAttributes extends StationAttributes, AttributesWithColor {
+export interface QingdaoMetroStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     isInt: boolean;

@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -38,7 +38,7 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
 /**
  * MTRLightRail specific props.
  */
-export interface MTRLightRailAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface MTRLightRailAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultMTRLightRailAttributes: MTRLightRailAttributes = {
     color: [CityCode.Hongkong, 'lrl', '#CD9700', MonoColour.white],

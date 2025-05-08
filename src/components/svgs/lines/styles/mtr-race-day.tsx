@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -39,7 +39,7 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
 /**
  * MTRRaceDays specific props.
  */
-export interface MTRRaceDaysAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface MTRRaceDaysAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultMTRRaceDaysAttributes: MTRRaceDaysAttributes = {
     color: [CityCode.Hongkong, 'twl', '#E2231A', MonoColour.white],

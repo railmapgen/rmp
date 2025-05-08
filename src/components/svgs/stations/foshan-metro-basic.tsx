@@ -13,7 +13,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
-import { AttributesWithColor, ColorField } from '../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const FoshanMetroBasicStation = (props: StationComponentProps) => {
@@ -197,7 +197,7 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
 /**
  * Foshan Metro basic station specific props.
  */
-export interface FoshanMetroBasicStationAttributes extends StationAttributes, AttributesWithColor {
+export interface FoshanMetroBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     lineCode: string;

@@ -10,7 +10,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { AttributesWithColor, ColorField } from '../../../panels/details/color-field';
+import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -32,7 +32,7 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
 /**
  * BjsubwaySingleColor specific props.
  */
-export interface BjsubwaySingleColorAttributes extends LinePathAttributes, AttributesWithColor {}
+export interface BjsubwaySingleColorAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultBjsubwaySingleColorAttributes: BjsubwaySingleColorAttributes = {
     color: [CityCode.Beijing, 'bj1', '#c23a30', MonoColour.white],
