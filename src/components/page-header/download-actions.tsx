@@ -171,13 +171,11 @@ export default function DownloadActions() {
 
         // always use resvg as mac has saving issues with downloadAs tauri-apps/tauri#4633
         if (isTauri) {
-            // TODO: use font family instead of custom font name, require rmg-runtime fonts/config.json to be updated
-            const replacedSvgString = svgString.replaceAll('GenYoMinTW-SB', '源樣明體');
+            // note mtr fonts are replaced in Tauri/resvg
             // @ts-expect-error
             window.parent.__TAURI__.core
-                .invoke('render_image', { svgString: replacedSvgString, scale, isTransparent, isSystemFontsOnly })
-                // @ts-expect-error
-                .then(_ => setIsDownloadRunning(false));
+                .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsOnly })
+                .then(() => setIsDownloadRunning(false));
             return;
         }
 
