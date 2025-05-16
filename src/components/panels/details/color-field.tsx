@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeType, Theme } from '../../../constants/constants';
-import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LineStyleType } from '../../../constants/lines';
+import { ExternalLineStyleAttributes, LineStyleType } from '../../../constants/lines';
 import { MiscNodeAttributes, MiscNodeType } from '../../../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -20,7 +20,7 @@ export interface ColorAttribute {
     color: Theme;
 }
 
-const dynamicColorInjectionKeys = [
+const dynamicColorInjectionStationKeys = [
     StationType.ShmetroBasic2020,
     StationType.GzmtrBasic,
     StationType.SuzhouRTBasic,
@@ -33,6 +33,8 @@ const dynamicColorInjectionKeys = [
     StationType.ChongqingRTBasic2021,
     StationType.ChongqingRTInt2021,
     StationType.ChengduRTBasic,
+] as const;
+const dynamicColorInjectionMiscNodeKeys = [
     MiscNodeType.ShmetroNumLineBadge,
     MiscNodeType.ShmetroTextLineBadge,
     MiscNodeType.GzmtrLineBadge,
@@ -53,6 +55,8 @@ const dynamicColorInjectionKeys = [
     MiscNodeType.LondonArrow,
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.TaiPeiMetroLineBadege,
+] as const;
+const dynamicColorInjectionLineStyleKeys = [
     LineStyleType.SingleColor,
     LineStyleType.BjsubwaySingleColor,
     LineStyleType.BjsubwayTram,
@@ -71,15 +75,31 @@ const dynamicColorInjectionKeys = [
     LineStyleType.ChongqingRTLoop,
     LineStyleType.ChongqingRTLineBadge,
 ] as const;
-type DynamicColorInjectionKeys = (typeof dynamicColorInjectionKeys)[number];
+type DynamicColorInjectionStationKeys = (typeof dynamicColorInjectionStationKeys)[number];
+type DynamicColorInjectionMiscNodeKeys = (typeof dynamicColorInjectionMiscNodeKeys)[number];
+type DynamicColorInjectionLineStyleKeys = (typeof dynamicColorInjectionLineStyleKeys)[number];
 
 /**
- * Whether to inject runtime colors.
+ * Types in this set will have their color field automatically injected with the runtime theme.
  */
-export const dynamicColorInjection: Set<StationType | NodeType | LineStyleType> = new Set(dynamicColorInjectionKeys);
+export const dynamicColorInjection: Set<StationType | NodeType | LineStyleType> = new Set([
+    ...dynamicColorInjectionStationKeys,
+    ...dynamicColorInjectionMiscNodeKeys,
+    ...dynamicColorInjectionLineStyleKeys,
+]);
 
-interface AllAttributes extends ExternalStationAttributes, MiscNodeAttributes, ExternalLineStyleAttributes {}
-export type AttributesWithColor = Exclude<AllAttributes[DynamicColorInjectionKeys], undefined>;
+/**
+ * Contains all the attributes that have a color field.
+ *
+ * If you want to add a new attribute to this list, add the type of your component
+ * to `dynamicColorInjection(Station|MiscNode|LineStyle)Keys`.
+ */
+export type AttributesWithColor = Exclude<
+    | ExternalStationAttributes[DynamicColorInjectionStationKeys]
+    | MiscNodeAttributes[DynamicColorInjectionMiscNodeKeys]
+    | ExternalLineStyleAttributes[DynamicColorInjectionLineStyleKeys],
+    undefined
+>;
 
 type GetNodeOrEdgeAttribute = (id: string, type: NodeType | LineStyleType) => Record<string, any>;
 
