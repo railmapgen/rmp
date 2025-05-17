@@ -81,6 +81,10 @@ export const usePaletteTheme = (options?: UsePaletteThemeOptions) => {
     const dispatch = useDispatch();
 
     const [theme, setTheme] = useState(providedTheme ?? runtimeTheme);
+    useEffect(() => {
+        setTheme(providedTheme ?? runtimeTheme);
+    }, [providedTheme, runtimeTheme]);
+
     const [isThemeRequested, setIsThemeRequested] = useState(false);
 
     useEffect(() => {
