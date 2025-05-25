@@ -618,7 +618,12 @@
             "importOK": "作品{{id}}がインポートされました。",
             "importOKContent": "この変更に満足していませんか？Ctrl + Zまたは元に戻すボタンで元に戻せます。",
             "importFail": "{{id}}のインポートに失敗しました。",
-            "importFailContent": "ファイルが見つかりませんでした。"
+            "importFailContent": "ファイルが見つかりませんでした。",
+            "confirmOverwrite": {
+                "title": "上書きの確認",
+                "body": "この操作により現在のプロジェクトが上書きされます。未保存の変更はすべて失われます。続行してもよろしいですか？",
+                "overwrite": "上書き"
+            }
         },
         "download": {
             "config": "作品をエクスポート",

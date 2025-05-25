@@ -615,7 +615,12 @@
             "importOK": "作品 {{id}} 已导入。",
             "importOKContent": "对此更改不满意？可通过 Ctrl + Z 或撤销按钮进行撤销。",
             "importFail": "无法导入{{id}}。",
-            "importFailContent": "找不到文件。"
+            "importFailContent": "找不到文件。",
+            "confirmOverwrite": {
+                "title": "确认覆盖",
+                "body": "此操作将覆盖当前项目。所有未保存的更改将丢失。确定要继续吗？",
+                "overwrite": "覆盖"
+            }
         },
         "download": {
             "config": "导出项目",
