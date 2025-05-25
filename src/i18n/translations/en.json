@@ -616,7 +616,7 @@
             "importOK": "Template {{id}} imported.",
             "importOKContent": "Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
             "importFail": "Fail to import {{id}}.",
-            "importFailContent": "Fail to import {{id}}. The file can not be found."
+            "importFailContent": "The file can not be found."
         },
         "download": {
             "config": "Export project",
