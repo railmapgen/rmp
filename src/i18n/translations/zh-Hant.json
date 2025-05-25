@@ -612,8 +612,10 @@
             "unknownError": "解析上傳文件時發生未知錯誤！請重試。",
             "gallery": "從畫廊中讀入",
             "tutorial": "開始教程",
-            "importFromRMPGallery": "範本 {{id}} 已匯入。對此更改不滿意？可通過 Ctrl + Z 或撤銷按鈕進行撤銷。",
-            "failToImportFromRMPGallery": "無法從畫廊導入{{id}}，找不到檔案。"
+            "importOK": "項目 {{id}} 已匯入。",
+            "importOKContent": "對此更改不滿意？可通過 Ctrl + Z 或撤銷按鈕進行撤銷。",
+            "importFail": "無法導入{{id}}。",
+            "importFailContent": "找不到檔案。"
         },
         "download": {
             "config": "導出項目",

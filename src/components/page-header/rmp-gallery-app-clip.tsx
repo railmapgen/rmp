@@ -4,6 +4,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
+import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
@@ -91,22 +92,44 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                 rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, data);
             }
             handleOpenTemplate(template);
-            toast({
-                title: t('header.open.importFromRMPGallery', { id }),
-                status: 'success' as const,
+            rmgRuntime.sendNotification({
+                title: t('header.open.importOK', { id }),
+                message: t('header.open.importOKContent'),
+                type: 'success',
                 duration: 9000,
-                isClosable: true,
             });
         } else {
-            toast({
-                title: t('header.open.failToImportFromRMPGallery', { id }),
-                status: 'error' as const,
+            rmgRuntime.sendNotification({
+                title: t('header.open.importFail', { id }),
+                message: t('header.open.importFailContent'),
+                type: 'error',
                 duration: 9000,
-                isClosable: true,
             });
         }
-        // clear the search params in rmt, otherwise it will be preserved and re-imported every time
-        rmgRuntime.updateAppMetadata({ hash: '' });
+    };
+
+    const fetchAndApplyShare = async (s: string) => {
+        const rep = await fetch(`${shared_work_endpoint}/${s}`);
+        if (rep.status !== 200) {
+            rmgRuntime.sendNotification({
+                title: t('header.open.importFail', { id: s }),
+                message: t('header.open.importFailContent'),
+                type: 'error',
+                duration: 9000,
+            });
+            return;
+        }
+        const work = await rep.json();
+        if (isAllowAppTelemetry) {
+            rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, { share: s });
+        }
+        handleOpenTemplate(work);
+        rmgRuntime.sendNotification({
+            title: t('header.open.importOK', { id: s }),
+            message: t('header.open.importOKContent'),
+            type: 'success',
+            duration: 9000,
+        });
     };
 
     // A one time url match to see if it is a work share link and apply the work if needed.
@@ -126,7 +149,10 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             const id = params.substring(0, firstDotIndex === -1 ? undefined : firstDotIndex);
             let host: string | undefined = undefined;
             if (firstDotIndex !== -1) host = params.substring(firstDotIndex + 1);
-            fetchAndApplyTemplate(id, host);
+            if (host === 'org') fetchAndApplyShare(id);
+            else fetchAndApplyTemplate(id, host);
+            // clear the search params in rmt, otherwise it will be preserved and re-imported every time
+            rmgRuntime.updateAppMetadata({ hash: '' });
         }
     }, []);
 

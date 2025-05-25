@@ -613,8 +613,10 @@
             "unknownError": "Unknown error occurred while parsing the uploaded file! Please try again.",
             "gallery": "Import from Gallery",
             "tutorial": "Start tutorial",
-            "importFromRMPGallery": "Template {{id}} imported. Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
-            "failToImportFromRMPGallery": "Fail to import {{id}} from the gallery. The file can not be found."
+            "importOK": "Template {{id}} imported.",
+            "importOKContent": "Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
+            "importFail": "Fail to import {{id}}.",
+            "importFailContent": "Fail to import {{id}}. The file can not be found."
         },
         "download": {
             "config": "Export project",
