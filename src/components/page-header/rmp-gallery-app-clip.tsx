@@ -121,7 +121,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         }
         const work = await rep.json();
         if (isAllowAppTelemetry) {
-            rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, { share: s });
+            rmgRuntime.event(Events.IMPORT_WORK_FROM_SHARE, { share: s });
         }
         handleOpenTemplate(work);
         rmgRuntime.sendNotification({
