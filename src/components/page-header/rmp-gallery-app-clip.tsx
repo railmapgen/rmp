@@ -152,7 +152,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             if (host === 'org') fetchAndApplyShare(id);
             else fetchAndApplyTemplate(id, host);
             // clear the search params in rmt, otherwise it will be preserved and re-imported every time
-            rmgRuntime.updateAppMetadata({ hash: '' });
+            rmgRuntime.updateAppMetadata({ search: '' });
         }
     }, []);
 
