@@ -59,7 +59,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const transferAll = transfer.flat().slice(0, 5); // slice to make sure at most 5 transfers
+    const transferAll = transfer.flat();
     const stations = transferAll.map(s => ({
         style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
         lineNum: s[4],
@@ -402,7 +402,6 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
     ];
 
-    const maximumTransfers = [5, 0, 0];
     const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
 
     const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
@@ -467,7 +466,7 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
 
                             <InterchangeCardGZMTR
                                 interchangeList={infoList}
-                                onAdd={maximumTransfers[i] > infoList.length ? handleAdd(i) : undefined}
+                                onAdd={handleAdd(i)}
                                 onDelete={handleDelete(i)}
                                 onUpdate={handleUpdate(i)}
                             />
