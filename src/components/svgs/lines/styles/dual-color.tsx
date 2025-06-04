@@ -95,6 +95,7 @@ const dualColorAttrsComponent = (props: AttrsProps<DualColorAttributes>) => {
             type: 'custom',
             label: t('panel.details.lines.dualColor.swap'),
             component: <DualColorSwitch />,
+            minW: 'full',
         },
         {
             type: 'custom',

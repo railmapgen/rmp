@@ -36,6 +36,51 @@ const NAME_DY_SG_BASIC = {
 
 const MRTBasicStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { isTram = defaultMRTBasicStationAttributes.isTram } =
+        attrs[StationType.MRTBasic] ?? defaultMRTBasicStationAttributes;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+    const onPointerMove = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerMove(id, e),
+        [id, handlePointerMove]
+    );
+    const onPointerUp = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
+        [id, handlePointerUp]
+    );
+
+    const width = 22.85;
+    const height = 12.935;
+
+    return (
+        <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
+            <g
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
+                <rect
+                    x={-width / 2}
+                    y={-height / 2}
+                    rx="3"
+                    ry="6"
+                    width={width}
+                    height={height}
+                    fill="white"
+                    stroke="white"
+                    strokeWidth="1"
+                />
+            </g>
+        </g>
+    );
+};
+
+const MRTBasicStationPost = (props: StationComponentProps) => {
+    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTBasicStationAttributes.nameOffsetX,
@@ -67,87 +112,60 @@ const MRTBasicStation = (props: StationComponentProps) => {
     const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
-                <g
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
+    return (
+        <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
+            <g
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
+                <rect x={-width / 2} y={-height / 2} rx="3" ry="6" width={width} height={height} fill={color[2]} />
+                <text
+                    fontSize={STATION_CODE_FONT_SIZE}
+                    dx="-4"
+                    dy="0.5"
+                    className="rmp-name__mrt"
+                    fill={color[3]}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
                 >
-                    <rect
-                        x={-width / 2}
-                        y={-height / 2}
-                        rx="3"
-                        ry="6"
-                        width={width}
-                        height={height}
-                        fill={color[2]}
-                        stroke="white"
-                        strokeWidth="1"
-                    />
-                    <text
-                        fontSize={STATION_CODE_FONT_SIZE}
-                        dx="-4"
-                        dy="0.5"
-                        className="rmp-name__mrt"
-                        fill={color[3]}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                    >
-                        {lineCode}
-                    </text>
-                    <text
-                        fontSize={STATION_CODE_FONT_SIZE}
-                        dx="4"
-                        dy="0.5"
-                        className="rmp-name__mrt"
-                        fill={color[3]}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                    >
-                        {stationCode}
-                    </text>
-                    <rect
-                        id={`stn_core_${id}`}
-                        x={-width / 2}
-                        y={-height / 2}
-                        rx="3"
-                        ry="6"
-                        width={width}
-                        height={height}
-                        fill="white"
-                        opacity="0"
-                    />
-                </g>
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\n')}
-                        fontSize={STATION_NAME_FONT_SIZE}
-                        lineHeight={STATION_NAME_FONT_SIZE}
-                        grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
-                        baseOffset={BASE_TEXT_OFFSET}
-                        className="rmp-name__mrt"
-                    />
-                </g>
+                    {lineCode}
+                </text>
+                <text
+                    fontSize={STATION_CODE_FONT_SIZE}
+                    dx="4"
+                    dy="0.5"
+                    className="rmp-name__mrt"
+                    fill={color[3]}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                >
+                    {stationCode}
+                </text>
+                <rect
+                    id={`stn_core_${id}`}
+                    x={-width / 2}
+                    y={-height / 2}
+                    rx="3"
+                    ry="6"
+                    width={width}
+                    height={height}
+                    fill="white"
+                    opacity="0"
+                />
             </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            ...names,
-            nameOffsetX,
-            nameOffsetY,
-            color,
-            lineCode,
-            stationCode,
-            isTram,
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\n')}
+                    fontSize={STATION_NAME_FONT_SIZE}
+                    lineHeight={STATION_NAME_FONT_SIZE}
+                    grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
+                    baseOffset={BASE_TEXT_OFFSET}
+                    className="rmp-name__mrt"
+                />
+            </g>
+        </g>
     );
 };
 
@@ -274,6 +292,7 @@ const mrtBasicStationIcon = (
 
 const mrtBasicStation: Station<MRTBasicStationAttributes> = {
     component: MRTBasicStation,
+    postComponent: MRTBasicStationPost,
     icon: mrtBasicStationIcon,
     defaultAttrs: defaultMRTBasicStationAttributes,
     attrsComponent: MRTBasicAttrsComponent,

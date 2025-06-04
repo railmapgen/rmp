@@ -21,6 +21,7 @@ import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unp
 import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
 import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
 import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
+import { MRTTapeOutAttributes } from '../components/svgs/lines/styles/mrt-tape-out';
 import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
 import { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
 import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-single-color';
@@ -69,6 +70,7 @@ export enum LineStyleType {
     MTRPaidArea = 'mtr-paid-area',
     MRTUnderConstruction = 'mrt-under-constr',
     MRTSentosaExpress = 'mrt-sentosa-express',
+    MRTTapeOut = 'mrt-tape-out',
     JREastSingleColor = 'jr-east-single-color',
     JREastSingleColorPattern = 'jr-east-single-color-pattern',
     LRTSingleColor = 'lrt-single-color',
@@ -103,6 +105,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MTRPaidArea]?: MTRPaidAreaAttributes;
     [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
+    [LineStyleType.MRTTapeOut]?: MRTTapeOutAttributes;
     [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
     [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
     [LineStyleType.LRTSingleColor]?: LRTSingleColorAttributes;

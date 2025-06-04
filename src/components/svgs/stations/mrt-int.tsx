@@ -36,6 +36,51 @@ const NAME_DY_SG_BASIC = {
 
 const MRTIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { transfer = defaultMRTIntStationAttributes.transfer } =
+        attrs[StationType.MRTInt] ?? defaultMRTIntStationAttributes;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+    const onPointerMove = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerMove(id, e),
+        [id, handlePointerMove]
+    );
+    const onPointerUp = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
+        [id, handlePointerUp]
+    );
+
+    const height = 16.77;
+    const width = (transfer[0].length - 2) * 29.625 + 57.8;
+
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <g
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
+                <rect
+                    x={-width / 2}
+                    y={-height / 2}
+                    rx="4.5"
+                    ry="8"
+                    width={width}
+                    height={height}
+                    fill="white"
+                    stroke="white"
+                    strokeWidth="1"
+                />
+            </g>
+        </g>
+    );
+};
+
+const MRTIntStationPost = (props: StationComponentProps) => {
+    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTIntStationAttributes.nameOffsetX,
@@ -68,124 +113,106 @@ const MRTIntStation = (props: StationComponentProps) => {
     const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <g
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                >
-                    {transfer
-                        .map(group => ({ info: group, width: (group.length - 2) * 29.625 + 57.8 }))
-                        .map(({ info, width }, i) => (
-                            <React.Fragment key={info.map(int => int[2]).join('_')}>
-                                <rect
-                                    x={-width / 2}
-                                    y={-height / 2}
-                                    rx="4.5"
-                                    ry="8"
-                                    width={width}
-                                    height={height}
-                                    fill={`url(#${id}_grad_${i})`}
-                                    stroke="white"
-                                    strokeWidth="1"
-                                />
-                                <linearGradient id={`${id}_grad_${i}`} y1="0%" y2="0%" x1="0%" x2="100%">
-                                    {info.map((int, j) => (
-                                        <React.Fragment key={int[2]}>
-                                            <stop // from
-                                                offset={`${(100 / info.length) * j}%`}
-                                                stopColor={int[2]}
-                                            />
-                                            <stop // to
-                                                offset={`${(100 / info.length) * (j + 1)}%`}
-                                                stopColor={int[2]}
-                                            />
-                                        </React.Fragment>
-                                    ))}
-                                </linearGradient>
-                                {dividingIndex.map(j => (
-                                    <line
-                                        key={j}
-                                        x1={(j / info.length) * width - width / 2}
-                                        x2={(j / info.length) * width - width / 2}
-                                        y1={-height / 2}
-                                        y2={height / 2}
-                                        stroke="white"
-                                        strokeWidth="1"
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <g
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            >
+                {transfer.map((info, i) => (
+                    <React.Fragment key={info.map(int => int[2]).join('_')}>
+                        <rect
+                            x={-width / 2}
+                            y={-height / 2}
+                            rx="4.5"
+                            ry="8"
+                            width={width}
+                            height={height}
+                            fill={`url(#${id}_grad_${i})`}
+                        />
+                        <linearGradient id={`${id}_grad_${i}`} y1="0%" y2="0%" x1="0%" x2="100%">
+                            {info.map((int, j) => (
+                                <React.Fragment key={int[2]}>
+                                    <stop // from
+                                        offset={`${(100 / info.length) * j}%`}
+                                        stopColor={int[2]}
                                     />
-                                ))}
-                                {info.map((int, j, arr) => (
-                                    <React.Fragment key={int[2]}>
-                                        <text
-                                            fontSize={STATION_CODE_FONT_SIZE}
-                                            dx={
-                                                (int[5] !== '' ? -5 : -2) +
-                                                (width / arr.length / 2) * (j * 2 + 1) -
-                                                width / 2 +
-                                                1
-                                            }
-                                            dy="0.5"
-                                            className="rmp-name__mrt"
-                                            fill={int[3]}
-                                            textAnchor="middle"
-                                            dominantBaseline="middle"
-                                        >
-                                            {int[4]}
-                                        </text>
-                                        <text
-                                            fontSize={STATION_CODE_FONT_SIZE}
-                                            dx={5 + (width / arr.length / 2) * (j * 2 + 1) - width / 2 + 1}
-                                            dy="0.5"
-                                            className="rmp-name__mrt"
-                                            fill={int[3]}
-                                            textAnchor="middle"
-                                            dominantBaseline="middle"
-                                        >
-                                            {int[5]}
-                                        </text>
-                                    </React.Fragment>
-                                ))}
-                                <rect
-                                    id={`stn_core_${id}`}
-                                    x={-width / 2}
-                                    y={-height / 2}
-                                    rx="4.5"
-                                    ry="8"
-                                    width={width}
-                                    height={height}
-                                    fill="white"
-                                    opacity="0"
-                                />
+                                    <stop // to
+                                        offset={`${(100 / info.length) * (j + 1)}%`}
+                                        stopColor={int[2]}
+                                    />
+                                </React.Fragment>
+                            ))}
+                        </linearGradient>
+                        {dividingIndex.map(j => (
+                            <line
+                                key={j}
+                                x1={(j / info.length) * width - width / 2}
+                                x2={(j / info.length) * width - width / 2}
+                                y1={-height / 2}
+                                y2={height / 2}
+                                stroke="white"
+                                strokeWidth="1"
+                            />
+                        ))}
+                        {info.map((int, j, arr) => (
+                            <React.Fragment key={int[2]}>
+                                <text
+                                    fontSize={STATION_CODE_FONT_SIZE}
+                                    dx={
+                                        (int[5] !== '' ? -5 : -2) +
+                                        (width / arr.length / 2) * (j * 2 + 1) -
+                                        width / 2 +
+                                        1
+                                    }
+                                    dy="0.5"
+                                    className="rmp-name__mrt"
+                                    fill={int[3]}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                >
+                                    {int[4]}
+                                </text>
+                                <text
+                                    fontSize={STATION_CODE_FONT_SIZE}
+                                    dx={5 + (width / arr.length / 2) * (j * 2 + 1) - width / 2 + 1}
+                                    dy="0.5"
+                                    className="rmp-name__mrt"
+                                    fill={int[3]}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                >
+                                    {int[5]}
+                                </text>
                             </React.Fragment>
                         ))}
-                </g>
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                    <MultilineText
-                        text={names[0].split('\n')}
-                        fontSize={STATION_NAME_FONT_SIZE}
-                        lineHeight={STATION_NAME_FONT_SIZE}
-                        grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
-                        baseOffset={0}
-                        className="rmp-name__mrt"
-                    />
-                </g>
+                        <rect
+                            id={`stn_core_${id}`}
+                            x={-width / 2}
+                            y={-height / 2}
+                            rx="4.5"
+                            ry="8"
+                            width={width}
+                            height={height}
+                            fill="white"
+                            opacity="0"
+                        />
+                    </React.Fragment>
+                ))}
             </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            ...names,
-            nameOffsetX,
-            nameOffsetY,
-            JSON.stringify(transfer),
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <MultilineText
+                    text={names[0].split('\n')}
+                    fontSize={STATION_NAME_FONT_SIZE}
+                    lineHeight={STATION_NAME_FONT_SIZE}
+                    grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
+                    baseOffset={0}
+                    className="rmp-name__mrt"
+                />
+            </g>
+        </g>
     );
 };
 
@@ -292,6 +319,7 @@ const mrtIntStationIcon = (
 
 const mrtIntStation: Station<MRTIntStationAttributes> = {
     component: MRTIntStation,
+    postComponent: MRTIntStationPost,
     icon: mrtIntStationIcon,
     defaultAttrs: defaultMRTIntStationAttributes,
     attrsComponent: MRTIntAttrsComponent,

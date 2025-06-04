@@ -548,6 +548,9 @@
                 "mrtSentosaExpress": {
                     "displayName": "Singapore MRT Sentosa Express style"
                 },
+                "mrtTapeOut": {
+                    "displayName": "Singapore MRT Tap Out to Transfer style"
+                },
                 "jrEastSingleColor": {
                     "displayName": "JR East single color style"
                 },

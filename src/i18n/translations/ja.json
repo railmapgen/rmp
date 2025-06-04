@@ -545,10 +545,13 @@
                     "displayName": "香港MTR改札内乗り換え風格"
                 },
                 "mrtUnderConstruction": {
-                    "displayName": "シンガポール MRT 工事中風格"
+                    "displayName": "シンガポールMRT工事中風格"
                 },
                 "mrtSentosaExpress": {
-                    "displayName": "シンガポール MRT セントーサ・エクスプレス風格"
+                    "displayName": "シンガポールMRTセントーサ・エクスプレス風格"
+                },
+                "mrtTapeOut": {
+                    "displayName": "シンガポールMRT改札外乗り換え風格"
                 },
                 "jrEastSingleColor": {
                     "displayName": "JR東日本単色風格"
