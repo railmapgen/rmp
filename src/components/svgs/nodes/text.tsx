@@ -37,6 +37,13 @@ export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
     taipei: MiscNodeType.TaiPeiMetroLineBadege,
 };
 
+const languageWithoutSynthesis: Set<TextLanguage> = new Set([
+    TextLanguage.zh,
+    TextLanguage.mtr__zh,
+    TextLanguage.jreast_ja,
+    TextLanguage.taipei,
+]);
+
 const Text = (props: NodeComponentProps<TextAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -263,22 +270,26 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
         {
             type: 'switch',
             label: t('panel.details.nodes.text.italic'),
+            hidden: languageWithoutSynthesis.has(attrs.language),
             isChecked: attrs.italic === 'italic',
             onChange: val => {
                 attrs.italic = val ? 'italic' : 'normal';
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+            oneLine: true,
         },
         {
             type: 'switch',
             label: t('panel.details.nodes.text.bold'),
+            hidden: languageWithoutSynthesis.has(attrs.language),
             isChecked: attrs.bold === 'bold',
             onChange: val => {
                 attrs.bold = val ? 'bold' : 'normal';
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+            oneLine: true,
         },
         {
             type: 'input',
