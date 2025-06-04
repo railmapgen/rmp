@@ -1,13 +1,15 @@
-import { CloseButton, SystemStyleObject, useToast } from '@chakra-ui/react';
+import { CloseButton, SystemStyleObject, useDisclosure } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
+import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { RMPSave, upgrade } from '../../util/save';
+import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 
 const RMP_GALLERY_CHANNEL_NAME = 'RMP_GALLERY_CHANNEL';
 const RMP_GALLERY_CHANNEL_EVENT = 'OPEN_TEMPLATE';
@@ -35,9 +37,11 @@ interface RmpGalleryAppClipProps {
 
 export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const { isOpen, onClose } = props;
-    const toast = useToast();
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
+    const [workToLoad, setWorkToLoad] = React.useState<RMPSave | null>(null);
+
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
@@ -72,6 +76,14 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
     };
 
+    const handleConfirmOpen = async () => {
+        if (workToLoad) {
+            await handleOpenTemplate(workToLoad);
+        }
+        onConfirmClose();
+        setWorkToLoad(null);
+    };
+
     const fetchAndApplyTemplate = async (id: string, host?: string) => {
         const urlPrefix = host ? `https://${host}` : '';
         const template = (await (
@@ -85,28 +97,57 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             .find(rep => rep.value.status === 200)
             ?.value.json()) as RMPSave | undefined;
         if (template) {
+            setWorkToLoad(template);
+            onConfirmOpen();
+
             if (isAllowAppTelemetry) {
                 const data: { id: string; host?: string } = { id };
-                if (isAllowProjectTelemetry && host) data['host'] = host;
+                if (isAllowProjectTelemetry && host) data.host = host;
                 rmgRuntime.event(Events.IMPORT_WORK_FROM_GALLERY, data);
             }
-            handleOpenTemplate(template);
-            toast({
-                title: t('header.open.importFromRMPGallery', { id }),
-                status: 'success' as const,
+            rmgRuntime.sendNotification({
+                title: t('header.open.importOK', { id }),
+                message: t('header.open.importOKContent'),
+                type: 'success',
                 duration: 9000,
-                isClosable: true,
             });
         } else {
-            toast({
-                title: t('header.open.failToImportFromRMPGallery', { id }),
-                status: 'error' as const,
+            rmgRuntime.sendNotification({
+                title: t('header.open.importFail', { id }),
+                message: t('header.open.importFailContent'),
+                type: 'error',
                 duration: 9000,
-                isClosable: true,
             });
         }
-        // clear the search params in rmt, otherwise it will be preserved and re-imported every time
-        rmgRuntime.updateAppMetadata({ hash: '' });
+    };
+
+    const fetchAndApplyShare = async (s: string) => {
+        try {
+            const rep = await fetch(`${shared_work_endpoint}/${s}`);
+            if (rep.status !== 200) {
+                throw new Error(t('header.open.importFailContent'));
+            }
+            const work = await rep.json();
+            setWorkToLoad(work as RMPSave);
+            onConfirmOpen();
+
+            if (isAllowAppTelemetry) {
+                rmgRuntime.event(Events.IMPORT_WORK_FROM_SHARE, { share: s });
+            }
+            rmgRuntime.sendNotification({
+                title: t('header.open.importOK', { id: s }),
+                message: t('header.open.importOKContent'),
+                type: 'success',
+                duration: 9000,
+            });
+        } catch (e) {
+            rmgRuntime.sendNotification({
+                title: t('header.open.importFail', { id: s }),
+                message: (e as Error).message,
+                type: 'error',
+                duration: 9000,
+            });
+        }
     };
 
     // A one time url match to see if it is a work share link and apply the work if needed.
@@ -126,7 +167,10 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             const id = params.substring(0, firstDotIndex === -1 ? undefined : firstDotIndex);
             let host: string | undefined = undefined;
             if (firstDotIndex !== -1) host = params.substring(firstDotIndex + 1);
-            fetchAndApplyTemplate(id, host);
+            if (host === 'org') fetchAndApplyShare(id);
+            else fetchAndApplyTemplate(id, host);
+            // clear the search params in rmt, otherwise it will be preserved and re-imported every time
+            rmgRuntime.updateAppMetadata({ search: '' });
         }
     }, []);
 
@@ -142,9 +186,12 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     }, []);
 
     return (
-        <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
-            <iframe src="/rmp-gallery/" loading="lazy" />
-            <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
-        </RmgAppClip>
+        <>
+            <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
+                <iframe src="/rmp-gallery/" loading="lazy" />
+                <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
+            </RmgAppClip>
+            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmOpen} />
+        </>
     );
 }

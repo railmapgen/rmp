@@ -617,8 +617,15 @@
             "unknownError": "アップロードされたファイルの解析中に不明なエラーが発生しました。もう一度お試しください。",
             "gallery": "ギャラリーからインポート",
             "tutorial": "指導を開始する",
-            "importFromRMPGallery": "テンプレート{{id}}がインポートされました。この変更に満足していませんか？Ctrl + Zまたは元に戻すボタンで元に戻せます。",
-            "failToImportFromRMPGallery": "ギャラリーから{{id}}のインポートに失敗しました。ファイルが見つかりませんでした。"
+            "importOK": "作品{{id}}がインポートされました。",
+            "importOKContent": "この変更に満足していませんか？Ctrl + Zまたは元に戻すボタンで元に戻せます。",
+            "importFail": "{{id}}のインポートに失敗しました。",
+            "importFailContent": "ファイルが見つかりませんでした。",
+            "confirmOverwrite": {
+                "title": "上書きの確認",
+                "body": "この操作により現在のプロジェクトが上書きされます。未保存の変更はすべて失われます。続行してもよろしいですか？",
+                "overwrite": "上書き"
+            }
         },
         "download": {
             "config": "作品をエクスポート",

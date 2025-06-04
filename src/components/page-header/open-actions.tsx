@@ -1,4 +1,4 @@
-import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from '@chakra-ui/react';
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,12 +11,15 @@ import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, RMPSave, upgrade } from '../../util/save';
+import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
 export default function OpenActions() {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
+    const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
+    const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
 
     const size = useWindowSize();
     const { height } = getCanvasSize(size);
@@ -62,6 +65,24 @@ export default function OpenActions() {
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
     };
 
+    const handleConfirmLoad = async () => {
+        if (paramToLoad) {
+            await loadParam(paramToLoad);
+
+            const initialParam = await getInitialParam();
+            if (paramToLoad.length === initialParam.length) {
+                // this is a tutorial, so we need to set the view box to the default
+                dispatch(setSvgViewBoxMin({ x: -10, y: -13 }));
+                // these magic k and b comes from linear equation fitting where you record several window size...
+                const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
+                dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+                rmgRuntime.event(Events.LOAD_TUTORIAL, {});
+            }
+        }
+        onConfirmClose();
+        setParamToLoad(null);
+    };
+
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         console.log('OpenActions.handleUpload():: received file', file);
@@ -72,7 +93,8 @@ export default function OpenActions() {
         } else {
             try {
                 const paramStr = await readFileAsText(file);
-                await loadParam(paramStr);
+                setParamToLoad(paramStr);
+                onConfirmOpen();
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
                 console.error(
@@ -87,12 +109,9 @@ export default function OpenActions() {
     };
 
     const handleLoadTutorial = async () => {
-        await loadParam(await getInitialParam());
-        dispatch(setSvgViewBoxMin({ x: -10, y: -13 }));
-        // these magic k and b comes from linear equation fitting where you record several window size...
-        const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
-        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
-        rmgRuntime.event(Events.LOAD_TUTORIAL, {});
+        const initialParam = await getInitialParam();
+        setParamToLoad(initialParam);
+        onConfirmOpen();
     };
 
     React.useEffect(() => {
@@ -116,45 +135,49 @@ export default function OpenActions() {
     }, []);
 
     return (
-        <Menu>
-            <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
-            <MenuList>
-                <MenuItem icon={<MdNoteAdd />} onClick={handleNew}>
-                    {t('header.open.new')}
-                </MenuItem>
+        <>
+            <Menu>
+                <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
+                <MenuList>
+                    <MenuItem icon={<MdNoteAdd />} onClick={handleNew}>
+                        {t('header.open.new')}
+                    </MenuItem>
 
-                <input
-                    id="upload_project"
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".json"
-                    hidden={true}
-                    onChange={handleUpload}
-                    data-testid="file-upload"
-                />
-                <MenuItem icon={<MdUpload />} onClick={() => fileInputRef?.current?.click()}>
-                    {t('header.open.config')}
-                </MenuItem>
+                    <input
+                        id="upload_project"
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        hidden={true}
+                        onChange={handleUpload}
+                        data-testid="file-upload"
+                    />
+                    <MenuItem icon={<MdUpload />} onClick={() => fileInputRef?.current?.click()}>
+                        {t('header.open.config')}
+                    </MenuItem>
 
-                <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsRmgParamAppClipOpen(true)}>
-                    {t('header.open.projectRMG')}
-                </MenuItem>
+                    <MenuItem icon={<MdInsertDriveFile />} onClick={() => setIsRmgParamAppClipOpen(true)}>
+                        {t('header.open.projectRMG')}
+                    </MenuItem>
 
-                <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenGallery(true)}>
-                    {t('header.open.gallery')}
-                    <Badge ml="1" colorScheme="green">
-                        New
-                    </Badge>
-                </MenuItem>
+                    <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenGallery(true)}>
+                        {t('header.open.gallery')}
+                        <Badge ml="1" colorScheme="green">
+                            New
+                        </Badge>
+                    </MenuItem>
 
-                <MenuItem icon={<MdSchool />} onClick={handleLoadTutorial}>
-                    {t('header.open.tutorial')}
-                </MenuItem>
-            </MenuList>
+                    <MenuItem icon={<MdSchool />} onClick={handleLoadTutorial}>
+                        {t('header.open.tutorial')}
+                    </MenuItem>
+                </MenuList>
 
-            <RmgParamAppClip isOpen={isRmgParamAppClipOpen} onClose={() => setIsRmgParamAppClipOpen(false)} />
-            <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
-        </Menu>
+                <RmgParamAppClip isOpen={isRmgParamAppClipOpen} onClose={() => setIsRmgParamAppClipOpen(false)} />
+                <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
+            </Menu>
+
+            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmLoad} />
+        </>
     );
 }
 
