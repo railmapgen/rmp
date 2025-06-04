@@ -239,6 +239,7 @@
                     "tokyo_en": "東京地鐵英文",
                     "tube": "倫敦地鐵",
                     "taipei": "台北捷運",
+                    "fontSynthesisWarning": "粗體和斜體樣式僅在字型支援時可用。",
                     "rotate": "旋轉",
                     "italic": "斜體",
                     "bold": "粗體",

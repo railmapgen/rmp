@@ -239,6 +239,7 @@
                     "tokyo_en": "东京地铁英语",
                     "tube": "伦敦地铁",
                     "taipei": "台北捷运",
+                    "fontSynthesisWarning": "粗体和斜体样式仅在字体支持时可用。",
                     "rotate": "旋转",
                     "italic": "斜体",
                     "bold": "粗体",

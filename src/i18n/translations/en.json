@@ -239,6 +239,7 @@
                     "tokyo_en": "Tokyo Metro English",
                     "tube": "London Underground",
                     "taipei": "Taipei Metro",
+                    "fontSynthesisWarning": "Bold and italic styles are only available if supported by the font.",
                     "rotate": "Rotation",
                     "italic": "Italic",
                     "bold": "Bold",

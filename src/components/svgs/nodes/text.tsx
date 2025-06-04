@@ -1,3 +1,4 @@
+import { Alert, AlertIcon } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
@@ -268,9 +269,20 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            hidden: !languageWithoutSynthesis.has(attrs.language ?? defaultTextAttributes.language),
+            component: (
+                <Alert status="warning">
+                    <AlertIcon />
+                    {t('panel.details.nodes.text.fontSynthesisWarning')}
+                </Alert>
+            ),
+            minW: 'full',
+        },
+        {
             type: 'switch',
             label: t('panel.details.nodes.text.italic'),
-            hidden: languageWithoutSynthesis.has(attrs.language),
             isChecked: attrs.italic === 'italic',
             onChange: val => {
                 attrs.italic = val ? 'italic' : 'normal';
@@ -282,7 +294,6 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
         {
             type: 'switch',
             label: t('panel.details.nodes.text.bold'),
-            hidden: languageWithoutSynthesis.has(attrs.language),
             isChecked: attrs.bold === 'bold',
             onChange: val => {
                 attrs.bold = val ? 'bold' : 'normal';
