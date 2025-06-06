@@ -94,6 +94,7 @@ const ChongqingRTTextLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTTex
                 attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
         },
         {
             type: 'input',
@@ -103,6 +104,7 @@ const ChongqingRTTextLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTTex
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
         },
         {
             type: 'custom',
