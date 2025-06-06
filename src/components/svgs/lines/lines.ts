@@ -20,6 +20,7 @@ import mtrPaidArea from './styles/mtr-paid-area';
 import bjsubwayDotted from './styles/bjsubway-dotted';
 import mrtUnderConstruction from './styles/mrt-under-construction';
 import mrtSentosaExpress from './styles/mrt-sentosa-express';
+import mrtTapeOut from './styles/mrt-tape-out';
 import jrEastSingleColor from './styles/jr-east-single-color';
 import jrEastSingleColorPattern from './styles/jr-east-single-color-pattern';
 import lrtSingleColor from './styles/lrt-single-color';
@@ -60,6 +61,7 @@ export const lineStyles = {
     [LineStyleType.MTRPaidArea]: mtrPaidArea,
     [LineStyleType.MRTUnderConstruction]: mrtUnderConstruction,
     [LineStyleType.MRTSentosaExpress]: mrtSentosaExpress,
+    [LineStyleType.MRTTapeOut]: mrtTapeOut,
     [LineStyleType.JREastSingleColor]: jrEastSingleColor,
     [LineStyleType.JREastSingleColorPattern]: jrEastSingleColorPattern,
     [LineStyleType.LRTSingleColor]: lrtSingleColor,

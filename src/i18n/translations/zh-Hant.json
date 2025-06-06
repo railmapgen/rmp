@@ -547,6 +547,9 @@
                 "mrtSentosaExpress": {
                     "displayName": "新加坡MRT聖淘沙捷運樣式"
                 },
+                "mrtTapeOut": {
+                    "displayName": "新加坡MRT出站換乘樣式"
+                },
                 "jrEastSingleColor": {
                     "displayName": "JR東日本單色樣式"
                 },
