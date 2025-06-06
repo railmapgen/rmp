@@ -37,7 +37,7 @@ export default function ConfirmOverwriteDialog(props: ConfirmOverwriteDialogProp
                         <Button ref={cancelRef} onClick={onClose}>
                             {t('cancel')}
                         </Button>
-                        <Button colorScheme="red" onClick={onConfirm} ml={3}>
+                        <Button id="confirm_overwrite" colorScheme="red" onClick={onConfirm} ml={3}>
                             {t('header.open.confirmOverwrite.overwrite')}
                         </Button>
                     </AlertDialogFooter>

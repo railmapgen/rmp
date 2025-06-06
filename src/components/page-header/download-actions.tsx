@@ -258,7 +258,11 @@ export default function DownloadActions() {
                         >
                             <Text>{t('header.download.isSystemFontsOnly')}</Text>
                         </Checkbox>
-                        <Checkbox isChecked={isAttachSelected} onChange={e => setIsAttachSelected(e.target.checked)}>
+                        <Checkbox
+                            id="share_info"
+                            isChecked={isAttachSelected}
+                            onChange={e => setIsAttachSelected(e.target.checked)}
+                        >
                             <Text>
                                 {t('header.download.shareInfo1')}
                                 <Link
@@ -271,6 +275,7 @@ export default function DownloadActions() {
                             </Text>
                         </Checkbox>
                         <Checkbox
+                            id="agree_terms"
                             isChecked={isTermsAndConditionsSelected}
                             onChange={e => setIsTermsAndConditionsSelected(e.target.checked)}
                         >
@@ -308,6 +313,7 @@ export default function DownloadActions() {
                     <ModalFooter>
                         <HStack>
                             <Button
+                                id="download_button"
                                 colorScheme="teal"
                                 variant="outline"
                                 size="sm"
