@@ -139,7 +139,7 @@ const MTRStation = (props: StationComponentProps) => {
                         grow="up"
                         baseOffset={1}
                         fill="#001f50"
-                        className="rmp-name__mtr__zh"
+                        className="rmp-name__mtr__ar"
                     />
                     <MultilineText
                         text={names[1].split('\n')}
@@ -179,7 +179,7 @@ export interface MTRStationAttributes extends StationAttributes, StationAttribut
 }
 
 const defaultMTRStationAttributes: MTRStationAttributes = {
-    names: ['車站', 'Stn'],
+    names: ['محطة', 'Stn'],
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     rotate: 0,
@@ -283,7 +283,7 @@ const mtrStation: Station<MTRStationAttributes> = {
     attrsComponent: MTRStationAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.mtr.displayName',
-        cities: [CityCode.Hongkong],
+        cities: [CityCode.Khaleej],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: [],
