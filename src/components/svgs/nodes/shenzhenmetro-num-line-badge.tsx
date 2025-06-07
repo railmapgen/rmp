@@ -46,7 +46,7 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
         >
             <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
             <text
-                className="rmp-name__zh"
+                className="rmp-name__en"
                 textAnchor="middle"
                 x={numX}
                 y="13.5"
