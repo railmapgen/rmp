@@ -114,7 +114,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
     }, [names[0]]);
     const textX = nameOffsetX === 'left' ? -7 : nameOffsetX === 'right' ? 7 : 0;
     const textXVer = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
-    const textY = nameOffsetY === 'bottom' ? 20 : nameOffsetY === 'top' ? -9 : 5.5;
+    const textY = nameOffsetY === 'bottom' ? 7 : nameOffsetY === 'top' ? -9 : 5.5;
     const textYVer = nameOffsetY === 'bottom' ? 9 + textLength * 5 : nameOffsetY === 'top' ? -9 - textLength * 5 : -5;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
@@ -141,8 +141,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                             text={names[0].split('\n')}
                             fontSize={10}
                             lineHeight={10}
-                            grow="up"
-                            funcDX={i => (i - (names[0].split('\n').length - 1) / 2) * 10}
+                            grow={nameOffsetY === 'bottom' ? 'down' : 'up'}
                             className="rmp-name__jreast_ja"
                             fill={'black'}
                         />
