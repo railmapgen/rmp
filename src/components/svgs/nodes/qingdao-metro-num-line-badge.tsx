@@ -42,7 +42,7 @@ const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineB
         >
             <rect fill={color[2]} x="0" width="20" height="20" rx="2" ry="2" />
             <text
-                className="rmp-name__zh"
+                className="rmp-name__en"
                 textAnchor="left"
                 x={sX}
                 y={sY}
