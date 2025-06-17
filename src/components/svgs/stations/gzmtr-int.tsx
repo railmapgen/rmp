@@ -289,14 +289,14 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                                 strokeColour={info[2]}
                                 lineNum={info[4]}
                                 stnNum={info[5]}
-                                textClassName="rmp-name__zh"
+                                textClassName="rmp-name__en"
                             />
                         ) : (
                             <FoshanStationNumber
                                 strokeColour={info[2]}
                                 lineNum={info[4]}
                                 stnNum={info[5]}
-                                textClassName="rmp-name__zh"
+                                textClassName="rmp-name__en"
                             />
                         )}
                     </g>

@@ -37,7 +37,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
         >
             <rect fill={color[2]} width={width} height="22.67" />
             <text
-                className="rmp-name__zh"
+                className="rmp-name__en"
                 textAnchor="middle"
                 x={numX}
                 y="19"

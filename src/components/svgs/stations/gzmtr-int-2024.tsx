@@ -130,7 +130,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                 <InterchangeStation2024
                     ref={ref}
                     stations={stations}
-                    textClassName="rmp-name__zh"
+                    textClassName="rmp-name__en"
                     columns={columns}
                     topHeavy={topHeavy}
                     anchorAt={anchorAt >= 0 ? anchorAt : undefined}
