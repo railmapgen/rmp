@@ -96,6 +96,7 @@ const BJSubwayTextLineBadgeAttrsComponent = (props: AttrsProps<BjsubwayTextLineB
                 attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
         },
         {
             type: 'input',
@@ -105,6 +106,7 @@ const BJSubwayTextLineBadgeAttrsComponent = (props: AttrsProps<BjsubwayTextLineB
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
         },
         {
             type: 'custom',
@@ -115,6 +117,7 @@ const BJSubwayTextLineBadgeAttrsComponent = (props: AttrsProps<BjsubwayTextLineB
                     defaultTheme={defaultBjsubwayTextLineBadgeAttributes.color}
                 />
             ),
+            minW: 'full',
         },
     ];
 
