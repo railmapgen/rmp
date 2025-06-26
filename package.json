@@ -20,6 +20,7 @@
         "bezier-js": "^6.1.4",
         "canvas-size": "^2.0.0",
         "graphology": "^0.26.0",
+        "i18next": "^25.2.1",
         "immer": "^10.1.1",
         "nanoid": "^5.0.9",
         "react": "^18.3.1",
