@@ -130,7 +130,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                 <InterchangeStation2024
                     ref={ref}
                     stations={stations}
-                    textClassName="rmp-name__en"
+                    classNames={{ digits: 'rmp-name__en' }}
                     columns={columns}
                     topHeavy={topHeavy}
                     anchorAt={anchorAt >= 0 ? anchorAt : undefined}
@@ -493,7 +493,7 @@ const gzmtrInt2024StationIcon = (
                     stnNum: '05',
                 },
             ]}
-            textClassName="rmp-name__zh"
+            classNames={{ digits: 'rmp-name__en' }}
             columns={1}
             transform="translate(12,12)scale(0.3)"
         />

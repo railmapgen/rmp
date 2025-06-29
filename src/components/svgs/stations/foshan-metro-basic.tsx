@@ -112,7 +112,7 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
                     strokeColour={color[2]}
                     lineNum={lineCode === '' ? undefined : lineCode}
                     stnNum={stationCode === '' ? undefined : stationCode}
-                    textClassName="rmp-name__zh"
+                    classNames={{ digits: 'rmp-name__en' }}
                     ref={iconEl}
                 />
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
