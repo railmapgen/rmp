@@ -163,7 +163,7 @@ const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; 
 const loadedFonts: string[] = [];
 export const loadFont = async (lang: TextLanguage) => {
     const fontObj = FONTS[lang];
-    if (!fontObj || lang in loadedFonts) return;
+    if (!fontObj || loadedFonts.includes(lang)) return;
 
     const { config, name } = fontObj;
 

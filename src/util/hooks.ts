@@ -129,9 +129,8 @@ export const useFonts = () => {
     } = useRootSelector(state => state.runtime);
 
     useEffect(() => {
-        // console.log('refresh fonts with: ', languages);
         for (const lang of languages) {
             loadFont(lang);
         }
-    }, [refreshNodes]);
+    }, [refreshNodes, languages]);
 };
