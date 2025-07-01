@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Rotate,
@@ -11,8 +12,8 @@ import {
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -189,7 +190,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         grow={textGrow.ja}
                         baseOffset={textBaseOffset.ja}
                         funcDX={i => (i - (names[0].split('\n').length - 1) / 2) * textBaseDX}
-                        className="rmp-name__jreast_ja"
+                        {...getLangStyle(TextLanguage.jreast_ja)}
                         fill={important ? 'white' : 'black'}
                     />
                     <MultilineText
@@ -201,7 +202,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                         grow={textGrow.en}
                         baseOffset={textBaseOffset.en}
                         funcDX={i => i * LINE_WIDTH * Math.SQRT1_2 * textBase}
-                        className="rmp-name__jreast_en"
+                        {...getLangStyle(TextLanguage.jreast_en)}
                     />
                 </g>
             ) : (
@@ -226,7 +227,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             baseOffset={0}
                             baseDY={textVerticalBaseDY}
                             y={important ? 2.75 * NAME_DY[nameOffsetY].polarity : 0}
-                            className="rmp-name__jreast_ja"
+                            {...getLangStyle(TextLanguage.jreast_ja)}
                             fill={important ? 'white' : 'black'}
                         />
                     </g>
@@ -244,7 +245,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                                 i * LINE_WIDTH * Math.SQRT1_2 * textVerticalBase * (nameOffsetY === 'top' ? -1 : 1)
                             }
                             // x={textVerticalENX}
-                            className="rmp-name__jreast_en"
+                            {...getLangStyle(TextLanguage.jreast_en)}
                         />
                     </g>
                 </>

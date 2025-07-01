@@ -44,10 +44,6 @@ export const MultilineText = React.forwardRef((props: MultilineTextProps, ref: R
     );
 });
 
-// Display component name in debugging.
-// Required by eslint react/display-name.
-MultilineText.displayName = 'MultilineText';
-
 /**
  * This is the default const of name height in different languages.
  */

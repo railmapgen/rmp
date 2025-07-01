@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -39,7 +40,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
                     <>
                         <rect fill={color[2]} x="0" width="25" height="25" rx="12.5" ry="12.5" />
                         <text
-                            className="rmp-name__zh"
+                            {...getLangStyle(TextLanguage.zh)}
                             textAnchor="middle"
                             x="12.5"
                             y="12.5"
@@ -65,7 +66,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
                         <rect fill={color[2]} x={19 + widthOffset / 2} y="10" width="6" height="5" rx="0" ry="0" />
                         <rect fill={color[2]} x={19 + widthOffset / 2} y="20" width="6" height="5" rx="0" ry="0" />
                         <text
-                            className="rmp-name__zh"
+                            {...getLangStyle(TextLanguage.zh)}
                             textAnchor="left"
                             x={-widthOffset / 2}
                             y="12.5"

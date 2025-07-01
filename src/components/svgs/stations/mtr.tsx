@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Rotate,
@@ -10,8 +11,8 @@ import {
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import {
     InterchangeField,
     InterchangeInfo,
@@ -139,7 +140,7 @@ const MTRStation = (props: StationComponentProps) => {
                         grow="up"
                         baseOffset={1}
                         fill="#001f50"
-                        className="rmp-name__mtr__zh"
+                        {...getLangStyle(TextLanguage.mtr_zh)}
                     />
                     <MultilineText
                         text={names[1].split('\n')}
@@ -148,7 +149,7 @@ const MTRStation = (props: StationComponentProps) => {
                         grow="down"
                         baseOffset={1}
                         fill="#001f50"
-                        className="rmp-name__mtr__en"
+                        {...getLangStyle(TextLanguage.mtr_en)}
                     />
                 </g>
             </g>

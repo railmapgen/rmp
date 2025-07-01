@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const NUM_WIDTH = 11.84375;
@@ -46,7 +47,7 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
         >
             <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
             <text
-                className="rmp-name__en"
+                {...getLangStyle(TextLanguage.en)}
                 textAnchor="middle"
                 x={numX}
                 y="13.5"
@@ -56,10 +57,17 @@ const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLin
             >
                 {num}
             </text>
-            <text className="rmp-name__zh" x={chX} y="9.5" fontSize="6" fill={fgColor} letterSpacing={chLetSp}>
+            <text
+                {...getLangStyle(TextLanguage.zh)}
+                x={chX}
+                y="9.5"
+                fontSize="6"
+                fill={fgColor}
+                letterSpacing={chLetSp}
+            >
                 号线{isBranch ? '支线' : ''}
             </text>
-            <text className="rmp-name__en" x={enX} y="13.5" fontSize="3" fill={fgColor}>
+            <text {...getLangStyle(TextLanguage.en)} x={enX} y="13.5" fontSize="3" fill={fgColor}>
                 {isBranch ? 'Branch' : ''} Line {num}
             </text>
         </g>

@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBadgeAttributes>) => {
@@ -41,7 +42,7 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
         >
             <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
             <text
-                className="rmp-name__zh"
+                {...getLangStyle(TextLanguage.zh)}
                 textAnchor="middle"
                 x="10"
                 y="10"

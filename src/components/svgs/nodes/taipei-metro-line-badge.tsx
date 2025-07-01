@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 
 const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -41,7 +42,7 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
             <rect fill={color[2]} x={-width / 2} y="-8" width={width} height="16" rx="2.5" ry="2.5" />
             <g>
                 <text
-                    className="rmp-name__taipei"
+                    {...getLangStyle(TextLanguage.taipei)}
                     textAnchor="middle"
                     dominantBaseline="central"
                     fontSize="10"

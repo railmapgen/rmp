@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
@@ -57,7 +58,7 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
                 strokeWidth="1"
             />
             <text
-                className="rmp-name__mrt"
+                {...getLangStyle(TextLanguage.mrt)}
                 textAnchor="middle"
                 fill={fgColor}
                 fontSize="15"
@@ -67,7 +68,7 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
                 {lineCode}
             </text>
             <text
-                className="rmp-name__mrt"
+                {...getLangStyle(TextLanguage.mrt)}
                 textAnchor="left"
                 x="28"
                 y={isTram ? 3.5 : -3}
@@ -84,7 +85,7 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
                             <>
                                 <circle r="6" fill={bgColor}></circle>
                                 <text
-                                    className="rmp-name__mrt"
+                                    {...getLangStyle(TextLanguage.mrt)}
                                     textAnchor="middle"
                                     fill={fgColor}
                                     fontSize="9"

@@ -16,6 +16,7 @@ import {
 } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import ThemeButton from '../../panels/theme-button';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
@@ -276,7 +277,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                             fontSize={fontSize}
                             lineHeight={fontSize}
                             grow={nameOffsetY === 'top' || mereOffset === 'up' ? 'up' : 'down'}
-                            className="rmp-name__jreast_ja"
+                            {...getLangStyle(TextLanguage.jreast_ja)}
                             fill={'black'}
                             fontWeight={importance !== 'default' ? 'bold' : 'normal'}
                         />
@@ -288,7 +289,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                             fontSize={fontSize}
                             lineWidth={fontSize}
                             grow="bidirectional"
-                            className="rmp-name__jreast_ja"
+                            {...getLangStyle(TextLanguage.jreast_ja)}
                             fill={'black'}
                             fontWeight={importance !== 'default' ? 'bold' : 'normal'}
                         />

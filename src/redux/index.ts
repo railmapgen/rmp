@@ -8,6 +8,7 @@ import accountReducer from './account/account-slice';
 import appReducer from './app/app-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
+import fontsReducer from './fonts/fonts-slice';
 
 enableMapSet();
 
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
     app: appReducer,
     param: paramReducer,
     runtime: runtimeReducer,
+    fonts: fontsReducer,
 });
 export type RootState = ReturnType<typeof rootReducer>;
 

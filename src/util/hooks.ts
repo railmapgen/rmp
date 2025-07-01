@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useRootSelector } from '../redux';
 import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
 import { Theme } from '../constants/constants';
+import { loadFont } from './fonts';
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {
@@ -113,4 +114,24 @@ export const usePaletteTheme = (options?: UsePaletteThemeOptions) => {
     }, [dispatch, theme]);
 
     return { theme, requestThemeChange };
+};
+
+/**
+ * All in one place to load fonts, should be attached only once in svg-wrapper.
+ *
+ * Of course, you are free to load fonts by manually dispatching loadFont/loadFonts actions,
+ * here is only a convenience hook to load all fonts by node types in the graph.
+ */
+export const useFonts = () => {
+    const { languages } = useRootSelector(state => state.fonts);
+    const {
+        refresh: { nodes: refreshNodes },
+    } = useRootSelector(state => state.runtime);
+
+    useEffect(() => {
+        // console.log('refresh fonts with: ', languages);
+        for (const lang of languages) {
+            loadFont(lang);
+        }
+    }, [refreshNodes]);
 };

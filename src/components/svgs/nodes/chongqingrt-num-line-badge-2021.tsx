@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLineBadge2021Attributes>) => {
@@ -47,7 +48,7 @@ const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLin
                     ry="2"
                 />
                 <text
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                     textAnchor="middle"
                     x={sX}
                     y="10.5"

@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const MIN_WIDTH = 28.84375;
@@ -47,7 +48,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
             <rect fill={color[2]} x="0" width={width + 4} height="16" rx="2" />
             <g ref={textLineEl}>
                 <text
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                     textAnchor="middle"
                     x={(width + 4) / 2}
                     y="8"
@@ -57,7 +58,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
                     {names[0]}
                 </text>
                 <text
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                     textAnchor="middle"
                     x={(width + 4) / 2}
                     y="13.5"

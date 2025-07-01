@@ -1,9 +1,10 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -49,7 +50,7 @@ const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextL
                     ry="2"
                 />
                 <text
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                     textAnchor="middle"
                     x={width / 2}
                     y={height / 2 + 0.5}
@@ -62,7 +63,7 @@ const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextL
                 <MultilineText
                     ref={textLineEl}
                     text={names[1].split('\n')}
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                     textAnchor="middle"
                     x={width / 2}
                     y={height / 2 - Number(!isRapid) * 0.75}
@@ -160,11 +161,19 @@ const chongqingRTTextLineBadge2021Icon = (
     <svg viewBox="0 0 21 21" height={40} width={40} focusable={false} style={{ padding: 3 }}>
         <rect fill="currentColor" x="0" width="21" height="21" rx="3" ry="3" />
         <rect strokeWidth="1.5" stroke="white" fill="none" x="1.5" y="1.5" width="18" height="18" rx="2" ry="2" />
-        <text className="rmp-name__zh" textAnchor="middle" x="10.5" y="11" fill="white" fontSize="5" letterSpacing="0">
+        <text
+            {...getLangStyle(TextLanguage.zh)}
+            textAnchor="middle"
+            x="10.5"
+            y="11"
+            fill="white"
+            fontSize="5"
+            letterSpacing="0"
+        >
             空港线
         </text>
         <text
-            className="rmp-name__en"
+            {...getLangStyle(TextLanguage.en)}
             textAnchor="middle"
             x="10.5"
             y="13.75"

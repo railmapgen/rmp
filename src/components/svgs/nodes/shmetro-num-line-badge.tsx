@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttributes>) => {
@@ -37,7 +38,7 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
         >
             <rect fill={color[2]} width={width} height="22.67" />
             <text
-                className="rmp-name__en"
+                {...getLangStyle(TextLanguage.en)}
                 textAnchor="middle"
                 x={numX}
                 y="19"
@@ -47,10 +48,10 @@ const ShmetroNumLineBadge = (props: NodeComponentProps<ShmetroNumLineBadgeAttrib
             >
                 {num}
             </text>
-            <text className="rmp-name__zh" x={width + 2} y="12" fontSize="14.67">
+            <text {...getLangStyle(TextLanguage.zh)} x={width + 2} y="12" fontSize="14.67">
                 号线
             </text>
-            <text className="rmp-name__en" x={width + 4} y="21.5" fontSize="8">
+            <text {...getLangStyle(TextLanguage.en)} x={width + 4} y="21.5" fontSize="8">
                 Line {num}
             </text>
         </g>

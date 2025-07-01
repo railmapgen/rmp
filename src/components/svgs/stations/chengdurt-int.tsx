@@ -1,16 +1,17 @@
-import React from 'react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -151,7 +152,7 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
                         lineHeight={LINE_HEIGHT.en}
                         text={names[1].split('\n')}
                         fontSize={LINE_HEIGHT.en}
-                        className="rmp-name__en"
+                        {...getLangStyle(TextLanguage.en)}
                         dominantBaseline="central"
                     />
                 ) : (
@@ -160,7 +161,7 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
                         lineWidth={LINE_HEIGHT.en}
                         text={names[1].split('\n')}
                         fontSize={LINE_HEIGHT.en}
-                        className="rmp-name__en"
+                        {...getLangStyle(TextLanguage.en)}
                         dominantBaseline="central"
                     />
                 )}

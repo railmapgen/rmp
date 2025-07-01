@@ -1,19 +1,20 @@
-import React from 'react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
-import { MultilineText } from '../common/multiline-text';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
     zh: 9,
@@ -149,7 +150,7 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
                     fontSize={LINE_HEIGHT.zh}
                     lineHeight={LINE_HEIGHT.zh}
                     grow="up"
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                     baseOffset={1}
                     ref={zhRef}
                 />
@@ -158,7 +159,7 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
                     fontSize={LINE_HEIGHT.en}
                     lineHeight={LINE_HEIGHT.en}
                     grow="down"
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                     baseOffset={1}
                     ref={elRef}
                     transform={`translate(${nameOffsetX == 'right' ? elOffset : -elOffset}, 0)`}
@@ -169,7 +170,7 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
                             dy={names[1].split('\n').length * LINE_HEIGHT.en + 2}
                             fontSize={LINE_HEIGHT.en}
                             dominantBaseline="hanging"
-                            className="rmp-name__zh"
+                            {...getLangStyle(TextLanguage.zh)}
                         >
                             (暂缓开通)
                         </text>

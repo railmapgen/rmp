@@ -5,6 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
@@ -41,7 +42,11 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
             <LineIcon
                 zhName={names.at(0) ?? ''}
                 enName={names.at(1) ?? ''}
-                classNames={{ digits: 'rmp-name__en', zh: 'rmp-name__zh', en: 'rmp-name__en' }}
+                textProps={{
+                    digits: { ...getLangStyle(TextLanguage.en) },
+                    zh: { ...getLangStyle(TextLanguage.zh) },
+                    en: { ...getLangStyle(TextLanguage.en) },
+                }}
                 foregroundColour={color[3]}
                 backgroundColour={color[2]}
                 spanDigits={span}
