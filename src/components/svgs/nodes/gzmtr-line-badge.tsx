@@ -29,22 +29,32 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
         [id, handlePointerUp]
     );
 
+    const iconRef = React.useRef<SVGSVGElement>(null);
+    const [iconBBox, setIconBBox] = React.useState({ height: 0, width: 0 });
+    React.useEffect(() => setIconBBox(iconRef.current?.getBBox() ?? { height: 0, width: 0 }), [...names, tram]);
+
     return (
-        <g
-            id={id}
-            transform={`translate(${x}, ${y})scale(${tram ? 0.5 : 1})`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={{ cursor: 'move' }}
-        >
+        <g id={id} transform={`translate(${x}, ${y - iconBBox.height / 2})scale(${tram ? 0.5 : 1})`}>
             <LineIcon
+                ref={iconRef}
                 zhName={names.at(0) ?? ''}
                 enName={names.at(1) ?? ''}
                 classNames={{ digits: 'rmp-name__en', zh: 'rmp-name__zh', en: 'rmp-name__en' }}
                 foregroundColour={color[3]}
                 backgroundColour={color[2]}
                 spanDigits={span}
+            />
+            {/* Below is an overlay element that has all event hooks but can not be seen. */}
+            <rect
+                id={`misc_node_connectable_${id}`}
+                x={-iconBBox.width / 2}
+                width={iconBBox.width}
+                height="24"
+                fill="transparent"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
             />
         </g>
     );

@@ -52,7 +52,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 53;
+export const CURRENT_VERSION = 54;
 
 /**
  * Load the tutorial.
@@ -702,5 +702,17 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.removeNodeAttribute(node, 'gd-intercity-rwy');
             });
         return JSON.stringify({ ...p, version: 53, graph: graph.export() });
+    },
+    53: param => {
+        // Bump save version to match the icon reposition in gzmtr-line-badge.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.GzmtrLineBadge)
+            .forEach(node => {
+                graph.updateNodeAttribute(node, 'y', y => (y ?? 0) + 12);
+            });
+        return JSON.stringify({ ...p, version: 54, graph: graph.export() });
     },
 };
