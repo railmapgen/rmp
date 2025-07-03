@@ -835,5 +835,7 @@
             "slack": "Slack群组",
             "slackContent": "在这些Slack频道中讨论!"
         }
-    }
+    },
+
+    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
 }

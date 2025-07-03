@@ -836,5 +836,7 @@
             "slack": "Slack group",
             "slackContent": "Chat in these Slack channels!"
         }
-    }
+    },
+
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
 }

@@ -1,4 +1,5 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { nanoid } from 'nanoid';
@@ -85,9 +86,18 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
     }
 
     if (changed) {
-        console.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
+        logger.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
         // Backup original param in case of bugs in the upgrades.
-        localStorage.setItem(LocalStorageKey.PARAM_BACKUP, originalParam);
+        try {
+            localStorage.setItem(LocalStorageKey.PARAM_BACKUP, originalParam);
+        } catch (error) {
+            if (error instanceof Error && error.name == 'QuotaExceededError') {
+                logger.error('Failed to backup original param due to local storage quota exceeded.');
+                localStorage.removeItem(LocalStorageKey.PARAM_BACKUP);
+                // Remove the previous backup to free up some spaces.
+                // This should give users the maximum 5mb for their work.
+            }
+        }
     }
 
     // Version should be CURRENT_VERSION now.
