@@ -48,8 +48,8 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     React.useEffect(() => setIconBBox(iconEl.current!.getBBox()), []);
 
     const FONT_SIZE = {
-        en: tram ? 5.08 : 6.56,
-        zh: tram ? 7.29 : 13.13,
+        en: tram || lineCode.includes('APM') ? 5.08 : 6.56,
+        zh: tram || lineCode.includes('APM') ? 7.29 : 13.13,
     };
     const NAME_DY: typeof DEFAULT_NAME_DY = {
         top: {
