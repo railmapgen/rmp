@@ -48,8 +48,8 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
     React.useEffect(() => setIconBBox(iconEl.current!.getBBox()), []);
 
     const FONT_SIZE = {
-        en: tram || lineCode.includes('APM') ? 5.08 : 6.56,
-        zh: tram || lineCode.includes('APM') ? 7.29 : 13.13,
+        en: tram || String(lineCode).includes('APM') ? 5.08 : 6.56,
+        zh: tram || String(lineCode).includes('APM') ? 7.29 : 13.13,
     };
     const NAME_DY: typeof DEFAULT_NAME_DY = {
         top: {
@@ -293,6 +293,7 @@ const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAtt
             label: t('panel.details.stations.common.lineCode'),
             value: attrs.lineCode,
             onChange: val => {
+                console.log(typeof val);
                 attrs.lineCode = val;
                 handleAttrsUpdate(id, attrs);
             },
