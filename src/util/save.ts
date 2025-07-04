@@ -38,6 +38,8 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { ParamState } from '../redux/param/param-slice';
+import { TextAttributes } from '../components/svgs/nodes/text';
+import { TextLanguage } from './fonts';
 
 /**
  * The save format of the project.
@@ -53,7 +55,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 54;
+export const CURRENT_VERSION = 55;
 
 /**
  * Load the tutorial.
@@ -724,5 +726,21 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.updateNodeAttribute(node, 'y', y => (y ?? 0) + 12);
             });
         return JSON.stringify({ ...p, version: 54, graph: graph.export() });
+    },
+    54: param => {
+        // Bump save version to update TextLanguage in Text (mtr__zh -> mtr_zh, mtr__en -> mtr_en).
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('misc_node') && attr.type === MiscNodeType.Text)
+            .forEach(node => {
+                graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, MiscNodeType.Text) as TextAttributes;
+                if ((attr.language as string) === 'mtr__zh') attr.language = TextLanguage.mtr_zh;
+                else if ((attr.language as string) === 'mtr__en') attr.language = TextLanguage.mtr_en;
+                graph.mergeNodeAttributes(node, { [MiscNodeType.Text]: attr });
+            });
+        return JSON.stringify({ ...p, version: 55, graph: graph.export() });
     },
 };
