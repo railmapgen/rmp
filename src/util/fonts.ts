@@ -7,28 +7,9 @@ export const isSafari = () => {
     return navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
 };
 
-export type FontFaceConfig = {
-    source: string;
-    descriptors?: FontFaceDescriptors;
-};
-
-const LTAIdentity: FontFaceConfig = {
-    source: 'url("./fonts/LTAIdentity-Medium.ttf")',
-    descriptors: { display: 'swap' },
-};
-const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
-const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
-const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', descriptors: { display: 'swap' } };
-const Railway: FontFaceConfig = { source: 'url("./fonts/Railway-PlyE.otf")', descriptors: { display: 'swap' } };
-const TaipeiSansTC: FontFaceConfig = {
-    source: 'url("./fonts/TaipeiSansTCBeta-Regular.ttf")',
-    descriptors: { display: 'swap' },
-};
-
 export enum TextLanguage {
     zh = 'zh',
     en = 'en',
-    // TODO: update mtr key name in misc-node text
     mtr_zh = 'mtr_zh',
     mtr_en = 'mtr_en',
     berlin = 'berlin',
@@ -61,6 +42,9 @@ export const Node2Font: {
     [MiscNodeType.TaiPeiMetroLineBadege]: [TextLanguage.taipei],
 };
 
+/**
+ * Selected font styles that are a subset of CSS properties.
+ */
 type FontStyle = Pick<
     React.CSSProperties,
     | 'fontFamily'
@@ -73,7 +57,28 @@ type FontStyle = Pick<
     | 'fontStretch'
     | 'fontSynthesis'
 >;
+/**
+ * Font props that are used to set the font style of text elements in SVG.
+ *
+ * Note: `fontSynthesis` is not a valid SVG presentation attribute, so it is wrapped in a `style` object.
+ */
+type FontProps = Exclude<FontStyle, 'fontSynthesis'> & { style?: Pick<React.CSSProperties, 'fontSynthesis'> };
 
+/**
+ * Matches the TextLanguage to a specific font style.
+ * Text elements may use this to set the font style based on the language.
+ */
+export const getLangStyle = (lang: TextLanguage) => {
+    const props = structuredClone(LANG_STYLE[lang]) as FontProps;
+    for (const key in props) {
+        if (key === 'fontSynthesis') {
+            // fontSynthesis is not a valid SVG presentation attribute, so we need to wrap it in a style tag.
+            props.style = { fontSynthesis: props[key] };
+            delete props[key];
+        }
+    }
+    return props;
+};
 const LANG_STYLE: Record<TextLanguage, FontStyle> = {
     zh: {
         fontFamily: "SimHei, 'STHeiti T0C', 'PingFang SC', sans-serif",
@@ -129,7 +134,7 @@ const LANG_STYLE: Record<TextLanguage, FontStyle> = {
         fontSynthesis: 'none',
     },
     tokyo_ja: {
-        // copied from jreast_ja
+        // same as jreast_ja
         fontFamily: "a-otf-ud-shin-go-pr6n, 'M PLUS 2', sans-serif",
         fontSynthesis: 'none',
     },
@@ -146,7 +151,27 @@ const LANG_STYLE: Record<TextLanguage, FontStyle> = {
     },
 };
 
-export const getLangStyle = (lang: TextLanguage) => LANG_STYLE[lang];
+/**
+ * Below are the additional font data needs to be loaded separately.
+ */
+
+type FontFaceConfig = {
+    source: string;
+    descriptors?: FontFaceDescriptors;
+};
+
+const LTAIdentity: FontFaceConfig = {
+    source: 'url("./fonts/LTAIdentity-Medium.ttf")',
+    descriptors: { display: 'swap' },
+};
+const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
+const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
+const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', descriptors: { display: 'swap' } };
+const Railway: FontFaceConfig = { source: 'url("./fonts/Railway-PlyE.otf")', descriptors: { display: 'swap' } };
+const TaipeiSansTC: FontFaceConfig = {
+    source: 'url("./fonts/TaipeiSansTCBeta-Regular.ttf")',
+    descriptors: { display: 'swap' },
+};
 
 const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; name: string }>> = {
     mtr_zh: { config: undefined, name: 'GenYoMinTW-SB' },
