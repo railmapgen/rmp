@@ -8,7 +8,7 @@ import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes
 import { Rotate } from '../../../constants/stations';
 import { useRootDispatch } from '../../../redux';
 import { loadFont } from '../../../redux/fonts/fonts-slice';
-import { TextLanguage } from '../../../util/fonts';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -97,7 +97,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                 text={content.split('\n')}
                 lineHeight={lineHeight}
                 grow="down" // this will be ignored
-                className={`rmp-name__${language} ${outline > 0 ? 'rmp-name-outline' : ''}`}
+                className={outline > 0 ? 'rmp-name-outline' : ''}
+                {...getLangStyle(language)}
                 strokeWidth={outline > 0 ? outline : undefined}
                 fontSize={fontSize}
                 textAnchor={textAnchor}
