@@ -52,6 +52,7 @@ const connectableNodesType = [
     MiscNodeType.ChongqingRTNumLineBadge2021,
     MiscNodeType.ChongqingRTTextLineBadge2021,
     MiscNodeType.ChengduRTLineBadge,
+    MiscNodeType.GzmtrLineBadge,
 ];
 
 const SvgCanvas = () => {

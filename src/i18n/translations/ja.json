@@ -837,5 +837,7 @@
             "slack": "Slackグループ",
             "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
-    }
+    },
+
+    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }

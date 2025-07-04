@@ -700,4 +700,18 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
+    it('53 -> 54', () => {
+        // Bump save version to match the icon reposition in gzmtr-line-badge.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":255,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"],"tram":false,"span":true}}},{"key":"misc_node_Another","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["2号线","Line 2"],"color":["guangzhou","gz2","#00629B","#fff"],"tram":false,"span":true}}}],"edges":[]},"version":53}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[53](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":267,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"],"tram":false,"span":true}}},{"key":"misc_node_Another","attributes":{"visible":true,"zIndex":0,"x":100,"y":112,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["2号线","Line 2"],"color":["guangzhou","gz2","#00629B","#fff"],"tram":false,"span":true}}}],"edges":[]},"version":54}';
+        // And the updated save has only version field and y positions changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

@@ -40,12 +40,14 @@ let defaultGraphHash: string | undefined;
 
 // Notify rmt to update save when the state is changed.
 export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+    // top-level await is not supported so we are computing defaultGraphHash only once in the first call
     if (!defaultGraphHash) {
-        // top-level await is not supported so we are computing it in the first call
         const emptyGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
         defaultGraphHash = await createHash(JSON.stringify(emptyGraph));
         logger.debug(`Default graph hash: ${defaultGraphHash}`);
     }
+
+    let changed = false;
 
     const graphHash = await createHash(JSON.stringify(graph));
     if (previousGraphHash && previousGraphHash !== defaultGraphHash && previousGraphHash !== graphHash) {
@@ -55,8 +57,11 @@ export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, Edg
             key: LocalStorageKey.PARAM,
             from: 'rmp',
         } as SaveManagerEvent);
+        changed = true;
     }
     previousGraphHash = graphHash;
+
+    return changed;
 };
 
 export interface APISubscription {
