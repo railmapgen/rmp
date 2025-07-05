@@ -721,4 +721,20 @@ describe('Unit tests for param upgrade function', () => {
             '{"svgViewBoxZoom":40,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_klNPHzAh5Q","attributes":{"visible":true,"zIndex":0,"x":595,"y":320,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}},{"key":"misc_node_x78cK21yLo","attributes":{"visible":true,"zIndex":0,"x":595,"y":370,"type":"text","text":{"content":"車站","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"mtr_zh","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}}],"edges":[]},"version":55}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('55 -> 56', () => {
+        // Bump save version to support Chongqing Rail Transit stations.
+        // Add isLoop attributes to Chongqing Rail Transit Basic stations.
+        // Prepare an empty save.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chengdurt-basic","chengdurt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false,"direction":"horizontal","stationType":"joint"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":55}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[55](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chengdurt-basic","chengdurt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false,"direction":"horizontal","stationType":"joint","rotation":0}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":56}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

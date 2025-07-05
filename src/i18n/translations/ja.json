@@ -463,7 +463,8 @@
                         "branchTerminal": "支線終着駅",
                         "joint": "共線乗換駅",
                         "tram": "路面電車駅"
-                    }
+                    },
+                    "rotation": "回転角度かいてんかくど"
                 },
                 "chengduRTInt": {
                     "displayName": "成都鉄道交通乗換駅"

@@ -461,7 +461,8 @@
                         "branchTerminal": "Branch terminal",
                         "joint": "Joint transfer station",
                         "tram": "Tram station"
-                    }
+                    },
+                    "rotation": "Rotation"
                 },
                 "chengduRTInt": {
                     "displayName": "Chengdu Rail Transit interchange station"

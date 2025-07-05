@@ -55,7 +55,7 @@ export interface RMPSave {
     svgViewBoxMin: { x: number; y: number };
 }
 
-export const CURRENT_VERSION = 55;
+export const CURRENT_VERSION = 56;
 
 /**
  * Load the tutorial.
@@ -742,5 +742,20 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [MiscNodeType.Text]: attr });
             });
         return JSON.stringify({ ...p, version: 55, graph: graph.export() });
+    },
+    55: param => {
+        // Bump save version to add rotation to chengdurt-basic.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.ChengduRTBasic)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.rotation = 0;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 56, graph: graph.export() });
     },
 };

@@ -34,6 +34,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
         color = defaultChengduRTBasicStationAttributes.color,
         direction = defaultChengduRTBasicStationAttributes.direction,
         stationType = defaultChengduRTBasicStationAttributes.stationType,
+        rotation = defaultChengduRTBasicStationAttributes.rotation,
     } = attrs[StationType.ChengduRTBasic] ?? defaultChengduRTBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -150,7 +151,11 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 />
             ) : stationType == 'joint' ? (
-                <g transform={direction == 'vertical' ? 'rotate(90)' : ''}>
+                <g
+                    transform={
+                        direction == 'vertical' ? `rotate(${Number(rotation) + 90})` : `rotate(${Number(rotation)})`
+                    }
+                >
                     <circle r={2.25} fill="black" transform="translate(-1.5,0)" />
                     <circle r={2.25} fill="black" transform="translate(1.5,0)" />
                     <circle r={1.75} fill="white" transform="translate(-1.5,0)" />
@@ -249,6 +254,7 @@ export interface ChengduRTBasicStationAttributes extends StationAttributes, Colo
     nameOffsetY: NameOffsetY;
     direction: 'vertical' | 'horizontal';
     stationType: 'normal' | 'joint' | 'branchTerminal' | 'tram';
+    rotation: '0' | '45' | '90' | '135' | '180' | '225' | '270' | '315';
 }
 
 const defaultChengduRTBasicStationAttributes: ChengduRTBasicStationAttributes = {
@@ -258,6 +264,7 @@ const defaultChengduRTBasicStationAttributes: ChengduRTBasicStationAttributes = 
     nameOffsetY: 'top',
     direction: 'horizontal',
     stationType: 'normal',
+    rotation: '0',
 };
 
 const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAttributes>) => {
@@ -351,6 +358,27 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.chengduRTBasic.rotation'),
+            value: attrs.rotation ?? defaultChengduRTBasicStationAttributes.rotation,
+            options: {
+                '0': '0°',
+                '45': '45°',
+                '90': '90°',
+                '135': '135°',
+                '180': '180°',
+                '225': '225°',
+                '270': '270°',
+                '315': '315°',
+            },
+            onChange: val => {
+                attrs.rotation = val as '0' | '45' | '90' | '135' | '180' | '225' | '270' | '315';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            isDisabled: attrs.stationType != 'joint',
         },
     ];
     return <RmgFields fields={fields} />;

@@ -460,7 +460,8 @@
                         "branchTerminal": "지선 종점역",
                         "joint": "공선 환승역",
                         "tram": "노면 전차역"
-                    }
+                    },
+                    "rotation": "회전 각도"
                 },
                 "chengduRTInt": {
                     "displayName": "청두 도시철도 환승역"
