@@ -2,6 +2,12 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { TextLanguage } from '../../util/fonts';
 
 interface FontsState {
+    /**
+     * List of languages that are used in the map.
+     * When added, the followings will try to load the font for the language (if available).
+     *   1. useFonts hook
+     *   2. loadFonts in download (image rendering)
+     */
     languages: TextLanguage[];
 }
 
