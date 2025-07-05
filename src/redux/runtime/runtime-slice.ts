@@ -127,12 +127,12 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
         );
     }
 
-    const fonts = existsTypes
+    const languages = existsTypes
         .values()
         .filter(t => t in Node2Font)
         .flatMap(t => Node2Font[t]!)
         .toArray();
-    dispatch(loadFonts(new Set(fonts)));
+    dispatch(loadFonts([...new Set(languages)]));
 });
 
 /**
