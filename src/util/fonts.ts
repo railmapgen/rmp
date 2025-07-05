@@ -185,14 +185,14 @@ const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; 
     taipei: { config: TaipeiSansTC, name: 'Taipei Sans TC Beta' },
 };
 
-const loadedFonts: string[] = [];
+const loadedLangs: TextLanguage[] = [];
 export const loadFont = async (lang: TextLanguage) => {
     const fontObj = FONTS[lang];
-    if (!fontObj || loadedFonts.includes(lang)) return;
+    if (!fontObj || loadedLangs.includes(lang)) return;
 
     const { config, name } = fontObj;
 
-    loadedFonts.push(lang);
+    loadedLangs.push(lang);
     await rmgRuntime.loadFont(name, config && { configs: [config] });
 };
 
