@@ -3,49 +3,24 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CityCode, NodeType } from '../../../constants/constants';
+import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { Rotate, StationType } from '../../../constants/stations';
-import { loadFontCss } from '../../../util/fonts';
+import { Rotate } from '../../../constants/stations';
+import { useRootDispatch } from '../../../redux';
+import { loadFont } from '../../../redux/fonts/fonts-slice';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
-export enum TextLanguage {
-    zh = 'zh',
-    en = 'en',
-    mtr__zh = 'mtr__zh',
-    mtr__en = 'mtr__en',
-    berlin = 'berlin',
-    mrt = 'mrt',
-    jreast_ja = 'jreast_ja',
-    jreast_en = 'jreast_en',
-    tokyo_en = 'tokyo_en',
-    tube = 'tube',
-    taipei = 'taipei',
-}
-
-export const languageToFontsCss: { [k in TextLanguage]: NodeType } = {
-    zh: StationType.ShmetroBasic,
-    en: StationType.ShmetroBasic,
-    mtr__zh: StationType.MTR,
-    mtr__en: StationType.MTR,
-    berlin: MiscNodeType.BerlinSBahnLineBadge,
-    mrt: StationType.MRTBasic,
-    jreast_ja: StationType.JREastBasic,
-    jreast_en: StationType.JREastBasic,
-    tokyo_en: StationType.TokyoMetroBasic,
-    tube: StationType.LondonTubeBasic,
-    taipei: MiscNodeType.TaiPeiMetroLineBadege,
-};
-
 const languageWithoutSynthesis: Set<TextLanguage> = new Set([
     TextLanguage.zh,
-    TextLanguage.mtr__zh,
+    TextLanguage.mtr_zh,
     TextLanguage.jreast_ja,
     TextLanguage.taipei,
 ]);
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
+    const dispatch = useRootDispatch();
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         content = defaultTextAttributes.content,
@@ -82,10 +57,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
         ]
     );
 
-    // Add fonts css to the document for the language selected.
     React.useEffect(() => {
-        const type = languageToFontsCss[language];
-        if (type) loadFontCss(type);
+        dispatch(loadFont(language));
     }, [language]);
 
     const onPointerDown = React.useCallback(
@@ -124,7 +97,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
                 text={content.split('\n')}
                 lineHeight={lineHeight}
                 grow="down" // this will be ignored
-                className={`rmp-name__${language} ${outline > 0 ? 'rmp-name-outline' : ''}`}
+                className={outline > 0 ? 'rmp-name-outline' : ''}
+                {...getLangStyle(language)}
                 strokeWidth={outline > 0 ? outline : undefined}
                 fontSize={fontSize}
                 textAnchor={textAnchor}
@@ -241,8 +215,8 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             options: {
                 zh: t('panel.details.nodes.text.zh'),
                 en: t('panel.details.nodes.text.en'),
-                mtr__zh: t('panel.details.nodes.text.mtr__zh'),
-                mtr__en: t('panel.details.nodes.text.mtr__en'),
+                mtr_zh: t('panel.details.nodes.text.mtr_zh'),
+                mtr_en: t('panel.details.nodes.text.mtr_en'),
                 berlin: t('panel.details.nodes.text.berlin'),
                 mrt: t('panel.details.nodes.text.mrt'),
                 jreast_ja: t('panel.details.nodes.text.jreast_ja'),

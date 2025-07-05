@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAttributes>) => {
@@ -38,7 +39,7 @@ const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAt
         >
             <circle r="8" fill={bgColor}></circle>
             <text
-                className="rmp-name__mrt"
+                {...getLangStyle(TextLanguage.mrt)}
                 textAnchor="middle"
                 x="0"
                 y="0"

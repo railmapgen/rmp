@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute } from '../../panels/details/color-field';
 
 const GuangdongIntercityRailwayLineBadge = (
@@ -44,7 +45,7 @@ const GuangdongIntercityRailwayLineBadge = (
             <rect rx="2" ry="2" fill={color[2]} x="0" width={bBox.width + 7} height="21" />
             <g ref={textLineEl}>
                 <text
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                     textAnchor="middle"
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}
@@ -55,7 +56,7 @@ const GuangdongIntercityRailwayLineBadge = (
                     {names[0]}
                 </text>
                 <text
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                     textAnchor="middle"
                     dominantBaseline="hanging"
                     x={(bBox.width + 7) / 2}

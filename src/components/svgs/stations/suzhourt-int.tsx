@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Rotate,
@@ -11,8 +12,8 @@ import {
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
@@ -127,7 +128,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                     lineHeight={NAME_SZ_BASIC.zh.size}
                     grow="up"
                     baseOffset={NAME_SZ_BASIC.zh.baseOffset}
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
@@ -135,7 +136,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
                     lineHeight={NAME_SZ_BASIC.en.size}
                     grow="down"
                     baseOffset={NAME_SZ_BASIC.en.baseOffset}
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                     fill="gray"
                 />
             </g>

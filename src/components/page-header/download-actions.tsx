@@ -51,6 +51,7 @@ export default function DownloadActions() {
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
+    const { languages } = useRootSelector(state => state.fonts);
     const param = useRootSelector(state => state.param);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
@@ -157,6 +158,7 @@ export default function DownloadActions() {
             graph.current,
             isAttachSelected,
             isSystemFontsOnly,
+            languages,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process

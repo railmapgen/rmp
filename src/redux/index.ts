@@ -7,6 +7,7 @@ import { onRMPSaveUpdate } from '../util/rmt-save';
 import { stringifyParam } from '../util/save';
 import accountReducer from './account/account-slice';
 import appReducer from './app/app-slice';
+import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer, { setGlobalAlert } from './runtime/runtime-slice';
 
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
     app: appReducer,
     param: paramReducer,
     runtime: runtimeReducer,
+    fonts: fontsReducer,
 });
 export type RootState = ReturnType<typeof rootReducer>;
 

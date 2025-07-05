@@ -4,14 +4,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -168,7 +169,7 @@ const MRTIntStationPost = (props: StationComponentProps) => {
                                         1
                                     }
                                     dy="0.5"
-                                    className="rmp-name__mrt"
+                                    {...getLangStyle(TextLanguage.mrt)}
                                     fill={int[3]}
                                     textAnchor="middle"
                                     dominantBaseline="middle"
@@ -179,7 +180,7 @@ const MRTIntStationPost = (props: StationComponentProps) => {
                                     fontSize={STATION_CODE_FONT_SIZE}
                                     dx={5 + (width / arr.length / 2) * (j * 2 + 1) - width / 2 + 1}
                                     dy="0.5"
-                                    className="rmp-name__mrt"
+                                    {...getLangStyle(TextLanguage.mrt)}
                                     fill={int[3]}
                                     textAnchor="middle"
                                     dominantBaseline="middle"
@@ -209,7 +210,7 @@ const MRTIntStationPost = (props: StationComponentProps) => {
                     lineHeight={STATION_NAME_FONT_SIZE}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
                     baseOffset={0}
-                    className="rmp-name__mrt"
+                    {...getLangStyle(TextLanguage.mrt)}
                 />
             </g>
         </g>
@@ -302,16 +303,16 @@ const MRTIntAttrsComponent = (props: AttrsProps<MRTIntStationAttributes>) => {
 const mrtIntStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <rect x="2" y="9.0985" rx="1.038" ry="2.076" width="20" height="5.803" fill="currentColor" />
-        <text fontSize="3" dx="5" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3" dx="5" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
             NE
         </text>
-        <text fontSize="3" dx="9.5" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3" dx="9.5" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
             4
         </text>
-        <text fontSize="3" dx="14.5" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3" dx="14.5" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
             DT
         </text>
-        <text fontSize="3" dx="19" dy="13.25" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3" dx="19" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
             19
         </text>
     </svg>

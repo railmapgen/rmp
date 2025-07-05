@@ -7,7 +7,155 @@ export const isSafari = () => {
     return navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
 };
 
-export type FontFaceConfig = {
+export enum TextLanguage {
+    zh = 'zh',
+    en = 'en',
+    mtr_zh = 'mtr_zh',
+    mtr_en = 'mtr_en',
+    berlin = 'berlin',
+    mrt = 'mrt',
+    jreast_ja = 'jreast_ja',
+    jreast_en = 'jreast_en',
+    tokyo_ja = 'tokyo_ja',
+    tokyo_en = 'tokyo_en',
+    tube = 'tube',
+    taipei = 'taipei',
+}
+
+export const Node2Font: {
+    [k in NodeType]?: TextLanguage[];
+} = {
+    [StationType.MTR]: [TextLanguage.mtr_zh, TextLanguage.mtr_en],
+    [StationType.MRTBasic]: [TextLanguage.mrt],
+    [StationType.MRTInt]: [TextLanguage.mrt],
+    [StationType.JREastBasic]: [TextLanguage.jreast_ja, TextLanguage.jreast_en],
+    [StationType.JREastImportant]: [TextLanguage.jreast_ja, TextLanguage.jreast_en],
+    [StationType.TokyoMetroBasic]: [TextLanguage.tokyo_ja, TextLanguage.tokyo_en],
+    [StationType.TokyoMetroInt]: [TextLanguage.tokyo_ja, TextLanguage.tokyo_en],
+    [StationType.LondonTubeBasic]: [TextLanguage.tube],
+    [StationType.LondonTubeInt]: [TextLanguage.tube],
+    [MiscNodeType.BerlinSBahnLineBadge]: [TextLanguage.berlin],
+    [MiscNodeType.BerlinUBahnLineBadge]: [TextLanguage.berlin],
+    [MiscNodeType.JREastLineBadge]: [TextLanguage.jreast_ja],
+    [MiscNodeType.MRTDestinationNumbers]: [TextLanguage.mrt],
+    [MiscNodeType.MRTLineBadge]: [TextLanguage.mrt],
+    [MiscNodeType.TaiPeiMetroLineBadege]: [TextLanguage.taipei],
+};
+
+/**
+ * Selected font styles that are a subset of CSS properties.
+ */
+type FontStyle = Pick<
+    React.CSSProperties,
+    | 'fontFamily'
+    | 'fontSize'
+    | 'fontStyle'
+    | 'fontWeight'
+    | 'fontVariant'
+    | 'letterSpacing'
+    | 'wordSpacing'
+    | 'fontStretch'
+    | 'fontSynthesis'
+>;
+/**
+ * Font props that are used to set the font style of text elements in SVG.
+ *
+ * Note: `fontSynthesis` is not a valid SVG presentation attribute, so it is wrapped in a `style` object.
+ */
+type FontProps = Exclude<FontStyle, 'fontSynthesis'> & { style?: Pick<React.CSSProperties, 'fontSynthesis'> };
+
+/**
+ * Matches the TextLanguage to a specific font style.
+ * Text elements may use this to set the font style based on the language.
+ */
+export const getLangStyle = (lang: TextLanguage) => {
+    const props = structuredClone(LANG_STYLE[lang]) as FontProps;
+    for (const key in props) {
+        if (key === 'fontSynthesis') {
+            // fontSynthesis is not a valid SVG presentation attribute, so we need to wrap it in a style tag.
+            props.style = { fontSynthesis: props[key] };
+            delete props[key];
+        }
+    }
+    return props;
+};
+const LANG_STYLE: Record<TextLanguage, FontStyle> = {
+    zh: {
+        fontFamily: "SimHei, 'STHeiti T0C', 'PingFang SC', sans-serif",
+        fontSynthesis: 'none',
+    },
+    en: {
+        fontFamily: 'Arial, sans-serif',
+    },
+    berlin: {
+        fontFamily: 'Roboto, Arial, Helvetica, sans-serif',
+    },
+    /*
+     * Special thanks to these blogs for recommending M+ as an alternative to 新ゴ.
+     * https://google-sensei.com/it/font-shinmgo/
+     * https://mocotan-e.hatenablog.com/entry/2023/01/10/003337
+     * Although there are some discussion on the difference, it is still the closest and free.
+     * http://fumomit.blogstation.jp/archives/4112965.html
+     *
+     * https://github.com/coz-m/MPLUS_FONTS
+     * This is a free font with SIL OPEN FONT LICENSE.
+     */
+    jreast_ja: {
+        fontFamily: "a-otf-ud-shin-go-pr6n, 'M PLUS 2', sans-serif",
+        fontSynthesis: 'none',
+    },
+    jreast_en: {
+        fontFamily: 'helvetica, Arial, sans-serif',
+    },
+    /*
+     * IdentityFont comes from https://github.com/jglim/IdentityFont
+     * Special thanks to @jglim :)
+     * For licensing, see discussion at https://github.com/jglim/IdentityFont/pull/2
+     * We believe an open Internet but if the project changes its license or there
+     * is a direct request from LTA, we need to pull this down from out site.
+     */
+    mrt: {
+        fontFamily: 'LTAIdentity, sans-serif',
+    },
+    mtr_zh: {
+        fontFamily: 'GenYoMinTW-SB, HiraMinProN-W6, Vegur-Bold, Helvetica, serif',
+        fontSynthesis: 'none',
+    },
+    mtr_en: {
+        fontFamily: 'MyriadPro-Semibold, Vegur-Bold, Helvetica, sans-serif',
+    },
+    /*
+     * Taipei Sans TC Beta
+     * from 翰字鑄造 JT Foundry
+     * https://sites.google.com/view/jtfoundry/zh-tw/downloads
+     */
+    taipei: {
+        fontFamily: "'Taipei Sans TC Beta', Arial, sans-serif",
+        fontSynthesis: 'none',
+    },
+    tokyo_ja: {
+        // same as jreast_ja
+        fontFamily: "a-otf-ud-shin-go-pr6n, 'M PLUS 2', sans-serif",
+        fontSynthesis: 'none',
+    },
+    tokyo_en: {
+        fontFamily: 'MontaguSlab, Arial, sans-serif',
+    },
+    /*
+     * Railway comes from https://www.fontspace.com/railway-font-f20426
+     * Special thanks to @Greg Fleming for bringing this amazing font to the public :)
+     * This font is licensed under SIL Open Font License (OFL). https://openfontlicense.org/
+     */
+    tube: {
+        fontFamily: 'Johnston, Railway, sans-serif',
+    },
+};
+
+/**
+ * Below are the additional font data needs to be loaded separately.
+ */
+
+type FontFaceConfig = {
     source: string;
     descriptors?: FontFaceDescriptors;
 };
@@ -25,130 +173,35 @@ const TaipeiSansTC: FontFaceConfig = {
     descriptors: { display: 'swap' },
 };
 
-/**
- * Node type to fonts' css related data.
- */
-export const FONTS_CSS: {
-    [k in NodeType]?: {
-        className: string[];
-        cssFont: Record<string, FontFaceConfig | undefined>;
-        cssName: string;
-    };
-} = {
-    [StationType.MTR]: {
-        className: ['.rmp-name__mtr__zh', '.rmp-name__mtr__en'],
-        cssFont: { 'MyriadPro-Semibold': undefined, 'Vegur-Bold': undefined, 'GenYoMinTW-SB': undefined },
-        cssName: 'fonts_mtr',
-    },
-    [StationType.MRTBasic]: {
-        className: ['.rmp-name__mrt'],
-        cssFont: { LTAIdentity },
-        cssName: 'fonts_mrt',
-    },
-    [StationType.MRTInt]: {
-        className: ['.rmp-name__mrt'],
-        cssFont: { LTAIdentity },
-        cssName: 'fonts_mrt',
-    },
-    [StationType.JREastBasic]: {
-        className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
-        cssName: 'fonts_jreast',
-    },
-    [StationType.JREastImportant]: {
-        className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { 'M PLUS 2': MPLUS2 },
-        cssName: 'fonts_jreast',
-    },
-    [MiscNodeType.BerlinSBahnLineBadge]: {
-        className: ['.rmp-name__berlin'],
-        cssFont: { Roboto },
-        cssName: 'fonts_berlin',
-    },
-    [MiscNodeType.BerlinUBahnLineBadge]: {
-        className: ['.rmp-name__berlin'],
-        cssFont: { Roboto },
-        cssName: 'fonts_berlin',
-    },
-    [MiscNodeType.JREastLineBadge]: {
-        className: ['.rmp-name__jreast_ja', '.rmp-name__jreast_en'],
-        cssFont: { '"M PLUS 2"': MPLUS2 },
-        cssName: 'fonts_jreast',
-    },
-    [MiscNodeType.MRTDestinationNumbers]: {
-        className: ['.rmp-name__mrt'],
-        cssFont: { LTAIdentity },
-        cssName: 'fonts_mrt',
-    },
-    [MiscNodeType.MRTLineBadge]: {
-        className: ['.rmp-name__mrt'],
-        cssFont: { LTAIdentity },
-        cssName: 'fonts_mrt',
-    },
-    [StationType.TokyoMetroBasic]: {
-        className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
-        cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
-        cssName: 'fonts_tokyo',
-    },
-    [StationType.TokyoMetroInt]: {
-        className: ['.rmp-name__tokyo_en', '.rmp-name__jreast_ja'],
-        cssFont: { MontaguSlab, 'M PLUS 2': MPLUS2 },
-        cssName: 'fonts_tokyo',
-    },
-    [StationType.LondonTubeBasic]: {
-        className: ['.rmp-name__tube'],
-        cssFont: { Railway },
-        cssName: 'fonts_tube',
-    },
-    [StationType.LondonTubeInt]: {
-        className: ['.rmp-name__tube'],
-        cssFont: { Railway },
-        cssName: 'fonts_tube',
-    },
-    [MiscNodeType.TaiPeiMetroLineBadege]: {
-        className: ['.rmp-name__taipei'],
-        cssFont: { 'Taipei Sans TC Beta': TaipeiSansTC },
-        cssName: 'fonts_taipei',
-    },
+const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; name: string }>> = {
+    mtr_zh: { config: undefined, name: 'GenYoMinTW-SB' },
+    mtr_en: { config: undefined, name: 'Vegur-Bold' },
+    mrt: { config: LTAIdentity, name: 'LTAIdentity' },
+    jreast_ja: { config: MPLUS2, name: 'M PLUS 2' },
+    tokyo_ja: { config: MPLUS2, name: 'M PLUS 2' },
+    tokyo_en: { config: MontaguSlab, name: 'MontaguSlab' },
+    berlin: { config: Roboto, name: 'Roboto' },
+    tube: { config: Railway, name: 'Railway' },
+    taipei: { config: TaipeiSansTC, name: 'Taipei Sans TC Beta' },
 };
 
-const loadedCssNames: string[] = [];
-export const loadFontCss = async (type: NodeType) => {
-    const cssObj = FONTS_CSS[type];
-    if (!cssObj) return;
+const loadedLangs: TextLanguage[] = [];
+export const loadFont = async (lang: TextLanguage) => {
+    const fontObj = FONTS[lang];
+    if (!fontObj || loadedLangs.includes(lang)) return;
 
-    const { cssFont, cssName } = cssObj;
-    if (loadedCssNames.includes(cssName)) return;
+    const { config, name } = fontObj;
 
-    loadedCssNames.push(cssName);
-    await Promise.all(
-        Object.entries(cssFont).map(([font, config]) => rmgRuntime.loadFont(font, config && { configs: [config] }))
-    );
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.id = cssName;
-    link.href = import.meta.env.BASE_URL + `styles/${cssName}.css`;
-    document.head.append(link);
+    loadedLangs.push(lang);
+    await rmgRuntime.loadFont(name, config && { configs: [config] });
 };
 
-export const makeBase64EncodedFontsStyle = async (
-    cssFont: Record<string, FontFaceConfig | undefined>,
-    cssName: string
-) => {
+export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => {
     const s = document.createElement('style');
 
-    for (let i = document.styleSheets.length - 1; i >= 0; i = i - 1) {
-        if (document.styleSheets[i].href?.endsWith(`styles/${cssName}.css`)) {
-            s.textContent = [...document.styleSheets[i].cssRules]
-                .map(_ => _.cssText)
-                .filter(_ => !_.startsWith('@font-face')) // this is added with base64 data below
-                .join('\n');
-            break;
-        }
-    }
-    s.textContent += '\n';
-
-    const cssPromises = await Promise.allSettled(Object.keys(cssFont).map(rmgRuntime.getFontCSS));
+    const cssPromises = await Promise.allSettled(
+        languages.filter(lang => lang in FONTS).map(lang => rmgRuntime.getFontCSS(FONTS[lang]!.name))
+    );
     const cssTexts = cssPromises
         .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
         .map(promise => promise.value);

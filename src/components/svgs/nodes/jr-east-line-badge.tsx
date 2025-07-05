@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -114,7 +115,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 dominantBaseline="middle"
                 fill={color[3] === '#000' ? 'white' : color[2]}
                 fontSize={num > 9 ? 7 : 8}
-                className="rmp-name__jreast_en"
+                {...getLangStyle(TextLanguage.jreast_en)}
             >
                 {num}
             </text>
@@ -127,7 +128,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 fontSize={FONT_SIZE_JA}
                 lineHeight={FONT_SIZE_JA}
                 grow="down"
-                className="rmp-name__jreast_ja"
+                {...getLangStyle(TextLanguage.jreast_ja)}
             />
             <MultilineText
                 text={names[1].split('\n')}
@@ -139,7 +140,7 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
                 lineHeight={FONT_SIZE_EN}
                 baseOffset={0}
                 grow="down"
-                className="rmp-name__jreast_en"
+                {...getLangStyle(TextLanguage.jreast_en)}
             />
         </g>
     );

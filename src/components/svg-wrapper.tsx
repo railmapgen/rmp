@@ -19,10 +19,9 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
-import { FONTS_CSS, loadFontCss } from '../util/fonts';
-import { findEdgesConnectedByNodes, findNodesExist, findNodesInRectangle } from '../util/graph';
+import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
-import { useWindowSize } from '../util/hooks';
+import { useFonts, useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { getOneStationName } from '../util/random-station-names';
 import GridLines from './grid-lines';
@@ -64,16 +63,7 @@ const SvgWrapper = () => {
     const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
     const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
 
-    // Find nodes existence on each update and load fonts if needed.
-    React.useEffect(() => {
-        const nodesExist = findNodesExist(graph.current);
-
-        Object.entries(nodesExist)
-            // find nodes that exist and require additional fonts
-            .filter(([type, exists]) => exists && type in FONTS_CSS)
-            // only type is needed
-            .forEach(([type]) => loadFontCss(type as NodeType));
-    }, [refreshNodes]);
+    useFonts();
 
     // select related
     const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system

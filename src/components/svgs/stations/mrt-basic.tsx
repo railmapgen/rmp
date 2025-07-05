@@ -4,14 +4,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -125,7 +126,7 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
                     fontSize={STATION_CODE_FONT_SIZE}
                     dx="-4"
                     dy="0.5"
-                    className="rmp-name__mrt"
+                    {...getLangStyle(TextLanguage.mrt)}
                     fill={color[3]}
                     textAnchor="middle"
                     dominantBaseline="middle"
@@ -136,7 +137,7 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
                     fontSize={STATION_CODE_FONT_SIZE}
                     dx="4"
                     dy="0.5"
-                    className="rmp-name__mrt"
+                    {...getLangStyle(TextLanguage.mrt)}
                     fill={color[3]}
                     textAnchor="middle"
                     dominantBaseline="middle"
@@ -162,7 +163,7 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
                     lineHeight={STATION_NAME_FONT_SIZE}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
                     baseOffset={BASE_TEXT_OFFSET}
-                    className="rmp-name__mrt"
+                    {...getLangStyle(TextLanguage.mrt)}
                 />
             </g>
         </g>
@@ -281,10 +282,10 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
 const mrtBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <rect x="6" y="8.6035" rx="1.575" ry="3.151" width="12" height="6.793" fill="currentColor" />
-        <text fontSize="3.5" dx="10" dy="13" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3.5" dx="10" dy="13" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
             NS
         </text>
-        <text fontSize="3.5" dx="15" dy="13" className="rmp-name__en" fill="white" textAnchor="middle">
+        <text fontSize="3.5" dx="15" dy="13" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
             28
         </text>
     </svg>

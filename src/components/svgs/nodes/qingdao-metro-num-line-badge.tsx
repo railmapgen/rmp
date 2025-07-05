@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineBadgeAttributes>) => {
@@ -42,7 +43,7 @@ const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineB
         >
             <rect fill={color[2]} x="0" width="20" height="20" rx="2" ry="2" />
             <text
-                className="rmp-name__en"
+                {...getLangStyle(TextLanguage.en)}
                 textAnchor="left"
                 x={sX}
                 y={sY}
@@ -56,10 +57,10 @@ const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineB
             </text>
             {showText && (
                 <>
-                    <text className="rmp-name__zh" x="22" y="10.5" fontSize="13">
+                    <text {...getLangStyle(TextLanguage.zh)} x="22" y="10.5" fontSize="13">
                         号线
                     </text>
-                    <text className="rmp-name__en" x="22.5" y="19.5" fontSize="8">
+                    <text {...getLangStyle(TextLanguage.en)} x="22.5" y="19.5" fontSize="8">
                         Line {numEn}
                     </text>
                 </>

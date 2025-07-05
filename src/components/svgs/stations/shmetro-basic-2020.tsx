@@ -4,13 +4,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -147,7 +148,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                         lineHeight={12.67}
                         grow="up"
                         baseOffset={1}
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                     />
                     <MultilineText
                         text={names[1].split('\n')}
@@ -156,7 +157,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                         lineHeight={6.67}
                         grow="down"
                         baseOffset={1.5}
-                        className="rmp-name__en"
+                        {...getLangStyle(TextLanguage.en)}
                     />
                 </g>
             </g>

@@ -1,19 +1,20 @@
-import React from 'react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
-import { MultilineText } from '../common/multiline-text';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
     zh: 9,
@@ -202,7 +203,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
                     fontSize={LINE_HEIGHT.en}
                     lineHeight={LINE_HEIGHT.en}
                     grow="down"
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                     baseOffset={1}
                 />
             </g>

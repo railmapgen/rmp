@@ -3,14 +3,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText } from '../common/multiline-text';
 
 const X_HEIGHT = 5;
@@ -85,7 +86,7 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
                     dominantBaseline={dominantBaseline}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'bottom' ? 'down' : 'bidirectional'}
                     baseOffset={1}
-                    className="rmp-name__tube"
+                    {...getLangStyle(TextLanguage.tube)}
                 />
             </g>
         </g>

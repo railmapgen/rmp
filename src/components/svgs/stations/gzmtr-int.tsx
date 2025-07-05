@@ -15,6 +15,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
+import { TextLanguage, getLangStyle } from '../../../util/fonts';
 import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
@@ -289,14 +290,14 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                                 strokeColour={info[2]}
                                 lineNum={info[4]}
                                 stnNum={info[5]}
-                                classNames={{ digits: 'rmp-name__en' }}
+                                textProps={{ ...getLangStyle(TextLanguage.en) }}
                             />
                         ) : (
                             <FoshanStationNumber
                                 strokeColour={info[2]}
                                 lineNum={info[4]}
                                 stnNum={info[5]}
-                                classNames={{ digits: 'rmp-name__en' }}
+                                textProps={{ ...getLangStyle(TextLanguage.en) }}
                             />
                         )}
                     </g>
@@ -322,14 +323,14 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     fontSize={FONT_SIZE.zh}
                     lineHeight={FONT_SIZE.zh}
                     grow="up"
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
                     fontSize={FONT_SIZE.en}
                     lineHeight={FONT_SIZE.en}
                     grow="down"
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                 />
             </g>
             {secondaryNames.join('') !== '' && (
@@ -339,7 +340,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                         dx={-(secondaryTextWidth + 5) / 2}
                         textAnchor="end"
                         dominantBaseline="middle"
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                     >
                         （
                     </text>
@@ -348,15 +349,15 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                         dx={(secondaryTextWidth + 5) / 2}
                         textAnchor="start"
                         dominantBaseline="middle"
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                     >
                         ）
                     </text>
                     <g ref={secondaryTextRef}>
-                        <text fontSize="10" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        <text fontSize="10" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
                             {secondaryNames[0]}
                         </text>
-                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
                             {secondaryNames[1]}
                         </text>
                     </g>
@@ -367,10 +368,10 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     transform={`translate(${textX + underConstructionDx}, ${textY})`}
                     textAnchor={underConstructionTextAnchor}
                 >
-                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
                         （未开通）
                     </text>
-                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
                         (Under Construction)
                     </text>
                 </g>
