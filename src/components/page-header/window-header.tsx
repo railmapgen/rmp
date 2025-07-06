@@ -15,11 +15,15 @@ import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
+import { ImageImportModal } from './image-import-modal';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { past, future } = useRootSelector(state => state.param);
+    const {
+        refresh: { param: refreshParam },
+    } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
@@ -148,6 +152,7 @@ export default function WindowHeader() {
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+            <ImageImportModal trigger={refreshParam} />
         </RmgWindowHeader>
     );
 }

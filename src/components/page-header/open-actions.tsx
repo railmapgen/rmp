@@ -6,7 +6,13 @@ import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'r
 import { Events, LocalStorageKey } from '../../constants/constants';
 import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import {
+    clearSelected,
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    setGlobalAlert,
+    setRefreshParam,
+} from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
@@ -54,6 +60,7 @@ export default function OpenActions() {
         // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
+        dispatch(setRefreshParam());
 
         // hard refresh the canvas
         refreshAndSave();
