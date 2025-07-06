@@ -15,6 +15,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
         href = defaultImageAttributes.href,
         scale = defaultImageAttributes.scale,
         rotate = defaultImageAttributes.rotate,
+        opacity = defaultImageAttributes.opacity,
     } = attrs ?? defaultImageAttributes;
 
     const onPointerDown = React.useCallback(
@@ -68,7 +69,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
                         ) : (
                             <image href={`${href}`} aria-label={label} />
                         )} */}
-                        <image href={imgHref} aria-label={label} />
+                        <image href={imgHref} aria-label={label} opacity={opacity} />
                     </g>
                     <g
                         transform="rotate(45)"
@@ -98,6 +99,7 @@ export interface ImageAttributes {
     hash?: string;
     scale: number;
     rotate: number;
+    opacity: number;
 }
 
 const defaultImageAttributes: ImageAttributes = {
@@ -105,6 +107,7 @@ const defaultImageAttributes: ImageAttributes = {
     type: 'file',
     scale: 1,
     rotate: 0,
+    opacity: 1,
 };
 
 const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
@@ -215,6 +218,18 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             validator: (val: string) => !Number.isNaN(val),
             onChange: val => {
                 attrs.rotate = Number(val);
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            hidden: !attrs.href,
+        },
+        {
+            label: t('opacity'),
+            type: 'input',
+            value: (attrs.opacity ?? defaultImageAttributes.opacity).toString(),
+            validator: (val: string) => !Number.isNaN(val),
+            onChange: val => {
+                attrs.opacity = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
