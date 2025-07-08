@@ -661,7 +661,7 @@
             "transparent": "透明性",
             "scale": "スケール",
             "disabledScaleOptions": "画像がこのブラウザには大きすぎます。",
-            "disabledScaleOptionsSolution": "購読してデスクトップアプリをダウンロードし、大きな画像を渲染してください。",
+            "disabledScaleOptionsSolution": "<link1>購読して</link1>デスクトップアプリを<link2>ダウンロードし</link2>、大きな画像を渲染してください。",
             "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
             "isSystemFontsOnly": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",

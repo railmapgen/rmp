@@ -659,7 +659,7 @@
             "transparent": "Transparency",
             "scale": "Scale",
             "disabledScaleOptions": "Image too large for this browser.",
-            "disabledScaleOptionsSolution": "Subscribe and download our desktop app to render large images.",
+            "disabledScaleOptionsSolution": "<link1>Subscribe</link1> and <link2>download</link2> our desktop app to render large images.",
             "imageTooBig": "The image is too big for your browser to generate!",
             "isSystemFontsOnly": "Use system font only (font display may vary).",
             "shareInfo1": "I will attach ",

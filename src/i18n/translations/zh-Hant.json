@@ -658,7 +658,7 @@
             "transparent": "透明背景",
             "scale": "縮放",
             "disabledScaleOptions": "影像對於此瀏覽器來說太大。",
-            "disabledScaleOptionsSolution": "訂閱並下載我們的桌面應用程式以呈現大型影像。",
+            "disabledScaleOptionsSolution": "<link1>訂閱</link1>並<link2>下載</link2>我們的桌面應用程式以呈現大型影像。",
             "imageTooBig": "圖像太大，您的瀏覽器無法生成！",
             "isSystemFontsOnly": "僅用系統字體（字體顯示可能不一致）。",
             "shareInfo1": "當我分享此圖片時我會附上",
