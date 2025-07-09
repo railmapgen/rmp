@@ -1,4 +1,4 @@
-import { Box, Flex, Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
+import { Flex, Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
@@ -78,7 +78,7 @@ export default function WindowHeader() {
                     />
                 </HStack>
 
-                <HStack overflowX="auto" ml="auto">
+                <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>
                     <SearchPopover />
 
                     <IconButton
