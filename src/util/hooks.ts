@@ -1,10 +1,11 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { Theme } from '../constants/constants';
 import { useRootSelector } from '../redux';
 import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
-import { Theme } from '../constants/constants';
 import { loadFont } from './fonts';
 
 // Define general type for useWindowSize hook, which includes width and height
@@ -136,4 +137,35 @@ export const useFonts = () => {
             loadFont(lang);
         }
     }, [refreshNodes, languages]);
+};
+
+export const useScreenOrientation = () => {
+    const [orientation, setOrientation] = useState('landscape' as 'landscape' | 'portrait');
+
+    useEffect(() => {
+        if (!screen.orientation) {
+            logger.warn('screen.orientation API is not supported in this browser.');
+            return;
+        }
+
+        const getOrientation = () => {
+            if (screen.orientation.type.startsWith('portrait')) {
+                return 'portrait';
+            }
+            return 'landscape';
+        };
+
+        setOrientation(getOrientation());
+
+        const handleOrientationChange = () => {
+            setOrientation(getOrientation());
+        };
+        screen.orientation.addEventListener('change', handleOrientationChange);
+
+        return () => {
+            screen.orientation.removeEventListener('change', handleOrientationChange);
+        };
+    }, []);
+
+    return orientation;
 };
