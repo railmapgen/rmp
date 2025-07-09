@@ -1,4 +1,4 @@
-import { Heading, IconButton, Menu, MenuButton, MenuItem, MenuList, Wrap, WrapItem } from '@chakra-ui/react';
+import { Flex, Heading, HStack, IconButton, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import { RmgEnvBadge, RmgWindowHeader, useReadyConfig } from '@railmapgen/rmg-components';
 import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
@@ -9,6 +9,7 @@ import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
+import { useScreenOrientation } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
@@ -27,6 +28,8 @@ export default function WindowHeader() {
 
     const environment = useReadyConfig(rmgRuntime.getEnv);
     const appVersion = useReadyConfig(rmgRuntime.getAppVersion);
+
+    const orientation = useScreenOrientation();
 
     React.useEffect(() => {
         // environment !== RmgEnv.DEV -> wait after rmgRuntime.ready() in useReadyConfig
@@ -50,34 +53,34 @@ export default function WindowHeader() {
 
     return (
         <RmgWindowHeader>
-            <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
-                {t('header.about.rmp')}
-            </Heading>
-            <RmgEnvBadge
-                environment={environment}
-                version={appVersion}
-                popoverHeader={
-                    environment === RmgEnv.PRD ? undefined : (
-                        <Trans i18nKey="header.popoverHeader" environment={environment}>
-                            You&apos;re on {{ environment }} environment!
-                        </Trans>
-                    )
-                }
-                popoverBody={
-                    environment === RmgEnv.PRD ? undefined : (
-                        <Trans i18nKey="header.popoverBody">
-                            This is a testing environment where we test the latest beta RMP.
-                        </Trans>
-                    )
-                }
-            />
+            <Flex direction={orientation === 'landscape' ? 'row' : 'column'} width="100%">
+                <HStack height="32px">
+                    <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
+                        {t('header.about.rmp')}
+                    </Heading>
+                    <RmgEnvBadge
+                        environment={environment}
+                        version={appVersion}
+                        popoverHeader={
+                            environment === RmgEnv.PRD ? undefined : (
+                                <Trans i18nKey="header.popoverHeader" environment={environment}>
+                                    You&apos;re on {{ environment }} environment!
+                                </Trans>
+                            )
+                        }
+                        popoverBody={
+                            environment === RmgEnv.PRD ? undefined : (
+                                <Trans i18nKey="header.popoverBody">
+                                    This is a testing environment where we test the latest beta RMP.
+                                </Trans>
+                            )
+                        }
+                    />
+                </HStack>
 
-            <Wrap ml="auto">
-                <WrapItem>
+                <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>
                     <SearchPopover />
-                </WrapItem>
 
-                <WrapItem>
                     <IconButton
                         size="sm"
                         variant="ghost"
@@ -86,8 +89,6 @@ export default function WindowHeader() {
                         isDisabled={past.length === 0}
                         onClick={handleUndo}
                     />
-                </WrapItem>
-                <WrapItem>
                     <IconButton
                         size="sm"
                         variant="ghost"
@@ -96,22 +97,14 @@ export default function WindowHeader() {
                         isDisabled={future.length === 0}
                         onClick={handleRedo}
                     />
-                </WrapItem>
 
-                <WrapItem>
                     <ZoomPopover />
-                </WrapItem>
 
-                <WrapItem>
                     <OpenActions />
-                </WrapItem>
 
-                <WrapItem>
                     <DownloadActions />
-                </WrapItem>
 
-                {rmgRuntime.isStandaloneWindow() && (
-                    <WrapItem>
+                    {rmgRuntime.isStandaloneWindow() && (
                         <Menu>
                             <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
                             <MenuList>
@@ -122,10 +115,8 @@ export default function WindowHeader() {
                                 ))}
                             </MenuList>
                         </Menu>
-                    </WrapItem>
-                )}
+                    )}
 
-                <WrapItem>
                     <IconButton
                         size="sm"
                         variant="ghost"
@@ -133,9 +124,7 @@ export default function WindowHeader() {
                         icon={<MdSettings />}
                         onClick={() => setIsSettingsModalOpen(true)}
                     />
-                </WrapItem>
 
-                <WrapItem>
                     <IconButton
                         size="sm"
                         variant="ghost"
@@ -143,8 +132,8 @@ export default function WindowHeader() {
                         icon={<MdHelp />}
                         onClick={() => setIsAboutModalOpen(true)}
                     />
-                </WrapItem>
-            </Wrap>
+                </HStack>
+            </Flex>
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
