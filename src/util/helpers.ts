@@ -205,3 +205,39 @@ export const getContrastingColor = (hex: `#${string}`): MonoColour => {
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
     return yiq >= 128 ? MonoColour.black : MonoColour.white;
 };
+
+export const base64DataURLToBytes = async (dataURL: string) => {
+    const matches = dataURL.match(/^data:(.+);base64,(.*)$/);
+    if (!matches) {
+        throw new Error('Invalid base64 data URL.');
+    }
+    const mimeType = matches[1]; // "image/png"
+    const format = mimeType.split('/')[1]; // "png"
+    const base64 = matches[2];
+
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return { bytes, format, hash };
+};
+
+export const bytesToBase64DataURL = (bytes: Uint8Array, format: string): string => {
+    let binaryString = '';
+    const len = bytes.length;
+
+    for (let i = 0; i < len; i++) {
+        binaryString += String.fromCharCode(bytes[i]);
+    }
+
+    const base64 = btoa(binaryString);
+    const dataURL = `data:image/${format};base64,${base64}`;
+    return dataURL;
+};

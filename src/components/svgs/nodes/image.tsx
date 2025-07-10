@@ -1,11 +1,11 @@
-import { RmgButtonGroup, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { Input, Image as ChakraImage } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { Image as ChakraImage, Button } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { nanoid } from 'nanoid';
 import { AttrsProps, MiscNodeId } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { imageStoreIndexedDB } from '../../../util/image-store-indexed-db';
+import { ImagePanelModal } from '../../page-header/image-panel-modal';
 
 const Image = (props: NodeComponentProps<ImageAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -35,7 +35,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
     React.useEffect(() => {
         let ignore = false;
         if (href) {
-            imageStoreIndexedDB.get(id).then(src => {
+            imageStoreIndexedDB.get(href).then(src => {
                 if (!ignore) setImgHref(src);
             });
         } else {
@@ -94,7 +94,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
  */
 export interface ImageAttributes {
     label: string;
-    type: 'url' | 'file';
+    type: 'server' | 'local';
     href?: string;
     hash?: string;
     scale: number;
@@ -104,7 +104,7 @@ export interface ImageAttributes {
 
 const defaultImageAttributes: ImageAttributes = {
     label: 'Uninitialized Image',
-    type: 'file',
+    type: 'local',
     scale: 1,
     rotate: 0,
     opacity: 1,
@@ -114,11 +114,13 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const [isOpenImagePanel, setIsOpenImagePanel] = React.useState(false);
+
     const [imgSrc, setImgSrc] = React.useState<string | undefined>(undefined);
     React.useEffect(() => {
         let ignore = false;
         if (attrs.href) {
-            imageStoreIndexedDB.get(id as MiscNodeId).then(src => {
+            imageStoreIndexedDB.get(attrs.href).then(src => {
                 if (!ignore) setImgSrc(src);
             });
         } else {
@@ -129,46 +131,6 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
         };
     }, [id, attrs.href]);
 
-    // const loadExternalImage = async (url: string) => {
-    //     try {
-    //         const response = await fetch(url, { headers: { 'Access-Control-Allow-Origin': '*' } });
-    //         if (!response.ok) {
-    //             throw new Error(`下载失败: ${url}`);
-    //         }
-    //         const arrayBuffer = await response.arrayBuffer();
-
-    //         const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
-    //         const hashHex = bufferToHex(hashBuffer);
-
-    //         const base64String = bufferToBase64(arrayBuffer);
-    //         const mimeType = response.headers.get('Content-Type') || 'image/jpeg';
-    //         const href = `data:${mimeType};base64,${base64String}`;
-
-    //         dispatch(addImageHref({ id: id as MiscNodeId, href }));
-    //         return hashHex;
-    //     } catch (error) {
-    //         console.error('Error loading external image:', error);
-    //         return undefined;
-    //     }
-    // };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        console.log('File selected:', file);
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                if (typeof reader.result === 'string') {
-                    console.log('File read as base64:', reader.result);
-                    console.log({ ...attrs, href: reader.result });
-                    imageStoreIndexedDB.save(id as MiscNodeId, reader.result);
-                    handleAttrsUpdate(id, { ...attrs, label: file.name, href: `${id}+${nanoid(5)}` });
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const fields: RmgFieldsField[] = [
         {
             label: t('label'),
@@ -177,28 +139,6 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             onChange: (value: string) => handleAttrsUpdate(id, { ...attrs, label: value }),
             minW: 'full',
         },
-        // {
-        //     label: 'type',
-        //     type: 'custom',
-        //     component: (
-        //         <RmgButtonGroup
-        //             selections={[
-        //                 {
-        //                     label: t('panel.details..file'),
-        //                     value: 'file',
-        //                 },
-        //                 {
-        //                     label: t('panel.de.url'),
-        //                     value: 'url',
-        //                 },
-        //             ]}
-        //             defaultValue={attrs.type}
-        //             multiSelect={false}
-        //             onChange={value => handleAttrsUpdate(id, { ...attrs, type: value })}
-        //         />
-        //     ),
-        //     minW: 'full',
-        // },
         {
             label: t('scale'),
             type: 'input',
@@ -239,33 +179,31 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             label: t('image'),
             type: 'custom',
             component:
-                attrs.href === undefined || !imageStoreIndexedDB.has(id as MiscNodeId) ? (
+                attrs.href === undefined || !imageStoreIndexedDB.has(attrs.href) ? (
                     'Please upload file.'
                 ) : (
                     <ChakraImage src={imgSrc} />
                 ),
             minW: 'full',
-            hidden: attrs.type !== 'file',
         },
-        // {
-        //     label: 'url',
-        //     type: 'input',
-        //     value: attrs.href ?? '',
-        //     onChange: async (value: string) => {
-        //         const hash = await loadExternalImage(value);
-        //         handleAttrsUpdate(id, { ...attrs, href: value, hash });
-        //     },
-        //     minW: 'full',
-        //     hidden: attrs.type !== 'url',
-        // },
     ];
+
+    const handleImageChange = (id: MiscNodeId, href: string, type: 'local' | 'server') => {
+        handleAttrsUpdate(id, { ...attrs, type, href });
+    };
 
     return (
         <>
             <RmgFields fields={fields} />
-            {attrs.type === 'file' && (
-                <Input variant="flushedd" type="file" accept="image/*" onChange={handleFileChange} />
-            )}
+            <Button colorScheme="blue" variant="outline" onClick={() => setIsOpenImagePanel(true)} minW="full">
+                Open Image Panel
+            </Button>
+            <ImagePanelModal
+                id={id as MiscNodeId}
+                isOpen={isOpenImagePanel}
+                onClose={() => setIsOpenImagePanel(false)}
+                onChange={handleImageChange}
+            />
         </>
     );
 };
