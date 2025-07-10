@@ -20,9 +20,9 @@ const DetailsPanel = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const hardRefresh = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
@@ -42,8 +42,8 @@ const DetailsPanel = () => {
         allAttr.y += 50;
         const id = selectedFirst.startsWith('stn') ? `stn_${nanoid(10)}` : `misc_node_${nanoid(10)}`;
         graph.current.addNode(id, allAttr);
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
     };
     const handleCopy = (selected: Set<Id>) => {
         const s = exportSelectedNodesAndEdges(graph.current, selected);

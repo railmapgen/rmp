@@ -38,9 +38,9 @@ export const ScaleNodesModal = (props: { isOpen: boolean; onClose: () => void })
             graph.current.updateNodeAttribute(node, 'x', val => (val ?? 0) * scale);
             graph.current.updateNodeAttribute(node, 'y', val => (val ?? 0) * scale);
         });
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
         onClose();
     };
 

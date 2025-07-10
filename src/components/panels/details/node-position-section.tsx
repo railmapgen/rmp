@@ -10,9 +10,9 @@ export default function NodePositionSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const {
         selected,

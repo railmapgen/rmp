@@ -26,42 +26,14 @@ export interface SaveManagerEvent {
 
 export const saveManagerChannel = new BroadcastChannel(SAVE_MANAGER_CHANNEL_NAME);
 
-/**
- * Remember the previous hash of the graph state.
- * Notify RMT only if the graph changes.
- */
-let previousGraphHash: string | undefined;
-/**
- * The default graph on state initialization will be an empty graph.
- * Of course we shouldn't notify RMT if the graph is empty so we record
- * and sent the message only if the previousGraphHash is not the defaultGraphHash.
- */
-let defaultGraphHash: string | undefined;
-
 // Notify rmt to update save when the state is changed.
-export const onRMPSaveUpdate = async (graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    // top-level await is not supported so we are computing defaultGraphHash only once in the first call
-    if (!defaultGraphHash) {
-        const emptyGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
-        defaultGraphHash = await createHash(JSON.stringify(emptyGraph));
-        logger.debug(`Default graph hash: ${defaultGraphHash}`);
-    }
-
-    let changed = false;
-
-    const graphHash = await createHash(JSON.stringify(graph));
-    if (previousGraphHash && previousGraphHash !== defaultGraphHash && previousGraphHash !== graphHash) {
-        logger.debug(`Notify RMP save change, hash: ${graphHash}`);
-        saveManagerChannel.postMessage({
-            type: SaveManagerEventType.SAVE_CHANGED,
-            key: LocalStorageKey.PARAM,
-            from: 'rmp',
-        } as SaveManagerEvent);
-        changed = true;
-    }
-    previousGraphHash = graphHash;
-
-    return changed;
+export const onRMPSaveUpdate = () => {
+    logger.debug('Notify RMP save change');
+    saveManagerChannel.postMessage({
+        type: SaveManagerEventType.SAVE_CHANGED,
+        key: LocalStorageKey.PARAM,
+        from: 'rmp',
+    } as SaveManagerEvent);
 };
 
 export interface APISubscription {

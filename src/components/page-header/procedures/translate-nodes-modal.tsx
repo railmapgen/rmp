@@ -47,9 +47,9 @@ export const TranslateNodesModal = (props: { isOpen: boolean; onClose: () => voi
             graph.current.updateNodeAttribute(node, 'x', val => (val ?? 0) + x);
             graph.current.updateNodeAttribute(node, 'y', val => (val ?? 0) + y);
         });
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
         onClose();
     };
 

@@ -21,8 +21,8 @@ export default function StationTypeSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
     }, [dispatch, refreshNodesThunk, saveGraph]);
 
     const {

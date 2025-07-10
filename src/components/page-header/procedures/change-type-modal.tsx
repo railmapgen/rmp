@@ -25,7 +25,7 @@ import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { openPaletteAppClip, refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import {
     changeLinePathTypeInBatch,
     changeLineStyleTypeInBatch,
@@ -71,9 +71,9 @@ export const ChangeTypeModal = (props: {
     const { activeSubscriptions } = useRootSelector(state => state.account);
 
     const hardRefresh = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 

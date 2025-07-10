@@ -23,9 +23,9 @@ export default function InfoSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
@@ -56,8 +56,8 @@ export default function InfoSection() {
     };
     const handleParallelIndexChange = (parallelIndex: number) => {
         graph.current.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
-        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     const fields: RmgFieldsField[] = [];

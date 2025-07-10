@@ -54,9 +54,9 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
         });
 
     const refreshAndSave = useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
     const handleImportRMGProject = (param: RMGParam) => {

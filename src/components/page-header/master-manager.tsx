@@ -69,8 +69,8 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                     newParam.color.value = attrs.color ? newParam.color.value : newParam.color.defaultValue;
                 graph.current.mergeNodeAttributes(node, { [MiscNodeType.Master]: newParam });
             });
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
     };
 
     const handleDownload = (p: MasterParam) => {
@@ -101,8 +101,8 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
             .forEach(node => {
                 graph.current.dropNode(node);
             });
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
     };
 
     const handleSetLabel = (attr: MasterParam, label: string) => {
@@ -115,8 +115,8 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
             .forEach(node => {
                 graph.current.mergeNodeAttributes(node, { [MiscNodeType.Master]: { ...attr, label } });
             });
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
     };
 
     const fields = list.map(attrs => {

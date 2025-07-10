@@ -50,9 +50,9 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const graph = React.useRef(window.graph);
 
     const refreshAndSave = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
     const handleOpenTemplate = async (rmpSave: RMPSave) => {

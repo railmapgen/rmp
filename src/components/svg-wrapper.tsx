@@ -34,9 +34,9 @@ const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     };
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
@@ -52,7 +52,6 @@ const SvgWrapper = () => {
         selected,
         keepLastPath,
         theme,
-        refresh: { nodes: refreshNodes },
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
 

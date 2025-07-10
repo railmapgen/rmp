@@ -24,8 +24,8 @@ export const NodeSpecificAttributes = () => {
     const handleAttrsUpdate = (selectedFirst: string, attrs: any) => {
         const type = window.graph.getNodeAttribute(selectedFirst, 'type');
         window.graph.mergeNodeAttributes(selectedFirst, { [type]: attrs });
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshNodesThunk());
     };
 
     return AttrsComponent ? (
@@ -62,14 +62,14 @@ export const LineSpecificAttributes = () => {
     };
     const handlePathAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
-        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     const handleStyleAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [style]: attrs });
-        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     return (

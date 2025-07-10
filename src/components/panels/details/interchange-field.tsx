@@ -45,8 +45,8 @@ export const InterchangeField = (props: {
     const dispatch = useRootDispatch();
 
     const hardRefresh = React.useCallback(() => {
-        dispatch(refreshNodesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
     }, [dispatch, refreshNodesThunk, saveGraph]);
     const { selected } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
