@@ -4,6 +4,7 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
+import { RootStore, startRootListening } from '.';
 import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoParallel,
@@ -17,7 +18,6 @@ import {
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
-import { RootStore, startRootListening } from '.';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.

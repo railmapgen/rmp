@@ -1,3 +1,4 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
@@ -105,7 +106,7 @@ const loadFonts = async (elem: SVGSVGElement, isSystemFontsOnly: boolean, langua
             elem.prepend(await makeBase64EncodedFontsStyle(languages));
         } catch (err) {
             alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
-            console.error(err);
+            logger.warn(err);
         }
     }
 };

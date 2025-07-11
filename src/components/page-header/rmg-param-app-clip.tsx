@@ -1,6 +1,6 @@
 import { SystemStyleObject } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
@@ -68,7 +68,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
             refreshAndSave();
         } catch (err) {
             dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
-            console.error('OpenActions.handleUploadRMG():: Unknown error occurred while parsing the RMG project', err);
+            logger.error('OpenActions.handleUploadRMG():: Unknown error occurred while parsing the RMG project', err);
         } finally {
             onClose();
         }
@@ -78,7 +78,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
         const channel = new BroadcastChannel(CHANNEL_PREFIX + appClipId);
         channel.onmessage = ev => {
             const { event, data } = ev.data;
-            console.log('[rmp] Received event from RMG app clip:', event);
+            logger.debug('[rmp] Received event from RMG app clip:', event);
             if (event === 'CLOSE') {
                 onClose();
             } else if (event === 'IMPORT') {

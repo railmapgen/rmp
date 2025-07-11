@@ -294,7 +294,6 @@ const gzmtrBasicStationAttrsComponents = (props: AttrsProps<GzmtrBasicStationAtt
             label: t('panel.details.stations.common.lineCode'),
             value: attrs.lineCode,
             onChange: val => {
-                console.log(typeof val);
                 attrs.lineCode = val;
                 handleAttrsUpdate(id, attrs);
             },
