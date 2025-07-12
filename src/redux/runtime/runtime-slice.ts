@@ -29,6 +29,7 @@ interface RuntimeState {
     refresh: {
         nodes: number;
         edges: number;
+        param: number;
     };
     mode: RuntimeMode;
     /**
@@ -74,6 +75,7 @@ const initialState: RuntimeState = {
     refresh: {
         nodes: Date.now(),
         edges: Date.now(),
+        param: Date.now(),
     },
     mode: 'free',
     lastTool: undefined,
@@ -187,6 +189,9 @@ const runtimeSlice = createSlice({
         setRefreshEdges: state => {
             state.refresh.edges = Date.now();
         },
+        setRefreshParam: state => {
+            state.refresh.param = Date.now();
+        },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             if (state.mode !== 'free') state.lastTool = state.mode;
             state.mode = action.payload;
@@ -264,6 +269,7 @@ export const {
     setActive,
     setRefreshNodes,
     setRefreshEdges,
+    setRefreshParam,
     setMode,
     setKeepLastPath,
     setTheme,
