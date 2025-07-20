@@ -23,33 +23,34 @@ import {
     TabPanels,
     Image,
     CardFooter,
-    HStack,
     AlertIcon,
     AlertTitle,
     Alert,
     AlertDescription,
     CloseButton,
-    VStack,
     Tooltip,
     Badge,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { nanoid } from 'nanoid';
 import { MdCheck, MdDelete } from 'react-icons/md';
+import { nanoid } from 'nanoid';
 import { MiscNodeId } from '../../constants/constants';
+import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
 import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { bytesToBase64DataURL } from '../../util/helpers';
-import { image_endpoint } from '../../constants/server';
 
 interface ImageList {
     id: string;
     thumbnail: string;
     hash?: string;
 }
+
+// TEST USAGE !
+const RMP_EXPORT = true;
 
 export const ImagePanelModal = (props: {
     id: MiscNodeId;
@@ -62,7 +63,7 @@ export const ImagePanelModal = (props: {
     const { t } = useTranslation();
     const {
         token,
-        activeSubscriptions: { RMP_CLOUD },
+        // activeSubscriptions: { RMP_EXPORT },
     } = useRootSelector(state => state.account);
     const graph = React.useRef(window.graph);
     const dispatch = useDispatch();
@@ -316,7 +317,7 @@ export const ImagePanelModal = (props: {
                             <Tabs isLazy isFitted overflow="hidden">
                                 <TabList>
                                     <Tab>{t('gallery.type.local')}</Tab>
-                                    {RMP_CLOUD ? (
+                                    {RMP_EXPORT ? (
                                         <Tab>
                                             {t('gallery.type.server')}
                                             <Badge
