@@ -23,17 +23,27 @@ import {
     TabPanels,
     Image,
     CardFooter,
+    HStack,
+    AlertIcon,
+    AlertTitle,
+    Alert,
+    AlertDescription,
+    CloseButton,
+    VStack,
+    Tooltip,
+    Badge,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { nanoid } from 'nanoid';
 import { MdCheck, MdDelete } from 'react-icons/md';
-import { MiscNodeId, RMT_SERVER } from '../../constants/constants';
+import { MiscNodeId } from '../../constants/constants';
 import { useRootSelector } from '../../redux';
 import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { bytesToBase64DataURL } from '../../util/helpers';
+import { image_endpoint } from '../../constants/server';
 
 interface ImageList {
     id: string;
@@ -50,7 +60,10 @@ export const ImagePanelModal = (props: {
 }) => {
     const { id, isOpen, fetchImage, onClose, onChange } = props;
     const { t } = useTranslation();
-    const { token } = useRootSelector(state => state.account);
+    const {
+        token,
+        activeSubscriptions: { RMP_CLOUD },
+    } = useRootSelector(state => state.account);
     const graph = React.useRef(window.graph);
     const dispatch = useDispatch();
 
@@ -60,6 +73,7 @@ export const ImagePanelModal = (props: {
     const [localList, setLocalList] = React.useState<ImageList[]>([]);
     const [cloudList, setCloudList] = React.useState<ImageList[]>([]);
     const [selected, setSelected] = React.useState<ImageList | undefined>(undefined);
+    const [error, setError] = React.useState<string | undefined>(undefined);
 
     const tabs = [localList, cloudList];
 
@@ -93,9 +107,10 @@ export const ImagePanelModal = (props: {
 
                 const formData = new FormData();
                 formData.append('image', new Blob([bytes], { type: file.type }), file.name);
+                formData.append('mimetype', file.type);
                 formData.append('hash', hash);
 
-                fetch(RMT_SERVER + '/image/', {
+                fetch(image_endpoint, {
                     method: 'POST',
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -104,15 +119,19 @@ export const ImagePanelModal = (props: {
                 })
                     .then(response => response.json())
                     .then(data => {
-                        const imgId = `s${data.id}`;
-                        const newImage = {
-                            id: imgId,
-                            hash: data.hash,
-                            thumbnail: bytesToBase64DataURL(data.thumbnail, 'jpeg'),
-                        };
-                        setCloudList(prev => [...prev, newImage]);
-                        imageStoreIndexedDB.save(imgId, reader.result as string);
-                        setRefresh();
+                        if (!data.code || data.code === 201) {
+                            const imgId = `s${data.id}`;
+                            const newImage = {
+                                id: imgId,
+                                hash: data.hash,
+                                thumbnail: bytesToBase64DataURL(data.thumbnail, 'jpeg'),
+                            };
+                            setCloudList(prev => [...prev, newImage]);
+                            imageStoreIndexedDB.save(imgId, reader.result as string);
+                            setRefresh();
+                        } else {
+                            setError(data.message);
+                        }
                     })
                     .catch(error => console.error('Error uploading image:', error));
             } else {
@@ -161,7 +180,7 @@ export const ImagePanelModal = (props: {
 
     const fetchImageList = async () => {
         if (!token) return;
-        const rep = await fetch(RMT_SERVER + '/image/', {
+        const rep = await fetch(image_endpoint, {
             headers: {
                 accept: 'application/json',
                 'Content-Type': 'application/json',
@@ -175,7 +194,7 @@ export const ImagePanelModal = (props: {
 
         const list = await Promise.all(
             images.map(async (img: { id: string; hash: string }) => {
-                const thumbnail = await fetchImageAsBase64(`${RMT_SERVER}/image/thumbnail/${img.id}`);
+                const thumbnail = await fetchImageAsBase64(`${image_endpoint}/thumbnail/${img.id}`);
                 return {
                     id: `s${img.id}`,
                     hash: img.hash,
@@ -202,6 +221,7 @@ export const ImagePanelModal = (props: {
     React.useEffect(() => {
         if (isOpen) {
             setLoading(true);
+            setError(undefined);
             setSelected(undefined);
             getLocalImageList();
             fetchImageList();
@@ -219,7 +239,7 @@ export const ImagePanelModal = (props: {
                 .forEach(id => {
                     const attr = graph.current.getNodeAttributes(id)['image']!;
                     if (attr.href && attr.href.startsWith('s') && !imageStoreIndexedDB.has(attr.href)) {
-                        fetchImageAsBase64(`${RMT_SERVER}/image/thumbnail/${attr.href.slice(1)}`).then(src => {
+                        fetchImageAsBase64(`${image_endpoint}/thumbnail/${attr.href.slice(1)}`).then(src => {
                             if (src) {
                                 imageStoreIndexedDB.save(attr.href!, src);
                                 dispatch(setRefreshNodes());
@@ -238,7 +258,7 @@ export const ImagePanelModal = (props: {
                 onChange(id, imgId, 'local');
             } else {
                 const serverId = imgId.slice(1); // Remove 's' prefix
-                const src = await fetchImageAsBase64(RMT_SERVER + `/image/data/${serverId}`);
+                const src = await fetchImageAsBase64(`${image_endpoint}/data/${serverId}`);
                 if (src) {
                     imageStoreIndexedDB.save(imgId, src);
                     onChange(id, imgId, 'server');
@@ -259,7 +279,7 @@ export const ImagePanelModal = (props: {
         } else {
             // Server image
             const serverId = id.slice(1); // Remove 's' prefix
-            fetch(RMT_SERVER + `/image/data/${serverId}`, {
+            fetch(`${image_endpoint}/data/${serverId}`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -296,8 +316,33 @@ export const ImagePanelModal = (props: {
                             <Tabs isLazy isFitted overflow="hidden">
                                 <TabList>
                                     <Tab>{t('gallery.type.local')}</Tab>
-                                    <Tab>{t('gallery.type.server')}</Tab>
+                                    {RMP_CLOUD ? (
+                                        <Tab>
+                                            {t('gallery.type.server')}
+                                            <Badge
+                                                ml="1"
+                                                color="gray.50"
+                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                            >
+                                                PRO
+                                            </Badge>
+                                        </Tab>
+                                    ) : (
+                                        <Tooltip label={t('header.settings.pro')} hasArrow>
+                                            <Tab isDisabled>
+                                                {t('gallery.type.server')}
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tab>
+                                        </Tooltip>
+                                    )}
                                 </TabList>
+
                                 <TabPanels overflow="hidden" h="100%">
                                     {tabs.map((g, i) => (
                                         <TabPanel key={i} overflowY="auto" h="calc(100% - 2rem - 8px)">
@@ -348,15 +393,42 @@ export const ImagePanelModal = (props: {
                                                     </Flex>
                                                 </CardBody>
                                                 <CardFooter>
-                                                    <Heading size="md" width="100%">
-                                                        Add new
-                                                    </Heading>
-                                                    <Input
-                                                        variant="flushedd"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={e => handleFileChange(e, i)}
-                                                    />
+                                                    <Flex width="100%" direction="column">
+                                                        <Flex direction="row">
+                                                            <Heading size="md" width="100%">
+                                                                Add new
+                                                            </Heading>
+                                                            <Input
+                                                                variant="flushedd"
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={e => handleFileChange(e, i)}
+                                                            />
+                                                        </Flex>
+                                                        {error && (
+                                                            <Alert
+                                                                status="error"
+                                                                variant="left-accent"
+                                                                borderRadius="md"
+                                                                boxShadow="md"
+                                                                position="relative"
+                                                            >
+                                                                <AlertIcon />
+                                                                <Box flex="1">
+                                                                    <AlertTitle>Failed to upload!</AlertTitle>
+                                                                    <AlertDescription>{error}</AlertDescription>
+                                                                </Box>
+                                                                {onClose && (
+                                                                    <CloseButton
+                                                                        position="absolute"
+                                                                        right="8px"
+                                                                        top="8px"
+                                                                        onClick={onClose}
+                                                                    />
+                                                                )}
+                                                            </Alert>
+                                                        )}
+                                                    </Flex>
                                                 </CardFooter>
                                             </Card>
                                         </TabPanel>

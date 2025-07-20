@@ -113,8 +113,6 @@ export interface SnapPoint {
     originalNodesPos: [{ x: number; y: number }, { x: number; y: number }];
 }
 
-export const RMT_SERVER = 'https://railmapgen.org/v1';
-
 /**
  * Stations and lines may be in different displaying format.
  * E.g. Station's icon of Rail map and platform are different in Shanghai metro.
