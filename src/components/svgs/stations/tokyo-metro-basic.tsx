@@ -66,11 +66,10 @@ export const TokyoMetroBasicSvg = (props: TokyoMetroBasicSvgProps) => {
             </text>
             <text
                 x={stationCode.length === 1 ? 0 : -0.4 / stationCode.length}
-                y={5.5}
+                y={5}
                 textAnchor="middle"
                 {...getLangStyle(TextLanguage.tokyo_en)}
-                fontSize={7}
-                fontWeight="bold"
+                fontSize={6}
                 letterSpacing="-0.4"
                 fill="black"
             >
