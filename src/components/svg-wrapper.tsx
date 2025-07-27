@@ -8,6 +8,7 @@ import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
+import { setSnapLines } from '../redux/app/app-slice';
 import { redoAction, saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom, undoAction } from '../redux/param/param-slice';
 import {
     clearSelected,
@@ -42,7 +43,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { randomStationsNames, gridLines },
+        preference: { randomStationsNames, gridLines, snapLines },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -284,6 +285,8 @@ const SvgWrapper = () => {
             dispatch(redoAction());
             dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
+        } else if (e.key === 'c') {
+            dispatch(setSnapLines(!snapLines));
         }
     });
 

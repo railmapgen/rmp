@@ -721,6 +721,7 @@
                 "description": "Description",
                 "f": "Use the last tool.",
                 "s": "Marquee selection.",
+                "c": "Enable or disable magnetic layout.",
                 "arrows": "Move the canvas a little bit.",
                 "ijkl": "Move the selected station(s) a little bit.",
                 "shift": "Multiple selection.",
