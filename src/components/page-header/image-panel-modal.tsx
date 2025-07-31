@@ -57,7 +57,7 @@ export const ImagePanelModal = (props: {
     isOpen: boolean;
     fetchImage?: number;
     onClose: () => void;
-    onChange: (id: MiscNodeId, href: string, type: 'local' | 'server') => void;
+    onChange: (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => void;
 }) => {
     const { id, isOpen, fetchImage, onClose, onChange } = props;
     const { t } = useTranslation();
@@ -121,13 +121,7 @@ export const ImagePanelModal = (props: {
                     .then(response => response.json())
                     .then(data => {
                         if (!data.code || data.code === 201) {
-                            const imgId = `s${data.id}`;
-                            const newImage = {
-                                id: imgId,
-                                hash: data.hash,
-                                thumbnail: bytesToBase64DataURL(data.thumbnail, 'jpeg'),
-                            };
-                            setCloudList(prev => [...prev, newImage]);
+                            const imgId = `img-s_${data.id}`;
                             imageStoreIndexedDB.save(imgId, reader.result as string);
                             setRefresh();
                         } else {
@@ -139,7 +133,7 @@ export const ImagePanelModal = (props: {
                 const reader = new FileReader();
                 reader.onload = () => {
                     if (typeof reader.result === 'string') {
-                        const imgId = `l${nanoid(5)}`; // Use timestamp to ensure unique ID
+                        const imgId = `img-l_${nanoid(5)}`; // Use timestamp to ensure unique ID
                         imageStoreIndexedDB.save(imgId, reader.result);
                         setLocalList(prev => [...prev, { id: imgId, thumbnail: reader.result as string }]);
                         setRefresh();
@@ -195,9 +189,17 @@ export const ImagePanelModal = (props: {
 
         const list = await Promise.all(
             images.map(async (img: { id: string; hash: string }) => {
-                const thumbnail = await fetchImageAsBase64(`${image_endpoint}/thumbnail/${img.id}`);
+                const id = `img-s_${img.id}`;
+                const localId = `${id}_thumbnail`;
+                if ((await imageStoreIndexedDB.has(localId)) === false) {
+                    await imageStoreIndexedDB.save(
+                        localId,
+                        await fetchImageAsBase64(`${image_endpoint}/thumbnail/${img.id}`)
+                    );
+                }
+                const thumbnail = await imageStoreIndexedDB.get(localId);
                 return {
-                    id: `s${img.id}`,
+                    id,
                     hash: img.hash,
                     thumbnail,
                 };
@@ -209,7 +211,7 @@ export const ImagePanelModal = (props: {
     const getLocalImageList = async () => {
         const list: ImageList[] = [];
         (await imageStoreIndexedDB.getAll()).forEach((img, id) => {
-            if (img && id.startsWith('l')) {
+            if (img && id.startsWith('img-l')) {
                 list.push({
                     id,
                     thumbnail: img,
@@ -239,30 +241,32 @@ export const ImagePanelModal = (props: {
                 )
                 .forEach(id => {
                     const attr = graph.current.getNodeAttributes(id)['image']!;
-                    if (attr.href && attr.href.startsWith('s') && !imageStoreIndexedDB.has(attr.href)) {
-                        fetchImageAsBase64(`${image_endpoint}/thumbnail/${attr.href.slice(1)}`).then(src => {
+                    if (attr.href && attr.href.startsWith('img-s') && !imageStoreIndexedDB.has(attr.href)) {
+                        fetchImageAsBase64(`${image_endpoint}/data/${attr.href.slice(6)}/${attr.hash}`).then(src => {
                             if (src) {
                                 imageStoreIndexedDB.save(attr.href!, src);
-                                dispatch(setRefreshNodes());
                             }
                         });
                     }
                 });
+            dispatch(setRefreshNodes());
+            fetchImageList();
         }
     }, [fetchImage]);
 
     const handleChange = async () => {
         if (selected) {
             const imgId = selected.id;
-            if (imgId.startsWith('l')) {
+            const hash = selected.hash;
+            if (imgId.startsWith('img-l')) {
                 // Local image
                 onChange(id, imgId, 'local');
             } else {
-                const serverId = imgId.slice(1); // Remove 's' prefix
-                const src = await fetchImageAsBase64(`${image_endpoint}/data/${serverId}`);
+                const serverId = imgId.slice(6); // Remove 'img-s_' prefix
+                const src = await fetchImageAsBase64(`${image_endpoint}/data/${serverId}/${hash}`);
                 if (src) {
                     imageStoreIndexedDB.save(imgId, src);
-                    onChange(id, imgId, 'server');
+                    onChange(id, imgId, 'server', hash);
                 } else {
                     console.error('Failed to fetch image from server');
                     return;
@@ -273,13 +277,13 @@ export const ImagePanelModal = (props: {
     };
 
     const handleDelete = (id: string) => {
-        if (id.startsWith('l')) {
+        if (id.startsWith('img-l')) {
             // Local image
             imageStoreIndexedDB.delete(id);
             setLocalList(prev => prev.filter(img => img.id !== id));
         } else {
             // Server image
-            const serverId = id.slice(1); // Remove 's' prefix
+            const serverId = id.slice(6); // Remove 'img-X_' prefix
             fetch(`${image_endpoint}/data/${serverId}`, {
                 method: 'DELETE',
                 headers: {
@@ -299,26 +303,37 @@ export const ImagePanelModal = (props: {
     };
 
     return (
-        <>
-            <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>{t('header.settings...importTitle')}</ModalHeader>
-                    <ModalCloseButton />
+        <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>{t('header.settings...importTitle')}</ModalHeader>
+                <ModalCloseButton />
 
-                    <ModalBody>
-                        {loading && (
-                            <Box textAlign="center" py={10}>
-                                <Spinner size="xl" />
-                                <Text mt={4}>Loading...</Text>
-                            </Box>
-                        )}
-                        {!loading && (
-                            <Tabs isLazy isFitted overflow="hidden">
-                                <TabList>
-                                    <Tab>{t('gallery.type.local')}</Tab>
-                                    {RMP_EXPORT ? (
-                                        <Tab>
+                <ModalBody>
+                    {loading && (
+                        <Box textAlign="center" py={10}>
+                            <Spinner size="xl" />
+                            <Text mt={4}>Loading...</Text>
+                        </Box>
+                    )}
+                    {!loading && (
+                        <Tabs isLazy isFitted overflow="hidden">
+                            <TabList>
+                                <Tab>{t('gallery.type.local')}</Tab>
+                                {RMP_EXPORT ? (
+                                    <Tab>
+                                        {t('gallery.type.server')}
+                                        <Badge
+                                            ml="1"
+                                            color="gray.50"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tab>
+                                ) : (
+                                    <Tooltip label={t('header.settings.pro')} hasArrow>
+                                        <Tab isDisabled>
                                             {t('gallery.type.server')}
                                             <Badge
                                                 ml="1"
@@ -328,127 +343,114 @@ export const ImagePanelModal = (props: {
                                                 PRO
                                             </Badge>
                                         </Tab>
-                                    ) : (
-                                        <Tooltip label={t('header.settings.pro')} hasArrow>
-                                            <Tab isDisabled>
-                                                {t('gallery.type.server')}
-                                                <Badge
-                                                    ml="1"
-                                                    color="gray.50"
-                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                >
-                                                    PRO
-                                                </Badge>
-                                            </Tab>
-                                        </Tooltip>
-                                    )}
-                                </TabList>
+                                    </Tooltip>
+                                )}
+                            </TabList>
 
-                                <TabPanels overflow="hidden" h="100%">
-                                    {tabs.map((g, i) => (
-                                        <TabPanel key={i} overflowY="auto" h="calc(100% - 2rem - 8px)">
-                                            <Card mt="2">
-                                                <CardBody paddingTop="0">
-                                                    <Flex flexWrap="wrap">
-                                                        {g.map(k => (
-                                                            <Flex direction="column" key={k.id}>
-                                                                <Box
-                                                                    key={k.id}
-                                                                    boxSize="300px"
-                                                                    m="2"
-                                                                    border="1px solid"
-                                                                    borderColor="gray.200"
-                                                                    overflow="hidden"
-                                                                    borderRadius="md"
-                                                                >
-                                                                    <Image
-                                                                        id={`image_thumbnail_${k.id}`}
-                                                                        src={k.thumbnail}
-                                                                        boxSize="100%"
-                                                                        objectFit="cover"
-                                                                    />
-                                                                </Box>
-                                                                <Flex direction="row" width="100%">
-                                                                    <IconButton
-                                                                        m="1"
-                                                                        width="100%"
-                                                                        aria-label={t('gallery.select')}
-                                                                        icon={<MdCheck />}
-                                                                        colorScheme={
-                                                                            selected && selected.id === k.id
-                                                                                ? 'blue'
-                                                                                : 'gray'
-                                                                        }
-                                                                        onClick={() => setSelected(k)}
-                                                                    />
-                                                                    <IconButton
-                                                                        m="1"
-                                                                        aria-label="Delete"
-                                                                        icon={<MdDelete />}
-                                                                        colorScheme="red"
-                                                                        onClick={() => handleDelete(k.id)}
-                                                                    />
-                                                                </Flex>
-                                                            </Flex>
-                                                        ))}
-                                                    </Flex>
-                                                </CardBody>
-                                                <CardFooter>
-                                                    <Flex width="100%" direction="column">
-                                                        <Flex direction="row">
-                                                            <Heading size="md" width="100%">
-                                                                Add new
-                                                            </Heading>
-                                                            <Input
-                                                                variant="flushedd"
-                                                                type="file"
-                                                                accept="image/*"
-                                                                onChange={e => handleFileChange(e, i)}
-                                                            />
-                                                        </Flex>
-                                                        {error && (
-                                                            <Alert
-                                                                status="error"
-                                                                variant="left-accent"
+                            <TabPanels overflow="hidden" h="100%">
+                                {tabs.map((g, i) => (
+                                    <TabPanel key={i} overflowY="auto" h="calc(100% - 2rem - 8px)">
+                                        <Card mt="2">
+                                            <CardBody paddingTop="0">
+                                                <Flex flexWrap="wrap">
+                                                    {g.map(k => (
+                                                        <Flex direction="column" key={k.id}>
+                                                            <Box
+                                                                key={k.id}
+                                                                boxSize="300px"
+                                                                m="2"
+                                                                border="1px solid"
+                                                                borderColor="gray.200"
+                                                                overflow="hidden"
                                                                 borderRadius="md"
-                                                                boxShadow="md"
-                                                                position="relative"
                                                             >
-                                                                <AlertIcon />
-                                                                <Box flex="1">
-                                                                    <AlertTitle>Failed to upload!</AlertTitle>
-                                                                    <AlertDescription>{error}</AlertDescription>
-                                                                </Box>
-                                                                {onClose && (
-                                                                    <CloseButton
-                                                                        position="absolute"
-                                                                        right="8px"
-                                                                        top="8px"
-                                                                        onClick={onClose}
-                                                                    />
-                                                                )}
-                                                            </Alert>
-                                                        )}
+                                                                <Image
+                                                                    id={`image_thumbnail_${k.id}`}
+                                                                    src={k.thumbnail}
+                                                                    boxSize="100%"
+                                                                    objectFit="cover"
+                                                                />
+                                                            </Box>
+                                                            <Flex direction="row" width="100%">
+                                                                <IconButton
+                                                                    m="1"
+                                                                    width="100%"
+                                                                    aria-label={t('gallery.select')}
+                                                                    icon={<MdCheck />}
+                                                                    colorScheme={
+                                                                        selected && selected.id === k.id
+                                                                            ? 'blue'
+                                                                            : 'gray'
+                                                                    }
+                                                                    onClick={() => setSelected(k)}
+                                                                />
+                                                                <IconButton
+                                                                    m="1"
+                                                                    aria-label="Delete"
+                                                                    icon={<MdDelete />}
+                                                                    colorScheme="red"
+                                                                    onClick={() => handleDelete(k.id)}
+                                                                />
+                                                            </Flex>
+                                                        </Flex>
+                                                    ))}
+                                                </Flex>
+                                            </CardBody>
+                                            <CardFooter>
+                                                <Flex width="100%" direction="column">
+                                                    <Flex direction="row">
+                                                        <Heading size="md" width="100%">
+                                                            Add new
+                                                        </Heading>
+                                                        <Input
+                                                            variant="flushedd"
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={e => handleFileChange(e, i)}
+                                                        />
                                                     </Flex>
-                                                </CardFooter>
-                                            </Card>
-                                        </TabPanel>
-                                    ))}
-                                </TabPanels>
-                            </Tabs>
-                        )}
-                    </ModalBody>
+                                                    {error && (
+                                                        <Alert
+                                                            status="error"
+                                                            variant="left-accent"
+                                                            borderRadius="md"
+                                                            boxShadow="md"
+                                                            position="relative"
+                                                        >
+                                                            <AlertIcon />
+                                                            <Box flex="1">
+                                                                <AlertTitle>Failed to upload!</AlertTitle>
+                                                                <AlertDescription>{error}</AlertDescription>
+                                                            </Box>
+                                                            {onClose && (
+                                                                <CloseButton
+                                                                    position="absolute"
+                                                                    right="8px"
+                                                                    top="8px"
+                                                                    onClick={onClose}
+                                                                />
+                                                            )}
+                                                        </Alert>
+                                                    )}
+                                                </Flex>
+                                            </CardFooter>
+                                        </Card>
+                                    </TabPanel>
+                                ))}
+                            </TabPanels>
+                        </Tabs>
+                    )}
+                </ModalBody>
 
-                    <ModalFooter>
-                        <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
-                            {t('close')}
-                        </Button>
-                        <Button colorScheme="blue" variant="solid" mr="1" onClick={handleChange} isDisabled={!selected}>
-                            {t('change')}
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal>
-        </>
+                <ModalFooter>
+                    <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
+                        {t('close')}
+                    </Button>
+                    <Button colorScheme="blue" variant="solid" mr="1" onClick={handleChange} isDisabled={!selected}>
+                        {t('change')}
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
     );
 };

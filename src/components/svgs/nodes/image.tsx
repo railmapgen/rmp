@@ -188,14 +188,31 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
         },
     ];
 
-    const handleImageChange = (id: MiscNodeId, href: string, type: 'local' | 'server') => {
-        handleAttrsUpdate(id, { ...attrs, type, href });
+    const handleImageChange = (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => {
+        handleAttrsUpdate(id, { ...attrs, type, href, hash });
     };
+
+    const [isImageEditable, setIsImageEditable] = React.useState(false);
+    React.useEffect(() => {
+        if (attrs.href) {
+            imageStoreIndexedDB.has(`${attrs.href}_thumbnail`).then(has => {
+                setIsImageEditable(has);
+            });
+        } else {
+            setIsImageEditable(true);
+        }
+    }, [attrs.href]);
 
     return (
         <>
             <RmgFields fields={fields} />
-            <Button colorScheme="blue" variant="outline" onClick={() => setIsOpenImagePanel(true)} minW="full">
+            <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={() => setIsOpenImagePanel(true)}
+                isDisabled={!isImageEditable}
+                minW="full"
+            >
                 Open Image Panel
             </Button>
             <ImagePanelModal
