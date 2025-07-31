@@ -232,8 +232,8 @@
                     "language": "言語での書体ファミリー",
                     "zh": "中国語",
                     "en": "英語",
-                    "mtr__zh": "香港MTR中国語",
-                    "mtr__en": "香港MTR英語",
+                    "mtr_zh": "香港MTR中国語",
+                    "mtr_en": "香港MTR英語",
                     "berlin": "ベルリンS/Uバーン",
                     "mrt": "シンガポールMRT",
                     "jreast_ja": "JR東日本日本語",
@@ -463,7 +463,8 @@
                         "branchTerminal": "支線終着駅",
                         "joint": "共線乗換駅",
                         "tram": "路面電車駅"
-                    }
+                    },
+                    "rotation": "回転角度かいてんかくど"
                 },
                 "chengduRTInt": {
                     "displayName": "成都鉄道交通乗換駅"
@@ -660,7 +661,7 @@
             "transparent": "透明性",
             "scale": "スケール",
             "disabledScaleOptions": "画像がこのブラウザには大きすぎます。",
-            "disabledScaleOptionsSolution": "購読してデスクトップアプリをダウンロードし、大きな画像を渲染してください。",
+            "disabledScaleOptionsSolution": "<link1>購読して</link1>デスクトップアプリを<link2>ダウンロードし</link2>、大きな画像を渲染してください。",
             "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
             "isSystemFontsOnly": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",
@@ -722,6 +723,7 @@
                 "description": "説明",
                 "f": "最後のツールを使用する。",
                 "s": "範囲選択。",
+                "c": "マグネティックレイアウトを有効または無効にします。",
                 "arrows": "キャンバスを少し移動します。",
                 "ijkl": "選択した駅を少し移動します。",
                 "shift": "複数選択。",

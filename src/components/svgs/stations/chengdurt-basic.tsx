@@ -1,19 +1,20 @@
-import React from 'react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
-import { MultilineText } from '../common/multiline-text';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
 export const LINE_HEIGHT = {
@@ -33,6 +34,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
         color = defaultChengduRTBasicStationAttributes.color,
         direction = defaultChengduRTBasicStationAttributes.direction,
         stationType = defaultChengduRTBasicStationAttributes.stationType,
+        rotation = defaultChengduRTBasicStationAttributes.rotation,
     } = attrs[StationType.ChengduRTBasic] ?? defaultChengduRTBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -149,7 +151,11 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                     style={{ cursor: 'move' }}
                 />
             ) : stationType == 'joint' ? (
-                <g transform={direction == 'vertical' ? 'rotate(90)' : ''}>
+                <g
+                    transform={
+                        direction == 'vertical' ? `rotate(${Number(rotation) + 90})` : `rotate(${Number(rotation)})`
+                    }
+                >
                     <circle r={2.25} fill="black" transform="translate(-1.5,0)" />
                     <circle r={2.25} fill="black" transform="translate(1.5,0)" />
                     <circle r={1.75} fill="white" transform="translate(-1.5,0)" />
@@ -197,7 +203,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         fontSize={LINE_HEIGHT.zh}
                         lineHeight={LINE_HEIGHT.zh}
                         grow="up"
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                         baseOffset={1}
                     />
                     <MultilineText
@@ -205,7 +211,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         fontSize={LINE_HEIGHT.en}
                         lineHeight={LINE_HEIGHT.en}
                         grow="down"
-                        className="rmp-name__en"
+                        {...getLangStyle(TextLanguage.en)}
                         baseOffset={1}
                     />
                 </g>
@@ -218,7 +224,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                             lineWidth={LINE_HEIGHT.zh}
                             grow="bidirectional"
                             dominantBaseline="central"
-                            className="rmp-name__zh"
+                            {...getLangStyle(TextLanguage.zh)}
                         />
                     </g>
                     <g
@@ -230,7 +236,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                             fontSize={LINE_HEIGHT.en}
                             lineHeight={LINE_HEIGHT.en}
                             grow="up"
-                            className="rmp-name__en"
+                            {...getLangStyle(TextLanguage.en)}
                             dominantBaseline="central"
                         />
                     </g>
@@ -248,6 +254,7 @@ export interface ChengduRTBasicStationAttributes extends StationAttributes, Colo
     nameOffsetY: NameOffsetY;
     direction: 'vertical' | 'horizontal';
     stationType: 'normal' | 'joint' | 'branchTerminal' | 'tram';
+    rotation: '0' | '45' | '90' | '135' | '180' | '225' | '270' | '315';
 }
 
 const defaultChengduRTBasicStationAttributes: ChengduRTBasicStationAttributes = {
@@ -257,6 +264,7 @@ const defaultChengduRTBasicStationAttributes: ChengduRTBasicStationAttributes = 
     nameOffsetY: 'top',
     direction: 'horizontal',
     stationType: 'normal',
+    rotation: '0',
 };
 
 const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAttributes>) => {
@@ -350,6 +358,27 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.chengduRTBasic.rotation'),
+            value: attrs.rotation ?? defaultChengduRTBasicStationAttributes.rotation,
+            options: {
+                '0': '0°',
+                '45': '45°',
+                '90': '90°',
+                '135': '135°',
+                '180': '180°',
+                '225': '225°',
+                '270': '270°',
+                '315': '315°',
+            },
+            onChange: val => {
+                attrs.rotation = val as '0' | '45' | '90' | '135' | '180' | '225' | '270' | '315';
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            isDisabled: attrs.stationType != 'joint',
         },
     ];
     return <RmgFields fields={fields} />;

@@ -11,6 +11,7 @@ import {
     useToast,
 } from '@chakra-ui/react';
 import { MonoColour, updateTheme } from '@railmapgen/rmg-palette-resources';
+import { logger } from '@railmapgen/rmg-runtime';
 import { SerializedGraph } from 'graphology-types';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,9 +36,9 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
             const updatedParam = await updateColors(param);
             graph.current.clear();
             graph.current.import(updatedParam);
+            dispatch(saveGraph(graph.current.export()));
             dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
-            dispatch(saveGraph(graph.current.export()));
             toast({
                 title: t('header.settings.procedures.updateColor.success'),
                 status: 'success' as const,
@@ -45,7 +46,7 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
                 isClosable: true,
             });
         } catch (e) {
-            console.error(`[rmp] Error in updating all colors: ${e}`);
+            logger.error(`[rmp] Error in updating all colors: ${e}`);
             toast({
                 title: t('header.settings.procedures.updateColor.error', { e }),
                 status: 'error' as const,
@@ -139,7 +140,7 @@ const updateColors = async (s: string): Promise<SerializedGraph<NodeAttributes, 
     const startTimestamp = new Date().getTime();
 
     const matchedThemes = getMatchedThemesWithPaths(param);
-    console.log(`[rmp] Found all themes pending for update`, matchedThemes);
+    logger.debug(`[rmp] Found all themes pending for update`, matchedThemes);
 
     const TIMEOUT = 10000;
     let timeoutId;
@@ -170,7 +171,7 @@ const updateColors = async (s: string): Promise<SerializedGraph<NodeAttributes, 
 
     try {
         await updatePromise;
-        console.log(
+        logger.debug(
             `[rmp] Themes update completed, elapsed time ${(new Date().getTime() - startTimestamp) / 1000} sec`
         );
         return param;

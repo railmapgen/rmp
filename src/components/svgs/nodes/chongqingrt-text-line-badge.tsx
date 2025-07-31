@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -42,7 +43,7 @@ const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineB
         >
             <rect fill={color[2]} x="0" width="20" height="20" rx="10" ry="10" />
             <text
-                className="rmp-name__zh"
+                {...getLangStyle(TextLanguage.zh)}
                 textAnchor="middle"
                 x="10"
                 y="10.5"
@@ -55,7 +56,7 @@ const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineB
             <MultilineText
                 ref={textLineEl}
                 text={names[1].split('\n')}
-                className="rmp-name__en"
+                {...getLangStyle(TextLanguage.en)}
                 textAnchor="middle"
                 x="10"
                 y="9.25"

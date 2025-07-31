@@ -3,12 +3,14 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '..';
-import { CityCode, Id, MiscNodeId, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
+import { Node2Font } from '../../util/fonts';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
+import { loadFonts } from '../fonts/fonts-slice';
 import { redoAction, undoAction } from '../param/param-slice';
 
 /**
@@ -102,6 +104,7 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     dispatch(setRefreshNodes());
 
     let [stations, miscNodes, masters] = [0, 0, 0];
+    const existsTypes = new Set<NodeType>();
     window.graph.forEachNode((id, attr) => {
         if (id.startsWith('stn')) {
             stations += 1;
@@ -111,7 +114,10 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
         if (attr.type === MiscNodeType.Master) {
             masters += 1;
         }
+
+        existsTypes.add(attr.type);
     });
+
     dispatch(setNodesCount({ stations, miscNodes, masters }));
     const maximumMasterNodes = state.account.activeSubscriptions.RMP_CLOUD ? MAX_MASTER_NODE_PRO : MAX_MASTER_NODE_FREE;
     if (masters > maximumMasterNodes) {
@@ -122,6 +128,13 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
             })
         );
     }
+
+    const languages = existsTypes
+        .values()
+        .filter(t => t in Node2Font)
+        .flatMap(t => Node2Font[t]!)
+        .toArray();
+    dispatch(loadFonts([...new Set(languages)]));
 });
 
 /**

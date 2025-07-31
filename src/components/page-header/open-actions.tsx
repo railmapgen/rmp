@@ -37,9 +37,9 @@ export default function OpenActions() {
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
     const handleNew = () => {
@@ -92,11 +92,11 @@ export default function OpenActions() {
 
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        console.log('OpenActions.handleUpload():: received file', file);
+        logger.debug('OpenActions.handleUpload():: received file', file);
 
         if (file?.type !== 'application/json') {
             dispatch(setGlobalAlert({ status: 'error', message: t('header.open.invalidType') }));
-            console.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
+            logger.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
                 const paramStr = await readFileAsText(file);
@@ -104,7 +104,7 @@ export default function OpenActions() {
                 onConfirmOpen();
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
-                console.error(
+                logger.error(
                     'OpenActions.handleUpload():: Unknown error occurred while parsing the uploaded file',
                     err
                 );

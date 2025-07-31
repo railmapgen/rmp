@@ -24,8 +24,8 @@ export default function LineTypeSection() {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const hardRefresh = React.useCallback(() => {
-        dispatch(refreshEdgesThunk());
         dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
     }, [dispatch, refreshEdgesThunk, saveGraph]);
 
     const {

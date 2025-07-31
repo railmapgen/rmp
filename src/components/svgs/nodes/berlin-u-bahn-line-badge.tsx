@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinUBahnLineBadgeAttributes>) => {
@@ -37,7 +38,7 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinUBahnLineBadgeAttr
         >
             <rect fill={color[2]} x="0" width="25" height="15" />
             <text
-                className="rmp-name__berlin"
+                {...getLangStyle(TextLanguage.berlin)}
                 textAnchor="middle"
                 x="12.5"
                 y="12.5"

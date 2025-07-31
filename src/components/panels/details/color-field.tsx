@@ -113,16 +113,13 @@ type GetNodeOrEdgeAttribute = (id: string, type: NodeType | LineStyleType) => Re
 export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: string; defaultTheme: Theme }) => {
     const { type, colorKey = 'color', defaultTheme } = props;
     const dispatch = useRootDispatch();
-    const {
-        selected,
-        paletteAppClip: { input, output },
-    } = useRootSelector(state => state.runtime);
+    const { selected } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
     const hardRefresh = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 

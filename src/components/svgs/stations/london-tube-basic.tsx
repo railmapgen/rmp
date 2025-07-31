@@ -6,15 +6,16 @@ import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId, Theme } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import ThemeButton from '../../panels/theme-button';
 import { MultilineText } from '../common/multiline-text';
 
@@ -259,7 +260,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                     dominantBaseline={ROTATE_CONST[textRotate].dominantBaseline}
                     grow={ROTATE_CONST[textRotate].grow}
                     baseOffset={0}
-                    className="rmp-name__tube"
+                    {...getLangStyle(TextLanguage.tube)}
                 />
             </g>
         </g>

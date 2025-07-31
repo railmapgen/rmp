@@ -321,6 +321,12 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tr>
                                         <Tr>
                                             <Td>
+                                                <Kbd>c</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.c')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
                                                 <Box display="flex" flexDirection="row">
                                                     <MdArrowUpward />
                                                     <MdArrowBack />

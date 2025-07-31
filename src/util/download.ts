@@ -1,11 +1,10 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { FacilitiesType } from '../components/svgs/nodes/facilities';
-import { languageToFontsCss } from '../components/svgs/nodes/text';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { StationType } from '../constants/stations';
 import i18n from '../i18n/config';
-import { FONTS_CSS, makeBase64EncodedFontsStyle } from './fonts';
+import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize } from './helpers';
 
@@ -39,6 +38,7 @@ export const makeRenderReadySVGElement = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     generateRMPInfo: boolean,
     isSystemFontsOnly: boolean,
+    languages: TextLanguage[],
     svgVersion: 1.1 | 2
 ) => {
     // get the minimum and maximum of the graph
@@ -92,94 +92,40 @@ export const makeRenderReadySVGElement = async (
         el.remove();
     });
 
-    const nodesExist = findNodesExist(graph);
+    await loadFonts(elem, isSystemFontsOnly, languages);
 
-    await loadFonts(elem, graph, nodesExist, isSystemFontsOnly);
-
-    await loadFacilitiesSvg(elem, graph, nodesExist);
+    await loadFacilitiesSvg(elem, graph);
 
     return { elem, width, height };
 };
 
-const loadFonts = async (
-    elem: SVGSVGElement,
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodesExist: ReturnType<typeof findNodesExist>,
-    isSystemFontsOnly: boolean
-) => {
-    // TODO: add fonts by language (mtr__zh/mtr__en/mrt/jreast_ja) instead of node type
-    // this will reduce the fonts loaded as some node types (e.g. mtr) have two languages which might import two fonts
-    const fontsByNodeType: Set<NodeType> = new Set();
-    // find additional fonts imported from stations
-    (Object.keys(FONTS_CSS) as NodeType[])
-        .filter(nodeType => nodesExist[nodeType])
-        .forEach(nodeType => fontsByNodeType.add(nodeType));
-    // find additional fonts from text nodes
-    graph
-        .filterNodes((node, attr) => node.startsWith('misc_node_') && attr.type === MiscNodeType.Text)
-        .map(node => graph.getNodeAttribute(node, MiscNodeType.Text)!.language)
-        .map(lng => languageToFontsCss[lng])
-        // default fonts do not exist in FONTS_CSS but will be loaded definitely
-        .filter(nodeType => nodeType !== StationType.ShmetroBasic)
-        .forEach(nodeType => fontsByNodeType.add(nodeType));
+const loadFonts = async (elem: SVGSVGElement, isSystemFontsOnly: boolean, languages: TextLanguage[]) => {
     if (!isSystemFontsOnly) {
-        // add rmp-name__zh and rmp-name__en every time as they are the default fonts
-        const s = document.createElement('style');
-        for (let i = 0; i < document.styleSheets.length; i = i + 1) {
-            if (document.styleSheets[i].href?.endsWith('styles/fonts.css')) {
-                s.textContent = [...document.styleSheets[i].cssRules].map(_ => _.cssText).join('\n');
-                break;
-            }
+        // add additional fonts data to the final svg in encoded base64 format
+        try {
+            elem.prepend(await makeBase64EncodedFontsStyle(languages));
+        } catch (err) {
+            alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
+            logger.warn(err);
         }
-        elem.prepend(s);
-
-        // add additional fonts to the final svg in encoded base64 format
-        await Promise.all(
-            [...fontsByNodeType.values()]
-                .map(nodeType => FONTS_CSS[nodeType]!)
-                .map(async ({ cssName, cssFont }) => {
-                    try {
-                        elem.prepend(await makeBase64EncodedFontsStyle(cssFont, cssName));
-                    } catch (err) {
-                        alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
-                        console.error(err);
-                    }
-                })
-        );
-    } else {
-        // remove fonts class from the text element
-        ['.rmp-name__zh', '.rmp-name__en'].forEach(className => {
-            elem.querySelectorAll(className).forEach(el => {
-                el.classList.remove(className.slice(1));
-                if (el.classList.length === 0) el.removeAttribute('class');
-            });
-        });
-        fontsByNodeType.forEach(nodeType => {
-            FONTS_CSS[nodeType]!.className.forEach(className => {
-                elem.querySelectorAll(className).forEach(el => {
-                    el.classList.remove(className.slice(1));
-                    if (el.classList.length === 0) el.removeAttribute('class');
-                });
-            });
-        });
     }
 };
 
 const loadFacilitiesSvg = async (
     elem: SVGSVGElement,
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodesExist: ReturnType<typeof findNodesExist>
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
 ) => {
+    const nodesExist = findNodesExist(graph);
     if (nodesExist[MiscNodeType.Facilities]) {
-        const facilitiesNodes = graph.filterNodes((_, attr) => attr.type === MiscNodeType.Facilities);
         const facilitiesTypesToNodesMapping = Object.fromEntries(
             Object.values(FacilitiesType).map(k => [k, []])
         ) as unknown as {
             [key in FacilitiesType]: string[];
         };
-        facilitiesNodes.forEach(node => {
-            const type = graph.getNodeAttribute(node, MiscNodeType.Facilities)?.type;
-            if (type) facilitiesTypesToNodesMapping[type].push(node);
+        graph.forEachNode((node, attr) => {
+            if (attr.type !== MiscNodeType.Facilities) return;
+            const facilityType = attr[MiscNodeType.Facilities]?.type;
+            if (facilityType) facilitiesTypesToNodesMapping[facilityType].push(node);
         });
         const facilitiesTypesExists = Object.entries(facilitiesTypesToNodesMapping)
             .filter(([_, v]) => v.length > 0)

@@ -230,8 +230,8 @@
                     "language": "언어로 된 글꼴 종류",
                     "zh": "중국어",
                     "en": "영어",
-                    "mtr__zh": "홍콩 MTR 중국어",
-                    "mtr__en": "홍콩 MTR 영어",
+                    "mtr_zh": "홍콩 MTR 중국어",
+                    "mtr_en": "홍콩 MTR 영어",
                     "berlin": "베를린 S/U Bahn",
                     "mrt": "싱가포르 MRT",
                     "jreast_ja": "JR 동일본어",
@@ -460,7 +460,8 @@
                         "branchTerminal": "지선 종점역",
                         "joint": "공선 환승역",
                         "tram": "노면 전차역"
-                    }
+                    },
+                    "rotation": "회전 각도"
                 },
                 "chengduRTInt": {
                     "displayName": "청두 도시철도 환승역"
@@ -657,7 +658,7 @@
             "transparent": "투명 배경",
             "scale": "확대/축소",
             "disabledScaleOptions": "이미지가 이 브라우저에는 너무 큽니다.",
-            "disabledScaleOptionsSolution": "구독하고 데스크톱 앱을 다운로드하여 큰 이미지를 렌더링하세요.",
+            "disabledScaleOptionsSolution": "<link1>구독하고</link1> <link2>데스크톱 앱을 다운로드하여</link2> 큰 이미지를 렌더링하세요.",
             "imageTooBig": "이미지가 너무 크기 때문에 브라우저에서 생성할 수 없습니다!",
             "isSystemFontsOnly": "시스템 글꼴만 사용하십시오 (글꼴 표시가 다를 수 있습니다).",
             "shareInfo1": "이 사진을 공유할 때",
@@ -719,6 +720,7 @@
                 "description": "설명",
                 "f": "마지막 도구 사용.",
                 "s": "프레임 선택.",
+                "c": "자기 레이아웃을 활성화하거나 비활성화합니다.",
                 "arrows": "캔버스를 약간 이동합니다.",
                 "ijkl": "선택한 역을 약간 이동합니다.",
                 "shift": "여러 항목 선택.",

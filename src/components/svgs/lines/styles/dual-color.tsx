@@ -80,8 +80,8 @@ const DualColorSwitch = () => {
                 attrs.colorA = attrs.colorB;
                 attrs.colorB = tmp;
                 graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.DualColor]: attrs });
-                dispatch(refreshEdgesThunk());
                 dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
             }}
         />
     );

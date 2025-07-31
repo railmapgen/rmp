@@ -3,14 +3,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText } from '../common/multiline-text';
 
 const NAME_JRE_IMPORTANT = {
@@ -86,7 +87,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     <text
                         ref={textJAEl}
                         y="-1"
-                        className="rmp-name__jreast_ja"
+                        {...getLangStyle(TextLanguage.jreast_ja)}
                         textAnchor="middle"
                         fontSize={NAME_JRE_IMPORTANT.ja.size}
                         fill="white"
@@ -97,7 +98,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                 ) : (
                     <text
                         ref={textJAEl}
-                        className="rmp-name__jreast_ja"
+                        {...getLangStyle(TextLanguage.jreast_ja)}
                         textAnchor="middle"
                         writingMode="vertical-rl"
                         fontSize={NAME_JRE_IMPORTANT.ja.size}
@@ -134,7 +135,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
                     lineHeight={NAME_JRE_IMPORTANT.en.size}
                     grow={nameOffsetY === 'top' ? 'up' : nameOffsetY === 'middle' ? 'bidirectional' : 'down'}
                     baseOffset={0}
-                    className="rmp-name__jreast_en"
+                    {...getLangStyle(TextLanguage.jreast_en)}
                 />
             </g>
         </g>

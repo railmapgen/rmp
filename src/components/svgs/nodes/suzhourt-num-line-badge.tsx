@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const SuzhouRTNumLineBadge = (props: NodeComponentProps<SuzhouRTNumLineBadgeAttributes>) => {
@@ -38,7 +39,7 @@ const SuzhouRTNumLineBadge = (props: NodeComponentProps<SuzhouRTNumLineBadgeAttr
         >
             <rect fill={color[2]} width="20" height="20" rx="2" ry="2" />
             <text
-                className="rmp-name__zh"
+                {...getLangStyle(TextLanguage.zh)}
                 textAnchor="middle"
                 dominantBaseline="middle"
                 x="10"
@@ -51,10 +52,10 @@ const SuzhouRTNumLineBadge = (props: NodeComponentProps<SuzhouRTNumLineBadgeAttr
             </text>
             {branch && (
                 <>
-                    <text className="rmp-name__zh" x={20 + 2.5} y="10" fontSize="10">
+                    <text {...getLangStyle(TextLanguage.zh)} x={20 + 2.5} y="10" fontSize="10">
                         支线
                     </text>
-                    <text className="rmp-name__en" x={20 + 2.5} y="18" fontSize="5" fill="gray">
+                    <text {...getLangStyle(TextLanguage.en)} x={20 + 2.5} y="18" fontSize="5" fill="gray">
                         Branch line
                     </text>
                 </>

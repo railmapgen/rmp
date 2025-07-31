@@ -230,8 +230,8 @@
                     "language": "Font family in which language",
                     "zh": "Chinese",
                     "en": "English",
-                    "mtr__zh": "Hongkong MTR Chinese",
-                    "mtr__en": "Hongkong MTR English",
+                    "mtr_zh": "Hongkong MTR Chinese",
+                    "mtr_en": "Hongkong MTR English",
                     "berlin": "Berlin S/U Bahn",
                     "mrt": "Singapore MRT",
                     "jreast_ja": "JR East Japanese",
@@ -461,7 +461,8 @@
                         "branchTerminal": "Branch terminal",
                         "joint": "Joint transfer station",
                         "tram": "Tram station"
-                    }
+                    },
+                    "rotation": "Rotation"
                 },
                 "chengduRTInt": {
                     "displayName": "Chengdu Rail Transit interchange station"
@@ -658,7 +659,7 @@
             "transparent": "Transparency",
             "scale": "Scale",
             "disabledScaleOptions": "Image too large for this browser.",
-            "disabledScaleOptionsSolution": "Subscribe and download our desktop app to render large images.",
+            "disabledScaleOptionsSolution": "<link1>Subscribe</link1> and <link2>download</link2> our desktop app to render large images.",
             "imageTooBig": "The image is too big for your browser to generate!",
             "isSystemFontsOnly": "Use system font only (font display may vary).",
             "shareInfo1": "I will attach ",
@@ -720,6 +721,7 @@
                 "description": "Description",
                 "f": "Use the last tool.",
                 "s": "Marquee selection.",
+                "c": "Enable or disable magnetic layout.",
                 "arrows": "Move the canvas a little bit.",
                 "ijkl": "Move the selected station(s) a little bit.",
                 "shift": "Multiple selection.",

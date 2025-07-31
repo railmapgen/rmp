@@ -1,10 +1,12 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { Theme } from '../constants/constants';
 import { useRootSelector } from '../redux';
 import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
-import { Theme } from '../constants/constants';
+import { loadFont } from './fonts';
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {
@@ -113,4 +115,57 @@ export const usePaletteTheme = (options?: UsePaletteThemeOptions) => {
     }, [dispatch, theme]);
 
     return { theme, requestThemeChange };
+};
+
+/**
+ * All in one place to load fonts based on used languages, should be attached only once in svg-wrapper.
+ *
+ * Of course, you are free to load fonts by manually dispatching loadFont/loadFonts actions,
+ * here is only a convenience hook to load all fonts by node types in the graph.
+ * However, manually dispatching loadFont/loadFonts actions in every component instance may
+ * cause performance issues. So use this whenever possible unless your component
+ * needs to load fonts dynamically such as the `Text` component.
+ */
+export const useFonts = () => {
+    const { languages } = useRootSelector(state => state.fonts);
+    const {
+        refresh: { nodes: refreshNodes },
+    } = useRootSelector(state => state.runtime);
+
+    useEffect(() => {
+        for (const lang of languages) {
+            loadFont(lang);
+        }
+    }, [refreshNodes, languages]);
+};
+
+export const useScreenOrientation = () => {
+    const [orientation, setOrientation] = useState('landscape' as 'landscape' | 'portrait');
+
+    useEffect(() => {
+        if (!screen.orientation) {
+            logger.warn('screen.orientation API is not supported in this browser.');
+            return;
+        }
+
+        const getOrientation = () => {
+            if (screen.orientation.type.startsWith('portrait')) {
+                return 'portrait';
+            }
+            return 'landscape';
+        };
+
+        setOrientation(getOrientation());
+
+        const handleOrientationChange = () => {
+            setOrientation(getOrientation());
+        };
+        screen.orientation.addEventListener('change', handleOrientationChange);
+
+        return () => {
+            screen.orientation.removeEventListener('change', handleOrientationChange);
+        };
+    }, []);
+
+    return orientation;
 };

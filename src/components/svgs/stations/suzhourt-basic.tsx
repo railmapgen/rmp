@@ -4,14 +4,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
@@ -100,7 +101,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                         lineHeight={NAME_SZ_BASIC.zh.size}
                         grow="up"
                         baseOffset={NAME_SZ_BASIC.zh.baseOffset}
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                     />
                     <MultilineText
                         text={names[1].split('\n')}
@@ -108,7 +109,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                         lineHeight={NAME_SZ_BASIC.en.size}
                         grow="down"
                         baseOffset={NAME_SZ_BASIC.en.baseOffset}
-                        className="rmp-name__en"
+                        {...getLangStyle(TextLanguage.en)}
                         fill="gray"
                     />
                 </g>
@@ -122,7 +123,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                             grow="bidirectional"
                             baseOffset={NAME_SZ_BASIC.zh.baseOffset}
                             dominantBaseline="central"
-                            className="rmp-name__zh"
+                            {...getLangStyle(TextLanguage.zh)}
                         />
                     </g>
                     <g
@@ -135,7 +136,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                             lineHeight={NAME_SZ_BASIC.en.size}
                             grow="up"
                             baseOffset={NAME_SZ_BASIC.en.baseOffset}
-                            className="rmp-name__en"
+                            {...getLangStyle(TextLanguage.en)}
                             dominantBaseline="central"
                             fill="gray"
                         />

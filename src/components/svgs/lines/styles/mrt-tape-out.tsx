@@ -114,8 +114,8 @@ const MRTTapeOutSwitch = () => {
                 attrs.colorA = attrs.colorB;
                 attrs.colorB = tmp;
                 graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.MRTTapeOut]: attrs });
-                dispatch(refreshEdgesThunk());
                 dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
             }}
         />
     );

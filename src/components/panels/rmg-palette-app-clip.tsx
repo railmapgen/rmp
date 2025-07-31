@@ -1,6 +1,6 @@
 import { CloseButton, SystemStyleObject } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
-import rmgRuntime from '@railmapgen/rmg-runtime';
+import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { Theme } from '../../constants/constants';
 
@@ -51,7 +51,7 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
 
         channel.onmessage = ev => {
             const { event, data } = ev.data;
-            console.log('[rmp] Received event from Palette app clip:', event);
+            logger.debug('[rmp] Received event from Palette app clip:', event);
             if (event === 'CLOSE') {
                 onClose();
             } else if (event === 'SELECT') {

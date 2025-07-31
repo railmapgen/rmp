@@ -672,7 +672,7 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('51 -> 52', () => {
-        // Bump save version to support Taipei Metro line badge.
+        // Bump save version to support Taiwan railway and hsr facilities.
         // Prepare an empty save.
         const oldParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":51}';
@@ -687,17 +687,14 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('52 -> 53', () => {
-        // Bump save version to support Taipei Metro line badge.
-        // Prepare an empty save.
+        // Bump save version to rename some type.
         const oldParam =
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":-807.5,"y":-210.5},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_HF4IR3Cy_s","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top"}}},{"key":"stn_7qZmnoU1-G","attributes":{"visible":true,"zIndex":0,"x":0,"y":50,"type":"sh-sub-rwy","sh-sub-rwy":{"names":["车站","Stn"],"rotate":0}}},{"key":"stn_auLwhQdP_M","attributes":{"visible":true,"zIndex":0,"x":0,"y":100,"type":"gd-intercity-rwy","gd-intercity-rwy":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false}}}],"edges":[]},"version":52}';
-        // Upgrade it with your newly added function.
         const newParam = UPGRADE_COLLECTION[52](oldParam);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":-807.5,"y":-210.5},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_HF4IR3Cy_s","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top"}}},{"key":"stn_7qZmnoU1-G","attributes":{"visible":true,"zIndex":0,"x":0,"y":50,"type":"shanghai-sub-rwy","shanghai-sub-rwy":{"names":["车站","Stn"],"rotate":0}}},{"key":"stn_auLwhQdP_M","attributes":{"visible":true,"zIndex":0,"x":0,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["车站","Stn"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false}}}],"edges":[]},"version":53}';
-        // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
 
@@ -705,13 +702,39 @@ describe('Unit tests for param upgrade function', () => {
         // Bump save version to match the icon reposition in gzmtr-line-badge.
         const oldParam =
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":255,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"],"tram":false,"span":true}}},{"key":"misc_node_Another","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["2号线","Line 2"],"color":["guangzhou","gz2","#00629B","#fff"],"tram":false,"span":true}}}],"edges":[]},"version":53}';
-        // Upgrade it with your newly added function.
         const newParam = UPGRADE_COLLECTION[53](oldParam);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_Of3OsZGk2E","attributes":{"visible":true,"zIndex":0,"x":320,"y":267,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["1号线","Line 1"],"color":["guangzhou","gz1","#F3D03E","#000"],"tram":false,"span":true}}},{"key":"misc_node_Another","attributes":{"visible":true,"zIndex":0,"x":100,"y":112,"type":"gzmtr-line-badge","gzmtr-line-badge":{"names":["2号线","Line 2"],"color":["guangzhou","gz2","#00629B","#fff"],"tram":false,"span":true}}}],"edges":[]},"version":54}';
-        // And the updated save has only version field and y positions changed.
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('54 -> 55', () => {
+        // Bump save version to update TextLanguage in Text (mtr__zh -> mtr_zh, mtr__en -> mtr_en).
+        const oldParam =
+            '{"svgViewBoxZoom":40,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_klNPHzAh5Q","attributes":{"visible":true,"zIndex":0,"x":595,"y":320,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}},{"key":"misc_node_x78cK21yLo","attributes":{"visible":true,"zIndex":0,"x":595,"y":370,"type":"text","text":{"content":"車站","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"mtr__zh","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}}],"edges":[]},"version":54}';
+        const newParam = UPGRADE_COLLECTION[54](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":40,"svgViewBoxMin":{"x":0,"y":0},"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_klNPHzAh5Q","attributes":{"visible":true,"zIndex":0,"x":595,"y":320,"type":"text","text":{"content":"Enter your text here","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"en","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}},{"key":"misc_node_x78cK21yLo","attributes":{"visible":true,"zIndex":0,"x":595,"y":370,"type":"text","text":{"content":"車站","fontSize":16,"lineHeight":16,"textAnchor":"middle","dominantBaseline":"middle","language":"mtr_zh","color":["shanghai","jsr","#000000","#fff"],"rotate":0,"italic":"normal","bold":"normal","outline":0}}}],"edges":[]},"version":55}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('55 -> 56', () => {
+        // Bump save version to support Chongqing Rail Transit stations.
+        // Add isLoop attributes to Chongqing Rail Transit Basic stations.
+        // Prepare an empty save.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chengdurt-basic","chengdurt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false,"direction":"horizontal","stationType":"joint"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":55}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[55](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_6oAhcug7aq","attributes":{"visible":true,"zIndex":0,"x":-1161.8544148936169,"y":648.2702426050851,"type":"chengdurt-basic","chengdurt-basic":{"names":["铁山坪","Tieshanping"],"color":["chongqing","cq4","#DC8633","#fff"],"nameOffsetX":"middle","nameOffsetY":"top","textVertical":false,"direction":"horizontal","stationType":"joint","rotation":0}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":56}';
+        // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
 });

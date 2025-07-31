@@ -37,8 +37,8 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
-import SvgLayer from './svg-layer';
 import SnapPointGuideLines from './snap-point-guide-lines';
+import SvgLayer from './svg-layer';
 import { linePaths } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -59,9 +59,9 @@ const SvgCanvas = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
+        dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-        dispatch(saveGraph(graph.current.export()));
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
@@ -335,8 +335,8 @@ const SvgCanvas = () => {
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                 }
             });
-            dispatch(refreshEdgesThunk());
             dispatch(saveGraph(graph.current.export()));
+            dispatch(refreshEdgesThunk());
         } else if (mode === 'free') {
             if (active) {
                 // the node is pointed down before
@@ -347,6 +347,7 @@ const SvgCanvas = () => {
                 } else {
                     // its a moving node operation, save the final coordinate
                     dispatch(saveGraph(graph.current.export()));
+                    dispatch(refreshNodesThunk());
                 }
             } else {
                 // no-op for a new node is just placed, already added to selected in pointer down

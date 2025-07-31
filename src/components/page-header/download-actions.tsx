@@ -29,7 +29,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import canvasSize from 'canvas-size';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { isTauri } from '../../constants/server';
@@ -42,6 +42,20 @@ import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
 
+const getTauriUrl = () => {
+    const baseUrl = 'https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download';
+    const d = new Date();
+    const tag = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}01`;
+    const ver = `${String(d.getFullYear()).slice(-2)}.${d.getMonth() + 1}.1`;
+    const platform = navigator.platform;
+    const suffix = platform.includes('Linux')
+        ? 'amd64.AppImage'
+        : platform.includes('Mac')
+          ? 'aarch64.dmg'
+          : 'x64-setup.exe';
+    return baseUrl + `/tauri-${tag}/Rail.Map.Toolkit_${ver}_${suffix}`;
+};
+
 export default function DownloadActions() {
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
@@ -51,6 +65,7 @@ export default function DownloadActions() {
     const {
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
+    const { languages } = useRootSelector(state => state.fonts);
     const param = useRootSelector(state => state.param);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
@@ -157,6 +172,7 @@ export default function DownloadActions() {
             graph.current,
             isAttachSelected,
             isSystemFontsOnly,
+            languages,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
@@ -294,7 +310,28 @@ export default function DownloadActions() {
                                 <Box>
                                     <AlertTitle>{t('header.download.disabledScaleOptions')}</AlertTitle>
                                     <AlertDescription>
-                                        {t('header.download.disabledScaleOptionsSolution')}
+                                        <Trans
+                                            i18nKey="header.download.disabledScaleOptionsSolution"
+                                            components={{
+                                                link1: (
+                                                    <Link
+                                                        color="teal.500"
+                                                        textDecoration="underline"
+                                                        cursor="pointer"
+                                                        href="https://afdian.com/item/9c8b220c614311efab2d52540025c377"
+                                                        target="_blank"
+                                                    />
+                                                ),
+                                                link2: (
+                                                    <Link
+                                                        color="teal.500"
+                                                        textDecoration="underline"
+                                                        cursor="pointer"
+                                                        href={getTauriUrl()}
+                                                    />
+                                                ),
+                                            }}
+                                        />
                                     </AlertDescription>
                                 </Box>
                             </Alert>

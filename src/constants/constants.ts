@@ -148,8 +148,8 @@ export enum Events {
 }
 
 export enum LocalStorageKey {
-    LOGIN_STATE = 'rmp__login_state',
-    APP = 'rmp__app',
+    LOGIN_STATE = 'login_state',
+    APP = 'app',
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',

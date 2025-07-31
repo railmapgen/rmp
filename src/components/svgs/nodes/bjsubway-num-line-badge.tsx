@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const NUM_WIDTH = 11.84375;
@@ -39,7 +40,7 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
         >
             <rect fill={color[2]} x="0" width={NUM_WIDTH + 21} height="16" rx="2" />
             <text
-                className="rmp-name__en"
+                {...getLangStyle(TextLanguage.en)}
                 textAnchor="middle"
                 x={NUM_WIDTH / 2 + 2}
                 y="13.5"
@@ -49,10 +50,22 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
             >
                 {num}
             </text>
-            <text className="rmp-name__zh" x={NUM_WIDTH + (num > 9 ? 5.5 : 3)} y="8.5" fontSize="7" fill={fgColor}>
+            <text
+                x={NUM_WIDTH + (num > 9 ? 5.5 : 3)}
+                y="8.5"
+                fontSize="7"
+                fill={fgColor}
+                {...getLangStyle(TextLanguage.zh)}
+            >
                 号线
             </text>
-            <text className="rmp-name__en" x={NUM_WIDTH + (num > 9 ? 6 : 4.5)} y="13.5" fontSize="4" fill={fgColor}>
+            <text
+                {...getLangStyle(TextLanguage.en)}
+                x={NUM_WIDTH + (num > 9 ? 6 : 4.5)}
+                y="13.5"
+                fontSize="4"
+                fill={fgColor}
+            >
                 Line {num}
             </text>
         </g>

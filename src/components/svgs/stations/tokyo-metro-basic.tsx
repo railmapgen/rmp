@@ -4,17 +4,18 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
 import {
+    defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
     Station,
     StationAttributes,
     StationComponentProps,
     StationType,
-    defaultStationAttributes,
 } from '../../../constants/stations';
+import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
-import { ColorField } from '../../panels/details/color-field';
 
 export interface TokyoMetroBasicSvgAttributes {
     lineCode: string;
@@ -57,7 +58,7 @@ export const TokyoMetroBasicSvg = (props: TokyoMetroBasicSvgProps) => {
                 x={0}
                 y={lineCode.length === 1 ? -0.75 : -1.5}
                 textAnchor="middle"
-                className="rmp-name__tokyo_en"
+                {...getLangStyle(TextLanguage.tokyo_en)}
                 fontSize={lineCode.length === 1 ? 7 : 4.5}
                 fill="black"
             >
@@ -65,11 +66,10 @@ export const TokyoMetroBasicSvg = (props: TokyoMetroBasicSvgProps) => {
             </text>
             <text
                 x={stationCode.length === 1 ? 0 : -0.4 / stationCode.length}
-                y={5.5}
+                y={5}
                 textAnchor="middle"
-                className="rmp-name__en"
-                fontSize={7}
-                fontWeight="bold"
+                {...getLangStyle(TextLanguage.tokyo_en)}
+                fontSize={6}
                 letterSpacing="-0.4"
                 fill="black"
             >
@@ -142,7 +142,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                             fontSize={10}
                             lineHeight={10}
                             grow={nameOffsetY === 'bottom' ? 'down' : 'up'}
-                            className="rmp-name__jreast_ja"
+                            {...getLangStyle(TextLanguage.jreast_ja)}
                             fill={'black'}
                         />
                     </g>
@@ -155,7 +155,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                             grow="bidirectional"
                             baseOffset={0}
                             baseDY={0}
-                            className="rmp-name__jreast_ja"
+                            {...getLangStyle(TextLanguage.jreast_ja)}
                             fill={'black'}
                         />
                     </g>

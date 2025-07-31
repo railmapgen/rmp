@@ -1,8 +1,8 @@
 import { FormLabel, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
 import { utils } from '@railmapgen/svg-assets';
+import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
@@ -16,6 +16,7 @@ import {
     StationType,
     defaultStationAttributes,
 } from '../../../constants/stations';
+import { TextLanguage, getLangStyle } from '../../../util/fonts';
 import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
@@ -130,7 +131,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                 <InterchangeStation2024
                     ref={ref}
                     stations={stations}
-                    classNames={{ digits: 'rmp-name__en' }}
+                    textProps={{ ...getLangStyle(TextLanguage.en) }}
                     columns={columns}
                     topHeavy={topHeavy}
                     anchorAt={anchorAt >= 0 ? anchorAt : undefined}
@@ -162,14 +163,14 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                     fontSize={13.13}
                     lineHeight={13.13}
                     grow="up"
-                    className="rmp-name__zh"
+                    {...getLangStyle(TextLanguage.zh)}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
                     fontSize={6.56}
                     lineHeight={6.56}
                     grow="down"
-                    className="rmp-name__en"
+                    {...getLangStyle(TextLanguage.en)}
                 />
             </g>
             {secondaryNames.join('') !== '' && (
@@ -179,7 +180,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                         dx={-(secondaryTextWidth + 5) / 2}
                         textAnchor="end"
                         dominantBaseline="middle"
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                     >
                         （
                     </text>
@@ -188,15 +189,15 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                         dx={(secondaryTextWidth + 5) / 2}
                         textAnchor="start"
                         dominantBaseline="middle"
-                        className="rmp-name__zh"
+                        {...getLangStyle(TextLanguage.zh)}
                     >
                         ）
                     </text>
                     <g ref={secondaryTextRef}>
-                        <text fontSize="10" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                        <text fontSize="10" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
                             {secondaryNames[0]}
                         </text>
-                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" className="rmp-name__en">
+                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
                             {secondaryNames[1]}
                         </text>
                     </g>
@@ -207,10 +208,10 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                     transform={`translate(${textX + underConstructionDx}, ${textY})`}
                     textAnchor={underConstructionTextAnchor}
                 >
-                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" className="rmp-name__zh">
+                    <text fontSize="6.04" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
                         （未开通）
                     </text>
-                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" className="rmp-name__en">
+                    <text fontSize="3.6" dy="4" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
                         (Under Construction)
                     </text>
                 </g>
@@ -493,7 +494,7 @@ const gzmtrInt2024StationIcon = (
                     stnNum: '05',
                 },
             ]}
-            classNames={{ digits: 'rmp-name__en' }}
+            textProps={{ ...getLangStyle(TextLanguage.en) }}
             columns={1}
             transform="translate(12,12)scale(0.3)"
         />
