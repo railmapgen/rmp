@@ -194,7 +194,7 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
 
     const [isImageEditable, setIsImageEditable] = React.useState(false);
     React.useEffect(() => {
-        if (attrs.href) {
+        if (attrs.href && attrs.href.startsWith('img-s')) {
             imageStoreIndexedDB.has(`${attrs.href}_thumbnail`).then(has => {
                 setIsImageEditable(has);
             });

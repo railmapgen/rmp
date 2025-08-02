@@ -34,20 +34,21 @@ import {
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { MdCheck, MdDelete } from 'react-icons/md';
+import { MdCheck, MdDelete, MdDownload } from 'react-icons/md';
 import { nanoid } from 'nanoid';
 import { MiscNodeId } from '../../constants/constants';
 import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
-import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import {
+    downloadBase64Image,
+    fetchAndSaveImage,
+    fetchImageList,
+    getExtFromBase64,
+    getLocalImageList,
+    ImageList,
+} from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { bytesToBase64DataURL } from '../../util/helpers';
-
-interface ImageList {
-    id: string;
-    thumbnail: string;
-    hash?: string;
-}
 
 // TEST USAGE !
 const RMP_EXPORT = true;
@@ -55,11 +56,10 @@ const RMP_EXPORT = true;
 export const ImagePanelModal = (props: {
     id: MiscNodeId;
     isOpen: boolean;
-    fetchImage?: number;
     onClose: () => void;
     onChange: (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => void;
 }) => {
-    const { id, isOpen, fetchImage, onClose, onChange } = props;
+    const { id, isOpen, onClose, onChange } = props;
     const { t } = useTranslation();
     const {
         token,
@@ -144,115 +144,20 @@ export const ImagePanelModal = (props: {
         }
     };
 
-    async function fetchImageAsBase64(url: string): Promise<string> {
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to download: ${response.statusText}`);
-        }
-
-        const blob = await response.blob();
-        return await blobToBase64(blob);
-    }
-
-    function blobToBase64(blob: Blob): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (typeof reader.result === 'string') {
-                    resolve(reader.result);
-                } else {
-                    reject('Failed to convert blob to base64');
-                }
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    }
-
-    const fetchImageList = async () => {
-        if (!token) return;
-        const rep = await fetch(image_endpoint, {
-            headers: {
-                accept: 'application/json',
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if (rep.status !== 200) {
-            return;
-        }
-        const { images } = await rep.json();
-
-        const list = await Promise.all(
-            images.map(async (img: { id: string; hash: string }) => {
-                const id = `img-s_${img.id}`;
-                const localId = `${id}_thumbnail`;
-                if ((await imageStoreIndexedDB.has(localId)) === false) {
-                    await imageStoreIndexedDB.save(
-                        localId,
-                        await fetchImageAsBase64(`${image_endpoint}/thumbnail/${img.id}`)
-                    );
-                }
-                const thumbnail = await imageStoreIndexedDB.get(localId);
-                return {
-                    id,
-                    hash: img.hash,
-                    thumbnail,
-                };
-            })
-        );
-        setCloudList(list);
-    };
-
-    const getLocalImageList = async () => {
-        const list: ImageList[] = [];
-        (await imageStoreIndexedDB.getAll()).forEach((img, id) => {
-            if (img && id.startsWith('img-l')) {
-                list.push({
-                    id,
-                    thumbnail: img,
-                });
-            }
-        });
-        setLocalList(list);
-    };
-
     React.useEffect(() => {
-        if (isOpen) {
+        const runEffect = async () => {
             setLoading(true);
             setError(undefined);
             setSelected(undefined);
-            getLocalImageList();
-            fetchImageList();
+            setLocalList(await getLocalImageList());
+            setCloudList(await fetchImageList(token));
             setLoading(false);
+        };
+
+        if (isOpen) {
+            runEffect();
         }
     }, [isOpen, refresh]);
-
-    React.useEffect(() => {
-        if (fetchImage !== undefined) {
-            graph.current
-                .filterNodes(
-                    (id, attr) =>
-                        id.startsWith('misc_node') && attr.type === 'image' && attr['image']!.href !== undefined
-                )
-                .forEach(id => {
-                    const attr = graph.current.getNodeAttributes(id)['image']!;
-                    if (attr.href && attr.href.startsWith('img-s') && !imageStoreIndexedDB.has(attr.href)) {
-                        fetchImageAsBase64(`${image_endpoint}/data/${attr.href.slice(6)}/${attr.hash}`).then(src => {
-                            if (src) {
-                                imageStoreIndexedDB.save(attr.href!, src);
-                            }
-                        });
-                    }
-                });
-            dispatch(setRefreshNodes());
-            fetchImageList();
-        }
-    }, [fetchImage]);
 
     const handleChange = async () => {
         if (selected) {
@@ -262,15 +167,8 @@ export const ImagePanelModal = (props: {
                 // Local image
                 onChange(id, imgId, 'local');
             } else {
-                const serverId = imgId.slice(6); // Remove 'img-s_' prefix
-                const src = await fetchImageAsBase64(`${image_endpoint}/data/${serverId}/${hash}`);
-                if (src) {
-                    imageStoreIndexedDB.save(imgId, src);
-                    onChange(id, imgId, 'server', hash);
-                } else {
-                    console.error('Failed to fetch image from server');
-                    return;
-                }
+                await fetchAndSaveImage(imgId, hash!, token);
+                onChange(id, imgId, 'server', hash);
             }
         }
         onClose();
@@ -299,6 +197,17 @@ export const ImagePanelModal = (props: {
                     }
                 })
                 .catch(error => console.error('Error deleting image:', error));
+        }
+    };
+
+    const handleDownload = async (image: ImageList) => {
+        if (image.id.startsWith('img-s') && (await imageStoreIndexedDB.has(image.id)) === false) {
+            await fetchAndSaveImage(image.id, image.hash!, token);
+        }
+        const base64 = await imageStoreIndexedDB.get(image.id);
+        if (base64) {
+            const ext = getExtFromBase64(base64) ?? 'jpg';
+            downloadBase64Image(base64, `image_${image.id}.${ext}`);
         }
     };
 
@@ -372,6 +281,13 @@ export const ImagePanelModal = (props: {
                                                                 />
                                                             </Box>
                                                             <Flex direction="row" width="100%">
+                                                                <IconButton
+                                                                    m="1"
+                                                                    aria-label={t('download')}
+                                                                    icon={<MdDownload />}
+                                                                    colorScheme="blue"
+                                                                    onClick={() => handleDownload(k)}
+                                                                />
                                                                 <IconButton
                                                                     m="1"
                                                                     width="100%"

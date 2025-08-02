@@ -9,14 +9,13 @@ import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
-import { useScreenOrientation } from '../../util/hooks';
+import { useScreenOrientation, useSyncServerImages } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
-import { ImagePanelModal } from './image-panel-modal';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -26,6 +25,8 @@ export default function WindowHeader() {
         refresh: { param: refreshParam },
     } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
+
+    useSyncServerImages(refreshParam);
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -141,13 +142,6 @@ export default function WindowHeader() {
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
-            <ImagePanelModal
-                fetchImage={refreshParam}
-                id={'misc_node_undefined'}
-                isOpen={false}
-                onClose={() => {}}
-                onChange={() => {}}
-            />
         </RmgWindowHeader>
     );
 }
