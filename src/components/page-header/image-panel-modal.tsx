@@ -53,28 +53,39 @@ import { bytesToBase64DataURL } from '../../util/helpers';
 // TEST USAGE !
 const RMP_EXPORT = true;
 
-export const ImagePanelModal = (props: {
-    id: MiscNodeId;
-    isOpen: boolean;
-    onClose: () => void;
-    onChange: (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => void;
-}) => {
-    const { id, isOpen, onClose, onChange } = props;
+export const ImagePanelModal = (
+    props:
+        | {
+              id: MiscNodeId;
+              isOpen: boolean;
+              mode: 'import';
+              onClose: () => void;
+              onChange: (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => void;
+          }
+        | {
+              id?: undefined;
+              isOpen: boolean;
+              mode: 'export';
+              onClose: () => void;
+              onChange: (images: { id: string; base64: string }[]) => void;
+          }
+) => {
+    const { id, isOpen, mode, onClose, onChange } = props;
     const { t } = useTranslation();
     const {
         token,
         // activeSubscriptions: { RMP_EXPORT },
     } = useRootSelector(state => state.account);
     const graph = React.useRef(window.graph);
-    const dispatch = useDispatch();
 
     const [loading, setLoading] = React.useState(false);
     const [refresh, _setRefresh] = React.useState(0);
     const setRefresh = () => _setRefresh(refresh + 1);
     const [localList, setLocalList] = React.useState<ImageList[]>([]);
     const [cloudList, setCloudList] = React.useState<ImageList[]>([]);
-    const [selected, setSelected] = React.useState<ImageList | undefined>(undefined);
     const [error, setError] = React.useState<string | undefined>(undefined);
+
+    const [selected, setSelected] = React.useState<ImageList[]>([]);
 
     const tabs = [localList, cloudList];
 
@@ -102,6 +113,11 @@ export const ImagePanelModal = (props: {
         console.log('File selected:', file);
         if (file) {
             if (type === 'server') {
+                if (file.size > 4 * 1024 * 1024) {
+                    setError('Image is too big.');
+                    return;
+                }
+
                 const bytes = await fileToBytes(file);
                 const hash = await sha256(bytes);
                 const reader = new FileReader();
@@ -144,13 +160,35 @@ export const ImagePanelModal = (props: {
         }
     };
 
+    const getCanvasUsedImages = async () => {
+        const list: ImageList[] = [];
+        const nodeIds = graph.current.filterNodes(
+            (id: string, attr: any) => id.startsWith('misc_node') && attr.type === 'image'
+        );
+
+        for (const id of nodeIds) {
+            const attr = graph.current.getNodeAttributes(id)['image']!;
+            if (attr.href && attr.href.startsWith('img-l') && !list.find(p => p.id === attr.href)) {
+                const thumbnail = (await imageStoreIndexedDB.get(attr.href)) ?? '';
+                list.push({ id: attr.href, thumbnail });
+            }
+        }
+
+        return list;
+    };
+
     React.useEffect(() => {
         const runEffect = async () => {
             setLoading(true);
             setError(undefined);
-            setSelected(undefined);
             setLocalList(await getLocalImageList());
-            setCloudList(await fetchImageList(token));
+            if (mode === 'import') {
+                setCloudList(await fetchImageList(token));
+                setSelected([]);
+            } else {
+                setCloudList([]);
+                setSelected(await getCanvasUsedImages());
+            }
             setLoading(false);
         };
 
@@ -160,9 +198,10 @@ export const ImagePanelModal = (props: {
     }, [isOpen, refresh]);
 
     const handleChange = async () => {
-        if (selected) {
-            const imgId = selected.id;
-            const hash = selected.hash;
+        setLoading(true);
+        if (selected.length > 0 && mode === 'import') {
+            const imgId = selected[0].id;
+            const hash = selected[0].hash;
             if (imgId.startsWith('img-l')) {
                 // Local image
                 onChange(id, imgId, 'local');
@@ -170,7 +209,17 @@ export const ImagePanelModal = (props: {
                 await fetchAndSaveImage(imgId, hash!, token);
                 onChange(id, imgId, 'server', hash);
             }
+        } else if (mode === 'export') {
+            const images: { id: string; base64: string }[] = [];
+            for (const img of selected) {
+                const base64 = await imageStoreIndexedDB.get(img.id);
+                if (base64) {
+                    images.push({ id: img.id, base64 });
+                }
+            }
+            onChange(images);
         }
+        setLoading(false);
         onClose();
     };
 
@@ -211,27 +260,38 @@ export const ImagePanelModal = (props: {
         }
     };
 
+    const handleSelect = (image: ImageList) => {
+        if (mode === 'import') {
+            setSelected([image]);
+        } else {
+            if (selected.find(s => s.id === image.id)) {
+                setSelected(selected.filter(s => s.id !== image.id));
+            } else {
+                setSelected([...selected, image]);
+            }
+        }
+    };
+
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('header.settings...importTitle')}</ModalHeader>
+                <ModalHeader>{t(`panel.details.image.${mode}Title`)}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
-                    {loading && (
+                    {loading ? (
                         <Box textAlign="center" py={10}>
                             <Spinner size="xl" />
-                            <Text mt={4}>Loading...</Text>
+                            <Text mt={4}>{t('panel.details.image.loading')}</Text>
                         </Box>
-                    )}
-                    {!loading && (
+                    ) : (
                         <Tabs isLazy isFitted overflow="hidden">
                             <TabList>
-                                <Tab>{t('gallery.type.local')}</Tab>
+                                <Tab>{t('panel.details.image.local')}</Tab>
                                 {RMP_EXPORT ? (
-                                    <Tab>
-                                        {t('gallery.type.server')}
+                                    <Tab isDisabled={mode === 'export'}>
+                                        {t('panel.details.image.server')}
                                         <Badge
                                             ml="1"
                                             color="gray.50"
@@ -243,7 +303,7 @@ export const ImagePanelModal = (props: {
                                 ) : (
                                     <Tooltip label={t('header.settings.pro')} hasArrow>
                                         <Tab isDisabled>
-                                            {t('gallery.type.server')}
+                                            {t('panel.details.image.server')}
                                             <Badge
                                                 ml="1"
                                                 color="gray.50"
@@ -291,14 +351,14 @@ export const ImagePanelModal = (props: {
                                                                 <IconButton
                                                                     m="1"
                                                                     width="100%"
-                                                                    aria-label={t('gallery.select')}
+                                                                    aria-label={t('select')}
                                                                     icon={<MdCheck />}
                                                                     colorScheme={
-                                                                        selected && selected.id === k.id
+                                                                        selected.find(s => s.id == k.id)
                                                                             ? 'blue'
                                                                             : 'gray'
                                                                     }
-                                                                    onClick={() => setSelected(k)}
+                                                                    onClick={() => handleSelect(k)}
                                                                 />
                                                                 <IconButton
                                                                     m="1"
@@ -316,7 +376,7 @@ export const ImagePanelModal = (props: {
                                                 <Flex width="100%" direction="column">
                                                     <Flex direction="row">
                                                         <Heading size="md" width="100%">
-                                                            Add new
+                                                            {t('panel.details.image.add')}
                                                         </Heading>
                                                         <Input
                                                             variant="flushedd"
@@ -335,7 +395,9 @@ export const ImagePanelModal = (props: {
                                                         >
                                                             <AlertIcon />
                                                             <Box flex="1">
-                                                                <AlertTitle>Failed to upload!</AlertTitle>
+                                                                <AlertTitle>
+                                                                    {t('panel.details.image.error')}
+                                                                </AlertTitle>
                                                                 <AlertDescription>{error}</AlertDescription>
                                                             </Box>
                                                             {onClose && (
@@ -362,8 +424,14 @@ export const ImagePanelModal = (props: {
                     <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('close')}
                     </Button>
-                    <Button colorScheme="blue" variant="solid" mr="1" onClick={handleChange} isDisabled={!selected}>
-                        {t('change')}
+                    <Button
+                        colorScheme="blue"
+                        variant="solid"
+                        mr="1"
+                        onClick={handleChange}
+                        isDisabled={selected.length === 0}
+                    >
+                        {t('apply')}
                     </Button>
                 </ModalFooter>
             </ModalContent>

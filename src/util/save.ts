@@ -53,6 +53,7 @@ export interface RMPSave {
     graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     svgViewBoxZoom: number;
     svgViewBoxMin: { x: number; y: number };
+    images?: { id: string; base64: string }[];
 }
 
 export const CURRENT_VERSION = 56;

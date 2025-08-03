@@ -128,3 +128,9 @@ export const getExtFromBase64 = (base64: string): string | undefined => {
     if (!match) return undefined;
     return extension(match[1]) || undefined;
 };
+
+export const saveImagesFromParam = async (images: { id: string; base64: string }[]) => {
+    for (const { id, base64 } of images) {
+        if (id && base64) await imageStoreIndexedDB.save(id, base64);
+    }
+};

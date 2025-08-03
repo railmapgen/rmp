@@ -40,6 +40,7 @@ import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
+import { ImagePanelModal } from './image-panel-modal';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 const getTauriUrl = () => {
@@ -126,6 +127,10 @@ export default function DownloadActions() {
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
+    const [isDownloadJsonOpen, setIsDownloadJsonOpen] = React.useState(false);
+    const [isDownloadJsonWithImagesOpen, setIsDownloadJsonWithImagesOpen] = React.useState(false);
+
+    const [imageList, setImageList] = React.useState<{ id: string; base64: string }[]>([]);
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
@@ -156,7 +161,10 @@ export default function DownloadActions() {
                 Events.DOWNLOAD_PARAM,
                 isAllowProjectTelemetry ? { '#nodes': graph.current.order, '#edges': graph.current.size } : {}
             );
-        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(param));
+        const data = { ...param, images: imageList };
+        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(data));
+        setIsDownloadJsonOpen(false);
+        setImageList([]);
     };
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
@@ -242,7 +250,7 @@ export default function DownloadActions() {
         <Menu id="download">
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
-                <MenuItem icon={<MdSave />} onClick={handleDownloadJson}>
+                <MenuItem icon={<MdSave />} onClick={() => setIsDownloadJsonOpen(true)}>
                     {t('header.download.config')}
                 </MenuItem>
                 <MenuItem icon={<MdSaveAs />} onClick={() => setIsToRmgOpen(true)}>
@@ -376,7 +384,43 @@ export default function DownloadActions() {
                 </ModalContent>
             </Modal>
 
+            <Modal size="xs" isOpen={isDownloadJsonOpen} onClose={() => setIsDownloadJsonOpen(false)}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.download.config')}</ModalHeader>
+                    <ModalCloseButton />
+
+                    <ModalBody>
+                        <Checkbox
+                            id="share_info"
+                            isChecked={imageList.length > 0}
+                            onChange={e =>
+                                e.target.checked ? setIsDownloadJsonWithImagesOpen(true) : setImageList([])
+                            }
+                        >
+                            <Text>
+                                {t('panel.details.image.exportTitle')} ({imageList.length})
+                            </Text>
+                        </Checkbox>
+                    </ModalBody>
+
+                    <ModalFooter>
+                        <HStack>
+                            <Button colorScheme="teal" variant="outline" size="sm" onClick={handleDownloadJson}>
+                                {t('header.download.confirm')}
+                            </Button>
+                        </HStack>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
             <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
+            <ImagePanelModal
+                isOpen={isDownloadJsonWithImagesOpen}
+                onClose={() => setIsDownloadJsonWithImagesOpen(false)}
+                mode="export"
+                onChange={setImageList}
+            />
         </Menu>
     );
 }

@@ -133,14 +133,14 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
 
     const fields: RmgFieldsField[] = [
         {
-            label: t('label'),
+            label: t('panel.details.nodes.image.label'),
             type: 'input',
             value: attrs.label,
             onChange: (value: string) => handleAttrsUpdate(id, { ...attrs, label: value }),
             minW: 'full',
         },
         {
-            label: t('scale'),
+            label: t('panel.details.nodes.image.scale'),
             type: 'input',
             value: (attrs.scale ?? defaultImageAttributes.scale).toString(),
             validator: (val: string) => !Number.isNaN(val),
@@ -152,7 +152,7 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             hidden: !attrs.href,
         },
         {
-            label: t('rorate'),
+            label: t('panel.details.nodes.image.rotate'),
             type: 'input',
             value: (attrs.rotate ?? defaultImageAttributes.rotate).toString(),
             validator: (val: string) => !Number.isNaN(val),
@@ -164,7 +164,7 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             hidden: !attrs.href,
         },
         {
-            label: t('opacity'),
+            label: t('panel.details.nodes.image.opacity'),
             type: 'input',
             value: (attrs.opacity ?? defaultImageAttributes.opacity).toString(),
             validator: (val: string) => !Number.isNaN(val),
@@ -176,7 +176,7 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             hidden: !attrs.href,
         },
         {
-            label: t('image'),
+            label: t('panel.details.nodes.image.preview'),
             type: 'custom',
             component:
                 attrs.href === undefined || !imageStoreIndexedDB.has(attrs.href) ? (
@@ -213,11 +213,12 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
                 isDisabled={!isImageEditable}
                 minW="full"
             >
-                Open Image Panel
+                {t('panel.details.image.importTitle')}
             </Button>
             <ImagePanelModal
                 id={id as MiscNodeId}
                 isOpen={isOpenImagePanel}
+                mode="import"
                 onClose={() => setIsOpenImagePanel(false)}
                 onChange={handleImageChange}
             />

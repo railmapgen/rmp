@@ -162,6 +162,14 @@
                     "displayName": "台北捷運線路標識",
                     "tram": "輕軌"
                 },
+                "image": {
+                    "displayName": "影像",
+                    "label": "標籤",
+                    "scale": "縮放",
+                    "rotate": "旋轉",
+                    "opacity": "不透明度",
+                    "preview": "預覽"
+                },
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
@@ -598,6 +606,15 @@
                 }
             },
             "edges": {},
+            "image": {
+                "importTitle": "影像面板",
+                "exportTitle": "附加影像到專案",
+                "local": "本地影像",
+                "server": "伺服器影像",
+                "add": "上傳影像",
+                "error": "上傳此影像失敗！",
+                "loading": "正在載入影像..."
+            },
             "footer": {
                 "duplicate": "重複",
                 "copy": "複製",
