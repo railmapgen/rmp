@@ -162,6 +162,14 @@
                     "displayName": "타이페이 지하철 노선 뱃지",
                     "tram": "트램"
                 },
+                "image": {
+                    "displayName": "이미지",
+                    "label": "라벨",
+                    "scale": "크기 조절",
+                    "rotate": "회전",
+                    "opacity": "불투명도",
+                    "preview": "미리보기"
+                },
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
@@ -598,6 +606,15 @@
                 }
             },
             "edges": {},
+            "image": {
+                "importTitle": "이미지 패널",
+                "exportTitle": "프로젝트에 이미지 첨부",
+                "local": "로컬 이미지",
+                "server": "서버 이미지",
+                "add": "이미지 업로드",
+                "error": "이미지 업로드에 실패했습니다!",
+                "loading": "이미지를 불러오는 중..."
+            },
             "footer": {
                 "duplicate": "복사",
                 "copy": "복사",
