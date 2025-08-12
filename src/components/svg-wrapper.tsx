@@ -3,7 +3,7 @@ import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId } from '../constants/constants';
+import { Events, Id, MiscNodeId, RuntimeMode, StationCity, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
@@ -27,6 +27,7 @@ import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { getOneStationName } from '../util/random-station-names';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
+import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -375,6 +376,7 @@ const SvgWrapper = () => {
             <utils.SvgAssetsContextProvider>
                 <SvgCanvas />
             </utils.SvgAssetsContextProvider>
+            <PredictNextNode />
             {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
                 <rect
                     x={selectCoord.sx}
