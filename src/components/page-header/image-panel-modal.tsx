@@ -1,42 +1,41 @@
 import {
-    Modal,
-    ModalOverlay,
-    ModalContent,
-    ModalHeader,
-    ModalCloseButton,
-    ModalBody,
-    Button,
-    ModalFooter,
-    Input,
-    Flex,
-    Heading,
-    Text,
+    Alert,
+    AlertDescription,
+    AlertIcon,
+    AlertTitle,
+    Badge,
     Box,
-    Spinner,
-    Tabs,
+    Button,
     Card,
     CardBody,
+    CardFooter,
+    CloseButton,
+    Flex,
+    Heading,
     IconButton,
+    Image,
+    Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Spinner,
     Tab,
     TabList,
     TabPanel,
     TabPanels,
-    Image,
-    CardFooter,
-    AlertIcon,
-    AlertTitle,
-    Alert,
-    AlertDescription,
-    CloseButton,
+    Tabs,
+    Text,
     Tooltip,
-    Badge,
 } from '@chakra-ui/react';
+import { nanoid } from 'nanoid';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MdCheck, MdDelete, MdDownload } from 'react-icons/md';
-import { nanoid } from 'nanoid';
-import { MiscNodeId } from '../../constants/constants';
+import { MiscNodeId, NodeAttributes } from '../../constants/constants';
 import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
 import {
@@ -48,7 +47,7 @@ import {
     ImageList,
 } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
-import { bytesToBase64DataURL } from '../../util/helpers';
+import { MiscNodeType } from '../../constants/nodes';
 
 // TEST USAGE !
 const RMP_EXPORT = true;
@@ -127,24 +126,25 @@ export const ImagePanelModal = (
                 formData.append('mimetype', file.type);
                 formData.append('hash', hash);
 
-                fetch(image_endpoint, {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: formData,
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.code || data.code === 201) {
-                            const imgId = `img-s_${data.id}`;
-                            imageStoreIndexedDB.save(imgId, reader.result as string);
-                            setRefresh();
-                        } else {
-                            setError(data.message);
-                        }
-                    })
-                    .catch(error => console.error('Error uploading image:', error));
+                try {
+                    const response = await fetch(image_endpoint, {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: formData,
+                    });
+                    const data = await response.json();
+                    if (!data.code || data.code === 201) {
+                        const imgId = `img-s_${data.id}`;
+                        imageStoreIndexedDB.save(imgId, reader.result as string);
+                        setRefresh();
+                    } else {
+                        setError(data.message);
+                    }
+                } catch (error) {
+                    console.error('Error uploading image:', error);
+                }
             } else {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -163,7 +163,7 @@ export const ImagePanelModal = (
     const getCanvasUsedImages = async () => {
         const list: ImageList[] = [];
         const nodeIds = graph.current.filterNodes(
-            (id: string, attr: any) => id.startsWith('misc_node') && attr.type === 'image'
+            (id: string, attr: NodeAttributes) => id.startsWith('misc_node') && attr.type === MiscNodeType.Image
         );
 
         for (const id of nodeIds) {
@@ -223,7 +223,7 @@ export const ImagePanelModal = (
         onClose();
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (id.startsWith('img-l')) {
             // Local image
             imageStoreIndexedDB.delete(id);
@@ -231,21 +231,22 @@ export const ImagePanelModal = (
         } else {
             // Server image
             const serverId = id.slice(6); // Remove 'img-X_' prefix
-            fetch(`${image_endpoint}/data/${serverId}`, {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            })
-                .then(response => {
-                    if (response.ok) {
-                        setCloudList(prev => prev.filter(img => img.id !== id));
-                        imageStoreIndexedDB.delete(id);
-                    } else {
-                        console.error('Failed to delete image from server');
-                    }
-                })
-                .catch(error => console.error('Error deleting image:', error));
+            try {
+                const response = await fetch(`${image_endpoint}/data/${serverId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    setCloudList(prev => prev.filter(img => img.id !== id));
+                    imageStoreIndexedDB.delete(id);
+                } else {
+                    console.error('Failed to delete image from server');
+                }
+            } catch (error) {
+                console.error('Error deleting image:', error);
+            }
         }
     };
 
