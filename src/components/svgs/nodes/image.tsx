@@ -1,7 +1,8 @@
+import { Button, Image as ChakraImage } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { Image as ChakraImage, Button } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdAdd, MdImageNotSupported, MdRemove } from 'react-icons/md';
 import { AttrsProps, MiscNodeId } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { imageStoreIndexedDB } from '../../../util/image-store-indexed-db';
@@ -57,9 +58,8 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
                     onPointerUp={onPointerUp}
                     style={{ cursor: 'move' }}
                 >
-                    <circle cx="5" cy="5" r="5" fill="yellow" stroke="black" stroke-width="0.2" />
-                    <rect x="4.6" y="2" width="0.8" height="4" fill="black" stroke="black" stroke-width="0.1" />
-                    <circle cx="5" cy="7.5" r="0.4" fill="black" stroke="black" stroke-width="0.1" />
+                    <rect x="0" y="0" width="12" height="12" fill="transparent" />
+                    <MdImageNotSupported />
                 </g>
             ) : (
                 <g>
@@ -153,25 +153,33 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
         },
         {
             label: t('panel.details.nodes.image.rotate'),
-            type: 'input',
-            value: (attrs.rotate ?? defaultImageAttributes.rotate).toString(),
-            validator: (val: string) => !Number.isNaN(val),
+            type: 'slider',
+            value: attrs.rotate ?? defaultImageAttributes.rotate,
+            min: 0,
+            max: 360,
+            step: 1,
             onChange: val => {
                 attrs.rotate = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            leftIcon: <MdRemove />,
+            rightIcon: <MdAdd />,
             minW: 'full',
             hidden: !attrs.href,
         },
         {
             label: t('panel.details.nodes.image.opacity'),
-            type: 'input',
-            value: (attrs.opacity ?? defaultImageAttributes.opacity).toString(),
-            validator: (val: string) => !Number.isNaN(val),
+            type: 'slider',
+            value: attrs.opacity ?? defaultImageAttributes.opacity,
+            min: 0,
+            max: 1,
+            step: 0.01,
             onChange: val => {
                 attrs.opacity = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
+            leftIcon: <MdRemove />,
+            rightIcon: <MdAdd />,
             minW: 'full',
             hidden: !attrs.href,
         },
