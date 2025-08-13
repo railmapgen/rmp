@@ -88,7 +88,8 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
 
     const width =
         direction == 'horizontal' ? (names[0].length > 5 ? 60 + (names[0].length - 5) * LINE_HEIGHT.zh : 60) : 15;
-    const height = direction == 'horizontal' ? 15 : 60;
+    const height =
+        direction == 'vertical' ? (names[0].length > 5 ? 60 + (names[0].length - 5) * LINE_HEIGHT.zh : 60) : 15;
     const [textX, textY] = getTextOffset();
     const textAnchor =
         direction == 'vertical'
