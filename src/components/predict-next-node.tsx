@@ -1,25 +1,31 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
-import { Events, LineId, MiscNodeId, StationCity, StnId, Theme } from '../constants/constants';
+import React from 'react';
+import { Events, LineId, MiscNodeId, NodeAttributes, NodeType, StnId, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { StationAttributes, StationType } from '../constants/stations';
+import { STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
 import { makeParallelIndex } from '../util/parallel';
-import { getOneStationName } from '../util/random-station-names';
+import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import { linePaths } from './svgs/lines/lines';
 import diagonalPath from './svgs/lines/paths/diagonal';
+import perpendicularPath from './svgs/lines/paths/perpendicular';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import virtual from './svgs/nodes/virtual';
 import stations from './svgs/stations/stations';
 
+type NodeID = StnId | MiscNodeId;
+
 const VirtualNodeComponent = virtual.component;
 const diagonalPathGenerator = diagonalPath.generatePath;
+const perpendicularPathGenerator = perpendicularPath.generatePath;
 const SingleColorComponent = singleColor.component;
+const OFFSET = 10;
 
 const PredictNextNode = () => {
     const dispatch = useRootDispatch();
@@ -28,18 +34,23 @@ const PredictNextNode = () => {
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
     };
-    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames },
+        preference: { autoParallel },
     } = useRootSelector(state => state.app);
-    const { selected, theme: runtimeTheme } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        theme: runtimeTheme,
+        count: { mostFrequentStationType },
+    } = useRootSelector(state => state.runtime);
 
-    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
+    const makeStationName = useMakeStationName();
 
     if (selected.size !== 1) return undefined;
     const selectedID = selected.keys().next().value!;
     if (!selectedID.startsWith('stn') && !selectedID.startsWith('misc_node')) return undefined;
+    // TODO: remove selectedID if it is not existed in redo/undo
+    if (!window.graph.hasNode(selectedID)) return undefined;
 
     const neighbors = window.graph.neighbors(selectedID);
     if (neighbors.length === 0) return undefined;
@@ -64,6 +75,19 @@ const PredictNextNode = () => {
         y: curPos.y + (curPos.y - avgPos.y),
     };
 
+    const stationType = selectedID.startsWith('stn_')
+        ? (window.graph.getNodeAttribute(selectedID, 'type') as StationType)
+        : mostFrequentStationType;
+    const StationComponent = stations[stationType].component;
+    const stationAttrs: NodeAttributes = {
+        visible: true,
+        zIndex: 0,
+        x: nextPos.x + OFFSET,
+        y: nextPos.y + OFFSET,
+        type: stationType,
+        [stationType]: stations[stationType].defaultAttrs,
+    };
+
     const allThemes = window.graph.reduceEdges(
         selectedID,
         (acc, edge) => {
@@ -82,47 +106,62 @@ const PredictNextNode = () => {
         {} as Record<string, number>
     );
     const mostFrequentTheme =
-        Object.entries(allThemes).reduce(
-            (max, [theme, count]) => (count > max.count ? { color: JSON.parse(theme) as Theme, count } : max),
-            { color: null as Theme | null, count: 0 }
-        ).color ?? runtimeTheme;
-    const path = diagonalPathGenerator(curPos.x, nextPos.x, curPos.y, nextPos.y, diagonalPath.defaultAttrs);
+        Object.entries(allThemes)
+            .filter(([_, count]) => count % 2 !== 0) // Filter themes that appear an odd number of times
+            .reduce((max, [theme, count]) => (count > max.count ? { color: JSON.parse(theme) as Theme, count } : max), {
+                color: null as Theme | null,
+                count: 0,
+            }).color ?? runtimeTheme;
+    // const pathTop = diagonalPathGenerator(curPos.x, nextPos.x, curPos.y, nextPos.y - OFFSET, {
+    //     ...diagonalPath.defaultAttrs,
+    //     startFrom: 'to',
+    // });
+    // const pathLeft = perpendicularPathGenerator(curPos.x, nextPos.x - OFFSET, curPos.y, nextPos.y, {
+    //     ...perpendicularPath.defaultAttrs,
+    //     startFrom: 'to',
+    // });
+    // const pathBottom = diagonalPathGenerator(
+    //     curPos.x,
+    //     nextPos.x,
+    //     curPos.y,
+    //     nextPos.y + OFFSET,
+    //     diagonalPath.defaultAttrs
+    // );
+    // const pathRight = perpendicularPathGenerator(
+    //     curPos.x,
+    //     nextPos.x + OFFSET,
+    //     curPos.y,
+    //     nextPos.y,
+    //     perpendicularPath.defaultAttrs
+    // );
+    const pathLeftTop = diagonalPathGenerator(curPos.x, nextPos.x - OFFSET, curPos.y, nextPos.y - OFFSET, {
+        ...diagonalPath.defaultAttrs,
+        startFrom: 'to',
+    });
+    const pathRightBottom = diagonalPathGenerator(curPos.x, nextPos.x + OFFSET, curPos.y, nextPos.y + OFFSET, {
+        ...diagonalPath.defaultAttrs,
+    });
 
-    const handlePointerDown = async (_: string, e: React.PointerEvent<SVGElement>) => {
-        const mode = 'misc-node-virtual'; // TODO: fix this
-
+    const handlePointerDown = (_: NodeID, e: React.PointerEvent<SVGElement>) => {
+        e.stopPropagation();
+    };
+    const handlePointerUp = async (nodeType: NodeType, e: React.PointerEvent<SVGElement>) => {
         const rand = nanoid(10);
-        const isStation = mode.startsWith('station');
-        const nextID: StnId | MiscNodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
-        const nodeType = (isStation ? mode.slice(8) : mode.slice(10)) as StationType | MiscNodeType;
+        const isStation = STATION_TYPE_VALUES.has(nodeType as StationType);
+        const nextID: NodeID = isStation ? `stn_${rand}` : `misc_node_${rand}`;
 
         // deep copy to prevent mutual reference
         const attr = structuredClone({ ...stations, ...miscNodes }[nodeType].defaultAttrs);
         // inject runtime color if registered in dynamicColorInjection
         if (dynamicColorInjection.has(nodeType)) (attr as AttributesWithColor).color = runtimeTheme;
         // Add random names for stations
-        // TODO: extract this logic to a separate function
-        if (isStation && !isRandomStationNamesDisabled) {
-            const attrNames = (attr as StationAttributes).names;
-            const namesActionResult = await dispatch(getOneStationName(StationCity.Shmetro));
-            // only proceed if there is no error returned
-            if (getOneStationName.fulfilled.match(namesActionResult)) {
-                const names = namesActionResult.payload as [string, ...string[]];
-                // fill or truncate the names array to the station name length
-                if (attrNames.length > names.length) {
-                    names.push(...Array(attrNames.length - names.length).fill(names.at(-1)));
-                } else if (attrNames.length < names.length) {
-                    names.splice(attrNames.length, names.length - attrNames.length);
-                }
-                (attr as StationAttributes).names = names;
-            }
-        }
+        if (isStation) (attr as StationAttributes).names = await makeStationName(nodeType as StationType);
 
         window.graph.addNode(nextID, {
             visible: true,
             zIndex: 0,
-            x: nextPos.x,
-            y: nextPos.y,
+            x: nextPos.x + OFFSET * (isStation ? 1 : -1),
+            y: nextPos.y + OFFSET * (isStation ? 1 : -1),
             type: nodeType,
             [nodeType]: attr,
         });
@@ -130,7 +169,7 @@ const PredictNextNode = () => {
 
         const pathType = LinePathType.Diagonal;
         const newLineId: LineId = `line_${nanoid(10)}`;
-        const [source, target] = [selectedID as StnId | MiscNodeId, nextID];
+        const [source, target] = [selectedID as NodeID, nextID];
         const parallelIndex = autoParallel ? makeParallelIndex(window.graph, pathType, source, target, 'from') : -1;
         window.graph.addDirectedEdgeWithKey(newLineId, source, target, {
             visible: true,
@@ -145,28 +184,108 @@ const PredictNextNode = () => {
         });
         if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type: pathType });
 
-        dispatch(setSelected(new Set([nextID])));
         refreshAndSave();
+        dispatch(setSelected(new Set([nextID])));
     };
 
     return (
         <g id="prediction" opacity="0.5" className="removeMe">
+            {/* <SingleColorComponent
+                id="line_prediction_left"
+                type={LinePathType.Perpendicular}
+                path={pathLeft}
+                styleAttrs={{ color: mostFrequentTheme }}
+                newLine
+                handlePointerDown={() => {}}
+            />
+            <SingleColorComponent
+                id="line_prediction_right"
+                type={LinePathType.Perpendicular}
+                path={pathRight}
+                styleAttrs={{ color: mostFrequentTheme }}
+                newLine
+                handlePointerDown={() => {}}
+            />
+            <SingleColorComponent
+                id="line_prediction_top"
+                type={LinePathType.Diagonal}
+                path={pathTop}
+                styleAttrs={{ color: mostFrequentTheme }}
+                newLine
+                handlePointerDown={() => {}}
+            />
+            <SingleColorComponent
+                id="line_prediction_bottom"
+                type={LinePathType.Diagonal}
+                path={pathBottom}
+                styleAttrs={{ color: mostFrequentTheme }}
+                newLine
+                handlePointerDown={() => {}}
+            /> */}
+            <SingleColorComponent
+                id="line_prediction_lefttop"
+                type={LinePathType.Diagonal}
+                path={pathLeftTop}
+                styleAttrs={{ color: mostFrequentTheme }}
+                newLine
+                handlePointerDown={() => {}}
+            />
+            <SingleColorComponent
+                id="line_prediction_rightbottom"
+                type={LinePathType.Perpendicular}
+                path={pathRightBottom}
+                styleAttrs={{ color: mostFrequentTheme }}
+                newLine
+                handlePointerDown={() => {}}
+            />
+            {/* <VirtualNodeComponent
+                id="misc_node_virtual_prediction"
+                attrs={{}}
+                x={nextPos.x + OFFSET}
+                y={nextPos.y}
+                handlePointerDown={handlePointerDown}
+                handlePointerMove={() => {}}
+                handlePointerUp={handlePointerUp}
+            />
+            <VirtualNodeComponent
+                id="misc_node_virtual_prediction"
+                attrs={{}}
+                x={nextPos.x - OFFSET}
+                y={nextPos.y}
+                handlePointerDown={handlePointerDown}
+                handlePointerMove={() => {}}
+                handlePointerUp={handlePointerUp}
+            />
             <VirtualNodeComponent
                 id="misc_node_virtual_prediction"
                 attrs={{}}
                 x={nextPos.x}
-                y={nextPos.y}
+                y={nextPos.y + OFFSET}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={() => {}}
-                handlePointerUp={() => {}}
+                handlePointerUp={handlePointerUp}
+            /> */}
+            <VirtualNodeComponent
+                id="misc_node_virtual_prediction_lefttop"
+                attrs={{}}
+                x={nextPos.x - OFFSET}
+                y={nextPos.y - OFFSET}
+                handlePointerDown={handlePointerDown}
+                handlePointerMove={() => {}}
+                handlePointerUp={(_, e) => {
+                    handlePointerUp(MiscNodeType.Virtual, e);
+                }}
             />
-            <SingleColorComponent
-                id="line_prediction"
-                type={LinePathType.Diagonal}
-                path={path}
-                styleAttrs={{ color: mostFrequentTheme }}
-                newLine
-                handlePointerDown={() => {}}
+            <StationComponent
+                id="stn_virtual_prediction_rightbottom"
+                attrs={stationAttrs}
+                x={nextPos.x + OFFSET}
+                y={nextPos.y + OFFSET}
+                handlePointerDown={handlePointerDown}
+                handlePointerMove={() => {}}
+                handlePointerUp={(_, e) => {
+                    handlePointerUp(mostFrequentStationType, e);
+                }}
             />
         </g>
     );

@@ -288,7 +288,7 @@ const SvgCanvas = () => {
             }
             dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
-        } else if (mode.startsWith('line')) {
+        } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
                 dy: ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
