@@ -13,7 +13,6 @@ import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import { linePaths } from './svgs/lines/lines';
 import diagonalPath from './svgs/lines/paths/diagonal';
-import perpendicularPath from './svgs/lines/paths/perpendicular';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import virtual from './svgs/nodes/virtual';
@@ -23,7 +22,6 @@ type NodeID = StnId | MiscNodeId;
 
 const VirtualNodeComponent = virtual.component;
 const diagonalPathGenerator = diagonalPath.generatePath;
-const perpendicularPathGenerator = perpendicularPath.generatePath;
 const SingleColorComponent = singleColor.component;
 const OFFSET = 10;
 
@@ -70,9 +68,22 @@ const PredictNextNode = () => {
         x: sumPos.x / neighbors.length,
         y: sumPos.y / neighbors.length,
     };
+    const deltaPos = {
+        x: curPos.x - avgPos.x,
+        y: curPos.y - avgPos.y,
+    };
     const nextPos = {
-        x: curPos.x + (curPos.x - avgPos.x),
-        y: curPos.y + (curPos.y - avgPos.y),
+        x: curPos.x + deltaPos.x,
+        y: curPos.y + deltaPos.y,
+    };
+    const sameSign = Math.sign(deltaPos.x) === Math.sign(deltaPos.y);
+    const nextPos1 = {
+        x: nextPos.x - OFFSET,
+        y: nextPos.y + OFFSET * (sameSign ? 1 : -1),
+    };
+    const nextPos2 = {
+        x: nextPos.x + OFFSET,
+        y: nextPos.y + OFFSET * (sameSign ? -1 : 1),
     };
 
     const stationType = selectedID.startsWith('stn_')
@@ -82,8 +93,8 @@ const PredictNextNode = () => {
     const stationAttrs: NodeAttributes = {
         visible: true,
         zIndex: 0,
-        x: nextPos.x + OFFSET,
-        y: nextPos.y + OFFSET,
+        x: nextPos2.x,
+        y: nextPos2.y,
         type: stationType,
         [stationType]: stations[stationType].defaultAttrs,
     };
@@ -112,34 +123,21 @@ const PredictNextNode = () => {
                 color: null as Theme | null,
                 count: 0,
             }).color ?? runtimeTheme;
-    // const pathTop = diagonalPathGenerator(curPos.x, nextPos.x, curPos.y, nextPos.y - OFFSET, {
-    //     ...diagonalPath.defaultAttrs,
-    //     startFrom: 'to',
-    // });
-    // const pathLeft = perpendicularPathGenerator(curPos.x, nextPos.x - OFFSET, curPos.y, nextPos.y, {
-    //     ...perpendicularPath.defaultAttrs,
-    //     startFrom: 'to',
-    // });
-    // const pathBottom = diagonalPathGenerator(
-    //     curPos.x,
-    //     nextPos.x,
-    //     curPos.y,
-    //     nextPos.y + OFFSET,
-    //     diagonalPath.defaultAttrs
-    // );
-    // const pathRight = perpendicularPathGenerator(
-    //     curPos.x,
-    //     nextPos.x + OFFSET,
-    //     curPos.y,
-    //     nextPos.y,
-    //     perpendicularPath.defaultAttrs
-    // );
-    const pathLeftTop = diagonalPathGenerator(curPos.x, nextPos.x - OFFSET, curPos.y, nextPos.y - OFFSET, {
+    const switchStartFrom =
+        deltaPos.x > 0
+            ? deltaPos.x > Math.abs(deltaPos.y)
+                ? false
+                : true
+            : -deltaPos.x > Math.abs(deltaPos.y)
+              ? true
+              : false;
+    const path1 = diagonalPathGenerator(curPos.x, nextPos1.x, curPos.y, nextPos1.y, {
         ...diagonalPath.defaultAttrs,
-        startFrom: 'to',
+        startFrom: switchStartFrom ? 'from' : 'to',
     });
-    const pathRightBottom = diagonalPathGenerator(curPos.x, nextPos.x + OFFSET, curPos.y, nextPos.y + OFFSET, {
+    const path2 = diagonalPathGenerator(curPos.x, nextPos2.x, curPos.y, nextPos2.y, {
         ...diagonalPath.defaultAttrs,
+        startFrom: switchStartFrom ? 'to' : 'from',
     });
 
     const handlePointerDown = (_: NodeID, e: React.PointerEvent<SVGElement>) => {
@@ -190,86 +188,27 @@ const PredictNextNode = () => {
 
     return (
         <g id="prediction" opacity="0.5" className="removeMe">
-            {/* <SingleColorComponent
-                id="line_prediction_left"
-                type={LinePathType.Perpendicular}
-                path={pathLeft}
-                styleAttrs={{ color: mostFrequentTheme }}
-                newLine
-                handlePointerDown={() => {}}
-            />
             <SingleColorComponent
-                id="line_prediction_right"
-                type={LinePathType.Perpendicular}
-                path={pathRight}
-                styleAttrs={{ color: mostFrequentTheme }}
-                newLine
-                handlePointerDown={() => {}}
-            />
-            <SingleColorComponent
-                id="line_prediction_top"
+                id="line_prediction_1"
                 type={LinePathType.Diagonal}
-                path={pathTop}
+                path={path1}
                 styleAttrs={{ color: mostFrequentTheme }}
                 newLine
                 handlePointerDown={() => {}}
             />
             <SingleColorComponent
-                id="line_prediction_bottom"
+                id="line_prediction_2"
                 type={LinePathType.Diagonal}
-                path={pathBottom}
+                path={path2}
                 styleAttrs={{ color: mostFrequentTheme }}
                 newLine
                 handlePointerDown={() => {}}
-            /> */}
-            <SingleColorComponent
-                id="line_prediction_lefttop"
-                type={LinePathType.Diagonal}
-                path={pathLeftTop}
-                styleAttrs={{ color: mostFrequentTheme }}
-                newLine
-                handlePointerDown={() => {}}
-            />
-            <SingleColorComponent
-                id="line_prediction_rightbottom"
-                type={LinePathType.Perpendicular}
-                path={pathRightBottom}
-                styleAttrs={{ color: mostFrequentTheme }}
-                newLine
-                handlePointerDown={() => {}}
-            />
-            {/* <VirtualNodeComponent
-                id="misc_node_virtual_prediction"
-                attrs={{}}
-                x={nextPos.x + OFFSET}
-                y={nextPos.y}
-                handlePointerDown={handlePointerDown}
-                handlePointerMove={() => {}}
-                handlePointerUp={handlePointerUp}
             />
             <VirtualNodeComponent
-                id="misc_node_virtual_prediction"
+                id="misc_node_virtual_prediction_1"
                 attrs={{}}
-                x={nextPos.x - OFFSET}
-                y={nextPos.y}
-                handlePointerDown={handlePointerDown}
-                handlePointerMove={() => {}}
-                handlePointerUp={handlePointerUp}
-            />
-            <VirtualNodeComponent
-                id="misc_node_virtual_prediction"
-                attrs={{}}
-                x={nextPos.x}
-                y={nextPos.y + OFFSET}
-                handlePointerDown={handlePointerDown}
-                handlePointerMove={() => {}}
-                handlePointerUp={handlePointerUp}
-            /> */}
-            <VirtualNodeComponent
-                id="misc_node_virtual_prediction_lefttop"
-                attrs={{}}
-                x={nextPos.x - OFFSET}
-                y={nextPos.y - OFFSET}
+                x={nextPos1.x}
+                y={nextPos1.y}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={() => {}}
                 handlePointerUp={(_, e) => {
@@ -277,10 +216,10 @@ const PredictNextNode = () => {
                 }}
             />
             <StationComponent
-                id="stn_virtual_prediction_rightbottom"
+                id="stn_virtual_prediction_2"
                 attrs={stationAttrs}
-                x={nextPos.x + OFFSET}
-                y={nextPos.y + OFFSET}
+                x={nextPos2.x}
+                y={nextPos2.y}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={() => {}}
                 handlePointerUp={(_, e) => {
