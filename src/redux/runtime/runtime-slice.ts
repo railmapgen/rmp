@@ -23,6 +23,11 @@ interface RuntimeState {
      * Current selection (nodes and edges id, possible multiple selection).
      */
     selected: Set<Id>;
+    /**
+     * The position of pointer down for nodes in svg-canvas-graph,
+     * defined by the pointer down event, undefined if on pointer up.
+     */
+    pointerPosition?: { x: number; y: number };
     active: StnId | MiscNodeId | 'background' | undefined;
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
@@ -181,6 +186,9 @@ const runtimeSlice = createSlice({
         clearSelected: state => {
             state.selected = new Set<Id>();
         },
+        setPointerPosition: (state, action: PayloadAction<{ x: number; y: number } | undefined>) => {
+            state.pointerPosition = action.payload;
+        },
         setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;
         },
@@ -273,6 +281,7 @@ export const {
     addSelected,
     removeSelected,
     clearSelected,
+    setPointerPosition,
     setActive,
     setRefreshNodes,
     setRefreshEdges,

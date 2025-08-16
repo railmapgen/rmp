@@ -7,7 +7,14 @@ import { MiscNodeType } from '../constants/nodes';
 import { STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
+import {
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    setActive,
+    setPointerPosition,
+    setSelected,
+} from '../redux/runtime/runtime-slice';
+import { getMousePosition } from '../util/helpers';
 import { makeParallelIndex } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -131,19 +138,22 @@ const PredictNextNode = () => {
             : -deltaPos.x > Math.abs(deltaPos.y)
               ? true
               : false;
+    const path1StartFrom = switchStartFrom ? 'from' : 'to';
     const path1 = diagonalPathGenerator(curPos.x, nextPos1.x, curPos.y, nextPos1.y, {
         ...diagonalPath.defaultAttrs,
-        startFrom: switchStartFrom ? 'from' : 'to',
+        startFrom: path1StartFrom,
     });
+    const path2StartFrom = switchStartFrom ? 'to' : 'from';
     const path2 = diagonalPathGenerator(curPos.x, nextPos2.x, curPos.y, nextPos2.y, {
         ...diagonalPath.defaultAttrs,
-        startFrom: switchStartFrom ? 'to' : 'from',
+        startFrom: path2StartFrom,
     });
 
-    const handlePointerDown = (_: NodeID, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerDown = async (nodeType: NodeType, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
-    };
-    const handlePointerUp = async (nodeType: NodeType, e: React.PointerEvent<SVGElement>) => {
+        const { x, y } = getMousePosition(e);
+        dispatch(setPointerPosition({ x, y }));
+
         const rand = nanoid(10);
         const isStation = STATION_TYPE_VALUES.has(nodeType as StationType);
         const nextID: NodeID = isStation ? `stn_${rand}` : `misc_node_${rand}`;
@@ -158,8 +168,8 @@ const PredictNextNode = () => {
         window.graph.addNode(nextID, {
             visible: true,
             zIndex: 0,
-            x: nextPos.x + OFFSET * (isStation ? 1 : -1),
-            y: nextPos.y + OFFSET * (isStation ? 1 : -1),
+            x: isStation ? nextPos2.x : nextPos1.x,
+            y: isStation ? nextPos2.y : nextPos1.y,
             type: nodeType,
             [nodeType]: attr,
         });
@@ -169,12 +179,16 @@ const PredictNextNode = () => {
         const newLineId: LineId = `line_${nanoid(10)}`;
         const [source, target] = [selectedID as NodeID, nextID];
         const parallelIndex = autoParallel ? makeParallelIndex(window.graph, pathType, source, target, 'from') : -1;
+        const startFrom = isStation ? path2StartFrom : path1StartFrom;
         window.graph.addDirectedEdgeWithKey(newLineId, source, target, {
             visible: true,
             zIndex: 0,
             type: pathType,
-            // deep copy to prevent mutual reference
-            [pathType]: structuredClone(linePaths[pathType].defaultAttrs),
+            [pathType]: {
+                // deep copy to prevent mutual reference
+                ...structuredClone(linePaths[pathType].defaultAttrs),
+                startFrom,
+            },
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: { color: mostFrequentTheme },
             reconcileId: '',
@@ -183,6 +197,7 @@ const PredictNextNode = () => {
         if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type: pathType });
 
         refreshAndSave();
+        dispatch(setActive(nextID));
         dispatch(setSelected(new Set([nextID])));
     };
 
@@ -209,22 +224,22 @@ const PredictNextNode = () => {
                 attrs={{}}
                 x={nextPos1.x}
                 y={nextPos1.y}
-                handlePointerDown={handlePointerDown}
-                handlePointerMove={() => {}}
-                handlePointerUp={(_, e) => {
-                    handlePointerUp(MiscNodeType.Virtual, e);
+                handlePointerDown={(_, e) => {
+                    handlePointerDown(MiscNodeType.Virtual, e);
                 }}
+                handlePointerMove={() => {}}
+                handlePointerUp={() => {}}
             />
             <StationComponent
                 id="stn_virtual_prediction_2"
                 attrs={stationAttrs}
                 x={nextPos2.x}
                 y={nextPos2.y}
-                handlePointerDown={handlePointerDown}
-                handlePointerMove={() => {}}
-                handlePointerUp={(_, e) => {
-                    handlePointerUp(mostFrequentStationType, e);
+                handlePointerDown={(_, e) => {
+                    handlePointerDown(mostFrequentStationType, e);
                 }}
+                handlePointerMove={() => {}}
+                handlePointerUp={() => {}}
             />
         </g>
     );

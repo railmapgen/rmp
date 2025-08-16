@@ -101,8 +101,8 @@ const SvgWrapper = () => {
                 [type]: attr,
             });
             // console.log('down', active, offset);
-            refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+            refreshAndSave();
             dispatch(setSelected(new Set([id])));
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background

@@ -16,6 +16,7 @@ import {
     removeSelected,
     setActive,
     setMode,
+    setPointerPosition,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import {
@@ -70,17 +71,16 @@ const SvgCanvas = () => {
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
+        pointerPosition,
+        active,
         refresh: { nodes: refreshNodes, edges: refreshEdges },
         mode,
-        active,
         keepLastPath,
         theme,
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
-    // the position of pointer down, defined by the pointer down event, undefined if on pointer up
-    const [pointerPosition, setPointerPosition] = React.useState<{ x: number; y: number }>();
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
 
@@ -115,16 +115,14 @@ const SvgCanvas = () => {
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        const { x, y } = getMousePosition(e);
 
         if (mode === 'select') dispatch(setMode('free'));
 
-        const el = e.currentTarget;
-        const { x, y } = getMousePosition(e);
-        el.setPointerCapture(e.pointerId);
-
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
-        setPointerPosition({ x, y });
+        dispatch(setPointerPosition({ x, y }));
 
         dispatch(setActive(node));
 
@@ -150,6 +148,10 @@ const SvgCanvas = () => {
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
+        // in normal case, the element is already captured in pointer down
+        // however in predict-next-node, the element is created without pointer capture
+        // so we need to capture it here as a double insurance
+        e.currentTarget.setPointerCapture(e.pointerId);
 
         if (mode === 'free' && active === node) {
             if (!e.altKey && useSnapLines) {
@@ -296,6 +298,8 @@ const SvgCanvas = () => {
         }
     });
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
