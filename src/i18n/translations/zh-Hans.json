@@ -307,7 +307,7 @@
                     "foshan": "佛山"
                 },
                 "gzmtrInt2024": {
-                    "displayName": "广州地铁换乘站（2024）",
+                    "displayName": "广州地铁换乘车站（2024）",
                     "columns": "站点列数",
                     "topHeavy": "优先将更多站点放在上方",
                     "anchorAt": "锚点位置",

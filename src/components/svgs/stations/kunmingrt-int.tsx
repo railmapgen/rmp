@@ -21,7 +21,7 @@ const [WIDTH, HEIGHT] = [15, 9];
 const NAME_DY_KM_INT = {
     top: {
         lineHeight: 6.67,
-        offset: 3.5 + 1.5, // offset + baseOffset
+        offset: 4 + 1.5, // offset + baseOffset
     },
     middle: {
         lineHeight: 0,
@@ -29,7 +29,7 @@ const NAME_DY_KM_INT = {
     },
     bottom: {
         lineHeight: 12.67,
-        offset: -0.17 + 1, // offset + baseOffset
+        offset: 3 + 1.5, // offset + baseOffset
     },
 };
 

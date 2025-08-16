@@ -299,24 +299,25 @@ const SvgCanvas = () => {
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
-            const couldActiveBeConnected =
+            const couldSourceBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
             const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
-            prefixes.forEach(prefix => {
-                const elems = document.elementsFromPoint(e.clientX, e.clientY);
-                const id = elems[0].attributes?.getNamedItem('id')?.value;
-                // all connectable nodes have prefixes in their mask/event elements' ids
-                const couldIDBeConnected = id?.startsWith(prefix);
+            const elems = document.elementsFromPoint(e.clientX, e.clientY);
+            const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
+            // all connectable nodes have prefixes in their mask/event elements' ids
+            // also known as couldTargetBeConnected
+            const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
-                if (couldActiveBeConnected && couldIDBeConnected) {
-                    const type = mode.slice(5) as LinePathType;
-                    const newLineId: LineId = `line_${nanoid(10)}`;
-                    const [source, target] = [
-                        active! as StnId | MiscNodeId,
-                        id!.slice(prefix.length) as StnId | MiscNodeId,
-                    ];
+            if (couldSourceBeConnected && matchedPrefix) {
+                const type = mode.slice(5) as LinePathType;
+                const newLineId: LineId = `line_${nanoid(10)}`;
+                const [source, target] = [
+                    active! as StnId | MiscNodeId,
+                    id!.slice(matchedPrefix.length) as StnId | MiscNodeId,
+                ];
+                if (source !== target) {
                     const parallelIndex = autoParallel
                         ? makeParallelIndex(graph.current, type, source, target, 'from')
                         : -1;
@@ -333,10 +334,10 @@ const SvgCanvas = () => {
                     });
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
+                    dispatch(saveGraph(graph.current.export()));
+                    dispatch(refreshEdgesThunk());
                 }
-            });
-            dispatch(saveGraph(graph.current.export()));
-            dispatch(refreshEdgesThunk());
+            }
         } else if (mode === 'free') {
             if (active) {
                 // the node is pointed down before
