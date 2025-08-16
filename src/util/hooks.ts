@@ -1,12 +1,15 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { Theme } from '../constants/constants';
+import { image_endpoint } from '../constants/server';
 import { useRootSelector } from '../redux';
-import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
+import { openPaletteAppClip, setRefreshNodes } from '../redux/runtime/runtime-slice';
+import { imageStoreIndexedDB } from '../util/image-store-indexed-db';
 import { loadFont } from './fonts';
+import { fetchImageAsBase64, fetchImageList } from './image';
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {
@@ -168,4 +171,30 @@ export const useScreenOrientation = () => {
     }, []);
 
     return orientation;
+};
+
+export const useSyncServerImages = (fetchImage: number) => {
+    const dispatch = useDispatch();
+    const graph = useRef(window.graph);
+    const { token } = useRootSelector(state => state.account);
+
+    useEffect(() => {
+        graph.current
+            .filterNodes(
+                (id: string, attr: any) =>
+                    id.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href !== undefined
+            )
+            .forEach((id: string) => {
+                const attr = graph.current.getNodeAttributes(id)['image']!;
+                if (attr.href && attr.href.startsWith('img-s') && !imageStoreIndexedDB.has(attr.href)) {
+                    fetchImageAsBase64(`${image_endpoint}/data/${attr.href.slice(6)}/${attr.hash}`, token).then(src => {
+                        if (src) {
+                            imageStoreIndexedDB.save(attr.href!, src);
+                        }
+                    });
+                }
+            });
+        fetchImageList(token);
+        dispatch(setRefreshNodes());
+    }, [fetchImage]);
 };
