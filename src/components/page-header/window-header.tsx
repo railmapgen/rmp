@@ -42,13 +42,9 @@ export default function WindowHeader() {
     };
     const handleUndo = () => {
         dispatch(undoAction());
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
     };
     const handleRedo = () => {
         dispatch(redoAction());
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
     };
 
     return (
