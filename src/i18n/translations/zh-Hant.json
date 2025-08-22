@@ -465,6 +465,24 @@
                 },
                 "chengduRTInt": {
                     "displayName": "成都軌道交通換乘車站"
+                },
+                "osakaMetro": {
+                    "displayName": "大阪地鐵（含直通運轉）",
+                    "stationType": "車站類型",
+                    "normalType": "一般站點",
+                    "throughType": "直通運轉",
+                    "noteName": "站點舊稱",
+                    "nameVertical": "名稱縱向顯示",
+                    "stationVertical": "車站縱向顯示",
+                    "customNameOffsetX": "自定義名稱水平偏移量",
+                    "customNameOffsetY": "自定義名稱垂直偏移量",
+                    "customStationOffsetX": "自定義車站水平偏移量",
+                    "customStationOffsetY": "自定義車站垂直偏移量",
+                    "nameMaxWidth": "日文名稱最大寬度",
+                    "noteMaxWidth": "站點舊稱最大寬度",
+                    "translationMaxWidth": "英文名稱最大寬度",
+                    "maxWidthPlaceholder": "默認為0",
+                    "transferEdit": "線路編輯"
                 }
             },
             "lines": {

@@ -466,6 +466,24 @@
                 },
                 "chengduRTInt": {
                     "displayName": "Chengdu Rail Transit interchange station"
+                },
+                "osakaMetro": {
+                    "displayName": "Osaka Metro (including through-train)",
+                    "stationType": "Station type",
+                    "normalType": "Normal station",
+                    "throughType": "Through train",
+                    "noteName": "Station old name",
+                    "nameVertical": "Name vertical display",
+                    "stationVertical": "Station vertical display",
+                    "customNameOffsetX": "Custom name horizontal offset",
+                    "customNameOffsetY": "Custom name vertical offset",
+                    "customStationOffsetX": "Custom station horizontal offset",
+                    "customStationOffsetY": "Custom station vertical offset",
+                    "nameMaxWidth": "Maximum width of Japanese name",
+                    "noteMaxWidth": "Maximum width of station old name",
+                    "translationMaxWidth": "Maximum width of English name",
+                    "maxWidthPlaceholder": "Default is 0",
+                    "transferEdit": "Line edit"
                 }
             },
             "lines": {

@@ -465,6 +465,24 @@
                 },
                 "chengduRTInt": {
                     "displayName": "청두 도시철도 환승역"
+                },
+                "osakaMetro": {
+                    "displayName": "오사카 메트로(직결 운행 포함)",
+                    "stationType": "역 유형",
+                    "normalType": "일반 역",
+                    "throughType": "직결 운행",
+                    "noteName": "이전 역 이름",
+                    "nameVertical": "이름 세로 표시",
+                    "stationVertical": "역 세로 표시",
+                    "customNameOffsetX": "사용자 지정 이름 가로 오프셋",
+                    "customNameOffsetY": "사용자 지정 이름 세로 오프셋",
+                    "customStationOffsetX": "사용자 지정 역 가로 오프셋",
+                    "customStationOffsetY": "사용자 지정 역 세로 오프셋",
+                    "nameMaxWidth": "일본어 역 이름의 최대 너비",
+                    "noteMaxWidth": "이전 역 이름의 최대 너비",
+                    "translationMaxWidth": "영어 역 이름의 최대 너비",
+                    "maxWidthPlaceholder": "기본값은 0입니다",
+                    "transferEdit": "선로 편집"
                 }
             },
             "lines": {

@@ -25,6 +25,7 @@ const jaStationType = [
     StationType.JREastImportant,
     StationType.TokyoMetroBasic,
     StationType.TokyoMetroInt,
+    StationType.OsakaMetro,
 ];
 
 export const localizedStaions: { [k in LanguageCode]?: StationType[] } = {

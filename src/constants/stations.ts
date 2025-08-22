@@ -33,6 +33,7 @@ import { ChongqingRTBasicStation2021Attributes } from '../components/svgs/statio
 import { ChongqingRTIntStation2021Attributes } from '../components/svgs/stations/chongqingrt-int-2021';
 import { ChengduRTBasicStationAttributes } from '../components/svgs/stations/chengdurt-basic';
 import { ChengduRTIntStationAttributes } from '../components/svgs/stations/chengdurt-int';
+import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -68,6 +69,7 @@ export enum StationType {
     ChongqingRTInt2021 = 'chongqingrt-int-2021',
     ChengduRTBasic = 'chengdurt-basic',
     ChengduRTInt = 'chengdurt-int',
+    OsakaMetro = 'osaka-metro',
 }
 
 export interface ExternalStationAttributes {
@@ -104,6 +106,7 @@ export interface ExternalStationAttributes {
     [StationType.ChongqingRTInt2021]?: ChongqingRTIntStation2021Attributes;
     [StationType.ChengduRTBasic]?: ChengduRTBasicStationAttributes;
     [StationType.ChengduRTInt]?: ChengduRTIntStationAttributes;
+    [StationType.OsakaMetro]?: OsakaMetroStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
