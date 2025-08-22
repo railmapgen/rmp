@@ -52,24 +52,13 @@ import { MiscNodeType } from '../../constants/nodes';
 // TEST USAGE !
 const RMP_EXPORT = true;
 
-export const ImagePanelModal = (
-    props:
-        | {
-              id: MiscNodeId;
-              isOpen: boolean;
-              mode: 'import';
-              onClose: () => void;
-              onChange: (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => void;
-          }
-        | {
-              id?: undefined;
-              isOpen: boolean;
-              mode: 'export';
-              onClose: () => void;
-              onChange: (images: { id: string; base64: string }[]) => void;
-          }
-) => {
-    const { id, isOpen, mode, onClose, onChange } = props;
+export const ImagePanelModal = (props: {
+    id: MiscNodeId;
+    isOpen: boolean;
+    onClose: () => void;
+    onChange: (id: MiscNodeId, href: string, type: 'local' | 'server', hash?: string) => void;
+}) => {
+    const { id, isOpen, onClose, onChange } = props;
     const { t } = useTranslation();
     const {
         token,
@@ -182,13 +171,8 @@ export const ImagePanelModal = (
             setLoading(true);
             setError(undefined);
             setLocalList(await getLocalImageList());
-            if (mode === 'import') {
-                setCloudList(await fetchImageList(token));
-                setSelected([]);
-            } else {
-                setCloudList([]);
-                setSelected(await getCanvasUsedImages());
-            }
+            setCloudList(await fetchImageList(token));
+            setSelected([]);
             setLoading(false);
         };
 
@@ -199,7 +183,7 @@ export const ImagePanelModal = (
 
     const handleChange = async () => {
         setLoading(true);
-        if (selected.length > 0 && mode === 'import') {
+        if (selected.length > 0) {
             const imgId = selected[0].id;
             const hash = selected[0].hash;
             if (imgId.startsWith('img-l')) {
@@ -209,15 +193,6 @@ export const ImagePanelModal = (
                 await fetchAndSaveImage(imgId, hash!, token);
                 onChange(id, imgId, 'server', hash);
             }
-        } else if (mode === 'export') {
-            const images: { id: string; base64: string }[] = [];
-            for (const img of selected) {
-                const base64 = await imageStoreIndexedDB.get(img.id);
-                if (base64) {
-                    images.push({ id: img.id, base64 });
-                }
-            }
-            onChange(images);
         }
         setLoading(false);
         onClose();
@@ -261,23 +236,11 @@ export const ImagePanelModal = (
         }
     };
 
-    const handleSelect = (image: ImageList) => {
-        if (mode === 'import') {
-            setSelected([image]);
-        } else {
-            if (selected.find(s => s.id === image.id)) {
-                setSelected(selected.filter(s => s.id !== image.id));
-            } else {
-                setSelected([...selected, image]);
-            }
-        }
-    };
-
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t(`panel.details.image.${mode}Title`)}</ModalHeader>
+                <ModalHeader>{t(`panel.details.image.importTitle`)}</ModalHeader>
                 <ModalCloseButton />
 
                 <ModalBody>
@@ -291,7 +254,7 @@ export const ImagePanelModal = (
                             <TabList>
                                 <Tab>{t('panel.details.image.local')}</Tab>
                                 {RMP_EXPORT ? (
-                                    <Tab isDisabled={mode === 'export'}>
+                                    <Tab>
                                         {t('panel.details.image.server')}
                                         <Badge
                                             ml="1"
@@ -359,7 +322,7 @@ export const ImagePanelModal = (
                                                                             ? 'blue'
                                                                             : 'gray'
                                                                     }
-                                                                    onClick={() => handleSelect(k)}
+                                                                    onClick={() => setSelected([k])}
                                                                 />
                                                                 <IconButton
                                                                     m="1"

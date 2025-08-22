@@ -173,6 +173,9 @@ export const useScreenOrientation = () => {
     return orientation;
 };
 
+/**
+ * A hook for automatically fetching and saving images from the server when "fetchImage" changes as graph is reloaded.
+ */
 export const useSyncServerImages = (fetchImage: number) => {
     const dispatch = useDispatch();
     const graph = useRef(window.graph);

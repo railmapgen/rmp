@@ -226,7 +226,6 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
             <ImagePanelModal
                 id={id as MiscNodeId}
                 isOpen={isOpenImagePanel}
-                mode="import"
                 onClose={() => setIsOpenImagePanel(false)}
                 onChange={handleImageChange}
             />
