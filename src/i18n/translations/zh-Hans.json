@@ -467,22 +467,20 @@
                     "displayName": "成都轨道交通换乘车站"
                 },
                 "osakaMetro": {
-                    "displayName": "大阪地铁（含贯通运营）",
+                    "displayName": "大阪地铁站",
                     "stationType": "车站类型",
-                    "normalType": "一般站点",
+                    "normalType": "一般车站",
                     "throughType": "贯通运营",
-                    "noteName": "站点旧称",
+                    "oldName": "车站旧称",
                     "nameVertical": "名称纵向显示",
-                    "stationVertical": "站点纵向布局",
-                    "customNameOffsetX": "自定义名称水平偏移量",
-                    "customNameOffsetY": "自定义名称垂直偏移量",
-                    "customStationOffsetX": "自定义站点水平偏移量",
-                    "customStationOffsetY": "自定义站点垂直偏移量",
-                    "nameMaxWidth": "日文名称最大宽度",
-                    "noteMaxWidth": "站点旧称最大宽度",
-                    "translationMaxWidth": "英文名称最大宽度",
-                    "maxWidthPlaceholder": "默认为0",
-                    "transferEdit": "线路编辑"
+                    "stationVertical": "车站纵向布局",
+                    "nameOverallPosition": "名称整体位置",
+                    "nameOffsetPosition": "名称微调位置",
+                    "nameMaxWidth": "日文名称长度(%)",
+                    "oldNameMaxWidth": "车站旧称长度(%)",
+                    "translationMaxWidth": "英文名称长度(%)",
+                    "up": "上",
+                    "down": "下"
                 }
             },
             "lines": {

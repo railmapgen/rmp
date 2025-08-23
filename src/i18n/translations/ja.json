@@ -9,7 +9,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -470,22 +469,20 @@
                     "displayName": "成都鉄道交通乗換駅"
                 },
                 "osakaMetro": {
-                    "displayName": "大阪メトロ（直通運転を含む）",
+                    "displayName": "大阪地下鉄駅",
                     "stationType": "駅種別",
                     "normalType": "通常駅",
                     "throughType": "直通運転",
-                    "noteName": "駅旧称",
+                    "oldName": "旧駅名",
                     "nameVertical": "駅名縦表示",
-                    "stationVertical": "駅縦表示",
-                    "customNameOffsetX": "カスタム名前横オフセット",
-                    "customNameOffsetY": "カスタム名前縦オフセット",
-                    "customStationOffsetX": "カスタム駅横オフセット",
-                    "customStationOffsetY": "カスタム駅縦オフセット",
-                    "nameMaxWidth": "日本語駅名の最大幅",
-                    "noteMaxWidth": "駅旧称の最大幅",
-                    "translationMaxWidth": "英語駅名の最大幅",
-                    "maxWidthPlaceholder": "デフォルトは0です",
-                    "transferEdit": "線路編集"
+                    "stationVertical": "駅名縦表示",
+                    "nameOverallPosition": "駅名全体位置",
+                    "nameOffsetPosition": "駅名オフセット位置",
+                    "nameMaxWidth": "日本語駅名の長さ (%)",
+                    "oldNameMaxWidth": "旧駅名の長さ (%)",
+                    "translationMaxWidth": "英語駅名の長さ (%)",
+                    "up": "上",
+                    "down": "下"
                 }
             },
             "lines": {
@@ -626,7 +623,6 @@
             }
         }
     },
-
     "header": {
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
@@ -858,6 +854,5 @@
             "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     },
-
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }
