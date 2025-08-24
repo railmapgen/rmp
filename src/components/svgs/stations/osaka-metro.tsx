@@ -24,14 +24,11 @@ const LAYOUT_CONSTANTS = {
     ICON_RATIO: 0.6,
     BASE_TEXT_OFFSET: 3,
     BASE_LINE_HALF_WIDTH: 2,
-    ADDITIONAL_STROKE_OFFSET: 1,
     VERTICAL_SPACING: 2,
     MAGIC_OFFSET_8: 8,
     MAGIC_OFFSET_9: 9,
     MAGIC_OFFSET_10: 10,
     MAGIC_OFFSET_11: 11,
-    TEXT_VERTICAL_CORRECTION: 0.5,
-    OLD_NAME_VERTICAL_CORRECTION: 2,
     STATION: {
         WIDTH: 30,
         HEIGHT: 15,
@@ -97,23 +94,17 @@ function convertToOffsetXY(
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
 } {
-    // If nameOverallPosition is up/down, it determines nameOffsetY
     if (nameOverallPosition === 'up' || nameOverallPosition === 'down') {
         const nameOffsetY: NameOffsetY = nameOverallPosition === 'up' ? 'top' : 'bottom';
-        // nameOffsetX comes from nameOffsetPosition (or middle if nameOffsetPosition is up/down)
         const nameOffsetX: NameOffsetX =
             nameOffsetPosition === 'left' || nameOffsetPosition === 'right' ? nameOffsetPosition : 'middle';
-
         return {
             nameOffsetX,
             nameOffsetY,
         };
     }
 
-    // If nameOverallPosition is left/right
     const nameOffsetX: NameOffsetX = nameOverallPosition;
-
-    // Handle diagonal positions: if nameOffsetPosition is up/down, it determines nameOffsetY
     if (nameOffsetPosition === 'up' || nameOffsetPosition === 'down') {
         const nameOffsetY: NameOffsetY = nameOffsetPosition === 'up' ? 'top' : 'bottom';
         return {
@@ -122,7 +113,6 @@ function convertToOffsetXY(
         };
     }
 
-    // Default case: nameOffsetPosition is middle or other values
     return {
         nameOffsetX,
         nameOffsetY: 'middle',
@@ -139,19 +129,15 @@ function convertFromOffsetXY(
     nameOffsetX: NameOffsetX,
     nameOffsetY: NameOffsetY
 ): { nameOverallPosition: OsakaMetroNameOverallPosition; nameOffsetPosition: OsakaMetroNameOffsetPosition } {
-    // If nameOffsetY is not middle, determine nameOverallPosition based on nameOffsetY
     if (nameOffsetY !== 'middle') {
         const nameOverallPosition: OsakaMetroNameOverallPosition = nameOffsetY === 'top' ? 'up' : 'down';
-        // If nameOffsetX is also not middle, nameOffsetPosition is based on nameOffsetX
         const nameOffsetPosition: OsakaMetroNameOffsetPosition = nameOffsetX === 'middle' ? 'middle' : nameOffsetX;
-
         return {
             nameOverallPosition,
             nameOffsetPosition,
         };
     }
 
-    // When nameOffsetY is middle, nameOverallPosition is based on nameOffsetX
     const nameOverallPosition: OsakaMetroNameOverallPosition = nameOffsetX === 'left' ? 'left' : 'right';
 
     return {
@@ -252,11 +238,6 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
     );
 };
 
-interface StationDimensions {
-    width: number;
-    height: number;
-}
-
 interface PositionConfig {
     stationType: OsakaMetroStationType;
     transferCount: number;
@@ -272,7 +253,10 @@ function calculateStationDimensions(
     stationType: string,
     transferCount: number,
     stationDirection: OsakaMetroDirection
-): StationDimensions {
+): {
+    width: number;
+    height: number;
+} {
     const isThrough = stationType === 'through';
     const baseWidth = isThrough ? LAYOUT_CONSTANTS.STATION.RADIUS * 2 : LAYOUT_CONSTANTS.STATION.WIDTH;
     const baseHeight = isThrough ? LAYOUT_CONSTANTS.STATION.RADIUS * 2 : LAYOUT_CONSTANTS.STATION.HEIGHT;
@@ -445,42 +429,34 @@ function calculateTextPosition(config: PositionConfig) {
     return { textX, textY, textAnchor };
 }
 
-function calculateStationAdjustment(
+const calculateStationAdjustment = (
     x: number,
     y: number,
     transferCount: number,
     stationDirection: OsakaMetroDirection
-) {
-    const adjustX =
-        x -
+) => [
+    x -
         (stationDirection === 'horizontal' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.WIDTH) / 2 : 0) -
-        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
-
-    const adjustY =
-        y -
+        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0),
+    y -
         (stationDirection === 'vertical' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 : 0) -
-        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
-
-    return { adjustX, adjustY };
-}
+        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0),
+];
 
 const OsakaMetroIntSvg = (props: {
     stationDirection: OsakaMetroDirection;
-    width: number;
-    height: number;
     interchangeList: InterchangeInfo[];
     stationType: OsakaMetroStationType;
 }) => {
-    const { stationDirection, width, height, interchangeList, stationType } = props;
+    const { stationDirection, interchangeList, stationType } = props;
+    const isHorizontal = stationDirection === 'horizontal';
+
     return (
         <g>
             {interchangeList.map((interchange, index) => (
                 <g
                     key={index}
-                    transform={`translate(
-                        ${(stationDirection === 'horizontal' ? index * LAYOUT_CONSTANTS.STATION.WIDTH : 0) + 1},
-                        ${(stationDirection === 'vertical' ? index * LAYOUT_CONSTANTS.STATION.HEIGHT : 0) + 1}
-                    )`}
+                    transform={`translate(${isHorizontal ? index * LAYOUT_CONSTANTS.STATION.WIDTH + 1 : 1}, ${isHorizontal ? 1 : index * LAYOUT_CONSTANTS.STATION.HEIGHT + 1})`}
                 >
                     <OsakaMetroSvg interchangeInfo={interchange} stationType={stationType} />
                 </g>
@@ -510,16 +486,13 @@ const OsakaMetroStation = (props: StationComponentProps) => {
 
     const interchangeList = transfer[0] || [];
     const transferCount = interchangeList.length || 1;
-
-    const calculateTextScale = (percentage: number, direction: 'horizontal' | 'vertical' = 'horizontal') => {
-        if (percentage === 100) return undefined;
-        const scale = percentage / 100;
-        return direction === 'horizontal' ? `scale(${scale}, 1)` : `scale(1, ${scale})`;
-    };
-
-    const nameScaleTransform = calculateTextScale(nameMaxWidth, nameDirection);
-    const oldNameScaleTransform = calculateTextScale(oldNameMaxWidth, nameDirection);
-    const translationScaleTransform = calculateTextScale(translationMaxWidth, nameDirection);
+    const isHorizontal = nameDirection === 'horizontal';
+    const isThrough = stationType === 'through';
+    const hasOldName = oldName.length > 0;
+    const nameScale = nameMaxWidth / 100;
+    const oldNameScale = oldNameMaxWidth / 100;
+    const translationScale = translationMaxWidth / 100;
+    const processedNameText = names[0].length === 2 ? `${names[0][0]} ${names[0][1]}` : names[0];
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -539,45 +512,38 @@ const OsakaMetroStation = (props: StationComponentProps) => {
         transferCount,
         stationDirection
     );
-
-    const positionConfig: PositionConfig = {
+    const { textX, textY, textAnchor } = calculateTextPosition({
         stationType,
         transferCount,
         nameLineCount: names[0].split('\n').length,
-        hasOldName: oldName.length > 0,
+        hasOldName,
         stationDirection,
         nameDirection,
         nameOverallPosition,
         nameOffsetPosition,
-    };
-
-    const { textX, textY, textAnchor } = calculateTextPosition(positionConfig);
-    const { adjustX, adjustY } = calculateStationAdjustment(x, y, transferCount, stationDirection);
-    const processedNameText = names[0].length === 2 ? names[0].slice(0, 1) + ' ' + names[0].slice(1) : names[0];
-    const nameTransform = `translate(0, ${-(LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME + 2) * (oldName.length > 0 ? 1 : 0)})`;
-    const oldNameVerticalTransform = `translate(${LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME - LAYOUT_CONSTANTS.FONT_SIZE.NAME - LAYOUT_CONSTANTS.MAGIC_OFFSET_8}, 0)`;
-    const translationVerticalTransform = `translate(${-(LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME + 2) * (oldName.length > 0 ? 1 : 0) - 4}, 0)`;
+    });
+    const [adjustX, adjustY] = calculateStationAdjustment(x, y, transferCount, stationDirection);
 
     return (
         <g id={id} transform={`translate(${adjustX}, ${adjustY})`}>
             {interchangeList.length === 1 ? (
-                stationType !== 'through' ? (
+                isThrough ? (
                     <g>
-                        <rect
-                            x={-LAYOUT_CONSTANTS.STATION.WIDTH / 2 - LAYOUT_CONSTANTS.STATION.STROKE_WIDTH}
-                            y={-LAYOUT_CONSTANTS.STATION.HEIGHT / 2 - LAYOUT_CONSTANTS.STATION.STROKE_WIDTH}
-                            width={LAYOUT_CONSTANTS.STATION.WIDTH + LAYOUT_CONSTANTS.STATION.STROKE_WIDTH * 2}
-                            height={LAYOUT_CONSTANTS.STATION.HEIGHT + LAYOUT_CONSTANTS.STATION.STROKE_WIDTH * 2}
+                        <circle
+                            cx={0}
+                            cy={0}
+                            r={LAYOUT_CONSTANTS.STATION.RADIUS + LAYOUT_CONSTANTS.STATION.STROKE_WIDTH + 0.5}
                             fill="white"
                         />
                         <OsakaMetroSvg interchangeInfo={interchangeList[0]} stationType={stationType} />
                     </g>
                 ) : (
                     <g>
-                        <circle
-                            cx={0}
-                            cy={0}
-                            r={LAYOUT_CONSTANTS.STATION.RADIUS + LAYOUT_CONSTANTS.STATION.STROKE_WIDTH + 0.5}
+                        <rect
+                            x={-LAYOUT_CONSTANTS.STATION.WIDTH / 2 - LAYOUT_CONSTANTS.STATION.STROKE_WIDTH}
+                            y={-LAYOUT_CONSTANTS.STATION.HEIGHT / 2 - LAYOUT_CONSTANTS.STATION.STROKE_WIDTH}
+                            width={LAYOUT_CONSTANTS.STATION.WIDTH + LAYOUT_CONSTANTS.STATION.STROKE_WIDTH * 2}
+                            height={LAYOUT_CONSTANTS.STATION.HEIGHT + LAYOUT_CONSTANTS.STATION.STROKE_WIDTH * 2}
                             fill="white"
                         />
                         <OsakaMetroSvg interchangeInfo={interchangeList[0]} stationType={stationType} />
@@ -597,15 +563,13 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                     />
                     <OsakaMetroIntSvg
                         stationDirection={stationDirection}
-                        width={stationWidth}
-                        height={stationHeight}
                         interchangeList={interchangeList}
                         stationType={stationType}
                     />
                 </>
             )}
 
-            {transferCount === 1 && stationType === 'through' ? (
+            {transferCount === 1 && isThrough ? (
                 <circle
                     id={`stn_core_${id}`}
                     cx={0}
@@ -632,51 +596,46 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                 />
             )}
 
-            {nameDirection === 'horizontal' ? (
+            {isHorizontal ? (
                 <g
                     transform={`translate(${textX}, ${textY})`}
                     textAnchor={textAnchor}
                     className="rmp-name-outline"
                     strokeWidth="1"
                 >
-                    <g transform={nameScaleTransform}>
+                    <MultilineText
+                        text={processedNameText.split('\n')}
+                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                        lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                        transform={`${`translate(0, ${-(LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME + 2) * (hasOldName ? 1 : 0)})`}${nameScale === 1 ? '' : ` scale(${nameScale}, 1)`}`}
+                        grow="up"
+                        baseOffset={1}
+                        fontWeight="bold"
+                        stroke="none"
+                        {...getLangStyle(TextLanguage.tokyo_ja)}
+                    />
+                    {hasOldName && (
                         <MultilineText
-                            text={processedNameText.split('\n')}
-                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                            lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                            transform={nameTransform}
-                            grow="up"
+                            text={`(${oldName})`.split('\n')}
+                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                            lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                            transform={`translate(0, ${-LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME / 2 - 0.5})${oldNameScale === 1 ? '' : ` scale(${oldNameScale}, 1)`}`}
+                            grow="bidirectional"
                             baseOffset={1}
                             fontWeight="bold"
-                            stroke="none"
                             {...getLangStyle(TextLanguage.tokyo_ja)}
                         />
-                    </g>
-                    {oldName && oldName.length > 0 && (
-                        <g transform={oldNameScaleTransform}>
-                            <MultilineText
-                                text={`(${oldName})`.split('\n')}
-                                fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                                lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                                transform={`translate(0, ${-LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME / 2 - 0.5})`}
-                                grow="bidirectional"
-                                baseOffset={1}
-                                fontWeight="bold"
-                                {...getLangStyle(TextLanguage.tokyo_ja)}
-                            />
-                        </g>
                     )}
-                    <g transform={translationScaleTransform}>
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                            lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                            grow="down"
-                            baseOffset={1}
-                            fontWeight="bold"
-                            {...getLangStyle(TextLanguage.tokyo_ja)}
-                        />
-                    </g>
+                    <MultilineText
+                        text={names[1].split('\n')}
+                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                        lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                        transform={translationScale === 1 ? undefined : `scale(${translationScale}, 1)`}
+                        grow="down"
+                        baseOffset={1}
+                        fontWeight="bold"
+                        {...getLangStyle(TextLanguage.tokyo_ja)}
+                    />
                 </g>
             ) : (
                 <g
@@ -685,43 +644,38 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                     className="rmp-name-outline"
                     strokeWidth="1"
                 >
-                    <g transform={nameScaleTransform}>
+                    <MultilineTextVertical
+                        text={processedNameText.split('\n')}
+                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                        lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                        transform={nameScale === 1 ? undefined : `scale(1, ${nameScale})`}
+                        grow="right"
+                        baseOffset={1}
+                        fontWeight="bold"
+                        {...getLangStyle(TextLanguage.tokyo_ja)}
+                    />
+                    {hasOldName && (
                         <MultilineTextVertical
-                            text={processedNameText.split('\n')}
-                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                            lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                            grow="right"
+                            text={`(${oldName})`.split('\n')}
+                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                            lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                            transform={`${`translate(${LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME - LAYOUT_CONSTANTS.FONT_SIZE.NAME - LAYOUT_CONSTANTS.MAGIC_OFFSET_8}, 0)`}${oldNameScale === 1 ? '' : ` scale(1, ${oldNameScale})`}`}
+                            grow="bidirectional"
                             baseOffset={1}
                             fontWeight="bold"
                             {...getLangStyle(TextLanguage.tokyo_ja)}
                         />
-                    </g>
-                    {oldName && oldName.length > 0 && (
-                        <g transform={oldNameScaleTransform}>
-                            <MultilineTextVertical
-                                text={`(${oldName})`.split('\n')}
-                                fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                                lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                                transform={oldNameVerticalTransform}
-                                grow="bidirectional"
-                                baseOffset={1}
-                                fontWeight="bold"
-                                {...getLangStyle(TextLanguage.tokyo_ja)}
-                            />
-                        </g>
                     )}
-                    <g transform={translationScaleTransform}>
-                        <MultilineTextVertical
-                            text={names[1].split('\n')}
-                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                            lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                            transform={translationVerticalTransform}
-                            grow="left"
-                            baseOffset={1}
-                            fontWeight="bold"
-                            {...getLangStyle(TextLanguage.tokyo_ja)}
-                        />
-                    </g>
+                    <MultilineTextVertical
+                        text={names[1].split('\n')}
+                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                        lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                        transform={`${`translate(${-(LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME + 2) * (hasOldName ? 1 : 0) - 4}, 0)`}${translationScale === 1 ? '' : ` scale(1, ${translationScale})`}`}
+                        grow="left"
+                        baseOffset={1}
+                        fontWeight="bold"
+                        {...getLangStyle(TextLanguage.tokyo_ja)}
+                    />
                 </g>
             )}
         </g>
@@ -735,7 +689,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
     const interchangeCount = attrs.transfer?.[0]?.length || 1;
     const isHorizontal = attrs.nameDirection === 'horizontal';
     const isMultipleTransfers = interchangeCount > 1;
-    const isNameUpOrDown = attrs.nameOverallPosition === 'up' || attrs.nameOverallPosition === 'down';
+    const isNameUpOrDown = ['up', 'down'].includes(attrs.nameOverallPosition);
 
     const handleAutoAdjustment = React.useCallback(() => {
         if (isMultipleTransfers) {
@@ -773,8 +727,6 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
 
     // Initialize sync mechanism to handle station type conversion and ensure consistency
     React.useEffect(() => {
-        // Check if this is a station type conversion scenario:
-        // nameOffsetX/Y are not default but nameOverallPosition/nameOffsetPosition are still default
         const isDefaultPosition =
             attrs.nameOverallPosition === defaultOsakaMetroStationAttributes.nameOverallPosition &&
             attrs.nameOffsetPosition === defaultOsakaMetroStationAttributes.nameOffsetPosition;
@@ -783,7 +735,6 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             attrs.nameOffsetY === defaultOsakaMetroStationAttributes.nameOffsetY;
 
         if (isDefaultPosition && !isDefaultOffset) {
-            // Station type conversion scenario: convert nameOffsetX/Y to nameOverallPosition/nameOffsetPosition
             const { nameOverallPosition, nameOffsetPosition } = convertFromOffsetXY(
                 attrs.nameOffsetX,
                 attrs.nameOffsetY
@@ -791,10 +742,8 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             const syncedAttrs = { ...attrs, nameOverallPosition, nameOffsetPosition };
             handleAttrsUpdate(id, syncedAttrs);
         } else {
-            // Normal scenario: ensure nameOffsetX/Y are consistent with nameOverallPosition/nameOffsetPosition
             const { nameOffsetX, nameOffsetY } = convertToOffsetXY(attrs.nameOverallPosition, attrs.nameOffsetPosition);
 
-            // Check if sync is needed
             if (attrs.nameOffsetX !== nameOffsetX || attrs.nameOffsetY !== nameOffsetY) {
                 const syncedAttrs = { ...attrs, nameOffsetX, nameOffsetY };
                 handleAttrsUpdate(id, syncedAttrs);
