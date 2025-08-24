@@ -478,9 +478,9 @@
                     "stationVertical": "駅名縦表示",
                     "nameOverallPosition": "駅名全体位置",
                     "nameOffsetPosition": "駅名オフセット位置",
-                    "nameMaxWidth": "日本語駅名の長さ (%)",
-                    "oldNameMaxWidth": "旧駅名の長さ (%)",
-                    "translationMaxWidth": "英語駅名の長さ (%)",
+                    "nameMaxWidth": "日本語駅名の長さ",
+                    "oldNameMaxWidth": "旧駅名の長さ",
+                    "translationMaxWidth": "英語駅名の長さ",
                     "up": "上",
                     "down": "下"
                 }

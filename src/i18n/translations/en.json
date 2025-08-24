@@ -476,9 +476,9 @@
                     "stationVertical": "Station Vertical Layout",
                     "nameOverallPosition": "Name Overall Position",
                     "nameOffsetPosition": "Name Offset Position",
-                    "nameMaxWidth": "Japanese Name Length (%)",
-                    "oldNameMaxWidth": "Old Station Name Length (%)",
-                    "translationMaxWidth": "English Name Length (%)",
+                    "nameMaxWidth": "Japanese Name Length",
+                    "oldNameMaxWidth": "Old Station Name Length",
+                    "translationMaxWidth": "English Name Length",
                     "up": "Up",
                     "down": "Down"
                 }

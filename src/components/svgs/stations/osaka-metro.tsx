@@ -511,54 +511,15 @@ const OsakaMetroStation = (props: StationComponentProps) => {
     const interchangeList = transfer[0] || [];
     const transferCount = interchangeList.length || 1;
 
-    const calculateTextLength = (percentage: number, text: string, fontSize: number) => {
+    const calculateTextScale = (percentage: number, direction: 'horizontal' | 'vertical' = 'horizontal') => {
         if (percentage === 100) return undefined;
-        if (!text || text.trim() === '') return undefined;
-
-        // For multi-line text, calculate based on the longest line
-        const lines = text.split('\n');
-        const longestLine = lines.reduce(
-            (longest, current) => (current.length > longest.length ? current : longest),
-            ''
-        );
-
-        // Estimate character width ratio
-        let totalWidth = 0;
-        for (let i = 0; i < longestLine.length; i++) {
-            const char = longestLine[i];
-            if (/[\u4e00-\u9faf\u3040-\u309f\u30a0-\u30ff]/.test(char)) {
-                // Japanese characters
-                totalWidth += fontSize * 1.0;
-            } else if (/[A-Za-z]/.test(char)) {
-                // English letters
-                totalWidth += fontSize * 0.6;
-            } else if (/[0-9]/.test(char)) {
-                // Numbers
-                totalWidth += fontSize * 0.5;
-            } else {
-                // Other characters (spaces, punctuation, etc.)
-                totalWidth += fontSize * 0.4;
-            }
-        }
-
-        return totalWidth * (percentage / 100);
+        const scale = percentage / 100;
+        return direction === 'horizontal' ? `scale(${scale}, 1)` : `scale(1, ${scale})`;
     };
 
-    const actualNameText = names[0].length === 2 ? names[0].slice(0, 1) + ' ' + names[0].slice(1) : names[0];
-    const actualOldNameText = oldName ? `(${oldName})` : '';
-    const actualTranslationText = names[1];
-
-    const actualNameMaxWidth = calculateTextLength(nameMaxWidth, actualNameText, LAYOUT_CONSTANTS.FONT_SIZE.NAME);
-    const actualOldNameMaxWidth = calculateTextLength(
-        oldNameMaxWidth,
-        actualOldNameText,
-        LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME
-    );
-    const actualTranslationMaxWidth = calculateTextLength(
-        translationMaxWidth,
-        actualTranslationText,
-        LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION
-    );
+    const nameScaleTransform = calculateTextScale(nameMaxWidth, nameDirection);
+    const oldNameScaleTransform = calculateTextScale(oldNameMaxWidth, nameDirection);
+    const translationScaleTransform = calculateTextScale(translationMaxWidth, nameDirection);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -678,44 +639,44 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                     className="rmp-name-outline"
                     strokeWidth="1"
                 >
-                    <MultilineText
-                        text={processedNameText.split('\n')}
-                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                        lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                        transform={nameTransform}
-                        grow="up"
-                        baseOffset={1}
-                        fontWeight="bold"
-                        textLength={actualNameMaxWidth}
-                        lengthAdjust="spacingAndGlyphs"
-                        stroke="none"
-                        {...getLangStyle(TextLanguage.tokyo_ja)}
-                    />
-                    {oldName && oldName.length > 0 && (
+                    <g transform={nameScaleTransform}>
                         <MultilineText
-                            text={`(${oldName})`.split('\n')}
-                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                            lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                            transform={`translate(0, ${-LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME / 2 - 0.5})`}
-                            grow="bidirectional"
+                            text={processedNameText.split('\n')}
+                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                            lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                            transform={nameTransform}
+                            grow="up"
                             baseOffset={1}
                             fontWeight="bold"
-                            textLength={actualOldNameMaxWidth}
-                            lengthAdjust="spacingAndGlyphs"
+                            stroke="none"
                             {...getLangStyle(TextLanguage.tokyo_ja)}
                         />
+                    </g>
+                    {oldName && oldName.length > 0 && (
+                        <g transform={oldNameScaleTransform}>
+                            <MultilineText
+                                text={`(${oldName})`.split('\n')}
+                                fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                                lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                                transform={`translate(0, ${-LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME / 2 - 0.5})`}
+                                grow="bidirectional"
+                                baseOffset={1}
+                                fontWeight="bold"
+                                {...getLangStyle(TextLanguage.tokyo_ja)}
+                            />
+                        </g>
                     )}
-                    <MultilineText
-                        text={names[1].split('\n')}
-                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                        lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                        grow="down"
-                        baseOffset={1}
-                        fontWeight="bold"
-                        textLength={actualTranslationMaxWidth}
-                        lengthAdjust="spacingAndGlyphs"
-                        {...getLangStyle(TextLanguage.tokyo_ja)}
-                    />
+                    <g transform={translationScaleTransform}>
+                        <MultilineText
+                            text={names[1].split('\n')}
+                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                            lineHeight={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                            grow="down"
+                            baseOffset={1}
+                            fontWeight="bold"
+                            {...getLangStyle(TextLanguage.tokyo_ja)}
+                        />
+                    </g>
                 </g>
             ) : (
                 <g
@@ -724,43 +685,43 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                     className="rmp-name-outline"
                     strokeWidth="1"
                 >
-                    <MultilineTextVertical
-                        text={processedNameText.split('\n')}
-                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                        lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
-                        grow="right"
-                        baseOffset={1}
-                        fontWeight="bold"
-                        textLength={actualNameMaxWidth}
-                        lengthAdjust="spacingAndGlyphs"
-                        {...getLangStyle(TextLanguage.tokyo_ja)}
-                    />
-                    {oldName && oldName.length > 0 && (
+                    <g transform={nameScaleTransform}>
                         <MultilineTextVertical
-                            text={`(${oldName})`.split('\n')}
-                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                            lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
-                            transform={oldNameVerticalTransform}
-                            grow="bidirectional"
+                            text={processedNameText.split('\n')}
+                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                            lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.NAME}
+                            grow="right"
                             baseOffset={1}
                             fontWeight="bold"
-                            textLength={actualOldNameMaxWidth}
-                            lengthAdjust="spacingAndGlyphs"
                             {...getLangStyle(TextLanguage.tokyo_ja)}
                         />
+                    </g>
+                    {oldName && oldName.length > 0 && (
+                        <g transform={oldNameScaleTransform}>
+                            <MultilineTextVertical
+                                text={`(${oldName})`.split('\n')}
+                                fontSize={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                                lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.OLD_NAME}
+                                transform={oldNameVerticalTransform}
+                                grow="bidirectional"
+                                baseOffset={1}
+                                fontWeight="bold"
+                                {...getLangStyle(TextLanguage.tokyo_ja)}
+                            />
+                        </g>
                     )}
-                    <MultilineTextVertical
-                        text={names[1].split('\n')}
-                        fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                        lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
-                        transform={translationVerticalTransform}
-                        grow="left"
-                        baseOffset={1}
-                        fontWeight="bold"
-                        textLength={actualTranslationMaxWidth}
-                        lengthAdjust="spacingAndGlyphs"
-                        {...getLangStyle(TextLanguage.tokyo_ja)}
-                    />
+                    <g transform={translationScaleTransform}>
+                        <MultilineTextVertical
+                            text={names[1].split('\n')}
+                            fontSize={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                            lineWidth={LAYOUT_CONSTANTS.FONT_SIZE.TRANSLATION}
+                            transform={translationVerticalTransform}
+                            grow="left"
+                            baseOffset={1}
+                            fontWeight="bold"
+                            {...getLangStyle(TextLanguage.tokyo_ja)}
+                        />
+                    </g>
                 </g>
             )}
         </g>
@@ -928,9 +889,9 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             type: 'slider',
             label: t('panel.details.stations.osakaMetro.nameMaxWidth'),
             value: attrs.nameMaxWidth,
-            min: 50,
+            min: 70,
             max: 100,
-            step: 5,
+            step: 1,
             onChange: val => updateAttr('nameMaxWidth', val),
             minW: 'full',
         },
@@ -938,9 +899,9 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             type: 'slider',
             label: t('panel.details.stations.osakaMetro.oldNameMaxWidth'),
             value: attrs.oldNameMaxWidth,
-            min: 50,
+            min: 70,
             max: 100,
-            step: 5,
+            step: 1,
             onChange: val => updateAttr('oldNameMaxWidth', val || 100),
             minW: 'full',
         },
@@ -948,9 +909,9 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             type: 'slider',
             label: t('panel.details.stations.osakaMetro.translationMaxWidth'),
             value: attrs.translationMaxWidth,
-            min: 50,
+            min: 70,
             max: 100,
-            step: 5,
+            step: 1,
             onChange: val => updateAttr('translationMaxWidth', val || 100),
             minW: 'full',
         },

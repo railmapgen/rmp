@@ -476,9 +476,9 @@
                     "stationVertical": "车站纵向布局",
                     "nameOverallPosition": "名称整体位置",
                     "nameOffsetPosition": "名称微调位置",
-                    "nameMaxWidth": "日文名称长度(%)",
-                    "oldNameMaxWidth": "车站旧称长度(%)",
-                    "translationMaxWidth": "英文名称长度(%)",
+                    "nameMaxWidth": "日文名称长度",
+                    "oldNameMaxWidth": "车站旧称长度",
+                    "translationMaxWidth": "英文名称长度",
                     "up": "上",
                     "down": "下"
                 }
