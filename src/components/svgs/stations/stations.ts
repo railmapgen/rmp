@@ -32,6 +32,7 @@ import chongqingRTBasicStation2021 from './chongqingrt-basic-2021';
 import chongqingRTIntStation2021 from './chongqingrt-int-2021';
 import chengduRTBasicStation from './chengdurt-basic';
 import chengduRTIntStation from './chengdurt-int';
+import osakaMetroStation from './osaka-metro';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -67,6 +68,7 @@ const stations = {
     [StationType.ChongqingRTInt2021]: chongqingRTIntStation2021,
     [StationType.ChengduRTBasic]: chengduRTBasicStation,
     [StationType.ChengduRTInt]: chengduRTIntStation,
+    [StationType.OsakaMetro]: osakaMetroStation,
 };
 
 export default stations;
