@@ -33,11 +33,13 @@ import {
 } from '@chakra-ui/react';
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MdCheck, MdDelete, MdDownload } from 'react-icons/md';
 import { MiscNodeId, NodeAttributes } from '../../constants/constants';
 import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
+import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
 import {
     downloadBase64Image,
     fetchAndSaveImage,
@@ -65,6 +67,7 @@ export const ImagePanelModal = (props: {
         // activeSubscriptions: { RMP_EXPORT },
     } = useRootSelector(state => state.account);
     const graph = React.useRef(window.graph);
+    const dispatch = useDispatch();
 
     const [loading, setLoading] = React.useState(false);
     const [refresh, _setRefresh] = React.useState(0);
@@ -199,6 +202,17 @@ export const ImagePanelModal = (props: {
     };
 
     const handleDelete = async (id: string) => {
+        graph.current
+            .filterNodes(
+                (n: string, attr: any) =>
+                    n.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href === id
+            )
+            .forEach(node => {
+                const attrs = graph.current.getNodeAttribute(node, MiscNodeType.Image)!;
+                attrs.href = undefined;
+                graph.current.mergeNodeAttributes(node, { [MiscNodeType.Image]: attrs });
+            });
+
         if (id.startsWith('img-l')) {
             // Local image
             imageStoreIndexedDB.delete(id);
@@ -223,6 +237,8 @@ export const ImagePanelModal = (props: {
                 console.error('Error deleting image:', error);
             }
         }
+
+        dispatch(setRefreshNodes());
     };
 
     const handleDownload = async (image: ImageList) => {
