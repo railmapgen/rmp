@@ -469,7 +469,7 @@
                 "chengduRTInt": {
                     "displayName": "成都鉄道交通乗換駅"
                 },
-                "osakaMetroStation": {
+                "osakaMetro": {
                     "displayName": "大阪地下鉄駅",
                     "stationType": "駅種別",
                     "normalType": "通常駅",

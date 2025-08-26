@@ -467,8 +467,8 @@
                 "chengduRTInt": {
                     "displayName": "Chengdu Rail Transit interchange station"
                 },
-                "osakaMetroStation": {
-                    "displayName": "Osaka Metro Station",
+                "osakaMetro": {
+                    "displayName": "Osaka Metro station",
                     "stationType": "Station Type",
                     "normalType": "Normal Station",
                     "throughType": "Through-train Station",

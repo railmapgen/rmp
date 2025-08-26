@@ -633,12 +633,12 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
     const fields: RmgFieldsField[] = [
         {
             type: 'select',
-            label: t('panel.details.stations.osakaMetroStation.stationType'),
+            label: t('panel.details.stations.osakaMetro.stationType'),
             hidden: isMultipleTransfers,
             value: attrs.stationType,
             options: {
-                normal: t('panel.details.stations.osakaMetroStation.normalType'),
-                through: t('panel.details.stations.osakaMetroStation.throughType'),
+                normal: t('panel.details.stations.osakaMetro.normalType'),
+                through: t('panel.details.stations.osakaMetro.throughType'),
             },
             onChange: val => updateAttr('stationType', val as OsakaMetroStationType),
         },
@@ -651,7 +651,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'input',
-            label: t('panel.details.stations.osakaMetroStation.oldName'),
+            label: t('panel.details.stations.osakaMetro.oldName'),
             value: attrs.oldName,
             onChange: val => updateAttr('oldName', val),
             minW: 'full',
@@ -665,13 +665,13 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'select',
-            label: t('panel.details.stations.osakaMetroStation.nameOverallPosition'),
+            label: t('panel.details.stations.osakaMetro.nameOverallPosition'),
             value: attrs.nameOverallPosition,
             options: {
-                up: t('panel.details.stations.osakaMetroStation.up'),
+                up: t('panel.details.stations.osakaMetro.up'),
                 left: t('panel.details.stations.common.left'),
                 right: t('panel.details.stations.common.right'),
-                down: t('panel.details.stations.osakaMetroStation.down'),
+                down: t('panel.details.stations.osakaMetro.down'),
             },
             disabledOptions: attrs.nameDirection === 'vertical' ? ['left', 'right'] : [],
             onChange: val => {
@@ -682,7 +682,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'select',
-            label: t('panel.details.stations.osakaMetroStation.nameOffsetPosition'),
+            label: t('panel.details.stations.osakaMetro.nameOffsetPosition'),
             hidden: !isHorizontal,
             value: attrs.nameOffsetPosition,
             options: isNameUpOrDown
@@ -692,9 +692,9 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
                       right: t('panel.details.stations.common.right'),
                   }
                 : {
-                      up: t('panel.details.stations.osakaMetroStation.up'),
+                      up: t('panel.details.stations.osakaMetro.up'),
                       middle: t('panel.details.stations.common.middle'),
-                      down: t('panel.details.stations.osakaMetroStation.down'),
+                      down: t('panel.details.stations.osakaMetro.down'),
                   },
             disabledOptions: isNameUpOrDown ? ['up', 'down'] : ['left', 'right'],
             onChange: val => {
@@ -704,7 +704,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.osakaMetroStation.nameMaxWidth'),
+            label: t('panel.details.stations.osakaMetro.nameMaxWidth'),
             value: attrs.nameMaxWidth,
             min: 70,
             max: 100,
@@ -714,7 +714,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.osakaMetroStation.oldNameMaxWidth'),
+            label: t('panel.details.stations.osakaMetro.oldNameMaxWidth'),
             value: attrs.oldNameMaxWidth,
             min: 70,
             max: 100,
@@ -724,7 +724,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.osakaMetroStation.translationMaxWidth'),
+            label: t('panel.details.stations.osakaMetro.translationMaxWidth'),
             value: attrs.translationMaxWidth,
             min: 70,
             max: 100,
@@ -734,7 +734,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.osakaMetroStation.nameVertical'),
+            label: t('panel.details.stations.osakaMetro.nameVertical'),
             hidden: isMultipleTransfers,
             isChecked: !isHorizontal,
             onChange: val => {
@@ -747,7 +747,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.osakaMetroStation.stationVertical'),
+            label: t('panel.details.stations.osakaMetro.stationVertical'),
             hidden: !isMultipleTransfers,
             isChecked: attrs.stationDirection === 'vertical',
             onChange: val => updateAttr('stationDirection', val ? 'vertical' : 'horizontal'),
@@ -772,7 +772,7 @@ const osakaMetroStation: Station<OsakaMetroStationAttributes> = {
     defaultAttrs: defaultOsakaMetroStationAttributes,
     attrsComponent: OsakaMetroAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.osakaMetroStation.displayName',
+        displayName: 'panel.details.stations.osakaMetro.displayName',
         cities: [CityCode.Osaka],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],

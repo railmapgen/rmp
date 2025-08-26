@@ -466,7 +466,7 @@
                 "chengduRTInt": {
                     "displayName": "청두 도시철도 환승역"
                 },
-                "osakaMetroStation": {
+                "osakaMetro": {
                     "displayName": "오사카 지하철역",
                     "stationType": "역 유형",
                     "normalType": "일반 역",
