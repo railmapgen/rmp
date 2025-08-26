@@ -7,6 +7,7 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
+
     "panel": {
         "tools": {
             "showLess": "적게 표시",
@@ -465,7 +466,7 @@
                 "chengduRTInt": {
                     "displayName": "청두 도시철도 환승역"
                 },
-                "osakaMetro": {
+                "osakaMetroStation": {
                     "displayName": "오사카 지하철역",
                     "stationType": "역 유형",
                     "normalType": "일반 역",
@@ -620,6 +621,7 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
@@ -852,5 +854,6 @@
             "slackContent": "이 슬랙 채널에서 채팅해요!"
         }
     },
+
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
 }

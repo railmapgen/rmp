@@ -7,6 +7,7 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
+
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -465,7 +466,7 @@
                 "chengduRTInt": {
                     "displayName": "成都軌道交通換乘車站"
                 },
-                "osakaMetro": {
+                "osakaMetroStation": {
                     "displayName": "大阪地鐵站",
                     "stationType": "車站類型",
                     "normalType": "一般車站",
@@ -620,6 +621,7 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "你正在瀏覽<1>{{environment}}</1>環境！",
         "popoverBody": "我們正在測試最新的RMP。如果妳有任何建議，歡迎在 https://github.com/railmapgen/rmp/issues 上提出。",
@@ -852,5 +854,6 @@
             "slackContent": "在這些Slack頻道中討論!"
         }
     },
+
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
 }

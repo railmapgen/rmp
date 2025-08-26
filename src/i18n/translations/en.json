@@ -7,6 +7,7 @@
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
+
     "panel": {
         "tools": {
             "showLess": "Show less",
@@ -466,7 +467,7 @@
                 "chengduRTInt": {
                     "displayName": "Chengdu Rail Transit interchange station"
                 },
-                "osakaMetro": {
+                "osakaMetroStation": {
                     "displayName": "Osaka Metro Station",
                     "stationType": "Station Type",
                     "normalType": "Normal Station",
@@ -621,6 +622,7 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
@@ -853,5 +855,6 @@
             "slackContent": "Chat in these Slack channels!"
         }
     },
+
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
 }

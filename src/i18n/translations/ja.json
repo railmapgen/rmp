@@ -9,6 +9,7 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
+
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -468,7 +469,7 @@
                 "chengduRTInt": {
                     "displayName": "成都鉄道交通乗換駅"
                 },
-                "osakaMetro": {
+                "osakaMetroStation": {
                     "displayName": "大阪地下鉄駅",
                     "stationType": "駅種別",
                     "normalType": "通常駅",
@@ -623,6 +624,7 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
@@ -854,5 +856,6 @@
             "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     },
+
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }

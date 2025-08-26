@@ -2,15 +2,8 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
-import {
-    NameOffsetX,
-    NameOffsetY,
-    Station,
-    StationAttributes,
-    StationComponentProps,
-    StationType,
-} from '../../../constants/stations';
+import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
+import { Station, StationComponentProps, StationType } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import {
     InterchangeField,
@@ -60,8 +53,6 @@ export interface OsakaMetroStationAttributes extends StationAttributesWithInterc
     nameMaxWidth: number;
     oldNameMaxWidth: number;
     translationMaxWidth: number;
-    nameOffsetX: NameOffsetX;
-    nameOffsetY: NameOffsetY;
 }
 
 const defaultOsakaMetroStationAttributes: OsakaMetroStationAttributes = {
@@ -76,75 +67,7 @@ const defaultOsakaMetroStationAttributes: OsakaMetroStationAttributes = {
     nameMaxWidth: 100,
     oldNameMaxWidth: 100,
     translationMaxWidth: 100,
-    nameOffsetX: 'left',
-    nameOffsetY: 'middle',
 };
-
-/**
- * Adapter function: Convert nameOverallPosition and nameOffsetPosition to nameOffsetX and nameOffsetY
- * Conversion rules (reverse of convertFromOffsetXY):
- * 1. If nameOverallPosition is up/down, nameOffsetY comes from nameOverallPosition, nameOffsetX comes from nameOffsetPosition
- * 2. If nameOverallPosition is left/right and nameOffsetPosition is middle, nameOffsetX comes from nameOverallPosition, nameOffsetY is middle
- * 3. If nameOverallPosition is left/right and nameOffsetPosition is up/down, handle diagonal positions (e.g. left+down = bottom-left)
- */
-function convertToOffsetXY(
-    nameOverallPosition: OsakaMetroNameOverallPosition,
-    nameOffsetPosition: OsakaMetroNameOffsetPosition = 'middle'
-): {
-    nameOffsetX: NameOffsetX;
-    nameOffsetY: NameOffsetY;
-} {
-    if (nameOverallPosition === 'up' || nameOverallPosition === 'down') {
-        const nameOffsetY: NameOffsetY = nameOverallPosition === 'up' ? 'top' : 'bottom';
-        const nameOffsetX: NameOffsetX =
-            nameOffsetPosition === 'left' || nameOffsetPosition === 'right' ? nameOffsetPosition : 'middle';
-        return {
-            nameOffsetX,
-            nameOffsetY,
-        };
-    }
-
-    const nameOffsetX: NameOffsetX = nameOverallPosition;
-    if (nameOffsetPosition === 'up' || nameOffsetPosition === 'down') {
-        const nameOffsetY: NameOffsetY = nameOffsetPosition === 'up' ? 'top' : 'bottom';
-        return {
-            nameOffsetX,
-            nameOffsetY,
-        };
-    }
-
-    return {
-        nameOffsetX,
-        nameOffsetY: 'middle',
-    };
-}
-
-/**
- * Adapter function: Convert nameOffsetX and nameOffsetY to nameOverallPosition and nameOffsetPosition
- * Conversion rules:
- * 1. Both nameOffsetY and nameOffsetX can be middle, but not at the same time
- * 2. If both are not middle, nameOverallPosition is based on nameOffsetY (up/down), nameOffsetPosition is based on nameOffsetX (left/right)
- */
-function convertFromOffsetXY(
-    nameOffsetX: NameOffsetX,
-    nameOffsetY: NameOffsetY
-): { nameOverallPosition: OsakaMetroNameOverallPosition; nameOffsetPosition: OsakaMetroNameOffsetPosition } {
-    if (nameOffsetY !== 'middle') {
-        const nameOverallPosition: OsakaMetroNameOverallPosition = nameOffsetY === 'top' ? 'up' : 'down';
-        const nameOffsetPosition: OsakaMetroNameOffsetPosition = nameOffsetX === 'middle' ? 'middle' : nameOffsetX;
-        return {
-            nameOverallPosition,
-            nameOffsetPosition,
-        };
-    }
-
-    const nameOverallPosition: OsakaMetroNameOverallPosition = nameOffsetX === 'left' ? 'left' : 'right';
-
-    return {
-        nameOverallPosition,
-        nameOffsetPosition: 'middle',
-    };
-}
 
 const OsakaMetroStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
@@ -171,7 +94,7 @@ const OsakaMetroStationIcon = (
 
 const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: OsakaMetroStationType }) => {
     const { interchangeInfo, stationType } = props;
-    const [cityCode, lineId, bgColor, fgColor, lineCode, stationCode] = interchangeInfo;
+    const [, , bgColor, fgColor, lineCode, stationCode] = interchangeInfo;
     const isThrough = stationType === 'through';
 
     return !isThrough ? (
@@ -238,17 +161,6 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
     );
 };
 
-interface PositionConfig {
-    stationType: OsakaMetroStationType;
-    transferCount: number;
-    nameLineCount: number;
-    hasOldName: boolean;
-    stationDirection: OsakaMetroDirection;
-    nameDirection: OsakaMetroDirection;
-    nameOverallPosition: OsakaMetroNameOverallPosition;
-    nameOffsetPosition: OsakaMetroNameOffsetPosition;
-}
-
 function calculateStationDimensions(
     stationType: string,
     transferCount: number,
@@ -273,7 +185,16 @@ function calculateStationDimensions(
     };
 }
 
-function calculateTextPosition(config: PositionConfig) {
+function calculateTextPosition(config: {
+    stationType: OsakaMetroStationType;
+    transferCount: number;
+    nameLineCount: number;
+    hasOldName: boolean;
+    stationDirection: OsakaMetroDirection;
+    nameDirection: OsakaMetroDirection;
+    nameOverallPosition: OsakaMetroNameOverallPosition;
+    nameOffsetPosition: OsakaMetroNameOffsetPosition;
+}) {
     const {
         stationType,
         nameLineCount,
@@ -429,20 +350,6 @@ function calculateTextPosition(config: PositionConfig) {
     return { textX, textY, textAnchor };
 }
 
-const calculateStationAdjustment = (
-    x: number,
-    y: number,
-    transferCount: number,
-    stationDirection: OsakaMetroDirection
-) => [
-    x -
-        (stationDirection === 'horizontal' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.WIDTH) / 2 : 0) -
-        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0),
-    y -
-        (stationDirection === 'vertical' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 : 0) -
-        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0),
-];
-
 const OsakaMetroIntSvg = (props: {
     stationDirection: OsakaMetroDirection;
     interchangeList: InterchangeInfo[];
@@ -522,7 +429,14 @@ const OsakaMetroStation = (props: StationComponentProps) => {
         nameOverallPosition,
         nameOffsetPosition,
     });
-    const [adjustX, adjustY] = calculateStationAdjustment(x, y, transferCount, stationDirection);
+    const adjustX =
+        x -
+        (stationDirection === 'horizontal' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.WIDTH) / 2 : 0) -
+        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
+    const adjustY =
+        y -
+        (stationDirection === 'vertical' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 : 0) -
+        (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
 
     return (
         <g id={id} transform={`translate(${adjustX}, ${adjustY})`}>
@@ -682,7 +596,7 @@ const OsakaMetroStation = (props: StationComponentProps) => {
     );
 };
 
-const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>) => {
+const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
@@ -691,7 +605,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
     const isMultipleTransfers = interchangeCount > 1;
     const isNameUpOrDown = ['up', 'down'].includes(attrs.nameOverallPosition);
 
-    const handleAutoAdjustment = React.useCallback(() => {
+    React.useEffect(() => {
         if (isMultipleTransfers) {
             let needsUpdate = false;
             const newAttrs = { ...attrs };
@@ -711,66 +625,20 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         }
     }, [isMultipleTransfers, attrs.stationType, attrs.nameDirection, id, handleAttrsUpdate]);
 
-    const syncOffsets = React.useCallback((updatedAttrs: OsakaMetroStationAttributes) => {
-        const { nameOffsetX, nameOffsetY } = convertToOffsetXY(
-            updatedAttrs.nameOverallPosition,
-            updatedAttrs.nameOffsetPosition
-        );
-        updatedAttrs.nameOffsetX = nameOffsetX;
-        updatedAttrs.nameOffsetY = nameOffsetY;
-        return updatedAttrs;
-    }, []);
-
-    React.useEffect(() => {
-        handleAutoAdjustment();
-    }, [handleAutoAdjustment]);
-
-    // Initialize sync mechanism to handle station type conversion and ensure consistency
-    React.useEffect(() => {
-        const isDefaultPosition =
-            attrs.nameOverallPosition === defaultOsakaMetroStationAttributes.nameOverallPosition &&
-            attrs.nameOffsetPosition === defaultOsakaMetroStationAttributes.nameOffsetPosition;
-        const isDefaultOffset =
-            attrs.nameOffsetX === defaultOsakaMetroStationAttributes.nameOffsetX &&
-            attrs.nameOffsetY === defaultOsakaMetroStationAttributes.nameOffsetY;
-
-        if (isDefaultPosition && !isDefaultOffset) {
-            const { nameOverallPosition, nameOffsetPosition } = convertFromOffsetXY(
-                attrs.nameOffsetX,
-                attrs.nameOffsetY
-            );
-            const syncedAttrs = { ...attrs, nameOverallPosition, nameOffsetPosition };
-            handleAttrsUpdate(id, syncedAttrs);
-        } else {
-            const { nameOffsetX, nameOffsetY } = convertToOffsetXY(attrs.nameOverallPosition, attrs.nameOffsetPosition);
-
-            if (attrs.nameOffsetX !== nameOffsetX || attrs.nameOffsetY !== nameOffsetY) {
-                const syncedAttrs = { ...attrs, nameOffsetX, nameOffsetY };
-                handleAttrsUpdate(id, syncedAttrs);
-            }
-        }
-    }, []); // Only run once on component mount
-
     const updateAttr = <K extends keyof OsakaMetroStationAttributes>(key: K, value: OsakaMetroStationAttributes[K]) => {
         attrs[key] = value;
-
-        if (key === 'nameOverallPosition' || key === 'nameOffsetPosition') {
-            const syncedAttrs = syncOffsets(attrs);
-            handleAttrsUpdate(id, syncedAttrs);
-        } else {
-            handleAttrsUpdate(id, attrs);
-        }
+        handleAttrsUpdate(id, attrs);
     };
 
     const fields: RmgFieldsField[] = [
         {
             type: 'select',
-            label: t('panel.details.stations.osakaMetro.stationType'),
+            label: t('panel.details.stations.osakaMetroStation.stationType'),
             hidden: isMultipleTransfers,
             value: attrs.stationType,
             options: {
-                normal: t('panel.details.stations.osakaMetro.normalType'),
-                through: t('panel.details.stations.osakaMetro.throughType'),
+                normal: t('panel.details.stations.osakaMetroStation.normalType'),
+                through: t('panel.details.stations.osakaMetroStation.throughType'),
             },
             onChange: val => updateAttr('stationType', val as OsakaMetroStationType),
         },
@@ -783,7 +651,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'input',
-            label: t('panel.details.stations.osakaMetro.oldName'),
+            label: t('panel.details.stations.osakaMetroStation.oldName'),
             value: attrs.oldName,
             onChange: val => updateAttr('oldName', val),
             minW: 'full',
@@ -797,13 +665,13 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'select',
-            label: t('panel.details.stations.osakaMetro.nameOverallPosition'),
+            label: t('panel.details.stations.osakaMetroStation.nameOverallPosition'),
             value: attrs.nameOverallPosition,
             options: {
-                up: t('panel.details.stations.osakaMetro.up'),
+                up: t('panel.details.stations.osakaMetroStation.up'),
                 left: t('panel.details.stations.common.left'),
                 right: t('panel.details.stations.common.right'),
-                down: t('panel.details.stations.osakaMetro.down'),
+                down: t('panel.details.stations.osakaMetroStation.down'),
             },
             disabledOptions: attrs.nameDirection === 'vertical' ? ['left', 'right'] : [],
             onChange: val => {
@@ -814,7 +682,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'select',
-            label: t('panel.details.stations.osakaMetro.nameOffsetPosition'),
+            label: t('panel.details.stations.osakaMetroStation.nameOffsetPosition'),
             hidden: !isHorizontal,
             value: attrs.nameOffsetPosition,
             options: isNameUpOrDown
@@ -824,9 +692,9 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
                       right: t('panel.details.stations.common.right'),
                   }
                 : {
-                      up: t('panel.details.stations.osakaMetro.up'),
+                      up: t('panel.details.stations.osakaMetroStation.up'),
                       middle: t('panel.details.stations.common.middle'),
-                      down: t('panel.details.stations.osakaMetro.down'),
+                      down: t('panel.details.stations.osakaMetroStation.down'),
                   },
             disabledOptions: isNameUpOrDown ? ['up', 'down'] : ['left', 'right'],
             onChange: val => {
@@ -836,7 +704,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.osakaMetro.nameMaxWidth'),
+            label: t('panel.details.stations.osakaMetroStation.nameMaxWidth'),
             value: attrs.nameMaxWidth,
             min: 70,
             max: 100,
@@ -846,7 +714,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.osakaMetro.oldNameMaxWidth'),
+            label: t('panel.details.stations.osakaMetroStation.oldNameMaxWidth'),
             value: attrs.oldNameMaxWidth,
             min: 70,
             max: 100,
@@ -856,7 +724,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.osakaMetro.translationMaxWidth'),
+            label: t('panel.details.stations.osakaMetroStation.translationMaxWidth'),
             value: attrs.translationMaxWidth,
             min: 70,
             max: 100,
@@ -866,7 +734,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.osakaMetro.nameVertical'),
+            label: t('panel.details.stations.osakaMetroStation.nameVertical'),
             hidden: isMultipleTransfers,
             isChecked: !isHorizontal,
             onChange: val => {
@@ -879,7 +747,7 @@ const osakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         },
         {
             type: 'switch',
-            label: t('panel.details.stations.osakaMetro.stationVertical'),
+            label: t('panel.details.stations.osakaMetroStation.stationVertical'),
             hidden: !isMultipleTransfers,
             isChecked: attrs.stationDirection === 'vertical',
             onChange: val => updateAttr('stationDirection', val ? 'vertical' : 'horizontal'),
@@ -902,9 +770,9 @@ const osakaMetroStation: Station<OsakaMetroStationAttributes> = {
     component: OsakaMetroStation,
     icon: OsakaMetroStationIcon,
     defaultAttrs: defaultOsakaMetroStationAttributes,
-    attrsComponent: osakaMetroAttrsComponent,
+    attrsComponent: OsakaMetroAttrsComponent,
     metadata: {
-        displayName: 'panel.details.stations.osakaMetro.displayName',
+        displayName: 'panel.details.stations.osakaMetroStation.displayName',
         cities: [CityCode.Osaka],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
