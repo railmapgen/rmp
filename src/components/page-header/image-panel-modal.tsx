@@ -138,7 +138,7 @@ export const ImagePanelModal = (props: {
                 const reader = new FileReader();
                 reader.onload = () => {
                     if (typeof reader.result === 'string') {
-                        const imgId = `img-l_${nanoid(5)}`; // Use timestamp to ensure unique ID
+                        const imgId = `img-l_${nanoid(10)}`; // Use timestamp to ensure unique ID
                         imageStoreIndexedDB.save(imgId, reader.result);
                         setLocalList(prev => [...prev, { id: imgId, thumbnail: reader.result as string }]);
                         setRefresh();

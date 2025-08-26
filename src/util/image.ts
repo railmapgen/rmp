@@ -1,4 +1,8 @@
+import { MultiDirectedGraph } from 'graphology';
+import { nanoid } from 'nanoid';
 import { extension } from 'mime-types';
+import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
 import { imageStoreIndexedDB } from './image-store-indexed-db';
 
@@ -129,8 +133,30 @@ export const getExtFromBase64 = (base64: string): string | undefined => {
     return extension(match[1]) || undefined;
 };
 
-export const saveImagesFromParam = async (images: { id: string; base64: string }[]) => {
+export const saveImagesFromParam = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    images: { id: string; base64: string }[]
+) => {
     for (const { id, base64 } of images) {
-        if (id && base64) await imageStoreIndexedDB.save(id, base64);
+        if (id && base64) {
+            if ((await imageStoreIndexedDB.has(id)) === false) {
+                // not exist => save
+                await imageStoreIndexedDB.save(id, base64);
+            } else if ((await imageStoreIndexedDB.get(id)) !== base64) {
+                // conflict name => rename new one
+                const newId = `img-l_${nanoid(10)}`;
+                await imageStoreIndexedDB.save(newId, base64);
+                graph
+                    .filterNodes(
+                        (n: string, attr: any) =>
+                            n.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href === id
+                    )
+                    .forEach(node => {
+                        const attrs = graph.getNodeAttribute(node, MiscNodeType.Image)!;
+                        attrs.href = newId;
+                        graph.mergeNodeAttributes(node, { [MiscNodeType.Image]: attrs });
+                    });
+            }
+        }
     }
 };
