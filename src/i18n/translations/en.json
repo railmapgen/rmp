@@ -151,7 +151,7 @@
                 },
                 "chengduRTLineBadge": {
                     "displayName": "Chengdu Rail Transit Line Badge",
-                    "badgeType":{
+                    "badgeType": {
                         "displayName": "Type",
                         "normal": "Normal",
                         "suburban": "Suburban railway",
@@ -436,7 +436,7 @@
                         "y": "Text distance Y",
                         "near": "near",
                         "far": "far"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "Chongqing Rail Transit basic station (2021)",
@@ -446,7 +446,7 @@
                     "displayName": "Chongqing Rail Transit interchange station (2021)",
                     "isRapid": "Is rapid or express train station",
                     "isWide": "Is a wide station",
-                    "wideDirection":{
+                    "wideDirection": {
                         "displayName": "Direction",
                         "vertical": "Vertical",
                         "horizontal": "Horizontal"
@@ -466,6 +466,22 @@
                 },
                 "chengduRTInt": {
                     "displayName": "Chengdu Rail Transit interchange station"
+                },
+                "osakaMetro": {
+                    "displayName": "Osaka Metro station",
+                    "stationType": "Station Type",
+                    "normalType": "Normal Station",
+                    "throughType": "Through-train Station",
+                    "oldName": "Old Station Name",
+                    "nameVertical": "Name Vertical Display",
+                    "stationVertical": "Station Vertical Layout",
+                    "nameOverallPosition": "Name Overall Position",
+                    "nameOffsetPosition": "Name Offset Position",
+                    "nameMaxWidth": "Japanese Name Length",
+                    "oldNameMaxWidth": "Old Station Name Length",
+                    "translationMaxWidth": "English Name Length",
+                    "up": "Up",
+                    "down": "Down"
                 }
             },
             "lines": {

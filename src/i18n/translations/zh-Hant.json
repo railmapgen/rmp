@@ -7,7 +7,7 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-    
+
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -435,7 +435,7 @@
                         "y": "縱向文字距離",
                         "near": "近",
                         "far": "遠"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重慶軌道交通基本車站（2021）",
@@ -445,7 +445,7 @@
                     "displayName": "重慶軌道交通換乘車站（2021）",
                     "isRapid": "快速/直快車停靠站",
                     "isWide": "宽形站",
-                    "wideDirection":{
+                    "wideDirection": {
                         "displayName": "方向",
                         "vertical": "縱向",
                         "horizontal": "橫向"
@@ -465,6 +465,22 @@
                 },
                 "chengduRTInt": {
                     "displayName": "成都軌道交通換乘車站"
+                },
+                "osakaMetro": {
+                    "displayName": "大阪地鐵站",
+                    "stationType": "車站類型",
+                    "normalType": "一般車站",
+                    "throughType": "直通運轉",
+                    "oldName": "站點舊稱",
+                    "nameVertical": "名稱縱向顯示",
+                    "stationVertical": "車站縱向佈局",
+                    "nameOverallPosition": "名稱整體位置",
+                    "nameOffsetPosition": "名稱微調位置",
+                    "nameMaxWidth": "日文名稱長度",
+                    "oldNameMaxWidth": "車站舊稱長度",
+                    "translationMaxWidth": "英文名稱長度",
+                    "up": "上",
+                    "down": "下"
                 }
             },
             "lines": {

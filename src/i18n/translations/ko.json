@@ -435,7 +435,7 @@
                         "y": "세로 문자 거리",
                         "near": "가까이",
                         "far": "멀리"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "충칭 궤도교통 기본역 (2021)",
@@ -465,6 +465,22 @@
                 },
                 "chengduRTInt": {
                     "displayName": "청두 도시철도 환승역"
+                },
+                "osakaMetro": {
+                    "displayName": "오사카 지하철역",
+                    "stationType": "역 유형",
+                    "normalType": "일반 역",
+                    "throughType": "직결 운행",
+                    "oldName": "이전 역 이름",
+                    "nameVertical": "이름 세로 표시",
+                    "stationVertical": "역 세로 레이아웃",
+                    "nameOverallPosition": "이름 전체 위치",
+                    "nameOffsetPosition": "이름 오프셋 위치",
+                    "nameMaxWidth": "일본어 이름 길이",
+                    "oldNameMaxWidth": "이전 역 이름 길이",
+                    "translationMaxWidth": "영어 이름 길이",
+                    "up": "위쪽",
+                    "down": "아래쪽"
                 }
             },
             "lines": {
