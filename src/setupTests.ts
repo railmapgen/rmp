@@ -1,4 +1,8 @@
 import { vi } from 'vitest';
+import { indexedDB, IDBKeyRange } from 'fake-indexeddb';
+
+(globalThis as any).indexedDB = indexedDB;
+(globalThis as any).IDBKeyRange = IDBKeyRange;
 
 const originalFetch = global.fetch;
 global.fetch = vi.fn().mockImplementation((...args: any[]) => {

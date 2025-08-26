@@ -6,9 +6,16 @@ import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'r
 import { Events, LocalStorageKey } from '../../constants/constants';
 import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import {
+    clearSelected,
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    setGlobalAlert,
+    setRefreshParam,
+} from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
+import { saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
@@ -46,7 +53,7 @@ export default function OpenActions() {
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
@@ -54,15 +61,21 @@ export default function OpenActions() {
         // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
-
-        // hard refresh the canvas
-        refreshAndSave();
+        dispatch(setRefreshParam());
 
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
         if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
         if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
+
+        // save images to indexedDB if they exist
+        if (Array.isArray(images) && images.length > 0) {
+            await saveImagesFromParam(graph.current, images);
+        }
+
+        // hard refresh the canvas
+        refreshAndSave();
     };
 
     const handleConfirmLoad = async () => {
