@@ -111,6 +111,8 @@ export interface ExternalStationAttributes {
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
 
+export const STATION_TYPE_VALUES = new Set(Object.values(StationType));
+
 export interface StationComponentProps {
     id: StnId;
     attrs: ExternalStationAttributes;
