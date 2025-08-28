@@ -199,7 +199,7 @@ export const useMakeStationName = () => {
                     return names;
                 }
             }
-            return attrNames;
+            return structuredClone(attrNames);
         },
         [dispatch, isRandomStationNamesDisabled]
     );
