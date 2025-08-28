@@ -38,66 +38,63 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    return React.useMemo(
-        () => (
-            <g id={id}>
-                <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
-                    <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#898989" />
-                    {/* A mask for the end of shanghai suburban railway style. */}
-                    <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
-                    <rect
-                        x={-2 + 1.1675}
-                        y={-7.83 + 1.5}
-                        width={(4 * 2) / 5}
-                        height={7.83 - 1.5}
-                        stroke="none"
-                        fill="white"
-                    />
+    return (
+        <g id={id}>
+            <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
+                <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#898989" />
+                {/* A mask for the end of shanghai suburban railway style. */}
+                <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
+                <rect
+                    x={-2 + 1.1675}
+                    y={-7.83 + 1.5}
+                    width={(4 * 2) / 5}
+                    height={7.83 - 1.5}
+                    stroke="none"
+                    fill="white"
+                />
 
-                    {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                    <rect
-                        id={`stn_core_${id}`}
-                        x="-2"
-                        y="-7.83"
-                        width="4"
-                        height={7.83 + 1.25}
-                        stroke="none"
-                        fill="white"
-                        fillOpacity="0"
-                        onPointerDown={onPointerDown}
-                        onPointerMove={onPointerMove}
-                        onPointerUp={onPointerUp}
-                        style={{ cursor: 'move' }}
-                        className="removeMe"
-                    />
-                </g>
-                <g
-                    transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
-                    textAnchor={ROTATE_CONST[rotate].textAnchor}
-                    className="rmp-name-outline"
-                    strokeWidth="2.5"
-                >
-                    <MultilineText
-                        text={names[0].split('\n')}
-                        fontSize={12.67}
-                        lineHeight={12.67}
-                        grow="up"
-                        baseOffset={1}
-                        {...getLangStyle(TextLanguage.zh)}
-                    />
-                    <MultilineText
-                        text={names[1].split('\n')}
-                        dx={rotate >= 45 && rotate <= 135 ? 1.67 : 0}
-                        fontSize={6.67}
-                        lineHeight={6.67}
-                        grow="down"
-                        baseOffset={1.5}
-                        {...getLangStyle(TextLanguage.en)}
-                    />
-                </g>
+                {/* Below is an overlay element that has all event hooks but can not be seen. */}
+                <rect
+                    id={`stn_core_${id}`}
+                    x="-2"
+                    y="-7.83"
+                    width="4"
+                    height={7.83 + 1.25}
+                    stroke="none"
+                    fill="white"
+                    fillOpacity="0"
+                    onPointerDown={onPointerDown}
+                    onPointerMove={onPointerMove}
+                    onPointerUp={onPointerUp}
+                    style={{ cursor: 'move' }}
+                    className="removeMe"
+                />
             </g>
-        ),
-        [id, x, y, ...names, rotate, onPointerDown, onPointerMove, onPointerUp]
+            <g
+                transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
+                textAnchor={ROTATE_CONST[rotate].textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+            >
+                <MultilineText
+                    text={names[0].split('\n')}
+                    fontSize={12.67}
+                    lineHeight={12.67}
+                    grow="up"
+                    baseOffset={1}
+                    {...getLangStyle(TextLanguage.zh)}
+                />
+                <MultilineText
+                    text={names[1].split('\n')}
+                    dx={rotate >= 45 && rotate <= 135 ? 1.67 : 0}
+                    fontSize={6.67}
+                    lineHeight={6.67}
+                    grow="down"
+                    baseOffset={1.5}
+                    {...getLangStyle(TextLanguage.en)}
+                />
+            </g>
+        </g>
     );
 };
 
