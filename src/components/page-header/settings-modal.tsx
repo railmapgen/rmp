@@ -35,6 +35,7 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import {
     setAutoParallel,
     setGridLines,
+    setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
     setTelemetryProject,
@@ -65,7 +66,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames, gridLines, snapLines },
+        preference: { autoParallel, randomStationsNames, gridLines, snapLines, predictNextNode },
     } = useRootSelector(state => state.app);
     const {
         keepLastPath,
@@ -183,6 +184,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Switch
                                         isChecked={snapLines}
                                         onChange={({ target: { checked } }) => dispatch(setSnapLines(checked))}
+                                    />
+                                </Box>
+                                <Box display="flex" mb="1">
+                                    <Text flex="1">{t('header.settings.preference.predictNextNode')}</Text>
+                                    <Switch
+                                        isChecked={predictNextNode}
+                                        onChange={({ target: { checked } }) => dispatch(setPredictNextNode(checked))}
                                     />
                                 </Box>
                             </Box>

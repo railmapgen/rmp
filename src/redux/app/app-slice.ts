@@ -41,6 +41,7 @@ export interface AppState {
         randomStationsNames: 'none' | StationCity;
         gridLines: boolean;
         snapLines: boolean;
+        predictNextNode: boolean;
     };
 }
 
@@ -58,6 +59,7 @@ export const initialState: AppState = {
         randomStationsNames: 'none',
         gridLines: false,
         snapLines: true,
+        predictNextNode: true,
     },
 };
 
@@ -89,6 +91,9 @@ const appSlice = createSlice({
         setSnapLines: (state, action: PayloadAction<boolean>) => {
             state.preference.snapLines = action.payload;
         },
+        setPredictNextNode: (state, action: PayloadAction<boolean>) => {
+            state.preference.predictNextNode = action.payload;
+        },
     },
 });
 
@@ -101,5 +106,6 @@ export const {
     setRandomStationsNames,
     setGridLines,
     setSnapLines,
+    setPredictNextNode,
 } = appSlice.actions;
 export default appSlice.reducer;

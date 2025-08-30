@@ -728,7 +728,8 @@
                     "bjsubway": "北京"
                 },
                 "gridline": "顯示網格參考線",
-                "snapline": "磁性吸附到參考線"
+                "snapline": "磁性吸附到參考線",
+                "predictNextNode": "當選擇一個節點時預測下一個節點"
             },
             "shortcuts": {
                 "title": "捷徑",

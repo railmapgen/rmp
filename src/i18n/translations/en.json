@@ -729,7 +729,8 @@
                     "bjsubway": "Beijing"
                 },
                 "gridline": "Show grid guide lines",
-                "snapline": "Auto snapping to the guide lines and points"
+                "snapline": "Auto snapping to the guide lines and points",
+                "predictNextNode": "Predict next nodes when a node is selected"
             },
             "shortcuts": {
                 "title": "Shortcuts",

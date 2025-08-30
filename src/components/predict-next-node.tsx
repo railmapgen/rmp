@@ -51,8 +51,9 @@ const PredictNextNode = () => {
 
     const makeStationName = useMakeStationName();
 
-    if (selected.size !== 1) return undefined;
+    // must have exactly one selected, checked in the parent component
     const selectedID = selected.keys().next().value!;
+    // check if the selectedID is a node
     if (!selectedID.startsWith('stn') && !selectedID.startsWith('misc_node')) return undefined;
     // TODO: remove selectedID if it is not existed in redo/undo
     if (!window.graph.hasNode(selectedID)) return undefined;

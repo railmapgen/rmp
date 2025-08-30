@@ -44,7 +44,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { gridLines, snapLines },
+        preference: { gridLines, snapLines, predictNextNode },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -356,7 +356,7 @@ const SvgWrapper = () => {
                     svgHeight={height}
                 />
             )}
-            <PredictNextNode />
+            {predictNextNode && selected.size === 1 && <PredictNextNode />}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <utils.SvgAssetsContextProvider>
                 <SvgCanvas />

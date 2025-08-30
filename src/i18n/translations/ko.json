@@ -728,7 +728,8 @@
                     "bjsubway": "베이징"
                 },
                 "gridline": "격자 가이드 라인 표시",
-                "snapline": "가이드 라인과 포인트에 자동 스냅"
+                "snapline": "가이드 라인과 포인트에 자동 스냅",
+                "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기"
             },
             "shortcuts": {
                 "title": "바로 가기",
