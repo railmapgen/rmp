@@ -8,6 +8,7 @@ import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoParallel,
     setGridLines,
+    setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
     setTelemetryApp,
@@ -41,6 +42,8 @@ export const initStore = async (store: RootStore) => {
             store.dispatch(setRandomStationsNames(appState.preference.randomStationsNames));
         if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
+        if ('predictNextNode' in appState.preference)
+            store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));
