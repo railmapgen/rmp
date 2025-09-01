@@ -315,7 +315,7 @@
                     "foshan": "佛山"
                 },
                 "gzmtrInt2024": {
-                    "displayName": "广州地铁换乘站（2024）",
+                    "displayName": "广州地铁换乘车站（2024）",
                     "columns": "站点列数",
                     "topHeavy": "优先将更多站点放在上方",
                     "anchorAt": "锚点位置",
@@ -473,6 +473,22 @@
                 },
                 "chengduRTInt": {
                     "displayName": "成都轨道交通换乘车站"
+                },
+                "osakaMetro": {
+                    "displayName": "大阪地铁站",
+                    "stationType": "车站类型",
+                    "normalType": "一般车站",
+                    "throughType": "贯通运营",
+                    "oldName": "车站旧称",
+                    "nameVertical": "名称纵向显示",
+                    "stationVertical": "车站纵向布局",
+                    "nameOverallPosition": "名称整体位置",
+                    "nameOffsetPosition": "名称微调位置",
+                    "nameMaxWidth": "日文名称长度",
+                    "oldNameMaxWidth": "车站旧称长度",
+                    "translationMaxWidth": "英文名称长度",
+                    "up": "上",
+                    "down": "下"
                 }
             },
             "lines": {
@@ -729,7 +745,8 @@
                     "bjsubway": "北京"
                 },
                 "gridline": "显示网格参考线",
-                "snapline": "磁性吸附到参考线"
+                "snapline": "磁性吸附到参考线",
+                "predictNextNode": "当选择一个节点时预测下一个节点"
             },
             "shortcuts": {
                 "title": "快捷键",

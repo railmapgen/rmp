@@ -44,51 +44,48 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <circle r={5} stroke="#2559a8" strokeWidth="1.5" fill="white" />
-                {interchange && <circle r={2.5} stroke="#2559a8" strokeWidth="1" fill="white" />}
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <circle r={5} stroke="#2559a8" strokeWidth="1.5" fill="white" />
+            {interchange && <circle r={2.5} stroke="#2559a8" strokeWidth="1" fill="white" />}
 
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <circle
-                    id={`stn_core_${id}`}
-                    r={5 + 1.33 / 2}
-                    fill="white"
-                    fillOpacity="0"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                    className="removeMe"
+            {/* Below is an overlay element that has all event hooks but can not be seen. */}
+            <circle
+                id={`stn_core_${id}`}
+                r={5 + 1.33 / 2}
+                fill="white"
+                fillOpacity="0"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+                className="removeMe"
+            />
+            <g
+                transform={`translate(${textX}, ${textY})`}
+                textAnchor={textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="1"
+            >
+                <MultilineText
+                    text={names[0].split('\n')}
+                    fontSize={13.13}
+                    lineHeight={13.13}
+                    grow="up"
+                    baseOffset={1}
+                    {...getLangStyle(TextLanguage.zh)}
                 />
-                <g
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
-                    className="rmp-name-outline"
-                    strokeWidth="1"
-                >
-                    <MultilineText
-                        text={names[0].split('\n')}
-                        fontSize={13.13}
-                        lineHeight={13.13}
-                        grow="up"
-                        baseOffset={1}
-                        {...getLangStyle(TextLanguage.zh)}
-                    />
-                    <MultilineText
-                        text={names[1].split('\n')}
-                        dx={nameOffsetX === 'right' ? 1.67 : 0}
-                        fontSize={5.83}
-                        lineHeight={5.83}
-                        grow="down"
-                        baseOffset={1.5}
-                        {...getLangStyle(TextLanguage.en)}
-                    />
-                </g>
+                <MultilineText
+                    text={names[1].split('\n')}
+                    dx={nameOffsetX === 'right' ? 1.67 : 0}
+                    fontSize={5.83}
+                    lineHeight={5.83}
+                    grow="down"
+                    baseOffset={1.5}
+                    {...getLangStyle(TextLanguage.en)}
+                />
             </g>
-        ),
-        [id, x, y, ...names, nameOffsetX, nameOffsetY, interchange, onPointerDown, onPointerMove, onPointerUp]
+        </g>
     );
 };
 

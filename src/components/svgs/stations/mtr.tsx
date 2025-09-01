@@ -85,88 +85,73 @@ const MTRStation = (props: StationComponentProps) => {
     const textY = Math.sign(iconY) === Math.sign(textDY) ? iconY + textDY : textDY;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    return React.useMemo(
-        () => (
-            <g id={id} transform={`translate(${x}, ${y})`}>
-                <path
-                    transform={`rotate(${rotate})`}
-                    d={path}
-                    stroke="#001f50"
-                    strokeWidth="1.5"
-                    fill="white"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
-                {transfer.at(0)!.length > 1 &&
-                    transfer
-                        .at(0)!
-                        .map(info => info[2])
-                        .map((color, i) => (
-                            <line
-                                key={`${i}_${color}`}
-                                transform={`rotate(${rotate})`}
-                                x1={-LINE_WIDTH / 2 + i * LINE_WIDTH}
-                                x2={LINE_WIDTH / 2 + i * LINE_WIDTH}
-                                stroke={color}
-                                strokeWidth="2"
-                            />
-                        ))}
+    return (
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <path
+                transform={`rotate(${rotate})`}
+                d={path}
+                stroke="#001f50"
+                strokeWidth="1.5"
+                fill="white"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
+            {transfer.at(0)!.length > 1 &&
+                transfer
+                    .at(0)!
+                    .map(info => info[2])
+                    .map((color, i) => (
+                        <line
+                            key={`${i}_${color}`}
+                            transform={`rotate(${rotate})`}
+                            x1={-LINE_WIDTH / 2 + i * LINE_WIDTH}
+                            x2={LINE_WIDTH / 2 + i * LINE_WIDTH}
+                            stroke={color}
+                            strokeWidth="2"
+                        />
+                    ))}
 
-                {/* Below is an overlay element that has all event hooks but can not be seen. */}
-                <path
-                    id={`stn_core_${id}`}
-                    transform={`rotate(${rotate})`}
-                    d={path}
-                    fill="white"
-                    fillOpacity="0"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                    className="removeMe"
+            {/* Below is an overlay element that has all event hooks but can not be seen. */}
+            <path
+                id={`stn_core_${id}`}
+                transform={`rotate(${rotate})`}
+                d={path}
+                fill="white"
+                fillOpacity="0"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+                className="removeMe"
+            />
+            <g
+                transform={`translate(${textX}, ${textY})`}
+                textAnchor={textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="1.25"
+            >
+                <MultilineText
+                    text={names[0].split('\n')}
+                    fontSize={10}
+                    lineHeight={10}
+                    grow="up"
+                    baseOffset={1}
+                    fill="#001f50"
+                    {...getLangStyle(TextLanguage.mtr_zh)}
                 />
-                <g
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
-                    className="rmp-name-outline"
-                    strokeWidth="1.25"
-                >
-                    <MultilineText
-                        text={names[0].split('\n')}
-                        fontSize={10}
-                        lineHeight={10}
-                        grow="up"
-                        baseOffset={1}
-                        fill="#001f50"
-                        {...getLangStyle(TextLanguage.mtr_zh)}
-                    />
-                    <MultilineText
-                        text={names[1].split('\n')}
-                        fontSize={7.5}
-                        lineHeight={7.5}
-                        grow="down"
-                        baseOffset={1}
-                        fill="#001f50"
-                        {...getLangStyle(TextLanguage.mtr_en)}
-                    />
-                </g>
+                <MultilineText
+                    text={names[1].split('\n')}
+                    fontSize={7.5}
+                    lineHeight={7.5}
+                    grow="down"
+                    baseOffset={1}
+                    fill="#001f50"
+                    {...getLangStyle(TextLanguage.mtr_en)}
+                />
             </g>
-        ),
-        [
-            id,
-            x,
-            y,
-            ...names,
-            rotate,
-            JSON.stringify(transfer),
-            nameOffsetX,
-            nameOffsetY,
-            onPointerDown,
-            onPointerMove,
-            onPointerUp,
-        ]
+        </g>
     );
 };
 

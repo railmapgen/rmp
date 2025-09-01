@@ -207,7 +207,10 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                         strokeWidth="0.5"
                     />
                     {interchanges.map((s, i) => (
-                        <g key={i} transform={`translate(${i * singleWidth - (width - singleWidth) / 2}, 0)`}>
+                        <g
+                            key={`${s.lineCode}_${s.stationCode}_${i}`}
+                            transform={`translate(${i * singleWidth - (width - singleWidth) / 2}, 0)`}
+                        >
                             <TokyoMetroBasicSvg
                                 lineCode={s.lineCode}
                                 stationCode={s.stationCode}
@@ -244,7 +247,10 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                         strokeWidth="0.5"
                     />
                     {interchanges.map((s, i) => (
-                        <g key={i} transform={`translate(0, ${i * singleHeight - (height - singleHeight) / 2})`}>
+                        <g
+                            key={`${s.lineCode}_${s.stationCode}_${i}`}
+                            transform={`translate(0, ${i * singleHeight - (height - singleHeight) / 2})`}
+                        >
                             <TokyoMetroBasicSvg
                                 lineCode={s.lineCode}
                                 stationCode={s.stationCode}
@@ -516,7 +522,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
             <RmgLabel label={t('panel.details.stations.interchange.title')}>
                 <VStack align="flex-start">
                     {attrs.interchanges.map((s, i) => (
-                        <HStack key={i}>
+                        <HStack key={`${s.lineCode}_${s.stationCode}_${i}`}>
                             <ThemeButton
                                 theme={s.color}
                                 onClick={() => {

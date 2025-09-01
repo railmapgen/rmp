@@ -16,6 +16,7 @@ import {
     removeSelected,
     setActive,
     setMode,
+    setPointerPosition,
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import {
@@ -70,17 +71,16 @@ const SvgCanvas = () => {
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
+        pointerPosition,
+        active,
         refresh: { nodes: refreshNodes, edges: refreshEdges },
         mode,
-        active,
         keepLastPath,
         theme,
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
-    // the position of pointer down, defined by the pointer down event, undefined if on pointer up
-    const [pointerPosition, setPointerPosition] = React.useState<{ x: number; y: number }>();
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
 
@@ -115,16 +115,14 @@ const SvgCanvas = () => {
 
     const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        const { x, y } = getMousePosition(e);
 
         if (mode === 'select') dispatch(setMode('free'));
 
-        const el = e.currentTarget;
-        const { x, y } = getMousePosition(e);
-        el.setPointerCapture(e.pointerId);
-
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
-        setPointerPosition({ x, y });
+        dispatch(setPointerPosition({ x, y }));
 
         dispatch(setActive(node));
 
@@ -150,6 +148,10 @@ const SvgCanvas = () => {
     });
     const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
+        // in normal case, the element is already captured in pointer down
+        // however in predict-next-node, the element is created without pointer capture
+        // so we need to capture it here as a double insurance
+        e.currentTarget.setPointerCapture(e.pointerId);
 
         if (mode === 'free' && active === node) {
             if (!e.altKey && useSnapLines) {
@@ -288,7 +290,7 @@ const SvgCanvas = () => {
             }
             dispatch(refreshNodesThunk());
             dispatch(refreshEdgesThunk());
-        } else if (mode.startsWith('line')) {
+        } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
                 dy: ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
@@ -296,27 +298,30 @@ const SvgCanvas = () => {
         }
     });
     const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
 
-            const couldActiveBeConnected =
+            const couldSourceBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
             const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
-            prefixes.forEach(prefix => {
-                const elems = document.elementsFromPoint(e.clientX, e.clientY);
-                const id = elems[0].attributes?.getNamedItem('id')?.value;
-                // all connectable nodes have prefixes in their mask/event elements' ids
-                const couldIDBeConnected = id?.startsWith(prefix);
+            const elems = document.elementsFromPoint(e.clientX, e.clientY);
+            const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
+            // all connectable nodes have prefixes in their mask/event elements' ids
+            // also known as couldTargetBeConnected
+            const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
-                if (couldActiveBeConnected && couldIDBeConnected) {
-                    const type = mode.slice(5) as LinePathType;
-                    const newLineId: LineId = `line_${nanoid(10)}`;
-                    const [source, target] = [
-                        active! as StnId | MiscNodeId,
-                        id!.slice(prefix.length) as StnId | MiscNodeId,
-                    ];
+            if (couldSourceBeConnected && matchedPrefix) {
+                const type = mode.slice(5) as LinePathType;
+                const newLineId: LineId = `line_${nanoid(10)}`;
+                const [source, target] = [
+                    active! as StnId | MiscNodeId,
+                    id!.slice(matchedPrefix.length) as StnId | MiscNodeId,
+                ];
+                if (source !== target) {
                     const parallelIndex = autoParallel
                         ? makeParallelIndex(graph.current, type, source, target, 'from')
                         : -1;
@@ -333,10 +338,10 @@ const SvgCanvas = () => {
                     });
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
+                    dispatch(saveGraph(graph.current.export()));
+                    dispatch(refreshEdgesThunk());
                 }
-            });
-            dispatch(saveGraph(graph.current.export()));
-            dispatch(refreshEdgesThunk());
+            }
         } else if (mode === 'free') {
             if (active) {
                 // the node is pointed down before

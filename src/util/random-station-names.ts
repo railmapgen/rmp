@@ -1,10 +1,12 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import React from 'react';
+import stations from '../components/svgs/stations/stations';
 import { StationCity } from '../constants/constants';
 import { random_station_names_endpoint } from '../constants/server';
-import { StationAttributes } from '../constants/stations';
-import { RootState } from '../redux';
+import { StationAttributes, StationType } from '../constants/stations';
+import { RootState, useRootDispatch, useRootSelector } from '../redux';
 import { setStationNames } from '../redux/runtime/runtime-slice';
 
 const FALLBACK_STATION_NAMES: { [key in StationCity]: { [key in keyof Translation]: string }[] } = {
@@ -152,7 +154,7 @@ const getStationNames = createAsyncThunk<undefined, { cityName: StationCity }>(
     }
 );
 
-export const getOneStationName = createAsyncThunk<StationAttributes['names'], StationCity>(
+const getOneStationName = createAsyncThunk<StationAttributes['names'], StationCity>(
     'runtime/getOneStationName',
     async (cityName, { getState, dispatch }) => {
         const { stationNames } = (getState() as RootState).runtime;
@@ -172,3 +174,33 @@ export const getOneStationName = createAsyncThunk<StationAttributes['names'], St
         return Object.values(names!) as StationAttributes['names'];
     }
 );
+
+export const useMakeStationName = () => {
+    const dispatch = useRootDispatch();
+    const { activeSubscriptions } = useRootSelector(state => state.account);
+    const {
+        preference: { randomStationsNames },
+    } = useRootSelector(state => state.app);
+    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
+
+    return React.useCallback(
+        async (type: StationType) => {
+            const attrNames = stations[type].defaultAttrs.names;
+            if (!isRandomStationNamesDisabled) {
+                const result = await dispatch(getOneStationName(StationCity.Shmetro));
+                if (getOneStationName.fulfilled.match(result)) {
+                    const names = result.payload as [string, ...string[]];
+                    // fill or truncate
+                    if (attrNames.length > names.length) {
+                        names.push(...Array(attrNames.length - names.length).fill(names.at(-1)));
+                    } else if (attrNames.length < names.length) {
+                        names.splice(attrNames.length);
+                    }
+                    return names;
+                }
+            }
+            return structuredClone(attrNames);
+        },
+        [dispatch, isRandomStationNamesDisabled]
+    );
+};

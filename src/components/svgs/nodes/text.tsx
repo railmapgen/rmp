@@ -121,7 +121,7 @@ export interface TextAttributes extends ColorAttribute {
     textAnchor: React.SVGProps<SVGTextElement>['textAnchor'];
     dominantBaseline: React.SVGProps<SVGTextElement>['dominantBaseline'];
     language: TextLanguage;
-    rotate: Rotate;
+    rotate: number;
     italic: string | number;
     bold: string | number;
     outline: number;
@@ -232,12 +232,14 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'input',
             label: t('panel.details.nodes.text.rotate'),
-            value: attrs.rotate ?? defaultTextAttributes.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            value: (attrs.rotate ?? defaultTextAttributes.rotate).toString(),
+            optionList: ['0', '45', '90', '135', '180', '225', '270', '315'],
+            debouncedDelay: 500,
+            validator: (val: string) => !Number.isNaN(val),
             onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
+                attrs.rotate = ((Number(val) % 360) + 360) % 360; // Normalize to [0, 360)
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

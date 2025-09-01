@@ -3,7 +3,7 @@ import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId } from '../constants/constants';
+import { Events, Id, MiscNodeId, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
@@ -24,9 +24,10 @@ import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
-import { getOneStationName } from '../util/random-station-names';
+import { useMakeStationName } from '../util/random-station-names';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
+import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -43,7 +44,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { randomStationsNames, gridLines, snapLines },
+        preference: { gridLines, snapLines, predictNextNode },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -61,8 +62,8 @@ const SvgWrapper = () => {
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
-    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
 
+    const makeStationName = useMakeStationName();
     useFonts();
 
     // select related
@@ -89,21 +90,7 @@ const SvgWrapper = () => {
             // inject runtime color if registered in dynamicColorInjection
             if (dynamicColorInjection.has(type)) (attr as AttributesWithColor).color = theme;
             // Add random names for stations
-            if (isStation && !isRandomStationNamesDisabled) {
-                const attrNames = (attr as StationAttributes).names;
-                const namesActionResult = await dispatch(getOneStationName(StationCity.Shmetro));
-                // only proceed if there is no error returned
-                if (getOneStationName.fulfilled.match(namesActionResult)) {
-                    const names = namesActionResult.payload as [string, ...string[]];
-                    // fill or truncate the names array to the station name length
-                    if (attrNames.length > names.length) {
-                        names.push(...Array(attrNames.length - names.length).fill(names.at(-1)));
-                    } else if (attrNames.length < names.length) {
-                        names.splice(attrNames.length, names.length - attrNames.length);
-                    }
-                    (attr as StationAttributes).names = names;
-                }
-            }
+            if (isStation) (attr as StationAttributes).names = await makeStationName(type as StationType);
 
             graph.current.addNode(id, {
                 visible: true,
@@ -114,8 +101,8 @@ const SvgWrapper = () => {
                 [type]: attr,
             });
             // console.log('down', active, offset);
-            refreshAndSave();
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+            refreshAndSave();
             dispatch(setSelected(new Set([id])));
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
@@ -283,8 +270,6 @@ const SvgWrapper = () => {
             (!isMacClient && e.key === 'y' && e.ctrlKey)
         ) {
             dispatch(redoAction());
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
         }
@@ -371,6 +356,7 @@ const SvgWrapper = () => {
                     svgHeight={height}
                 />
             )}
+            {predictNextNode && selected.size === 1 && <PredictNextNode />}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <utils.SvgAssetsContextProvider>
                 <SvgCanvas />

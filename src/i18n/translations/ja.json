@@ -476,6 +476,22 @@
                 },
                 "chengduRTInt": {
                     "displayName": "成都鉄道交通乗換駅"
+                },
+                "osakaMetro": {
+                    "displayName": "大阪地下鉄駅",
+                    "stationType": "駅種別",
+                    "normalType": "通常駅",
+                    "throughType": "直通運転",
+                    "oldName": "旧駅名",
+                    "nameVertical": "駅名縦表示",
+                    "stationVertical": "駅名縦表示",
+                    "nameOverallPosition": "駅名全体位置",
+                    "nameOffsetPosition": "駅名オフセット位置",
+                    "nameMaxWidth": "日本語駅名の長さ",
+                    "oldNameMaxWidth": "旧駅名の長さ",
+                    "translationMaxWidth": "英語駅名の長さ",
+                    "up": "上",
+                    "down": "下"
                 }
             },
             "lines": {
@@ -732,7 +748,8 @@
                     "bjsubway": "北京"
                 },
                 "gridline": "グリッドガイドラインを表示",
-                "snapline": "ガイドラインおよびポイントに自動的にスナップする"
+                "snapline": "ガイドラインおよびポイントに自動的にスナップする",
+                "predictNextNode": "節点を選択したときに次の節点を予測する"
             },
             "shortcuts": {
                 "title": "ショートカット",

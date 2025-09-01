@@ -6,6 +6,7 @@ import { RootState } from '..';
 import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
+import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -22,6 +23,11 @@ interface RuntimeState {
      * Current selection (nodes and edges id, possible multiple selection).
      */
     selected: Set<Id>;
+    /**
+     * The position of pointer down for nodes in svg-canvas-graph,
+     * defined by the pointer down event, undefined if on pointer up.
+     */
+    pointerPosition?: { x: number; y: number };
     active: StnId | MiscNodeId | 'background' | undefined;
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
@@ -61,6 +67,7 @@ interface RuntimeState {
         lines: number;
         masters: number;
         parallel: number;
+        mostFrequentStationType: StationType;
     };
     /**
      * Cached random station names.
@@ -91,6 +98,7 @@ const initialState: RuntimeState = {
         lines: 0,
         masters: 0,
         parallel: 0,
+        mostFrequentStationType: StationType.ShmetroBasic,
     },
     stationNames: {},
     globalAlerts: {},
@@ -104,21 +112,25 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     dispatch(setRefreshNodes());
 
     let [stations, miscNodes, masters] = [0, 0, 0];
-    const existsTypes = new Set<NodeType>();
+    const existsTypes: { [k in NodeType]?: number } = {};
     window.graph.forEachNode((id, attr) => {
+        const { type } = attr;
         if (id.startsWith('stn')) {
             stations += 1;
         } else if (id.startsWith('misc_node')) {
             miscNodes += 1;
         }
-        if (attr.type === MiscNodeType.Master) {
+        if (type === MiscNodeType.Master) {
             masters += 1;
         }
 
-        existsTypes.add(attr.type);
+        existsTypes[type] = (existsTypes[type] || 0) + 1;
     });
 
-    dispatch(setNodesCount({ stations, miscNodes, masters }));
+    const mostFrequentStationType = (Object.entries(existsTypes) as [StationType, number][])
+        .filter(([type]) => STATION_TYPE_VALUES.has(type))
+        .reduce((a, b) => (b[1] > a[1] ? b : a), [StationType.ShmetroBasic, 0])[0];
+    dispatch(setNodesCount({ stations, miscNodes, masters, mostFrequentStationType }));
     const maximumMasterNodes = state.account.activeSubscriptions.RMP_CLOUD ? MAX_MASTER_NODE_PRO : MAX_MASTER_NODE_FREE;
     if (masters > maximumMasterNodes) {
         dispatch(
@@ -129,11 +141,7 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
         );
     }
 
-    const languages = existsTypes
-        .values()
-        .filter(t => t in Node2Font)
-        .flatMap(t => Node2Font[t]!)
-        .toArray();
+    const languages = (Object.keys(existsTypes) as NodeType[]).filter(t => t in Node2Font).flatMap(t => Node2Font[t]!);
     dispatch(loadFonts([...new Set(languages)]));
 });
 
@@ -180,6 +188,9 @@ const runtimeSlice = createSlice({
         clearSelected: state => {
             state.selected = new Set<Id>();
         },
+        setPointerPosition: (state, action: PayloadAction<{ x: number; y: number } | undefined>) => {
+            state.pointerPosition = action.payload;
+        },
         setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;
         },
@@ -213,11 +224,20 @@ const runtimeSlice = createSlice({
             state.paletteAppClip.input = undefined;
             state.paletteAppClip.output = action.payload;
         },
-        setNodesCount: (state, action: PayloadAction<{ stations: number; miscNodes: number; masters: number }>) => {
+        setNodesCount: (
+            state,
+            action: PayloadAction<{
+                stations: number;
+                miscNodes: number;
+                masters: number;
+                mostFrequentStationType: StationType;
+            }>
+        ) => {
             const { stations, miscNodes, masters } = action.payload;
             state.count.stations = stations;
             state.count.miscNodes = miscNodes;
             state.count.masters = masters;
+            state.count.mostFrequentStationType = action.payload.mostFrequentStationType;
         },
         setEdgesCount: (state, action: PayloadAction<{ lines: number; parallel: number }>) => {
             const { lines, parallel } = action.payload;
@@ -266,6 +286,7 @@ export const {
     addSelected,
     removeSelected,
     clearSelected,
+    setPointerPosition,
     setActive,
     setRefreshNodes,
     setRefreshEdges,

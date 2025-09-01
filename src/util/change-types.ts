@@ -4,6 +4,7 @@ import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 import stations from '../components/svgs/stations/stations';
 import {
     EdgeAttributes,
@@ -22,15 +23,18 @@ const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
     StationType.LondonTubeBasic,
     StationType.ShanghaiSuburbanRailway,
+    StationType.OsakaMetro,
 ];
 type StationsWithoutNameOffset =
     | StationType.ShmetroBasic2020
     | StationType.LondonTubeBasic
-    | StationType.ShanghaiSuburbanRailway;
+    | StationType.ShanghaiSuburbanRailway
+    | StationType.OsakaMetro;
 type StationsWithoutNameOffsetAttributes =
     | ShmetroBasic2020StationAttributes
     | LondonTubeBasicStationAttributes
-    | ShanghaiSuburbanRailwayStationAttributes;
+    | ShanghaiSuburbanRailwayStationAttributes
+    | OsakaMetroStationAttributes;
 
 /**
  * Change a station's type.
