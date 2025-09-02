@@ -8,8 +8,7 @@ import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md'
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
-import { useScreenOrientation, useSyncServerImages } from '../../util/hooks';
+import { useScreenOrientation } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
@@ -21,12 +20,7 @@ export default function WindowHeader() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { past, future } = useRootSelector(state => state.param);
-    const {
-        refresh: { param: refreshParam },
-    } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
-
-    useSyncServerImages(refreshParam);
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);

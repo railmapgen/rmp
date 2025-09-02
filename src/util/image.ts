@@ -67,7 +67,7 @@ export const fetchImageList = async (token: string | undefined): Promise<ImageLi
     }
     const { images } = await rep.json();
 
-    const list = await Promise.all(
+    return await Promise.all(
         images.map(async (img: { id: string; hash: string }) => {
             const id = `img-s_${img.id}`;
             const localId = `${id}_thumbnail`;
@@ -85,7 +85,6 @@ export const fetchImageList = async (token: string | undefined): Promise<ImageLi
             };
         })
     );
-    return list;
 };
 
 export const getLocalImageList = async (): Promise<ImageList[]> => {

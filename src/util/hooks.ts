@@ -172,32 +172,3 @@ export const useScreenOrientation = () => {
 
     return orientation;
 };
-
-/**
- * A hook for automatically fetching and saving images from the server when "fetchImage" changes as graph is reloaded.
- */
-export const useSyncServerImages = (fetchImage: number) => {
-    const dispatch = useDispatch();
-    const graph = useRef(window.graph);
-    const { token } = useRootSelector(state => state.account);
-
-    useEffect(() => {
-        graph.current
-            .filterNodes(
-                (id: string, attr: any) =>
-                    id.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href !== undefined
-            )
-            .forEach((id: string) => {
-                const attr = graph.current.getNodeAttributes(id)['image']!;
-                if (attr.href && attr.href.startsWith('img-s') && !imageStoreIndexedDB.has(attr.href)) {
-                    fetchImageAsBase64(`${image_endpoint}/data/${attr.href.slice(6)}/${attr.hash}`, token).then(src => {
-                        if (src) {
-                            imageStoreIndexedDB.save(attr.href!, src);
-                        }
-                    });
-                }
-            });
-        fetchImageList(token);
-        dispatch(setRefreshNodes());
-    }, [fetchImage]);
-};

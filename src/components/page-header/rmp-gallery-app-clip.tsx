@@ -6,13 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
 import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
+import { pullCloudImages } from '../../redux/image/image-slice';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import {
-    clearSelected,
-    refreshEdgesThunk,
-    refreshNodesThunk,
-    setRefreshParam,
-} from '../../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 
@@ -70,7 +66,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
-        dispatch(setRefreshParam());
+        dispatch(pullCloudImages());
 
         // hard refresh the canvas
         refreshAndSave();
