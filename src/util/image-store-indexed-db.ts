@@ -4,30 +4,50 @@ import { MiscNodeId } from '../constants/constants';
 export class ImageStoreIndexedDB {
     private dbName = 'ImageDB';
     private storeName = 'images';
+    private dbPromise: Promise<IDBDatabase> | null = null;
 
     constructor() {
-        this.initDB();
-    }
-
-    private initDB() {
-        const request = indexedDB.open(this.dbName, 1);
-        request.onupgradeneeded = event => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (!db.objectStoreNames.contains(this.storeName)) {
-                db.createObjectStore(this.storeName);
-            }
-        };
-        request.onerror = () => {
+        this.getDB().catch(() => {
             logger.error('IndexDB initialization failed.');
-        };
+        });
     }
 
     private getDB(): Promise<IDBDatabase> {
-        return new Promise((resolve, reject) => {
+        if (this.dbPromise) {
+            return this.dbPromise;
+        }
+
+        this.dbPromise = new Promise((resolve, reject) => {
             const request = indexedDB.open(this.dbName, 1);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
+
+            request.onupgradeneeded = event => {
+                const db = (event.target as IDBOpenDBRequest).result;
+                if (!db.objectStoreNames.contains(this.storeName)) {
+                    db.createObjectStore(this.storeName);
+                }
+            };
+
+            request.onsuccess = () => {
+                const db = request.result;
+                db.onclose = () => {
+                    this.dbPromise = null;
+                    logger.info('IndexDB connection closed.');
+                };
+                db.onversionchange = () => {
+                    db.close();
+                    this.dbPromise = null;
+                    logger.warn('IndexDB connection closed due to version change.');
+                };
+                resolve(db);
+            };
+
+            request.onerror = () => {
+                this.dbPromise = null;
+                reject(request.error);
+            };
         });
+
+        return this.dbPromise;
     }
 
     async has(id: string): Promise<boolean> {
