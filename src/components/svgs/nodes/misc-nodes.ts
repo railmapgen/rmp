@@ -29,11 +29,11 @@ import taipeiMetroLineBadge from './taipei-metro-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
+    [MiscNodeType.Master]: Master,
+    [MiscNodeType.Image]: Image,
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
     [MiscNodeType.I18nText]: i18nText,
-    [MiscNodeType.Master]: Master,
-    [MiscNodeType.Image]: Image,
     [MiscNodeType.ShmetroNumLineBadge]: shmetroNumLineBadge,
     [MiscNodeType.ShmetroTextLineBadge]: shmetroTextLineBadge,
     [MiscNodeType.GzmtrLineBadge]: gzmtrLineBadge,
