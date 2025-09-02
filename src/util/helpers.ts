@@ -185,9 +185,9 @@ export const shuffle = <T>(arr: T[]): T[] => {
     return arr;
 };
 
-export const createHash = async (data: string, algorithm = 'SHA-256') => {
+export const createHash = async (encodedData: string | Uint8Array<ArrayBufferLike>, algorithm = 'SHA-256') => {
     const encoder = new TextEncoder();
-    const encodedData = encoder.encode(data);
+    encodedData = typeof encodedData === 'string' ? encoder.encode(encodedData) : encodedData;
     const hashBuffer = await crypto.subtle.digest(algorithm, encodedData);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
@@ -222,9 +222,7 @@ export const base64DataURLToBytes = async (dataURL: string) => {
         bytes[i] = binaryString.charCodeAt(i);
     }
 
-    const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hash = await createHash(bytes);
 
     return { bytes, format, hash };
 };
@@ -240,4 +238,15 @@ export const bytesToBase64DataURL = (bytes: Uint8Array, format: string): string 
     const base64 = btoa(binaryString);
     const dataURL = `data:image/${format};base64,${base64}`;
     return dataURL;
+};
+
+export const fileToBytes = (file: File): Promise<Uint8Array> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            resolve(new Uint8Array(reader.result as ArrayBuffer));
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
 };

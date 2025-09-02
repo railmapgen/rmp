@@ -42,6 +42,7 @@ import { MiscNodeType } from '../../constants/nodes';
 import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
 import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
+import { createHash, fileToBytes } from '../../util/helpers';
 import {
     downloadBase64Image,
     fetchAndSaveImage,
@@ -70,9 +71,8 @@ export const ImagePanelModal = (props: {
     const graph = React.useRef(window.graph);
     const dispatch = useDispatch();
 
+    const [activeTab, setActiveTab] = React.useState(0);
     const [loading, setLoading] = React.useState(false);
-    const [refresh, _setRefresh] = React.useState(0);
-    const setRefresh = () => _setRefresh(refresh + 1);
     const [localList, setLocalList] = React.useState<ImageList[]>([]);
     const [cloudList, setCloudList] = React.useState<ImageList[]>([]);
     const [error, setError] = React.useState<string | undefined>(undefined);
@@ -80,24 +80,6 @@ export const ImagePanelModal = (props: {
     const [selected, setSelected] = React.useState<ImageList[]>([]);
 
     const tabs = [localList, cloudList];
-
-    function fileToBytes(file: File): Promise<Uint8Array> {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                resolve(new Uint8Array(reader.result as ArrayBuffer));
-            };
-            reader.onerror = reject;
-            reader.readAsArrayBuffer(file);
-        });
-    }
-
-    async function sha256(bytes: Uint8Array): Promise<string> {
-        const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
-        return Array.from(new Uint8Array(hashBuffer))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('');
-    }
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, tabId: number) => {
         const type = tabId === 0 ? 'local' : 'server';
@@ -111,7 +93,7 @@ export const ImagePanelModal = (props: {
                 }
 
                 const bytes = await fileToBytes(file);
-                const hash = await sha256(bytes);
+                const hash = await createHash(bytes);
                 const reader = new FileReader();
 
                 const formData = new FormData();
@@ -131,7 +113,7 @@ export const ImagePanelModal = (props: {
                     if (!data.code || data.code === 201) {
                         const imgId = `img-s_${data.id}`;
                         imageStoreIndexedDB.save(imgId, reader.result as string);
-                        setRefresh();
+                        setCloudList(await fetchImageList(token));
                     } else {
                         setError(data.message);
                     }
@@ -145,7 +127,6 @@ export const ImagePanelModal = (props: {
                         const imgId = `img-l_${nanoid(10)}`; // Use timestamp to ensure unique ID
                         imageStoreIndexedDB.save(imgId, reader.result);
                         setLocalList(prev => [...prev, { id: imgId, thumbnail: reader.result as string }]);
-                        setRefresh();
                     }
                 };
                 reader.readAsDataURL(file);
@@ -154,19 +135,22 @@ export const ImagePanelModal = (props: {
     };
 
     React.useEffect(() => {
-        const runEffect = async () => {
+        const runEffect = async (fetchList: () => Promise<void>) => {
             setLoading(true);
             setError(undefined);
-            setLocalList(await getLocalImageList());
-            setCloudList(await fetchImageList(token));
+            await fetchList();
             setSelected([]);
             setLoading(false);
         };
 
         if (isOpen) {
-            runEffect();
+            const fetchList =
+                activeTab === 0
+                    ? async () => setLocalList(await getLocalImageList())
+                    : async () => setCloudList(await fetchImageList(token));
+            runEffect(fetchList);
         }
-    }, [isOpen, refresh]);
+    }, [isOpen, activeTab]);
 
     const handleChange = async () => {
         setLoading(true);
@@ -243,17 +227,23 @@ export const ImagePanelModal = (props: {
                 <ModalCloseButton />
 
                 <ModalBody>
-                    {loading ? (
-                        <Box textAlign="center" py={10}>
-                            <Spinner size="xl" />
-                            <Text mt={4}>{t('panel.details.image.loading')}</Text>
-                        </Box>
-                    ) : (
-                        <Tabs isLazy isFitted overflow="hidden">
-                            <TabList>
-                                <Tab>{t('panel.details.image.local')}</Tab>
-                                {RMP_EXPORT ? (
-                                    <Tab>
+                    <Tabs isLazy isFitted overflow="hidden" index={activeTab} onChange={idx => setActiveTab(idx)}>
+                        <TabList>
+                            <Tab>{t('panel.details.image.local')}</Tab>
+                            {RMP_EXPORT ? (
+                                <Tab>
+                                    {t('panel.details.image.server')}
+                                    <Badge
+                                        ml="1"
+                                        color="gray.50"
+                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                    >
+                                        PRO
+                                    </Badge>
+                                </Tab>
+                            ) : (
+                                <Tooltip label={t('header.settings.pro')} hasArrow>
+                                    <Tab isDisabled>
                                         {t('panel.details.image.server')}
                                         <Badge
                                             ml="1"
@@ -263,25 +253,19 @@ export const ImagePanelModal = (props: {
                                             PRO
                                         </Badge>
                                     </Tab>
-                                ) : (
-                                    <Tooltip label={t('header.settings.pro')} hasArrow>
-                                        <Tab isDisabled>
-                                            {t('panel.details.image.server')}
-                                            <Badge
-                                                ml="1"
-                                                color="gray.50"
-                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            >
-                                                PRO
-                                            </Badge>
-                                        </Tab>
-                                    </Tooltip>
-                                )}
-                            </TabList>
+                                </Tooltip>
+                            )}
+                        </TabList>
 
-                            <TabPanels overflow="hidden" h="100%">
-                                {tabs.map((g, i) => (
-                                    <TabPanel key={i} overflowY="auto" h="calc(100% - 2rem - 8px)">
+                        <TabPanels overflow="hidden" h="100%">
+                            {tabs.map((g, i) => (
+                                <TabPanel key={i} overflowY="auto" h="calc(100% - 2rem - 8px)">
+                                    {loading ? (
+                                        <Box textAlign="center" py={10}>
+                                            <Spinner size="xl" />
+                                            <Text mt={4}>{t('panel.details.image.loading')}</Text>
+                                        </Box>
+                                    ) : (
                                         <Card mt="2">
                                             <CardBody paddingTop="0">
                                                 <Flex flexWrap="wrap">
@@ -363,24 +347,22 @@ export const ImagePanelModal = (props: {
                                                                 </AlertTitle>
                                                                 <AlertDescription>{error}</AlertDescription>
                                                             </Box>
-                                                            {onClose && (
-                                                                <CloseButton
-                                                                    position="absolute"
-                                                                    right="8px"
-                                                                    top="8px"
-                                                                    onClick={onClose}
-                                                                />
-                                                            )}
+                                                            <CloseButton
+                                                                position="absolute"
+                                                                right="8px"
+                                                                top="8px"
+                                                                onClick={() => setError(undefined)}
+                                                            />
                                                         </Alert>
                                                     )}
                                                 </Flex>
                                             </CardFooter>
                                         </Card>
-                                    </TabPanel>
-                                ))}
-                            </TabPanels>
-                        </Tabs>
-                    )}
+                                    )}
+                                </TabPanel>
+                            ))}
+                        </TabPanels>
+                    </Tabs>
                 </ModalBody>
 
                 <ModalFooter>
