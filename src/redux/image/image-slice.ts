@@ -1,9 +1,19 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { MiscNodeType } from '../../constants/nodes';
 import { fetchAndSaveImage } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import type { RootState } from '../index';
-import { setRefreshNodes } from '../runtime/runtime-slice';
+
+interface ImageState {
+    /**
+     * A timestamp that changes whenever images are updated in indexedDB, to trigger re-renders.
+     */
+    refresh: number;
+}
+
+const initialState: ImageState = {
+    refresh: Date.now(),
+};
 
 /**
  * Scan the current graph for cloud images and ensure they are cached locally.
@@ -28,6 +38,19 @@ export const pullCloudImages = createAsyncThunk<void, void, { state: RootState }
             });
 
         // Trigger a canvas refresh to reflect any newly cached images.
-        dispatch(setRefreshNodes());
+        dispatch(setRefresh());
     }
 );
+
+const imageSlice = createSlice({
+    name: 'image',
+    initialState,
+    reducers: {
+        setRefresh: state => {
+            state.refresh = Date.now();
+        },
+    },
+});
+
+export const { setRefresh } = imageSlice.actions;
+export default imageSlice.reducer;

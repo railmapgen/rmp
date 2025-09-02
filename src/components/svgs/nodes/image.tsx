@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MdAdd, MdImageNotSupported, MdRemove } from 'react-icons/md';
 import { AttrsProps, MiscNodeId } from '../../../constants/constants';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { useRootSelector } from '../../../redux';
 import { imageStoreIndexedDB } from '../../../util/image-store-indexed-db';
 import { ImagePanelModal } from '../../page-header/image-panel-modal';
 
@@ -17,6 +18,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
         rotate = defaultImageAttributes.rotate,
         opacity = defaultImageAttributes.opacity,
     } = attrs ?? defaultImageAttributes;
+    const { refresh } = useRootSelector(state => state.image);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -44,7 +46,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
         return () => {
             ignore = true;
         };
-    }, [id, href]);
+    }, [id, href, refresh]);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
@@ -88,6 +90,9 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
  */
 export interface ImageAttributes {
     type: 'server' | 'local';
+    /**
+     * Local or server image id, with prefix (e.g. img-l_123 or img-s_123).
+     */
     href?: string;
     hash?: string;
     scale: number;
