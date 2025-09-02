@@ -1,7 +1,8 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
-import { nanoid } from 'nanoid';
 import { extension } from 'mime-types';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
+import { nanoid } from 'nanoid';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
 import { imageStoreIndexedDB } from './image-store-indexed-db';
@@ -49,7 +50,7 @@ export const fetchAndSaveImage = async (id: string, hash: string, token: string 
     if (src) {
         await imageStoreIndexedDB.save(id, src);
     } else {
-        console.error('Failed to fetch image from server');
+        logger.error('Failed to fetch image from server');
     }
 };
 

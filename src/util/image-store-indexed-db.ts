@@ -1,3 +1,4 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { MiscNodeId } from '../constants/constants';
 
 export class ImageStoreIndexedDB {
@@ -17,7 +18,7 @@ export class ImageStoreIndexedDB {
             }
         };
         request.onerror = () => {
-            console.error('IndexDB initialization failed.');
+            logger.error('IndexDB initialization failed.');
         };
     }
 

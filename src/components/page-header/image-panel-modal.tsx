@@ -31,11 +31,12 @@ import {
     Text,
     Tooltip,
 } from '@chakra-ui/react';
+import { logger } from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MdCheck, MdDelete, MdDownload } from 'react-icons/md';
+import { useDispatch } from 'react-redux';
 import { MiscNodeId } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import { image_endpoint } from '../../constants/server';
@@ -101,7 +102,7 @@ export const ImagePanelModal = (props: {
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, tabId: number) => {
         const type = tabId === 0 ? 'local' : 'server';
         const file = event.target.files?.[0];
-        console.log('File selected:', file);
+        logger.debug('File selected:', file);
         if (file) {
             if (type === 'server') {
                 if (file.size > 4 * 1024 * 1024) {
@@ -135,7 +136,7 @@ export const ImagePanelModal = (props: {
                         setError(data.message);
                     }
                 } catch (error) {
-                    console.error('Error uploading image:', error);
+                    logger.error('Error uploading image:', error);
                 }
             } else {
                 const reader = new FileReader();
@@ -213,10 +214,10 @@ export const ImagePanelModal = (props: {
                     setCloudList(prev => prev.filter(img => img.id !== id));
                     imageStoreIndexedDB.delete(id);
                 } else {
-                    console.error('Failed to delete image from server');
+                    logger.error('Failed to delete image from server');
                 }
             } catch (error) {
-                console.error('Error deleting image:', error);
+                logger.error('Error deleting image:', error);
             }
         }
 
