@@ -11,7 +11,6 @@ import { ImagePanelModal } from '../../page-header/image-panel-modal';
 const Image = (props: NodeComponentProps<ImageAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
-        label = defaultImageAttributes.label,
         type = defaultImageAttributes.type,
         href = defaultImageAttributes.href,
         scale = defaultImageAttributes.scale,
@@ -64,12 +63,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
             ) : (
                 <g>
                     <g transform={`rotate(${rotate}) scale(${scale})`}>
-                        {/* {type === 'file' ? (
-                            <image href={imageHrefs.get(id)!} aria-label={label} />
-                        ) : (
-                            <image href={`${href}`} aria-label={label} />
-                        )} */}
-                        <image href={imgHref} aria-label={label} opacity={opacity} />
+                        <image href={imgHref} opacity={opacity} />
                     </g>
                     <g
                         transform="rotate(45)"
@@ -93,7 +87,6 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
  * Image specific props.
  */
 export interface ImageAttributes {
-    label: string;
     type: 'server' | 'local';
     href?: string;
     hash?: string;
@@ -103,7 +96,6 @@ export interface ImageAttributes {
 }
 
 const defaultImageAttributes: ImageAttributes = {
-    label: 'Uninitialized Image',
     type: 'local',
     scale: 1,
     rotate: 0,
@@ -132,13 +124,6 @@ const attrsComponent = (props: AttrsProps<ImageAttributes>) => {
     }, [id, attrs.href]);
 
     const fields: RmgFieldsField[] = [
-        {
-            label: t('panel.details.nodes.image.label'),
-            type: 'input',
-            value: attrs.label,
-            onChange: (value: string) => handleAttrsUpdate(id, { ...attrs, label: value }),
-            minW: 'full',
-        },
         {
             label: t('panel.details.nodes.image.scale'),
             type: 'input',

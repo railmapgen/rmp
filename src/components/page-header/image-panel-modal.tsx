@@ -36,7 +36,8 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { MdCheck, MdDelete, MdDownload } from 'react-icons/md';
-import { MiscNodeId, NodeAttributes } from '../../constants/constants';
+import { MiscNodeId } from '../../constants/constants';
+import { MiscNodeType } from '../../constants/nodes';
 import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
 import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
@@ -49,7 +50,6 @@ import {
     ImageList,
 } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
-import { MiscNodeType } from '../../constants/nodes';
 
 // TEST USAGE !
 const RMP_EXPORT = true;
@@ -152,23 +152,6 @@ export const ImagePanelModal = (props: {
         }
     };
 
-    const getCanvasUsedImages = async () => {
-        const list: ImageList[] = [];
-        const nodeIds = graph.current.filterNodes(
-            (id: string, attr: NodeAttributes) => id.startsWith('misc_node') && attr.type === MiscNodeType.Image
-        );
-
-        for (const id of nodeIds) {
-            const attr = graph.current.getNodeAttributes(id)['image']!;
-            if (attr.href && attr.href.startsWith('img-l') && !list.find(p => p.id === attr.href)) {
-                const thumbnail = (await imageStoreIndexedDB.get(attr.href)) ?? '';
-                list.push({ id: attr.href, thumbnail });
-            }
-        }
-
-        return list;
-    };
-
     React.useEffect(() => {
         const runEffect = async () => {
             setLoading(true);
@@ -190,7 +173,6 @@ export const ImagePanelModal = (props: {
             const imgId = selected[0].id;
             const hash = selected[0].hash;
             if (imgId.startsWith('img-l')) {
-                // Local image
                 onChange(id, imgId, 'local');
             } else {
                 await fetchAndSaveImage(imgId, hash!, token);
