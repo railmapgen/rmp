@@ -158,16 +158,19 @@ export const pullServerImages = createAsyncThunk<void, void, { state: RootState 
         const token = state.account.token;
 
         // Ensure all server images used in the graph are available in IndexedDB.
-        window.graph
-            .filterNodes(
-                (id: string, attr: any) => id.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href
-            )
-            .forEach(async (id: string) => {
-                const { href, hash } = window.graph.getNodeAttribute(id, MiscNodeType.Image)!;
-                if (href && href.startsWith('img-s') && !imageStoreIndexedDB.has(href) && hash) {
-                    await fetchAndSaveImage(href, hash, token);
-                }
-            });
+        await Promise.all(
+            window.graph
+                .filterNodes(
+                    (id, attr) =>
+                        id.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href !== undefined
+                )
+                .map(async id => {
+                    const { href, hash } = window.graph.getNodeAttribute(id, MiscNodeType.Image)!;
+                    if (href && href.startsWith('img-s') && !(await imageStoreIndexedDB.has(href)) && hash) {
+                        await fetchAndSaveImage(href, hash, token);
+                    }
+                })
+        );
 
         // Trigger a canvas refresh to reflect any newly cached images.
         dispatch(setRefreshImages());
