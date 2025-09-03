@@ -5,12 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
 import { useRootDispatch } from '../../redux';
-import { pullCloudImages } from '../../redux/image/image-slice';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
-import { saveImagesFromParam } from '../../util/image';
+import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
@@ -56,7 +55,9 @@ export default function OpenActions() {
         // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
-        dispatch(pullCloudImages());
+
+        // ensure all server images used in the graph are available in IndexedDB
+        dispatch(pullServerImages());
 
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
@@ -84,7 +85,7 @@ export default function OpenActions() {
                 // these magic k and b comes from linear equation fitting where you record several window size...
                 const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
                 dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
-                await dispatch(pullCloudImages());
+                await dispatch(pullServerImages());
                 rmgRuntime.event(Events.LOAD_TUTORIAL, {});
             }
         }

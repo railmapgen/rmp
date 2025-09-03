@@ -18,7 +18,9 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
         rotate = defaultImageAttributes.rotate,
         opacity = defaultImageAttributes.opacity,
     } = attrs ?? defaultImageAttributes;
-    const { refresh } = useRootSelector(state => state.image);
+    const {
+        refresh: { images: refreshImages },
+    } = useRootSelector(state => state.runtime);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -46,7 +48,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
         return () => {
             ignore = true;
         };
-    }, [id, href, refresh]);
+    }, [id, href, refreshImages]);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>

@@ -1,10 +1,13 @@
 import { logger } from '@railmapgen/rmg-runtime';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 import { MultiDirectedGraph } from 'graphology';
 import { extension } from 'mime-types';
 import { nanoid } from 'nanoid';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
+import { RootState } from '../redux';
+import { setRefreshImages } from '../redux/runtime/runtime-slice';
 import { imageStoreIndexedDB } from './image-store-indexed-db';
 
 export interface ImageList {
@@ -12,6 +15,21 @@ export interface ImageList {
     thumbnail: string;
     hash?: string;
 }
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            if (typeof reader.result === 'string') {
+                resolve(reader.result);
+            } else {
+                reject('Failed to convert blob to base64');
+            }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+};
 
 export const fetchImageAsBase64 = async (url: string, token: string | undefined): Promise<string> => {
     if (!token) throw new Error('No token provided for image fetch');
@@ -28,21 +46,6 @@ export const fetchImageAsBase64 = async (url: string, token: string | undefined)
     return await blobToBase64(blob);
 };
 
-export const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-                resolve(reader.result);
-            } else {
-                reject('Failed to convert blob to base64');
-            }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-};
-
 export const fetchAndSaveImage = async (id: string, hash: string, token: string | undefined) => {
     if (!token) return;
     const serverId = id.slice(6); // Remove 'img-s_' prefix
@@ -54,7 +57,7 @@ export const fetchAndSaveImage = async (id: string, hash: string, token: string 
     }
 };
 
-export const fetchImageList = async (token: string | undefined): Promise<ImageList[]> => {
+export const fetchServerImageList = async (token: string | undefined): Promise<ImageList[]> => {
     if (!token) return [];
     const rep = await fetch(image_endpoint, {
         headers: {
@@ -88,17 +91,14 @@ export const fetchImageList = async (token: string | undefined): Promise<ImageLi
     );
 };
 
-export const getLocalImageList = async (): Promise<ImageList[]> => {
-    const list: ImageList[] = [];
-    (await imageStoreIndexedDB.getAll()).forEach((img, id) => {
-        if (img && id.startsWith('img-l')) {
-            list.push({
-                id,
-                thumbnail: img,
-            });
-        }
-    });
-    return list;
+export const fetchLocalImageList = async (): Promise<ImageList[]> => {
+    const allImages = await imageStoreIndexedDB.getAll();
+    return Array.from(allImages.entries())
+        .filter(([id, img]) => img && id.startsWith('img-l'))
+        .map(([id, thumbnail]) => ({
+            id,
+            thumbnail,
+        }));
 };
 
 export const downloadBase64Image = (base64: string, filename: string) => {
@@ -160,3 +160,30 @@ export const saveImagesFromParam = async (
         }
     }
 };
+
+/**
+ * Scan the current graph for cloud images and ensure they are cached locally.
+ * Also trigger a canvas refresh.
+ */
+export const pullServerImages = createAsyncThunk<void, void, { state: RootState }>(
+    'image/pullServerImages',
+    async (_: void, { getState, dispatch }) => {
+        const state = getState();
+        const token = state.account.token;
+
+        // Ensure all server images used in the graph are available in IndexedDB.
+        window.graph
+            .filterNodes(
+                (id: string, attr: any) => id.startsWith('misc_node') && attr.type === 'image' && attr['image']?.href
+            )
+            .forEach(async (id: string) => {
+                const { href, hash } = window.graph.getNodeAttribute(id, MiscNodeType.Image)!;
+                if (href && href.startsWith('img-s') && !imageStoreIndexedDB.has(href) && hash) {
+                    await fetchAndSaveImage(href, hash, token);
+                }
+            });
+
+        // Trigger a canvas refresh to reflect any newly cached images.
+        dispatch(setRefreshImages());
+    }
+);

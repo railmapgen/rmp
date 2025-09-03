@@ -46,9 +46,9 @@ import { createHash, fileToBytes } from '../../util/helpers';
 import {
     downloadBase64Image,
     fetchAndSaveImage,
-    fetchImageList,
+    fetchServerImageList,
     getExtFromBase64,
-    getLocalImageList,
+    fetchLocalImageList,
     ImageList,
 } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
@@ -113,7 +113,7 @@ export const ImagePanelModal = (props: {
                     if (!data.code || data.code === 201) {
                         const imgId = `img-s_${data.id}`;
                         imageStoreIndexedDB.save(imgId, reader.result as string);
-                        setCloudList(await fetchImageList(token));
+                        setCloudList(await fetchServerImageList(token));
                     } else {
                         setError(data.message);
                     }
@@ -146,8 +146,8 @@ export const ImagePanelModal = (props: {
         if (isOpen) {
             const fetchList =
                 activeTab === 0
-                    ? async () => setLocalList(await getLocalImageList())
-                    : async () => setCloudList(await fetchImageList(token));
+                    ? async () => setLocalList(await fetchLocalImageList())
+                    : async () => setCloudList(await fetchServerImageList(token));
             runEffect(fetchList);
         }
     }, [isOpen, activeTab]);

@@ -4,7 +4,6 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import accountReducer from './account/account-slice';
 import appReducer from './app/app-slice';
 import fontsReducer from './fonts/fonts-slice';
-import imageReducer from './image/image-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
 
@@ -16,7 +15,6 @@ const rootReducer = combineReducers({
     param: paramReducer,
     runtime: runtimeReducer,
     fonts: fontsReducer,
-    image: imageReducer,
 });
 export type RootState = ReturnType<typeof rootReducer>;
 

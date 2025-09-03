@@ -1,15 +1,12 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { Theme } from '../constants/constants';
-import { image_endpoint } from '../constants/server';
 import { useRootSelector } from '../redux';
-import { openPaletteAppClip, setRefreshNodes } from '../redux/runtime/runtime-slice';
-import { imageStoreIndexedDB } from '../util/image-store-indexed-db';
+import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
 import { loadFont } from './fonts';
-import { fetchImageAsBase64, fetchImageList } from './image';
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {
