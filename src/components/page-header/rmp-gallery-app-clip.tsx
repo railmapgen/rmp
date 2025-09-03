@@ -8,7 +8,7 @@ import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
-import { pullServerImages } from '../../util/image';
+import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 
@@ -58,7 +58,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const handleOpenTemplate = async (rmpSave: RMPSave) => {
         // templates may be obsolete and require upgrades
-        const { version, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
+        const { version, images, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
@@ -67,6 +67,10 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         graph.current.clear();
         graph.current.import(save.graph);
 
+        // save images to indexedDB if they exist
+        if (Array.isArray(images) && images.length > 0) {
+            await saveImagesFromParam(graph.current, images);
+        }
         // ensure all server images used in the graph are available in IndexedDB
         dispatch(pullServerImages());
 

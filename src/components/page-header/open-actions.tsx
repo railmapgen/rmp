@@ -56,22 +56,21 @@ export default function OpenActions() {
         graph.current.clear();
         graph.current.import(save.graph);
 
+        // save images to indexedDB if they exist
+        if (Array.isArray(images) && images.length > 0) {
+            await saveImagesFromParam(graph.current, images);
+        }
         // ensure all server images used in the graph are available in IndexedDB
         dispatch(pullServerImages());
+
+        // hard refresh the canvas
+        refreshAndSave();
 
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
         if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
         if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
-
-        // save images to indexedDB if they exist
-        if (Array.isArray(images) && images.length > 0) {
-            await saveImagesFromParam(graph.current, images);
-        }
-
-        // hard refresh the canvas
-        refreshAndSave();
     };
 
     const handleConfirmLoad = async () => {
