@@ -94,8 +94,12 @@ export interface ImageAttributes {
     type: 'server' | 'local';
     /**
      * Local or server image id, with prefix (e.g. img-l_123 or img-s_123).
+     * Undefined if no image is selected.
      */
     href?: string;
+    /**
+     * Server image hash, undefined for local images.
+     */
     hash?: string;
     scale: number;
     rotate: number;
