@@ -8,6 +8,7 @@ import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
 import { RootState } from '../redux';
 import { setRefreshImages } from '../redux/runtime/runtime-slice';
+import { blobToBase64 } from './binary';
 import { imageStoreIndexedDB } from './image-store-indexed-db';
 
 export interface ImageList {
@@ -15,21 +16,6 @@ export interface ImageList {
     thumbnail: string;
     hash?: string;
 }
-
-const blobToBase64 = (blob: Blob): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            if (typeof reader.result === 'string') {
-                resolve(reader.result);
-            } else {
-                reject('Failed to convert blob to base64');
-            }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-    });
-};
 
 export const fetchImageAsBase64 = async (url: string, token: string | undefined): Promise<string> => {
     if (!token) throw new Error('No token provided for image fetch');

@@ -185,14 +185,6 @@ export const shuffle = <T>(arr: T[]): T[] => {
     return arr;
 };
 
-export const createHash = async (encodedData: string | Uint8Array<ArrayBufferLike>, algorithm = 'SHA-256') => {
-    const encoder = new TextEncoder();
-    encodedData = typeof encodedData === 'string' ? encoder.encode(encodedData) : encodedData;
-    const hashBuffer = await crypto.subtle.digest(algorithm, encodedData);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-};
-
 export const getRandomHexColor = (): `#${string}` => {
     const color = Math.floor(Math.random() * 0xffffff);
     return `#${color.toString(16).padStart(6, '0')}`;
@@ -204,15 +196,4 @@ export const getContrastingColor = (hex: `#${string}`): MonoColour => {
     const b = parseInt(hex.slice(5, 7), 16);
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
     return yiq >= 128 ? MonoColour.black : MonoColour.white;
-};
-
-export const fileToBytes = (file: File): Promise<Uint8Array> => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            resolve(new Uint8Array(reader.result as ArrayBuffer));
-        };
-        reader.onerror = reject;
-        reader.readAsArrayBuffer(file);
-    });
 };

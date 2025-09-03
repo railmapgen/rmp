@@ -42,13 +42,13 @@ import { MiscNodeType } from '../../constants/nodes';
 import { image_endpoint } from '../../constants/server';
 import { useRootSelector } from '../../redux';
 import { setRefreshNodes } from '../../redux/runtime/runtime-slice';
-import { createHash, fileToBytes } from '../../util/helpers';
+import { createHash, fileToBytes } from '../../util/binary';
 import {
     downloadBase64Image,
     fetchAndSaveImage,
+    fetchLocalImageList,
     fetchServerImageList,
     getExtFromBase64,
-    fetchLocalImageList,
     ImageList,
 } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
