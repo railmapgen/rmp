@@ -17,13 +17,8 @@ export interface ImageList {
     hash?: string;
 }
 
-export const fetchImageAsBase64 = async (url: string, token: string | undefined): Promise<string> => {
-    if (!token) throw new Error('No token provided for image fetch');
-    const response = await fetch(url, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+export const fetchImageAsBase64 = async (url: string): Promise<string> => {
+    const response = await fetch(url);
     if (!response.ok) {
         throw new Error(`Failed to download: ${response.statusText}`);
     }
@@ -32,10 +27,9 @@ export const fetchImageAsBase64 = async (url: string, token: string | undefined)
     return await blobToBase64(blob);
 };
 
-export const fetchAndSaveImage = async (id: string, hash: string, token: string | undefined) => {
-    if (!token) return;
+export const fetchAndSaveImage = async (id: string, hash: string) => {
     const serverId = id.slice(6); // Remove 'img-s_' prefix
-    const src = await fetchImageAsBase64(`${image_endpoint}/data/${serverId}/${hash}`, token);
+    const src = await fetchImageAsBase64(`${image_endpoint}/data/${serverId}/${hash}`);
     if (src) {
         await imageStoreIndexedDB.save(id, src);
     } else {
@@ -64,7 +58,7 @@ export const fetchServerImageList = async (token: string | undefined): Promise<I
             if ((await imageStoreIndexedDB.has(localId)) === false) {
                 await imageStoreIndexedDB.save(
                     localId,
-                    await fetchImageAsBase64(`${image_endpoint}/thumbnail/${img.id}`, token)
+                    await fetchImageAsBase64(`${image_endpoint}/thumbnail/${img.id}`)
                 );
             }
             const thumbnail = await imageStoreIndexedDB.get(localId);
@@ -154,9 +148,6 @@ export const saveImagesFromParam = async (
 export const pullServerImages = createAsyncThunk<void, void, { state: RootState }>(
     'image/pullServerImages',
     async (_: void, { getState, dispatch }) => {
-        const state = getState();
-        const token = state.account.token;
-
         // Ensure all server images used in the graph are available in IndexedDB.
         await Promise.all(
             window.graph
@@ -167,7 +158,7 @@ export const pullServerImages = createAsyncThunk<void, void, { state: RootState 
                 .map(async id => {
                     const { href, hash } = window.graph.getNodeAttribute(id, MiscNodeType.Image)!;
                     if (href && href.startsWith('img-s') && !(await imageStoreIndexedDB.has(href)) && hash) {
-                        await fetchAndSaveImage(href, hash, token);
+                        await fetchAndSaveImage(href, hash);
                     }
                 })
         );

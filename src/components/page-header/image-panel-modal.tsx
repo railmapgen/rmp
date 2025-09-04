@@ -160,7 +160,7 @@ export const ImagePanelModal = (props: {
             if (imgId.startsWith('img-l')) {
                 onChange(id, imgId, 'local');
             } else {
-                await fetchAndSaveImage(imgId, hash!, token);
+                await fetchAndSaveImage(imgId, hash!);
                 onChange(id, imgId, 'server', hash);
             }
         }
@@ -210,7 +210,7 @@ export const ImagePanelModal = (props: {
 
     const handleDownload = async (image: ImageList) => {
         if (image.id.startsWith('img-s') && (await imageStoreIndexedDB.has(image.id)) === false) {
-            await fetchAndSaveImage(image.id, image.hash!, token);
+            await fetchAndSaveImage(image.id, image.hash!);
         }
         const base64 = await imageStoreIndexedDB.get(image.id);
         if (base64) {
