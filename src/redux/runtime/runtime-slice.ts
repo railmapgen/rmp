@@ -201,7 +201,7 @@ const runtimeSlice = createSlice({
             state.refresh.edges = Date.now();
         },
         setRefreshImages: state => {
-            state.refresh.edges = Date.now();
+            state.refresh.images = Date.now();
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             if (state.mode !== 'free') state.lastTool = state.mode;
