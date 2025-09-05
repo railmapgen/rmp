@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, RuntimeMode, StnId } from '../constants/constants';
+import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
@@ -23,7 +24,7 @@ import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../uti
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
-import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
+import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -44,7 +45,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { gridLines, snapLines, predictNextNode },
+        preference: { gridLines, snapLines, predictNextNode, autoParallel },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -272,6 +273,36 @@ const SvgWrapper = () => {
             dispatch(redoAction());
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
+        } else if (e.key === 'e') {
+            // switch startFrom between 'from' and 'to' when an edge is selected
+            const [selectedFirst] = selected;
+            if (selected.size === 1 && graph.current.hasEdge(selectedFirst)) {
+                const attr = graph.current.getEdgeAttributes(selectedFirst);
+                const { type } = attr;
+
+                // only work for non-simple line types that have startFrom
+                if (type !== LinePathType.Simple && attr[type]) {
+                    const lineAttrs = attr[type] as NonSimpleLinePathAttributes;
+                    const currentStartFrom = lineAttrs.startFrom || 'from';
+                    const newStartFrom = currentStartFrom === 'from' ? 'to' : 'from';
+
+                    // recalculate parallel index if auto parallel is enabled
+                    let parallelIndex = attr.parallelIndex;
+                    if (autoParallel) {
+                        const [source, target] = graph.current.extremities(selectedFirst) as [
+                            StnId | MiscNodeId,
+                            StnId | MiscNodeId,
+                        ];
+                        parallelIndex = makeParallelIndex(graph.current, type, source, target, newStartFrom);
+                    }
+
+                    // update the startFrom attribute
+                    const updatedLineAttrs = { ...lineAttrs, startFrom: newStartFrom };
+                    graph.current.mergeEdgeAttributes(selectedFirst, { [type]: updatedLineAttrs, parallelIndex });
+
+                    refreshAndSave();
+                }
+            }
         }
     });
 
@@ -356,7 +387,7 @@ const SvgWrapper = () => {
                     svgHeight={height}
                 />
             )}
-            {predictNextNode && selected.size === 1 && <PredictNextNode />}
+            {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <utils.SvgAssetsContextProvider>
                 <SvgCanvas />
