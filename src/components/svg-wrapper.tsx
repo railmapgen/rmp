@@ -57,7 +57,6 @@ const SvgWrapper = () => {
         theme,
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
-    const [selectedFirst] = selected;
 
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
@@ -275,31 +274,32 @@ const SvgWrapper = () => {
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
         } else if (e.key === 'e') {
-            // Switch startFrom between 'from' and 'to' when an edge is selected
+            // switch startFrom between 'from' and 'to' when an edge is selected
+            const [selectedFirst] = selected;
             if (selected.size === 1 && graph.current.hasEdge(selectedFirst)) {
                 const attr = graph.current.getEdgeAttributes(selectedFirst);
                 const { type } = attr;
-                
-                // Only work for non-simple line types that support startFrom
+
+                // only work for non-simple line types that have startFrom
                 if (type !== LinePathType.Simple && attr[type]) {
                     const lineAttrs = attr[type] as NonSimpleLinePathAttributes;
                     const currentStartFrom = lineAttrs.startFrom || 'from';
                     const newStartFrom = currentStartFrom === 'from' ? 'to' : 'from';
-                    
-                    // Update the startFrom attribute
-                    const updatedLineAttrs = { ...lineAttrs, startFrom: newStartFrom };
-                    graph.current.setEdgeAttribute(selectedFirst, type, updatedLineAttrs);
-                    
-                    // Recalculate parallel index if auto parallel is enabled
+
+                    // recalculate parallel index if auto parallel is enabled
+                    let parallelIndex = attr.parallelIndex;
                     if (autoParallel) {
                         const [source, target] = graph.current.extremities(selectedFirst) as [
                             StnId | MiscNodeId,
                             StnId | MiscNodeId,
                         ];
-                        const parallelIndex = makeParallelIndex(graph.current, type, source, target, newStartFrom);
-                        graph.current.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
+                        parallelIndex = makeParallelIndex(graph.current, type, source, target, newStartFrom);
                     }
-                    
+
+                    // update the startFrom attribute
+                    const updatedLineAttrs = { ...lineAttrs, startFrom: newStartFrom };
+                    graph.current.mergeEdgeAttributes(selectedFirst, { [type]: updatedLineAttrs, parallelIndex });
+
                     refreshAndSave();
                 }
             }
