@@ -387,7 +387,7 @@ const SvgWrapper = () => {
                     svgHeight={height}
                 />
             )}
-            {predictNextNode && selected.size === 1 && <PredictNextNode />}
+            {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
             {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
             <utils.SvgAssetsContextProvider>
                 <SvgCanvas />
