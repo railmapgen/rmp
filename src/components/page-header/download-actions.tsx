@@ -1,4 +1,9 @@
 import {
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
     Alert,
     AlertDescription,
     AlertIcon,
@@ -31,7 +36,7 @@ import canvasSize from 'canvas-size';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
-import { Events } from '../../constants/constants';
+import { Events, MiscNodeId, StnId } from '../../constants/constants';
 import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
@@ -54,6 +59,35 @@ const getTauriUrl = () => {
           ? 'aarch64.dmg'
           : 'x64-setup.exe';
     return baseUrl + `/tauri-${tag}/Rail.Map.Toolkit_${ver}_${suffix}`;
+};
+
+const getNodeOptions = () => {
+    const options: { [k: string]: string } = { '': '' }; // Default empty option
+
+    if (window.graph) {
+        window.graph.forEachNode((nodeId) => {
+            try {
+                const nodeAttrs = window.graph.getNodeAttributes(nodeId);
+                const nodeType = nodeAttrs.type;
+
+                // Try to get the display name from the node's attributes
+                let displayName = nodeId; // fallback to ID
+                if (nodeType && nodeAttrs[nodeType] && (nodeAttrs[nodeType] as any).names) {
+                    const names = (nodeAttrs[nodeType] as any).names;
+                    if (Array.isArray(names) && names.length > 0) {
+                        displayName = names[0] || names[1] || nodeId; // Use first non-empty name
+                    }
+                }
+
+                options[nodeId] = `${displayName} (${nodeId})`;
+            } catch (error) {
+                // If we can't get the name, just use the ID
+                options[nodeId] = nodeId;
+            }
+        });
+    }
+
+    return options;
 };
 
 export default function DownloadActions() {
@@ -83,6 +117,31 @@ export default function DownloadActions() {
     const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
     const [resvgScaleOptions, setResvgScaleOptions] = React.useState<number[]>([]);
     const [isTransparent, setIsTransparent] = React.useState(false);
+
+    // Advanced mode state variables  
+    const [selectedNodeId, setSelectedNodeId] = React.useState('');
+    const [leftDistance, setLeftDistance] = React.useState(50);
+    const [rightDistance, setRightDistance] = React.useState(50);
+    const [topDistance, setTopDistance] = React.useState(50);
+    const [bottomDistance, setBottomDistance] = React.useState(50);
+    const [aspectRatio, setAspectRatio] = React.useState('current');
+    const [extraPadding, setExtraPadding] = React.useState(0);
+    const [topLeftX, setTopLeftX] = React.useState(0);
+    const [topLeftY, setTopLeftY] = React.useState(0);
+    const [topRightX, setTopRightX] = React.useState(0);
+    const [topRightY, setTopRightY] = React.useState(0);
+    const [bottomLeftX, setBottomLeftX] = React.useState(0);
+    const [bottomLeftY, setBottomLeftY] = React.useState(0);
+    const [bottomRightX, setBottomRightX] = React.useState(0);
+    const [bottomRightY, setBottomRightY] = React.useState(0);
+    const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
+    const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
+    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
+    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
+    const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
+    const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
+    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
+
     const fields: RmgFieldsField[] = [
         {
             type: 'select',
@@ -119,13 +178,134 @@ export default function DownloadActions() {
             onChange: setIsTransparent,
         },
     ];
-    const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
-    const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
-    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
-    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
-    const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
-    const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
-    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
+
+    // Advanced mode fields
+    const nodeOptions = React.useMemo(() => getNodeOptions(), [isDownloadModalOpen]);
+    const aspectRatioOptions = {
+        current: 'Current dimensions',
+        '16:9': '16:9',
+        '4:3': '4:3',
+        '3:2': '3:2',
+        '1:1': '1:1',
+        '2:3': '2:3',
+        '3:4': '3:4',
+        '9:16': '9:16',
+    };
+
+    const advancedFields: RmgFieldsField[] = [
+        {
+            type: 'select',
+            label: 'Center node',
+            value: selectedNodeId,
+            options: nodeOptions,
+            onChange: value => setSelectedNodeId(value as string),
+        },
+        {
+            type: 'input',
+            label: 'Left distance',
+            value: leftDistance.toString(),
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setLeftDistance(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Right distance',
+            value: rightDistance.toString(),
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setRightDistance(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Top distance',
+            value: topDistance.toString(),
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setTopDistance(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Bottom distance',
+            value: bottomDistance.toString(),
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setBottomDistance(Number(value) || 0),
+        },
+        {
+            type: 'select',
+            label: 'Aspect ratio',
+            value: aspectRatio,
+            options: aspectRatioOptions,
+            onChange: value => setAspectRatio(value as string),
+        },
+        {
+            type: 'input',
+            label: 'Extra padding',
+            value: extraPadding.toString(),
+            variant: 'number',
+            onChange: value => setExtraPadding(Number(value) || 0),
+        },
+    ];
+
+    const positionFields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: 'Top left X',
+            value: topLeftX.toString(),
+            variant: 'number',
+            onChange: value => setTopLeftX(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Top left Y',
+            value: topLeftY.toString(),
+            variant: 'number',
+            onChange: value => setTopLeftY(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Top right X',
+            value: topRightX.toString(),
+            variant: 'number',
+            onChange: value => setTopRightX(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Top right Y',
+            value: topRightY.toString(),
+            variant: 'number',
+            onChange: value => setTopRightY(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Bottom left X',
+            value: bottomLeftX.toString(),
+            variant: 'number',
+            onChange: value => setBottomLeftX(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Bottom left Y',
+            value: bottomLeftY.toString(),
+            variant: 'number',
+            onChange: value => setBottomLeftY(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Bottom right X',
+            value: bottomRightX.toString(),
+            variant: 'number',
+            onChange: value => setBottomRightX(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Bottom right Y',
+            value: bottomRightY.toString(),
+            variant: 'number',
+            onChange: value => setBottomRightY(Number(value) || 0),
+        },
+    ];
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
@@ -266,6 +446,27 @@ export default function DownloadActions() {
                         <RmgFields fields={fields} />
                         {format === 'svg' && <RmgFields fields={svgFields} />}
                         {format === 'png' && <RmgFields fields={pngFields} />}
+
+                        <Accordion allowToggle mt={4}>
+                            <AccordionItem>
+                                <AccordionButton>
+                                    <Box flex="1" textAlign="left">
+                                        Advanced options
+                                    </Box>
+                                    <AccordionIcon />
+                                </AccordionButton>
+                                <AccordionPanel pb={4}>
+                                    <RmgFields fields={advancedFields} />
+                                    <Box mt={4}>
+                                        <Text fontWeight="bold" mb={2}>
+                                            Position controls
+                                        </Text>
+                                        <RmgFields fields={positionFields} />
+                                    </Box>
+                                </AccordionPanel>
+                            </AccordionItem>
+                        </Accordion>
+
                         <br />
                         <Checkbox
                             isChecked={isSystemFontsOnly}
