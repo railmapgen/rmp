@@ -19,7 +19,7 @@ import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 import { ColorField } from '../../../panels/details/color-field';
 
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
-    const { id, type, path, styleAttrs, handlePointerDown } = props;
+    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
     const { colorA = defaultDualColorAttributes.colorA, colorB = defaultDualColorAttributes.colorB } =
         styleAttrs ?? defaultDualColorAttributes;
 
@@ -39,7 +39,12 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     }, [path]);
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g 
+            id={id} 
+            onPointerDown={newLine ? undefined : onPointerDown} 
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth="2.5" strokeLinecap="round" />
             <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth="2.5" strokeLinecap="round" />
         </g>

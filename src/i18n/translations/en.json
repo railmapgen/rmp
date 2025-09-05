@@ -13,6 +13,7 @@
             "showLess": "Show less",
             "section": {
                 "lineDrawing": "Line drawing",
+                "lineStyle": "Line style",
                 "stations": "Stations",
                 "miscellaneousNodes": "Miscellaneous nodes"
             },

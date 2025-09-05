@@ -17,24 +17,25 @@ import {
     useColorModeValue,
 } from '@chakra-ui/react';
 import { LanguageCode } from '@railmapgen/rmg-translate';
+import { RmgSelect } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconContext } from 'react-icons';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { Theme } from '../../../constants/constants';
-import { LinePathType } from '../../../constants/lines';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
-import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { setMode, setSelectedLineStyle, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
-import { linePaths } from '../../svgs/lines/lines';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
-import { localizedMiscNodes, localizedStaions } from './localized-order';
+import { localizedMiscNodes, localizedStaions, localizedLineStyles } from './localized-order';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -74,6 +75,7 @@ const ToolsPanel = () => {
     } = useRootSelector(state => state.app);
     const {
         mode,
+        selectedLineStyle,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
@@ -150,6 +152,26 @@ const ToolsPanel = () => {
                                     {isTextShown ? t('color') : undefined}
                                 </Text>
                             </Flex>
+
+                            {isTextShown && (
+                                <Box mb={2}>
+                                    <Text fontSize="sm" fontWeight="600" mb={1}>
+                                        {t('panel.tools.section.lineStyle')}
+                                    </Text>
+                                    <RmgSelect
+                                        options={Object.fromEntries(
+                                            localizedLineStyles[i18n.language as LanguageCode]?.map(lineStyle => [
+                                                lineStyle,
+                                                t(lineStyles[lineStyle].metadata.displayName).toString(),
+                                            ]) ?? []
+                                        )}
+                                        value={selectedLineStyle}
+                                        onChange={({ target: { value } }) => {
+                                            dispatch(setSelectedLineStyle(value as LineStyleType));
+                                        }}
+                                    />
+                                </Box>
+                            )}
 
                             {Object.values(LinePathType)
                                 .filter(type => !(type === LinePathType.Simple && unlockSimplePathAttempts >= 0))

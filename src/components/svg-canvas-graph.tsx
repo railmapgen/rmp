@@ -40,7 +40,7 @@ import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { linePaths } from './svgs/lines/lines';
+import { linePaths, lineStyles } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
@@ -77,6 +77,7 @@ const SvgCanvas = () => {
         mode,
         keepLastPath,
         theme,
+        selectedLineStyle,
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
@@ -325,14 +326,18 @@ const SvgCanvas = () => {
                     const parallelIndex = autoParallel
                         ? makeParallelIndex(graph.current, type, source, target, 'from')
                         : -1;
+                    const lineStyleAttrs = selectedLineStyle === LineStyleType.SingleColor 
+                        ? { color: theme }
+                        : structuredClone(lineStyles[selectedLineStyle].defaultAttrs);
+                    
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
                         type,
                         // deep copy to prevent mutual reference
                         [type]: structuredClone(linePaths[type].defaultAttrs),
-                        style: LineStyleType.SingleColor,
-                        [LineStyleType.SingleColor]: { color: theme },
+                        style: selectedLineStyle,
+                        [selectedLineStyle]: lineStyleAttrs,
                         reconcileId: '',
                         parallelIndex,
                     });
