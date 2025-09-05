@@ -24,13 +24,14 @@ export const classifyParallelLines = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     lineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
 ) => {
-    const { type, parallelIndex } = lineEntry.attributes;
+    const { type: baseType, parallelIndex } = lineEntry.attributes;
     // safe guard for invalid cases
-    if (type === LinePathType.Simple || parallelIndex < 0) {
+    if (baseType === LinePathType.Simple || parallelIndex < 0) {
         return { normal: [lineEntry], parallel: [] };
     }
 
-    const { source, target } = lineEntry;
+    const { source, target, attributes } = lineEntry;
+    const { startFrom: baseStartFrom } = attributes[baseType] as NonSimpleLinePathAttributes;
     const normal: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
@@ -41,8 +42,7 @@ export const classifyParallelLines = (
             continue;
         }
 
-        const { startFrom } = lineEntry.attributes[type] as NonSimpleLinePathAttributes;
-        if (checkParallels(type, source as StnId | MiscNodeId, startFrom, lineEntry)) {
+        if (checkParallels(type, source as StnId | MiscNodeId, baseStartFrom, lineEntry)) {
             parallelLines.push(lineEntry);
         }
     }

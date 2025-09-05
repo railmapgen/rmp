@@ -15,7 +15,6 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition } from '../util/helpers';
-import { makeParallelIndex } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import { linePaths } from './svgs/lines/lines';
@@ -179,7 +178,7 @@ const PredictNextNode = () => {
         const pathType = LinePathType.Diagonal;
         const newLineId: LineId = `line_${nanoid(10)}`;
         const [source, target] = [selectedID as NodeID, nextID];
-        const parallelIndex = autoParallel ? makeParallelIndex(window.graph, pathType, source, target, 'from') : -1;
+        const parallelIndex = autoParallel ? 0 : -1;
         const startFrom = isStation ? path2StartFrom : path1StartFrom;
         window.graph.addDirectedEdgeWithKey(newLineId, source, target, {
             visible: true,
