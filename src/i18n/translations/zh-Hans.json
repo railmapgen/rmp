@@ -13,6 +13,7 @@
             "showLess": "显示更少",
             "section": {
                 "lineDrawing": "线段绘制",
+                "lineStyle": "线段样式",
                 "stations": "车站",
                 "miscellaneousNodes": "杂项节点"
             },

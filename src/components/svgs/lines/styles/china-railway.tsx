@@ -13,7 +13,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultChinaRailwayAttributes.color } = styleAttrs ?? defaultChinaRailwayAttributes;
 
     const onPointerDown = React.useCallback(
@@ -22,7 +22,12 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g 
+            id={id} 
+            onPointerDown={newLine ? undefined : onPointerDown} 
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
             <path d={path} fill="none" stroke={color[3]} strokeWidth="4.67" strokeDasharray="17.5" />
         </g>
