@@ -298,7 +298,7 @@ export const ImagePanelModal = (props: {
                                                                     aria-label={t('select')}
                                                                     icon={<MdCheck />}
                                                                     colorScheme={
-                                                                        selected.find(s => s.id == k.id)
+                                                                        selected.find(s => s.id === k.id)
                                                                             ? 'blue'
                                                                             : 'gray'
                                                                     }
@@ -323,7 +323,7 @@ export const ImagePanelModal = (props: {
                                                             {t('panel.details.image.add')}
                                                         </Heading>
                                                         <Input
-                                                            variant="flushedd"
+                                                            variant="flushed"
                                                             type="file"
                                                             accept="image/*"
                                                             onChange={e => handleFileChange(e, i)}
