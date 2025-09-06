@@ -5,6 +5,7 @@ import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { I18nTextAttributes } from '../components/svgs/nodes/i18n-text';
 import { MasterAttributes } from '../components/svgs/nodes/master';
+import { ImageAttributes } from '../components/svgs/nodes/image';
 import { ShmetroNumLineBadgeAttributes } from '../components/svgs/nodes/shmetro-num-line-badge';
 import { ShmetroTextLineBadgeAttributes } from '../components/svgs/nodes/shmetro-text-line-badge';
 import { GzmtrLineBadgeAttributes } from '../components/svgs/nodes/gzmtr-line-badge';
@@ -33,6 +34,7 @@ export enum MiscNodeType {
     Text = 'text',
     I18nText = 'i18n-text',
     Master = 'master',
+    Image = 'image',
     ShmetroNumLineBadge = 'shmetro-num-line-badge',
     ShmetroTextLineBadge = 'shmetro-text-line-badge',
     GzmtrLineBadge = 'gzmtr-line-badge',
@@ -62,6 +64,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.Text]?: TextAttributes;
     [MiscNodeType.I18nText]?: I18nTextAttributes;
     [MiscNodeType.Master]?: MasterAttributes;
+    [MiscNodeType.Image]?: ImageAttributes;
     [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
     [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;

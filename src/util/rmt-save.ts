@@ -11,7 +11,7 @@ import {
     setState,
     setToken,
 } from '../redux/account/account-slice';
-import { createHash } from './helpers';
+import { createHash } from './binary';
 
 export const SAVE_MANAGER_CHANNEL_NAME = 'rmt-save-manager';
 export enum SaveManagerEventType {

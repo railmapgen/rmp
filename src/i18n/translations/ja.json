@@ -164,6 +164,14 @@
                     "displayName": "台北地下鉄路線記号",
                     "tram": "路面電車"
                 },
+                "image": {
+                    "displayName": "画像",
+                    "label": "ラベル",
+                    "scale": "スケール",
+                    "rotate": "回転",
+                    "opacity": "不透明度",
+                    "preview": "プレビュー"
+                },
                 "master": {
                     "displayName": "大師節点",
                     "type": "大師節点種類",
@@ -617,6 +625,15 @@
                 }
             },
             "edges": {},
+            "image": {
+                "importTitle": "画像パネル",
+                "exportTitle": "プロジェクトに画像を添付",
+                "local": "ローカル画像",
+                "server": "サーバー画像",
+                "add": "画像をアップロード",
+                "error": "この画像のアップロードに失敗しました！",
+                "loading": "画像を読み込み中..."
+            },
             "footer": {
                 "duplicate": "重複",
                 "copy": "複製",

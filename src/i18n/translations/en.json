@@ -162,6 +162,14 @@
                     "displayName": "Taipei Metro line badge",
                     "tram": "Tram"
                 },
+                "image": {
+                    "displayName": "Image",
+                    "label": "Label",
+                    "scale": "Scale",
+                    "rotate": "Rotation",
+                    "opacity": "Opacity",
+                    "preview": "Preview"
+                },
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
@@ -615,6 +623,15 @@
                 }
             },
             "edge": {},
+            "image": {
+                "importTitle": "Image panel",
+                "exportTitle": "Attach images to the project",
+                "local": "Local images",
+                "server": "Server images",
+                "add": "Upload image",
+                "error": "Failed to upload this image!",
+                "loading": "Loading images..."
+           },
             "footer": {
                 "duplicate": "Duplicate",
                 "copy": "Copy",
