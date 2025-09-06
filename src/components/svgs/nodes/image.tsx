@@ -52,7 +52,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            {href === undefined || !imageStoreIndexedDB.has(id) ? (
+            {href === undefined || imgHref === undefined ? (
                 <g
                     transform="translate(-5, -5)"
                     className="removeMe"
