@@ -53,9 +53,6 @@ import {
 } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 
-// TEST USAGE !
-const RMP_EXPORT = true;
-
 export const ImagePanelModal = (props: {
     id: MiscNodeId;
     isOpen: boolean;
@@ -66,7 +63,7 @@ export const ImagePanelModal = (props: {
     const { t } = useTranslation();
     const {
         token,
-        // activeSubscriptions: { RMP_EXPORT },
+        activeSubscriptions: { RMP_EXPORT },
     } = useRootSelector(state => state.account);
     const graph = React.useRef(window.graph);
     const dispatch = useDispatch();
