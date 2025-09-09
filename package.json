@@ -64,7 +64,7 @@
         "vitest": "^3.2.4"
     },
     "scripts": {
-        "dev": "vite",
+        "dev": "vite --host",
         "build": "tsc && vite build",
         "test": "vitest",
         "lint": "eslint ./src",
