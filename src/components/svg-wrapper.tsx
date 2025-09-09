@@ -26,6 +26,7 @@ import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, rou
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
@@ -71,11 +72,22 @@ const SvgWrapper = () => {
     const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
     const [selectMoving, setSelectMoving] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
 
+    // context menu related
+    const [contextMenu, setContextMenu] = React.useState<{ isOpen: boolean; position: { x: number; y: number } }>({
+        isOpen: false,
+        position: { x: 0, y: 0 },
+    });
+
     // background moving related
     const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
+        // Close context menu if it's open
+        if (contextMenu.isOpen) {
+            setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
+        }
+
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
@@ -185,6 +197,93 @@ const SvgWrapper = () => {
                 y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
             })
         );
+    });
+
+    const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
+        e.preventDefault();
+        const { x, y } = getMousePosition(e);
+        setContextMenu({
+            isOpen: true,
+            position: { x: e.clientX, y: e.clientY },
+        });
+    });
+
+    const handleCloseContextMenu = useEvent(() => {
+        setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
+    });
+
+    const handleContextMenuCopy = useEvent(() => {
+        if (selected.size > 0) {
+            const s = exportSelectedNodesAndEdges(graph.current, selected);
+            navigator.clipboard.writeText(s);
+        }
+    });
+
+    const handleContextMenuCut = useEvent(() => {
+        if (selected.size > 0) {
+            const s = exportSelectedNodesAndEdges(graph.current, selected);
+            navigator.clipboard.writeText(s);
+            dispatch(clearSelected());
+            selected.forEach(s => {
+                if (graph.current.hasNode(s)) graph.current.dropNode(s);
+                else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            });
+            refreshAndSave();
+        }
+    });
+
+    const handleContextMenuPaste = useEvent(async () => {
+        try {
+            const s = await navigator.clipboard.readText();
+            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
+                width / 2,
+                height / 2,
+                svgViewBoxZoom,
+                svgViewBoxMin
+            );
+            const { nodes, edges } = importSelectedNodesAndEdges(
+                s,
+                graph.current,
+                isMasterDisabled,
+                isParallelDisabled,
+                roundToMultiple(svgMidX, 5),
+                roundToMultiple(svgMidY, 5)
+            );
+            refreshAndSave();
+            // select copied nodes automatically
+            const allElements = structuredClone(nodes) as Set<Id>;
+            edges.forEach(s => allElements.add(s));
+            dispatch(setSelected(allElements));
+        } catch (error) {
+            // Handle clipboard read error
+            console.warn('Failed to read clipboard:', error);
+        }
+    });
+
+    const handleContextMenuDelete = useEvent(() => {
+        if (selected.size > 0) {
+            dispatch(clearSelected());
+            selected.forEach(s => {
+                if (graph.current.hasNode(s)) graph.current.dropNode(s);
+                else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            });
+            refreshAndSave();
+        }
+    });
+
+    const handleContextMenuZIndex = useEvent((zIndex: number) => {
+        if (selected.size > 0) {
+            const clampedZIndex = Math.min(Math.max(zIndex, -10), 10);
+            selected.forEach(id => {
+                if (graph.current.hasNode(id)) {
+                    graph.current.setNodeAttribute(id, 'zIndex', clampedZIndex);
+                }
+                if (graph.current.hasEdge(id)) {
+                    graph.current.setEdgeAttribute(id, 'zIndex', clampedZIndex);
+                }
+            });
+            refreshAndSave();
+        }
     });
 
     const handleKeyDown = useEvent(async (e: React.KeyboardEvent<SVGSVGElement>) => {
@@ -307,17 +406,55 @@ const SvgWrapper = () => {
     });
 
     const [touchDist, setTouchDist] = React.useState(0);
+    const [longPressTimeout, setLongPressTimeout] = React.useState<NodeJS.Timeout | null>(null);
+    const [touchStartPos, setTouchStartPos] = React.useState<{ x: number; y: number } | null>(null);
 
     const handleTouchStart = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        if (e.touches.length === 2) {
+        if (e.touches.length === 1) {
+            // Single touch for long press
+            const touch = e.touches[0];
+            setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+
+            const timeout = setTimeout(() => {
+                // Show context menu after long press
+                setContextMenu({
+                    isOpen: true,
+                    position: { x: touch.clientX, y: touch.clientY },
+                });
+                setLongPressTimeout(null);
+            }, 500); // 500ms long press threshold
+
+            setLongPressTimeout(timeout);
+        } else if (e.touches.length === 2) {
+            // Multi-touch for zoom
             dispatch(setActive(undefined));
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             setTouchDist(dx * dx + dy * dy);
+
+            // Clear long press when second finger touches
+            if (longPressTimeout) {
+                clearTimeout(longPressTimeout);
+                setLongPressTimeout(null);
+            }
+            setTouchStartPos(null);
         }
     });
 
     const handleTouchMove = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        if (touchDist !== 0 && e.touches.length === 2) {
+        // Cancel long press if user moves finger too much
+        if (e.touches.length === 1 && touchStartPos && longPressTimeout) {
+            const touch = e.touches[0];
+            const dx = touch.clientX - touchStartPos.x;
+            const dy = touch.clientY - touchStartPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 10) {
+                // 10px threshold
+                clearTimeout(longPressTimeout);
+                setLongPressTimeout(null);
+                setTouchStartPos(null);
+            }
+        } else if (touchDist !== 0 && e.touches.length === 2) {
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             const d = dx * dx + dy * dy;
 
@@ -344,6 +481,13 @@ const SvgWrapper = () => {
     });
 
     const handleTouchEnd = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        // Clear long press timeout on touch end
+        if (longPressTimeout) {
+            clearTimeout(longPressTimeout);
+            setLongPressTimeout(null);
+        }
+        setTouchStartPos(null);
+
         if (touchDist !== 0) {
             setTouchDist(0);
         }
@@ -360,59 +504,96 @@ const SvgWrapper = () => {
     }, [selectMoving.x, selectMoving.y]);
 
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            id="canvas"
-            style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
-            height={height}
-            width={width}
-            viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
-                (height * svgViewBoxZoom) / 100
-            }`}
-            onPointerDown={handleBackgroundDown}
-            onPointerMove={handleBackgroundMove}
-            onPointerUp={handleBackgroundUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onWheel={handleBackgroundWheel}
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-        >
-            {gridLines && (
-                <GridLines
-                    svgViewBoxMin={svgViewBoxMin}
-                    svgViewBoxZoom={svgViewBoxZoom}
-                    svgWidth={width}
-                    svgHeight={height}
-                />
-            )}
-            {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
-            {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-            <utils.SvgAssetsContextProvider>
-                <SvgCanvas />
-            </utils.SvgAssetsContextProvider>
-            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <rect
-                    x={selectCoord.sx}
-                    y={selectCoord.sy}
-                    width={selectCoord.ex - selectCoord.sx}
-                    height={selectCoord.ey - selectCoord.sy}
-                    rx="2"
-                    stroke="#b5b5b6"
-                    strokeWidth="2"
-                    strokeOpacity="0.4"
-                    fill="#b5b5b6"
-                    opacity="0.75"
-                />
-            )}
-            <defs>
-                <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
-                    <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
-                    <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
-                </pattern>
-            </defs>
-        </svg>
+        <>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                id="canvas"
+                style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
+                height={height}
+                width={width}
+                viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
+                    (height * svgViewBoxZoom) / 100
+                }`}
+                onPointerDown={handleBackgroundDown}
+                onPointerMove={handleBackgroundMove}
+                onPointerUp={handleBackgroundUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onWheel={handleBackgroundWheel}
+                onContextMenu={handleContextMenu}
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+            >
+                {gridLines && (
+                    <GridLines
+                        svgViewBoxMin={svgViewBoxMin}
+                        svgViewBoxZoom={svgViewBoxZoom}
+                        svgWidth={width}
+                        svgHeight={height}
+                    />
+                )}
+                {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
+                {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                <utils.SvgAssetsContextProvider>
+                    <SvgCanvas />
+                </utils.SvgAssetsContextProvider>
+                {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                    <rect
+                        x={selectCoord.sx}
+                        y={selectCoord.sy}
+                        width={selectCoord.ex - selectCoord.sx}
+                        height={selectCoord.ey - selectCoord.sy}
+                        rx="2"
+                        stroke="#b5b5b6"
+                        strokeWidth="2"
+                        strokeOpacity="0.4"
+                        fill="#b5b5b6"
+                        opacity="0.75"
+                    />
+                )}
+                <defs>
+                    <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
+                        <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                        <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                    </pattern>
+                </defs>
+            </svg>
+            <ContextMenu
+                isOpen={contextMenu.isOpen}
+                position={contextMenu.position}
+                onClose={handleCloseContextMenu}
+                selected={selected}
+                onCopy={handleContextMenuCopy}
+                onCut={handleContextMenuCut}
+                onPaste={handleContextMenuPaste}
+                onDelete={handleContextMenuDelete}
+                onPlaceTop={() => handleContextMenuZIndex(10)}
+                onPlaceBottom={() => handleContextMenuZIndex(-10)}
+                onPlaceUp={() => {
+                    if (selected.size > 0) {
+                        const [selectedFirst] = selected;
+                        const currentZIndex = graph.current.hasNode(selectedFirst)
+                            ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
+                            : graph.current.hasEdge(selectedFirst)
+                              ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
+                              : 0;
+                        handleContextMenuZIndex(currentZIndex + 1);
+                    }
+                }}
+                onPlaceDown={() => {
+                    if (selected.size > 0) {
+                        const [selectedFirst] = selected;
+                        const currentZIndex = graph.current.hasNode(selectedFirst)
+                            ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
+                            : graph.current.hasEdge(selectedFirst)
+                              ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
+                              : 0;
+                        handleContextMenuZIndex(currentZIndex - 1);
+                    }
+                }}
+            />
+        </>
     );
 };
 
