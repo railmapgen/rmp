@@ -12,9 +12,12 @@ import {
     Box,
     Button,
     Checkbox,
+    FormControl,
+    FormLabel,
     HStack,
     Icon,
     IconButton,
+    Input,
     Link,
     Menu,
     MenuButton,
@@ -125,7 +128,10 @@ export default function DownloadActions() {
     const [topDistance, setTopDistance] = React.useState(50);
     const [bottomDistance, setBottomDistance] = React.useState(50);
     const [aspectRatio, setAspectRatio] = React.useState('current');
-    const [extraPadding, setExtraPadding] = React.useState(0);
+    const [paddingLeft, setPaddingLeft] = React.useState(0);
+    const [paddingRight, setPaddingRight] = React.useState(0);
+    const [paddingTop, setPaddingTop] = React.useState(0);
+    const [paddingBottom, setPaddingBottom] = React.useState(0);
     const [topLeftX, setTopLeftX] = React.useState(0);
     const [topLeftY, setTopLeftY] = React.useState(0);
     const [topRightX, setTopRightX] = React.useState(0);
@@ -194,13 +200,6 @@ export default function DownloadActions() {
 
     const advancedFields: RmgFieldsField[] = [
         {
-            type: 'select',
-            label: 'Center node',
-            value: selectedNodeId,
-            options: nodeOptions,
-            onChange: value => setSelectedNodeId(value as string),
-        },
-        {
             type: 'input',
             label: 'Left distance',
             value: leftDistance.toString(),
@@ -241,10 +240,31 @@ export default function DownloadActions() {
         },
         {
             type: 'input',
-            label: 'Extra padding',
-            value: extraPadding.toString(),
+            label: 'Padding left',
+            value: paddingLeft.toString(),
             variant: 'number',
-            onChange: value => setExtraPadding(Number(value) || 0),
+            onChange: value => setPaddingLeft(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Padding right',
+            value: paddingRight.toString(),
+            variant: 'number',
+            onChange: value => setPaddingRight(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Padding top',
+            value: paddingTop.toString(),
+            variant: 'number',
+            onChange: value => setPaddingTop(Number(value) || 0),
+        },
+        {
+            type: 'input',
+            label: 'Padding bottom',
+            value: paddingBottom.toString(),
+            variant: 'number',
+            onChange: value => setPaddingBottom(Number(value) || 0),
         },
     ];
 
@@ -307,6 +327,62 @@ export default function DownloadActions() {
         },
     ];
 
+    // Initialize position controls with current dimensions
+    React.useEffect(() => {
+        if (isDownloadModalOpen && graph.current) {
+            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+            setTopLeftX(xMin);
+            setTopLeftY(yMin);
+            setTopRightX(xMax);
+            setTopRightY(yMin);
+            setBottomLeftX(xMin);
+            setBottomLeftY(yMax);
+            setBottomRightX(xMax);
+            setBottomRightY(yMax);
+        }
+    }, [isDownloadModalOpen]);
+
+    // Update position controls when advanced properties change
+    React.useEffect(() => {
+        if (!graph.current) return;
+
+        let xMin, yMin, xMax, yMax;
+
+        if (selectedNodeId && graph.current.hasNode(selectedNodeId)) {
+            // Center around selected node
+            const nodeX = graph.current.getNodeAttribute(selectedNodeId, 'x');
+            const nodeY = graph.current.getNodeAttribute(selectedNodeId, 'y');
+            
+            xMin = nodeX - leftDistance;
+            yMin = nodeY - topDistance;
+            xMax = nodeX + rightDistance;
+            yMax = nodeY + bottomDistance;
+        } else {
+            // Use current canvas dimensions
+            const canvasSize = calculateCanvasSize(graph.current);
+            xMin = canvasSize.xMin;
+            yMin = canvasSize.yMin;
+            xMax = canvasSize.xMax;
+            yMax = canvasSize.yMax;
+        }
+
+        // Apply padding
+        xMin -= paddingLeft;
+        yMin -= paddingTop;
+        xMax += paddingRight;
+        yMax += paddingBottom;
+
+        // Update position controls
+        setTopLeftX(xMin);
+        setTopLeftY(yMin);
+        setTopRightX(xMax);
+        setTopRightY(yMin);
+        setBottomLeftX(xMin);
+        setBottomLeftY(yMax);
+        setBottomRightX(xMax);
+        setBottomRightY(yMax);
+    }, [selectedNodeId, leftDistance, rightDistance, topDistance, bottomDistance, paddingLeft, paddingRight, paddingTop, paddingBottom]);
+
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
         const getMaxArea = async () => {
@@ -348,12 +424,20 @@ export default function DownloadActions() {
                 isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
             );
 
+        const customViewBox = {
+            xMin: Math.min(topLeftX, bottomLeftX),
+            yMin: Math.min(topLeftY, topRightY),
+            xMax: Math.max(topRightX, bottomRightX),
+            yMax: Math.max(bottomLeftY, bottomRightY)
+        };
+
         const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
             isAttachSelected,
             isSystemFontsOnly,
             languages,
-            svgVersion
+            svgVersion,
+            customViewBox
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
         // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
@@ -456,6 +540,22 @@ export default function DownloadActions() {
                                     <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel pb={4}>
+                                    <FormControl mb={4}>
+                                        <FormLabel>Center node</FormLabel>
+                                        <Input
+                                            list="node-options"
+                                            value={selectedNodeId}
+                                            onChange={(e) => setSelectedNodeId(e.target.value)}
+                                            placeholder="Enter node ID or select from list"
+                                        />
+                                        <datalist id="node-options">
+                                            {Object.entries(nodeOptions).map(([value, label]) => (
+                                                <option key={value} value={value}>
+                                                    {label}
+                                                </option>
+                                            ))}
+                                        </datalist>
+                                    </FormControl>
                                     <RmgFields fields={advancedFields} />
                                     <Box mt={4}>
                                         <Text fontWeight="bold" mb={2}>
