@@ -10,7 +10,7 @@ import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 /**
- * Find the shortest closed path starting from a node.
+ * Find the shortest closed path starting from a node using a modified BFS.
  * Returns undefined if no closed path is found within the max node limit.
  */
 const findShortestClosedPath = (
@@ -18,41 +18,55 @@ const findShortestClosedPath = (
     startNode: StnId | MiscNodeId,
     maxNodes: number = 100
 ): { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined => {
-    const visited = new Set<StnId | MiscNodeId>();
-    const queue: { node: StnId | MiscNodeId; path: (StnId | MiscNodeId)[]; edges: LineId[] }[] = [
-        { node: startNode, path: [startNode], edges: [] }
+    // Priority queue for paths, prioritizing shorter paths
+    const queue: { node: StnId | MiscNodeId; path: (StnId | MiscNodeId)[]; edges: LineId[]; depth: number }[] = [
+        { node: startNode, path: [startNode], edges: [], depth: 0 }
     ];
     
+    let shortestPath: { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined;
+    
+    // Sort by depth to explore shorter paths first
+    const sortQueue = () => {
+        queue.sort((a, b) => a.depth - b.depth);
+    };
+    
     while (queue.length > 0) {
-        const { node, path, edges } = queue.shift()!;
+        sortQueue();
+        const { node, path, edges, depth } = queue.shift()!;
         
-        if (path.length > maxNodes) continue;
+        // Skip if path is too long or we already found a shorter path
+        if (depth > maxNodes || (shortestPath && depth >= shortestPath.nodes.length)) continue;
         
         // Get all neighbors of current node (treat graph as undirected)
-        const neighbors = new Set<StnId | MiscNodeId>();
-        const edgeMap = new Map<StnId | MiscNodeId, LineId>();
+        const neighbors = new Map<StnId | MiscNodeId, LineId>();
         
         // Outgoing edges
         graph.forEachOutboundEdge(node, (edge, attributes, source, target) => {
-            neighbors.add(target as StnId | MiscNodeId);
-            edgeMap.set(target as StnId | MiscNodeId, edge as LineId);
+            if (!neighbors.has(target as StnId | MiscNodeId)) {
+                neighbors.set(target as StnId | MiscNodeId, edge as LineId);
+            }
         });
         
         // Incoming edges (treat as undirected)
         graph.forEachInboundEdge(node, (edge, attributes, source, target) => {
-            neighbors.add(source as StnId | MiscNodeId);
-            edgeMap.set(source as StnId | MiscNodeId, edge as LineId);
+            if (!neighbors.has(source as StnId | MiscNodeId)) {
+                neighbors.set(source as StnId | MiscNodeId, edge as LineId);
+            }
         });
         
-        for (const neighbor of neighbors) {
-            const edge = edgeMap.get(neighbor)!;
-            
+        for (const [neighbor, edge] of neighbors) {
             // If we found a cycle back to start and path has at least 3 nodes
             if (neighbor === startNode && path.length >= 3) {
-                return {
+                const newPath = {
                     nodes: [...path, startNode],
                     edges: [...edges, edge]
                 };
+                
+                // Keep the shortest path found so far
+                if (!shortestPath || newPath.nodes.length < shortestPath.nodes.length) {
+                    shortestPath = newPath;
+                }
+                continue;
             }
             
             // Continue exploring if not visited in current path
@@ -60,13 +74,14 @@ const findShortestClosedPath = (
                 queue.push({
                     node: neighbor,
                     path: [...path, neighbor],
-                    edges: [...edges, edge]
+                    edges: [...edges, edge],
+                    depth: depth + 1
                 });
             }
         }
     }
     
-    return undefined;
+    return shortestPath;
 };
 
 /**
@@ -80,7 +95,7 @@ const generateClosedPath = (
     if (nodes.length !== edges.length + 1 || nodes.length < 4) return undefined;
     
     const pathSegments: string[] = [];
-    let firstPoint: { x: number; y: number } | undefined;
+    let startPoint: { x: number; y: number } | undefined;
     
     for (let i = 0; i < edges.length; i++) {
         const edge = edges[i];
@@ -101,28 +116,37 @@ const generateClosedPath = (
         const y2 = targetAttr.y;
         
         if (i === 0) {
-            firstPoint = { x: x1, y: y1 };
+            startPoint = { x: x1, y: y1 };
         }
         
         const pathType = edgeAttrs.type;
         const pathAttr = edgeAttrs[pathType];
         
+        let pathStr: string;
+        
         if (pathType in linePaths) {
-            const pathStr = linePaths[pathType].generatePath(x1, x2, y1, y2, pathAttr as any);
-            
-            // For the first segment, include the M command
-            if (i === 0) {
-                pathSegments.push(pathStr);
-            } else {
-                // For subsequent segments, remove M command and connect with L if needed
-                const pathWithoutM = pathStr.replace(/^M\s*[+-]?\d*\.?\d+\s*[+-]?\d*\.?\d+\s*/, '');
-                pathSegments.push(pathWithoutM);
+            try {
+                pathStr = linePaths[pathType].generatePath(x1, x2, y1, y2, pathAttr as any);
+            } catch (error) {
+                // Fallback to simple line if path generation fails
+                pathStr = `M ${x1} ${y1} L ${x2} ${y2}`;
             }
         } else {
             // Fallback to simple line
-            if (i === 0) {
-                pathSegments.push(`M ${x1} ${y1} L ${x2} ${y2}`);
+            pathStr = `M ${x1} ${y1} L ${x2} ${y2}`;
+        }
+        
+        if (i === 0) {
+            // For the first segment, use the full path
+            pathSegments.push(pathStr);
+        } else {
+            // For subsequent segments, extract the path data after the M command
+            const pathCommands = pathStr.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi) || [];
+            const nonMoveCommands = pathCommands.filter(cmd => !cmd.startsWith('M'));
+            if (nonMoveCommands.length > 0) {
+                pathSegments.push(nonMoveCommands.join(' '));
             } else {
+                // If no path commands, fallback to line to target
                 pathSegments.push(`L ${x2} ${y2}`);
             }
         }
@@ -131,7 +155,14 @@ const generateClosedPath = (
     // Close the path
     pathSegments.push('Z');
     
-    return pathSegments.join(' ');
+    const fullPath = pathSegments.join(' ');
+    
+    // Validate the path by checking if it's reasonable
+    if (fullPath.length < 10) {
+        return undefined;
+    }
+    
+    return fullPath;
 };
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
@@ -151,24 +182,33 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const closedPathData = React.useMemo(() => {
         if (!graph) return undefined;
         
-        // Find the closest node to this fill node
-        const allNodes = graph.nodes() as (StnId | MiscNodeId)[];
-        let closestNode: StnId | MiscNodeId | undefined;
-        let minDistance = Infinity;
+        // Find all nodes except this fill node
+        const allNodes = graph.nodes().filter(node => node !== id) as (StnId | MiscNodeId)[];
         
-        for (const node of allNodes) {
-            if (node === id) continue; // Skip self
-            const nodeAttr = graph.getNodeAttributes(node);
-            const distance = Math.hypot(nodeAttr.x - x, nodeAttr.y - y);
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestNode = node;
+        if (allNodes.length < 3) return undefined; // Need at least 3 nodes for a closed path
+        
+        let bestPath: { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined;
+        let shortestDistance = Infinity;
+        
+        // Try to find a closed path starting from the closest few nodes
+        const candidates = allNodes
+            .map(node => {
+                const nodeAttr = graph.getNodeAttributes(node);
+                const distance = Math.hypot(nodeAttr.x - x, nodeAttr.y - y);
+                return { node, distance };
+            })
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, Math.min(5, allNodes.length)); // Try up to 5 closest nodes
+        
+        for (const { node } of candidates) {
+            const path = findShortestClosedPath(graph, node, maxNodes);
+            if (path && path.nodes.length < shortestDistance) {
+                bestPath = path;
+                shortestDistance = path.nodes.length;
             }
         }
         
-        if (!closestNode) return undefined;
-        
-        return findShortestClosedPath(graph, closestNode, maxNodes);
+        return bestPath;
     }, [graph, x, y, id, maxNodes]);
     
     const fillPath = React.useMemo(() => {
@@ -204,6 +244,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                     fill={color[2]}
                     fillOpacity={opacity}
                     stroke="none"
+                    pointerEvents="none" // Don't interfere with node dragging
                 />
             )}
             {/* Small indicator circle to show the fill node position */}
@@ -215,6 +256,19 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                 strokeWidth="0.5"
                 className="removeMe"
             />
+            {/* Show text when no fill path is found */}
+            {!fillPath && (
+                <text
+                    x="0"
+                    y="15"
+                    textAnchor="middle"
+                    fontSize="10"
+                    fill="#666"
+                    className="removeMe"
+                >
+                    No closed path
+                </text>
+            )}
         </g>
     );
 };

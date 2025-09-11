@@ -254,6 +254,11 @@
                     "italic": "イタリック体",
                     "bold": "太字",
                     "outline": "縁取り"
+                },
+                "fill": {
+                    "displayName": "塗りつぶしエリア",
+                    "maxNodes": "パスの最大ノード数",
+                    "opacity": "塗りつぶしの透明度"
                 }
             },
             "stations": {
