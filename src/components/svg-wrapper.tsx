@@ -1,7 +1,9 @@
+import { IconButton } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { Events, Id, MiscNodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
@@ -19,10 +21,18 @@ import {
     setKeepLastPath,
     setMode,
     setSelected,
+    showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
-import { getCanvasSize, getMousePosition, isMacClient, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
+import {
+    getCanvasSize,
+    getMousePosition,
+    isMacClient,
+    isMobileClient,
+    pointerPosToSVGCoord,
+    roundToMultiple,
+} from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
@@ -49,10 +59,11 @@ const SvgWrapper = () => {
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
+        selected,
+        active,
+        isDetailsOpen,
         mode,
         lastTool,
-        active,
-        selected,
         keepLastPath,
         theme,
         count: { masters: masterNodesCount, lines: parallelLinesCount },
@@ -360,59 +371,78 @@ const SvgWrapper = () => {
     }, [selectMoving.x, selectMoving.y]);
 
     return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            id="canvas"
-            style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
-            height={height}
-            width={width}
-            viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
-                (height * svgViewBoxZoom) / 100
-            }`}
-            onPointerDown={handleBackgroundDown}
-            onPointerMove={handleBackgroundMove}
-            onPointerUp={handleBackgroundUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onWheel={handleBackgroundWheel}
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-        >
-            {gridLines && (
-                <GridLines
-                    svgViewBoxMin={svgViewBoxMin}
-                    svgViewBoxZoom={svgViewBoxZoom}
-                    svgWidth={width}
-                    svgHeight={height}
+        <>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                id="canvas"
+                style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
+                height={height}
+                width={width}
+                viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
+                    (height * svgViewBoxZoom) / 100
+                }`}
+                onPointerDown={handleBackgroundDown}
+                onPointerMove={handleBackgroundMove}
+                onPointerUp={handleBackgroundUp}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onWheel={handleBackgroundWheel}
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+            >
+                <defs>
+                    <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
+                        <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                        <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
+                    </pattern>
+                </defs>
+                {gridLines && (
+                    <GridLines
+                        svgViewBoxMin={svgViewBoxMin}
+                        svgViewBoxZoom={svgViewBoxZoom}
+                        svgWidth={width}
+                        svgHeight={height}
+                    />
+                )}
+                {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
+                {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                <utils.SvgAssetsContextProvider>
+                    <SvgCanvas />
+                </utils.SvgAssetsContextProvider>
+                {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                    <rect
+                        x={selectCoord.sx}
+                        y={selectCoord.sy}
+                        width={selectCoord.ex - selectCoord.sx}
+                        height={selectCoord.ey - selectCoord.sy}
+                        rx="2"
+                        stroke="#b5b5b6"
+                        strokeWidth="2"
+                        strokeOpacity="0.4"
+                        fill="#b5b5b6"
+                        opacity="0.75"
+                    />
+                )}
+            </svg>
+            {isMobileClient && isDetailsOpen === 'hide' && (
+                <IconButton
+                    aria-label="open details panel"
+                    icon={<MdDoubleArrow style={{ transform: 'rotate(180deg)' }} />}
+                    onClick={() => dispatch(showDetailsPanel())}
+                    style={{
+                        position: 'fixed',
+                        bottom: 20,
+                        right: 0,
+                        borderTopRightRadius: 0,
+                        borderBottomRightRadius: 0,
+                    }}
+                    colorScheme="blue"
+                    size="lg"
+                    isRound
                 />
             )}
-            {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
-            {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-            <utils.SvgAssetsContextProvider>
-                <SvgCanvas />
-            </utils.SvgAssetsContextProvider>
-            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                <rect
-                    x={selectCoord.sx}
-                    y={selectCoord.sy}
-                    width={selectCoord.ex - selectCoord.sx}
-                    height={selectCoord.ey - selectCoord.sy}
-                    rx="2"
-                    stroke="#b5b5b6"
-                    strokeWidth="2"
-                    strokeOpacity="0.4"
-                    fill="#b5b5b6"
-                    opacity="0.75"
-                />
-            )}
-            <defs>
-                <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
-                    <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
-                    <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
-                </pattern>
-            </defs>
-        </svg>
+        </>
     );
 };
 
