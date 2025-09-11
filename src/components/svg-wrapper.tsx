@@ -425,7 +425,7 @@ const SvgWrapper = () => {
                     />
                 )}
             </svg>
-            {isMobileClient && isDetailsOpen === 'hide' && (
+            {isMobileClient() && isDetailsOpen === 'hide' && (
                 <IconButton
                     aria-label="open details panel"
                     icon={<MdDoubleArrow style={{ transform: 'rotate(180deg)' }} />}

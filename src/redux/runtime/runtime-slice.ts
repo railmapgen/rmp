@@ -196,7 +196,7 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
  */
 const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
     if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
-        if (isMobileClient) {
+        if (isMobileClient()) {
             return 'hide';
         }
         return 'show';
