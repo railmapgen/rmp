@@ -252,6 +252,11 @@
                     "italic": "Italic",
                     "bold": "Bold",
                     "outline": "Outline"
+                },
+                "fill": {
+                    "displayName": "Fill area",
+                    "maxNodes": "Maximum nodes in path",
+                    "opacity": "Fill opacity"
                 }
             },
             "stations": {

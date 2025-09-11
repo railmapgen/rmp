@@ -35,6 +35,9 @@ const dynamicColorInjectionStationKeys = [
     StationType.ChengduRTBasic,
 ] as const;
 const dynamicColorInjectionMiscNodeKeys = [
+    MiscNodeType.Text,
+    MiscNodeType.I18nText,
+    MiscNodeType.Fill,
     MiscNodeType.ShmetroNumLineBadge,
     MiscNodeType.ShmetroTextLineBadge,
     MiscNodeType.GzmtrLineBadge,
