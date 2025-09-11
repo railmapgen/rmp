@@ -2,6 +2,7 @@ import { AlertStatus } from '@chakra-ui/react';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { Draft } from 'immer';
 import { RootState } from '..';
 import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
@@ -9,6 +10,7 @@ import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
+import { isMobileClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
@@ -29,6 +31,15 @@ interface RuntimeState {
      */
     pointerPosition?: { x: number; y: number };
     active: StnId | MiscNodeId | 'background' | undefined;
+    /**
+     * The state of the details panel.
+     * On desktop, it is either 'show' or 'close'.
+     * On mobile, it is either 'show', 'hide' or 'close'.
+     * 'show' means the panel is open.
+     * 'hide' means the panel is closed but can be opened by clicking the arrow button.
+     * 'close' means the panel is closed and cannot be opened by clicking the arrow button.
+     */
+    isDetailsOpen: 'show' | 'hide' | 'close';
     /**
      * Watch these refresh indicators to know whether there is a change in `window.graph`.
      */
@@ -79,6 +90,7 @@ interface RuntimeState {
 const initialState: RuntimeState = {
     selected: new Set<Id>(),
     active: undefined,
+    isDetailsOpen: 'close',
     refresh: {
         nodes: Date.now(),
         edges: Date.now(),
@@ -172,12 +184,33 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     }
 });
 
+/**
+ * Determine the isDetailsOpen state based on current selected and mode.
+ *
+ * `detailsOpen = state.selected.size > 0 && !state.mode.startsWith('line') && !state.active`
+ *
+ * |           --           | detailsOpen === true | detailsOpen === false |
+ * |------------------------|----------------------|----------------------|
+ * | isMobileClient === true | 'show' or 'hide'     | 'close'              |
+ * | isMobileClient === false| 'show'               | 'close'              |
+ */
+const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
+    if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
+        if (isMobileClient) {
+            return 'hide';
+        }
+        return 'show';
+    }
+    return 'close';
+};
+
 const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
     reducers: {
         setSelected: (state, action: PayloadAction<Set<Id>>) => {
             state.selected = action.payload;
+            state.isDetailsOpen = getIsDetailsOpen(state);
         },
         addSelected: (state, action: PayloadAction<Id>) => {
             state.selected.add(action.payload);
@@ -193,6 +226,13 @@ const runtimeSlice = createSlice({
         },
         setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
             state.active = action.payload;
+            state.isDetailsOpen = getIsDetailsOpen(state);
+        },
+        showDetailsPanel: state => {
+            state.isDetailsOpen = 'show';
+        },
+        hideDetailsPanel: state => {
+            state.isDetailsOpen = 'hide';
         },
         setRefreshNodes: state => {
             state.refresh.nodes = Date.now();
@@ -206,6 +246,7 @@ const runtimeSlice = createSlice({
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
             if (state.mode !== 'free') state.lastTool = state.mode;
             state.mode = action.payload;
+            state.isDetailsOpen = getIsDetailsOpen(state);
         },
         setKeepLastPath: (state, action: PayloadAction<boolean>) => {
             state.keepLastPath = action.payload;
@@ -288,6 +329,8 @@ export const {
     clearSelected,
     setPointerPosition,
     setActive,
+    showDetailsPanel,
+    hideDetailsPanel,
     setRefreshNodes,
     setRefreshEdges,
     setRefreshImages,
