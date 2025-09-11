@@ -1,38 +1,36 @@
 import { Box, Portal, useOutsideClick } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import useEvent from 'react-use-event-hook';
 import { Id } from '../constants/constants';
+import { MAX_MASTER_NODE_FREE } from '../constants/master';
+import { useRootDispatch, useRootSelector } from '../redux';
+import { saveGraph } from '../redux/param/param-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
+import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
+import { getCanvasSize, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
+import { useWindowSize } from '../util/hooks';
+import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 
 interface ContextMenuProps {
     isOpen: boolean;
     position: { x: number; y: number };
     onClose: () => void;
-    selected: Set<Id>;
-    onCopy: () => void;
-    onCut: () => void;
-    onPaste: () => void;
-    onDelete: () => void;
-    onPlaceTop: () => void;
-    onPlaceBottom: () => void;
-    onPlaceUp: () => void;
-    onPlaceDown: () => void;
 }
 
-const ContextMenu: React.FC<ContextMenuProps> = ({
-    isOpen,
-    position,
-    onClose,
-    selected,
-    onCopy,
-    onCut,
-    onPaste,
-    onDelete,
-    onPlaceTop,
-    onPlaceBottom,
-    onPlaceUp,
-    onPlaceDown,
-}) => {
+const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) => {
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+    const graph = React.useRef(window.graph);
+    const { selected, count: { masters: masterNodesCount, lines: parallelLinesCount } } = useRootSelector(state => state.runtime);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
+    const size = useWindowSize();
+    const { width, height } = getCanvasSize(size);
+    
+    const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
+    const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
+
     const hasSelection = selected.size > 0;
     const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -40,6 +38,110 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
         ref: menuRef,
         handler: onClose,
         enabled: isOpen,
+    });
+
+    const refreshAndSave = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
+    }, [dispatch]);
+
+    const handleCopy = useEvent(() => {
+        if (selected.size > 0) {
+            const s = exportSelectedNodesAndEdges(graph.current, selected);
+            navigator.clipboard.writeText(s);
+        }
+    });
+
+    const handleCut = useEvent(() => {
+        if (selected.size > 0) {
+            const s = exportSelectedNodesAndEdges(graph.current, selected);
+            navigator.clipboard.writeText(s);
+            dispatch(clearSelected());
+            selected.forEach(s => {
+                if (graph.current.hasNode(s)) graph.current.dropNode(s);
+                else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            });
+            refreshAndSave();
+        }
+    });
+
+    const handlePaste = useEvent(async () => {
+        try {
+            const s = await navigator.clipboard.readText();
+            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
+                width / 2,
+                height / 2,
+                svgViewBoxZoom,
+                svgViewBoxMin
+            );
+            const { nodes, edges } = importSelectedNodesAndEdges(
+                s,
+                graph.current,
+                isMasterDisabled,
+                isParallelDisabled,
+                roundToMultiple(svgMidX, 5),
+                roundToMultiple(svgMidY, 5)
+            );
+            refreshAndSave();
+            // select copied nodes automatically
+            const allElements = structuredClone(nodes) as Set<Id>;
+            edges.forEach(s => allElements.add(s));
+            dispatch(setSelected(allElements));
+        } catch (error) {
+            // Handle clipboard read error
+            console.warn('Failed to read clipboard:', error);
+        }
+    });
+
+    const handleDelete = useEvent(() => {
+        if (selected.size > 0) {
+            dispatch(clearSelected());
+            selected.forEach(s => {
+                if (graph.current.hasNode(s)) graph.current.dropNode(s);
+                else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            });
+            refreshAndSave();
+        }
+    });
+
+    const handleZIndex = useEvent((zIndex: number) => {
+        if (selected.size > 0) {
+            const clampedZIndex = Math.min(Math.max(zIndex, -10), 10);
+            selected.forEach(id => {
+                if (graph.current.hasNode(id)) {
+                    graph.current.setNodeAttribute(id, 'zIndex', clampedZIndex);
+                }
+                if (graph.current.hasEdge(id)) {
+                    graph.current.setEdgeAttribute(id, 'zIndex', clampedZIndex);
+                }
+            });
+            refreshAndSave();
+        }
+    });
+
+    const handlePlaceUp = useEvent(() => {
+        if (selected.size > 0) {
+            const [selectedFirst] = selected;
+            const currentZIndex = graph.current.hasNode(selectedFirst)
+                ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
+                : graph.current.hasEdge(selectedFirst)
+                  ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
+                  : 0;
+            handleZIndex(currentZIndex + 1);
+        }
+    });
+
+    const handlePlaceDown = useEvent(() => {
+        if (selected.size > 0) {
+            const [selectedFirst] = selected;
+            const currentZIndex = graph.current.hasNode(selectedFirst)
+                ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
+                : graph.current.hasEdge(selectedFirst)
+                  ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
+                  : 0;
+            handleZIndex(currentZIndex - 1);
+        }
     });
 
     if (!isOpen) return null;
@@ -66,7 +168,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             >
                 <MenuItem
                     onClick={() => {
-                        onCopy();
+                        handleCopy();
                         onClose();
                     }}
                     isDisabled={!hasSelection}
@@ -75,7 +177,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        onCut();
+                        handleCut();
                         onClose();
                     }}
                     isDisabled={!hasSelection}
@@ -84,7 +186,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        onPaste();
+                        handlePaste();
                         onClose();
                     }}
                 >
@@ -92,7 +194,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        onDelete();
+                        handleDelete();
                         onClose();
                     }}
                     isDisabled={!hasSelection}
@@ -102,7 +204,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 <Box height="1px" bg="gray.200" my={1} _dark={{ bg: 'gray.600' }} />
                 <MenuItem
                     onClick={() => {
-                        onPlaceTop();
+                        handleZIndex(10);
                         onClose();
                     }}
                     isDisabled={!hasSelection}
@@ -111,7 +213,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        onPlaceBottom();
+                        handleZIndex(-10);
                         onClose();
                     }}
                     isDisabled={!hasSelection}
@@ -120,7 +222,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        onPlaceUp();
+                        handleZIndex(0);
+                        onClose();
+                    }}
+                    isDisabled={!hasSelection}
+                >
+                    {t('contextMenu.placeDefault')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handlePlaceUp();
                         onClose();
                     }}
                     isDisabled={!hasSelection}
@@ -129,7 +240,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 </MenuItem>
                 <MenuItem
                     onClick={() => {
-                        onPlaceDown();
+                        handlePlaceDown();
                         onClose();
                     }}
                     isDisabled={!hasSelection}

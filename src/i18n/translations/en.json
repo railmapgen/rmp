@@ -881,6 +881,7 @@
         "delete": "Delete",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
+        "placeDefault": "Place to default",
         "placeUp": "Place one level up",
         "placeDown": "Place one level down"
     },

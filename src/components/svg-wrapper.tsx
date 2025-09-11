@@ -47,11 +47,11 @@ import stations from './svgs/stations/stations';
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
-    const refreshAndSave = () => {
+    const refreshAndSave = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-    };
+    }, [dispatch]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
@@ -221,80 +221,6 @@ const SvgWrapper = () => {
 
     const handleCloseContextMenu = useEvent(() => {
         setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
-    });
-
-    const handleContextMenuCopy = useEvent(() => {
-        if (selected.size > 0) {
-            const s = exportSelectedNodesAndEdges(graph.current, selected);
-            navigator.clipboard.writeText(s);
-        }
-    });
-
-    const handleContextMenuCut = useEvent(() => {
-        if (selected.size > 0) {
-            const s = exportSelectedNodesAndEdges(graph.current, selected);
-            navigator.clipboard.writeText(s);
-            dispatch(clearSelected());
-            selected.forEach(s => {
-                if (graph.current.hasNode(s)) graph.current.dropNode(s);
-                else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
-            });
-            refreshAndSave();
-        }
-    });
-
-    const handleContextMenuPaste = useEvent(async () => {
-        try {
-            const s = await navigator.clipboard.readText();
-            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
-                width / 2,
-                height / 2,
-                svgViewBoxZoom,
-                svgViewBoxMin
-            );
-            const { nodes, edges } = importSelectedNodesAndEdges(
-                s,
-                graph.current,
-                isMasterDisabled,
-                isParallelDisabled,
-                roundToMultiple(svgMidX, 5),
-                roundToMultiple(svgMidY, 5)
-            );
-            refreshAndSave();
-            // select copied nodes automatically
-            const allElements = structuredClone(nodes) as Set<Id>;
-            edges.forEach(s => allElements.add(s));
-            dispatch(setSelected(allElements));
-        } catch (error) {
-            // Handle clipboard read error
-            console.warn('Failed to read clipboard:', error);
-        }
-    });
-
-    const handleContextMenuDelete = useEvent(() => {
-        if (selected.size > 0) {
-            dispatch(clearSelected());
-            selected.forEach(s => {
-                if (graph.current.hasNode(s)) graph.current.dropNode(s);
-                else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
-            });
-            refreshAndSave();
-        }
-    });
-
-    const handleContextMenuZIndex = useEvent((zIndex: number) => {
-        if (selected.size > 0) {
-            const clampedZIndex = Math.min(Math.max(zIndex, -10), 10);
-            selected.forEach(id => {
-                if (graph.current.hasNode(id)) {
-                    graph.current.setNodeAttribute(id, 'zIndex', clampedZIndex);
-                }
-                if (graph.current.hasEdge(id)) {
-                    graph.current.setEdgeAttribute(id, 'zIndex', clampedZIndex);
-                }
-            });
-            refreshAndSave();
-        }
     });
 
     const handleKeyDown = useEvent(async (e: React.KeyboardEvent<SVGSVGElement>) => {
@@ -570,40 +496,7 @@ const SvgWrapper = () => {
                     />
                 )}
             </svg>
-            <ContextMenu
-                isOpen={contextMenu.isOpen}
-                position={contextMenu.position}
-                onClose={handleCloseContextMenu}
-                selected={selected}
-                onCopy={handleContextMenuCopy}
-                onCut={handleContextMenuCut}
-                onPaste={handleContextMenuPaste}
-                onDelete={handleContextMenuDelete}
-                onPlaceTop={() => handleContextMenuZIndex(10)}
-                onPlaceBottom={() => handleContextMenuZIndex(-10)}
-                onPlaceUp={() => {
-                    if (selected.size > 0) {
-                        const [selectedFirst] = selected;
-                        const currentZIndex = graph.current.hasNode(selectedFirst)
-                            ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
-                            : graph.current.hasEdge(selectedFirst)
-                              ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
-                              : 0;
-                        handleContextMenuZIndex(currentZIndex + 1);
-                    }
-                }}
-                onPlaceDown={() => {
-                    if (selected.size > 0) {
-                        const [selectedFirst] = selected;
-                        const currentZIndex = graph.current.hasNode(selectedFirst)
-                            ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
-                            : graph.current.hasEdge(selectedFirst)
-                              ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
-                              : 0;
-                        handleContextMenuZIndex(currentZIndex - 1);
-                    }
-                }}
-            />
+            <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isMobileClient() && isDetailsOpen === 'hide' && (
                 <IconButton
                     aria-label="open details panel"
