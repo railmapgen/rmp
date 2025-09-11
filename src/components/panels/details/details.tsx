@@ -41,7 +41,7 @@ const DetailsPanel = () => {
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     const handleClose = () => {
-        if (!isMobileClient) {
+        if (!isMobileClient()) {
             dispatch(clearSelected());
         } else {
             dispatch(hideDetailsPanel());
