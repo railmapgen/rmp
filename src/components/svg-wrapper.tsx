@@ -94,8 +94,8 @@ const SvgWrapper = () => {
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
-        // Close context menu if it's open
         if (contextMenu.isOpen) {
+            // close context menu if it's open
             setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
         }
 

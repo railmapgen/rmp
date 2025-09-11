@@ -22,12 +22,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
-    const { selected, count: { masters: masterNodesCount, lines: parallelLinesCount } } = useRootSelector(state => state.runtime);
+    const {
+        selected,
+        count: { masters: masterNodesCount, lines: parallelLinesCount },
+    } = useRootSelector(state => state.runtime);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const size = useWindowSize();
     const { width, height } = getCanvasSize(size);
-    
+
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
 
