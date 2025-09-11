@@ -9,6 +9,7 @@ import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/para
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
+import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
@@ -46,7 +47,7 @@ export default function OpenActions() {
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
@@ -54,6 +55,13 @@ export default function OpenActions() {
         // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
+
+        // save images to indexedDB if they exist
+        if (Array.isArray(images) && images.length > 0) {
+            await saveImagesFromParam(graph.current, images);
+        }
+        // ensure all server images used in the graph are available in IndexedDB
+        dispatch(pullServerImages());
 
         // hard refresh the canvas
         refreshAndSave();
@@ -76,6 +84,7 @@ export default function OpenActions() {
                 // these magic k and b comes from linear equation fitting where you record several window size...
                 const newSvgViewBoxZoom = Math.max(0, Math.min(400, -0.132 * height + 117.772));
                 dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+                await dispatch(pullServerImages());
                 rmgRuntime.event(Events.LOAD_TUTORIAL, {});
             }
         }

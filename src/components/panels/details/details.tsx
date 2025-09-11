@@ -8,8 +8,14 @@ import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import {
+    clearSelected,
+    hideDetailsPanel,
+    refreshEdgesThunk,
+    refreshNodesThunk,
+} from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
+import { isMobileClient } from '../../../util/helpers';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -27,15 +33,20 @@ const DetailsPanel = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         selected,
-        mode,
-        active,
+        isDetailsOpen,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
-    const handleClose = () => dispatch(clearSelected());
+    const handleClose = () => {
+        if (!isMobileClient()) {
+            dispatch(clearSelected());
+        } else {
+            dispatch(hideDetailsPanel());
+        }
+    };
     const handleDuplicate = (selectedFirst: string) => {
         const allAttr = structuredClone(graph.current.getNodeAttributes(selectedFirst));
         allAttr.x += 50;
@@ -59,12 +70,7 @@ const DetailsPanel = () => {
     };
 
     return (
-        <RmgSidePanel
-            isOpen={selected.size > 0 && !mode.startsWith('line') && !active}
-            width={300}
-            header="Dummy header"
-            alwaysOverlay
-        >
+        <RmgSidePanel isOpen={isDetailsOpen === 'show'} width={300} header="Dummy header" alwaysOverlay>
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />

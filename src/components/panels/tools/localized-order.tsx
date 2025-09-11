@@ -1,13 +1,13 @@
+/**
+ * This file contains the localized order of station types, misc node types, and line styles.
+ * The order is based on the language and shows the most relevant types first.
+ * By relevance, we mean the types that users are most familiar in their respective language.
+ */
+
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import { StationType } from '../../../constants/stations';
 import { MiscNodeType } from '../../../constants/nodes';
 import { LineStyleType } from '../../../constants/lines';
-
-/**
- * This file contains the localized order of station types, misc node types, and line styles.
- * The order is based on the language and shows the most relevant types first.
- * By relevance, we mean the types that users are most familiar in the respective language.
- */
 
 /* ------- Station types ------ */
 
@@ -39,7 +39,7 @@ export const localizedStaions: { [k in LanguageCode]?: StationType[] } = {
 /* ------- Misc nodes ------ */
 
 const defaultMiscNodeType = Object.values(MiscNodeType);
-const alwaysFrontMiscNodeType = [MiscNodeType.Facilities, MiscNodeType.Text];
+const alwaysFrontMiscNodeType = [MiscNodeType.Image, MiscNodeType.Facilities, MiscNodeType.Text];
 const enMiscNodeType = [
     MiscNodeType.LondonArrow,
     MiscNodeType.BerlinSBahnLineBadge,

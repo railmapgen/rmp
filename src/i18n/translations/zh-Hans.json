@@ -162,6 +162,14 @@
                     "displayName": "台北捷运线路标志",
                     "tram": "轻轨"
                 },
+                "image": {
+                    "displayName": "图像",
+                    "label": "标签",
+                    "scale": "缩放",
+                    "rotate": "旋转",
+                    "opacity": "不透明度",
+                    "preview": "预览"
+                },
                 "master": {
                     "displayName": "大师节点",
                     "type": "大师节点类型",
@@ -614,6 +622,15 @@
                 }
             },
             "edges": {},
+            "image": {
+                "importTitle": "图像面板",
+                "exportTitle": "将图像附加到项目",
+                "local": "本地图像",
+                "server": "服务器图像",
+                "add": "上传图像",
+                "error": "上传该图像失败！",
+                "loading": "正在加载图像..."
+            },
             "footer": {
                 "duplicate": "重复",
                 "copy": "复制",

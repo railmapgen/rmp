@@ -176,6 +176,9 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
+export const isTouchClient =
+    'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+export const isMobileClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -183,14 +186,6 @@ export const shuffle = <T>(arr: T[]): T[] => {
         [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
-};
-
-export const createHash = async (data: string, algorithm = 'SHA-256') => {
-    const encoder = new TextEncoder();
-    const encodedData = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest(algorithm, encodedData);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 };
 
 export const getRandomHexColor = (): `#${string}` => {
