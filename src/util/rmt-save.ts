@@ -1,7 +1,5 @@
 import { logger } from '@railmapgen/rmg-runtime';
-import { MultiDirectedGraph } from 'graphology';
-import { SerializedGraph } from 'graphology-types';
-import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { LocalStorageKey } from '../constants/constants';
 import { subscription_endpoint } from '../constants/server';
 import { createStore, RootDispatch } from '../redux';
 import {
@@ -11,7 +9,6 @@ import {
     setState,
     setToken,
 } from '../redux/account/account-slice';
-import { createHash } from './binary';
 
 export const SAVE_MANAGER_CHANNEL_NAME = 'rmt-save-manager';
 export enum SaveManagerEventType {
@@ -46,7 +43,7 @@ const updateToken = async (store: ReturnType<typeof createStore>, token: string)
     store.dispatch(setToken(token));
 };
 
-export const updateLoginStateAndSubscriptions = async (dispatch: RootDispatch, token: string) => {
+export const fetchLoginStateAndSubscriptions = async (dispatch: RootDispatch, token: string) => {
     const rep = await fetch(subscription_endpoint, {
         headers: {
             accept: 'application/json',
@@ -106,7 +103,7 @@ export const onLocalStorageChangeRMT = (store: ReturnType<typeof createStore>) =
         const accountState = JSON.parse(accountString) as AccountState;
         const { token } = accountState;
         updateToken(store, token);
-        updateLoginStateAndSubscriptions(store.dispatch, token);
+        fetchLoginStateAndSubscriptions(store.dispatch, token);
     };
 
     // Record the previous account string and only handle the change.

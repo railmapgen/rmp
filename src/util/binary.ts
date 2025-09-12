@@ -1,17 +1,15 @@
-export const createHash = async (encodedData: string | Uint8Array<ArrayBufferLike>, algorithm = 'SHA-256') => {
+export const createHash = async (data: string | ArrayBuffer, algorithm = 'SHA-256') => {
     const encoder = new TextEncoder();
-    encodedData = typeof encodedData === 'string' ? encoder.encode(encodedData) : encodedData;
+    const encodedData = typeof data === 'string' ? encoder.encode(data) : new Uint8Array(data);
     const hashBuffer = await crypto.subtle.digest(algorithm, encodedData);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
 };
 
-export const fileToBytes = (file: File): Promise<Uint8Array> => {
+export const fileToBytes = (file: File): Promise<string | ArrayBuffer | null> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => {
-            resolve(new Uint8Array(reader.result as ArrayBuffer));
-        };
+        reader.onload = () => resolve(reader.result);
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
     });
