@@ -100,6 +100,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         }
     });
 
+    const handleRefresh = useEvent(() => {
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
+    });
+
     const handleZIndex = useEvent((zIndex: number) => {
         if (selected.size > 0) {
             const clampedZIndex = Math.min(Math.max(zIndex, -10), 10);
@@ -195,6 +200,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                     isDisabled={!hasSelection}
                 >
                     {t('contextMenu.delete')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleRefresh();
+                        onClose();
+                    }}
+                >
+                    {t('contextMenu.refresh')}
                 </MenuItem>
                 <Box height="1px" bg="gray.200" my={1} _dark={{ bg: 'gray.600' }} />
                 <MenuItem

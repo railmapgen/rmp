@@ -879,6 +879,7 @@
         "cut": "Cut", 
         "paste": "Paste",
         "delete": "Delete",
+        "refresh": "Refresh",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",

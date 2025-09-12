@@ -878,6 +878,7 @@
         "cut": "剪切", 
         "paste": "粘贴",
         "delete": "删除",
+        "refresh": "刷新",
         "placeTop": "置顶",
         "placeBottom": "置底",
         "placeDefault": "还原位置",
