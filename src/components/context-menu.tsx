@@ -1,4 +1,4 @@
-import { Box, Portal, useOutsideClick } from '@chakra-ui/react';
+import { Box, Divider, Portal, useOutsideClick } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
@@ -168,6 +168,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             >
                 <MenuItem
                     onClick={() => {
+                        handleRefresh();
+                        onClose();
+                    }}
+                >
+                    {t('contextMenu.refresh')}
+                </MenuItem>
+                <Divider />
+                <MenuItem
+                    onClick={() => {
                         handleCopy();
                         onClose();
                     }}
@@ -201,15 +210,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 >
                     {t('contextMenu.delete')}
                 </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleRefresh();
-                        onClose();
-                    }}
-                >
-                    {t('contextMenu.refresh')}
-                </MenuItem>
-                <Box height="1px" bg="gray.200" my={1} _dark={{ bg: 'gray.600' }} />
+                <Divider />
                 <MenuItem
                     onClick={() => {
                         handleZIndex(10);
