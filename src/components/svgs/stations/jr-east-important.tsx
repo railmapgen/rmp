@@ -66,7 +66,13 @@ const JREastImportantStation = (props: StationComponentProps) => {
 
     const textENDX = { left: -iconWidth / 2 - 1, middle: 0, right: iconWidth / 2 + 1 }[nameOffsetX];
     const textENDY = { top: -iconHeight / 2 - 1, middle: 0, bottom: iconHeight / 2 + 1 }[nameOffsetY];
-    const textENAnchor = { left: 'end', middle: 'middle', right: 'start' }[nameOffsetX];
+    const textENAnchor = (
+        {
+            left: 'end',
+            middle: 'middle',
+            right: 'start',
+        } as const
+    )[nameOffsetX];
 
     const scale = mostImportant ? 1.5 : 1;
 

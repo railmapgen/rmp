@@ -67,7 +67,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
                         <rect fill={color[2]} x={19 + widthOffset / 2} y="20" width="6" height="5" rx="0" ry="0" />
                         <text
                             {...getLangStyle(TextLanguage.zh)}
-                            textAnchor="left"
+                            textAnchor="start"
                             x={-widthOffset / 2}
                             y="12.5"
                             fill={fgColor}

@@ -128,7 +128,7 @@ const chongqingRTNumLineBadge2021Icon = (
     <svg viewBox="0 0 21 21" height={40} width={40} focusable={false} style={{ padding: 3 }}>
         <rect fill="currentColor" x="0" width="21" height="21" rx="3" ry="3" />
         <rect strokeWidth="1.5" stroke="white" fill="none" x="1.5" y="1.5" width="18" height="18" rx="2" ry="2" />
-        <text textAnchor="left" x="7.5" y="9.5" fill="white" fontSize="15" dominantBaseline="central">
+        <text textAnchor="start" x="7.5" y="9.5" fill="white" fontSize="15" dominantBaseline="central">
             1
         </text>
     </svg>
