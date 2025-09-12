@@ -221,6 +221,11 @@ const SvgWrapper = () => {
 
     const handleCloseContextMenu = useEvent(() => {
         setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
+        // Restore focus to SVG element to ensure keyboard shortcuts continue working
+        const svgElement = document.getElementById('canvas');
+        if (svgElement) {
+            svgElement.focus();
+        }
     });
 
     const handleKeyDown = useEvent(async (e: React.KeyboardEvent<SVGSVGElement>) => {
@@ -342,8 +347,12 @@ const SvgWrapper = () => {
         }
     });
 
+    // Touch state variables for handling mobile gestures:
+    // touchDist: tracks the distance between two fingers for pinch-to-zoom (0 when not zooming)
+    // longPressTimeout: timer ID for long-press detection (null when no long-press is pending)
+    // touchStartPos: initial touch position for movement threshold detection (null when not tracking)
     const [touchDist, setTouchDist] = React.useState(0);
-    const [longPressTimeout, setLongPressTimeout] = React.useState<NodeJS.Timeout | null>(null);
+    const [longPressTimeout, setLongPressTimeout] = React.useState<ReturnType<typeof setTimeout> | null>(null);
     const [touchStartPos, setTouchStartPos] = React.useState<{ x: number; y: number } | null>(null);
 
     const handleTouchStart = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
