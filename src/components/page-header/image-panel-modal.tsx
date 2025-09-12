@@ -90,6 +90,7 @@ export const ImagePanelModal = (props: {
                 }
 
                 const bytes = await fileToBytes(file);
+                if (!bytes) return;
                 const hash = await createHash(bytes);
                 const reader = new FileReader();
 
