@@ -873,5 +873,18 @@
         }
     },
 
+    "contextMenu": {
+        "copy": "複製",
+        "cut": "剪下", 
+        "paste": "貼上",
+        "delete": "刪除",
+        "refresh": "重新整理",
+        "placeTop": "置頂",
+        "placeBottom": "置底",
+        "placeDefault": "還原位置",
+        "placeUp": "上移一層",
+        "placeDown": "下移一層"
+    },
+
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
 }

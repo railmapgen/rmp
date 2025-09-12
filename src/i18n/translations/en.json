@@ -874,5 +874,18 @@
         }
     },
 
+    "contextMenu": {
+        "copy": "Copy",
+        "cut": "Cut", 
+        "paste": "Paste",
+        "delete": "Delete",
+        "refresh": "Refresh",
+        "placeTop": "Place top",
+        "placeBottom": "Place bottom",
+        "placeDefault": "Place to default",
+        "placeUp": "Place one level up",
+        "placeDown": "Place one level down"
+    },
+
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
 }
