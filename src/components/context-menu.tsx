@@ -8,8 +8,7 @@ import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
-import { getCanvasSize, pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
-import { useWindowSize } from '../util/hooks';
+import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 
 interface ContextMenuProps {
@@ -28,8 +27,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     } = useRootSelector(state => state.runtime);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const size = useWindowSize();
-    const { width, height } = getCanvasSize(size);
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
