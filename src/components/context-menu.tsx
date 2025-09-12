@@ -72,19 +72,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const handlePaste = useEvent(async () => {
         try {
             const s = await navigator.clipboard.readText();
-            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
-                position.x,
-                position.y,
-                svgViewBoxZoom,
-                svgViewBoxMin
-            );
+            const { x, y } = pointerPosToSVGCoord(position.x, position.y, svgViewBoxZoom, svgViewBoxMin);
             const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
                 graph.current,
                 isMasterDisabled,
                 isParallelDisabled,
-                roundToMultiple(svgMidX, 5),
-                roundToMultiple(svgMidY, 5)
+                roundToMultiple(x, 5),
+                roundToMultiple(y, 5)
             );
             refreshAndSave();
             // select copied nodes automatically
