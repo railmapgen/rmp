@@ -140,7 +140,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const textVerticalAnchor = {
         ja: nameOffsetY === 'top' ? 'end' : 'start',
         en: nameOffsetY === 'top' ? 'start' : 'end',
-    };
+    } as const;
     const textVerticalBase = { 0: 0, 45: -1, 90: 0, 135: 1, 180: 0, 225: -1, 270: 0, 315: 1 }[rotate];
     const textVerticalBaseDY = textVerticalBase * NAME_JRE_BASIC.ja.size;
     const textVerticalENBaseOffset =

@@ -69,7 +69,7 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
             </text>
             <text
                 {...getLangStyle(TextLanguage.mrt)}
-                textAnchor="left"
+                textAnchor="start"
                 x="28"
                 y={isTram ? 3.5 : -3}
                 fill="black"
