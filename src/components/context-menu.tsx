@@ -73,8 +73,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         try {
             const s = await navigator.clipboard.readText();
             const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
-                width / 2,
-                height / 2,
+                position.x,
+                position.y,
                 svgViewBoxZoom,
                 svgViewBoxMin
             );
