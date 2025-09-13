@@ -480,7 +480,7 @@ const SvgWrapper = () => {
                         <feColorMatrix values="1 1 0 0 0  1 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="yellowGlow" />
                         <feGaussianBlur in="yellowGlow" stdDeviation="1" result="blur1" />
                         <feGaussianBlur in="yellowGlow" stdDeviation="2" result="blur2">
-                            <animate attributeName="stdDeviation" values="1;3;1" dur="0.5s" repeatCount="indefinite" />
+                            <animate attributeName="stdDeviation" values="1;3;1" dur="1s" repeatCount="indefinite" />
                         </feGaussianBlur>
                         <feMerge>
                             <feMergeNode in="blur2" />
