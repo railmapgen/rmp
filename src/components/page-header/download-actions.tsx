@@ -570,29 +570,44 @@ export default function DownloadActions() {
                                 </AccordionButton>
                                 <AccordionPanel pb={4}>
                                     <Box mb={4} p={3} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
-                                        <Text fontSize="sm" fontWeight="bold" mb={1}>
-                                            {t('header.download.currentCanvasDimensions')}
-                                        </Text>
-                                        <Text fontSize="sm">
-                                            Width:{' '}
-                                            {Math.abs(
-                                                fourCornersPosition.topRightX - fourCornersPosition.topLeftX
-                                            ).toFixed(1)}{' '}
-                                            | Height:{' '}
-                                            {Math.abs(
-                                                fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY
-                                            ).toFixed(1)}
-                                        </Text>
-                                        <Text fontSize="sm" fontWeight="bold" mb={1} mt={2}>
-                                            {t('header.download.currentAspectRatio')}
-                                        </Text>
-                                        <Text fontSize="sm">
-                                            {(
-                                                Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX) /
-                                                Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY)
-                                            ).toFixed(2)}
-                                            :1
-                                        </Text>
+                                        <HStack spacing={4} align="stretch">
+                                            <Box flex="1" textAlign="center">
+                                                <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                                    {t('header.download.width')}
+                                                </Text>
+                                                <Text fontSize="sm">
+                                                    {Math.abs(
+                                                        fourCornersPosition.topRightX - fourCornersPosition.topLeftX
+                                                    ).toFixed(1)}
+                                                </Text>
+                                            </Box>
+                                            <Box flex="1" textAlign="center">
+                                                <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                                    {t('header.download.height')}
+                                                </Text>
+                                                <Text fontSize="sm">
+                                                    {Math.abs(
+                                                        fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY
+                                                    ).toFixed(1)}
+                                                </Text>
+                                            </Box>
+                                            <Box flex="1" textAlign="center">
+                                                <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                                    {t('header.download.ratio')}
+                                                </Text>
+                                                <Text fontSize="sm">
+                                                    {(() => {
+                                                        const width = Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX);
+                                                        const height = Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY);
+                                                        const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+                                                        const ratio1 = Math.round(width * 100);
+                                                        const ratio2 = Math.round(height * 100);
+                                                        const divisor = gcd(ratio1, ratio2);
+                                                        return `${ratio1 / divisor}:${ratio2 / divisor}`;
+                                                    })()}
+                                                </Text>
+                                            </Box>
+                                        </HStack>
                                     </Box>
                                     <FormControl mb={4}>
                                         <FormLabel>{t('header.download.centerNode')}</FormLabel>

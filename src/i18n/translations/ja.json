@@ -716,7 +716,10 @@
             "paddingRight": "右パディング",
             "paddingTop": "上パディング",
             "paddingBottom": "下パディング",
-            "positionControls": "位置制御"
+            "positionControls": "位置制御",
+            "width": "幅",
+            "height": "高さ",
+            "ratio": "比率"
         },
         "donation": {
             "title": "寄付",

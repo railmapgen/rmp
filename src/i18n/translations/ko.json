@@ -713,7 +713,10 @@
             "paddingRight": "오른쪽 패딩",
             "paddingTop": "위쪽 패딩",
             "paddingBottom": "아래쪽 패딩",
-            "positionControls": "위치 제어"
+            "positionControls": "위치 제어",
+            "width": "너비",
+            "height": "높이",
+            "ratio": "비율"
         },
         "donation": {
             "title": "기부",

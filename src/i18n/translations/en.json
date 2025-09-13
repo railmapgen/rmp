@@ -714,7 +714,10 @@
             "paddingRight": "Padding right",
             "paddingTop": "Padding top",
             "paddingBottom": "Padding bottom",
-            "positionControls": "Position controls"
+            "positionControls": "Position controls",
+            "width": "Width",
+            "height": "Height",
+            "ratio": "Ratio"
         },
         "donation": {
             "title": "Donation",

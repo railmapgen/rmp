@@ -713,7 +713,10 @@
             "paddingRight": "右侧内边距",
             "paddingTop": "上方内边距",
             "paddingBottom": "下方内边距",
-            "positionControls": "位置控制"
+            "positionControls": "位置控制",
+            "width": "宽度",
+            "height": "高度",
+            "ratio": "比例"
         },
         "donation": {
             "title": "捐赠",
