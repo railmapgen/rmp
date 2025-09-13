@@ -587,8 +587,11 @@ export default function DownloadActions() {
                                             {t('header.download.currentAspectRatio')}
                                         </Text>
                                         <Text fontSize="sm">
-                                            {(Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX) /
-                                             Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY)).toFixed(2)}:1
+                                            {(
+                                                Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX) /
+                                                Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY)
+                                            ).toFixed(2)}
+                                            :1
                                         </Text>
                                     </Box>
                                     <FormControl mb={4}>
