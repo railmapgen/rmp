@@ -252,6 +252,11 @@
                     "italic": "斜體",
                     "bold": "粗體",
                     "outline": "描邊"
+                },
+                "fill": {
+                    "displayName": "填充區域",
+                    "maxNodes": "路徑中最大節點數",
+                    "opacity": "填充透明度"
                 }
             },
             "stations": {
