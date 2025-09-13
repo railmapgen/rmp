@@ -13,10 +13,11 @@ import {
     NodeAttributes,
     StnId,
 } from '../../../constants/constants';
-import { linePaths } from '../lines/lines';
-import { LinePathType, Path } from '../../../constants/lines';
+import { Path } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
+import { linePaths } from '../lines/lines';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { useRootSelector } from '../../../redux';
 
 /**
  * Find the shortest closed path starting from a node using a modified BFS.
@@ -104,7 +105,6 @@ const generateClosedPath = (
     if (nodes.length !== edges.length + 1 || nodes.length < 4) return undefined;
 
     const pathSegments: string[] = [];
-    let startPoint: { x: number; y: number } | undefined;
 
     for (let i = 0; i < edges.length; i++) {
         const edge = edges[i];
@@ -119,17 +119,20 @@ const generateClosedPath = (
         const targetAttr = graph.getNodeAttributes(targetNode);
         const edgeAttrs = graph.getEdgeAttributes(edge);
 
+        const pathType = edgeAttrs.type;
+        let pathAttr = edgeAttrs[pathType];
+
         const x1 = sourceAttr.x;
         const y1 = sourceAttr.y;
         const x2 = targetAttr.x;
         const y2 = targetAttr.y;
 
-        if (i === 0) {
-            startPoint = { x: x1, y: y1 };
+        if (sourceNode !== graph.extremities(edge)[0]) {
+            // Swap if the direction is reversed
+            if ((pathAttr! as any).startFrom) {
+                pathAttr = { ...(pathAttr as any), startFrom: (pathAttr as any).startFrom === 'from' ? 'to' : 'from' };
+            }
         }
-
-        const pathType = edgeAttrs.type;
-        const pathAttr = edgeAttrs[pathType];
 
         let pathStr: string;
 
@@ -195,6 +198,8 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         [id, handlePointerUp]
     );
 
+    const { refresh } = useRootSelector(state => state.runtime);
+
     // Access graph directly from window object as it's available globally
     const graph = window.graph;
 
@@ -229,12 +234,12 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         }
 
         return bestPath;
-    }, [graph, x, y, id, maxNodes]);
+    }, [graph, x, y, id, maxNodes, refresh]);
 
     const fillPath = React.useMemo(() => {
         if (!closedPathData || !graph) return undefined;
         return generateClosedPath(graph, closedPathData.nodes, closedPathData.edges);
-    }, [closedPathData, graph]);
+    }, [closedPathData, graph, refresh]);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
