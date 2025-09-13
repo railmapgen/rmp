@@ -36,6 +36,7 @@ import {
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
@@ -46,11 +47,11 @@ import stations from './svgs/stations/stations';
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
-    const refreshAndSave = () => {
+    const refreshAndSave = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
-    };
+    }, [dispatch]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
@@ -82,11 +83,22 @@ const SvgWrapper = () => {
     const [selectStart, setSelectStart] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
     const [selectMoving, setSelectMoving] = React.useState({ x: 0, y: 0 }); // pos in the svg user coordinate system
 
+    // context menu related
+    const [contextMenu, setContextMenu] = React.useState<{ isOpen: boolean; position: { x: number; y: number } }>({
+        isOpen: false,
+        position: { x: 0, y: 0 },
+    });
+
     // background moving related
     const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
+        if (contextMenu.isOpen) {
+            // close context menu if it's open
+            setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
+        }
+
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
@@ -196,6 +208,24 @@ const SvgWrapper = () => {
                 y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
             })
         );
+    });
+
+    const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
+        e.preventDefault();
+        const { x, y } = getMousePosition(e);
+        setContextMenu({
+            isOpen: true,
+            position: { x: e.clientX, y: e.clientY },
+        });
+    });
+
+    const handleCloseContextMenu = useEvent(() => {
+        setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
+        // Restore focus to SVG element to ensure keyboard shortcuts continue working
+        const svgElement = document.getElementById('canvas');
+        if (svgElement) {
+            svgElement.focus();
+        }
     });
 
     const handleKeyDown = useEvent(async (e: React.KeyboardEvent<SVGSVGElement>) => {
@@ -317,18 +347,60 @@ const SvgWrapper = () => {
         }
     });
 
+    // Touch state variables for handling mobile gestures:
+    // touchDist: tracks the distance between two fingers for pinch-to-zoom (0 when not zooming)
+    // longPressTimeout: timer ID for long-press detection (null when no long-press is pending)
+    // touchStartPos: initial touch position for movement threshold detection (null when not tracking)
     const [touchDist, setTouchDist] = React.useState(0);
+    const [longPressTimeout, setLongPressTimeout] = React.useState<ReturnType<typeof setTimeout> | null>(null);
+    const [touchStartPos, setTouchStartPos] = React.useState<{ x: number; y: number } | null>(null);
 
     const handleTouchStart = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        if (e.touches.length === 2) {
+        if (e.touches.length === 1) {
+            // Single touch for long press
+            const touch = e.touches[0];
+            setTouchStartPos({ x: touch.clientX, y: touch.clientY });
+
+            const timeout = setTimeout(() => {
+                // Show context menu after long press
+                setContextMenu({
+                    isOpen: true,
+                    position: { x: touch.clientX, y: touch.clientY },
+                });
+                setLongPressTimeout(null);
+            }, 500); // 500ms long press threshold
+
+            setLongPressTimeout(timeout);
+        } else if (e.touches.length === 2) {
+            // Multi-touch for zoom
             dispatch(setActive(undefined));
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             setTouchDist(dx * dx + dy * dy);
+
+            // Clear long press when second finger touches
+            if (longPressTimeout) {
+                clearTimeout(longPressTimeout);
+                setLongPressTimeout(null);
+            }
+            setTouchStartPos(null);
         }
     });
 
     const handleTouchMove = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        if (touchDist !== 0 && e.touches.length === 2) {
+        // Cancel long press if user moves finger too much
+        if (e.touches.length === 1 && touchStartPos && longPressTimeout) {
+            const touch = e.touches[0];
+            const dx = touch.clientX - touchStartPos.x;
+            const dy = touch.clientY - touchStartPos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance > 10) {
+                // 10px threshold
+                clearTimeout(longPressTimeout);
+                setLongPressTimeout(null);
+                setTouchStartPos(null);
+            }
+        } else if (touchDist !== 0 && e.touches.length === 2) {
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             const d = dx * dx + dy * dy;
 
@@ -355,6 +427,13 @@ const SvgWrapper = () => {
     });
 
     const handleTouchEnd = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
+        // Clear long press timeout on touch end
+        if (longPressTimeout) {
+            clearTimeout(longPressTimeout);
+            setLongPressTimeout(null);
+        }
+        setTouchStartPos(null);
+
         if (touchDist !== 0) {
             setTouchDist(0);
         }
@@ -388,6 +467,7 @@ const SvgWrapper = () => {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
                 onWheel={handleBackgroundWheel}
+                onContextMenu={handleContextMenu}
                 tabIndex={0}
                 onKeyDown={handleKeyDown}
             >
@@ -425,6 +505,7 @@ const SvgWrapper = () => {
                     />
                 )}
             </svg>
+            <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isMobileClient() && isDetailsOpen === 'hide' && (
                 <IconButton
                     aria-label="open details panel"
