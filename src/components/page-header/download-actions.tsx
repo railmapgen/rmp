@@ -130,7 +130,6 @@ export default function DownloadActions() {
         top: 50,
         bottom: 50,
     });
-    const [aspectRatio, setAspectRatio] = React.useState('current');
     const [padding, setPadding] = React.useState({
         left: 0,
         right: 0,
@@ -194,17 +193,6 @@ export default function DownloadActions() {
 
     // Advanced mode fields
     const nodeOptions = React.useMemo(() => getNodeOptions(), [isDownloadModalOpen]);
-    const aspectRatioOptions = {
-        current: 'Current dimensions',
-        '16:9': '16:9',
-        '4:3': '4:3',
-        '3:2': '3:2',
-        '1:1': '1:1',
-        '2:3': '2:3',
-        '3:4': '3:4',
-        '9:16': '9:16',
-    };
-
     const advancedFields: RmgFieldsField[] = [
         {
             type: 'input',
@@ -237,13 +225,6 @@ export default function DownloadActions() {
             variant: 'number',
             isDisabled: !selectedNodeId,
             onChange: value => setDistance({ ...distance, bottom: Number(value) || 0 }),
-        },
-        {
-            type: 'select',
-            label: 'Aspect ratio',
-            value: aspectRatio,
-            options: aspectRatioOptions,
-            onChange: value => setAspectRatio(value as string),
         },
         {
             type: 'input',
