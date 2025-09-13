@@ -69,7 +69,7 @@ const getNodeOptions = () => {
     const options: { [k: string]: string } = { '': '' }; // Default empty option
 
     if (window.graph) {
-        window.graph.forEachNode((nodeId) => {
+        window.graph.forEachNode(nodeId => {
             try {
                 const nodeAttrs = window.graph.getNodeAttributes(nodeId);
                 const nodeType = nodeAttrs.type;
@@ -122,7 +122,7 @@ export default function DownloadActions() {
     const [resvgScaleOptions, setResvgScaleOptions] = React.useState<number[]>([]);
     const [isTransparent, setIsTransparent] = React.useState(false);
 
-    // Advanced mode state variables  
+    // Advanced mode state variables
     const [selectedNodeId, setSelectedNodeId] = React.useState('');
     const [leftDistance, setLeftDistance] = React.useState(50);
     const [rightDistance, setRightDistance] = React.useState(50);
@@ -353,7 +353,7 @@ export default function DownloadActions() {
             // Center around selected node
             const nodeX = graph.current.getNodeAttribute(selectedNodeId, 'x');
             const nodeY = graph.current.getNodeAttribute(selectedNodeId, 'y');
-            
+
             xMin = nodeX - leftDistance;
             yMin = nodeY - topDistance;
             xMax = nodeX + rightDistance;
@@ -382,7 +382,17 @@ export default function DownloadActions() {
         setBottomLeftY(yMax);
         setBottomRightX(xMax);
         setBottomRightY(yMax);
-    }, [selectedNodeId, leftDistance, rightDistance, topDistance, bottomDistance, paddingLeft, paddingRight, paddingTop, paddingBottom]);
+    }, [
+        selectedNodeId,
+        leftDistance,
+        rightDistance,
+        topDistance,
+        bottomDistance,
+        paddingLeft,
+        paddingRight,
+        paddingTop,
+        paddingBottom,
+    ]);
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
@@ -440,7 +450,7 @@ export default function DownloadActions() {
             xMin: Math.min(topLeftX, bottomLeftX),
             yMin: Math.min(topLeftY, topRightY),
             xMax: Math.max(topRightX, bottomRightX),
-            yMax: Math.max(bottomLeftY, bottomRightY)
+            yMax: Math.max(bottomLeftY, bottomRightY),
         };
 
         const { elem, width, height } = await makeRenderReadySVGElement(
@@ -557,7 +567,7 @@ export default function DownloadActions() {
                                         <Input
                                             list="node-options"
                                             value={selectedNodeId}
-                                            onChange={(e) => setSelectedNodeId(e.target.value)}
+                                            onChange={e => setSelectedNodeId(e.target.value)}
                                             placeholder="Enter node ID or select from list"
                                         />
                                         <datalist id="node-options">
