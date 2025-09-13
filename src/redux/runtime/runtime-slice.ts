@@ -214,12 +214,15 @@ const runtimeSlice = createSlice({
         },
         addSelected: (state, action: PayloadAction<Id>) => {
             state.selected.add(action.payload);
+            state.isDetailsOpen = getIsDetailsOpen(state);
         },
         removeSelected: (state, action: PayloadAction<Id>) => {
             state.selected.delete(action.payload);
+            state.isDetailsOpen = getIsDetailsOpen(state);
         },
         clearSelected: state => {
             state.selected = new Set<Id>();
+            state.isDetailsOpen = getIsDetailsOpen(state);
         },
         setPointerPosition: (state, action: PayloadAction<{ x: number; y: number } | undefined>) => {
             state.pointerPosition = action.payload;
