@@ -57,13 +57,9 @@ const SvgLayer = React.memo(
                         />
                     );
                     layers[element.line!.attr.zIndex].pre.push(
-                        isSelected ? (
-                            <g key={`${element.id}.pre-glow`} filter="url(#selected-glow)">
-                                {preComponent}
-                            </g>
-                        ) : (
-                            preComponent
-                        )
+                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {preComponent}
+                        </g>
                     );
                 }
 
@@ -82,13 +78,9 @@ const SvgLayer = React.memo(
                 );
 
                 layers[element.line!.attr.zIndex].main.push(
-                    isSelected ? (
-                        <g key={`${element.id}-glow`} filter="url(#selected-glow)">
-                            {component}
-                        </g>
-                    ) : (
-                        component
-                    )
+                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        {component}
+                    </g>
                 );
 
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
@@ -106,13 +98,9 @@ const SvgLayer = React.memo(
                         />
                     );
                     layers[element.line!.attr.zIndex].post.push(
-                        isSelected ? (
-                            <g key={`${element.id}.post-glow`} filter="url(#selected-glow)">
-                                {postComponent}
-                            </g>
-                        ) : (
-                            postComponent
-                        )
+                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {postComponent}
+                        </g>
                     );
                 }
             } else if (element.type === 'station') {
@@ -135,13 +123,9 @@ const SvgLayer = React.memo(
                         />
                     );
                     layers[element.station!.zIndex].pre.push(
-                        isSelected ? (
-                            <g key={`${element.id}.pre-glow`} filter="url(#selected-glow)">
-                                {preComponent}
-                            </g>
-                        ) : (
-                            preComponent
-                        )
+                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {preComponent}
+                        </g>
                     );
                 }
 
@@ -161,13 +145,9 @@ const SvgLayer = React.memo(
                 );
 
                 layers[element.station!.zIndex].main.push(
-                    isSelected ? (
-                        <g key={`${element.id}-glow`} filter="url(#selected-glow)">
-                            {component}
-                        </g>
-                    ) : (
-                        component
-                    )
+                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        {component}
+                    </g>
                 );
 
                 const PostStationComponent = allStations[type]?.postComponent;
@@ -186,13 +166,9 @@ const SvgLayer = React.memo(
                         />
                     );
                     layers[element.station!.zIndex].post.push(
-                        isSelected ? (
-                            <g key={`${element.id}.post-glow`} filter="url(#selected-glow)">
-                                {postComponent}
-                            </g>
-                        ) : (
-                            postComponent
-                        )
+                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {postComponent}
+                        </g>
                     );
                 }
             } else if (element.type === 'misc-node') {
@@ -216,13 +192,9 @@ const SvgLayer = React.memo(
                         />
                     );
                     layers[element.miscNode!.zIndex].pre.push(
-                        isSelected ? (
-                            <g key={`${element.id}.pre-glow`} filter="url(#selected-glow)">
-                                {preComponent}
-                            </g>
-                        ) : (
-                            preComponent
-                        )
+                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {preComponent}
+                        </g>
                     );
                 }
 
@@ -243,13 +215,9 @@ const SvgLayer = React.memo(
                 );
 
                 layers[element.miscNode!.zIndex].main.push(
-                    isSelected ? (
-                        <g key={`${element.id}-glow`} filter="url(#selected-glow)">
-                            {component}
-                        </g>
-                    ) : (
-                        component
-                    )
+                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        {component}
+                    </g>
                 );
 
                 const PostMiscNodeComponent = miscNodes[type]?.postComponent;
@@ -269,13 +237,9 @@ const SvgLayer = React.memo(
                         />
                     );
                     layers[element.miscNode!.zIndex].post.push(
-                        isSelected ? (
-                            <g key={`${element.id}.post-glow`} filter="url(#selected-glow)">
-                                {postComponent}
-                            </g>
-                        ) : (
-                            postComponent
-                        )
+                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {postComponent}
+                        </g>
                     );
                 }
             }
