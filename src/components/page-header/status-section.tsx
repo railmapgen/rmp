@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdRefresh } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { updateLoginStateAndSubscriptions } from '../../util/rmt-save';
+import { fetchLoginStateAndSubscriptions } from '../../util/rmt-save';
 
 const refreshInterval = 1;
 
@@ -35,7 +35,7 @@ export const StatusSection = () => {
         setIsRefreshDisabled(true);
         setRefreshDisabledSeconds(refreshInterval);
         if (!token) return;
-        updateLoginStateAndSubscriptions(dispatch, token);
+        fetchLoginStateAndSubscriptions(dispatch, token);
     };
 
     const stateText = {

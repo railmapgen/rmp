@@ -208,7 +208,7 @@ function calculateTextPosition(config: {
     const { width, height } = calculateStationDimensions(stationType, transferCount, stationDirection);
     let textX = 0,
         textY = 0,
-        textAnchor;
+        textAnchor: React.SVGAttributes<SVGTextElement>['textAnchor'];
 
     if (nameDirection === 'vertical') {
         textX = LAYOUT_CONSTANTS.BASE_TEXT_OFFSET - (nameLineCount - 1) * LAYOUT_CONSTANTS.FONT_SIZE.NAME;

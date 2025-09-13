@@ -44,7 +44,7 @@ const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineB
             <rect fill={color[2]} x="0" width="20" height="20" rx="2" ry="2" />
             <text
                 {...getLangStyle(TextLanguage.en)}
-                textAnchor="left"
+                textAnchor="start"
                 x={sX}
                 y={sY}
                 fill={fgColor}
