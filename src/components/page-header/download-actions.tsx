@@ -124,23 +124,29 @@ export default function DownloadActions() {
 
     // Advanced mode state variables
     const [selectedNodeId, setSelectedNodeId] = React.useState('');
-    const [leftDistance, setLeftDistance] = React.useState(50);
-    const [rightDistance, setRightDistance] = React.useState(50);
-    const [topDistance, setTopDistance] = React.useState(50);
-    const [bottomDistance, setBottomDistance] = React.useState(50);
+    const [distance, setDistance] = React.useState({
+        left: 50,
+        right: 50,
+        top: 50,
+        bottom: 50,
+    });
     const [aspectRatio, setAspectRatio] = React.useState('current');
-    const [paddingLeft, setPaddingLeft] = React.useState(0);
-    const [paddingRight, setPaddingRight] = React.useState(0);
-    const [paddingTop, setPaddingTop] = React.useState(0);
-    const [paddingBottom, setPaddingBottom] = React.useState(0);
-    const [topLeftX, setTopLeftX] = React.useState(0);
-    const [topLeftY, setTopLeftY] = React.useState(0);
-    const [topRightX, setTopRightX] = React.useState(0);
-    const [topRightY, setTopRightY] = React.useState(0);
-    const [bottomLeftX, setBottomLeftX] = React.useState(0);
-    const [bottomLeftY, setBottomLeftY] = React.useState(0);
-    const [bottomRightX, setBottomRightX] = React.useState(0);
-    const [bottomRightY, setBottomRightY] = React.useState(0);
+    const [padding, setPadding] = React.useState({
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+    });
+    const [fourCornersPosition, setFourCornersPosition] = React.useState({
+        topLeftX: 0,
+        topLeftY: 0,
+        topRightX: 0,
+        topRightY: 0,
+        bottomLeftX: 0,
+        bottomLeftY: 0,
+        bottomRightX: 0,
+        bottomRightY: 0,
+    });
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
@@ -203,34 +209,34 @@ export default function DownloadActions() {
         {
             type: 'input',
             label: 'Left distance',
-            value: leftDistance.toString(),
+            value: distance.left.toString(),
             variant: 'number',
             isDisabled: !selectedNodeId,
-            onChange: value => setLeftDistance(Number(value) || 0),
+            onChange: value => setDistance({ ...distance, left: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Right distance',
-            value: rightDistance.toString(),
+            value: distance.right.toString(),
             variant: 'number',
             isDisabled: !selectedNodeId,
-            onChange: value => setRightDistance(Number(value) || 0),
+            onChange: value => setDistance({ ...distance, right: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Top distance',
-            value: topDistance.toString(),
+            value: distance.top.toString(),
             variant: 'number',
             isDisabled: !selectedNodeId,
-            onChange: value => setTopDistance(Number(value) || 0),
+            onChange: value => setDistance({ ...distance, top: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Bottom distance',
-            value: bottomDistance.toString(),
+            value: distance.bottom.toString(),
             variant: 'number',
             isDisabled: !selectedNodeId,
-            onChange: value => setBottomDistance(Number(value) || 0),
+            onChange: value => setDistance({ ...distance, bottom: Number(value) || 0 }),
         },
         {
             type: 'select',
@@ -242,30 +248,30 @@ export default function DownloadActions() {
         {
             type: 'input',
             label: 'Padding left',
-            value: paddingLeft.toString(),
+            value: padding.left.toString(),
             variant: 'number',
-            onChange: value => setPaddingLeft(Number(value) || 0),
+            onChange: value => setPadding({ ...padding, left: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Padding right',
-            value: paddingRight.toString(),
+            value: padding.right.toString(),
             variant: 'number',
-            onChange: value => setPaddingRight(Number(value) || 0),
+            onChange: value => setPadding({ ...padding, right: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Padding top',
-            value: paddingTop.toString(),
+            value: padding.top.toString(),
             variant: 'number',
-            onChange: value => setPaddingTop(Number(value) || 0),
+            onChange: value => setPadding({ ...padding, top: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Padding bottom',
-            value: paddingBottom.toString(),
+            value: padding.bottom.toString(),
             variant: 'number',
-            onChange: value => setPaddingBottom(Number(value) || 0),
+            onChange: value => setPadding({ ...padding, bottom: Number(value) || 0 }),
         },
     ];
 
@@ -273,73 +279,82 @@ export default function DownloadActions() {
         {
             type: 'input',
             label: 'Top left X',
-            value: topLeftX.toString(),
+            value: fourCornersPosition.topLeftX.toString(),
             variant: 'number',
-            onChange: value => setTopLeftX(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topLeftX: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Top left Y',
-            value: topLeftY.toString(),
+            value: fourCornersPosition.topLeftY.toString(),
             variant: 'number',
-            onChange: value => setTopLeftY(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topLeftY: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Top right X',
-            value: topRightX.toString(),
+            value: fourCornersPosition.topRightX.toString(),
             variant: 'number',
-            onChange: value => setTopRightX(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topRightX: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Top right Y',
-            value: topRightY.toString(),
+            value: fourCornersPosition.topRightY.toString(),
             variant: 'number',
-            onChange: value => setTopRightY(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topRightY: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Bottom left X',
-            value: bottomLeftX.toString(),
+            value: fourCornersPosition.bottomLeftX.toString(),
             variant: 'number',
-            onChange: value => setBottomLeftX(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomLeftX: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Bottom left Y',
-            value: bottomLeftY.toString(),
+            value: fourCornersPosition.bottomLeftY.toString(),
             variant: 'number',
-            onChange: value => setBottomLeftY(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomLeftY: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Bottom right X',
-            value: bottomRightX.toString(),
+            value: fourCornersPosition.bottomRightX.toString(),
             variant: 'number',
-            onChange: value => setBottomRightX(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomRightX: Number(value) || 0 }),
         },
         {
             type: 'input',
             label: 'Bottom right Y',
-            value: bottomRightY.toString(),
+            value: fourCornersPosition.bottomRightY.toString(),
             variant: 'number',
-            onChange: value => setBottomRightY(Number(value) || 0),
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomRightY: Number(value) || 0 }),
         },
     ];
 
-    // Initialize position controls with current dimensions
+    // Initialize position controls with current dimensions and reset advanced properties when modal opens
     React.useEffect(() => {
         if (isDownloadModalOpen && graph.current) {
             const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
-            setTopLeftX(xMin);
-            setTopLeftY(yMin);
-            setTopRightX(xMax);
-            setTopRightY(yMin);
-            setBottomLeftX(xMin);
-            setBottomLeftY(yMax);
-            setBottomRightX(xMax);
-            setBottomRightY(yMax);
+            
+            // Reset advanced properties to default values when modal opens
+            setSelectedNodeId('');
+            setDistance({ left: 50, right: 50, top: 50, bottom: 50 });
+            setPadding({ left: 0, right: 0, top: 0, bottom: 0 });
+            
+            // Initialize position controls with current canvas dimensions
+            setFourCornersPosition({
+                topLeftX: xMin,
+                topLeftY: yMin,
+                topRightX: xMax,
+                topRightY: yMin,
+                bottomLeftX: xMin,
+                bottomLeftY: yMax,
+                bottomRightX: xMax,
+                bottomRightY: yMax,
+            });
         }
     }, [isDownloadModalOpen]);
 
@@ -354,10 +369,10 @@ export default function DownloadActions() {
             const nodeX = graph.current.getNodeAttribute(selectedNodeId, 'x');
             const nodeY = graph.current.getNodeAttribute(selectedNodeId, 'y');
 
-            xMin = nodeX - leftDistance;
-            yMin = nodeY - topDistance;
-            xMax = nodeX + rightDistance;
-            yMax = nodeY + bottomDistance;
+            xMin = nodeX - distance.left;
+            yMin = nodeY - distance.top;
+            xMax = nodeX + distance.right;
+            yMax = nodeY + distance.bottom;
         } else {
             // Use current canvas dimensions
             const canvasSize = calculateCanvasSize(graph.current);
@@ -368,30 +383,32 @@ export default function DownloadActions() {
         }
 
         // Apply padding
-        xMin -= paddingLeft;
-        yMin -= paddingTop;
-        xMax += paddingRight;
-        yMax += paddingBottom;
+        xMin -= padding.left;
+        yMin -= padding.top;
+        xMax += padding.right;
+        yMax += padding.bottom;
 
         // Update position controls
-        setTopLeftX(xMin);
-        setTopLeftY(yMin);
-        setTopRightX(xMax);
-        setTopRightY(yMin);
-        setBottomLeftX(xMin);
-        setBottomLeftY(yMax);
-        setBottomRightX(xMax);
-        setBottomRightY(yMax);
+        setFourCornersPosition({
+            topLeftX: xMin,
+            topLeftY: yMin,
+            topRightX: xMax,
+            topRightY: yMin,
+            bottomLeftX: xMin,
+            bottomLeftY: yMax,
+            bottomRightX: xMax,
+            bottomRightY: yMax,
+        });
     }, [
         selectedNodeId,
-        leftDistance,
-        rightDistance,
-        topDistance,
-        bottomDistance,
-        paddingLeft,
-        paddingRight,
-        paddingTop,
-        paddingBottom,
+        distance.left,
+        distance.right,
+        distance.top,
+        distance.bottom,
+        padding.left,
+        padding.right,
+        padding.top,
+        padding.bottom,
     ]);
 
     // calculate the max canvas area the current browser can support
@@ -408,14 +425,19 @@ export default function DownloadActions() {
     // disable some scale options that are too big for the current browser to generate
     React.useEffect(() => {
         if (isDownloadModalOpen) {
-            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+            // Recalculate canvas size using current position controls
+            const xMin = Math.min(fourCornersPosition.topLeftX, fourCornersPosition.bottomLeftX);
+            const yMin = Math.min(fourCornersPosition.topLeftY, fourCornersPosition.topRightY);
+            const xMax = Math.max(fourCornersPosition.topRightX, fourCornersPosition.bottomRightX);
+            const yMax = Math.max(fourCornersPosition.bottomLeftY, fourCornersPosition.bottomRightY);
+            
             const [width, height] = [xMax - xMin, yMax - yMin];
             const disabledScales = scales.filter(
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
             );
             setResvgScaleOptions(disabledScales);
         }
-    }, [isDownloadModalOpen]);
+    }, [isDownloadModalOpen, fourCornersPosition, maxArea]);
 
     const handleDownloadJson = async () => {
         if (isAllowAppTelemetry)
@@ -447,10 +469,10 @@ export default function DownloadActions() {
             );
 
         const customViewBox = {
-            xMin: Math.min(topLeftX, bottomLeftX),
-            yMin: Math.min(topLeftY, topRightY),
-            xMax: Math.max(topRightX, bottomRightX),
-            yMax: Math.max(bottomLeftY, bottomRightY),
+            xMin: Math.min(fourCornersPosition.topLeftX, fourCornersPosition.bottomLeftX),
+            yMin: Math.min(fourCornersPosition.topLeftY, fourCornersPosition.topRightY),
+            xMax: Math.max(fourCornersPosition.topRightX, fourCornersPosition.bottomRightX),
+            yMax: Math.max(fourCornersPosition.bottomLeftY, fourCornersPosition.bottomRightY),
         };
 
         const { elem, width, height } = await makeRenderReadySVGElement(
@@ -562,6 +584,15 @@ export default function DownloadActions() {
                                     <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel pb={4}>
+                                    <Box mb={4} p={3} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
+                                        <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                            Current canvas dimensions
+                                        </Text>
+                                        <Text fontSize="sm">
+                                            Width: {Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX).toFixed(1)} | 
+                                            Height: {Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY).toFixed(1)}
+                                        </Text>
+                                    </Box>
                                     <FormControl mb={4}>
                                         <FormLabel>Center node</FormLabel>
                                         <Input
