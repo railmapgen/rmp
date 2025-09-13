@@ -191,65 +191,69 @@ export default function DownloadActions() {
         },
     ];
 
-    // Advanced mode fields
+    // Advanced mode fields - distance fields
     const nodeOptions = React.useMemo(() => getNodeOptions(), [isDownloadModalOpen]);
-    const advancedFields: RmgFieldsField[] = [
+    const distanceFields: RmgFieldsField[] = [
         {
             type: 'input',
-            label: 'Left distance',
-            value: distance.left.toString(),
+            label: t('header.download.leftDistance'),
+            value: selectedNodeId ? distance.left.toString() : '',
             variant: 'number',
             isDisabled: !selectedNodeId,
             onChange: value => setDistance({ ...distance, left: Number(value) || 0 }),
         },
         {
             type: 'input',
-            label: 'Right distance',
-            value: distance.right.toString(),
+            label: t('header.download.rightDistance'),
+            value: selectedNodeId ? distance.right.toString() : '',
             variant: 'number',
             isDisabled: !selectedNodeId,
             onChange: value => setDistance({ ...distance, right: Number(value) || 0 }),
         },
         {
             type: 'input',
-            label: 'Top distance',
-            value: distance.top.toString(),
+            label: t('header.download.topDistance'),
+            value: selectedNodeId ? distance.top.toString() : '',
             variant: 'number',
             isDisabled: !selectedNodeId,
             onChange: value => setDistance({ ...distance, top: Number(value) || 0 }),
         },
         {
             type: 'input',
-            label: 'Bottom distance',
-            value: distance.bottom.toString(),
+            label: t('header.download.bottomDistance'),
+            value: selectedNodeId ? distance.bottom.toString() : '',
             variant: 'number',
             isDisabled: !selectedNodeId,
             onChange: value => setDistance({ ...distance, bottom: Number(value) || 0 }),
         },
+    ];
+
+    // Advanced mode fields - padding fields
+    const paddingFields: RmgFieldsField[] = [
         {
             type: 'input',
-            label: 'Padding left',
+            label: t('header.download.paddingLeft'),
             value: padding.left.toString(),
             variant: 'number',
             onChange: value => setPadding({ ...padding, left: Number(value) || 0 }),
         },
         {
             type: 'input',
-            label: 'Padding right',
+            label: t('header.download.paddingRight'),
             value: padding.right.toString(),
             variant: 'number',
             onChange: value => setPadding({ ...padding, right: Number(value) || 0 }),
         },
         {
             type: 'input',
-            label: 'Padding top',
+            label: t('header.download.paddingTop'),
             value: padding.top.toString(),
             variant: 'number',
             onChange: value => setPadding({ ...padding, top: Number(value) || 0 }),
         },
         {
             type: 'input',
-            label: 'Padding bottom',
+            label: t('header.download.paddingBottom'),
             value: padding.bottom.toString(),
             variant: 'number',
             onChange: value => setPadding({ ...padding, bottom: Number(value) || 0 }),
@@ -560,14 +564,14 @@ export default function DownloadActions() {
                             <AccordionItem>
                                 <AccordionButton>
                                     <Box flex="1" textAlign="left">
-                                        Advanced options
+                                        {t('header.download.advancedOptions')}
                                     </Box>
                                     <AccordionIcon />
                                 </AccordionButton>
                                 <AccordionPanel pb={4}>
                                     <Box mb={4} p={3} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
                                         <Text fontSize="sm" fontWeight="bold" mb={1}>
-                                            Current canvas dimensions
+                                            {t('header.download.currentCanvasDimensions')}
                                         </Text>
                                         <Text fontSize="sm">
                                             Width:{' '}
@@ -579,14 +583,21 @@ export default function DownloadActions() {
                                                 fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY
                                             ).toFixed(1)}
                                         </Text>
+                                        <Text fontSize="sm" fontWeight="bold" mb={1} mt={2}>
+                                            {t('header.download.currentAspectRatio')}
+                                        </Text>
+                                        <Text fontSize="sm">
+                                            {(Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX) /
+                                             Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY)).toFixed(2)}:1
+                                        </Text>
                                     </Box>
                                     <FormControl mb={4}>
-                                        <FormLabel>Center node</FormLabel>
+                                        <FormLabel>{t('header.download.centerNode')}</FormLabel>
                                         <Input
                                             list="node-options"
                                             value={selectedNodeId}
                                             onChange={e => setSelectedNodeId(e.target.value)}
-                                            placeholder="Enter node ID or select from list"
+                                            placeholder={t('header.download.centerNodePlaceholder')}
                                         />
                                         <datalist id="node-options">
                                             {Object.entries(nodeOptions).map(([value, label]) => (
@@ -596,10 +607,15 @@ export default function DownloadActions() {
                                             ))}
                                         </datalist>
                                     </FormControl>
-                                    <RmgFields fields={advancedFields} />
+                                    <Box mb={4}>
+                                        <RmgFields fields={distanceFields} />
+                                    </Box>
+                                    <Box mb={4}>
+                                        <RmgFields fields={paddingFields} />
+                                    </Box>
                                     <Box mt={4}>
                                         <Text fontWeight="bold" mb={2}>
-                                            Position controls
+                                            {t('header.download.positionControls')}
                                         </Text>
                                         <RmgFields fields={positionFields} />
                                     </Box>

@@ -702,7 +702,21 @@
             "termsAndConditions": "利用規約",
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
-            "confirm": "ダウンロード"
+            "confirm": "ダウンロード",
+            "advancedOptions": "詳細オプション",
+            "currentCanvasDimensions": "現在のキャンバス寸法",
+            "currentAspectRatio": "現在のアスペクト比",
+            "centerNode": "中心ノード",
+            "centerNodePlaceholder": "ノードIDを入力またはリストから選択",
+            "leftDistance": "左距離",
+            "rightDistance": "右距離",
+            "topDistance": "上距離",
+            "bottomDistance": "下距離",
+            "paddingLeft": "左パディング",
+            "paddingRight": "右パディング",
+            "paddingTop": "上パディング",
+            "paddingBottom": "下パディング",
+            "positionControls": "位置制御"
         },
         "donation": {
             "title": "寄付",

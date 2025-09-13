@@ -700,7 +700,21 @@
             "termsAndConditions": "Terms and Conditions",
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
-            "confirm": "Download"
+            "confirm": "Download",
+            "advancedOptions": "Advanced options",
+            "currentCanvasDimensions": "Current canvas dimensions",
+            "currentAspectRatio": "Current aspect ratio",
+            "centerNode": "Center node",
+            "centerNodePlaceholder": "Enter node ID or select from list",
+            "leftDistance": "Left distance",
+            "rightDistance": "Right distance",
+            "topDistance": "Top distance",
+            "bottomDistance": "Bottom distance",
+            "paddingLeft": "Padding left",
+            "paddingRight": "Padding right",
+            "paddingTop": "Padding top",
+            "paddingBottom": "Padding bottom",
+            "positionControls": "Position controls"
         },
         "donation": {
             "title": "Donation",

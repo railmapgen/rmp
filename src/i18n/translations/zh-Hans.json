@@ -699,7 +699,21 @@
             "termsAndConditions": "条款及细则",
             "termsAndConditionsInfo": "我同意",
             "period": "。",
-            "confirm": "下载"
+            "confirm": "下载",
+            "advancedOptions": "高级选项",
+            "currentCanvasDimensions": "当前画布尺寸",
+            "currentAspectRatio": "当前宽高比",
+            "centerNode": "中心节点",
+            "centerNodePlaceholder": "输入节点ID或从列表中选择",
+            "leftDistance": "左侧距离",
+            "rightDistance": "右侧距离",
+            "topDistance": "上方距离",
+            "bottomDistance": "下方距离",
+            "paddingLeft": "左侧内边距",
+            "paddingRight": "右侧内边距",
+            "paddingTop": "上方内边距",
+            "paddingBottom": "下方内边距",
+            "positionControls": "位置控制"
         },
         "donation": {
             "title": "捐赠",
