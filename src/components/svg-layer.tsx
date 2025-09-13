@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineId, MiscNodeId, StnId } from '../constants/constants';
+import { Id, LineId, MiscNodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -11,6 +11,7 @@ import { default as allStations } from './svgs/stations/stations';
 
 interface SvgLayerProps {
     elements: Element[];
+    selected: Set<Id>;
     handlePointerDown: (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
@@ -24,7 +25,8 @@ type StyleComponent = React.FC<
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
-        const { elements, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } = props;
+        const { elements, selected, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } =
+            props;
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
@@ -56,7 +58,8 @@ const SvgLayer = React.memo(
                 }
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
-                layers[element.line!.attr.zIndex].main.push(
+                const isSelected = selected.has(element.id);
+                const component = (
                     <StyleComponent
                         key={element.id}
                         id={element.id as LineId}
@@ -66,6 +69,16 @@ const SvgLayer = React.memo(
                         newLine={false}
                         handlePointerDown={handleEdgePointerDown}
                     />
+                );
+
+                layers[element.line!.attr.zIndex].main.push(
+                    isSelected ? (
+                        <g key={`${element.id}-glow`} filter="url(#selected-glow)">
+                            {component}
+                        </g>
+                    ) : (
+                        component
+                    )
                 );
 
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
@@ -103,7 +116,8 @@ const SvgLayer = React.memo(
                 }
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
-                layers[element.station!.zIndex].main.push(
+                const isSelected = selected.has(element.id);
+                const component = (
                     <StationComponent
                         key={element.id}
                         id={element.id as StnId}
@@ -114,6 +128,16 @@ const SvgLayer = React.memo(
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
                     />
+                );
+
+                layers[element.station!.zIndex].main.push(
+                    isSelected ? (
+                        <g key={`${element.id}-glow`} filter="url(#selected-glow)">
+                            {component}
+                        </g>
+                    ) : (
+                        component
+                    )
                 );
 
                 const PostStationComponent = allStations[type]?.postComponent;
@@ -153,7 +177,8 @@ const SvgLayer = React.memo(
                 }
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-                layers[element.miscNode!.zIndex].main.push(
+                const isSelected = selected.has(element.id);
+                const component = (
                     <MiscNodeComponent
                         key={element.id}
                         id={element.id as MiscNodeId}
@@ -165,6 +190,16 @@ const SvgLayer = React.memo(
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
                     />
+                );
+
+                layers[element.miscNode!.zIndex].main.push(
+                    isSelected ? (
+                        <g key={`${element.id}-glow`} filter="url(#selected-glow)">
+                            {component}
+                        </g>
+                    ) : (
+                        component
+                    )
                 );
 
                 const PostMiscNodeComponent = miscNodes[type]?.postComponent;
@@ -192,7 +227,7 @@ const SvgLayer = React.memo(
 
         return jsxElements;
     },
-    (prevProps, nextProps) => prevProps.elements === nextProps.elements
+    (prevProps, nextProps) => prevProps.elements === nextProps.elements && prevProps.selected === nextProps.selected
 );
 
 export default SvgLayer;
