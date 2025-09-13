@@ -237,14 +237,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     }, [closedPathData, graph]);
 
     return (
-        <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={{ cursor: 'move' }}
-        >
+        <g id={id} transform={`translate(${x}, ${y})`}>
             {fillPath && (
                 <path
                     d={fillPath}
@@ -264,6 +257,10 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                 stroke="#000"
                 strokeWidth="0.5"
                 className="removeMe"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
             />
             {/* Show text when no fill path is found */}
             {!fillPath && (
