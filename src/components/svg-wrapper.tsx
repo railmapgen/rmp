@@ -477,18 +477,10 @@ const SvgWrapper = () => {
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
                     <filter id="selected-glow" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                        <feMerge>
-                            <feMergeNode in="coloredBlur" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                        <feColorMatrix
-                            values="0.2 0.4 1 0 0  0.2 0.4 1 0 0  0.2 0.4 1 0 0  0 0 0 1 0"
-                            result="blueGlow"
-                        />
-                        <feGaussianBlur in="blueGlow" stdDeviation="2" result="blur1" />
-                        <feGaussianBlur in="blueGlow" stdDeviation="4" result="blur2">
-                            <animate attributeName="stdDeviation" values="2;6;2" dur="2s" repeatCount="indefinite" />
+                        <feColorMatrix values="1 1 0 0 0  1 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="yellowGlow" />
+                        <feGaussianBlur in="yellowGlow" stdDeviation="1" result="blur1" />
+                        <feGaussianBlur in="yellowGlow" stdDeviation="2" result="blur2">
+                            <animate attributeName="stdDeviation" values="1;3;1" dur="0.5s" repeatCount="indefinite" />
                         </feGaussianBlur>
                         <feMerge>
                             <feMergeNode in="blur2" />
