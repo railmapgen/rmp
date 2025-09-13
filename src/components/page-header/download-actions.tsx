@@ -338,12 +338,12 @@ export default function DownloadActions() {
     React.useEffect(() => {
         if (isDownloadModalOpen && graph.current) {
             const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
-            
+
             // Reset advanced properties to default values when modal opens
             setSelectedNodeId('');
             setDistance({ left: 50, right: 50, top: 50, bottom: 50 });
             setPadding({ left: 0, right: 0, top: 0, bottom: 0 });
-            
+
             // Initialize position controls with current canvas dimensions
             setFourCornersPosition({
                 topLeftX: xMin,
@@ -430,7 +430,7 @@ export default function DownloadActions() {
             const yMin = Math.min(fourCornersPosition.topLeftY, fourCornersPosition.topRightY);
             const xMax = Math.max(fourCornersPosition.topRightX, fourCornersPosition.bottomRightX);
             const yMax = Math.max(fourCornersPosition.bottomLeftY, fourCornersPosition.bottomRightY);
-            
+
             const [width, height] = [xMax - xMin, yMax - yMin];
             const disabledScales = scales.filter(
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
@@ -589,8 +589,14 @@ export default function DownloadActions() {
                                             Current canvas dimensions
                                         </Text>
                                         <Text fontSize="sm">
-                                            Width: {Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX).toFixed(1)} | 
-                                            Height: {Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY).toFixed(1)}
+                                            Width:{' '}
+                                            {Math.abs(
+                                                fourCornersPosition.topRightX - fourCornersPosition.topLeftX
+                                            ).toFixed(1)}{' '}
+                                            | Height:{' '}
+                                            {Math.abs(
+                                                fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY
+                                            ).toFixed(1)}
                                         </Text>
                                     </Box>
                                     <FormControl mb={4}>
