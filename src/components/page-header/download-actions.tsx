@@ -1,4 +1,9 @@
 import {
+    Accordion,
+    AccordionButton,
+    AccordionIcon,
+    AccordionItem,
+    AccordionPanel,
     Alert,
     AlertDescription,
     AlertIcon,
@@ -7,9 +12,12 @@ import {
     Box,
     Button,
     Checkbox,
+    FormControl,
+    FormLabel,
     HStack,
     Icon,
     IconButton,
+    Input,
     Link,
     Menu,
     MenuButton,
@@ -31,7 +39,7 @@ import canvasSize from 'canvas-size';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
-import { Events } from '../../constants/constants';
+import { Events, MiscNodeId, StnId } from '../../constants/constants';
 import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
@@ -55,6 +63,35 @@ const getTauriUrl = () => {
           ? 'aarch64.dmg'
           : 'x64-setup.exe';
     return baseUrl + `/tauri-${tag}/Rail.Map.Toolkit_${ver}_${suffix}`;
+};
+
+const getNodeOptions = () => {
+    const options: { [k: string]: string } = { '': '' }; // Default empty option
+
+    if (window.graph) {
+        window.graph.forEachNode(nodeId => {
+            try {
+                const nodeAttrs = window.graph.getNodeAttributes(nodeId);
+                const nodeType = nodeAttrs.type;
+
+                // Try to get the display name from the node's attributes
+                let displayName = nodeId; // fallback to ID
+                if (nodeType && nodeAttrs[nodeType] && (nodeAttrs[nodeType] as any).names) {
+                    const names = (nodeAttrs[nodeType] as any).names;
+                    if (Array.isArray(names) && names.length > 0) {
+                        displayName = names[0] || names[1] || nodeId; // Use first non-empty name
+                    }
+                }
+
+                options[nodeId] = `${displayName} (${nodeId})`;
+            } catch (error) {
+                // If we can't get the name, just use the ID
+                options[nodeId] = nodeId;
+            }
+        });
+    }
+
+    return options;
 };
 
 export default function DownloadActions() {
@@ -84,6 +121,39 @@ export default function DownloadActions() {
     const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
     const [resvgScaleOptions, setResvgScaleOptions] = React.useState<number[]>([]);
     const [isTransparent, setIsTransparent] = React.useState(false);
+
+    // Advanced mode state variables
+    const [selectedNodeId, setSelectedNodeId] = React.useState('');
+    const [distance, setDistance] = React.useState({
+        left: 50,
+        right: 50,
+        top: 50,
+        bottom: 50,
+    });
+    const [padding, setPadding] = React.useState({
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+    });
+    const [fourCornersPosition, setFourCornersPosition] = React.useState({
+        topLeftX: 0,
+        topLeftY: 0,
+        topRightX: 0,
+        topRightY: 0,
+        bottomLeftX: 0,
+        bottomLeftY: 0,
+        bottomRightX: 0,
+        bottomRightY: 0,
+    });
+    const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
+    const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
+    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
+    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
+    const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
+    const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
+    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
+
     const fields: RmgFieldsField[] = [
         {
             type: 'select',
@@ -120,13 +190,211 @@ export default function DownloadActions() {
             onChange: setIsTransparent,
         },
     ];
-    const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
-    const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
-    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
-    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
-    const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
-    const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
-    const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
+
+    // Advanced mode fields - distance fields
+    const nodeOptions = React.useMemo(() => getNodeOptions(), [isDownloadModalOpen]);
+    const distanceFields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('header.download.leftDistance'),
+            value: selectedNodeId ? distance.left.toString() : '',
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setDistance({ ...distance, left: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: t('header.download.rightDistance'),
+            value: selectedNodeId ? distance.right.toString() : '',
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setDistance({ ...distance, right: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: t('header.download.topDistance'),
+            value: selectedNodeId ? distance.top.toString() : '',
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setDistance({ ...distance, top: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: t('header.download.bottomDistance'),
+            value: selectedNodeId ? distance.bottom.toString() : '',
+            variant: 'number',
+            isDisabled: !selectedNodeId,
+            onChange: value => setDistance({ ...distance, bottom: Number(value) || 0 }),
+        },
+    ];
+
+    // Advanced mode fields - padding fields
+    const paddingFields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: t('header.download.paddingLeft'),
+            value: padding.left.toString(),
+            variant: 'number',
+            onChange: value => setPadding({ ...padding, left: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: t('header.download.paddingRight'),
+            value: padding.right.toString(),
+            variant: 'number',
+            onChange: value => setPadding({ ...padding, right: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: t('header.download.paddingTop'),
+            value: padding.top.toString(),
+            variant: 'number',
+            onChange: value => setPadding({ ...padding, top: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: t('header.download.paddingBottom'),
+            value: padding.bottom.toString(),
+            variant: 'number',
+            onChange: value => setPadding({ ...padding, bottom: Number(value) || 0 }),
+        },
+    ];
+
+    const positionFields: RmgFieldsField[] = [
+        {
+            type: 'input',
+            label: 'Top left X',
+            value: fourCornersPosition.topLeftX.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topLeftX: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Top left Y',
+            value: fourCornersPosition.topLeftY.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topLeftY: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Top right X',
+            value: fourCornersPosition.topRightX.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topRightX: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Top right Y',
+            value: fourCornersPosition.topRightY.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, topRightY: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Bottom left X',
+            value: fourCornersPosition.bottomLeftX.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomLeftX: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Bottom left Y',
+            value: fourCornersPosition.bottomLeftY.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomLeftY: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Bottom right X',
+            value: fourCornersPosition.bottomRightX.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomRightX: Number(value) || 0 }),
+        },
+        {
+            type: 'input',
+            label: 'Bottom right Y',
+            value: fourCornersPosition.bottomRightY.toString(),
+            variant: 'number',
+            onChange: value => setFourCornersPosition({ ...fourCornersPosition, bottomRightY: Number(value) || 0 }),
+        },
+    ];
+
+    // Initialize position controls with current dimensions and reset advanced properties when modal opens
+    React.useEffect(() => {
+        if (isDownloadModalOpen && graph.current) {
+            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+
+            // Reset advanced properties to default values when modal opens
+            setSelectedNodeId('');
+            setDistance({ left: 50, right: 50, top: 50, bottom: 50 });
+            setPadding({ left: 0, right: 0, top: 0, bottom: 0 });
+
+            // Initialize position controls with current canvas dimensions
+            setFourCornersPosition({
+                topLeftX: xMin,
+                topLeftY: yMin,
+                topRightX: xMax,
+                topRightY: yMin,
+                bottomLeftX: xMin,
+                bottomLeftY: yMax,
+                bottomRightX: xMax,
+                bottomRightY: yMax,
+            });
+        }
+    }, [isDownloadModalOpen]);
+
+    // Update position controls when advanced properties change
+    React.useEffect(() => {
+        if (!graph.current) return;
+
+        let xMin, yMin, xMax, yMax;
+
+        if (selectedNodeId && graph.current.hasNode(selectedNodeId)) {
+            // Center around selected node
+            const nodeX = graph.current.getNodeAttribute(selectedNodeId, 'x');
+            const nodeY = graph.current.getNodeAttribute(selectedNodeId, 'y');
+
+            xMin = nodeX - distance.left;
+            yMin = nodeY - distance.top;
+            xMax = nodeX + distance.right;
+            yMax = nodeY + distance.bottom;
+        } else {
+            // Use current canvas dimensions
+            const canvasSize = calculateCanvasSize(graph.current);
+            xMin = canvasSize.xMin;
+            yMin = canvasSize.yMin;
+            xMax = canvasSize.xMax;
+            yMax = canvasSize.yMax;
+        }
+
+        // Apply padding
+        xMin -= padding.left;
+        yMin -= padding.top;
+        xMax += padding.right;
+        yMax += padding.bottom;
+
+        // Update position controls
+        setFourCornersPosition({
+            topLeftX: xMin,
+            topLeftY: yMin,
+            topRightX: xMax,
+            topRightY: yMin,
+            bottomLeftX: xMin,
+            bottomLeftY: yMax,
+            bottomRightX: xMax,
+            bottomRightY: yMax,
+        });
+    }, [
+        selectedNodeId,
+        distance.left,
+        distance.right,
+        distance.top,
+        distance.bottom,
+        padding.left,
+        padding.right,
+        padding.top,
+        padding.bottom,
+    ]);
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
@@ -142,14 +410,19 @@ export default function DownloadActions() {
     // disable some scale options that are too big for the current browser to generate
     React.useEffect(() => {
         if (isDownloadModalOpen) {
-            const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+            // Recalculate canvas size using current position controls
+            const xMin = Math.min(fourCornersPosition.topLeftX, fourCornersPosition.bottomLeftX);
+            const yMin = Math.min(fourCornersPosition.topLeftY, fourCornersPosition.topRightY);
+            const xMax = Math.max(fourCornersPosition.topRightX, fourCornersPosition.bottomRightX);
+            const yMax = Math.max(fourCornersPosition.bottomLeftY, fourCornersPosition.bottomRightY);
+
             const [width, height] = [xMax - xMin, yMax - yMin];
             const disabledScales = scales.filter(
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
             );
             setResvgScaleOptions(disabledScales);
         }
-    }, [isDownloadModalOpen]);
+    }, [isDownloadModalOpen, fourCornersPosition, maxArea]);
 
     const handleDownloadJson = async () => {
         if (isAllowAppTelemetry)
@@ -180,12 +453,20 @@ export default function DownloadActions() {
                 isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
             );
 
+        const customViewBox = {
+            xMin: Math.min(fourCornersPosition.topLeftX, fourCornersPosition.bottomLeftX),
+            yMin: Math.min(fourCornersPosition.topLeftY, fourCornersPosition.topRightY),
+            xMax: Math.max(fourCornersPosition.topRightX, fourCornersPosition.bottomRightX),
+            yMax: Math.max(fourCornersPosition.bottomLeftY, fourCornersPosition.bottomRightY),
+        };
+
         const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
             isAttachSelected,
             isSystemFontsOnly,
             languages,
-            svgVersion
+            svgVersion,
+            customViewBox
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
         // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
@@ -278,6 +559,88 @@ export default function DownloadActions() {
                         <RmgFields fields={fields} />
                         {format === 'svg' && <RmgFields fields={svgFields} />}
                         {format === 'png' && <RmgFields fields={pngFields} />}
+
+                        <Accordion allowToggle mt={4}>
+                            <AccordionItem>
+                                <AccordionButton>
+                                    <Box flex="1" textAlign="left">
+                                        {t('header.download.advancedOptions')}
+                                    </Box>
+                                    <AccordionIcon />
+                                </AccordionButton>
+                                <AccordionPanel pb={4}>
+                                    <Box mb={4} p={3} bg={useColorModeValue('gray.50', 'gray.700')} borderRadius="md">
+                                        <HStack spacing={4} align="stretch">
+                                            <Box flex="1" textAlign="center">
+                                                <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                                    {t('header.download.width')}
+                                                </Text>
+                                                <Text fontSize="sm">
+                                                    {Math.abs(
+                                                        fourCornersPosition.topRightX - fourCornersPosition.topLeftX
+                                                    ).toFixed(1)}
+                                                </Text>
+                                            </Box>
+                                            <Box flex="1" textAlign="center">
+                                                <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                                    {t('header.download.height')}
+                                                </Text>
+                                                <Text fontSize="sm">
+                                                    {Math.abs(
+                                                        fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY
+                                                    ).toFixed(1)}
+                                                </Text>
+                                            </Box>
+                                            <Box flex="1" textAlign="center">
+                                                <Text fontSize="sm" fontWeight="bold" mb={1}>
+                                                    {t('header.download.ratio')}
+                                                </Text>
+                                                <Text fontSize="sm">
+                                                    {(() => {
+                                                        const width = Math.abs(fourCornersPosition.topRightX - fourCornersPosition.topLeftX);
+                                                        const height = Math.abs(fourCornersPosition.bottomLeftY - fourCornersPosition.topLeftY);
+                                                        const gcd = (a: number, b: number): number => b === 0 ? a : gcd(b, a % b);
+                                                        const ratio1 = Math.round(width * 100);
+                                                        const ratio2 = Math.round(height * 100);
+                                                        const divisor = gcd(ratio1, ratio2);
+                                                        return `${ratio1 / divisor}:${ratio2 / divisor}`;
+                                                    })()}
+                                                </Text>
+                                            </Box>
+                                        </HStack>
+                                    </Box>
+                                    <FormControl mb={4}>
+                                        <FormLabel>{t('header.download.centerNode')}</FormLabel>
+                                        <Input
+                                            list="node-options"
+                                            value={selectedNodeId}
+                                            onChange={e => setSelectedNodeId(e.target.value)}
+                                            placeholder={t('header.download.centerNodePlaceholder')}
+                                        />
+                                        <datalist id="node-options">
+                                            {Object.entries(nodeOptions).map(([value, label]) => (
+                                                <option key={value} value={value}>
+                                                    {label}
+                                                </option>
+                                            ))}
+                                        </datalist>
+                                    </FormControl>
+                                    <Box mb={4}>
+                                        <RmgFields fields={distanceFields} />
+                                    </Box>
+                                    <Box mb={4}>
+                                        <RmgFields fields={paddingFields} />
+                                    </Box>
+                                    <Box mt={4}>
+                                        <Text fontWeight="bold" mb={2}>
+                                            {t('header.download.positionControls')}
+                                        </Text>
+                                        <RmgFields fields={positionFields} />
+                                    </Box>
+                                </AccordionPanel>
+                            </AccordionItem>
+                        </Accordion>
+
                         <br />
                         <Checkbox
                             isChecked={isSystemFontsOnly}

@@ -39,15 +39,21 @@ export const makeRenderReadySVGElement = async (
     generateRMPInfo: boolean,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
-    svgVersion: 1.1 | 2
+    svgVersion: 1.1 | 2,
+    customViewBox?: { xMin: number; yMin: number; xMax: number; yMax: number }
 ) => {
     // get the minimum and maximum of the graph
-    const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
+    const canvasSize = calculateCanvasSize(graph);
+    const { xMin, yMin, xMax, yMax } = customViewBox || canvasSize;
     const [width, height] = [xMax - xMin, yMax - yMin];
 
     const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
     // append rmp info if user does not want to share rmp info
-    if (!generateRMPInfo) elem.appendChild(await generateRmpInfo(xMax - 400, yMax - 120));
+    if (!generateRMPInfo) {
+        // Use original canvas size for RMP info positioning when using custom viewbox
+        const originalSize = customViewBox ? canvasSize : { xMax, yMax };
+        elem.appendChild(await generateRmpInfo(originalSize.xMax - 400, originalSize.yMax - 120));
+    }
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
