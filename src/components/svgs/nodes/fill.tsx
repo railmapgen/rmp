@@ -177,6 +177,16 @@ const generateClosedPath = (
     return fullPath as Path;
 };
 
+const isPointInClosedPath = (d: string, x: number, y: number): boolean => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+
+    const path = new Path2D(d);
+
+    return ctx.isPointInPath(path, x, y);
+};
+
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -204,7 +214,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const graph = window.graph;
 
     // Find closed path starting from this node's position
-    const closedPathData = React.useMemo(() => {
+    const fillPath = React.useMemo(() => {
         if (!graph) return undefined;
 
         // Find all nodes except this fill node
@@ -212,34 +222,30 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
 
         if (allNodes.length < 3) return undefined; // Need at least 3 nodes for a closed path
 
-        let bestPath: { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined;
-        let shortestDistance = Infinity;
+        let bestPath: Path | undefined;
 
-        // Try to find a closed path starting from the closest few nodes
+        // Try to find a closed path starting from the closest nodes
         const candidates = allNodes
             .map(node => {
                 const nodeAttr = graph.getNodeAttributes(node);
                 const distance = Math.hypot(nodeAttr.x - x, nodeAttr.y - y);
                 return { node, distance };
             })
-            .sort((a, b) => a.distance - b.distance)
-            .slice(0, Math.min(5, allNodes.length)); // Try up to 5 closest nodes
+            .sort((a, b) => a.distance - b.distance);
 
         for (const { node } of candidates) {
             const path = findShortestClosedPath(graph, node, maxNodes);
-            if (path && path.nodes.length < shortestDistance) {
-                bestPath = path;
-                shortestDistance = path.nodes.length;
+            if (path) {
+                const d = generateClosedPath(graph, path.nodes, path.edges);
+                if (d && isPointInClosedPath(d, x, y)) {
+                    bestPath = d;
+                    break;
+                }
             }
         }
 
         return bestPath;
     }, [graph, x, y, id, maxNodes, refresh]);
-
-    const fillPath = React.useMemo(() => {
-        if (!closedPathData || !graph) return undefined;
-        return generateClosedPath(graph, closedPathData.nodes, closedPathData.edges);
-    }, [closedPathData, graph, refresh]);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
