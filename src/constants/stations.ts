@@ -1,4 +1,5 @@
 /* eslint-disable import/order */
+import React from 'react';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId } from './constants';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
@@ -162,7 +163,7 @@ export interface Station<T extends StationAttributes> {
     /**
      * The icon displayed in the tools panel.
      */
-    icon: JSX.Element;
+    icon: React.JSX.Element;
     /**
      * Default attributes for this component.
      */
