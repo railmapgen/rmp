@@ -1,10 +1,8 @@
-import { Button, HStack, IconButton, VStack } from '@chakra-ui/react';
-import { RmgDebouncedInput, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdDelete } from 'react-icons/md';
-import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
 import {
     defaultStationAttributes,
     NameOffsetX,
@@ -14,13 +12,11 @@ import {
     StationComponentProps,
     StationType,
 } from '../../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../../redux';
-import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import ThemeButton from '../../panels/theme-button';
+import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
-import { TokyoMetroBasicSvg, TokyoMetroBasicSvgAttributes } from './tokyo-metro-basic';
+import { TokyoMetroBasicSvg } from './tokyo-metro-basic';
 
 const TokyoMetroIntStation = (props: StationComponentProps) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -29,11 +25,13 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
         nameOffsetX = defaultTokyoMetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultTokyoMetroIntStationAttributes.nameOffsetY,
         textVertical = defaultTokyoMetroIntStationAttributes.textVertical,
-        interchanges = defaultTokyoMetroIntStationAttributes.interchanges,
+        transfer = defaultTokyoMetroIntStationAttributes.transfer,
         align = defaultTokyoMetroIntStationAttributes.align,
         importance = defaultTokyoMetroIntStationAttributes.importance,
         mereOffset = defaultTokyoMetroIntStationAttributes.mereOffset,
     } = attrs[StationType.TokyoMetroInt] ?? defaultTokyoMetroIntStationAttributes;
+
+    const interchanges = transfer[0];
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -208,13 +206,13 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                     />
                     {interchanges.map((s, i) => (
                         <g
-                            key={`${s.lineCode}_${s.stationCode}_${i}`}
+                            key={`${s.toString()}_${i}`}
                             transform={`translate(${i * singleWidth - (width - singleWidth) / 2}, 0)`}
                         >
                             <TokyoMetroBasicSvg
-                                lineCode={s.lineCode}
-                                stationCode={s.stationCode}
-                                color={s.color}
+                                lineCode={s[4]}
+                                stationCode={s[5]}
+                                color={s.slice(0, 4) as Theme}
                                 stroke={true}
                             />
                         </g>
@@ -248,13 +246,13 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                     />
                     {interchanges.map((s, i) => (
                         <g
-                            key={`${s.lineCode}_${s.stationCode}_${i}`}
+                            key={`${s.toString()}_${i}`}
                             transform={`translate(0, ${i * singleHeight - (height - singleHeight) / 2})`}
                         >
                             <TokyoMetroBasicSvg
-                                lineCode={s.lineCode}
-                                stationCode={s.stationCode}
-                                color={s.color}
+                                lineCode={s[4]}
+                                stationCode={s[5]}
+                                color={s.slice(0, 4) as Theme}
                                 stroke={true}
                             />
                         </g>
@@ -313,12 +311,11 @@ type Importance = 'default' | 'middle' | 'high';
 /**
  * TokyoMetroIntStation specific props.
  */
-export interface TokyoMetroIntStationAttributes extends StationAttributes {
+export interface TokyoMetroIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     mereOffset: MereOffset;
     textVertical: boolean;
-    interchanges: TokyoMetroBasicSvgAttributes[];
     align: Align;
     importance: Importance;
 }
@@ -329,39 +326,19 @@ const defaultTokyoMetroIntStationAttributes: TokyoMetroIntStationAttributes = {
     nameOffsetY: 'middle',
     mereOffset: 'none',
     textVertical: false,
-    interchanges: [
-        {
-            lineCode: 'G',
-            stationCode: '11',
-            color: [CityCode.Tokyo, 'g', '#f9a328', MonoColour.white],
-        },
-        {
-            lineCode: 'T',
-            stationCode: '10',
-            color: [CityCode.Tokyo, 't', '#00a4db', MonoColour.white],
-        },
-        {
-            lineCode: 'A',
-            stationCode: '13',
-            color: [CityCode.Tokyo, 'a', '#dd4231', MonoColour.white],
-        },
+    transfer: [
+        [
+            [CityCode.Tokyo, 'g', '#f9a328', MonoColour.white, 'G', '11'],
+            [CityCode.Tokyo, 't', '#00a4db', MonoColour.white, 'T', '10'],
+            [CityCode.Tokyo, 'a', '#dd4231', MonoColour.white, 'A', '13'],
+        ],
     ],
     align: 'horizontal',
     importance: 'default',
 };
 
-const defaultTransferInfo: TokyoMetroBasicSvgAttributes = {
-    lineCode: '',
-    stationCode: '',
-    color: [CityCode.Tokyo, '', '#AAAAAA', MonoColour.white],
-};
-
 const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
-    const dispatch = useRootDispatch();
-    const {
-        paletteAppClip: { input, output },
-    } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
@@ -476,101 +453,14 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         },
     ];
 
-    const [themeRequested, setThemeRequested] = React.useState<number | undefined>(undefined);
-    React.useEffect(() => {
-        if (themeRequested === undefined) {
-            return;
-        }
-        if (output) {
-            attrs.interchanges[themeRequested].color = output;
-            handleAttrsUpdate(id, attrs);
-            setThemeRequested(undefined);
-        } else if (!input) {
-            setThemeRequested(undefined);
-        }
-    }, [input, output]);
-
-    const handleAdd = (index: number) => {
-        const newInterchanges = structuredClone(attrs.interchanges);
-        newInterchanges.push(defaultTransferInfo);
-        for (let i = newInterchanges.length - 1; i > index; i--) {
-            newInterchanges[i] = structuredClone(newInterchanges[i - 1]);
-        }
-        newInterchanges[index] = defaultTransferInfo;
-        handleAttrsUpdate(id, { ...attrs, interchanges: newInterchanges });
-    };
-
-    const handleDelete = (index: number) => {
-        const newInterchanges = attrs.interchanges.filter((s, i) => i !== index);
-        handleAttrsUpdate(id, { ...attrs, interchanges: newInterchanges });
-    };
-
-    const handleLineCodeChange = (val: string, index: number) => {
-        attrs.interchanges[index].lineCode = val;
-        handleAttrsUpdate(id, attrs);
-    };
-
-    const handleStationCodeChange = (val: string, index: number) => {
-        attrs.interchanges[index].stationCode = val;
-        handleAttrsUpdate(id, attrs);
-    };
-
     return (
         <>
             <RmgFields fields={fields} />
-
-            <RmgLabel label={t('panel.details.stations.interchange.title')}>
-                <VStack align="flex-start">
-                    {attrs.interchanges.map((s, i) => (
-                        <HStack key={`${s.lineCode}_${s.stationCode}_${i}`}>
-                            <ThemeButton
-                                theme={s.color}
-                                onClick={() => {
-                                    setThemeRequested(i);
-                                    dispatch(openPaletteAppClip(s.color));
-                                }}
-                            />
-                            <RmgLabel label={t('panel.details.stations.common.lineCode')}>
-                                <RmgDebouncedInput
-                                    defaultValue={s.lineCode}
-                                    onDebouncedChange={val => handleLineCodeChange(val, i)}
-                                />
-                            </RmgLabel>
-                            <RmgLabel label={t('panel.details.stations.common.stationCode')}>
-                                <RmgDebouncedInput
-                                    defaultValue={s.stationCode}
-                                    onDebouncedChange={val => handleStationCodeChange(val, i)}
-                                />
-                            </RmgLabel>
-                            <IconButton
-                                size="sm"
-                                variant="ghost"
-                                aria-label={t('panel.details.stations.interchange.add')}
-                                icon={<MdAdd />}
-                                onClick={() => handleAdd(i)}
-                            ></IconButton>
-                            <IconButton
-                                size="sm"
-                                variant="ghost"
-                                aria-label={t('panel.details.stations.interchange.add')}
-                                icon={<MdDelete />}
-                                onClick={() => handleDelete(i)}
-                                isDisabled={attrs.interchanges.length === 1}
-                            ></IconButton>
-                        </HStack>
-                    ))}
-
-                    <Button
-                        size="sm"
-                        width="100%"
-                        variant="outline"
-                        leftIcon={<MdAdd />}
-                        onClick={() => handleAdd(attrs.interchanges.length)}
-                    >
-                        {t('panel.details.stations.interchange.title')}
-                    </Button>
-                </VStack>
-            </RmgLabel>
+            <InterchangeField
+                stationType={StationType.TokyoMetroInt}
+                defaultAttrs={defaultTokyoMetroIntStationAttributes}
+                maximumTransfers={[1000, 0, 0]}
+            />
         </>
     );
 };

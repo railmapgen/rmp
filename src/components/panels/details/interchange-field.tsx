@@ -1,9 +1,8 @@
 import { Button, FormLabel, VStack } from '@chakra-ui/react';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd } from 'react-icons/md';
-import { CityCode, Theme } from '../../../constants/constants';
+import { Theme } from '../../../constants/constants';
 import { StationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
@@ -44,6 +43,8 @@ export const InterchangeField = (props: {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
 
+    const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
+
     const hardRefresh = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
         dispatch(refreshNodesThunk());
@@ -60,14 +61,19 @@ export const InterchangeField = (props: {
             : defaultAttrs;
     const transfer = attr.transfer ?? defaultAttrs.transfer;
 
-    const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
+    const handleAdd = (setIndex: number) => (interchangeIndex: number, interchangeInfo: InterchangeInfo) => {
         const newTransferInfo: InterchangeInfo[][] = structuredClone(transfer);
         if (newTransferInfo.length <= setIndex) {
             for (let i = newTransferInfo.length; i <= setIndex; i++) {
                 newTransferInfo[i] = [];
             }
         }
-        newTransferInfo[setIndex].push(interchangeInfo);
+
+        newTransferInfo[setIndex] = [
+            ...newTransferInfo[setIndex].slice(0, interchangeIndex),
+            interchangeInfo,
+            ...newTransferInfo[setIndex].slice(interchangeIndex),
+        ];
 
         attr.transfer = newTransferInfo;
         graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
@@ -86,16 +92,16 @@ export const InterchangeField = (props: {
         }
     };
 
-    const handleUpdate = (setIndex: number) => (interchangeIndex: number, interchangeInfo: InterchangeInfo) => {
-        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex) {
+    const handleUp = (setIndex: number) => (interchangeIndex: number) => {
+        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex && interchangeIndex > 0) {
             const newTransferInfo = transfer.map((set, setIdx) =>
                 setIdx === setIndex
                     ? set.map((int, intIdx) =>
                           intIdx === interchangeIndex
-                              ? ([0, 1, 2, 3, 4, 5].map(i =>
-                                    interchangeInfo[i] === undefined ? int[i] : interchangeInfo[i]
-                                ) as InterchangeInfo)
-                              : int
+                              ? set[interchangeIndex - 1]
+                              : intIdx === interchangeIndex - 1
+                                ? set[interchangeIndex]
+                                : int
                       )
                     : set
             );
@@ -106,14 +112,51 @@ export const InterchangeField = (props: {
         }
     };
 
-    const handleAddInterchangeGroup = () =>
-        handleAdd(attr.transfer.length)([CityCode.Guangzhou, '', '#AAAAAA', MonoColour.white, '', '']);
+    const handleDown = (setIndex: number) => (interchangeIndex: number) => {
+        if (
+            transfer.length > setIndex &&
+            transfer[setIndex].length > interchangeIndex &&
+            interchangeIndex < transfer[setIndex].length - 1
+        ) {
+            const newTransferInfo = transfer.map((set, setIdx) =>
+                setIdx === setIndex
+                    ? set.map((int, intIdx) =>
+                          intIdx === interchangeIndex
+                              ? set[interchangeIndex + 1]
+                              : intIdx === interchangeIndex + 1
+                                ? set[interchangeIndex]
+                                : int
+                      )
+                    : set
+            );
+
+            attr.transfer = newTransferInfo;
+            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
+            hardRefresh();
+        }
+    };
+
+    const handleUpdate = (setIndex: number) => (interchangeIndex: number, interchangeInfo: InterchangeInfo) => {
+        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex) {
+            const newTransferInfo = transfer.map((set, setIdx) =>
+                setIdx === setIndex
+                    ? set.map((int, intIdx) => (intIdx === interchangeIndex ? interchangeInfo : int))
+                    : set
+            );
+
+            attr.transfer = newTransferInfo;
+            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
+            hardRefresh();
+        }
+    };
+
+    const handleAddInterchangeGroup = () => handleAdd(attr.transfer.length)(0, [...runtimeTheme, '', '']);
 
     return (
-        <VStack align="flex-start">
+        <VStack align="flex-start" ml="1">
             {attr.transfer.map((infoList, i) => (
-                <React.Fragment key={i}>
-                    <FormLabel size="xs">
+                <React.Fragment key={`${infoList.toString()}-${i}`}>
+                    <FormLabel fontSize="xs">
                         {i === 0
                             ? t('panel.details.stations.interchange.within')
                             : i === 1
@@ -123,9 +166,13 @@ export const InterchangeField = (props: {
 
                     <InterchangeCard
                         interchangeList={infoList}
-                        onAdd={maximumTransfers[i] > infoList.length ? handleAdd(i) : undefined}
+                        maximumTransfers={maximumTransfers[i]}
+                        onAdd={handleAdd(i)}
+                        onUp={handleUp(i)}
+                        onDown={handleDown(i)}
                         onDelete={handleDelete(i)}
                         onUpdate={handleUpdate(i)}
+                        foshan={stationType === StationType.GzmtrInt2024 || stationType === StationType.GzmtrInt}
                     />
                 </React.Fragment>
             ))}

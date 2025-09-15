@@ -235,20 +235,18 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
             },
             minW: 'full',
         },
-        {
-            type: 'custom',
-            label: t('panel.details.stations.interchange.title'),
-            component: (
-                <InterchangeField
-                    stationType={StationType.SuzhouRTInt}
-                    defaultAttrs={defaultSuzhouRTIntStationAttributes}
-                    maximumTransfers={[99, 0, 0]}
-                />
-            ),
-        },
     ];
 
-    return <RmgFields fields={fields} />;
+    return (
+        <>
+            <RmgFields fields={fields} />
+            <InterchangeField
+                stationType={StationType.SuzhouRTInt}
+                defaultAttrs={defaultSuzhouRTIntStationAttributes}
+                maximumTransfers={[1000, 0, 0]}
+            />
+        </>
+    );
 };
 
 const suzhouRTIntStationIcon = (
