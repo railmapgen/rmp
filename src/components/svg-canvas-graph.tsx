@@ -38,6 +38,7 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
+import { autoChangeStationIntType } from '../util/change-types';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
 import { linePaths } from './svgs/lines/lines';
@@ -336,6 +337,12 @@ const SvgCanvas = () => {
                         reconcileId: '',
                         parallelIndex,
                     });
+
+                    // Automatic change the station type to interchange if the station is connected by lines of different colors
+                    if (target.startsWith('stn_')) {
+                        autoChangeStationIntType(graph.current, target as StnId, 'int');
+                    }
+
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                     dispatch(saveGraph(graph.current.export()));
