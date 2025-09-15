@@ -339,7 +339,10 @@ const SvgCanvas = () => {
                     });
 
                     // Automatically change the station type to interchange if the station is connected by lines of different colors
-                    if (target.startsWith('stn_')) {
+                    if (source.startsWith('stn')) {
+                        autoChangeStationIntType(graph.current, source as StnId, 'int');
+                    }
+                    if (target.startsWith('stn')) {
                         autoChangeStationIntType(graph.current, target as StnId, 'int');
                     }
 

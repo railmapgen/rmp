@@ -342,22 +342,25 @@ export const autoChangeStationIntType = (
     to: 'int' | 'basic'
 ) => {
     const lines = graph.directedEdges(station);
-    let lineColor: string | undefined = undefined;
+    let lineColorStr: string | undefined = undefined;
+    let lineColor: Theme | undefined = undefined;
     for (const l of lines) {
         const style = graph.getEdgeAttributes(l).style;
-        if (!dynamicColorInjection.has(style)) break;
+        if (!dynamicColorInjection.has(style)) continue;
         const color = (graph.getEdgeAttributes(l)[style] as AttributesWithColor).color;
-        if (lineColor && lineColor !== color.toString()) {
+        if (lineColorStr && lineColorStr !== color.toString()) {
             // 2 colors
             if (to === 'int') changeStationIntType(graph, station, to);
             return;
-        } else if (!lineColor) {
+        } else if (!lineColorStr) {
             // 1 color
-            lineColor = color.toString();
+            lineColorStr = color.toString();
+            lineColor = color;
         }
     }
-    if (lineColor && to === 'basic') {
+    if (lineColorStr && to === 'basic') {
         // 1 color and is to downgrade to basic station
         changeStationIntType(graph, station, to);
+        changeNodesColorInBatch(graph, 'any', lineColor!, [station], []);
     }
 };
