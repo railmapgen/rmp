@@ -56,7 +56,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 57;
+export const CURRENT_VERSION = 58;
 
 /**
  * Load the tutorial.
@@ -762,4 +762,26 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     56: param =>
         // Bump save version to support Osaka Metro stations.
         JSON.stringify({ ...JSON.parse(param), version: 57 }),
+    57: param => {
+        // Bump save version to convert Tokyo Int transfer information to new format.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.TokyoMetroInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.transfer = [
+                    attr.interchanges.map((int: { lineCode: string; stationCode: string; color: Theme }) => [
+                        ...int.color,
+                        int.lineCode,
+                        int.stationCode,
+                    ]),
+                ];
+                attr.interchanges = undefined;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 58, graph: graph.export() });
+    },
 };

@@ -749,4 +749,19 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":57}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('57 -> 58', () => {
+        // Bump save version to convert Tokyo Metro Int transfer information to new format.
+        // Prepare an empty save.
+        const oldParam =
+            '{"svgViewBoxZoom":20,"svgViewBoxMin":{"x":258.68593749999997,"y":273.70625},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_diueKg5PAd","attributes":{"visible":true,"zIndex":0,"x":320,"y":345,"type":"tokyo-metro-int","tokyo-metro-int":{"names":["日本橋"],"nameOffsetX":"right","nameOffsetY":"middle","mereOffset":"none","textVertical":false,"interchanges":[{"lineCode":"A","stationCode":"13","color":["tokyo","a","#dd4231","#fff"]}],"align":"horizontal","importance":"default"}}}],"edges":[]},"version":57}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[57](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":20,"svgViewBoxMin":{"x":258.68593749999997,"y":273.70625},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_diueKg5PAd","attributes":{"visible":true,"zIndex":0,"x":320,"y":345,"type":"tokyo-metro-int","tokyo-metro-int":{"names":["日本橋"],"nameOffsetX":"right","nameOffsetY":"middle","mereOffset":"none","textVertical":false,"align":"horizontal","importance":"default","transfer":[[["tokyo","a","#dd4231","#fff","A","13"]]]}}}],"edges":[]},"version":58}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
 });

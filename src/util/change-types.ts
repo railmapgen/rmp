@@ -310,3 +310,57 @@ export const increaseZIndexInBatch = (
         graph.setEdgeAttribute(s, 'zIndex', z + value);
     });
 };
+
+const changeStationIntType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId,
+    to: 'int' | 'basic'
+) => {
+    const getDestinationType = (type: string) => {
+        if (type.endsWith('-int') && to === 'basic') {
+            return type.replace(/-int$/, '-basic');
+        } else if (type.endsWith('-basic') && to === 'int') {
+            return type.replace(/-basic$/, '-int');
+        }
+        return undefined;
+    };
+
+    const currType = graph.getNodeAttribute(station, 'type') as string;
+    const destType = getDestinationType(currType);
+
+    if (!destType) return;
+    if (!Object.values(StationType).includes(destType as StationType)) {
+        return;
+    }
+
+    changeStationType(graph, station, destType as StationType);
+};
+
+export const autoChangeStationIntType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId,
+    to: 'int' | 'basic'
+) => {
+    const lines = graph.directedEdges(station);
+    let lineColorStr: string | undefined = undefined;
+    let lineColor: Theme | undefined = undefined;
+    for (const l of lines) {
+        const style = graph.getEdgeAttributes(l).style;
+        if (!dynamicColorInjection.has(style)) continue;
+        const color = (graph.getEdgeAttributes(l)[style] as AttributesWithColor).color;
+        if (lineColorStr && lineColorStr !== color.toString()) {
+            // 2 colors
+            if (to === 'int') changeStationIntType(graph, station, to);
+            return;
+        } else if (!lineColorStr) {
+            // 1 color
+            lineColorStr = color.toString();
+            lineColor = color;
+        }
+    }
+    if (lineColorStr && to === 'basic') {
+        // 1 color and is to downgrade to basic station
+        changeStationIntType(graph, station, to);
+        changeNodesColorInBatch(graph, 'any', lineColor!, [station], []);
+    }
+};
