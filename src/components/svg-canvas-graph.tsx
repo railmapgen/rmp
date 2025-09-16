@@ -338,8 +338,11 @@ const SvgCanvas = () => {
                         parallelIndex,
                     });
 
-                    // Automatic change the station type to interchange if the station is connected by lines of different colors
-                    if (target.startsWith('stn_')) {
+                    // Automatically change the station type to interchange if the station is connected by lines of different colors
+                    if (source.startsWith('stn')) {
+                        autoChangeStationIntType(graph.current, source as StnId, 'int');
+                    }
+                    if (target.startsWith('stn')) {
                         autoChangeStationIntType(graph.current, target as StnId, 'int');
                     }
 
