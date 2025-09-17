@@ -311,15 +311,15 @@ export const increaseZIndexInBatch = (
     });
 };
 
-const changeStationIntType = (
+const makeStationType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId,
-    to: 'int' | 'basic'
+    direction: 'int' | 'basic'
 ) => {
     const getDestinationType = (type: string) => {
-        if (type.endsWith('-int') && to === 'basic') {
+        if (type.endsWith('-int') && direction === 'basic') {
             return type.replace(/-int$/, '-basic');
-        } else if (type.endsWith('-basic') && to === 'int') {
+        } else if (type.endsWith('-basic') && direction === 'int') {
             return type.replace(/-basic$/, '-int');
         }
         return undefined;
@@ -328,39 +328,39 @@ const changeStationIntType = (
     const currType = graph.getNodeAttribute(station, 'type') as string;
     const destType = getDestinationType(currType);
 
-    if (!destType) return;
+    if (!destType) return undefined;
     if (!Object.values(StationType).includes(destType as StationType)) {
-        return;
+        return undefined;
     }
-
-    changeStationType(graph, station, destType as StationType);
+    return destType as StationType;
 };
 
-export const autoChangeStationIntType = (
+export const checkStationInt = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    station: StnId,
-    to: 'int' | 'basic'
+    station: StnId
 ) => {
     const lines = graph.directedEdges(station);
-    let lineColorStr: string | undefined = undefined;
-    let lineColor: Theme | undefined = undefined;
+    const lineColorStr: Set<string> = new Set<string>();
+    const lineColor: Theme[] = [];
+
     for (const l of lines) {
         const style = graph.getEdgeAttributes(l).style;
         if (!dynamicColorInjection.has(style)) continue;
         const color = (graph.getEdgeAttributes(l)[style] as AttributesWithColor).color;
-        if (lineColorStr && lineColorStr !== color.toString()) {
-            // 2 colors
-            if (to === 'int') changeStationIntType(graph, station, to);
-            return;
-        } else if (!lineColorStr) {
-            // 1 color
-            lineColorStr = color.toString();
-            lineColor = color;
+        if (!lineColorStr.has(color.toString())) {
+            lineColorStr.add(color.toString());
+            lineColor.push(color);
         }
     }
-    if (lineColorStr && to === 'basic') {
-        // 1 color and is to downgrade to basic station
-        changeStationIntType(graph, station, to);
-        changeNodesColorInBatch(graph, 'any', lineColor!, [station], []);
+
+    if (lineColorStr.size > 1) {
+        const type = makeStationType(graph, station, 'int');
+        if (type) changeStationType(graph, station, type);
+    } else if (lineColorStr.size === 1) {
+        const type = makeStationType(graph, station, 'basic');
+        if (type) {
+            changeStationType(graph, station, type);
+            changeNodesColorInBatch(graph, 'any', lineColor[0], [station], []);
+        }
     }
 };

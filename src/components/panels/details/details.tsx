@@ -16,7 +16,7 @@ import {
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import { isMobileClient } from '../../../util/helpers';
-import { autoChangeStationIntType } from '../../../util/change-types';
+import { checkStationInt } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -68,8 +68,8 @@ const DetailsPanel = () => {
             else if (graph.current.hasEdge(s)) {
                 const [u, v] = graph.current.extremities(s);
                 graph.current.dropEdge(s);
-                if (u.startsWith('stn')) autoChangeStationIntType(graph.current, u as StnId, 'basic');
-                if (v.startsWith('stn')) autoChangeStationIntType(graph.current, v as StnId, 'basic');
+                if (u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
+                if (v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
             }
         });
         hardRefresh();
