@@ -57,7 +57,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { gridLines, snapLines, predictNextNode, autoParallel },
+        preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -241,8 +241,10 @@ const SvgWrapper = () => {
                     } else if (graph.current.hasEdge(s)) {
                         const [u, v] = graph.current.extremities(s);
                         graph.current.dropEdge(s);
-                        if (u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
-                        if (v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
+
+                        // Automatically change the station type to interchange if the station is connected by lines in a single color.
+                        if (autoChangeStationType && u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
+                        if (autoChangeStationType && v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
                     }
                 });
                 dispatch(clearSelected());

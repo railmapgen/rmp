@@ -16,7 +16,6 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition } from '../util/helpers';
 import { useMakeStationName } from '../util/random-station-names';
-import { checkStationInt } from '../util/change-types';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import { linePaths } from './svgs/lines/lines';
 import diagonalPath from './svgs/lines/paths/diagonal';
@@ -196,10 +195,6 @@ const PredictNextNode = () => {
             parallelIndex,
         });
         if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type: pathType });
-
-        if (source.startsWith('stn')) {
-            checkStationInt(window.graph, source as StnId);
-        }
 
         refreshAndSave();
         dispatch(setActive(nextID));

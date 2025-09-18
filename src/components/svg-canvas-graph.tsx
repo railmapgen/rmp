@@ -67,7 +67,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, gridLines: useGridLines, snapLines: useSnapLines },
+        preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -339,10 +339,10 @@ const SvgCanvas = () => {
                     });
 
                     // Automatically change the station type to interchange if the station is connected by lines of different colors
-                    if (source.startsWith('stn')) {
+                    if (autoChangeStationType && source.startsWith('stn')) {
                         checkStationInt(graph.current, source as StnId);
                     }
-                    if (target.startsWith('stn')) {
+                    if (autoChangeStationType && target.startsWith('stn')) {
                         checkStationInt(graph.current, target as StnId);
                     }
 

@@ -37,6 +37,9 @@ const DetailsPanel = () => {
         isDetailsOpen,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoChangeStationType },
+    } = useRootSelector(state => state.app);
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
@@ -68,8 +71,10 @@ const DetailsPanel = () => {
             else if (graph.current.hasEdge(s)) {
                 const [u, v] = graph.current.extremities(s);
                 graph.current.dropEdge(s);
-                if (u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
-                if (v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
+
+                // Automatically change the station type to basic if the station is connected by lines in a single color.
+                if (autoChangeStationType && u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
+                if (autoChangeStationType && v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
             }
         });
         hardRefresh();
