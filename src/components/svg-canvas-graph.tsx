@@ -49,6 +49,7 @@ const connectableNodesType = [
     ...Object.values(StationType),
     MiscNodeType.Virtual,
     MiscNodeType.Master,
+    MiscNodeType.Fill,
     MiscNodeType.LondonArrow,
     MiscNodeType.ChongqingRTNumLineBadge2021,
     MiscNodeType.ChongqingRTTextLineBadge2021,
