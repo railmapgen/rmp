@@ -4,6 +4,7 @@ import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constan
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
+import { useRootSelector } from '../redux';
 import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
 import { lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -25,6 +26,36 @@ type StyleComponent = React.FC<
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
         const { elements, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } = props;
+
+        // Subscribe to selected state from Redux
+        const { selected } = useRootSelector(state => state.runtime);
+
+        // Determine if we have a single selection and get the selected element ID
+        const singleSelectedId = selected.size === 1 ? Array.from(selected)[0] : undefined;
+
+        // Helper function to wrap element with zoom effect if selected
+        const wrapWithZoomEffect = (
+            element: React.JSX.Element,
+            elementId: string,
+            x?: number,
+            y?: number
+        ): React.JSX.Element => {
+            if (singleSelectedId === elementId && x !== undefined && y !== undefined) {
+                return (
+                    <g
+                        key={`${elementId}.zoom-wrapper`}
+                        transform={`translate(${x}, ${y}) scale(1.2) translate(${-x}, ${-y})`}
+                        style={{
+                            transition: 'transform 0.2s ease-in-out',
+                        }}
+                        className="removeMe"
+                    >
+                        {element}
+                    </g>
+                );
+            }
+            return element;
+        };
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
@@ -103,7 +134,7 @@ const SvgLayer = React.memo(
                 }
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
-                layers[element.station!.zIndex].main.push(
+                const stationElement = (
                     <StationComponent
                         key={element.id}
                         id={element.id as StnId}
@@ -114,6 +145,9 @@ const SvgLayer = React.memo(
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
                     />
+                );
+                layers[element.station!.zIndex].main.push(
+                    wrapWithZoomEffect(stationElement, element.id, attr.x, attr.y)
                 );
 
                 const PostStationComponent = allStations[type]?.postComponent;
@@ -153,7 +187,7 @@ const SvgLayer = React.memo(
                 }
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-                layers[element.miscNode!.zIndex].main.push(
+                const miscNodeElement = (
                     <MiscNodeComponent
                         key={element.id}
                         id={element.id as MiscNodeId}
@@ -165,6 +199,9 @@ const SvgLayer = React.memo(
                         handlePointerMove={handlePointerMove}
                         handlePointerUp={handlePointerUp}
                     />
+                );
+                layers[element.miscNode!.zIndex].main.push(
+                    wrapWithZoomEffect(miscNodeElement, element.id, attr.x, attr.y)
                 );
 
                 const PostMiscNodeComponent = miscNodes[type]?.postComponent;
