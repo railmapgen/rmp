@@ -174,7 +174,7 @@ interface LineBase<T extends LinePathAttributes> {
     /**
      * The icon displayed in the tools panel.
      */
-    icon: JSX.Element;
+    icon: React.JSX.Element;
     /**
      * Default attributes for this component.
      */
