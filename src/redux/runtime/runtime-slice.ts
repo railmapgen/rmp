@@ -5,6 +5,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 import { RootState } from '..';
 import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
+import { LineStyleType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
@@ -49,6 +50,11 @@ interface RuntimeState {
         images: number;
     };
     mode: RuntimeMode;
+    /**
+     * The selected line style for new lines.
+     * Defaults to SingleColor.
+     */
+    selectedLineStyle: LineStyleType;
     /**
      * The last tool used by the user.
      * Will be undefined on first load.
@@ -97,6 +103,7 @@ const initialState: RuntimeState = {
         images: Date.now(),
     },
     mode: 'free',
+    selectedLineStyle: LineStyleType.SingleColor,
     lastTool: undefined,
     keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
@@ -251,6 +258,9 @@ const runtimeSlice = createSlice({
             state.mode = action.payload;
             state.isDetailsOpen = getIsDetailsOpen(state);
         },
+        setSelectedLineStyle: (state, action: PayloadAction<LineStyleType>) => {
+            state.selectedLineStyle = action.payload;
+        },
         setKeepLastPath: (state, action: PayloadAction<boolean>) => {
             state.keepLastPath = action.payload;
         },
@@ -338,6 +348,7 @@ export const {
     setRefreshEdges,
     setRefreshImages,
     setMode,
+    setSelectedLineStyle,
     setKeepLastPath,
     setTheme,
     openPaletteAppClip,
