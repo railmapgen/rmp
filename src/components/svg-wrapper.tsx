@@ -36,6 +36,7 @@ import {
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import { checkStationInt } from '../util/change-types';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -56,7 +57,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { gridLines, snapLines, predictNextNode, autoParallel },
+        preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -238,7 +239,12 @@ const SvgWrapper = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.dropNode(s);
                     } else if (graph.current.hasEdge(s)) {
+                        const [u, v] = graph.current.extremities(s);
                         graph.current.dropEdge(s);
+
+                        // Automatically change the station type to interchange if the station is connected by lines in a single color.
+                        if (autoChangeStationType && u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
+                        if (autoChangeStationType && v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
                     }
                 });
                 dispatch(clearSelected());

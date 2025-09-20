@@ -749,7 +749,8 @@
                 },
                 "gridline": "グリッドガイドラインを表示",
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
-                "predictNextNode": "節点を選択したときに次の節点を予測する"
+                "predictNextNode": "節点を選択したときに次の節点を予測する",
+                "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える"
             },
             "shortcuts": {
                 "title": "ショートカット",

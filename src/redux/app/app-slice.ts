@@ -42,6 +42,7 @@ export interface AppState {
         gridLines: boolean;
         snapLines: boolean;
         predictNextNode: boolean;
+        autoChangeStationType: boolean;
     };
 }
 
@@ -60,6 +61,7 @@ export const initialState: AppState = {
         gridLines: false,
         snapLines: true,
         predictNextNode: true,
+        autoChangeStationType: true,
     },
 };
 
@@ -94,6 +96,9 @@ const appSlice = createSlice({
         setPredictNextNode: (state, action: PayloadAction<boolean>) => {
             state.preference.predictNextNode = action.payload;
         },
+        setAutoChangeStationType: (state, action: PayloadAction<boolean>) => {
+            state.preference.autoChangeStationType = action.payload;
+        },
     },
 });
 
@@ -107,5 +112,6 @@ export const {
     setGridLines,
     setSnapLines,
     setPredictNextNode,
+    setAutoChangeStationType,
 } = appSlice.actions;
 export default appSlice.reducer;
