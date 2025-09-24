@@ -44,9 +44,9 @@ const SvgLayer = React.memo(
                 return (
                     <g
                         key={`${elementId}.zoom-wrapper`}
-                        transform={`translate(${x}, ${y}) scale(1.2) translate(${-x}, ${-y})`}
+                        transform={`translate(${x}, ${y}) scale(2) translate(${-x}, ${-y})`}
                         style={{
-                            transition: 'transform 0.2s ease-in-out',
+                            transition: 'transform 0.5s ease-in-out',
                         }}
                         className="removeMe"
                     >
