@@ -456,7 +456,7 @@ const SvgWrapper = () => {
             <svg
                 xmlns="http://www.w3.org/2000/svg"
                 id="canvas"
-                style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
+                style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none', zIndex: 1 }}
                 height={height}
                 width={width}
                 viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${

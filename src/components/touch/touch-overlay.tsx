@@ -149,7 +149,7 @@ export const TouchOverlay: React.FC = () => {
                     left: 40,
                     right: 0,
                     bottom: 0,
-                    zIndex: 100, // Above SVG but below menu
+                    zIndex: 2, // Above SVG but below UI
                     pointerEvents: 'auto',
                     touchAction: 'none', // Prevent default touch behaviors
                 }}
