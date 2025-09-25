@@ -5,7 +5,7 @@ import { setSvgViewBoxMin } from '../../redux/param/param-slice';
 import { clearSelected } from '../../redux/runtime/runtime-slice';
 import { pointerPosToSVGCoord } from '../../util/helpers';
 import { useNearbyElements, MenuLayerData } from '../../util/hooks/useNearbyElements';
-import RadialTouchMenu from './RadialTouchMenu';
+import RadialTouchMenu from './radial-touch-menu';
 
 interface TouchState {
     active: boolean;

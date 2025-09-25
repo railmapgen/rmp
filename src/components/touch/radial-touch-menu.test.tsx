@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import RadialTouchMenu from './RadialTouchMenu';
+import RadialTouchMenu from './radial-touch-menu';
 
 describe('RadialTouchMenu', () => {
     const mockProps = {
