@@ -1,5 +1,4 @@
-import { FormLabel, VStack } from '@chakra-ui/react';
-import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { utils } from '@railmapgen/svg-assets';
 import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } from '@railmapgen/svg-assets/gzmtr';
@@ -17,9 +16,8 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { TextLanguage, getLangStyle } from '../../../util/fonts';
-import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
-import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
 
 const FONT_SIZE = {
     en: 6.56,
@@ -62,7 +60,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const transferAll = transfer.flat();
     const stations = transferAll.map(s => ({
-        style: (s[6] === 'gz' ? 'gzmtr' : 'fmetro') as 'gzmtr' | 'fmetro',
+        style: (s[6] === 'fs' ? 'fmetro' : 'gzmtr') as 'gzmtr' | 'fmetro',
         lineNum: s[4],
         stnNum: s[5],
         strokeColour: s[2],
@@ -403,78 +401,14 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
         },
     ];
 
-    const transfer = attrs.transfer ?? defaultGzmtrInt2024StationAttributes.transfer;
-
-    const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
-        const newTransferInfo = structuredClone(transfer);
-        if (newTransferInfo.length <= setIndex) {
-            for (let i = newTransferInfo.length; i <= setIndex; i++) {
-                newTransferInfo[i] = [defaultGZMTRTransferInfo];
-            }
-        }
-        newTransferInfo[setIndex].push(interchangeInfo);
-
-        attrs.transfer = newTransferInfo;
-        handleAttrsUpdate(id, attrs);
-    };
-
-    const handleDelete = (setIndex: number) => (interchangeIndex: number) => {
-        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex) {
-            const newTransferInfo = transfer.map((set, setIdx) =>
-                setIdx === setIndex ? set.filter((_, intIdx) => intIdx !== interchangeIndex) : set
-            );
-
-            attrs.transfer = newTransferInfo;
-            attrs.anchorAt = -1;
-            handleAttrsUpdate(id, attrs);
-        }
-    };
-
-    const handleUpdate = (setIndex: number) => (interchangeIndex: number, interchangeInfo: InterchangeInfo) => {
-        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex) {
-            const newTransferInfo = transfer.map((set, setIdx) =>
-                setIdx === setIndex
-                    ? set.map((int, intIdx) =>
-                          intIdx === interchangeIndex
-                              ? ([0, 1, 2, 3, 4, 5, 6].map(i =>
-                                    interchangeInfo[i] === undefined ? int[i] : interchangeInfo[i]
-                                ) as InterchangeInfo)
-                              : int
-                      )
-                    : set
-            );
-
-            attrs.transfer = newTransferInfo;
-            handleAttrsUpdate(id, attrs);
-        }
-    };
-
     return (
         <>
             <RmgFields fields={fields} />
-
-            <RmgLabel label={t('panel.details.stations.interchange.title')}>
-                <VStack align="flex-start">
-                    {transfer.map((infoList, i) => (
-                        <React.Fragment key={i}>
-                            <FormLabel size="xs">
-                                {i === 0
-                                    ? t('panel.details.stations.interchange.within')
-                                    : i === 1
-                                      ? t('panel.details.stations.interchange.outStation')
-                                      : t('panel.details.stations.interchange.outSystem')}
-                            </FormLabel>
-
-                            <InterchangeCardGZMTR
-                                interchangeList={infoList}
-                                onAdd={handleAdd(i)}
-                                onDelete={handleDelete(i)}
-                                onUpdate={handleUpdate(i)}
-                            />
-                        </React.Fragment>
-                    ))}
-                </VStack>
-            </RmgLabel>
+            <InterchangeField
+                stationType={StationType.GzmtrInt2024}
+                defaultAttrs={defaultGzmtrInt2024StationAttributes}
+                maximumTransfers={[1000, 0, 0]}
+            />
         </>
     );
 };

@@ -3,7 +3,7 @@ import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader 
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Id } from '../../../constants/constants';
+import { Id, StnId } from '../../../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -16,6 +16,7 @@ import {
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import { isMobileClient } from '../../../util/helpers';
+import { autoChangeStationIntType } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -64,7 +65,12 @@ const DetailsPanel = () => {
         dispatch(clearSelected());
         selected.forEach(s => {
             if (graph.current.hasNode(s)) graph.current.dropNode(s);
-            else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            else if (graph.current.hasEdge(s)) {
+                const [u, v] = graph.current.extremities(s);
+                graph.current.dropEdge(s);
+                if (u.startsWith('stn')) autoChangeStationIntType(graph.current, u as StnId, 'basic');
+                if (v.startsWith('stn')) autoChangeStationIntType(graph.current, v as StnId, 'basic');
+            }
         });
         hardRefresh();
     };

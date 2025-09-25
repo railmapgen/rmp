@@ -36,6 +36,7 @@ import {
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import { autoChangeStationIntType } from '../util/change-types';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -238,7 +239,10 @@ const SvgWrapper = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.dropNode(s);
                     } else if (graph.current.hasEdge(s)) {
+                        const [u, v] = graph.current.extremities(s);
                         graph.current.dropEdge(s);
+                        if (u.startsWith('stn')) autoChangeStationIntType(graph.current, u as StnId, 'basic');
+                        if (v.startsWith('stn')) autoChangeStationIntType(graph.current, v as StnId, 'basic');
                     }
                 });
                 dispatch(clearSelected());
