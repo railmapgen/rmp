@@ -1,5 +1,5 @@
 import React from 'react';
-import { MenuLayerData } from '../../util/hooks/useNearbyElements';
+import { MenuLayerData } from '../../util/hooks/use-nearby-elements';
 
 interface RadialTouchMenuProps {
     /** Menu data organized in layers from inner to outer */
