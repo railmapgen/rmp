@@ -44,7 +44,7 @@ import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
-import TouchOverlay from './touch/TouchOverlay';
+import TouchOverlay from './touch/touch-overlay';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -525,7 +525,7 @@ const SvgWrapper = () => {
                     isRound
                 />
             )}
-            {isTouchClient() && <TouchOverlay />}
+            {isTouchClient() && mode !== 'select' && <TouchOverlay />}
         </>
     );
 };
