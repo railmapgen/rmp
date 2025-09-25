@@ -1,5 +1,5 @@
 import React from 'react';
-import { MenuLayerData } from '../../util/hooks/use-nearby-elements';
+import { MenuLayerData, MenuCategory } from '../../util/hooks/use-nearby-elements';
 
 interface RadialTouchMenuProps {
     /** Menu data organized in layers from inner to outer */
@@ -13,9 +13,12 @@ interface RadialTouchMenuProps {
 }
 
 /**
- * Multi-layer radial touch menu component.
- * Renders up to 5 concentric rings around a center point.
- * Each ring represents a category of elements (stations, nodes, lines, operations).
+ * Quadrant-based radial touch menu component.
+ * Renders a circular menu divided into four quadrants:
+ * - Top-left: Stations
+ * - Top-right: Misc nodes
+ * - Bottom-left: Lines
+ * - Bottom-right: Operations
  */
 export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position, onClose, visible }) => {
     if (!visible || data.length === 0) {
@@ -24,8 +27,16 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
 
     // Menu configuration
     const CENTER_RADIUS = 20;
-    const LAYER_THICKNESS = 50;
-    const MENU_SIZE = CENTER_RADIUS + LAYER_THICKNESS * Math.min(data.length, 5) + 20;
+    const QUADRANT_RADIUS = 80;
+    const MENU_SIZE = CENTER_RADIUS + QUADRANT_RADIUS + 20;
+
+    // Organize data by category
+    const categoryData = {
+        [MenuCategory.STATION]: data.find(layer => layer.category === MenuCategory.STATION),
+        [MenuCategory.MISC_NODE]: data.find(layer => layer.category === MenuCategory.MISC_NODE),
+        [MenuCategory.LINE]: data.find(layer => layer.category === MenuCategory.LINE),
+        [MenuCategory.OPERATION]: data.find(layer => layer.category === MenuCategory.OPERATION),
+    };
 
     const handleItemClick = (action: () => void) => {
         action();
@@ -90,64 +101,88 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                     filter="url(#shadow)"
                 />
 
-                {/* Render layers */}
-                {data.slice(0, 5).map((layer, layerIndex) => {
-                    const innerRadius = CENTER_RADIUS + layerIndex * LAYER_THICKNESS;
-                    const outerRadius = innerRadius + LAYER_THICKNESS;
-                    const itemCount = layer.items.length;
-                    const angleStep = (2 * Math.PI) / itemCount;
+                {/* Render quadrants */}
+                {Object.entries(categoryData).map(([category, layerData]) => {
+                    if (!layerData || layerData.items.length === 0) return null;
+
+                    // Define quadrant positions based on category
+                    let quadrantAngleStart: number;
+                    let quadrantColor: string;
+
+                    switch (category) {
+                        case MenuCategory.STATION:
+                            quadrantAngleStart = Math.PI; // Top-left (180°)
+                            quadrantColor = 'hsl(220, 20%, 95%)'; // Blue tint
+                            break;
+                        case MenuCategory.MISC_NODE:
+                            quadrantAngleStart = Math.PI / 2; // Top-right (90°)
+                            quadrantColor = 'hsl(120, 20%, 95%)'; // Green tint
+                            break;
+                        case MenuCategory.LINE:
+                            quadrantAngleStart = -Math.PI; // Bottom-left (270°)
+                            quadrantColor = 'hsl(60, 20%, 95%)'; // Yellow tint
+                            break;
+                        case MenuCategory.OPERATION:
+                            quadrantAngleStart = -Math.PI / 2; // Bottom-right (0°)
+                            quadrantColor = 'hsl(0, 20%, 95%)'; // Red tint
+                            break;
+                        default:
+                            return null;
+                    }
+
+                    const quadrantAngleEnd = quadrantAngleStart + Math.PI / 2;
+
+                    // Create quadrant sector path
+                    const outerRadius = CENTER_RADIUS + QUADRANT_RADIUS;
+                    const startX = MENU_SIZE + CENTER_RADIUS * Math.cos(quadrantAngleStart);
+                    const startY = MENU_SIZE + CENTER_RADIUS * Math.sin(quadrantAngleStart);
+                    const endX = MENU_SIZE + CENTER_RADIUS * Math.cos(quadrantAngleEnd);
+                    const endY = MENU_SIZE + CENTER_RADIUS * Math.sin(quadrantAngleEnd);
+
+                    const outerStartX = MENU_SIZE + outerRadius * Math.cos(quadrantAngleStart);
+                    const outerStartY = MENU_SIZE + outerRadius * Math.sin(quadrantAngleStart);
+                    const outerEndX = MENU_SIZE + outerRadius * Math.cos(quadrantAngleEnd);
+                    const outerEndY = MENU_SIZE + outerRadius * Math.sin(quadrantAngleEnd);
+
+                    const quadrantPath = `M ${startX} ${startY}
+                                         L ${outerStartX} ${outerStartY}
+                                         A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY}
+                                         L ${endX} ${endY}
+                                         A ${CENTER_RADIUS} ${CENTER_RADIUS} 0 0 0 ${startX} ${startY}`;
 
                     return (
-                        <g key={layerIndex}>
-                            {/* Layer background ring */}
+                        <g key={category}>
+                            {/* Quadrant background */}
                             <path
-                                d={`M ${MENU_SIZE - outerRadius} ${MENU_SIZE} 
-                                    A ${outerRadius} ${outerRadius} 0 1 1 ${MENU_SIZE + outerRadius} ${MENU_SIZE}
-                                    A ${outerRadius} ${outerRadius} 0 1 1 ${MENU_SIZE - outerRadius} ${MENU_SIZE}
-                                    M ${MENU_SIZE - innerRadius} ${MENU_SIZE}
-                                    A ${innerRadius} ${innerRadius} 0 1 0 ${MENU_SIZE + innerRadius} ${MENU_SIZE}
-                                    A ${innerRadius} ${innerRadius} 0 1 0 ${MENU_SIZE - innerRadius} ${MENU_SIZE}`}
-                                fill={`hsl(${layerIndex * 60}, 20%, 95%)`}
+                                d={quadrantPath}
+                                fill={quadrantColor}
                                 stroke="rgba(0, 0, 0, 0.1)"
                                 strokeWidth="1"
                                 filter="url(#shadow)"
                                 fillRule="evenodd"
                             />
 
-                            {/* Layer items */}
-                            {layer.items.map((item, itemIndex) => {
-                                const angle = itemIndex * angleStep - Math.PI / 2; // Start from top
-                                const itemRadius = (innerRadius + outerRadius) / 2;
-                                const x = MENU_SIZE + itemRadius * Math.cos(angle);
-                                const y = MENU_SIZE + itemRadius * Math.sin(angle);
+                            {/* Quadrant items */}
+                            {layerData.items.slice(0, 6).map((item, itemIndex) => {
+                                // Position items within the quadrant
+                                const itemAngle =
+                                    quadrantAngleStart +
+                                    Math.PI / 4 +
+                                    (itemIndex - layerData.items.length / 2 + 0.5) * 0.2;
+                                const itemRadius = (CENTER_RADIUS + outerRadius) / 2;
+                                const x = MENU_SIZE + itemRadius * Math.cos(itemAngle);
+                                const y = MENU_SIZE + itemRadius * Math.sin(itemAngle);
 
-                                // Create sector path for touch area
-                                const startAngle = angle - angleStep / 2;
-                                const endAngle = angle + angleStep / 2;
-
-                                const startX = MENU_SIZE + innerRadius * Math.cos(startAngle);
-                                const startY = MENU_SIZE + innerRadius * Math.sin(startAngle);
-                                const endX = MENU_SIZE + innerRadius * Math.cos(endAngle);
-                                const endY = MENU_SIZE + innerRadius * Math.sin(endAngle);
-
-                                const outerStartX = MENU_SIZE + outerRadius * Math.cos(startAngle);
-                                const outerStartY = MENU_SIZE + outerRadius * Math.sin(startAngle);
-                                const outerEndX = MENU_SIZE + outerRadius * Math.cos(endAngle);
-                                const outerEndY = MENU_SIZE + outerRadius * Math.sin(endAngle);
-
-                                const largeArcFlag = angleStep > Math.PI ? 1 : 0;
-
-                                const sectorPath = `M ${startX} ${startY}
-                                                   L ${outerStartX} ${outerStartY}
-                                                   A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerEndX} ${outerEndY}
-                                                   L ${endX} ${endY}
-                                                   A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${startX} ${startY}`;
+                                // Create smaller circular touch area for each item
+                                const touchRadius = 15;
 
                                 return (
                                     <g key={itemIndex}>
                                         {/* Touch area */}
-                                        <path
-                                            d={sectorPath}
+                                        <circle
+                                            cx={x}
+                                            cy={y}
+                                            r={touchRadius}
                                             fill="transparent"
                                             style={{
                                                 pointerEvents: 'auto',
@@ -161,8 +196,10 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                                         />
 
                                         {/* Item highlight on hover */}
-                                        <path
-                                            d={sectorPath}
+                                        <circle
+                                            cx={x}
+                                            cy={y}
+                                            r={touchRadius}
                                             fill="rgba(0, 123, 255, 0.1)"
                                             opacity="0"
                                             style={{
@@ -178,7 +215,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                                             y={y}
                                             textAnchor="middle"
                                             dominantBaseline="middle"
-                                            fontSize="12"
+                                            fontSize="10"
                                             fill="#333"
                                             style={{
                                                 pointerEvents: 'none',

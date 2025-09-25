@@ -1,12 +1,13 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { MenuCategory } from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 
 describe('RadialTouchMenu', () => {
     const mockProps = {
         data: [
             {
-                category: '车站',
+                category: MenuCategory.STATION,
                 items: [
                     {
                         label: 'Test Station',

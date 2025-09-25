@@ -28,6 +28,7 @@ interface MenuState {
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { selected } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
     const { findNearbyElements } = useNearbyElements();
 
@@ -65,7 +66,7 @@ export const TouchOverlay: React.FC = () => {
 
         // Search for nearby elements within a touch-friendly radius
         const TOUCH_RADIUS = 30; // Adjust based on testing
-        const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch);
+        const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch, selected);
 
         if (nearbyElements.length > 0) {
             // Case A: Elements found - show radial menu

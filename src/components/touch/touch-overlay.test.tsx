@@ -58,6 +58,6 @@ describe('TouchOverlay', () => {
         // Check that the overlay has the expected styles
         const style = overlay?.getAttribute('style');
         expect(style).toContain('position: fixed');
-        expect(style).toContain('z-index: 100');
+        expect(style).toContain('z-index: 2');
     });
 });

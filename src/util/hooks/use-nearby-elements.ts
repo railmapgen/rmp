@@ -2,9 +2,17 @@ import { MultiDirectedGraph } from 'graphology';
 import { useCallback } from 'react';
 import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../../constants/constants';
 import { setSelected, setActive, showDetailsPanel, clearSelected } from '../../redux/runtime/runtime-slice';
+import { importSelectedNodesAndEdges } from '../clipboard';
+
+export enum MenuCategory {
+    STATION = 'station',
+    MISC_NODE = 'misc-node',
+    LINE = 'line',
+    OPERATION = 'operation',
+}
 
 export interface MenuLayerData {
-    category: string;
+    category: MenuCategory;
     items: MenuItemData[];
 }
 
@@ -25,7 +33,8 @@ export const useNearbyElements = () => {
             graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
             svgCoord: { x: number; y: number },
             radius: number,
-            dispatch: any
+            dispatch: any,
+            selectedElements: Set<string>
         ): MenuLayerData[] => {
             const layers: MenuLayerData[] = [];
 
@@ -70,7 +79,7 @@ export const useNearbyElements = () => {
                 }));
 
                 layers.push({
-                    category: '车站',
+                    category: MenuCategory.STATION,
                     items: stationItems,
                 });
             }
@@ -88,7 +97,7 @@ export const useNearbyElements = () => {
                 }));
 
                 layers.push({
-                    category: '节点',
+                    category: MenuCategory.MISC_NODE,
                     items: miscNodeItems,
                 });
             }
@@ -105,41 +114,59 @@ export const useNearbyElements = () => {
                 }));
 
                 layers.push({
-                    category: '线段',
+                    category: MenuCategory.LINE,
                     items: lineItems,
                 });
             }
 
-            // Add common operations layer if any elements were found
-            if (layers.length > 0) {
-                const operationItems: MenuItemData[] = [
-                    {
-                        label: '删除',
-                        action: () => {
-                            // Delete selected elements
-                            const allElementIds = layers.flatMap(layer =>
-                                layer.items.map(item => item.elementId).filter(Boolean)
-                            );
-                            allElementIds.forEach(id => {
-                                if (graph.hasNode(id!)) {
-                                    graph.dropNode(id!);
-                                } else if (graph.hasEdge(id!)) {
-                                    graph.dropEdge(id!);
-                                }
-                            });
-                            dispatch(clearSelected());
-                        },
-                    },
-                    {
-                        label: '取消',
-                        action: () => {
-                            dispatch(clearSelected());
-                        },
-                    },
-                ];
+            // Always add operations layer
+            const operationItems: MenuItemData[] = [];
 
+            if (layers.length > 0) {
+                // If elements are found, add delete and cancel operations
+                operationItems.push({
+                    label: '删除',
+                    action: () => {
+                        // Delete selected elements
+                        const allElementIds = layers.flatMap(layer =>
+                            layer.items.map(item => item.elementId).filter(Boolean)
+                        );
+                        allElementIds.forEach(id => {
+                            if (graph.hasNode(id!)) {
+                                graph.dropNode(id!);
+                            } else if (graph.hasEdge(id!)) {
+                                graph.dropEdge(id!);
+                            }
+                        });
+                        dispatch(clearSelected());
+                    },
+                });
+                operationItems.push({
+                    label: '取消',
+                    action: () => {
+                        dispatch(clearSelected());
+                    },
+                });
+            }
+
+            // Add paste operation if no elements are currently selected
+            if (selectedElements.size === 0) {
+                operationItems.push({
+                    label: '粘贴',
+                    action: async () => {
+                        try {
+                            const clipboardText = await navigator.clipboard.readText();
+                            importSelectedNodesAndEdges(clipboardText, graph, false, false, svgCoord.x, svgCoord.y);
+                        } catch (error) {
+                            console.error('Failed to paste from clipboard:', error);
+                        }
+                    },
+                });
+            }
+
+            if (operationItems.length > 0) {
                 layers.push({
-                    category: '操作',
+                    category: MenuCategory.OPERATION,
                     items: operationItems,
                 });
             }
