@@ -11,8 +11,8 @@ vi.mock('../../util/helpers', () => ({
     getCanvasSize: vi.fn().mockReturnValue({ height: 400, width: 300 }),
 }));
 
-// Mock the useNearbyElements hook
-vi.mock('../../util/hooks/useNearbyElements', () => ({
+// fix the hook mock path to match the real import
+vi.mock('../../util/hooks/use-nearby-elements', () => ({
     useNearbyElements: () => ({
         findNearbyElements: vi.fn().mockReturnValue([]),
     }),
@@ -57,10 +57,12 @@ describe('TouchOverlay', () => {
             </Provider>
         );
 
-        const overlay = container.querySelector('rect');
-        expect(overlay).toBeTruthy();
+        // ensure the interaction rect is present
+        const overlayRect = container.querySelector('rect');
+        expect(overlayRect).toBeTruthy();
 
-        // Check that the overlay has the expected class
-        expect(overlay?.classList).toContain('removeMe');
+        // now check the wrapper <g> for the class
+        const overlayGroup = container.querySelector('g');
+        expect(overlayGroup?.classList).toContain('removeMe');
     });
 });
