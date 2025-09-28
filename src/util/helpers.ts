@@ -200,3 +200,22 @@ export const getContrastingColor = (hex: `#${string}`): MonoColour => {
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
     return yiq >= 128 ? MonoColour.black : MonoColour.white;
 };
+
+/**
+ * Removes hyphens and capitalizes the first letter following each hyphen.
+ * Converts a kebab-case string to camelCase or PascalCase (depending on the first word's case).
+ * * @param str The string to convert.
+ * @returns The converted string (e.g., "shmetroNumLineBadge").
+ */
+export const toCamelCase = (str: string): string => {
+    // Regex: Matches a hyphen (-) followed by any word character (\w).
+    // The 'g' flag ensures global matching (finds all instances).
+    return str.replace(/-(\w)/g, (match, letter) => {
+        // match: The full matched string, e.g., "-n", "-l", "-b"
+        // letter: The captured group (\w), e.g., "n", "l", "b"
+
+        // Returns the uppercase version of the captured letter.
+        // This replaces the original "-letter" part.
+        return letter.toUpperCase();
+    });
+};

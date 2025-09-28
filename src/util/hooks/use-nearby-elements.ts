@@ -3,6 +3,9 @@ import { useCallback } from 'react';
 import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../../constants/constants';
 import { setSelected, setActive, showDetailsPanel, clearSelected } from '../../redux/runtime/runtime-slice';
 import { importSelectedNodesAndEdges } from '../clipboard';
+import { StationAttributes } from '../../constants/stations';
+import { toCamelCase } from '../helpers';
+import i18n from '../../i18n/config';
 
 export enum MenuCategory {
     STATION = 'station',
@@ -22,7 +25,11 @@ export interface MenuItemData {
     label: string;
     icon?: React.ReactNode;
     action: () => void;
-    elementId?: string;
+    /**
+     * The ID of the element this item represents (station ID, line ID, etc.)
+     * Optional, as operations do not correspond to a specific element.
+     */
+    elementId: string;
 }
 
 export const emptyMenuLayerData: MenuLayerData = {
@@ -76,44 +83,60 @@ export const useNearbyElements = () => {
 
             // Create station layer if there are nearby stations
             if (nearbyStations.length > 0) {
-                const stationItems: MenuItemData[] = nearbyStations.slice(0, 8).map(stationId => ({
-                    label: `Station ${stationId}`,
-                    elementId: stationId,
-                    action: () => {
-                        dispatch(setSelected(new Set([stationId])));
-                        dispatch(setActive(stationId));
-                        dispatch(showDetailsPanel());
-                    },
-                }));
+                const stationItems: MenuItemData[] = nearbyStations.slice(0, 8).map(stationId => {
+                    const type = graph.getNodeAttribute(stationId, 'type');
+                    const attr = graph.getNodeAttribute(stationId, type) as StationAttributes;
+                    return {
+                        label: attr.names[0],
+                        elementId: stationId,
+                        action: () => dispatch(setSelected(new Set([stationId]))),
+                    };
+                });
 
                 data[MenuCategory.STATION] = stationItems;
             }
 
             // Create misc nodes layer if there are nearby misc nodes
             if (nearbyMiscNodes.length > 0) {
-                const miscNodeItems: MenuItemData[] = nearbyMiscNodes.slice(0, 8).map(nodeId => ({
-                    label: `Node ${nodeId}`,
-                    elementId: nodeId,
-                    action: () => {
-                        dispatch(setSelected(new Set([nodeId])));
-                        dispatch(setActive(nodeId));
-                        dispatch(showDetailsPanel());
-                    },
-                }));
+                const miscNodeItems: MenuItemData[] = nearbyMiscNodes.slice(0, 8).map(nodeId => {
+                    const type = graph.getNodeAttribute(nodeId, 'type');
+                    const i18nType = toCamelCase(type);
+                    return {
+                        label: i18n.t(`panel.details.nodes.${i18nType}.displayName`),
+                        elementId: nodeId,
+                        action: () => dispatch(setSelected(new Set([nodeId]))),
+                    };
+                });
 
                 data[MenuCategory.MISC_NODE] = miscNodeItems;
             }
 
             // Create lines layer if there are nearby lines
             if (nearbyLines.length > 0) {
-                const lineItems: MenuItemData[] = nearbyLines.slice(0, 6).map(lineId => ({
-                    label: `Line ${lineId}`,
-                    elementId: lineId,
-                    action: () => {
-                        dispatch(setSelected(new Set([lineId])));
-                        dispatch(showDetailsPanel());
-                    },
-                }));
+                const lineItems: MenuItemData[] = nearbyLines.slice(0, 6).map(lineId => {
+                    const [source, target] = graph.extremities(lineId);
+                    const sourceType = graph.getNodeAttribute(source, 'type');
+                    const targetType = graph.getNodeAttribute(target, 'type');
+                    let sourceLabel = '',
+                        targetLabel = '';
+                    if (source.startsWith('stn')) {
+                        const sourceAttr = graph.getNodeAttribute(source, sourceType) as StationAttributes;
+                        sourceLabel = sourceAttr.names[0];
+                    } else {
+                        sourceLabel = i18n.t(`panel.details.nodes.${toCamelCase(sourceType)}.displayName`);
+                    }
+                    if (target.startsWith('stn')) {
+                        const targetAttr = graph.getNodeAttribute(target, targetType) as StationAttributes;
+                        targetLabel = targetAttr.names[0];
+                    } else {
+                        targetLabel = i18n.t(`panel.details.nodes.${toCamelCase(targetType)}.displayName`);
+                    }
+                    return {
+                        label: `${sourceLabel} - ${targetLabel}`,
+                        elementId: lineId,
+                        action: () => dispatch(setSelected(new Set([lineId]))),
+                    };
+                });
 
                 data[MenuCategory.LINE] = lineItems;
             }
@@ -130,6 +153,7 @@ export const useNearbyElements = () => {
                         console.error('Failed to paste from clipboard:', error);
                     }
                 },
+                elementId: 'operation-paste',
             });
             data[MenuCategory.OPERATION] = operationItems;
 
