@@ -1,9 +1,14 @@
 import React from 'react';
-import { MenuLayerData, MenuCategory } from '../../util/hooks/use-nearby-elements';
+import { MenuLayerData, MenuCategory, MenuItemData } from '../../util/hooks/use-nearby-elements';
+
+// Menu configuration
+const CENTER_RADIUS = 20;
+const QUADRANT_RADIUS = 80;
+const MENU_SIZE = CENTER_RADIUS + QUADRANT_RADIUS + 20;
 
 interface RadialTouchMenuProps {
     /** Menu data organized in layers from inner to outer */
-    data: MenuLayerData[];
+    data: MenuLayerData;
     /** Center position in screen coordinates */
     position: { x: number; y: number };
     /** Callback when menu should be closed */
@@ -21,22 +26,10 @@ interface RadialTouchMenuProps {
  * - Bottom-right: Operations
  */
 export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position, onClose, visible }) => {
-    if (!visible || data.length === 0) {
+    const elements = [...data[MenuCategory.STATION], ...data[MenuCategory.MISC_NODE], ...data[MenuCategory.LINE]];
+    if (!visible || elements.length === 0) {
         return null;
     }
-
-    // Menu configuration
-    const CENTER_RADIUS = 20;
-    const QUADRANT_RADIUS = 80;
-    const MENU_SIZE = CENTER_RADIUS + QUADRANT_RADIUS + 20;
-
-    // Organize data by category
-    const categoryData = {
-        [MenuCategory.STATION]: data.find(layer => layer.category === MenuCategory.STATION),
-        [MenuCategory.MISC_NODE]: data.find(layer => layer.category === MenuCategory.MISC_NODE),
-        [MenuCategory.LINE]: data.find(layer => layer.category === MenuCategory.LINE),
-        [MenuCategory.OPERATION]: data.find(layer => layer.category === MenuCategory.OPERATION),
-    };
 
     const handleItemClick = (action: () => void) => {
         action();
@@ -91,7 +84,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                 </defs>
 
                 {/* Center circle */}
-                <circle
+                {/* <circle
                     cx={MENU_SIZE}
                     cy={MENU_SIZE}
                     r={CENTER_RADIUS}
@@ -99,11 +92,11 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                     stroke="rgba(0, 0, 0, 0.2)"
                     strokeWidth="1"
                     filter="url(#shadow)"
-                />
+                /> */}
 
                 {/* Render quadrants */}
-                {Object.entries(categoryData).map(([category, layerData]) => {
-                    if (!layerData || layerData.items.length === 0) return null;
+                {(Object.entries(data) as [MenuCategory, MenuItemData[]][]).map(([category, layerData]) => {
+                    if (!layerData || layerData.length === 0) return null;
 
                     // Define quadrant positions based on category
                     let quadrantAngleStart: number;
@@ -114,16 +107,16 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                             quadrantAngleStart = Math.PI; // Top-left (180°)
                             quadrantColor = 'hsl(220, 20%, 95%)'; // Blue tint
                             break;
-                        case MenuCategory.MISC_NODE:
-                            quadrantAngleStart = Math.PI / 2; // Top-right (90°)
+                        case MenuCategory.LINE:
+                            quadrantAngleStart = Math.PI / 2; // Bottom-left (270°)
                             quadrantColor = 'hsl(120, 20%, 95%)'; // Green tint
                             break;
-                        case MenuCategory.LINE:
-                            quadrantAngleStart = -Math.PI; // Bottom-left (270°)
+                        case MenuCategory.MISC_NODE:
+                            quadrantAngleStart = (3 * Math.PI) / 2; // Top-right (90°)
                             quadrantColor = 'hsl(60, 20%, 95%)'; // Yellow tint
                             break;
                         case MenuCategory.OPERATION:
-                            quadrantAngleStart = -Math.PI / 2; // Bottom-right (0°)
+                            quadrantAngleStart = 2 * Math.PI; // Bottom-right (0°)
                             quadrantColor = 'hsl(0, 20%, 95%)'; // Red tint
                             break;
                         default:
@@ -163,12 +156,10 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                             />
 
                             {/* Quadrant items */}
-                            {layerData.items.slice(0, 6).map((item, itemIndex) => {
+                            {layerData.slice(0, 6).map((item, itemIndex) => {
                                 // Position items within the quadrant
                                 const itemAngle =
-                                    quadrantAngleStart +
-                                    Math.PI / 4 +
-                                    (itemIndex - layerData.items.length / 2 + 0.5) * 0.2;
+                                    quadrantAngleStart + Math.PI / 4 + (itemIndex - layerData.length / 2 + 0.5) * 0.2;
                                 const itemRadius = (CENTER_RADIUS + outerRadius) / 2;
                                 const x = MENU_SIZE + itemRadius * Math.cos(itemAngle);
                                 const y = MENU_SIZE + itemRadius * Math.sin(itemAngle);
@@ -233,7 +224,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                 })}
 
                 {/* Center label */}
-                <text
+                {/* <text
                     x={MENU_SIZE}
                     y={MENU_SIZE}
                     textAnchor="middle"
@@ -246,7 +237,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                     }}
                 >
                     Touch
-                </text>
+                </text> */}
             </svg>
 
             <style>{`

@@ -4,7 +4,12 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin } from '../../redux/param/param-slice';
 import { clearSelected } from '../../redux/runtime/runtime-slice';
 import { pointerPosToSVGCoord } from '../../util/helpers';
-import { useNearbyElements, MenuLayerData } from '../../util/hooks/use-nearby-elements';
+import {
+    MenuCategory,
+    MenuLayerData,
+    emptyMenuLayerData,
+    useNearbyElements,
+} from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 
 interface TouchState {
@@ -16,7 +21,7 @@ interface TouchState {
 interface MenuState {
     visible: boolean;
     position: { x: number; y: number };
-    data: MenuLayerData[];
+    data: MenuLayerData;
 }
 
 /**
@@ -28,7 +33,6 @@ interface MenuState {
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
-    const { selected } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
     const { findNearbyElements } = useNearbyElements();
 
@@ -43,7 +47,7 @@ export const TouchOverlay: React.FC = () => {
     const [menuState, setMenuState] = useState<MenuState>({
         visible: false,
         position: { x: 0, y: 0 },
-        data: [],
+        data: emptyMenuLayerData,
     });
 
     const handleTouchStart = useEvent((e: React.TouchEvent<HTMLDivElement>) => {
@@ -66,9 +70,15 @@ export const TouchOverlay: React.FC = () => {
 
         // Search for nearby elements within a touch-friendly radius
         const TOUCH_RADIUS = 30; // Adjust based on testing
-        const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch, selected);
+        const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch);
 
-        if (nearbyElements.length > 0) {
+        if (
+            [
+                ...nearbyElements[MenuCategory.STATION],
+                ...nearbyElements[MenuCategory.MISC_NODE],
+                ...nearbyElements[MenuCategory.LINE],
+            ].length > 0
+        ) {
             // Case A: Elements found - show radial menu
             setMenuState({
                 visible: true,
@@ -96,7 +106,7 @@ export const TouchOverlay: React.FC = () => {
             setMenuState({
                 visible: false,
                 position: { x: 0, y: 0 },
-                data: [],
+                data: emptyMenuLayerData,
             });
         }
     });
@@ -136,7 +146,7 @@ export const TouchOverlay: React.FC = () => {
         setMenuState({
             visible: false,
             position: { x: 0, y: 0 },
-            data: [],
+            data: emptyMenuLayerData,
         });
     }, []);
 

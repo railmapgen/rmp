@@ -5,18 +5,18 @@ import RadialTouchMenu from './radial-touch-menu';
 
 describe('RadialTouchMenu', () => {
     const mockProps = {
-        data: [
-            {
-                category: MenuCategory.STATION,
-                items: [
-                    {
-                        label: 'Test Station',
-                        action: vi.fn(),
-                        elementId: 'stn_1',
-                    },
-                ],
-            },
-        ],
+        data: {
+            [MenuCategory.STATION]: [
+                {
+                    label: 'Test Station',
+                    action: vi.fn(),
+                    elementId: 'stn_1',
+                },
+            ],
+            [MenuCategory.MISC_NODE]: [],
+            [MenuCategory.LINE]: [],
+            [MenuCategory.OPERATION]: [],
+        },
         position: { x: 200, y: 200 },
         onClose: vi.fn(),
         visible: true,

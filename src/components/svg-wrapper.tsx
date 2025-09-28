@@ -525,7 +525,7 @@ const SvgWrapper = () => {
                     isRound
                 />
             )}
-            {isTouchClient() && mode !== 'select' && <TouchOverlay />}
+            {isTouchClient() && selected.size === 0 && mode !== 'select' && <TouchOverlay />}
         </>
     );
 };

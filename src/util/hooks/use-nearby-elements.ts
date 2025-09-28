@@ -12,8 +12,10 @@ export enum MenuCategory {
 }
 
 export interface MenuLayerData {
-    category: MenuCategory;
-    items: MenuItemData[];
+    [MenuCategory.STATION]: MenuItemData[];
+    [MenuCategory.MISC_NODE]: MenuItemData[];
+    [MenuCategory.LINE]: MenuItemData[];
+    [MenuCategory.OPERATION]: MenuItemData[];
 }
 
 export interface MenuItemData {
@@ -22,6 +24,13 @@ export interface MenuItemData {
     action: () => void;
     elementId?: string;
 }
+
+export const emptyMenuLayerData: MenuLayerData = {
+    [MenuCategory.STATION]: [],
+    [MenuCategory.MISC_NODE]: [],
+    [MenuCategory.LINE]: [],
+    [MenuCategory.OPERATION]: [],
+};
 
 /**
  * Custom hook for finding elements near a touch point and organizing them into layers
@@ -33,10 +42,9 @@ export const useNearbyElements = () => {
             graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
             svgCoord: { x: number; y: number },
             radius: number,
-            dispatch: any,
-            selectedElements: Set<string>
-        ): MenuLayerData[] => {
-            const layers: MenuLayerData[] = [];
+            dispatch: any
+        ): MenuLayerData => {
+            const data = structuredClone(emptyMenuLayerData);
 
             // Find stations within radius
             const nearbyStations = graph.filterNodes((nodeId, attrs) => {
@@ -78,10 +86,7 @@ export const useNearbyElements = () => {
                     },
                 }));
 
-                layers.push({
-                    category: MenuCategory.STATION,
-                    items: stationItems,
-                });
+                data[MenuCategory.STATION] = stationItems;
             }
 
             // Create misc nodes layer if there are nearby misc nodes
@@ -96,10 +101,7 @@ export const useNearbyElements = () => {
                     },
                 }));
 
-                layers.push({
-                    category: MenuCategory.MISC_NODE,
-                    items: miscNodeItems,
-                });
+                data[MenuCategory.MISC_NODE] = miscNodeItems;
             }
 
             // Create lines layer if there are nearby lines
@@ -113,66 +115,25 @@ export const useNearbyElements = () => {
                     },
                 }));
 
-                layers.push({
-                    category: MenuCategory.LINE,
-                    items: lineItems,
-                });
+                data[MenuCategory.LINE] = lineItems;
             }
 
             // Always add operations layer
             const operationItems: MenuItemData[] = [];
+            operationItems.push({
+                label: '粘贴',
+                action: async () => {
+                    try {
+                        const clipboardText = await navigator.clipboard.readText();
+                        importSelectedNodesAndEdges(clipboardText, graph, false, false, svgCoord.x, svgCoord.y);
+                    } catch (error) {
+                        console.error('Failed to paste from clipboard:', error);
+                    }
+                },
+            });
+            data[MenuCategory.OPERATION] = operationItems;
 
-            if (layers.length > 0) {
-                // If elements are found, add delete and cancel operations
-                operationItems.push({
-                    label: '删除',
-                    action: () => {
-                        // Delete selected elements
-                        const allElementIds = layers.flatMap(layer =>
-                            layer.items.map(item => item.elementId).filter(Boolean)
-                        );
-                        allElementIds.forEach(id => {
-                            if (graph.hasNode(id!)) {
-                                graph.dropNode(id!);
-                            } else if (graph.hasEdge(id!)) {
-                                graph.dropEdge(id!);
-                            }
-                        });
-                        dispatch(clearSelected());
-                    },
-                });
-                operationItems.push({
-                    label: '取消',
-                    action: () => {
-                        dispatch(clearSelected());
-                    },
-                });
-            }
-
-            // Add paste operation if no elements are currently selected
-            if (selectedElements.size === 0) {
-                operationItems.push({
-                    label: '粘贴',
-                    action: async () => {
-                        try {
-                            const clipboardText = await navigator.clipboard.readText();
-                            importSelectedNodesAndEdges(clipboardText, graph, false, false, svgCoord.x, svgCoord.y);
-                        } catch (error) {
-                            console.error('Failed to paste from clipboard:', error);
-                        }
-                    },
-                });
-            }
-
-            if (operationItems.length > 0) {
-                layers.push({
-                    category: MenuCategory.OPERATION,
-                    items: operationItems,
-                });
-            }
-
-            // Return at most 5 layers
-            return layers.slice(0, 5);
+            return data;
         },
         []
     );
