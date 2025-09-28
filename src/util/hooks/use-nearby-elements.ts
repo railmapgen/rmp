@@ -8,6 +8,9 @@ import { setSelected } from '../../redux/runtime/runtime-slice';
 import { importSelectedNodesAndEdges } from '../clipboard';
 import { toCamelCase } from '../helpers';
 
+/** Radius in SVG units to search for nearby elements */
+export const TOUCH_RADIUS = 30;
+
 export enum MenuCategory {
     STATION = 'station',
     MISC_NODE = 'misc-node',
@@ -49,7 +52,6 @@ export const useNearbyElements = () => {
         (
             graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
             svgCoord: { x: number; y: number },
-            radius: number,
             dispatch: RootDispatch
         ): MenuLayerData => {
             const data = structuredClone(emptyMenuLayerData);
@@ -58,14 +60,14 @@ export const useNearbyElements = () => {
             const nearbyStations = graph.filterNodes((nodeId, attrs) => {
                 if (!nodeId.startsWith('stn')) return false;
                 const distance = Math.sqrt(Math.pow(attrs.x - svgCoord.x, 2) + Math.pow(attrs.y - svgCoord.y, 2));
-                return distance <= radius;
+                return distance <= TOUCH_RADIUS;
             }) as StnId[];
 
             // Find misc nodes within radius
             const nearbyMiscNodes = graph.filterNodes((nodeId, attrs) => {
                 if (!nodeId.startsWith('misc')) return false;
                 const distance = Math.sqrt(Math.pow(attrs.x - svgCoord.x, 2) + Math.pow(attrs.y - svgCoord.y, 2));
-                return distance <= radius;
+                return distance <= TOUCH_RADIUS;
             }) as MiscNodeId[];
 
             // Find lines connected to nearby nodes
@@ -166,36 +168,3 @@ export const useNearbyElements = () => {
 
     return { findNearbyElements };
 };
-
-/**
- * Calculate the shortest distance from a point to a line segment
- */
-function distanceToLineSegment(
-    point: { x: number; y: number },
-    lineStart: { x: number; y: number },
-    lineEnd: { x: number; y: number }
-): number {
-    const A = point.x - lineStart.x;
-    const B = point.y - lineStart.y;
-    const C = lineEnd.x - lineStart.x;
-    const D = lineEnd.y - lineStart.y;
-
-    const dot = A * C + B * D;
-    const lenSq = C * C + D * D;
-
-    if (lenSq === 0) {
-        // Line segment is actually a point
-        return Math.sqrt(A * A + B * B);
-    }
-
-    let param = dot / lenSq;
-    param = Math.max(0, Math.min(1, param));
-
-    const xx = lineStart.x + param * C;
-    const yy = lineStart.y + param * D;
-
-    const dx = point.x - xx;
-    const dy = point.y - yy;
-
-    return Math.sqrt(dx * dx + dy * dy);
-}

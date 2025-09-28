@@ -61,8 +61,7 @@ export const TouchOverlay: React.FC = () => {
             const relativeX = touch.clientX - bbox.left;
             const relativeY = touch.clientY - bbox.top;
             const svgCoord = pointerPosToSVGCoord(relativeX, relativeY, svgViewBoxZoom, svgViewBoxMin);
-            const TOUCH_RADIUS = 30;
-            const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch);
+            const nearbyElements = findNearbyElements(graph.current, svgCoord, dispatch);
             if (
                 [
                     ...nearbyElements[MenuCategory.STATION],

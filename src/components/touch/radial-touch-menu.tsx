@@ -1,9 +1,9 @@
 import React from 'react';
-import { MenuLayerData, MenuCategory, MenuItemData } from '../../util/hooks/use-nearby-elements';
+import { MenuCategory, MenuItemData, MenuLayerData, TOUCH_RADIUS } from '../../util/hooks/use-nearby-elements';
 
 // Menu configuration
 const LAYER_SIZE = 5; // Maximum number of layers supported
-const CENTER_RADIUS = 20;
+const CENTER_RADIUS = TOUCH_RADIUS;
 const QUADRANT_RADIUS = 40;
 
 interface RadialTouchMenuProps {
@@ -98,6 +98,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                                 const textEndX = textRadius * Math.cos(quadrantAngleEnd);
                                 const textEndY = textRadius * Math.sin(quadrantAngleEnd);
                                 const textPath = `M ${textStartX} ${textStartY} A ${textRadius} ${textRadius} 0 0 1 ${textEndX} ${textEndY}`;
+                                const arcLength = textRadius * (Math.PI / 2);
 
                                 return (
                                     <g key={item.elementId} onPointerDown={e => handleItemClick(e, item.action)}>
@@ -127,8 +128,8 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                                                 startOffset="50%"
                                                 // path={textPath} // Not supported in most browsers
                                                 href={`#${item.label}`}
-                                                // textLength="10%"
-                                                lengthAdjust="spacingAndGlyphs"
+                                                // textLength={arcLength}
+                                                // lengthAdjust="spacingAndGlyphs"
                                             >
                                                 {item.label}
                                             </textPath>
@@ -145,7 +146,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                     cx={0}
                     cy={0}
                     r={CENTER_RADIUS}
-                    fill="white"
+                    fill="rgba(255, 255, 255, 0.3)"
                     stroke="rgba(0,0,0,0.2)"
                     strokeWidth="1"
                     onPointerDown={onClose}
