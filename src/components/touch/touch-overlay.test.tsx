@@ -11,13 +11,6 @@ vi.mock('../../util/helpers', () => ({
     getCanvasSize: vi.fn().mockReturnValue({ height: 400, width: 300 }),
 }));
 
-// fix the hook mock path to match the real import
-vi.mock('../../util/hooks/use-nearby-elements', () => ({
-    useNearbyElements: () => ({
-        findNearbyElements: vi.fn().mockReturnValue([]),
-    }),
-}));
-
 // Mock window.graph
 Object.defineProperty(window, 'graph', {
     value: {
