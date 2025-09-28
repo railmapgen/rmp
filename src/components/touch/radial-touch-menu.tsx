@@ -96,27 +96,8 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
 
                     return (
                         <g key={category}>
-                            {/* Quadrant background */}
-                            {/* <path
-                                d={quadrantPath}
-                                fill={quadrantColor}
-                                stroke="rgba(0, 0, 0, 0.1)"
-                                strokeWidth="1"
-                                fillRule="evenodd"
-                            /> */}
-
                             {/* Quadrant items */}
                             {layerData.slice(0, LAYER_SIZE + 1).map((item, itemIndex) => {
-                                // Position items within the quadrant
-                                // const itemAngle =
-                                //     quadrantAngleStart + Math.PI / 4 + (itemIndex - layerData.length / 2 + 0.5) * 0.2;
-                                // const itemRadius = (CENTER_RADIUS + outerRadius) / 2;
-                                // const x = MENU_SIZE + itemRadius * Math.cos(itemAngle);
-                                // const y = MENU_SIZE + itemRadius * Math.sin(itemAngle);
-
-                                // Create smaller circular touch area for each item
-                                // const touchRadius = 15;
-
                                 // Create quadrant sector path
                                 const innerRadius = CENTER_RADIUS + itemIndex * QUADRANT_RADIUS;
                                 const outerRadius = CENTER_RADIUS + (itemIndex + 1) * QUADRANT_RADIUS;
@@ -141,12 +122,6 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                                 const textEndY = MENU_SIZE + textRadius * Math.sin(quadrantAngleEnd);
                                 const textPath = `M ${textStartX} ${textStartY}
                                     A ${textRadius} ${textRadius} 0 0 1 ${textEndX} ${textEndY}`;
-
-                                // const textPath = `M ${MENU_SIZE + ((innerRadius + outerRadius) / 2) * Math.cos(quadrantAngleStart)} ${
-                                //     MENU_SIZE + ((innerRadius + outerRadius) / 2) * Math.sin(quadrantAngleStart)
-                                // } A ${(innerRadius + outerRadius) / 2} ${(innerRadius + outerRadius) / 2} 0 0 1 ${
-                                //     MENU_SIZE + ((innerRadius + outerRadius) / 2) * Math.cos(quadrantAngleEnd)
-                                // } ${MENU_SIZE + ((innerRadius + outerRadius) / 2) * Math.sin(quadrantAngleEnd)}`;
 
                                 return (
                                     <g key={item.elementId} onPointerDown={() => handleItemClick(item.action)}>
@@ -199,22 +174,6 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                     strokeWidth="1"
                     onTouchStart={onClose}
                 />
-
-                {/* Center label */}
-                {/* <text
-                    x={MENU_SIZE}
-                    y={MENU_SIZE}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="10"
-                    fill="#666"
-                    style={{
-                        pointerEvents: 'none',
-                        userSelect: 'none',
-                    }}
-                >
-                    Touch
-                </text> */}
             </svg>
         </div>
     );
