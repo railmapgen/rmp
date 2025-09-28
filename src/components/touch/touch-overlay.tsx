@@ -136,7 +136,6 @@ export const TouchOverlay: React.FC = () => {
                 width={(width * svgViewBoxZoom) / 100}
                 height={(height * svgViewBoxZoom) / 100}
                 fill={menuState.visible ? 'rgba(0,0,0,0.3)' : 'transparent'}
-                // pointerEvents="auto"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
