@@ -23,7 +23,7 @@ interface MenuState {
  * TouchOverlay component handles all touch interactions for mobile devices.
  * It provides two main behaviors:
  * 1. When touching near elements: Shows radial menu for element interaction
- * 2. When touching empty space: Enables canvas panning
+ * 2. When touching empty space: Enables canvas panning and pinch-to-zoom
  */
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
@@ -128,10 +128,9 @@ export const TouchOverlay: React.FC = () => {
     }, []);
 
     return (
-        <>
+        <g className="removeMe">
             {/* Interaction overlay rect */}
             <rect
-                className="removeMe"
                 x={svgViewBoxMin.x}
                 y={svgViewBoxMin.y}
                 width={(width * svgViewBoxZoom) / 100}
@@ -149,7 +148,7 @@ export const TouchOverlay: React.FC = () => {
                 onClose={handleCloseMenu}
                 visible={menuState.visible}
             />
-        </>
+        </g>
     );
 };
 

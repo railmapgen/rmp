@@ -51,19 +51,19 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                     switch (category) {
                         case MenuCategory.STATION:
                             quadrantAngleStart = Math.PI; // Top-left (180°)
-                            quadrantColor = 'hsl(220, 20%, 95%)'; // Blue tint
+                            quadrantColor = 'hsl(220, 30%, 85%)'; // Blue tint
                             break;
                         case MenuCategory.LINE:
                             quadrantAngleStart = Math.PI / 2; // Bottom-left (270°)
-                            quadrantColor = 'hsl(120, 20%, 95%)'; // Green tint
+                            quadrantColor = 'hsl(120, 30%, 85%)'; // Green tint
                             break;
                         case MenuCategory.MISC_NODE:
                             quadrantAngleStart = (3 * Math.PI) / 2; // Top-right (90°)
-                            quadrantColor = 'hsl(60, 20%, 95%)'; // Yellow tint
+                            quadrantColor = 'hsl(60, 30%, 85%)'; // Yellow tint
                             break;
                         case MenuCategory.OPERATION:
                             quadrantAngleStart = 2 * Math.PI; // Bottom-right (0°)
-                            quadrantColor = 'hsl(0, 20%, 95%)'; // Red tint
+                            quadrantColor = 'hsl(0, 30%, 85%)'; // Red tint
                             break;
                         default:
                             return null;
