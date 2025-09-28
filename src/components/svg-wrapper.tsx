@@ -349,98 +349,6 @@ const SvgWrapper = () => {
         }
     });
 
-    // Touch state variables for handling mobile gestures:
-    // touchDist: tracks the distance between two fingers for pinch-to-zoom (0 when not zooming)
-    // longPressTimeout: timer ID for long-press detection (null when no long-press is pending)
-    // touchStartPos: initial touch position for movement threshold detection (null when not tracking)
-    const [touchDist, setTouchDist] = React.useState(0);
-    const [longPressTimeout, setLongPressTimeout] = React.useState<ReturnType<typeof setTimeout> | null>(null);
-    const [touchStartPos, setTouchStartPos] = React.useState<{ x: number; y: number } | null>(null);
-
-    const handleTouchStart = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        if (e.touches.length === 1) {
-            // Single touch for long press
-            const touch = e.touches[0];
-            setTouchStartPos({ x: touch.clientX, y: touch.clientY });
-
-            const timeout = setTimeout(() => {
-                // Show context menu after long press
-                setContextMenu({
-                    isOpen: true,
-                    position: { x: touch.clientX, y: touch.clientY },
-                });
-                setLongPressTimeout(null);
-            }, 500); // 500ms long press threshold
-
-            setLongPressTimeout(timeout);
-        } else if (e.touches.length === 2) {
-            // Multi-touch for zoom
-            dispatch(setActive(undefined));
-            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
-            setTouchDist(dx * dx + dy * dy);
-
-            // Clear long press when second finger touches
-            if (longPressTimeout) {
-                clearTimeout(longPressTimeout);
-                setLongPressTimeout(null);
-            }
-            setTouchStartPos(null);
-        }
-    });
-
-    const handleTouchMove = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        // Cancel long press if user moves finger too much
-        if (e.touches.length === 1 && touchStartPos && longPressTimeout) {
-            const touch = e.touches[0];
-            const dx = touch.clientX - touchStartPos.x;
-            const dy = touch.clientY - touchStartPos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            if (distance > 10) {
-                // 10px threshold
-                clearTimeout(longPressTimeout);
-                setLongPressTimeout(null);
-                setTouchStartPos(null);
-            }
-        } else if (touchDist !== 0 && e.touches.length === 2) {
-            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
-            const d = dx * dx + dy * dy;
-
-            let newSvgViewBoxZoom = svgViewBoxZoom;
-            if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
-            else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
-            dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
-            setTouchDist(d);
-
-            // the mid-position the fingers touch will still be in the same place after zooming
-            const bbox = e.currentTarget.getBoundingClientRect();
-            const [x, y] = [
-                (e.touches[0].clientX + e.touches[1].clientX) / 2 - bbox.left,
-                (e.touches[0].clientY + e.touches[1].clientY) / 2 - bbox.top,
-            ];
-            const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
-            dispatch(
-                setSvgViewBoxMin({
-                    x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-                    y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
-                })
-            );
-        }
-    });
-
-    const handleTouchEnd = useEvent((e: React.TouchEvent<SVGSVGElement>) => {
-        // Clear long press timeout on touch end
-        if (longPressTimeout) {
-            clearTimeout(longPressTimeout);
-            setLongPressTimeout(null);
-        }
-        setTouchStartPos(null);
-
-        if (touchDist !== 0) {
-            setTouchDist(0);
-        }
-    });
-
     const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
     React.useEffect(() => {
         setSelectCoord({
@@ -465,9 +373,6 @@ const SvgWrapper = () => {
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
                 onWheel={handleBackgroundWheel}
                 onContextMenu={handleContextMenu}
                 tabIndex={0}
@@ -506,6 +411,7 @@ const SvgWrapper = () => {
                         opacity="0.75"
                     />
                 )}
+                {isTouchClient() && selected.size == 0 && mode !== 'select' && <TouchOverlay />}
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isMobileClient() && isDetailsOpen === 'hide' && (
@@ -525,7 +431,6 @@ const SvgWrapper = () => {
                     isRound
                 />
             )}
-            {isTouchClient() && selected.size === 0 && mode !== 'select' && <TouchOverlay />}
         </>
     );
 };

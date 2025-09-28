@@ -5,12 +5,11 @@ import { MenuLayerData, MenuCategory, MenuItemData } from '../../util/hooks/use-
 const LAYER_SIZE = 5; // Maximum number of layers supported
 const CENTER_RADIUS = 20;
 const QUADRANT_RADIUS = 40;
-const MENU_SIZE = CENTER_RADIUS + QUADRANT_RADIUS * LAYER_SIZE + 20;
 
 interface RadialTouchMenuProps {
     /** Menu data organized in layers from inner to outer */
     data: MenuLayerData;
-    /** Center position in screen coordinates */
+    /** Center position in svg coordinates */
     position: { x: number; y: number };
     /** Callback when menu should be closed */
     onClose: () => void;
@@ -32,38 +31,16 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
         return null;
     }
 
-    const handleItemClick = (action: () => void) => {
+    const handleItemClick = (e: React.PointerEvent<SVGGElement>, action: () => void) => {
+        e.stopPropagation(); // stop background event handler
         action();
         onClose();
     };
 
     return (
-        <div
-            style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                zIndex: 9999,
-                backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'auto',
-            }}
-            onTouchStart={onClose}
-        >
-            <svg
-                width={MENU_SIZE * 2}
-                height={MENU_SIZE * 2}
-                style={{
-                    position: 'absolute',
-                    left: position.x - MENU_SIZE,
-                    top: position.y - MENU_SIZE,
-                }}
-            >
-                {/* Render quadrants */}
+        <g>
+            {/* Menu group centered at position */}
+            <g transform={`translate(${position.x}, ${position.y})`}>
                 {(Object.entries(data) as [MenuCategory, MenuItemData[]][]).map(([category, layerData]) => {
                     if (!layerData || layerData.length === 0) return null;
 
@@ -101,34 +78,33 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                                 // Create quadrant sector path
                                 const innerRadius = CENTER_RADIUS + itemIndex * QUADRANT_RADIUS;
                                 const outerRadius = CENTER_RADIUS + (itemIndex + 1) * QUADRANT_RADIUS;
-                                const startX = MENU_SIZE + innerRadius * Math.cos(quadrantAngleStart);
-                                const startY = MENU_SIZE + innerRadius * Math.sin(quadrantAngleStart);
-                                const endX = MENU_SIZE + innerRadius * Math.cos(quadrantAngleEnd);
-                                const endY = MENU_SIZE + innerRadius * Math.sin(quadrantAngleEnd);
-                                const outerStartX = MENU_SIZE + outerRadius * Math.cos(quadrantAngleStart);
-                                const outerStartY = MENU_SIZE + outerRadius * Math.sin(quadrantAngleStart);
-                                const outerEndX = MENU_SIZE + outerRadius * Math.cos(quadrantAngleEnd);
-                                const outerEndY = MENU_SIZE + outerRadius * Math.sin(quadrantAngleEnd);
+                                const startX = innerRadius * Math.cos(quadrantAngleStart);
+                                const startY = innerRadius * Math.sin(quadrantAngleStart);
+                                const endX = innerRadius * Math.cos(quadrantAngleEnd);
+                                const endY = innerRadius * Math.sin(quadrantAngleEnd);
+                                const outerStartX = outerRadius * Math.cos(quadrantAngleStart);
+                                const outerStartY = outerRadius * Math.sin(quadrantAngleStart);
+                                const outerEndX = outerRadius * Math.cos(quadrantAngleEnd);
+                                const outerEndY = outerRadius * Math.sin(quadrantAngleEnd);
                                 const quadrantPath = `M ${startX} ${startY}
-                                         L ${outerStartX} ${outerStartY}
-                                         A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY}
-                                         L ${endX} ${endY}
-                                         A ${innerRadius} ${innerRadius} 0 0 0 ${startX} ${startY}`;
+                                     L ${outerStartX} ${outerStartY}
+                                     A ${outerRadius} ${outerRadius} 0 0 1 ${outerEndX} ${outerEndY}
+                                     L ${endX} ${endY}
+                                     A ${innerRadius} ${innerRadius} 0 0 0 ${startX} ${startY}`;
 
                                 const textRadius = CENTER_RADIUS + (itemIndex + 0.5) * QUADRANT_RADIUS;
-                                const textStartX = MENU_SIZE + textRadius * Math.cos(quadrantAngleStart);
-                                const textStartY = MENU_SIZE + textRadius * Math.sin(quadrantAngleStart);
-                                const textEndX = MENU_SIZE + textRadius * Math.cos(quadrantAngleEnd);
-                                const textEndY = MENU_SIZE + textRadius * Math.sin(quadrantAngleEnd);
-                                const textPath = `M ${textStartX} ${textStartY}
-                                    A ${textRadius} ${textRadius} 0 0 1 ${textEndX} ${textEndY}`;
+                                const textStartX = textRadius * Math.cos(quadrantAngleStart);
+                                const textStartY = textRadius * Math.sin(quadrantAngleStart);
+                                const textEndX = textRadius * Math.cos(quadrantAngleEnd);
+                                const textEndY = textRadius * Math.sin(quadrantAngleEnd);
+                                const textPath = `M ${textStartX} ${textStartY} A ${textRadius} ${textRadius} 0 0 1 ${textEndX} ${textEndY}`;
 
                                 return (
-                                    <g key={item.elementId} onPointerDown={() => handleItemClick(item.action)}>
+                                    <g key={item.elementId} onPointerDown={e => handleItemClick(e, item.action)}>
                                         <path
                                             d={quadrantPath}
                                             fill={quadrantColor}
-                                            stroke="rgba(0, 0, 0, 0.1)"
+                                            stroke="rgba(0,0,0,0.1)"
                                             strokeWidth="1"
                                             fillRule="evenodd"
                                         />
@@ -166,16 +142,16 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
 
                 {/* Center circle */}
                 <circle
-                    cx={MENU_SIZE}
-                    cy={MENU_SIZE}
+                    cx={0}
+                    cy={0}
                     r={CENTER_RADIUS}
                     fill="white"
-                    stroke="rgba(0, 0, 0, 0.2)"
+                    stroke="rgba(0,0,0,0.2)"
                     strokeWidth="1"
-                    onTouchStart={onClose}
+                    onPointerDown={onClose}
                 />
-            </svg>
-        </div>
+            </g>
+        </g>
     );
 };
 

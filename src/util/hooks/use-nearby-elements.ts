@@ -1,11 +1,12 @@
 import { MultiDirectedGraph } from 'graphology';
 import { useCallback } from 'react';
 import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../../constants/constants';
-import { setSelected, setActive, showDetailsPanel, clearSelected } from '../../redux/runtime/runtime-slice';
-import { importSelectedNodesAndEdges } from '../clipboard';
 import { StationAttributes } from '../../constants/stations';
-import { toCamelCase } from '../helpers';
 import i18n from '../../i18n/config';
+import { RootDispatch } from '../../redux';
+import { setSelected } from '../../redux/runtime/runtime-slice';
+import { importSelectedNodesAndEdges } from '../clipboard';
+import { toCamelCase } from '../helpers';
 
 export enum MenuCategory {
     STATION = 'station',
@@ -49,7 +50,7 @@ export const useNearbyElements = () => {
             graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
             svgCoord: { x: number; y: number },
             radius: number,
-            dispatch: any
+            dispatch: RootDispatch
         ): MenuLayerData => {
             const data = structuredClone(emptyMenuLayerData);
 
@@ -144,7 +145,7 @@ export const useNearbyElements = () => {
             // Always add operations layer
             const operationItems: MenuItemData[] = [];
             operationItems.push({
-                label: '粘贴',
+                label: i18n.t('contextMenu.paste'),
                 action: async () => {
                     try {
                         const clipboardText = await navigator.clipboard.readText();

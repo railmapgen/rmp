@@ -1,9 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import useEvent from 'react-use-event-hook';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setSvgViewBoxMin } from '../../redux/param/param-slice';
-import { clearSelected } from '../../redux/runtime/runtime-slice';
-import { pointerPosToSVGCoord } from '../../util/helpers';
+import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { clearSelected, setActive } from '../../redux/runtime/runtime-slice';
+import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
+import { useWindowSize } from '../../util/hooks';
 import {
     MenuCategory,
     MenuLayerData,
@@ -11,12 +12,6 @@ import {
     useNearbyElements,
 } from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
-
-interface TouchState {
-    active: boolean;
-    startPosition: { x: number; y: number };
-    startViewBoxMin: { x: number; y: number };
-}
 
 interface MenuState {
     visible: boolean;
@@ -36,12 +31,12 @@ export const TouchOverlay: React.FC = () => {
     const graph = React.useRef(window.graph);
     const { findNearbyElements } = useNearbyElements();
 
-    // Touch panning state
-    const [touchState, setTouchState] = useState<TouchState>({
-        active: false,
-        startPosition: { x: 0, y: 0 },
-        startViewBoxMin: { x: 0, y: 0 },
-    });
+    // Touch state variables for handling mobile gestures:
+    // touchDist: tracks the distance between two fingers for pinch-to-zoom (0 when not zooming)
+    const [touchDist, setTouchDist] = React.useState(0);
+
+    const size = useWindowSize();
+    const { height, width } = getCanvasSize(size);
 
     // Radial menu state
     const [menuState, setMenuState] = useState<MenuState>({
@@ -50,96 +45,78 @@ export const TouchOverlay: React.FC = () => {
         data: emptyMenuLayerData,
     });
 
-    const handleTouchStart = useEvent((e: React.TouchEvent<HTMLDivElement>) => {
-        // Only handle single finger touches
-        if (e.touches.length !== 1) {
-            return;
-        }
+    const handleTouchStart = useEvent((e: React.TouchEvent<SVGRectElement>) => {
+        if (e.touches.length == 1) {
+            setTouchDist(0);
 
-        const touch = e.touches[0];
-        const screenCoord = { x: touch.clientX, y: touch.clientY };
+            if (menuState.visible) {
+                // If menu is already open, close it on this touch
+                handleCloseMenu();
+                return;
+            }
 
-        // Convert screen coordinates to SVG coordinates
-        const bbox = document.getElementById('canvas')?.getBoundingClientRect();
-        if (!bbox) return;
-
-        const relativeX = touch.clientX - bbox.left;
-        const relativeY = touch.clientY - bbox.top;
-
-        const svgCoord = pointerPosToSVGCoord(relativeX, relativeY, svgViewBoxZoom, svgViewBoxMin);
-
-        // Search for nearby elements within a touch-friendly radius
-        const TOUCH_RADIUS = 30; // Adjust based on testing
-        const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch);
-
-        if (
-            [
-                ...nearbyElements[MenuCategory.STATION],
-                ...nearbyElements[MenuCategory.MISC_NODE],
-                ...nearbyElements[MenuCategory.LINE],
-            ].length > 0
-        ) {
-            // Case A: Elements found - show radial menu
-            setMenuState({
-                visible: true,
-                position: screenCoord,
-                data: nearbyElements,
-            });
-
-            // Clear any active panning state
-            setTouchState({
-                active: false,
-                startPosition: { x: 0, y: 0 },
-                startViewBoxMin: { x: 0, y: 0 },
-            });
-        } else {
-            // Case B: No elements - enter panning mode
-            dispatch(clearSelected());
-
-            setTouchState({
-                active: true,
-                startPosition: screenCoord,
-                startViewBoxMin: { ...svgViewBoxMin },
-            });
-
-            // Close menu if it was open
-            setMenuState({
-                visible: false,
-                position: { x: 0, y: 0 },
-                data: emptyMenuLayerData,
-            });
+            const touch = e.touches[0];
+            const bbox = document.getElementById('canvas')?.getBoundingClientRect();
+            if (!bbox) return;
+            const relativeX = touch.clientX - bbox.left;
+            const relativeY = touch.clientY - bbox.top;
+            const svgCoord = pointerPosToSVGCoord(relativeX, relativeY, svgViewBoxZoom, svgViewBoxMin);
+            const TOUCH_RADIUS = 30;
+            const nearbyElements = findNearbyElements(graph.current, svgCoord, TOUCH_RADIUS, dispatch);
+            if (
+                [
+                    ...nearbyElements[MenuCategory.STATION],
+                    ...nearbyElements[MenuCategory.MISC_NODE],
+                    ...nearbyElements[MenuCategory.LINE],
+                ].length > 0
+            ) {
+                setMenuState({
+                    visible: true,
+                    position: svgCoord, // use svg coords directly
+                    data: nearbyElements,
+                });
+            } else {
+                dispatch(clearSelected());
+                handleCloseMenu();
+            }
+        } else if (e.touches.length == 2) {
+            // Multi-touch for zoom
+            dispatch(setActive(undefined));
+            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
+            setTouchDist(dx * dx + dy * dy);
         }
     });
 
-    const handleTouchMove = useEvent((e: React.TouchEvent<HTMLDivElement>) => {
-        if (!touchState.active || e.touches.length !== 1) {
-            return;
+    const handleTouchMove = useEvent((e: React.TouchEvent<SVGRectElement>) => {
+        if (e.touches.length == 2 && touchDist > 0) {
+            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
+            const d = dx * dx + dy * dy;
+
+            let newSvgViewBoxZoom = svgViewBoxZoom;
+            if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
+            else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
+            dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+            setTouchDist(d);
+
+            // the mid-position the fingers touch will still be in the same place after zooming
+            const bbox = e.currentTarget.getBoundingClientRect();
+            const [x, y] = [
+                (e.touches[0].clientX + e.touches[1].clientX) / 2 - bbox.left,
+                (e.touches[0].clientY + e.touches[1].clientY) / 2 - bbox.top,
+            ];
+            const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
+            dispatch(
+                setSvgViewBoxMin({
+                    x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+                    y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+                })
+            );
         }
-
-        e.preventDefault(); // Prevent default scrolling behavior
-
-        const touch = e.touches[0];
-        const deltaX = touch.clientX - touchState.startPosition.x;
-        const deltaY = touch.clientY - touchState.startPosition.y;
-
-        // Calculate new pan position based on zoom level
-        // Higher zoom means smaller movements in SVG space
-        const scaleFactor = svgViewBoxZoom / 100;
-        const newViewBoxMin = {
-            x: touchState.startViewBoxMin.x - deltaX * scaleFactor,
-            y: touchState.startViewBoxMin.y - deltaY * scaleFactor,
-        };
-
-        dispatch(setSvgViewBoxMin(newViewBoxMin));
     });
 
-    const handleTouchEnd = useEvent((e: React.TouchEvent<HTMLDivElement>) => {
+    const handleTouchEnd = useEvent((e: React.TouchEvent<SVGRectElement>) => {
         // Reset panning state
-        setTouchState({
-            active: false,
-            startPosition: { x: 0, y: 0 },
-            startViewBoxMin: { x: 0, y: 0 },
-        });
+        setTouchDist(0);
     });
 
     const handleCloseMenu = useCallback(() => {
@@ -152,24 +129,19 @@ export const TouchOverlay: React.FC = () => {
 
     return (
         <>
-            {/* Touch interaction overlay */}
-            <div
-                style={{
-                    position: 'fixed',
-                    top: 40, // Match SVG wrapper positioning
-                    left: 40,
-                    right: 0,
-                    bottom: 0,
-                    zIndex: 2, // Above SVG but below UI
-                    pointerEvents: 'auto',
-                    touchAction: 'none', // Prevent default touch behaviors
-                }}
+            {/* Interaction overlay rect */}
+            <rect
+                x={svgViewBoxMin.x}
+                y={svgViewBoxMin.y}
+                width={(width * svgViewBoxZoom) / 100}
+                height={(height * svgViewBoxZoom) / 100}
+                fill={menuState.visible ? 'rgba(0,0,0,0.3)' : 'transparent'}
+                // pointerEvents="auto"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
             />
-
-            {/* Radial touch menu */}
+            {/* Radial touch menu (SVG elements only) */}
             <RadialTouchMenu
                 data={menuState.data}
                 position={menuState.position}
