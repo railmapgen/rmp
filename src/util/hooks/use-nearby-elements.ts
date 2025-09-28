@@ -68,19 +68,20 @@ export const useNearbyElements = () => {
                 return distance <= radius;
             }) as MiscNodeId[];
 
-            // Find lines within radius (check if touch point is near any line path)
+            // Find lines connected to nearby nodes
+            const nearbyNodes = [...nearbyStations, ...nearbyMiscNodes];
             const nearbyLines: LineId[] = [];
-            graph.forEachEdge((edgeId, attributes, source, target, sourceAttrs, targetAttrs) => {
-                // Simple distance check to line segment (can be improved with proper line-point distance)
-                const lineDistance = distanceToLineSegment(
-                    svgCoord,
-                    { x: sourceAttrs.x, y: sourceAttrs.y },
-                    { x: targetAttrs.x, y: targetAttrs.y }
-                );
-                if (lineDistance <= radius) {
-                    nearbyLines.push(edgeId as LineId);
-                }
-            });
+            if (nearbyNodes.length > 0) {
+                graph.forEachEdge((edgeId, attributes, source, target) => {
+                    // Only include lines that are connected to nearby nodes
+                    if (
+                        nearbyNodes.includes(source as StnId | MiscNodeId) ||
+                        nearbyNodes.includes(target as StnId | MiscNodeId)
+                    ) {
+                        nearbyLines.push(edgeId as LineId);
+                    }
+                });
+            }
 
             // Create station layer if there are nearby stations
             if (nearbyStations.length > 0) {

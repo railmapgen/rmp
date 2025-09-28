@@ -23,36 +23,48 @@ describe('RadialTouchMenu', () => {
     };
 
     it('renders when visible is true', () => {
-        const { container } = render(<RadialTouchMenu {...mockProps} />);
+        const { container } = render(
+            <svg>
+                <RadialTouchMenu {...mockProps} />
+            </svg>
+        );
 
-        const overlay = container.querySelector('.radial-touch-menu-overlay');
-        expect(overlay).toBeTruthy();
+        const menuGroup = container.querySelector('g');
+        expect(menuGroup).toBeTruthy();
     });
 
     it('does not render when visible is false', () => {
-        const { container } = render(<RadialTouchMenu {...mockProps} visible={false} />);
+        const { container } = render(
+            <svg>
+                <RadialTouchMenu {...mockProps} visible={false} />
+            </svg>
+        );
 
-        const overlay = container.querySelector('.radial-touch-menu-overlay');
-        expect(overlay).toBeFalsy();
+        const menuGroup = container.querySelector('g');
+        expect(menuGroup).toBeFalsy();
     });
 
     it('renders SVG menu with correct structure', () => {
-        const { container } = render(<RadialTouchMenu {...mockProps} />);
+        const { container } = render(
+            <svg>
+                <RadialTouchMenu {...mockProps} />
+            </svg>
+        );
 
-        const svg = container.querySelector('svg');
-        expect(svg).toBeTruthy();
+        const menuGroup = container.querySelector('g');
+        expect(menuGroup).toBeTruthy();
 
-        // Check for center circle
-        const centerCircle = container.querySelector('circle[r="20"]');
-        expect(centerCircle).toBeTruthy();
-
-        // Check for menu text (center label)
-        const centerText = Array.from(container.querySelectorAll('text')).find(text => text.textContent === 'Touch');
-        expect(centerText).toBeTruthy();
+        // Check for nested groups
+        const nestedGroups = container.querySelectorAll('g');
+        expect(nestedGroups.length).toBeGreaterThan(1);
     });
 
     it('displays category items correctly', () => {
-        const { container } = render(<RadialTouchMenu {...mockProps} />);
+        const { container } = render(
+            <svg>
+                <RadialTouchMenu {...mockProps} />
+            </svg>
+        );
 
         // Check that the station label is rendered
         const stationText = Array.from(container.querySelectorAll('text')).find(

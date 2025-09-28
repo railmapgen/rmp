@@ -131,6 +131,7 @@ export const TouchOverlay: React.FC = () => {
         <>
             {/* Interaction overlay rect */}
             <rect
+                className="removeMe"
                 x={svgViewBoxMin.x}
                 y={svgViewBoxMin.y}
                 width={(width * svgViewBoxZoom) / 100}

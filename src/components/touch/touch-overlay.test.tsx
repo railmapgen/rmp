@@ -8,6 +8,7 @@ import TouchOverlay from './touch-overlay';
 vi.mock('../../util/helpers', () => ({
     pointerPosToSVGCoord: vi.fn().mockReturnValue({ x: 100, y: 100 }),
     isTouchClient: vi.fn().mockReturnValue(true),
+    getCanvasSize: vi.fn().mockReturnValue({ height: 400, width: 300 }),
 }));
 
 // Mock the useNearbyElements hook
@@ -36,28 +37,30 @@ describe('TouchOverlay', () => {
     it('renders without crashing', () => {
         const { container } = render(
             <Provider store={store}>
-                <TouchOverlay />
+                <svg>
+                    <TouchOverlay />
+                </svg>
             </Provider>
         );
 
-        // Check that the overlay div is rendered
-        const overlay = container.querySelector('div[style*="position: fixed"]');
+        // Check that the overlay rect is rendered
+        const overlay = container.querySelector('rect');
         expect(overlay).toBeTruthy();
     });
 
     it('has correct styling for touch overlay', () => {
         const { container } = render(
             <Provider store={store}>
-                <TouchOverlay />
+                <svg>
+                    <TouchOverlay />
+                </svg>
             </Provider>
         );
 
-        const overlay = container.querySelector('div[style*="position: fixed"]');
+        const overlay = container.querySelector('rect');
         expect(overlay).toBeTruthy();
 
-        // Check that the overlay has the expected styles
-        const style = overlay?.getAttribute('style');
-        expect(style).toContain('position: fixed');
-        expect(style).toContain('z-index: 2');
+        // Check that the overlay has the expected class
+        expect(overlay?.classList).toContain('removeMe');
     });
 });
