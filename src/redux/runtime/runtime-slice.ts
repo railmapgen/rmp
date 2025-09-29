@@ -10,7 +10,7 @@ import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
-import { isMobileClient } from '../../util/helpers';
+import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
@@ -196,7 +196,7 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
  */
 const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
     if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
-        if (isMobileClient()) {
+        if (isPortraitClient()) {
             return 'hide';
         }
         return 'show';

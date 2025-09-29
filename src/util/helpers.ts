@@ -176,9 +176,9 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
-export const isTouchClient =
+export const isTouchClient = (): boolean =>
     'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
-export const isMobileClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
+export const isPortraitClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -199,4 +199,23 @@ export const getContrastingColor = (hex: `#${string}`): MonoColour => {
     const b = parseInt(hex.slice(5, 7), 16);
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
     return yiq >= 128 ? MonoColour.black : MonoColour.white;
+};
+
+/**
+ * Removes hyphens and capitalizes the first letter following each hyphen.
+ * Converts a kebab-case string to camelCase or PascalCase (depending on the first word's case).
+ * * @param str The string to convert.
+ * @returns The converted string (e.g., "shmetroNumLineBadge").
+ */
+export const toCamelCase = (str: string): string => {
+    // Regex: Matches a hyphen (-) followed by any word character (\w).
+    // The 'g' flag ensures global matching (finds all instances).
+    return str.replace(/-(\w)/g, (match, letter) => {
+        // match: The full matched string, e.g., "-n", "-l", "-b"
+        // letter: The captured group (\w), e.g., "n", "l", "b"
+
+        // Returns the uppercase version of the captured letter.
+        // This replaces the original "-letter" part.
+        return letter.toUpperCase();
+    });
 };
