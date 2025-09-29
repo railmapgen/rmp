@@ -29,7 +29,7 @@
         "react-redux": "^9.2.0",
         "react-router-dom": "^7.9.1",
         "react-use-event-hook": "^0.9.6",
-        "rollup": "^4.51.0",
+        "rollup": "^4.52.3",
         "vite-plugin-svgr": "^4.5.0"
     },
     "devDependencies": {
@@ -71,5 +71,5 @@
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
     },
-    "version": "5.4.0"
+    "version": "5.4.1"
 }
