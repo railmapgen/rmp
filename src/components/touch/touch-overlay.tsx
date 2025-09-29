@@ -148,7 +148,7 @@ export const TouchOverlay: React.FC = () => {
                 visible={menuState.visible}
             />
             {/* Virtual joystick for selected nodes */}
-            <VirtualJoystick svgViewBoxMin={svgViewBoxMin} svgViewBoxZoom={svgViewBoxZoom} />
+            {[...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && <VirtualJoystick />}
         </g>
     );
 };

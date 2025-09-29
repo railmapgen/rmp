@@ -14,19 +14,18 @@ import { exportSelectedNodesAndEdges } from '../../util/clipboard';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 
-interface VirtualJoystickProps {
-    svgViewBoxMin: { x: number; y: number };
-    svgViewBoxZoom: number;
-}
+// Movement distance (same as keyboard controls in svg-wrapper.tsx)
+const MOVE_DISTANCE = 5;
 
 /**
  * Virtual joystick component for touch devices to move selected nodes.
  * Shows 4 directional buttons (up, down, left, right) plus copy and delete buttons.
  * Positioned at the bottom of the screen when nodes are selected.
  */
-export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin, svgViewBoxZoom }) => {
+export const VirtualJoystick: React.FC = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const { selected } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
@@ -38,11 +37,9 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
         dispatch(refreshEdgesThunk());
     }, [dispatch]);
 
-    // Movement distance (same as keyboard controls in svg-wrapper.tsx)
-    const MOVE_DISTANCE = 10;
-
     const handleMove = React.useCallback(
-        (xFactor: number, yFactor: number) => {
+        (e: React.PointerEvent, xFactor: number, yFactor: number) => {
+            e.stopPropagation();
             if (selected.size > 0) {
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
@@ -56,10 +53,10 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
         [selected, refreshAndSave]
     );
 
-    const handleMoveUp = React.useCallback(() => handleMove(0, -1), [handleMove]);
-    const handleMoveDown = React.useCallback(() => handleMove(0, 1), [handleMove]);
-    const handleMoveLeft = React.useCallback(() => handleMove(-1, 0), [handleMove]);
-    const handleMoveRight = React.useCallback(() => handleMove(1, 0), [handleMove]);
+    const handleMoveUp = React.useCallback((e: React.PointerEvent) => handleMove(e, 0, -1), [handleMove]);
+    const handleMoveDown = React.useCallback((e: React.PointerEvent) => handleMove(e, 0, 1), [handleMove]);
+    const handleMoveLeft = React.useCallback((e: React.PointerEvent) => handleMove(e, -1, 0), [handleMove]);
+    const handleMoveRight = React.useCallback((e: React.PointerEvent) => handleMove(e, 1, 0), [handleMove]);
 
     const handleCopy = React.useCallback(() => {
         if (selected.size > 0) {
@@ -82,22 +79,15 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
         }
     }, [selected, dispatch, refreshAndSave]);
 
-    if (selected.size === 0) {
-        return null;
-    }
-
     // Position at bottom center of the SVG viewport
     const centerX = svgViewBoxMin.x + (width * svgViewBoxZoom) / 200; // Center horizontally
-    const bottomY = svgViewBoxMin.y + (height * svgViewBoxZoom) / 100 - 80; // 80px from bottom
+    const bottomY = svgViewBoxMin.y + ((height - 100) * svgViewBoxZoom) / 100; // 80px from bottom
 
     const buttonSize = 40;
-    const buttonSpacing = 50;
+    const buttonSpacing = 40;
 
     return (
-        <g transform={`translate(${centerX}, ${bottomY})`} className="virtual-joystick">
-            {/* Background circle */}
-            <circle r="120" fill="rgba(0, 0, 0, 0.1)" stroke="rgba(0, 0, 0, 0.2)" strokeWidth="1" />
-
+        <g transform={`translate(${centerX}, ${bottomY})scale(${(1.5 * svgViewBoxZoom) / 100})`}>
             {/* Up button */}
             <g transform={`translate(0, -${buttonSpacing})`}>
                 <circle
@@ -105,17 +95,9 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
                     fill="rgba(255, 255, 255, 0.9)"
                     stroke="rgba(0, 0, 0, 0.3)"
                     strokeWidth="1"
-                    style={{ cursor: 'pointer' }}
                     onPointerDown={handleMoveUp}
                 />
-                <MdKeyboardArrowUp
-                    x={-12}
-                    y={-12}
-                    width={24}
-                    height={24}
-                    fill="rgba(0, 0, 0, 0.7)"
-                    style={{ pointerEvents: 'none' }}
-                />
+                <MdKeyboardArrowUp x={-8} y={-8} fill="rgba(0, 0, 0, 0.7)" style={{ pointerEvents: 'none' }} />
             </g>
 
             {/* Down button */}
@@ -125,17 +107,9 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
                     fill="rgba(255, 255, 255, 0.9)"
                     stroke="rgba(0, 0, 0, 0.3)"
                     strokeWidth="1"
-                    style={{ cursor: 'pointer' }}
                     onPointerDown={handleMoveDown}
                 />
-                <MdKeyboardArrowDown
-                    x={-12}
-                    y={-12}
-                    width={24}
-                    height={24}
-                    fill="rgba(0, 0, 0, 0.7)"
-                    style={{ pointerEvents: 'none' }}
-                />
+                <MdKeyboardArrowDown x={-8} y={-8} fill="rgba(0, 0, 0, 0.7)" style={{ pointerEvents: 'none' }} />
             </g>
 
             {/* Left button */}
@@ -145,17 +119,9 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
                     fill="rgba(255, 255, 255, 0.9)"
                     stroke="rgba(0, 0, 0, 0.3)"
                     strokeWidth="1"
-                    style={{ cursor: 'pointer' }}
                     onPointerDown={handleMoveLeft}
                 />
-                <MdKeyboardArrowLeft
-                    x={-12}
-                    y={-12}
-                    width={24}
-                    height={24}
-                    fill="rgba(0, 0, 0, 0.7)"
-                    style={{ pointerEvents: 'none' }}
-                />
+                <MdKeyboardArrowLeft x={-8} y={-8} fill="rgba(0, 0, 0, 0.7)" style={{ pointerEvents: 'none' }} />
             </g>
 
             {/* Right button */}
@@ -165,57 +131,33 @@ export const VirtualJoystick: React.FC<VirtualJoystickProps> = ({ svgViewBoxMin,
                     fill="rgba(255, 255, 255, 0.9)"
                     stroke="rgba(0, 0, 0, 0.3)"
                     strokeWidth="1"
-                    style={{ cursor: 'pointer' }}
                     onPointerDown={handleMoveRight}
                 />
-                <MdKeyboardArrowRight
-                    x={-12}
-                    y={-12}
-                    width={24}
-                    height={24}
-                    fill="rgba(0, 0, 0, 0.7)"
-                    style={{ pointerEvents: 'none' }}
-                />
+                <MdKeyboardArrowRight x={-8} y={-8} fill="rgba(0, 0, 0, 0.7)" style={{ pointerEvents: 'none' }} />
             </g>
 
             {/* Copy button */}
-            <g transform={`translate(-${buttonSpacing * 0.7}, -${buttonSpacing * 0.7})`}>
+            <g transform={`translate(${buttonSpacing}, ${buttonSpacing})`}>
                 <circle
                     r={(buttonSize / 2) * 0.8}
                     fill="rgba(255, 255, 255, 0.9)"
                     stroke="rgba(0, 0, 0, 0.3)"
                     strokeWidth="1"
-                    style={{ cursor: 'pointer' }}
                     onPointerDown={handleCopy}
                 />
-                <MdContentCopy
-                    x={-10}
-                    y={-10}
-                    width={20}
-                    height={20}
-                    fill="rgba(0, 0, 0, 0.7)"
-                    style={{ pointerEvents: 'none' }}
-                />
+                <MdContentCopy x={-8} y={-8} fill="rgba(0, 0, 0, 0.7)" style={{ pointerEvents: 'none' }} />
             </g>
 
             {/* Delete button */}
-            <g transform={`translate(${buttonSpacing * 0.7}, -${buttonSpacing * 0.7})`}>
+            <g transform={`translate(-${buttonSpacing}, ${buttonSpacing})`}>
                 <circle
                     r={(buttonSize / 2) * 0.8}
                     fill="rgba(255, 255, 255, 0.9)"
                     stroke="rgba(255, 0, 0, 0.5)"
                     strokeWidth="1"
-                    style={{ cursor: 'pointer' }}
                     onPointerDown={handleDelete}
                 />
-                <MdDelete
-                    x={-10}
-                    y={-10}
-                    width={20}
-                    height={20}
-                    fill="rgba(255, 0, 0, 0.7)"
-                    style={{ pointerEvents: 'none' }}
-                />
+                <MdDelete x={-8} y={-8} fill="rgba(255, 0, 0, 0.7)" style={{ pointerEvents: 'none' }} />
             </g>
         </g>
     );

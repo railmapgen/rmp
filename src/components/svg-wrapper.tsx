@@ -411,9 +411,7 @@ const SvgWrapper = () => {
                         opacity="0.75"
                     />
                 )}
-                {isTouchClient() && selected.size == 0 && mode !== 'select' && !mode.startsWith('line-') && (
-                    <TouchOverlay />
-                )}
+                {isTouchClient() && mode !== 'select' && !mode.startsWith('line-') && <TouchOverlay />}
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (
@@ -423,7 +421,7 @@ const SvgWrapper = () => {
                     onClick={() => dispatch(showDetailsPanel())}
                     style={{
                         position: 'fixed',
-                        bottom: 20,
+                        bottom: 140,
                         right: 0,
                         borderTopRightRadius: 0,
                         borderBottomRightRadius: 0,
