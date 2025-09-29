@@ -12,6 +12,7 @@ import {
     findNearbyElements,
 } from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
+import VirtualJoystick from './virtual-joystick';
 
 interface MenuState {
     visible: boolean;
@@ -28,6 +29,7 @@ interface MenuState {
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { selected } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     // Touch state variables for handling mobile gestures:
@@ -145,6 +147,8 @@ export const TouchOverlay: React.FC = () => {
                 onClose={handleCloseMenu}
                 visible={menuState.visible}
             />
+            {/* Virtual joystick for selected nodes */}
+            <VirtualJoystick svgViewBoxMin={svgViewBoxMin} svgViewBoxZoom={svgViewBoxZoom} />
         </g>
     );
 };

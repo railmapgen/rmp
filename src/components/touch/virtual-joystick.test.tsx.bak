@@ -1,0 +1,128 @@
+import { render } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { describe, expect, it, vi } from 'vitest';
+import { configureStore } from '@reduxjs/toolkit';
+import appSlice from '../../redux/app/app-slice';
+import paramSlice from '../../redux/param/param-slice';
+import runtimeSlice from '../../redux/runtime/runtime-slice';
+import accountSlice from '../../redux/account/account-slice';
+import { Id } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
+import VirtualJoystick from './virtual-joystick';
+
+// Mock the helper functions
+vi.mock('../../util/helpers', () => ({
+    getCanvasSize: vi.fn().mockReturnValue({ height: 600, width: 800 }),
+}));
+
+// Mock window.graph
+const mockGraph = {
+    hasNode: vi.fn().mockReturnValue(true),
+    hasEdge: vi.fn().mockReturnValue(false),
+    dropNode: vi.fn(),
+    dropEdge: vi.fn(),
+    updateNodeAttribute: vi.fn(),
+    export: vi.fn().mockReturnValue({}),
+};
+
+Object.defineProperty(window, 'graph', {
+    value: mockGraph,
+    writable: true,
+});
+
+// Mock clipboard API
+Object.assign(navigator, {
+    clipboard: {
+        writeText: vi.fn().mockResolvedValue(undefined),
+    },
+});
+
+describe('VirtualJoystick', () => {
+    const createTestStore = (selectedNodes: Id[] = []) =>
+        configureStore({
+            reducer: {
+                app: appSlice,
+                param: paramSlice,
+                runtime: runtimeSlice,
+                account: accountSlice,
+            },
+            preloadedState: {
+                runtime: {
+                    selected: new Set(selectedNodes),
+                    pointerPosition: undefined,
+                    active: undefined,
+                    isDetailsOpen: 'close' as const,
+                    refresh: { nodes: 0, edges: 0, images: 0 },
+                    mode: 'free' as const,
+                    lastTool: undefined,
+                    keepLastPath: false,
+                    theme: [9, 'white', '#000000', 0],
+                    paletteAppClip: { input: undefined, output: undefined },
+                    count: {
+                        stations: 0,
+                        miscNodes: 0,
+                        lines: 0,
+                        masters: 0,
+                        parallel: 0,
+                        mostFrequentStationType: StationType.ShmetroBasic,
+                    },
+                    stationNames: {},
+                    globalAlerts: {},
+                },
+            },
+        });
+
+    it('renders nothing when no nodes are selected', () => {
+        const store = createTestStore();
+        const { container } = render(
+            <Provider store={store}>
+                <svg>
+                    <VirtualJoystick svgViewBoxMin={{ x: 0, y: 0 }} svgViewBoxZoom={100} />
+                </svg>
+            </Provider>
+        );
+
+        const joystick = container.querySelector('.virtual-joystick');
+        expect(joystick).toBeNull();
+    });
+
+    it('renders joystick when nodes are selected', () => {
+        const store = createTestStore(['stn_test1', 'stn_test2']);
+        const { container } = render(
+            <Provider store={store}>
+                <svg>
+                    <VirtualJoystick svgViewBoxMin={{ x: 0, y: 0 }} svgViewBoxZoom={100} />
+                </svg>
+            </Provider>
+        );
+
+        const joystick = container.querySelector('.virtual-joystick');
+        expect(joystick).toBeTruthy();
+
+        // Should have background circle
+        const backgroundCircle = joystick?.querySelector('circle');
+        expect(backgroundCircle).toBeTruthy();
+
+        // Should have all 4 directional buttons plus 2 action buttons (6 groups total)
+        const buttonGroups = joystick?.querySelectorAll('g');
+        expect(buttonGroups?.length).toBe(6); // 4 directional + 2 action buttons
+    });
+
+    it('positions joystick correctly based on viewport parameters', () => {
+        const store = createTestStore(['stn_test1']);
+        const { container } = render(
+            <Provider store={store}>
+                <svg>
+                    <VirtualJoystick svgViewBoxMin={{ x: 100, y: 200 }} svgViewBoxZoom={150} />
+                </svg>
+            </Provider>
+        );
+
+        const joystick = container.querySelector('.virtual-joystick');
+        expect(joystick).toBeTruthy();
+
+        // Check that transform attribute contains the calculated position
+        const transform = joystick?.getAttribute('transform');
+        expect(transform).toContain('translate');
+    });
+});
