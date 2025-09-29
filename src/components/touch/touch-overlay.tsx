@@ -12,6 +12,7 @@ import {
     findNearbyElements,
 } from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
+import VirtualJoystick from './virtual-joystick';
 
 interface MenuState {
     visible: boolean;
@@ -28,6 +29,7 @@ interface MenuState {
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { selected } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     // Touch state variables for handling mobile gestures:
@@ -127,18 +129,24 @@ export const TouchOverlay: React.FC = () => {
 
     return (
         <g className="removeMe">
-            {/* Interaction overlay rect */}
-            <rect
-                x={svgViewBoxMin.x}
-                y={svgViewBoxMin.y}
-                width={(width * svgViewBoxZoom) / 100}
-                height={(height * svgViewBoxZoom) / 100}
-                fill={menuState.visible ? 'rgba(0,0,0,0.3)' : 'transparent'}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-            />
-            {/* Radial touch menu (SVG elements only) */}
+            {[...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) ? (
+                // Virtual joystick for selected nodes
+                // Overlay must be hidden to allow pointer events to pass through to the original canvas.
+                // Handlers such as predict next node will capture this event.
+                <VirtualJoystick />
+            ) : (
+                // Interaction overlay shown by default
+                <rect
+                    x={svgViewBoxMin.x}
+                    y={svgViewBoxMin.y}
+                    width={(width * svgViewBoxZoom) / 100}
+                    height={(height * svgViewBoxZoom) / 100}
+                    fill={menuState.visible ? 'rgba(0,0,0,0.3)' : 'transparent'}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                />
+            )}
             <RadialTouchMenu
                 data={menuState.data}
                 position={menuState.position}
