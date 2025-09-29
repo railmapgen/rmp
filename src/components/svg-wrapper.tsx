@@ -29,7 +29,7 @@ import {
     getCanvasSize,
     getMousePosition,
     isMacClient,
-    isMobileClient,
+    isPortraitClient,
     isTouchClient,
     pointerPosToSVGCoord,
     roundToMultiple,
@@ -411,10 +411,12 @@ const SvgWrapper = () => {
                         opacity="0.75"
                     />
                 )}
-                {isTouchClient() && selected.size == 0 && mode !== 'select' && <TouchOverlay />}
+                {isTouchClient() && selected.size == 0 && mode !== 'select' && !mode.startsWith('line-') && (
+                    <TouchOverlay />
+                )}
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
-            {isMobileClient() && isDetailsOpen === 'hide' && (
+            {isPortraitClient() && isDetailsOpen === 'hide' && (
                 <IconButton
                     aria-label="open details panel"
                     icon={<MdDoubleArrow style={{ transform: 'rotate(180deg)' }} />}

@@ -178,7 +178,7 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 export const isMacClient = navigator.platform.startsWith('Mac');
 export const isTouchClient = (): boolean =>
     'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
-export const isMobileClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
+export const isPortraitClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {
