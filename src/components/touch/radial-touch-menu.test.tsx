@@ -1,5 +1,7 @@
 import { render } from '@testing-library/react';
+import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
+import store from '../../redux';
 import { MenuCategory } from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 
@@ -24,9 +26,11 @@ describe('RadialTouchMenu', () => {
 
     it('renders when visible is true', () => {
         const { container } = render(
-            <svg>
-                <RadialTouchMenu {...mockProps} />
-            </svg>
+            <Provider store={store}>
+                <svg>
+                    <RadialTouchMenu {...mockProps} />
+                </svg>
+            </Provider>
         );
 
         const menuGroup = container.querySelector('g');
@@ -35,9 +39,11 @@ describe('RadialTouchMenu', () => {
 
     it('does not render when visible is false', () => {
         const { container } = render(
-            <svg>
-                <RadialTouchMenu {...mockProps} visible={false} />
-            </svg>
+            <Provider store={store}>
+                <svg>
+                    <RadialTouchMenu {...mockProps} visible={false} />
+                </svg>
+            </Provider>
         );
 
         const menuGroup = container.querySelector('g');
@@ -46,9 +52,11 @@ describe('RadialTouchMenu', () => {
 
     it('renders SVG menu with correct structure', () => {
         const { container } = render(
-            <svg>
-                <RadialTouchMenu {...mockProps} />
-            </svg>
+            <Provider store={store}>
+                <svg>
+                    <RadialTouchMenu {...mockProps} />
+                </svg>
+            </Provider>
         );
 
         const menuGroup = container.querySelector('g');
@@ -61,9 +69,11 @@ describe('RadialTouchMenu', () => {
 
     it('displays category items correctly', () => {
         const { container } = render(
-            <svg>
-                <RadialTouchMenu {...mockProps} />
-            </svg>
+            <Provider store={store}>
+                <svg>
+                    <RadialTouchMenu {...mockProps} />
+                </svg>
+            </Provider>
         );
 
         // Check that the station label is rendered
