@@ -1,13 +1,14 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { configureStore } from '@reduxjs/toolkit';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
-import { configureStore } from '@reduxjs/toolkit';
+import { CityCode, Id, Theme } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
+import accountSlice from '../../redux/account/account-slice';
 import appSlice from '../../redux/app/app-slice';
 import paramSlice from '../../redux/param/param-slice';
 import runtimeSlice from '../../redux/runtime/runtime-slice';
-import accountSlice from '../../redux/account/account-slice';
-import { Id } from '../../constants/constants';
-import { StationType } from '../../constants/stations';
 import VirtualJoystick from './virtual-joystick';
 
 // Mock the helper functions
@@ -38,7 +39,7 @@ Object.assign(navigator, {
 });
 
 describe('VirtualJoystick', () => {
-    const createTestStore = (selectedNodes: Id[] = []) =>
+    const createTestStore = (selectedNodes: Id[] = [], paramOverride?: any) =>
         configureStore({
             reducer: {
                 app: appSlice,
@@ -47,6 +48,12 @@ describe('VirtualJoystick', () => {
                 account: accountSlice,
             },
             preloadedState: {
+                param: {
+                    // minimal fields used by component
+                    svgViewBoxZoom: 100,
+                    svgViewBoxMin: { x: 0, y: 0 },
+                    ...paramOverride,
+                },
                 runtime: {
                     selected: new Set(selectedNodes),
                     pointerPosition: undefined,
@@ -56,7 +63,7 @@ describe('VirtualJoystick', () => {
                     mode: 'free' as const,
                     lastTool: undefined,
                     keepLastPath: false,
-                    theme: [9, 'white', '#000000', 0],
+                    theme: [CityCode.Shanghai, 'sh1', '#000000', MonoColour.white] as Theme,
                     paletteAppClip: { input: undefined, output: undefined },
                     count: {
                         stations: 0,
@@ -72,18 +79,19 @@ describe('VirtualJoystick', () => {
             },
         });
 
-    it('renders nothing when no nodes are selected', () => {
+    it('renders joystick even when no nodes are selected', () => {
         const store = createTestStore();
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <VirtualJoystick svgViewBoxMin={{ x: 0, y: 0 }} svgViewBoxZoom={100} />
+                    <VirtualJoystick />
                 </svg>
             </Provider>
         );
-
-        const joystick = container.querySelector('.virtual-joystick');
-        expect(joystick).toBeNull();
+        const rootGroup = container.querySelector('svg > g');
+        expect(rootGroup).toBeTruthy();
+        const childGroups = rootGroup?.querySelectorAll(':scope > g');
+        expect(childGroups?.length).toBe(6); // 4 directional + 2 action
     });
 
     it('renders joystick when nodes are selected', () => {
@@ -91,38 +99,33 @@ describe('VirtualJoystick', () => {
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <VirtualJoystick svgViewBoxMin={{ x: 0, y: 0 }} svgViewBoxZoom={100} />
+                    <VirtualJoystick />
                 </svg>
             </Provider>
         );
-
-        const joystick = container.querySelector('.virtual-joystick');
-        expect(joystick).toBeTruthy();
-
-        // Should have background circle
-        const backgroundCircle = joystick?.querySelector('circle');
-        expect(backgroundCircle).toBeTruthy();
-
-        // Should have all 4 directional buttons plus 2 action buttons (6 groups total)
-        const buttonGroups = joystick?.querySelectorAll('g');
-        expect(buttonGroups?.length).toBe(6); // 4 directional + 2 action buttons
+        const rootGroup = container.querySelector('svg > g');
+        expect(rootGroup).toBeTruthy();
+        const circles = rootGroup?.querySelectorAll('circle');
+        expect(circles && circles.length).toBeGreaterThan(0);
     });
 
-    it('positions joystick correctly based on viewport parameters', () => {
-        const store = createTestStore(['stn_test1']);
+    it('applies transform based on param slice viewport values', () => {
+        const store = createTestStore(['stn_test1'], {
+            svgViewBoxZoom: 150,
+            svgViewBoxMin: { x: 100, y: 200 },
+        });
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <VirtualJoystick svgViewBoxMin={{ x: 100, y: 200 }} svgViewBoxZoom={150} />
+                    <VirtualJoystick />
                 </svg>
             </Provider>
         );
-
-        const joystick = container.querySelector('.virtual-joystick');
-        expect(joystick).toBeTruthy();
-
-        // Check that transform attribute contains the calculated position
-        const transform = joystick?.getAttribute('transform');
+        const rootGroup = container.querySelector('svg > g');
+        expect(rootGroup).toBeTruthy();
+        const transform = rootGroup?.getAttribute('transform');
+        expect(transform).toBeTruthy();
         expect(transform).toContain('translate');
+        expect(transform).toContain('scale');
     });
 });
