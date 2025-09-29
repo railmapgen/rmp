@@ -5,12 +5,7 @@ import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-sli
 import { clearSelected, setActive } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
-import {
-    MenuCategory,
-    MenuLayerData,
-    emptyMenuLayerData,
-    findNearbyElements,
-} from '../../util/hooks/use-nearby-elements';
+import { MenuCategory, MenuLayerData, emptyMenuLayerData, findNearbyElements } from '../../util/graph-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 import VirtualJoystick from './virtual-joystick';
 

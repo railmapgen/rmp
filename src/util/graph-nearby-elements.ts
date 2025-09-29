@@ -1,12 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
-import { useCallback } from 'react';
-import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../../constants/constants';
-import { StationAttributes } from '../../constants/stations';
-import i18n from '../../i18n/config';
-import { RootDispatch } from '../../redux';
-import { setSelected } from '../../redux/runtime/runtime-slice';
-import { importSelectedNodesAndEdges } from '../clipboard';
-import { toCamelCase } from '../helpers';
+import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import { StationAttributes } from '../constants/stations';
+import i18n from '../i18n/config';
+import { RootDispatch } from '../redux';
+import { setSelected } from '../redux/runtime/runtime-slice';
+import { importSelectedNodesAndEdges } from './clipboard';
+import { toCamelCase } from './helpers';
 
 /** Radius in SVG units to search for nearby elements */
 export const TOUCH_RADIUS = 30;

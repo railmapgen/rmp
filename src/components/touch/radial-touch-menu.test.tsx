@@ -2,7 +2,7 @@ import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
 import store from '../../redux';
-import { MenuCategory } from '../../util/hooks/use-nearby-elements';
+import { MenuCategory } from '../../util/graph-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 
 describe('RadialTouchMenu', () => {

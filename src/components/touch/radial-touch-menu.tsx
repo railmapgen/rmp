@@ -1,6 +1,6 @@
 import React from 'react';
 import { useRootSelector } from '../../redux';
-import { MenuCategory, MenuItemData, MenuLayerData, TOUCH_RADIUS } from '../../util/hooks/use-nearby-elements';
+import { MenuCategory, MenuItemData, MenuLayerData, TOUCH_RADIUS } from '../../util/graph-nearby-elements';
 
 // Menu configuration
 const LAYER_SIZE = 5; // Maximum number of layers supported
