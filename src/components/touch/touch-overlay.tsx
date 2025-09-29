@@ -9,7 +9,7 @@ import {
     MenuCategory,
     MenuLayerData,
     emptyMenuLayerData,
-    useNearbyElements,
+    findNearbyElements,
 } from '../../util/hooks/use-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 
@@ -29,7 +29,6 @@ export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const graph = React.useRef(window.graph);
-    const { findNearbyElements } = useNearbyElements();
 
     // Touch state variables for handling mobile gestures:
     // touchDist: tracks the distance between two fingers for pinch-to-zoom (0 when not zooming)
