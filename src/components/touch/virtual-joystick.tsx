@@ -15,7 +15,7 @@ import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 
 // Movement distance (same as keyboard controls in svg-wrapper.tsx)
-const MOVE_DISTANCE = 5;
+const MOVE_DISTANCE = 10;
 
 /**
  * Virtual joystick component for touch devices to move selected nodes.
@@ -81,7 +81,7 @@ export const VirtualJoystick: React.FC = () => {
 
     // Position at bottom center of the SVG viewport
     const centerX = svgViewBoxMin.x + (width * svgViewBoxZoom) / 200; // Center horizontally
-    const bottomY = svgViewBoxMin.y + ((height - 100) * svgViewBoxZoom) / 100; // 80px from bottom
+    const bottomY = svgViewBoxMin.y + ((height - 100) * svgViewBoxZoom) / 100; // 100px from bottom
 
     const buttonSize = 40;
     const buttonSpacing = 40;
