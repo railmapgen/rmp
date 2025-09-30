@@ -1,4 +1,5 @@
 /* eslint-disable import/order */
+import React from 'react';
 import { AttrsProps, MiscNodeId } from './constants';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
@@ -127,7 +128,7 @@ export interface Node<T> {
     /**
      * The icon displayed in the tools panel.
      */
-    icon: JSX.Element;
+    icon: React.JSX.Element;
     /**
      * Default attributes for this component.
      */
