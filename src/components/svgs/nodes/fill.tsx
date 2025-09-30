@@ -182,20 +182,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                 />
             )}
             <g transform="rotate(45)" className="removeMe">
-                <defs>
-                    <radialGradient id="colorPaletteGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                        <stop offset="0%" stop-color="#ff0000" /> <stop offset="15%" stop-color="#ff7f00" />
-                        <stop offset="30%" stop-color="#ffff00" /> <stop offset="50%" stop-color="#00ff00" />
-                        <stop offset="70%" stop-color="#0000ff" /> <stop offset="85%" stop-color="#4b0082" />
-                        <stop offset="100%" stop-color="#9400d3" />
-                    </radialGradient>
-                </defs>
-                <circle
-                    r="5"
-                    // fill={color[2]}
-                    fill="url(#colorPaletteGradient)"
-                    stroke="#000"
-                />
+                <circle r="5" fill={color[2]} stroke="#000" />
                 <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
                 <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />
                 <circle
