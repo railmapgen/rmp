@@ -113,7 +113,8 @@ export function getDynamicContrastColor(hexColor: string, opacity: number): stri
 
     // 5. Compute final lightness and saturation
     let finalL = invertedL + opacityFactor * lightnessScale;
-    let finalS = s - opacityFactor * saturationScale; // opacity 大 -> 饱和度减, opacity 小 -> 饱和度增
+    // Higher opacity decreases saturation, lower opacity increases saturation
+    let finalS = s - opacityFactor * saturationScale;
 
     // 6. Clamp final values to the [0, 1] range
     finalL = Math.max(0, Math.min(1, finalL));

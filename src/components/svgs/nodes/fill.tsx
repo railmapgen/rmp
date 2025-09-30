@@ -355,7 +355,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             const type = shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
             const attrs = structuredClone(linePaths[type].defaultAttrs); // deep copy to prevent mutual reference
             if (shape === 'circle') {
-                if (i % 2 == 0) attrs.startFrom = 'to';
+                if (i % 2 === 0) attrs.startFrom = 'to';
                 attrs.roundCornerFactor = size;
             }
             graph.addDirectedEdgeWithKey(nanoid(10) as LineId, source, target, {
