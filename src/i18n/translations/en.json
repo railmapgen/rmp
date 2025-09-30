@@ -259,7 +259,11 @@
                     "patterns": "Patterns",
                     "logo": "Branding",
                     "trees": "Trees",
-                    "water": "Water"
+                    "water": "Water",
+                    "noClosedPath": "No closed path",
+                    "createSquare": "Create square",
+                    "createTriangle": "Create triangle",
+                    "createCircle": "Create circle"
                 }
             },
             "stations": {

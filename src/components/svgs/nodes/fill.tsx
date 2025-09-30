@@ -1,7 +1,8 @@
-import { Badge, Checkbox, HStack, Tooltip, VStack } from '@chakra-ui/react';
+import { Badge, Button, Checkbox, HStack, Text, Tooltip, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
+import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -14,9 +15,11 @@ import {
     NodeAttributes,
     StnId,
 } from '../../../constants/constants';
-import { Path } from '../../../constants/lines';
+import { LinePathType, LineStyleType, Path } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { useRootSelector } from '../../../redux';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/param/param-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
 import { NonSimpleLinePathAttributes } from '../../../util/parallel';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
@@ -266,8 +269,128 @@ export const defaultFillAttributes: FillAttributes = {
 
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
-    const { t } = useTranslation();
+    const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
+    const { refresh, theme } = useRootSelector(state => state.runtime);
+    const { t } = useTranslation();
+
+    const graph = window.graph!;
+    const refreshAndSave = React.useCallback(() => {
+        dispatch(saveGraph(graph.export()));
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
+    }, [dispatch]);
+
+    const hasClosedPath = React.useMemo(() => !!findShortestClosedPath(graph, id as MiscNodeId), [graph, id, refresh]);
+
+    const handleCreateShape = (shape: 'square' | 'triangle' | 'circle') => {
+        const currentNodeAttrs = graph.getNodeAttributes(id);
+        const { x, y } = currentNodeAttrs;
+        const size = 200; // The size of the shape to create
+
+        const nodesToAdd: { id: MiscNodeId; attrs: NodeAttributes }[] = [];
+        const nodeIds = [id as MiscNodeId];
+        const defaultVirtualAttributes = {
+            type: MiscNodeType.Virtual,
+            [MiscNodeType.Virtual]: {},
+            visible: true,
+            zIndex: 0,
+        };
+
+        if (shape === 'square') {
+            const newNodesCoords = [
+                { x: x + size, y: y },
+                { x: x + size, y: y + size },
+                { x: x, y: y + size },
+            ];
+            newNodesCoords.forEach(coords => {
+                const newNodeId = nanoid(10) as MiscNodeId;
+                nodeIds.push(newNodeId);
+                nodesToAdd.push({
+                    id: newNodeId,
+                    attrs: { ...coords, ...defaultVirtualAttributes },
+                });
+            });
+        } else if (shape === 'triangle') {
+            const newNodesCoords = [
+                { x: x + size, y: y },
+                { x: x + size / 2, y: y + size / 2 },
+            ];
+            newNodesCoords.forEach(coords => {
+                const newNodeId = nanoid(10) as MiscNodeId;
+                nodeIds.push(newNodeId);
+                nodesToAdd.push({
+                    id: newNodeId,
+                    attrs: { ...coords, ...defaultVirtualAttributes },
+                });
+            });
+        } else if (shape === 'circle') {
+            const newNodesCoords = [
+                { x: x + size / 2, y: y - size / 2 },
+                { x: x + size, y: y },
+                { x: x + size / 2, y: y + size / 2 },
+            ];
+            newNodesCoords.forEach(coords => {
+                const newNodeId = nanoid(10) as MiscNodeId;
+                nodeIds.push(newNodeId);
+                nodesToAdd.push({
+                    id: newNodeId,
+                    attrs: { ...coords, ...defaultVirtualAttributes },
+                });
+            });
+        }
+
+        // Dispatch actions to add nodes
+        nodesToAdd.forEach(({ id, attrs }) => {
+            graph.addNode(id, attrs);
+        });
+
+        // Dispatch actions to add edges to connect the nodes in a loop
+        for (let i = 0; i < nodeIds.length; i++) {
+            const source = nodeIds[i];
+            const target = nodeIds[(i + 1) % nodeIds.length]; // Wrap around to close the loop
+            const type = shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
+            const attrs = structuredClone(linePaths[type].defaultAttrs); // deep copy to prevent mutual reference
+            if (shape === 'circle') {
+                if (i % 2 == 0) attrs.startFrom = 'to';
+                attrs.roundCornerFactor = size;
+            }
+            graph.addDirectedEdgeWithKey(nanoid(10) as LineId, source, target, {
+                visible: true,
+                zIndex: 0,
+                type,
+                [type]: attrs,
+                style: LineStyleType.SingleColor,
+                [LineStyleType.SingleColor]: { color: theme },
+                reconcileId: '',
+                parallelIndex: autoParallel ? 0 : -1,
+            });
+        }
+
+        refreshAndSave();
+    };
+
+    if (!hasClosedPath) {
+        return (
+            <VStack spacing={1} align="stretch">
+                <Text fontSize="sm" color="gray.500">
+                    {t('panel.details.nodes.fill.noClosedPath')}
+                </Text>
+                <Button width="50%" onClick={() => handleCreateShape('square')}>
+                    {t('panel.details.nodes.fill.createSquare')}
+                </Button>
+                <Button width="50%" onClick={() => handleCreateShape('triangle')}>
+                    {t('panel.details.nodes.fill.createTriangle')}
+                </Button>
+                <Button width="50%" onClick={() => handleCreateShape('circle')}>
+                    {t('panel.details.nodes.fill.createCircle')}
+                </Button>
+            </VStack>
+        );
+    }
 
     const handlePatternChange = (patternId: string, isChecked: boolean) => {
         const currentPatterns = attrs.selectedPatterns ?? [];

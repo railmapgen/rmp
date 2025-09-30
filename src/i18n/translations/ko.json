@@ -259,7 +259,11 @@
                     "patterns": "패턴",
                     "logo": "브랜딩",
                     "trees": "나무",
-                    "water": "물"
+                    "water": "물",
+                    "noClosedPath": "닫힌 경로 없음",
+                    "createSquare": "정사각형 만들기",
+                    "createTriangle": "삼각형 만들기",
+                    "createCircle": "원 만들기"
                 }
             },
             "stations": {

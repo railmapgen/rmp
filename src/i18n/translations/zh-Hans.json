@@ -259,7 +259,11 @@
                     "patterns": "图案",
                     "logo": "品牌标识",
                     "trees": "树木",
-                    "water": "水域"
+                    "water": "水域",
+                    "noClosedPath": "没有闭合路径",
+                    "createSquare": "创建正方形",
+                    "createTriangle": "创建三角形",
+                    "createCircle": "创建圆形"
                 }
             },
             "stations": {
