@@ -34,11 +34,11 @@ import {
     changeStationsTypeInBatch,
     changeZIndexInBatch,
 } from '../../../util/change-types';
-import { findThemes } from '../../../util/graph';
+import { findThemes } from '../../../util/color';
+import { usePaletteTheme } from '../../../util/hooks';
 import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
-import { usePaletteTheme } from '../../../util/hooks';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
