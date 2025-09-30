@@ -1,3 +1,4 @@
+import { Checkbox, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
@@ -15,10 +16,10 @@ import {
 } from '../../../constants/constants';
 import { Path } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
-import { linePaths } from '../lines/lines';
-import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { useRootSelector } from '../../../redux';
 import { NonSimpleLinePathAttributes } from '../../../util/parallel';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { linePaths } from '../lines/lines';
 
 const MAX_NODES = 100;
 
@@ -138,8 +139,15 @@ const generateClosedPath = (
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { color = defaultFillAttributes.color, opacity = defaultFillAttributes.opacity } =
-        attrs ?? defaultFillAttributes;
+    const {
+        color = defaultFillAttributes.color,
+        opacity = defaultFillAttributes.opacity,
+        selectedPatterns = defaultFillAttributes.selectedPatterns,
+    } = attrs ?? defaultFillAttributes;
+
+    const { t } = useTranslation();
+    const { refresh } = useRootSelector(state => state.runtime);
+    const graph = window.graph!;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -154,26 +162,76 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         [id, handlePointerUp]
     );
 
-    const { refresh } = useRootSelector(state => state.runtime);
-    const graph = window.graph!;
-
     const closedPath = React.useMemo(() => findShortestClosedPath(graph, id), [graph, id, refresh]);
     const fillPath = React.useMemo(() => {
         if (!closedPath) return undefined;
         return generateClosedPath(graph, closedPath.nodes, closedPath.edges);
     }, [closedPath]);
 
+    const pattern = { width: 30, height: 30 };
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             {fillPath && (
-                <path
-                    d={fillPath}
-                    transform={`translate(${-x}, ${-y})`}
-                    fill={color[2]}
-                    fillOpacity={opacity}
-                    stroke="none"
-                    pointerEvents="none"
-                />
+                <g transform={`translate(${-x}, ${-y})`}>
+                    <defs>
+                        <pattern
+                            id={`logo_${id}`}
+                            patternUnits="userSpaceOnUse"
+                            width={pattern.width * 2}
+                            height={pattern.height}
+                            fill={color[2]}
+                            fontFamily="Arial, sans-serif"
+                        >
+                            <text x="1" y="12" fontSize="2">
+                                {t('Rail Map Painter')}
+                            </text>
+                            <text x="1" y="14" fontSize="2">
+                                https://railmapgen.org/
+                            </text>
+                        </pattern>
+                        <pattern
+                            id={`trees_${id}`}
+                            patternUnits="userSpaceOnUse"
+                            width={pattern.width}
+                            height={pattern.height}
+                            fill="none"
+                            stroke={color[2]} // #228B22
+                            strokeWidth="0.3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path
+                                transform="translate(0,0)"
+                                d="M2.5 5 L2.5 3.5 L1 4 L2.5 2 L1 2.5 L2.5 0.5 L4 2.5 L2.5 2 L4 4 L2.5 3.5"
+                            />
+                        </pattern>
+                        <pattern
+                            id={`water_${id}`}
+                            patternUnits="userSpaceOnUse"
+                            width={pattern.width}
+                            height={pattern.height}
+                            fill="none"
+                            stroke={color[2]} // #4682B4
+                            strokeWidth="0.4"
+                            strokeLinecap="round"
+                        >
+                            <path transform="translate(5,0)" d="M0.5 1 Q1.75 -0.5 3 1 T4.5 1" />
+                            <path transform="translate(5,0)" d="M0.5 2.5 Q1.75 1 3 2.5 T4.5 2.5" />
+                            <path transform="translate(5,0)" d="M0.5 4 Q1.75 2.5 3 4 T4.5 4" />
+                        </pattern>
+                    </defs>
+                    <path d={fillPath} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />
+                    {selectedPatterns.map(patternId => (
+                        <path
+                            key={patternId}
+                            d={fillPath}
+                            fill={`url(#${patternId}_${id})`}
+                            fillOpacity={opacity}
+                            stroke="none"
+                            pointerEvents="none"
+                        />
+                    ))}
+                </g>
             )}
             <g transform="rotate(45)" className="removeMe">
                 <circle r="5" fill={color[2]} stroke="#000" />
@@ -195,16 +253,24 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
 
 export interface FillAttributes extends ColorAttribute {
     opacity: number;
+    selectedPatterns: string[];
 }
 
 export const defaultFillAttributes: FillAttributes = {
     color: [CityCode.Shanghai, 'fill', '#FF0000', MonoColour.white],
     opacity: 0.5,
+    selectedPatterns: ['logo'],
 };
 
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+
+    const handlePatternChange = (patternId: string, isChecked: boolean) => {
+        const currentPatterns = attrs.selectedPatterns ?? [];
+        const newPatterns = isChecked ? [...currentPatterns, patternId] : currentPatterns.filter(p => p !== patternId);
+        handleAttrsUpdate(id, { ...attrs, selectedPatterns: newPatterns });
+    };
 
     const fields: RmgFieldsField[] = [
         {
@@ -213,8 +279,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             value: (attrs.opacity ?? defaultFillAttributes.opacity).toString(),
             validator: (val: string) => !Number.isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 1,
             onChange: val => {
-                attrs.opacity = Number(val);
-                handleAttrsUpdate(id, attrs);
+                handleAttrsUpdate(id, { ...attrs, opacity: Number(val) });
             },
             minW: 'full',
         },
@@ -223,13 +288,40 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             label: t('color'),
             component: <ColorField type={MiscNodeType.Fill} defaultTheme={defaultFillAttributes.color} />,
         },
+        {
+            type: 'custom',
+            label: t('panel.details.nodes.fill.patterns'),
+            component: (
+                <VStack alignItems="flex-start">
+                    <Checkbox
+                        isChecked={(attrs.selectedPatterns ?? []).includes('logo')}
+                        onChange={e => handlePatternChange('logo', e.target.checked)}
+                    >
+                        {t('panel.details.nodes.fill.logo')}
+                    </Checkbox>
+                    <Checkbox
+                        isChecked={(attrs.selectedPatterns ?? []).includes('trees')}
+                        onChange={e => handlePatternChange('trees', e.target.checked)}
+                    >
+                        {t('panel.details.nodes.fill.trees')}
+                    </Checkbox>
+                    <Checkbox
+                        isChecked={(attrs.selectedPatterns ?? []).includes('water')}
+                        onChange={e => handlePatternChange('water', e.target.checked)}
+                    >
+                        {t('panel.details.nodes.fill.water')}
+                    </Checkbox>
+                </VStack>
+            ),
+            minW: 'full',
+        },
     ];
 
     return <RmgFields fields={fields} />;
 };
 
 const fillIcon = (
-    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+    <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <path d="M12 2L22 12L12 22L2 12Z" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1" />
     </svg>
 );
