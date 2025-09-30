@@ -252,6 +252,14 @@
                     "italic": "이탤릭체",
                     "bold": "굵게",
                     "outline": "테두리"
+                },
+                "fill": {
+                    "displayName": "채우기 영역",
+                    "opacity": "채우기 불투명도",
+                    "patterns": "패턴",
+                    "logo": "브랜딩",
+                    "trees": "나무",
+                    "water": "물"
                 }
             },
             "stations": {

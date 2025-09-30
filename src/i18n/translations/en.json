@@ -255,8 +255,11 @@
                 },
                 "fill": {
                     "displayName": "Fill area",
-                    "maxNodes": "Maximum nodes in path",
-                    "opacity": "Fill opacity"
+                    "opacity": "Fill opacity",
+                    "patterns": "Patterns",
+                    "logo": "Branding",
+                    "trees": "Trees",
+                    "water": "Water"
                 }
             },
             "stations": {

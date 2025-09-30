@@ -256,9 +256,12 @@
                     "outline": "縁取り"
                 },
                 "fill": {
-                    "displayName": "塗りつぶしエリア",
-                    "maxNodes": "パスの最大ノード数",
-                    "opacity": "塗りつぶしの透明度"
+                    "displayName": "塗りつぶし範囲",
+                    "opacity": "塗りつぶし透明度",
+                    "patterns": "模様",
+                    "logo": "銘柄",
+                    "trees": "木々",
+                    "water": "水面"
                 }
             },
             "stations": {

@@ -255,8 +255,11 @@
                 },
                 "fill": {
                     "displayName": "填充區域",
-                    "maxNodes": "路徑中最大節點數",
-                    "opacity": "填充透明度"
+                    "opacity": "填充透明度",
+                    "patterns": "圖案",
+                    "logo": "品牌標誌",
+                    "trees": "樹木",
+                    "water": "水域"
                 }
             },
             "stations": {

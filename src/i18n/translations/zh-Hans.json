@@ -252,6 +252,14 @@
                     "italic": "斜体",
                     "bold": "粗体",
                     "outline": "描边"
+                },
+                "fill": {
+                    "displayName": "填充区域",
+                    "opacity": "填充透明度",
+                    "patterns": "图案",
+                    "logo": "品牌标识",
+                    "trees": "树木",
+                    "water": "水域"
                 }
             },
             "stations": {
