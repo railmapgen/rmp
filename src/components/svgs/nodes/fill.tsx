@@ -205,7 +205,7 @@ export interface FillAttributes extends ColorAttribute {
 
 export const defaultFillAttributes: FillAttributes = {
     color: [CityCode.Shanghai, 'fill', '#FF0000', MonoColour.white],
-    opacity: 0.3,
+    opacity: 0.5,
 };
 
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
