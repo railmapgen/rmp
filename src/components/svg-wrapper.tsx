@@ -383,6 +383,18 @@ const SvgWrapper = () => {
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
+                    <filter id="selected-glow" x="-50%" y="-50%" width="200%" height="200%">
+                        <feColorMatrix values="1 1 0 0 0  1 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="yellowGlow" />
+                        <feGaussianBlur in="yellowGlow" stdDeviation="1" result="blur1" />
+                        <feGaussianBlur in="yellowGlow" stdDeviation="2" result="blur2">
+                            <animate attributeName="stdDeviation" values="1;3;1" dur="1s" repeatCount="indefinite" />
+                        </feGaussianBlur>
+                        <feMerge>
+                            <feMergeNode in="blur2" />
+                            <feMergeNode in="blur1" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
                 </defs>
                 {gridLines && (
                     <GridLines
