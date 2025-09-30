@@ -92,13 +92,6 @@ const generateClosedPath = (
 ): Path | undefined => {
     if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
 
-    console.log(`%c[Path Calculation Start]`, 'font-weight:bold; color:blue;');
-
-    const pathSequence = nodes.reduce((acc, node, i) => {
-        return acc + node + (i < edges.length ? ` --(${edges[i]})--> ` : '');
-    }, '');
-    console.log('Path sequence:', pathSequence);
-
     let pathString = '';
 
     for (let i = 0; i < edges.length; i++) {
@@ -130,19 +123,6 @@ const generateClosedPath = (
         let segment: string =
             linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`;
 
-        console.groupCollapsed(`Segment ${i + 1}: ${sourceNodeId} -> ${targetNodeId}`);
-        console.log(`Source position: (${sourceAttrs.x}, ${sourceAttrs.y})`);
-        console.log(`Target position: (${targetAttrs.x}, ${targetAttrs.y})`);
-        console.log(`Edge ID: ${edgeId}`);
-        console.log('Original Edge Attributes:', initialPathAttr);
-        console.log('Final Path Attributes (after reversal adjustments):', finalPathAttr);
-        console.log('Generated SVG Path Segment:', segment);
-        console.log(
-            'Current SVG Path Segment:',
-            linePaths[pathType]?.generatePath(x1, x2, y1, y2, initialPathAttr as any)
-        );
-        console.groupEnd();
-
         if (i > 0) {
             const parts = segment.split(' ');
             // we slice from the 4th element (index 3) to remove the initial move command and its coordinates.
@@ -153,9 +133,6 @@ const generateClosedPath = (
     }
 
     const finalFullPath = pathString + ' Z';
-    console.log(`%c[Path Calculation End]`, 'font-weight:bold; color:blue;');
-    console.log('Final Combined SVG Path:', finalFullPath);
-
     return finalFullPath as Path;
 };
 
