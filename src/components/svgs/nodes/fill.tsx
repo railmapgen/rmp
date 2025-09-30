@@ -17,6 +17,7 @@ import {
 import { Path } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { useRootSelector } from '../../../redux';
+import { getDynamicContrastColor } from '../../../util/color';
 import { NonSimpleLinePathAttributes } from '../../../util/parallel';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
@@ -168,7 +169,8 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         return generateClosedPath(graph, closedPath.nodes, closedPath.edges);
     }, [closedPath]);
 
-    const pattern = { width: 30, height: 30 };
+    const pattern = { width: 60, height: 60 };
+    const patternColor = getDynamicContrastColor(color[2], opacity);
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             {fillPath && (
@@ -179,13 +181,13 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             patternUnits="userSpaceOnUse"
                             width={pattern.width * 2}
                             height={pattern.height}
-                            fill={color[2]}
+                            fill={patternColor}
                             fontFamily="Arial, sans-serif"
                         >
-                            <text x="1" y="12" fontSize="2">
+                            <text x="2" y="24" fontSize="4">
                                 {t('Rail Map Painter')}
                             </text>
-                            <text x="1" y="14" fontSize="2">
+                            <text x="2" y="28" fontSize="4">
                                 https://railmapgen.org/
                             </text>
                         </pattern>
@@ -195,14 +197,14 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             width={pattern.width}
                             height={pattern.height}
                             fill="none"
-                            stroke={color[2]} // #228B22
-                            strokeWidth="0.3"
+                            stroke={patternColor}
+                            strokeWidth="0.6"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                         >
                             <path
                                 transform="translate(0,0)"
-                                d="M2.5 5 L2.5 3.5 L1 4 L2.5 2 L1 2.5 L2.5 0.5 L4 2.5 L2.5 2 L4 4 L2.5 3.5"
+                                d="M10 20 L10 14 L4 16 L10 8 L4 10 L10 2 L16 10 L10 8 L16 16 L10 14"
                             />
                         </pattern>
                         <pattern
@@ -211,13 +213,13 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             width={pattern.width}
                             height={pattern.height}
                             fill="none"
-                            stroke={color[2]} // #4682B4
-                            strokeWidth="0.4"
+                            stroke={patternColor}
+                            strokeWidth="0.8"
                             strokeLinecap="round"
                         >
-                            <path transform="translate(5,0)" d="M0.5 1 Q1.75 -0.5 3 1 T4.5 1" />
-                            <path transform="translate(5,0)" d="M0.5 2.5 Q1.75 1 3 2.5 T4.5 2.5" />
-                            <path transform="translate(5,0)" d="M0.5 4 Q1.75 2.5 3 4 T4.5 4" />
+                            <path transform="translate(20,0)" d="M2 4 Q7 -2 12 4 T18 4" />
+                            <path transform="translate(20,0)" d="M2 10 Q7 4 12 10 T18 10" />
+                            <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" />
                         </pattern>
                     </defs>
                     <path d={fillPath} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />
