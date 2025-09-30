@@ -252,6 +252,18 @@
                     "italic": "Italic",
                     "bold": "Bold",
                     "outline": "Outline"
+                },
+                "fill": {
+                    "displayName": "Fill area",
+                    "opacity": "Fill opacity",
+                    "patterns": "Patterns",
+                    "logo": "Branding",
+                    "trees": "Trees",
+                    "water": "Water",
+                    "noClosedPath": "No closed path",
+                    "createSquare": "Create square",
+                    "createTriangle": "Create triangle",
+                    "createCircle": "Create circle"
                 }
             },
             "stations": {

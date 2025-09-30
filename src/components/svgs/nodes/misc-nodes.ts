@@ -5,6 +5,7 @@ import text from './text';
 import i18nText from './i18n-text';
 import Master from './master';
 import Image from './image';
+import fill from './fill';
 import shmetroNumLineBadge from './shmetro-num-line-badge';
 import shmetroTextLineBadge from './shmetro-text-line-badge';
 import gzmtrLineBadge from './gzmtr-line-badge';
@@ -34,6 +35,7 @@ const miscNodes = {
     [MiscNodeType.Facilities]: facilities,
     [MiscNodeType.Text]: text,
     [MiscNodeType.I18nText]: i18nText,
+    [MiscNodeType.Fill]: fill,
     [MiscNodeType.ShmetroNumLineBadge]: shmetroNumLineBadge,
     [MiscNodeType.ShmetroTextLineBadge]: shmetroTextLineBadge,
     [MiscNodeType.GzmtrLineBadge]: gzmtrLineBadge,
