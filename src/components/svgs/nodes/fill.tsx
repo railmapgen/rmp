@@ -155,19 +155,13 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     );
 
     const { refresh } = useRootSelector(state => state.runtime);
-    const graph = window.graph;
+    const graph = window.graph!;
 
+    const closedPath = React.useMemo(() => findShortestClosedPath(graph, id), [graph, id, refresh]);
     const fillPath = React.useMemo(() => {
-        if (!graph) return undefined;
-
-        const path = findShortestClosedPath(graph, id);
-
-        if (path) {
-            return generateClosedPath(graph, path.nodes, path.edges);
-        }
-
-        return undefined;
-    }, [graph, id, refresh]);
+        if (!closedPath) return undefined;
+        return generateClosedPath(graph, closedPath.nodes, closedPath.edges);
+    }, [closedPath]);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
