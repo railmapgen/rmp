@@ -1,4 +1,4 @@
-import { Checkbox, VStack } from '@chakra-ui/react';
+import { Badge, Checkbox, HStack, Tooltip, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
@@ -296,13 +296,20 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             label: t('panel.details.nodes.fill.patterns'),
             component: (
                 <VStack alignItems="flex-start">
-                    <Checkbox
-                        isChecked={(attrs.selectedPatterns ?? []).includes('logo')}
-                        onChange={e => handlePatternChange('logo', e.target.checked)}
-                        isDisabled={!activeSubscriptions.RMP_CLOUD}
-                    >
-                        {t('panel.details.nodes.fill.logo')}
-                    </Checkbox>
+                    <HStack>
+                        <Checkbox
+                            isChecked={(attrs.selectedPatterns ?? []).includes('logo')}
+                            onChange={e => handlePatternChange('logo', e.target.checked)}
+                            isDisabled={!activeSubscriptions.RMP_CLOUD}
+                        >
+                            {t('panel.details.nodes.fill.logo')}
+                        </Checkbox>
+                        <Tooltip label={t('header.settings.pro')}>
+                            <Badge color="gray.50" ml="1" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                                PRO
+                            </Badge>
+                        </Tooltip>
+                    </HStack>
                     <Checkbox
                         isChecked={(attrs.selectedPatterns ?? []).includes('trees')}
                         onChange={e => handlePatternChange('trees', e.target.checked)}
