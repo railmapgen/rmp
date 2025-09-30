@@ -39,7 +39,7 @@ export const localizedStaions: { [k in LanguageCode]?: StationType[] } = {
 /* ------- Misc nodes ------ */
 
 const defaultMiscNodeType = Object.values(MiscNodeType);
-const alwaysFrontMiscNodeType = [MiscNodeType.Image, MiscNodeType.Facilities, MiscNodeType.Text];
+const alwaysFrontMiscNodeType = [MiscNodeType.Image, MiscNodeType.Fill, MiscNodeType.Facilities, MiscNodeType.Text];
 const enMiscNodeType = [
     MiscNodeType.LondonArrow,
     MiscNodeType.BerlinSBahnLineBadge,
