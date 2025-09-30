@@ -18,182 +18,151 @@ import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes
 import { linePaths } from '../lines/lines';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { useRootSelector } from '../../../redux';
+import { NonSimpleLinePathAttributes } from '../../../util/parallel';
+
+const MAX_NODES = 100;
 
 /**
  * Find the shortest closed path starting from a node using a modified BFS.
- * Returns undefined if no closed path is found within the max node limit.
  */
 const findShortestClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     startNode: StnId | MiscNodeId,
-    maxNodes: number = 100
+    maxNodes: number = MAX_NODES
 ): { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined => {
-    // Priority queue for paths, prioritizing shorter paths
-    const queue: { node: StnId | MiscNodeId; path: (StnId | MiscNodeId)[]; edges: LineId[]; depth: number }[] = [
-        { node: startNode, path: [startNode], edges: [], depth: 0 },
+    if (!graph.hasNode(startNode)) {
+        return undefined;
+    }
+
+    const queue: { node: StnId | MiscNodeId; path: (StnId | MiscNodeId)[]; edges: LineId[]; fromEdge?: LineId }[] = [
+        { node: startNode, path: [startNode], edges: [] },
     ];
 
     let shortestPath: { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined;
 
-    // Sort by depth to explore shorter paths first
-    const sortQueue = () => {
-        queue.sort((a, b) => a.depth - b.depth);
-    };
-
     while (queue.length > 0) {
-        sortQueue();
-        const { node, path, edges, depth } = queue.shift()!;
+        const { node, path, edges, fromEdge } = queue.shift()!;
 
-        // Skip if path is too long or we already found a shorter path
-        if (depth > maxNodes || (shortestPath && depth >= shortestPath.nodes.length)) continue;
+        if (shortestPath && path.length >= shortestPath.nodes.length) {
+            continue;
+        }
+        if (path.length > maxNodes) {
+            continue;
+        }
 
-        // Get all neighbors of current node (treat graph as undirected)
-        const neighbors = new Map<StnId | MiscNodeId, LineId>();
-
-        // Outgoing edges
-        graph.forEachOutboundEdge(node, (edge, attributes, source, target) => {
-            if (!neighbors.has(target as StnId | MiscNodeId)) {
-                neighbors.set(target as StnId | MiscNodeId, edge as LineId);
+        graph.forEachEdge(node, (edge, attrs, source, target) => {
+            if (edge === fromEdge) {
+                return;
             }
-        });
 
-        // Incoming edges (treat as undirected)
-        graph.forEachInboundEdge(node, (edge, attributes, source, target) => {
-            if (!neighbors.has(source as StnId | MiscNodeId)) {
-                neighbors.set(source as StnId | MiscNodeId, edge as LineId);
-            }
-        });
+            const neighbor = (source === node ? target : source) as StnId | MiscNodeId;
 
-        for (const [neighbor, edge] of neighbors) {
-            // If we found a cycle back to start and path has at least 3 nodes
-            if (neighbor === startNode && path.length >= 3) {
-                const newPath = {
+            if (neighbor === startNode) {
+                const finalPath = {
                     nodes: [...path, startNode],
-                    edges: [...edges, edge],
+                    edges: [...edges, edge as LineId],
                 };
-
-                // Keep the shortest path found so far
-                if (!shortestPath || newPath.nodes.length < shortestPath.nodes.length) {
-                    shortestPath = newPath;
+                if (!shortestPath || finalPath.nodes.length < shortestPath.nodes.length) {
+                    shortestPath = finalPath;
                 }
-                continue;
+                return;
             }
 
-            // Continue exploring if not visited in current path
             if (!path.includes(neighbor)) {
                 queue.push({
                     node: neighbor,
                     path: [...path, neighbor],
-                    edges: [...edges, edge],
-                    depth: depth + 1,
+                    edges: [...edges, edge as LineId],
+                    fromEdge: edge as LineId,
                 });
             }
-        }
+        });
     }
 
     return shortestPath;
 };
 
 /**
- * Generate the combined path for the closed loop
+ * Generate the combined SVG path string for the closed loop with detailed logging.
  */
 const generateClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     nodes: (StnId | MiscNodeId)[],
     edges: LineId[]
 ): Path | undefined => {
-    if (nodes.length !== edges.length + 1 || nodes.length < 4) return undefined;
+    if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
 
-    const pathSegments: string[] = [];
+    console.log(`%c[Path Calculation Start]`, 'font-weight:bold; color:blue;');
+
+    const pathSequence = nodes.reduce((acc, node, i) => {
+        return acc + node + (i < edges.length ? ` --(${edges[i]})--> ` : '');
+    }, '');
+    console.log('Path sequence:', pathSequence);
+
+    let pathString = '';
 
     for (let i = 0; i < edges.length; i++) {
-        const edge = edges[i];
-        const sourceNode = nodes[i];
-        const targetNode = nodes[i + 1];
+        const sourceNodeId = nodes[i];
+        const targetNodeId = nodes[i + 1];
+        const edgeId = edges[i];
 
-        if (!graph.hasEdge(edge) || !graph.hasNode(sourceNode) || !graph.hasNode(targetNode)) {
-            return undefined;
-        }
-
-        const sourceAttr = graph.getNodeAttributes(sourceNode);
-        const targetAttr = graph.getNodeAttributes(targetNode);
-        const edgeAttrs = graph.getEdgeAttributes(edge);
-
+        const sourceAttrs = graph.getNodeAttributes(sourceNodeId);
+        const targetAttrs = graph.getNodeAttributes(targetNodeId);
+        const edgeAttrs = graph.getEdgeAttributes(edgeId);
         const pathType = edgeAttrs.type;
-        let pathAttr = edgeAttrs[pathType];
+        const initialPathAttr = edgeAttrs[pathType];
 
-        const x1 = sourceAttr.x;
-        const y1 = sourceAttr.y;
-        const x2 = targetAttr.x;
-        const y2 = targetAttr.y;
+        const x1 = sourceAttrs.x,
+            y1 = sourceAttrs.y,
+            x2 = targetAttrs.x,
+            y2 = targetAttrs.y;
+        const finalPathAttr = structuredClone(initialPathAttr);
 
-        if (sourceNode !== graph.extremities(edge)[0]) {
-            // Swap if the direction is reversed
-            if ((pathAttr! as any).startFrom) {
-                pathAttr = { ...(pathAttr as any), startFrom: (pathAttr as any).startFrom === 'from' ? 'to' : 'from' };
+        const isReversed = graph.source(edgeId) !== sourceNodeId;
+
+        if (isReversed) {
+            if ((finalPathAttr as any)?.startFrom) {
+                (finalPathAttr as NonSimpleLinePathAttributes).startFrom =
+                    (finalPathAttr as NonSimpleLinePathAttributes).startFrom === 'from' ? 'to' : 'from';
             }
         }
 
-        let pathStr: string;
+        let segment: string =
+            linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`;
 
-        if (pathType in linePaths) {
-            try {
-                pathStr = linePaths[pathType].generatePath(x1, x2, y1, y2, pathAttr as any);
-            } catch (error) {
-                // Fallback to simple line if path generation fails
-                pathStr = `M ${x1} ${y1} L ${x2} ${y2}`;
-            }
-        } else {
-            // Fallback to simple line
-            pathStr = `M ${x1} ${y1} L ${x2} ${y2}`;
+        console.groupCollapsed(`Segment ${i + 1}: ${sourceNodeId} -> ${targetNodeId}`);
+        console.log(`Source position: (${sourceAttrs.x}, ${sourceAttrs.y})`);
+        console.log(`Target position: (${targetAttrs.x}, ${targetAttrs.y})`);
+        console.log(`Edge ID: ${edgeId}`);
+        console.log('Original Edge Attributes:', initialPathAttr);
+        console.log('Final Path Attributes (after reversal adjustments):', finalPathAttr);
+        console.log('Generated SVG Path Segment:', segment);
+        console.log(
+            'Current SVG Path Segment:',
+            linePaths[pathType]?.generatePath(x1, x2, y1, y2, initialPathAttr as any)
+        );
+        console.groupEnd();
+
+        if (i > 0) {
+            const parts = segment.split(' ');
+            // we slice from the 4th element (index 3) to remove the initial move command and its coordinates.
+            segment = parts.slice(3).join(' ');
         }
 
-        if (i === 0) {
-            // For the first segment, use the full path
-            pathSegments.push(pathStr);
-        } else {
-            // For subsequent segments, extract the path data after the M command
-            const pathCommands = pathStr.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi) || [];
-            const nonMoveCommands = pathCommands.filter(cmd => !cmd.startsWith('M'));
-            if (nonMoveCommands.length > 0) {
-                pathSegments.push(nonMoveCommands.join(' '));
-            } else {
-                // If no path commands, fallback to line to target
-                pathSegments.push(`L ${x2} ${y2}`);
-            }
-        }
+        pathString += (i > 0 ? ' ' : '') + segment;
     }
 
-    // Close the path
-    pathSegments.push('Z');
+    const finalFullPath = pathString + ' Z';
+    console.log(`%c[Path Calculation End]`, 'font-weight:bold; color:blue;');
+    console.log('Final Combined SVG Path:', finalFullPath);
 
-    const fullPath = pathSegments.join(' ');
-
-    // Validate the path by checking if it's reasonable
-    if (fullPath.length < 10) {
-        return undefined;
-    }
-
-    return fullPath as Path;
-};
-
-const isPointInClosedPath = (d: string, x: number, y: number): boolean => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return false;
-
-    const path = new Path2D(d);
-
-    return ctx.isPointInPath(path, x, y);
+    return finalFullPath as Path;
 };
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const {
-        color = defaultFillAttributes.color,
-        maxNodes = defaultFillAttributes.maxNodes,
-        opacity = defaultFillAttributes.opacity,
-    } = attrs ?? defaultFillAttributes;
+    const { color = defaultFillAttributes.color, opacity = defaultFillAttributes.opacity } =
+        attrs ?? defaultFillAttributes;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -209,59 +178,33 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     );
 
     const { refresh } = useRootSelector(state => state.runtime);
-
-    // Access graph directly from window object as it's available globally
     const graph = window.graph;
 
-    // Find closed path starting from this node's position
     const fillPath = React.useMemo(() => {
         if (!graph) return undefined;
 
-        // Find all nodes except this fill node
-        const allNodes = graph.nodes().filter(node => node !== id) as (StnId | MiscNodeId)[];
+        const path = findShortestClosedPath(graph, id);
 
-        if (allNodes.length < 3) return undefined; // Need at least 3 nodes for a closed path
-
-        let bestPath: Path | undefined;
-
-        // Try to find a closed path starting from the closest nodes
-        const candidates = allNodes
-            .map(node => {
-                const nodeAttr = graph.getNodeAttributes(node);
-                const distance = Math.hypot(nodeAttr.x - x, nodeAttr.y - y);
-                return { node, distance };
-            })
-            .sort((a, b) => a.distance - b.distance);
-
-        for (const { node } of candidates) {
-            const path = findShortestClosedPath(graph, node, maxNodes);
-            if (path) {
-                const d = generateClosedPath(graph, path.nodes, path.edges);
-                if (d && isPointInClosedPath(d, x, y)) {
-                    bestPath = d;
-                    break;
-                }
-            }
+        if (path) {
+            return generateClosedPath(graph, path.nodes, path.edges);
         }
 
-        return bestPath;
-    }, [graph, x, y, id, maxNodes, refresh]);
+        return undefined;
+    }, [graph, id, refresh]);
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             {fillPath && (
                 <path
                     d={fillPath}
-                    transform={`translate(${-x}, ${-y})`} // Move path to origin for correct positioning'
+                    transform={`translate(${-x}, ${-y})`}
                     fill={color[2]}
                     fillOpacity={opacity}
                     stroke="none"
-                    pointerEvents="none" // Don't interfere with node dragging
+                    pointerEvents="none"
                 />
             )}
-            {/* Small indicator circle to show the fill node position */}
             <circle
-                id={`misc_node_connectable_${id}`}
                 r="3"
                 fill={color[2]}
                 fillOpacity="0.8"
@@ -273,27 +216,16 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            {/* Show text when no fill path is found */}
-            {!fillPath && (
-                <text x="0" y="15" textAnchor="middle" fontSize="10" fill="#666" className="removeMe">
-                    No closed path
-                </text>
-            )}
         </g>
     );
 };
 
-/**
- * Fill specific attributes.
- */
 export interface FillAttributes extends ColorAttribute {
-    maxNodes: number;
     opacity: number;
 }
 
 export const defaultFillAttributes: FillAttributes = {
     color: [CityCode.Shanghai, 'fill', '#FF0000', MonoColour.white],
-    maxNodes: 100,
     opacity: 0.3,
 };
 
@@ -302,17 +234,6 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
-        {
-            type: 'input',
-            label: t('panel.details.nodes.fill.maxNodes'),
-            value: (attrs.maxNodes ?? defaultFillAttributes.maxNodes).toString(),
-            validator: (val: string) => Number.isInteger(Number(val)) && Number(val) > 0 && Number(val) <= 1000,
-            onChange: val => {
-                attrs.maxNodes = Number(val);
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
         {
             type: 'input',
             label: t('panel.details.nodes.fill.opacity'),
