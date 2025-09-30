@@ -64,7 +64,7 @@ export const findThemes = (
  * @param opacity - Opacity value between 0.0 and 1.0.
  * @returns A hex color string with adjusted brightness and saturation.
  */
-export function getDynamicContrastColor(hexColor: string, opacity: number): string {
+export const getDynamicContrastColor = (hexColor: string, opacity: number): string => {
     // 1. Convert hex to RGB, normalized to [0,1]
     let r = 0,
         g = 0,
@@ -147,4 +147,4 @@ export function getDynamicContrastColor(hexColor: string, opacity: number): stri
     };
 
     return `#${toHex(r_new)}${toHex(g_new)}${toHex(b_new)}`;
-}
+};

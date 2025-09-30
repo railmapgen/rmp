@@ -19,14 +19,14 @@ import {
     setPointerPosition,
     setSelected,
 } from '../redux/runtime/runtime-slice';
+import { findNodesInRectangle } from '../util/graph';
 import {
-    findNodesInRectangle,
     getNearestSnapLine,
     getNearestSnapPoints,
     getSnapLineDistance,
     getSnapLines,
     isNodeSupportSnapLine,
-} from '../util/graph';
+} from '../util/snap-lines';
 import {
     getCanvasSize,
     getMousePosition,
