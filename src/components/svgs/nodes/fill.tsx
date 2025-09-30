@@ -265,6 +265,7 @@ export const defaultFillAttributes: FillAttributes = {
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const { activeSubscriptions } = useRootSelector(state => state.account);
 
     const handlePatternChange = (patternId: string, isChecked: boolean) => {
         const currentPatterns = attrs.selectedPatterns ?? [];
@@ -296,6 +297,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
                     <Checkbox
                         isChecked={(attrs.selectedPatterns ?? []).includes('logo')}
                         onChange={e => handlePatternChange('logo', e.target.checked)}
+                        isDisabled={!activeSubscriptions.RMP_CLOUD}
                     >
                         {t('panel.details.nodes.fill.logo')}
                     </Checkbox>
