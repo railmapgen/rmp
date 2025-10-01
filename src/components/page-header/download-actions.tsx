@@ -35,7 +35,7 @@ import { Events } from '../../constants/constants';
 import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
-import { downloadAs, downloadBlobAs, makeRenderReadySVGElement } from '../../util/download';
+import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, rmpInfoSpecificNodeExists } from '../../util/download';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
@@ -68,6 +68,7 @@ export default function DownloadActions() {
     } = useRootSelector(state => state.app);
     const { languages } = useRootSelector(state => state.fonts);
     const param = useRootSelector(state => state.param);
+    const { existsNodeTypes } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
 
@@ -124,6 +125,7 @@ export default function DownloadActions() {
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
+    const [isAttachDisabled, setIsAttachDisabled] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
@@ -148,6 +150,13 @@ export default function DownloadActions() {
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
             );
             setResvgScaleOptions(disabledScales);
+
+            if (rmpInfoSpecificNodeExists(existsNodeTypes)) {
+                setIsAttachSelected(false);
+                setIsAttachDisabled(true);
+            } else {
+                setIsAttachDisabled(false);
+            }
         }
     }, [isDownloadModalOpen]);
 
@@ -185,6 +194,7 @@ export default function DownloadActions() {
             isAttachSelected,
             isSystemFontsOnly,
             languages,
+            existsNodeTypes,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
@@ -289,6 +299,7 @@ export default function DownloadActions() {
                         <Checkbox
                             id="share_info"
                             isChecked={isAttachSelected}
+                            isDisabled={isAttachDisabled}
                             onChange={e => setIsAttachSelected(e.target.checked)}
                         >
                             <Text>
@@ -316,6 +327,14 @@ export default function DownloadActions() {
                             </Text>
                         </Checkbox>
 
+                        {isAttachDisabled && (
+                            <Alert status="error" mt="4">
+                                <AlertIcon />
+                                <Box>
+                                    <AlertTitle>{t('header.download.rmpInfoSpecificNodeExists')}</AlertTitle>
+                                </Box>
+                            </Alert>
+                        )}
                         {format === 'png' && resvgScaleOptions.includes(scale) && !isTauri && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />

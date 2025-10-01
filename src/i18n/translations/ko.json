@@ -711,6 +711,7 @@
             "termsAndConditions": "약관 및 세칙",
             "termsAndConditionsInfo": "동의",
             "period": ".",
+            "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
             "confirm": "다운로드"
         },
         "donation": {

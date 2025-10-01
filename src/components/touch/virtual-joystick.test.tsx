@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
-import { CityCode, Id, Theme } from '../../constants/constants';
+import { CityCode, Id, NodeType, Theme } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
 import accountSlice from '../../redux/account/account-slice';
 import appSlice from '../../redux/app/app-slice';
@@ -74,6 +74,7 @@ describe('VirtualJoystick', () => {
                         mostFrequentStationType: StationType.ShmetroBasic,
                     },
                     stationNames: {},
+                    existsNodeTypes: new Set<NodeType>(),
                     globalAlerts: {},
                 },
             },

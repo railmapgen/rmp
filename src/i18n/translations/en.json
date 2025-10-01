@@ -712,6 +712,7 @@
             "termsAndConditions": "Terms and Conditions",
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
+            "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
             "confirm": "Download"
         },
         "donation": {

@@ -1,7 +1,7 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { FacilitiesType } from '../components/svgs/nodes/facilities';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import i18n from '../i18n/config';
 import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
@@ -39,6 +39,7 @@ export const makeRenderReadySVGElement = async (
     generateRMPInfo: boolean,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
+    existsNodeTypes: Set<NodeType>,
     svgVersion: 1.1 | 2
 ) => {
     // get the minimum and maximum of the graph
@@ -46,8 +47,6 @@ export const makeRenderReadySVGElement = async (
     const [width, height] = [xMax - xMin, yMax - yMin];
 
     const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
-    // append rmp info if user does not want to share rmp info
-    if (!generateRMPInfo) elem.appendChild(await generateRmpInfo(xMax - 400, yMax - 120));
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -92,14 +91,6 @@ export const makeRenderReadySVGElement = async (
         el.remove();
     });
 
-    await loadFonts(elem, isSystemFontsOnly, languages);
-
-    await loadFacilitiesSvg(elem, graph);
-
-    return { elem, width, height };
-};
-
-const loadFonts = async (elem: SVGSVGElement, isSystemFontsOnly: boolean, languages: TextLanguage[]) => {
     if (!isSystemFontsOnly) {
         // add additional fonts data to the final svg in encoded base64 format
         try {
@@ -109,6 +100,15 @@ const loadFonts = async (elem: SVGSVGElement, isSystemFontsOnly: boolean, langua
             logger.warn(err);
         }
     }
+
+    await loadFacilitiesSvg(elem, graph);
+
+    // append rmp info if some nodes exist
+    if (!generateRMPInfo || rmpInfoSpecificNodeExists(existsNodeTypes)) {
+        elem.appendChild(await generateRmpInfo(xMax - 400, yMax - 120));
+    }
+
+    return { elem, width, height };
 };
 
 const loadFacilitiesSvg = async (
@@ -171,9 +171,19 @@ const loadFacilitiesSvg = async (
     }
 };
 
+export const rmpInfoSpecificNodeExists = (existsNodeTypes: Set<NodeType>) => {
+    if (existsNodeTypes.has(MiscNodeType.Image)) {
+        return true;
+    } else if (existsNodeTypes.has(MiscNodeType.Fill)) {
+        return true;
+    }
+    return false;
+};
+
 const generateRmpInfo = async (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     info.setAttribute('transform', `translate(${x}, ${y})scale(2)`);
+    info.setAttribute('opacity', '0.5');
 
     const logoSVGRep = await fetch('logo.svg');
     const logoSVG = await logoSVGRep.text();
@@ -181,7 +191,7 @@ const generateRmpInfo = async (x: number, y: number) => {
     temp.innerHTML = logoSVG;
     const svg = temp.querySelector('svg')!;
     const logo = document.createElement('g');
-    logo.setAttribute('transform', `translate(-60, -25)scale(0.1)`);
+    logo.setAttribute('transform', `translate(-32.5, -12.5)scale(0.05)`);
     logo.setAttribute('font-family', 'Arial, sans-serif');
     logo.innerHTML = svg.innerHTML;
     info.appendChild(logo);

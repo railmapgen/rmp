@@ -711,6 +711,7 @@
             "termsAndConditions": "條款及細則",
             "termsAndConditionsInfo": "我同意",
             "period": "。",
+            "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
             "confirm": "下載"
         },
         "donation": {

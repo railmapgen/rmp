@@ -84,6 +84,10 @@ interface RuntimeState {
      * Cached random station names.
      */
     stationNames: { [key in StationCity]?: { [key in keyof Translation]: string }[] };
+    /**
+     * The types of nodes that exist in the current graph.
+     */
+    existsNodeTypes: Set<NodeType>;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
 
@@ -113,6 +117,7 @@ const initialState: RuntimeState = {
         mostFrequentStationType: StationType.ShmetroBasic,
     },
     stationNames: {},
+    existsNodeTypes: new Set<NodeType>(),
     globalAlerts: {},
 };
 
@@ -124,7 +129,7 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     dispatch(setRefreshNodes());
 
     let [stations, miscNodes, masters] = [0, 0, 0];
-    const existsTypes: { [k in NodeType]?: number } = {};
+    const existsNodeTypesCount: { [k in NodeType]?: number } = {};
     window.graph.forEachNode((id, attr) => {
         const { type } = attr;
         if (id.startsWith('stn')) {
@@ -136,10 +141,10 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
             masters += 1;
         }
 
-        existsTypes[type] = (existsTypes[type] || 0) + 1;
+        existsNodeTypesCount[type] = (existsNodeTypesCount[type] || 0) + 1;
     });
 
-    const mostFrequentStationType = (Object.entries(existsTypes) as [StationType, number][])
+    const mostFrequentStationType = (Object.entries(existsNodeTypesCount) as [StationType, number][])
         .filter(([type]) => STATION_TYPE_VALUES.has(type))
         .reduce((a, b) => (b[1] > a[1] ? b : a), [StationType.ShmetroBasic, 0])[0];
     dispatch(setNodesCount({ stations, miscNodes, masters, mostFrequentStationType }));
@@ -153,7 +158,10 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
         );
     }
 
-    const languages = (Object.keys(existsTypes) as NodeType[]).filter(t => t in Node2Font).flatMap(t => Node2Font[t]!);
+    const existsNodeTypes = Object.keys(existsNodeTypesCount) as NodeType[];
+    dispatch(setExistsNodeTypes(new Set<NodeType>(existsNodeTypes)));
+
+    const languages = existsNodeTypes.filter(t => t in Node2Font).flatMap(t => Node2Font[t]!);
     dispatch(loadFonts([...new Set(languages)]));
 });
 
@@ -294,6 +302,9 @@ const runtimeSlice = createSlice({
         ) => {
             state.stationNames[action.payload.cityName] = action.payload.names;
         },
+        setExistsNodeTypes: (state, action: PayloadAction<Set<NodeType>>) => {
+            state.existsNodeTypes = action.payload;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -344,6 +355,7 @@ export const {
     closePaletteAppClip,
     onPaletteAppClipEmit,
     setStationNames,
+    setExistsNodeTypes,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

@@ -714,6 +714,7 @@
             "termsAndConditions": "利用規約",
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
+            "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
             "confirm": "ダウンロード"
         },
         "donation": {

@@ -1,4 +1,4 @@
-import { Badge, Button, Checkbox, HStack, Text, Tooltip, VStack } from '@chakra-ui/react';
+import { Button, Checkbox, Text, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
@@ -149,7 +149,6 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         selectedPatterns = defaultFillAttributes.selectedPatterns,
     } = attrs ?? defaultFillAttributes;
 
-    const { t } = useTranslation();
     const { refresh } = useRootSelector(state => state.runtime);
     const graph = window.graph!;
 
@@ -179,21 +178,6 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
             {fillPath && (
                 <g transform={`translate(${-x}, ${-y})`}>
                     <defs>
-                        <pattern
-                            id={`logo_${id}`}
-                            patternUnits="userSpaceOnUse"
-                            width={pattern.width * 2}
-                            height={pattern.height}
-                            fill={patternColor}
-                            fontFamily="Arial, sans-serif"
-                        >
-                            <text x="2" y="24" fontSize="4">
-                                {t('Rail Map Painter')}
-                            </text>
-                            <text x="2" y="28" fontSize="4">
-                                https://railmapgen.org/
-                            </text>
-                        </pattern>
                         <pattern
                             id={`trees_${id}`}
                             patternUnits="userSpaceOnUse"
@@ -270,7 +254,6 @@ export const defaultFillAttributes: FillAttributes = {
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
-    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
@@ -419,20 +402,6 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             label: t('panel.details.nodes.fill.patterns'),
             component: (
                 <VStack alignItems="flex-start">
-                    <HStack>
-                        <Checkbox
-                            isChecked={(attrs.selectedPatterns ?? []).includes('logo')}
-                            onChange={e => handlePatternChange('logo', e.target.checked)}
-                            isDisabled={!activeSubscriptions.RMP_CLOUD}
-                        >
-                            {t('panel.details.nodes.fill.logo')}
-                        </Checkbox>
-                        <Tooltip label={t('header.settings.pro')}>
-                            <Badge color="gray.50" ml="1" background="radial-gradient(circle, #3f5efb, #fc466b)">
-                                PRO
-                            </Badge>
-                        </Tooltip>
-                    </HStack>
                     <Checkbox
                         isChecked={(attrs.selectedPatterns ?? []).includes('trees')}
                         onChange={e => handlePatternChange('trees', e.target.checked)}
