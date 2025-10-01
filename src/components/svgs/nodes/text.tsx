@@ -145,6 +145,24 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const [rotate, setRotate] = React.useState((attrs.rotate ?? defaultTextAttributes.rotate).toString());
+    React.useEffect(() => {
+        const oldRotate = (attrs.rotate ?? defaultTextAttributes.rotate).toString();
+        console.log(`Text rotate update from state: ${oldRotate} -> ${rotate}`);
+        if (rotate !== oldRotate && !Number.isNaN(Number(rotate))) {
+            attrs.rotate = ((Number(rotate) % 360) + 360) % 360; // Normalize to [0, 360)
+            handleAttrsUpdate(id, attrs);
+        }
+    }, [rotate, id]);
+    React.useEffect(() => {
+        const oldRotate = (attrs.rotate ?? defaultTextAttributes.rotate).toString();
+        console.log(`Text rotate update from attrs: ${oldRotate} -> ${attrs.rotate}`);
+        if (oldRotate !== rotate) {
+            console.log(`Text rotate: ${attrs.rotate}`);
+            setRotate((attrs.rotate ?? defaultTextAttributes.rotate).toString());
+        }
+    }, [attrs.rotate, rotate]);
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -234,13 +252,12 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
         {
             type: 'input',
             label: t('panel.details.nodes.text.rotate'),
-            value: (attrs.rotate ?? defaultTextAttributes.rotate).toString(),
+            value: rotate,
             optionList: ['0', '45', '90', '135', '180', '225', '270', '315'],
             debouncedDelay: 500,
             validator: (val: string) => !Number.isNaN(val),
             onChange: val => {
-                attrs.rotate = ((Number(val) % 360) + 360) % 360; // Normalize to [0, 360)
-                handleAttrsUpdate(id, attrs);
+                setRotate(val);
             },
             minW: 'full',
         },
