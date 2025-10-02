@@ -44,7 +44,9 @@ import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
+import RadialTouchMenu from './touch/radial-touch-menu';
 import TouchOverlay from './touch/touch-overlay';
+import VirtualJoystick from './touch/virtual-joystick';
 
 const SvgWrapper = () => {
     const dispatch = useRootDispatch();
@@ -392,6 +394,7 @@ const SvgWrapper = () => {
                         svgHeight={height}
                     />
                 )}
+                {isTouchClient() && mode === 'free' && <TouchOverlay />}
                 {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
                 {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
                 <utils.SvgAssetsContextProvider>
@@ -411,7 +414,10 @@ const SvgWrapper = () => {
                         opacity="0.75"
                     />
                 )}
-                {isTouchClient() && mode !== 'select' && !mode.startsWith('line-') && <TouchOverlay />}
+                {isTouchClient() && [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
+                    <VirtualJoystick />
+                )}
+                <RadialTouchMenu />
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (

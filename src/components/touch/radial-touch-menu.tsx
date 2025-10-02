@@ -1,22 +1,30 @@
 import React from 'react';
-import { useRootSelector } from '../../redux';
-import { MenuCategory, MenuItemData, MenuLayerData, TOUCH_RADIUS } from '../../util/graph-nearby-elements';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { closeRadialTouchMenu } from '../../redux/runtime/runtime-slice';
+import {
+    emptyMenuLayerData,
+    MenuCategory,
+    MenuItemData,
+    MenuLayerData,
+    TOUCH_RADIUS,
+} from '../../util/graph-nearby-elements';
 
 // Menu configuration
 const LAYER_SIZE = 5; // Maximum number of layers supported
 const CENTER_RADIUS = TOUCH_RADIUS;
 const QUADRANT_RADIUS = 40;
 
-interface RadialTouchMenuProps {
-    /** Menu data organized in layers from inner to outer */
-    data: MenuLayerData;
-    /** Center position in svg coordinates */
-    position: { x: number; y: number };
-    /** Callback when menu should be closed */
-    onClose: () => void;
-    /** Whether menu is visible */
+export interface RadialTouchMenuState {
     visible: boolean;
+    position: { x: number; y: number };
+    data: MenuLayerData;
 }
+
+export const defaultRadialTouchMenuState: RadialTouchMenuState = {
+    visible: false,
+    position: { x: 0, y: 0 },
+    data: emptyMenuLayerData,
+};
 
 /**
  * Quadrant-based radial touch menu component.
@@ -26,8 +34,10 @@ interface RadialTouchMenuProps {
  * - Bottom-left: Misc nodes
  * - Bottom-right: Operations
  */
-export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position, onClose, visible }) => {
+export const RadialTouchMenu: React.FC = () => {
+    const dispatch = useRootDispatch();
     const { svgViewBoxZoom } = useRootSelector(state => state.param);
+    const { visible, position, data } = useRootSelector(state => state.runtime.radialTouchMenu);
 
     const elements = [...data[MenuCategory.STATION], ...data[MenuCategory.MISC_NODE], ...data[MenuCategory.LINE]];
     if (!visible || elements.length === 0) {
@@ -37,11 +47,14 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
     const handleItemClick = (e: React.PointerEvent<SVGGElement>, action: () => void) => {
         e.stopPropagation(); // stop background event handler
         action();
-        onClose();
+        dispatch(closeRadialTouchMenu());
     };
 
     return (
-        <g transform={`translate(${position.x}, ${position.y})scale(${(0.8 * svgViewBoxZoom) / 100})`}>
+        <g
+            transform={`translate(${position.x}, ${position.y})scale(${(0.8 * svgViewBoxZoom) / 100})`}
+            className="removeMe"
+        >
             {(Object.entries(data) as [MenuCategory, MenuItemData[]][]).map(([category, layerData]) => {
                 if (!layerData || layerData.length === 0) return null;
 
@@ -150,7 +163,7 @@ export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ data, position
                 fill="rgba(255, 255, 255, 0.3)"
                 stroke="rgba(0,0,0,0.2)"
                 strokeWidth="1"
-                onPointerDown={onClose}
+                onPointerDown={() => dispatch(closeRadialTouchMenu())}
             />
         </g>
     );

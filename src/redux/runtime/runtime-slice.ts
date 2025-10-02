@@ -4,6 +4,7 @@ import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 import { RootState } from '..';
+import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
 import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
@@ -88,6 +89,7 @@ interface RuntimeState {
      * The types of nodes that exist in the current graph.
      */
     existsNodeTypes: Set<NodeType>;
+    radialTouchMenu: RadialTouchMenuState;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
 
@@ -117,6 +119,7 @@ const initialState: RuntimeState = {
         mostFrequentStationType: StationType.ShmetroBasic,
     },
     stationNames: {},
+    radialTouchMenu: defaultRadialTouchMenuState,
     existsNodeTypes: new Set<NodeType>(),
     globalAlerts: {},
 };
@@ -197,14 +200,14 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
  *
  * `detailsOpen = state.selected.size > 0 && !state.mode.startsWith('line') && !state.active`
  *
- * |           --           | detailsOpen === true | detailsOpen === false |
- * |------------------------|----------------------|----------------------|
- * | isMobileClient === true | 'show' or 'hide'     | 'close'              |
- * | isMobileClient === false| 'show'               | 'close'              |
+ * |                      --                      | detailsOpen === true | detailsOpen === false |
+ * |----------------------------------------------|----------------------|----------------------|
+ * | isMobileClient === true && selected.size > 1 | 'show' or 'hide'     | 'close'              |
+ * | isMobileClient === false                     | 'show'               | 'close'              |
  */
 const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
     if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
-        if (isPortraitClient()) {
+        if (isPortraitClient() && state.selected.size > 1) {
             return 'hide';
         }
         return 'show';
@@ -305,6 +308,12 @@ const runtimeSlice = createSlice({
         setExistsNodeTypes: (state, action: PayloadAction<Set<NodeType>>) => {
             state.existsNodeTypes = action.payload;
         },
+        setRadialTouchMenu: (state, action: PayloadAction<RadialTouchMenuState>) => {
+            state.radialTouchMenu = action.payload;
+        },
+        closeRadialTouchMenu: state => {
+            state.radialTouchMenu = defaultRadialTouchMenuState;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -356,6 +365,8 @@ export const {
     onPaletteAppClipEmit,
     setStationNames,
     setExistsNodeTypes,
+    setRadialTouchMenu,
+    closeRadialTouchMenu,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

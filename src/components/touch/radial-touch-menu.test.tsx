@@ -1,85 +1,86 @@
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import store from '../../redux';
+import { closeRadialTouchMenu, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
 import { MenuCategory } from '../../util/graph-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';
 
-describe('RadialTouchMenu', () => {
-    const mockProps = {
-        data: {
-            [MenuCategory.STATION]: [
-                {
-                    label: 'Test Station',
-                    action: vi.fn(),
-                    elementId: 'stn_1',
-                },
-            ],
-            [MenuCategory.MISC_NODE]: [],
-            [MenuCategory.LINE]: [],
-            [MenuCategory.OPERATION]: [],
+const baseData = {
+    [MenuCategory.STATION]: [
+        {
+            label: 'Test Station',
+            action: vi.fn(),
+            elementId: 'stn_1',
         },
-        position: { x: 200, y: 200 },
-        onClose: vi.fn(),
-        visible: true,
-    };
+    ],
+    [MenuCategory.MISC_NODE]: [],
+    [MenuCategory.LINE]: [],
+    [MenuCategory.OPERATION]: [],
+};
 
+const setMenu = (visible: boolean, overrideData = baseData) => {
+    store.dispatch(
+        setRadialTouchMenu({
+            visible,
+            position: { x: 200, y: 200 },
+            data: overrideData,
+        })
+    );
+};
+
+afterEach(() => {
+    store.dispatch(closeRadialTouchMenu());
+});
+
+describe('RadialTouchMenu', () => {
     it('renders when visible is true', () => {
+        setMenu(true);
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <RadialTouchMenu {...mockProps} />
+                    <RadialTouchMenu />
                 </svg>
             </Provider>
         );
-
-        const menuGroup = container.querySelector('g');
-        expect(menuGroup).toBeTruthy();
+        expect(container.querySelector('g')).toBeTruthy();
     });
 
     it('does not render when visible is false', () => {
+        setMenu(false);
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <RadialTouchMenu {...mockProps} visible={false} />
+                    <RadialTouchMenu />
                 </svg>
             </Provider>
         );
-
-        const menuGroup = container.querySelector('g');
-        expect(menuGroup).toBeFalsy();
+        expect(container.querySelector('g')).toBeFalsy();
     });
 
-    it('renders SVG menu with correct structure', () => {
+    it('renders SVG menu with nested groups', () => {
+        setMenu(true);
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <RadialTouchMenu {...mockProps} />
+                    <RadialTouchMenu />
                 </svg>
             </Provider>
         );
-
-        const menuGroup = container.querySelector('g');
-        expect(menuGroup).toBeTruthy();
-
-        // Check for nested groups
         const nestedGroups = container.querySelectorAll('g');
         expect(nestedGroups.length).toBeGreaterThan(1);
     });
 
-    it('displays category items correctly', () => {
+    it('displays category item label', () => {
+        setMenu(true);
         const { container } = render(
             <Provider store={store}>
                 <svg>
-                    <RadialTouchMenu {...mockProps} />
+                    <RadialTouchMenu />
                 </svg>
             </Provider>
         );
-
-        // Check that the station label is rendered
-        const stationText = Array.from(container.querySelectorAll('text')).find(
-            text => text.textContent === 'Test Station'
-        );
+        const stationText = Array.from(container.querySelectorAll('text')).find(t => t.textContent === 'Test Station');
         expect(stationText).toBeTruthy();
     });
 });

@@ -1,19 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, setActive } from '../../redux/runtime/runtime-slice';
+import { clearSelected, closeRadialTouchMenu, setActive, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
+import { MenuCategory, findNearbyElements } from '../../util/graph-nearby-elements';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
-import { MenuCategory, MenuLayerData, emptyMenuLayerData, findNearbyElements } from '../../util/graph-nearby-elements';
-import RadialTouchMenu from './radial-touch-menu';
-import VirtualJoystick from './virtual-joystick';
-
-interface MenuState {
-    visible: boolean;
-    position: { x: number; y: number };
-    data: MenuLayerData;
-}
 
 /**
  * TouchOverlay component handles all touch interactions for mobile devices.
@@ -24,7 +16,7 @@ interface MenuState {
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
-    const { selected } = useRootSelector(state => state.runtime);
+    const { radialTouchMenu } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     // Touch state variables for handling mobile gestures:
@@ -34,20 +26,13 @@ export const TouchOverlay: React.FC = () => {
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
-    // Radial menu state
-    const [menuState, setMenuState] = useState<MenuState>({
-        visible: false,
-        position: { x: 0, y: 0 },
-        data: emptyMenuLayerData,
-    });
-
     const handleTouchStart = useEvent((e: React.TouchEvent<SVGRectElement>) => {
         if (e.touches.length == 1) {
             setTouchDist(0);
 
-            if (menuState.visible) {
+            if (radialTouchMenu.visible) {
                 // If menu is already open, close it on this touch
-                handleCloseMenu();
+                dispatch(closeRadialTouchMenu());
                 return;
             }
 
@@ -65,14 +50,16 @@ export const TouchOverlay: React.FC = () => {
                     ...nearbyElements[MenuCategory.LINE],
                 ].length > 0
             ) {
-                setMenuState({
-                    visible: true,
-                    position: svgCoord, // use svg coords directly
-                    data: nearbyElements,
-                });
+                dispatch(
+                    setRadialTouchMenu({
+                        visible: true,
+                        position: svgCoord,
+                        data: nearbyElements,
+                    })
+                );
             } else {
                 dispatch(clearSelected());
-                handleCloseMenu();
+                dispatch(closeRadialTouchMenu());
             }
         } else if (e.touches.length == 2) {
             // Multi-touch for zoom
@@ -114,41 +101,18 @@ export const TouchOverlay: React.FC = () => {
         setTouchDist(0);
     });
 
-    const handleCloseMenu = useCallback(() => {
-        setMenuState({
-            visible: false,
-            position: { x: 0, y: 0 },
-            data: emptyMenuLayerData,
-        });
-    }, []);
-
     return (
-        <g className="removeMe">
-            {[...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) ? (
-                // Virtual joystick for selected nodes
-                // Overlay must be hidden to allow pointer events to pass through to the original canvas.
-                // Handlers such as predict next node will capture this event.
-                <VirtualJoystick />
-            ) : (
-                // Interaction overlay shown by default
-                <rect
-                    x={svgViewBoxMin.x}
-                    y={svgViewBoxMin.y}
-                    width={(width * svgViewBoxZoom) / 100}
-                    height={(height * svgViewBoxZoom) / 100}
-                    fill={menuState.visible ? 'rgba(0,0,0,0.3)' : 'transparent'}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                />
-            )}
-            <RadialTouchMenu
-                data={menuState.data}
-                position={menuState.position}
-                onClose={handleCloseMenu}
-                visible={menuState.visible}
-            />
-        </g>
+        <rect
+            className="removeMe"
+            x={svgViewBoxMin.x}
+            y={svgViewBoxMin.y}
+            width={(width * svgViewBoxZoom) / 100}
+            height={(height * svgViewBoxZoom) / 100}
+            fill={radialTouchMenu.visible ? 'rgba(0,0,0,0.3)' : 'transparent'}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        />
     );
 };
 

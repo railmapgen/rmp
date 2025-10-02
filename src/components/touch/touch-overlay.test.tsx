@@ -41,7 +41,7 @@ describe('TouchOverlay', () => {
         expect(overlay).toBeTruthy();
     });
 
-    it('has correct styling for touch overlay', () => {
+    it('renders expected overlay structure', () => {
         const { container } = render(
             <Provider store={store}>
                 <svg>
@@ -50,12 +50,13 @@ describe('TouchOverlay', () => {
             </Provider>
         );
 
-        // ensure the interaction rect is present
-        const overlayRect = container.querySelector('rect');
-        expect(overlayRect).toBeTruthy();
+        // Check that exactly one rect is rendered
+        const rects = container.querySelectorAll('rect');
+        expect(rects.length).toBe(1);
 
-        // now check the wrapper <g> for the class
-        const overlayGroup = container.querySelector('g');
-        expect(overlayGroup?.classList).toContain('removeMe');
+        // Check that the rect has expected attributes
+        const rect = rects[0];
+        expect(rect.getAttribute('width')).toBeTruthy();
+        expect(rect.getAttribute('height')).toBeTruthy();
     });
 });

@@ -10,6 +10,7 @@ import appSlice from '../../redux/app/app-slice';
 import paramSlice from '../../redux/param/param-slice';
 import runtimeSlice from '../../redux/runtime/runtime-slice';
 import VirtualJoystick from './virtual-joystick';
+import { defaultRadialTouchMenuState } from './radial-touch-menu';
 
 // Mock the helper functions
 vi.mock('../../util/helpers', () => ({
@@ -75,6 +76,7 @@ describe('VirtualJoystick', () => {
                     },
                     stationNames: {},
                     existsNodeTypes: new Set<NodeType>(),
+                    radialTouchMenu: defaultRadialTouchMenuState,
                     globalAlerts: {},
                 },
             },
