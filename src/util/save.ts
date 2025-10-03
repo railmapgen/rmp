@@ -2,8 +2,10 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
+import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import { TextAttributes } from '../components/svgs/nodes/text';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 import { FoshanMetroBasicStationAttributes } from '../components/svgs/stations/foshan-metro-basic';
@@ -38,7 +40,6 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { ParamState } from '../redux/param/param-slice';
-import { TextAttributes } from '../components/svgs/nodes/text';
 import { TextLanguage } from './fonts';
 
 /**
@@ -56,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 59;
+export const CURRENT_VERSION = 60;
 
 /**
  * Load the tutorial.
@@ -768,4 +769,25 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     58: param =>
         // Bump save version to support fill node.
         JSON.stringify({ ...JSON.parse(param), version: 59 }),
+    59: param => {
+        // Bump save version to add misc_node_ and line_ prefixes to those created by fill.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        const newGraph = updateGraphKeys(
+            graph,
+            key => {
+                const type = graph.getNodeAttribute(key, 'type');
+                if (type === MiscNodeType.Virtual && !key.startsWith('misc_node_')) {
+                    return `misc_node_${key}`;
+                }
+                return key;
+            },
+            key => {
+                if (key.startsWith('line_')) return key;
+                return `line_${key}`;
+            }
+        );
+        return JSON.stringify({ ...p, version: 60, graph: newGraph.export() });
+    },
 };

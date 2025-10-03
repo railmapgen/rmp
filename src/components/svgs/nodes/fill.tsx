@@ -290,7 +290,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
                 { x: x, y: y + size },
             ];
             newNodesCoords.forEach(coords => {
-                const newNodeId = nanoid(10) as MiscNodeId;
+                const newNodeId = `misc_node_${nanoid(10)}` as MiscNodeId;
                 nodeIds.push(newNodeId);
                 nodesToAdd.push({
                     id: newNodeId,
@@ -303,7 +303,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
                 { x: x + size / 2, y: y + size / 2 },
             ];
             newNodesCoords.forEach(coords => {
-                const newNodeId = nanoid(10) as MiscNodeId;
+                const newNodeId = `misc_node_${nanoid(10)}` as MiscNodeId;
                 nodeIds.push(newNodeId);
                 nodesToAdd.push({
                     id: newNodeId,
@@ -317,7 +317,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
                 { x: x + size / 2, y: y + size / 2 },
             ];
             newNodesCoords.forEach(coords => {
-                const newNodeId = nanoid(10) as MiscNodeId;
+                const newNodeId = `misc_node_${nanoid(10)}` as MiscNodeId;
                 nodeIds.push(newNodeId);
                 nodesToAdd.push({
                     id: newNodeId,
@@ -335,13 +335,14 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
         for (let i = 0; i < nodeIds.length; i++) {
             const source = nodeIds[i];
             const target = nodeIds[(i + 1) % nodeIds.length]; // Wrap around to close the loop
+            const newLineId: LineId = `line_${nanoid(10)}`;
             const type = shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
             const attrs = structuredClone(linePaths[type].defaultAttrs); // deep copy to prevent mutual reference
             if (shape === 'circle') {
                 if (i % 2 === 0) attrs.startFrom = 'to';
                 attrs.roundCornerFactor = size;
             }
-            graph.addDirectedEdgeWithKey(nanoid(10) as LineId, source, target, {
+            graph.addDirectedEdgeWithKey(newLineId, source, target, {
                 visible: true,
                 zIndex: 0,
                 type,
