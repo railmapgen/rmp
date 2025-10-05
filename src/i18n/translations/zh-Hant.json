@@ -13,6 +13,7 @@
             "showLess": "顯示更少",
             "section": {
                 "lineDrawing": "線段繪製",
+                "lineStyle": "線段樣式",
                 "stations": "車站",
                 "miscellaneousNodes": "雜項節點"
             },
