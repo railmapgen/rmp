@@ -54,13 +54,16 @@ export const roundToMultiple = (value: number, base: number): number => {
  * @param svgViewBoxMin The viewport relative to each DOMRect.
  * @returns The canvas size.
  */
-export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+export const calculateCanvasSize = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    padding = 50
+) => {
     let [xMin, yMin, xMax, yMax] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
 
-    graph.forEachNode((node, _) => {
-        const nodeElm = document.getElementById(node) as SVGSVGElement | null;
-        if (nodeElm) {
-            const rect = transformedBoundingBox(nodeElm);
+    [...graph.nodes(), ...graph.edges()].forEach(id => {
+        const elem = document.getElementById(id) as SVGSVGElement | null;
+        if (elem) {
+            const rect = transformedBoundingBox(elem);
             xMin = Math.min(rect.x, xMin);
             yMin = Math.min(rect.y, yMin);
             xMax = Math.max(rect.x + rect.width, xMax);
@@ -68,10 +71,10 @@ export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, Ed
         }
     });
 
-    xMin -= 50;
-    yMin -= 50;
-    xMax += 100;
-    yMax += 100;
+    xMin -= padding;
+    yMin -= padding;
+    xMax += padding;
+    yMax += padding;
 
     return { xMin, yMin, xMax, yMax };
 };
@@ -140,7 +143,7 @@ export const makeSnapLinesPath = (
  * @param el The element to getBBox.
  * @returns The SVGRect with respect to its own transformation attribute.
  */
-const transformedBoundingBox = (el: SVGSVGElement) => {
+export const transformedBoundingBox = (el: SVGSVGElement) => {
     const bb = el.getBBox();
     const svg = el.ownerSVGElement!;
     const m = (el.parentNode! as SVGSVGElement).getScreenCTM()!.inverse().multiply(el.getScreenCTM()!);

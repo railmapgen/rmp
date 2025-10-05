@@ -6,7 +6,7 @@ import { MiscNodeType } from '../constants/nodes';
 import i18n from '../i18n/config';
 import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
 import { findNodesExist } from './graph';
-import { calculateCanvasSize } from './helpers';
+import { calculateCanvasSize, transformedBoundingBox } from './helpers';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -105,7 +105,9 @@ export const makeRenderReadySVGElement = async (
 
     // append rmp info if some nodes exist
     if (!generateRMPInfo || rmpInfoSpecificNodeExists(existsNodeTypes)) {
-        elem.appendChild(await generateRmpInfo(xMax - 400, yMax - 120));
+        // intelligent placement to avoid overlapping existing elements.
+        const [infoX, infoY] = findRmpInfoPosition(graph, { xMin, yMin, xMax, yMax }, { width: 350, height: 50 });
+        elem.appendChild(await generateRmpInfo(infoX, infoY));
     }
 
     return { elem, width, height };
@@ -180,9 +182,55 @@ export const rmpInfoSpecificNodeExists = (existsNodeTypes: Set<NodeType>) => {
     return false;
 };
 
+// Intelligent placement using candidate positions; overlap detection via graph traversal.
+const findRmpInfoPosition = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    canvasBounds: { xMin: number; yMin: number; xMax: number; yMax: number },
+    infoSize: { width: number; height: number },
+    padding = 20
+): [number, number] => {
+    const { xMin, yMin, xMax, yMax } = canvasBounds;
+    const { width, height } = infoSize;
+
+    const centerX = xMin + (xMax - xMin - width) / 2;
+    const candidates: [number, number][] = [
+        [xMax - width - padding - 50, yMax - height - padding - 50], // bottom-right
+        [xMin + padding, yMax - height - padding - 50], // bottom-left
+        [xMax - width - padding - 50, yMin + padding], // top-right
+        [xMin + padding, yMin + padding], // top-left
+        [centerX, yMin + padding], // top-center
+        [centerX, yMax - height - padding - 50], // bottom-center
+    ];
+    const possible = Array.from({ length: candidates.length }, () => true);
+
+    [...graph.nodes(), ...graph.edges()].forEach(id => {
+        const elem = document.getElementById(id) as SVGSVGElement | null;
+        if (elem) {
+            const rect = transformedBoundingBox(elem);
+            for (let i = 0; i < candidates.length; i++) {
+                const [cx, cy] = candidates[i];
+                const isOverlapping =
+                    cx < rect.x + rect.width &&
+                    rect.x < cx + width &&
+                    cy < rect.y + rect.height &&
+                    rect.y < cy + height;
+                if (isOverlapping) {
+                    possible[i] = false;
+                }
+            }
+        }
+    });
+
+    for (let i = 0; i < candidates.length; i++) {
+        if (possible[i]) return candidates[i];
+    }
+    return candidates[0];
+};
+
 const generateRmpInfo = async (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    info.setAttribute('transform', `translate(${x}, ${y})scale(2)`);
+    info.setAttribute('transform', `translate(${x}, ${y})`);
+    info.setAttribute('id', 'rmp_info');
     info.setAttribute('opacity', '0.5');
 
     const logoSVGRep = await fetch('logo.svg');
@@ -191,21 +239,23 @@ const generateRmpInfo = async (x: number, y: number) => {
     temp.innerHTML = logoSVG;
     const svg = temp.querySelector('svg')!;
     const logo = document.createElement('g');
-    logo.setAttribute('transform', `translate(-32.5, -12.5)scale(0.05)`);
+    logo.setAttribute('transform', `scale(0.1)`);
     logo.setAttribute('font-family', 'Arial, sans-serif');
     logo.innerHTML = svg.innerHTML;
-    info.appendChild(logo);
 
     const rmp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     rmp.setAttribute('font-family', 'Arial, sans-serif');
-    rmp.setAttribute('font-size', '16');
+    rmp.setAttribute('font-size', '32');
+    rmp.setAttribute('x', '60');
+    rmp.setAttribute('y', '25');
     const appName = i18n.t('Rail Map Painter');
     rmp.appendChild(document.createTextNode(appName));
 
     const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     link.setAttribute('font-family', 'Arial, sans-serif');
-    link.setAttribute('font-size', '10');
-    link.setAttribute('y', '10');
+    link.setAttribute('font-size', '20');
+    link.setAttribute('x', '60');
+    link.setAttribute('y', '50');
     const origin = window.location.origin;
     let url = 'https://railmapgen.org/';
     if (origin.includes('github')) url = 'https://railmapgen.github.io/';

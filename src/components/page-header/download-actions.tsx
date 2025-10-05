@@ -278,7 +278,7 @@ export default function DownloadActions() {
                 </MenuItem>
             </MenuList>
 
-            <Modal size="xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
+            <Modal size="2xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>{t('header.download.image')}</ModalHeader>
@@ -296,23 +296,27 @@ export default function DownloadActions() {
                         >
                             <Text>{t('header.download.isSystemFontsOnly')}</Text>
                         </Checkbox>
-                        <Checkbox
-                            id="share_info"
-                            isChecked={isAttachSelected}
-                            isDisabled={isAttachDisabled}
-                            onChange={e => setIsAttachSelected(e.target.checked)}
-                        >
-                            <Text>
-                                {t('header.download.shareInfo1')}
-                                <Link
-                                    color="teal.500"
-                                    onClick={() => window.open('https://railmapgen.github.io/rmp', '_blank')}
-                                >
-                                    {t('header.about.rmp')} <Icon as={MdOpenInNew} />
-                                </Link>
-                                {t('header.download.shareInfo2')}
-                            </Text>
-                        </Checkbox>
+                        <HStack>
+                            <Checkbox
+                                id="share_info"
+                                isChecked={isAttachSelected}
+                                isDisabled={isAttachDisabled || !RMP_EXPORT}
+                                onChange={e => setIsAttachSelected(e.target.checked)}
+                            >
+                                <Text>
+                                    {t('header.download.shareInfo1')}
+                                    <Link color="teal.500" href="https://railmapgen.org/rmp">
+                                        {t('header.about.rmp')} <Icon as={MdOpenInNew} />
+                                    </Link>
+                                    {t('header.download.shareInfo2')}
+                                </Text>
+                            </Checkbox>
+                            {isAttachDisabled && (
+                                <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                                    PRO
+                                </Badge>
+                            )}
+                        </HStack>
                         <Checkbox
                             id="agree_terms"
                             isChecked={isTermsAndConditionsSelected}
