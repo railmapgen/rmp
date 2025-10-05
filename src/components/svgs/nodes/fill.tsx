@@ -227,6 +227,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                 <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
                 <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />
                 <circle
+                    id={`misc_node_connectable_${id}`}
                     r="5"
                     fill="rgb(255, 255, 255, 0)"
                     stroke="rgb(0, 0, 0, 0)"
