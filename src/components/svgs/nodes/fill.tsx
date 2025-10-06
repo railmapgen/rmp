@@ -26,60 +26,93 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
 
 const MAX_NODES = 100;
+type NodeID = StnId | MiscNodeId;
 
 /**
  * Find the shortest closed path starting from a node using a modified BFS.
  */
-const findShortestClosedPath = (
+export const findShortestClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    startNode: StnId | MiscNodeId,
+    startNode: NodeID,
     maxNodes: number = MAX_NODES
-): { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined => {
+): { nodes: NodeID[]; edges: LineId[] } | undefined => {
     if (!graph.hasNode(startNode)) {
         return undefined;
     }
 
-    const queue: { node: StnId | MiscNodeId; path: (StnId | MiscNodeId)[]; edges: LineId[]; fromEdge?: LineId }[] = [
-        { node: startNode, path: [startNode], edges: [] },
-    ];
+    // The queue now only stores the current node, its parent, and the edge used to reach it.
+    const queue: { node: NodeID; parent: NodeID; edge: LineId }[] = [];
 
-    let shortestPath: { nodes: (StnId | MiscNodeId)[]; edges: LineId[] } | undefined;
+    // `visited` map stores the "parent" and "edge" for each visited node to reconstruct the path later.
+    // The value is the path from the startNode.
+    const visited = new Map<NodeID, { parent: NodeID; edge: LineId }>();
+
+    // Initialize the queue with neighbors of the start node.
+    graph.forEachOutEdge(startNode, (edge, _attrs, _source, target) => {
+        const neighbor = target as NodeID;
+        if (neighbor === startNode) return; // Avoid self-loops at the very beginning
+        if (!visited.has(neighbor)) {
+            visited.set(neighbor, { parent: startNode, edge: edge as LineId });
+            queue.push({ node: neighbor, parent: startNode, edge: edge as LineId });
+        }
+    });
+
+    let shortestPath: { nodes: NodeID[]; edges: LineId[] } | undefined;
 
     while (queue.length > 0) {
-        const { node, path, edges, fromEdge } = queue.shift()!;
+        const { node } = queue.shift()!;
 
-        if (shortestPath && path.length >= shortestPath.nodes.length) {
+        // Reconstruct path to check length
+        const tempPath: NodeID[] = [];
+        let curr = node;
+        while (visited.has(curr)) {
+            tempPath.push(curr);
+            const parentInfo = visited.get(curr)!;
+            curr = parentInfo.parent;
+        }
+        const currentPathLength = tempPath.length;
+
+        if (shortestPath && currentPathLength >= shortestPath.nodes.length - 1) {
             continue;
         }
-        if (path.length > maxNodes) {
+        // The current path to `node` has `currentPathLength` edges.
+        // A cycle would add one more edge, making the total length `currentPathLength + 1`.
+        // The number of nodes in a cycle is `edges + 1`.
+        // So, the final cycle would have `currentPathLength + 2` nodes.
+        // We stop if this would exceed maxNodes.
+        if (currentPathLength + 2 > maxNodes) {
             continue;
         }
 
-        graph.forEachEdge(node, (edge, attrs, source, target) => {
-            if (edge === fromEdge) {
-                return;
-            }
-
-            const neighbor = (source === node ? target : source) as StnId | MiscNodeId;
+        graph.forEachOutEdge(node, (edge, _attrs, _source, target) => {
+            const neighbor = target as NodeID;
 
             if (neighbor === startNode) {
-                const finalPath = {
-                    nodes: [...path, startNode],
-                    edges: [...edges, edge as LineId],
-                };
+                // Found a cycle back to the start node.
+                const pathNodes = [startNode];
+                const pathEdges: LineId[] = [];
+                let pathCurr = node;
+
+                pathEdges.unshift(edge as LineId); // Add the final edge
+                while (pathCurr !== startNode && visited.has(pathCurr)) {
+                    pathNodes.unshift(pathCurr);
+                    const parentInfo = visited.get(pathCurr)!;
+                    pathEdges.unshift(parentInfo.edge);
+                    pathCurr = parentInfo.parent;
+                }
+                pathNodes.unshift(startNode);
+
+                const finalPath = { nodes: pathNodes, edges: pathEdges };
+
                 if (!shortestPath || finalPath.nodes.length < shortestPath.nodes.length) {
                     shortestPath = finalPath;
                 }
-                return;
+                return; // Continue search for even shorter paths on the same level
             }
 
-            if (!path.includes(neighbor)) {
-                queue.push({
-                    node: neighbor,
-                    path: [...path, neighbor],
-                    edges: [...edges, edge as LineId],
-                    fromEdge: edge as LineId,
-                });
+            if (!visited.has(neighbor)) {
+                visited.set(neighbor, { parent: node, edge: edge as LineId });
+                queue.push({ node: neighbor, parent: node, edge: edge as LineId });
             }
         });
     }
@@ -92,7 +125,7 @@ const findShortestClosedPath = (
  */
 const generateClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: (StnId | MiscNodeId)[],
+    nodes: NodeID[],
     edges: LineId[]
 ): Path | undefined => {
     if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
