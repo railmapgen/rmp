@@ -1,8 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import type { EdgeAttributes, GraphAttributes, MiscNodeId, NodeAttributes } from '../../../constants/constants';
-import { MiscNodeType } from '../../../constants/nodes';
-import { findShortestClosedPath } from './fill';
+import type { EdgeAttributes, GraphAttributes, MiscNodeId, NodeAttributes } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
+import { findShortestClosedPath } from './graph-find-shortest-closed-path';
 
 describe('findShortestClosedPath', () => {
     it('should not enter an infinite loop with the problematic graph data', () => {
