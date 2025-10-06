@@ -17,20 +17,20 @@ const MIN_ROUND_CORNER_FACTOR = 1;
  * into lines that should be parallel to the provided line and lines that should not.
  * Based on parallelIndex, type, and startFrom of the provided line.
  * @param graph The graph.
- * @param lineEntry The line entry.
+ * @param baseLineEntry The base line entry.
  * @returns An object containing normal and parallel lines.
  */
 export const classifyParallelLines = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    lineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
+    baseLineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
 ) => {
-    const { type: baseType, parallelIndex } = lineEntry.attributes;
+    const { type: baseType, parallelIndex: baseParallelIndex } = baseLineEntry.attributes;
     // safe guard for invalid cases
-    if (baseType === LinePathType.Simple || parallelIndex < 0) {
-        return { normal: [lineEntry], parallel: [] };
+    if (baseType === LinePathType.Simple || baseParallelIndex < 0) {
+        return { normal: [baseLineEntry], parallel: [] };
     }
 
-    const { source, target, attributes } = lineEntry;
+    const { source, target, attributes } = baseLineEntry;
     const { startFrom: baseStartFrom } = attributes[baseType] as NonSimpleLinePathAttributes;
     const normal: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
@@ -42,7 +42,7 @@ export const classifyParallelLines = (
             continue;
         }
 
-        if (checkParallels(type, source as NodeId, baseStartFrom, lineEntry)) {
+        if (checkParallels(baseType, source as NodeId, baseStartFrom, lineEntry)) {
             parallelLines.push(lineEntry);
         }
     }
