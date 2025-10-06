@@ -1,5 +1,13 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import {
+    EdgeAttributes,
+    GraphAttributes,
+    LineId,
+    MiscNodeId,
+    NodeAttributes,
+    NodeId,
+    StnId,
+} from '../constants/constants';
 import { StationAttributes } from '../constants/stations';
 import i18n from '../i18n/config';
 import { RootDispatch } from '../redux';
@@ -73,10 +81,7 @@ export const findNearbyElements = (
     if (nearbyNodes.length > 0) {
         graph.forEachEdge((edgeId, attributes, source, target) => {
             // Only include lines that are connected to nearby nodes
-            if (
-                nearbyNodes.includes(source as StnId | MiscNodeId) ||
-                nearbyNodes.includes(target as StnId | MiscNodeId)
-            ) {
+            if (nearbyNodes.includes(source as NodeId) || nearbyNodes.includes(target as NodeId)) {
                 nearbyLines.push(edgeId as LineId);
             }
         });

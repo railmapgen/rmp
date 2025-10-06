@@ -5,7 +5,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 import { RootState } from '..';
 import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
-import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
+import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
@@ -31,7 +31,7 @@ interface RuntimeState {
      * defined by the pointer down event, undefined if on pointer up.
      */
     pointerPosition?: { x: number; y: number };
-    active: StnId | MiscNodeId | 'background' | undefined;
+    active: NodeId | 'background' | undefined;
     /**
      * The state of the details panel.
      * On desktop, it is either 'show' or 'close'.
@@ -238,7 +238,7 @@ const runtimeSlice = createSlice({
         setPointerPosition: (state, action: PayloadAction<{ x: number; y: number } | undefined>) => {
             state.pointerPosition = action.payload;
         },
-        setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
+        setActive: (state, action: PayloadAction<NodeId | 'background' | undefined>) => {
             state.active = action.payload;
             state.isDetailsOpen = getIsDetailsOpen(state);
         },

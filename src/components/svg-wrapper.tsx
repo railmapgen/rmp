@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
-import { Events, Id, MiscNodeId, RuntimeMode, StnId } from '../constants/constants';
+import { Events, Id, NodeId, RuntimeMode } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
@@ -110,7 +110,7 @@ const SvgWrapper = () => {
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
 
             const isStation = mode.startsWith('station');
-            const id: StnId | MiscNodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
+            const id: NodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
             const type = (isStation ? mode.slice(8) : mode.slice(10)) as StationType | MiscNodeType;
 
             // deep copy to prevent mutual reference
@@ -334,10 +334,7 @@ const SvgWrapper = () => {
                     // recalculate parallel index if auto parallel is enabled
                     let parallelIndex = attr.parallelIndex;
                     if (autoParallel) {
-                        const [source, target] = graph.current.extremities(selectedFirst) as [
-                            StnId | MiscNodeId,
-                            StnId | MiscNodeId,
-                        ];
+                        const [source, target] = graph.current.extremities(selectedFirst) as [NodeId, NodeId];
                         parallelIndex = makeParallelIndex(graph.current, type, source, target, newStartFrom);
                     }
 

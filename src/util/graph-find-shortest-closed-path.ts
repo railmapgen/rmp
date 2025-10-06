@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeID } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 
 const MAX_NODES = 100;
 
@@ -8,23 +8,23 @@ const MAX_NODES = 100;
  */
 export const findShortestClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    startNode: NodeID,
+    startNode: NodeId,
     maxNodes: number = MAX_NODES
-): { nodes: NodeID[]; edges: LineId[] } | undefined => {
+): { nodes: NodeId[]; edges: LineId[] } | undefined => {
     if (!graph.hasNode(startNode)) {
         return undefined;
     }
 
     // The queue now only stores the current node, its parent, and the edge used to reach it.
-    const queue: { node: NodeID; parent: NodeID; edge: LineId }[] = [];
+    const queue: { node: NodeId; parent: NodeId; edge: LineId }[] = [];
 
     // `visited` map stores the "parent" and "edge" for each visited node to reconstruct the path later.
     // The value is the path from the startNode.
-    const visited = new Map<NodeID, { parent: NodeID; edge: LineId }>();
+    const visited = new Map<NodeId, { parent: NodeId; edge: LineId }>();
 
     // Initialize the queue with neighbors of the start node.
     graph.forEachOutEdge(startNode, (edge, _attrs, _source, target) => {
-        const neighbor = target as NodeID;
+        const neighbor = target as NodeId;
         if (neighbor === startNode) return; // Avoid self-loops at the very beginning
         if (!visited.has(neighbor)) {
             visited.set(neighbor, { parent: startNode, edge: edge as LineId });
@@ -32,13 +32,13 @@ export const findShortestClosedPath = (
         }
     });
 
-    let shortestPath: { nodes: NodeID[]; edges: LineId[] } | undefined;
+    let shortestPath: { nodes: NodeId[]; edges: LineId[] } | undefined;
 
     while (queue.length > 0) {
         const { node } = queue.shift()!;
 
         // Reconstruct path to check length
-        const tempPath: NodeID[] = [];
+        const tempPath: NodeId[] = [];
         let curr = node;
         while (visited.has(curr)) {
             tempPath.push(curr);
@@ -60,7 +60,7 @@ export const findShortestClosedPath = (
         }
 
         graph.forEachOutEdge(node, (edge, _attrs, _source, target) => {
-            const neighbor = target as NodeID;
+            const neighbor = target as NodeId;
 
             if (neighbor === startNode) {
                 // Found a cycle back to the start node.

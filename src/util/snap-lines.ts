@@ -4,6 +4,7 @@ import {
     GraphAttributes,
     MiscNodeId,
     NodeAttributes,
+    NodeId,
     SnapLine,
     SnapPoint,
     StnId,
@@ -14,7 +15,7 @@ import { MiscNodeType } from '../constants/nodes';
  * Supported: station, virtual node, master node (station only)
  */
 export const isNodeSupportSnapLine = (
-    node: StnId | MiscNodeId,
+    node: NodeId,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
 ): boolean =>
     node.startsWith('stn') ||
@@ -28,11 +29,11 @@ export const isNodeSupportSnapLine = (
  */
 export const getSnapLines = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: (StnId | MiscNodeId)[]
+    nodes: NodeId[]
 ): SnapLine[] => {
     const snapLines: SnapLine[] = [];
     nodes
-        .filter(node => isNodeSupportSnapLine(node as StnId | MiscNodeId, graph))
+        .filter(node => isNodeSupportSnapLine(node as NodeId, graph))
         .forEach(node => {
             const x = graph.getNodeAttribute(node, 'x');
             const y = graph.getNodeAttribute(node, 'y');
@@ -58,7 +59,7 @@ export const getNearestSnapLine = (
     x: number,
     y: number,
     snapLines: SnapLine[],
-    nodes: (StnId | MiscNodeId)[]
+    nodes: NodeId[]
 ): { l: SnapLine; d: number } => {
     let minDistance = Infinity,
         minLine = { a: 0, b: 0, c: 0, node: 'stn_null', x: 0, y: 0 } as SnapLine;

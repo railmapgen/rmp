@@ -1,15 +1,7 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
-import {
-    EdgeAttributes,
-    GraphAttributes,
-    LineId,
-    MiscNodeId,
-    NodeAttributes,
-    StnId,
-    Theme,
-} from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, Theme } from '../constants/constants';
 
 export const getRandomHexColor = (): `#${string}` => {
     const color = Math.floor(Math.random() * 0xffffff);
@@ -29,7 +21,7 @@ export const getContrastingColor = (hex: `#${string}`): MonoColour => {
  */
 export const findThemes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: (StnId | MiscNodeId)[],
+    nodes: NodeId[],
     edges: LineId[]
 ) => {
     const colorList: Theme[] = [];

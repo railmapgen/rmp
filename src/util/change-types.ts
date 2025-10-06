@@ -2,9 +2,9 @@ import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
+import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
-import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 import stations from '../components/svgs/stations/stations';
 import {
     EdgeAttributes,
@@ -12,6 +12,7 @@ import {
     LineId,
     MiscNodeId,
     NodeAttributes,
+    NodeId,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -130,7 +131,7 @@ export const changeLinePathType = (
         // so that makeParallelIndex won't consider this line as an existing line
         let parallelIndex = -1;
         if (autoParallel && newLinePathType !== LinePathType.Simple) {
-            const [source, target] = graph.extremities(selectedFirst) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
             const startFrom = (newAttrs as NonSimpleLinePathAttributes).startFrom;
             parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
         }

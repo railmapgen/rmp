@@ -13,7 +13,7 @@ import {
     LineId,
     MiscNodeId,
     NodeAttributes,
-    NodeID,
+    NodeId,
 } from '../../../constants/constants';
 import { LinePathType, LineStyleType, Path } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
@@ -31,7 +31,7 @@ import { linePaths } from '../lines/lines';
  */
 const generateClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: NodeID[],
+    nodes: NodeId[],
     edges: LineId[]
 ): Path | undefined => {
     if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;

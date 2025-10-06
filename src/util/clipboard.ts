@@ -1,11 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 
-type NodesWithAttrs = { [key in StnId | MiscNodeId]: NodeAttributes };
+type NodesWithAttrs = { [key in NodeId]: NodeAttributes };
 type EdgesWithAttrs = {
-    [key in LineId]: { attr: EdgeAttributes; source: StnId | MiscNodeId; target: StnId | MiscNodeId };
+    [key in LineId]: { attr: EdgeAttributes; source: NodeId; target: NodeId };
 };
 interface ClipboardData {
     app: 'rmp';
@@ -26,7 +26,7 @@ export const exportSelectedNodesAndEdges = (
     let countNode = 0;
     selected.forEach(id => {
         if (graph.hasNode(id)) {
-            const node = id as StnId | MiscNodeId;
+            const node = id as NodeId;
             const attr = graph.getNodeAttributes(node);
             nodesWithAttrs[node] = attr;
             sumX += attr.x;
@@ -34,7 +34,7 @@ export const exportSelectedNodesAndEdges = (
             countNode++;
         } else if (graph.hasEdge(id)) {
             const edge = id as LineId;
-            const [source, target] = graph.extremities(edge) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            const [source, target] = graph.extremities(edge) as [NodeId, NodeId];
             edgesWithAttrs[edge] = {
                 attr: graph.getEdgeAttributes(edge),
                 source,
@@ -127,7 +127,7 @@ export const importSelectedNodesAndEdges = (
     );
 
     return {
-        nodes: new Set(Object.keys(filteredNodes)) as Set<StnId | MiscNodeId>,
+        nodes: new Set(Object.keys(filteredNodes)) as Set<NodeId>,
         edges: new Set(Object.keys(filteredEdges)) as Set<LineId>,
     };
 };

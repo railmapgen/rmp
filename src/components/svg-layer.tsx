@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineId, MiscNodeId, StnId } from '../constants/constants';
+import { LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -11,9 +11,9 @@ import { default as allStations } from './svgs/stations/stations';
 
 interface SvgLayerProps {
     elements: Element[];
-    handlePointerDown: (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
-    handlePointerMove: (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
-    handlePointerUp: (node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => void;
+    handlePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
+    handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
+    handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handleEdgePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
 }
 

@@ -1,13 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import {
-    EdgeAttributes,
-    GraphAttributes,
-    LineId,
-    MiscNodeId,
-    NodeAttributes,
-    NodeType,
-    StnId,
-} from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, NodeType } from '../constants/constants';
 import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -17,11 +9,11 @@ import { StationType } from '../constants/stations';
  */
 export const findEdgesConnectedByNodes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: Set<StnId | MiscNodeId>
+    nodes: Set<NodeId>
 ) =>
     graph.filterEdges(
         (edge, attr, source, target, sourceAttr, targetAttr, undirected) =>
-            nodes.has(source as StnId | MiscNodeId) && nodes.has(target as StnId | MiscNodeId)
+            nodes.has(source as NodeId) && nodes.has(target as NodeId)
     ) as LineId[];
 
 /**
@@ -55,7 +47,7 @@ export const findNodesInRectangle = (
     const sY = y1 <= y2 ? y1 : y2;
     const eX = x1 <= x2 ? x2 : x1;
     const eY = y1 <= y2 ? y2 : y1;
-    return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y)) as (StnId | MiscNodeId)[];
+    return graph.filterNodes((_, attr) => inRange(sX, sY, eX, eY, attr.x, attr.y)) as NodeId[];
 };
 
 export const getMasterNodeTypes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
