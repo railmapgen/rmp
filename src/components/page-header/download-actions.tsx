@@ -300,7 +300,7 @@ export default function DownloadActions() {
                             <Checkbox
                                 id="share_info"
                                 isChecked={isAttachSelected}
-                                isDisabled={isAttachDisabled || !RMP_EXPORT}
+                                isDisabled={isAttachDisabled && !RMP_EXPORT}
                                 onChange={e => setIsAttachSelected(e.target.checked)}
                             >
                                 <Text>
