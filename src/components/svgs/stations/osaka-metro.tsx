@@ -322,7 +322,7 @@ function calculateTextPosition(config: {
                     (stationDirection === 'vertical' && transferCount > 1
                         ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 +
                           LAYOUT_CONSTANTS.STATION.STROKE_WIDTH * 2
-                        : 0);
+                        : LAYOUT_CONSTANTS.STATION.STROKE_WIDTH);
             } else if (nameOffsetPosition === 'middle') {
                 textY +=
                     (nameLineCount - 1) * LAYOUT_CONSTANTS.FONT_SIZE.NAME +
@@ -341,7 +341,7 @@ function calculateTextPosition(config: {
                     (stationDirection === 'vertical' && transferCount > 1
                         ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 +
                           LAYOUT_CONSTANTS.STATION.STROKE_WIDTH * 2
-                        : 0) +
+                        : LAYOUT_CONSTANTS.STATION.STROKE_WIDTH) +
                     LAYOUT_CONSTANTS.MAGIC_OFFSET_9;
             }
         }
@@ -760,7 +760,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             <InterchangeField
                 stationType={StationType.OsakaMetro}
                 defaultAttrs={defaultOsakaMetroStationAttributes}
-                maximumTransfers={[4, 0, 0]}
+                maximumTransfers={[Infinity, 0, 0]}
             />
         </>
     );
