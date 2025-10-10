@@ -73,8 +73,10 @@ const DetailsPanel = () => {
                 graph.current.dropEdge(s);
 
                 // Automatically change the station type to basic if the station is connected by lines in a single color.
-                if (autoChangeStationType && u.startsWith('stn')) checkAncChangeStationIntType(graph.current, u as StnId);
-                if (autoChangeStationType && v.startsWith('stn')) checkAncChangeStationIntType(graph.current, v as StnId);
+                if (autoChangeStationType && u.startsWith('stn'))
+                    checkAncChangeStationIntType(graph.current, u as StnId);
+                if (autoChangeStationType && v.startsWith('stn'))
+                    checkAncChangeStationIntType(graph.current, v as StnId);
             }
         });
         hardRefresh();
