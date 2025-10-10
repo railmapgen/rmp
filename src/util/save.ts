@@ -811,6 +811,6 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 attr.interchanges = undefined;
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
-        return JSON.stringify({ ...p, version: 58, graph: graph.export() });
+        return JSON.stringify({ ...p, version: 61, graph: graph.export() });
     },
 };
