@@ -759,7 +759,8 @@
                 },
                 "gridline": "격자 가이드 라인 표시",
                 "snapline": "가이드 라인과 포인트에 자동 스냅",
-                "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기"
+                "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
+                "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환"
             },
             "shortcuts": {
                 "title": "바로 가기",

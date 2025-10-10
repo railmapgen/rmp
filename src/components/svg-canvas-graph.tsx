@@ -31,6 +31,7 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
+import { checkAncChangeStationIntType } from '../util/change-types';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
@@ -67,7 +68,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, gridLines: useGridLines, snapLines: useSnapLines },
+        preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -334,6 +335,14 @@ const SvgCanvas = () => {
                         reconcileId: '',
                         parallelIndex,
                     });
+
+                    if (autoChangeStationType && source.startsWith('stn')) {
+                        checkAncChangeStationIntType(graph.current, source as StnId);
+                    }
+                    if (autoChangeStationType && target.startsWith('stn')) {
+                        checkAncChangeStationIntType(graph.current, target as StnId);
+                    }
+
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                     dispatch(saveGraph(graph.current.export()));

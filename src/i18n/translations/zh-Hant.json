@@ -759,7 +759,8 @@
                 },
                 "gridline": "顯示網格參考線",
                 "snapline": "磁性吸附到參考線",
-                "predictNextNode": "當選擇一個節點時預測下一個節點"
+                "predictNextNode": "當選擇一個節點時預測下一個節點",
+                "autoChangeStationType": "自動切換基本車站與換乘車站"
             },
             "shortcuts": {
                 "title": "捷徑",

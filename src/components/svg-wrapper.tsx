@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
-import { Events, Id, NodeId, RuntimeMode } from '../constants/constants';
+import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
@@ -37,6 +37,7 @@ import {
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import { checkAncChangeStationIntType } from '../util/change-types';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -60,7 +61,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { gridLines, snapLines, predictNextNode, autoParallel },
+        preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -242,7 +243,12 @@ const SvgWrapper = () => {
                     if (graph.current.hasNode(s)) {
                         graph.current.dropNode(s);
                     } else if (graph.current.hasEdge(s)) {
+                        const [u, v] = graph.current.extremities(s);
                         graph.current.dropEdge(s);
+
+                        // Automatically change the station type to interchange if the station is connected by lines in a single color.
+                        if (autoChangeStationType && u.startsWith('stn')) checkAncChangeStationIntType(graph.current, u as StnId);
+                        if (autoChangeStationType && v.startsWith('stn')) checkAncChangeStationIntType(graph.current, v as StnId);
                     }
                 });
                 dispatch(clearSelected());

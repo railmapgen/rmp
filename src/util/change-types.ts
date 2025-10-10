@@ -311,3 +311,65 @@ export const increaseZIndexInBatch = (
         graph.setEdgeAttribute(s, 'zIndex', z + value);
     });
 };
+
+/**
+ * Helper to find the corresponding station type when changing between basic and interchange.
+ */
+const makeStationType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId,
+    direction: 'int' | 'basic'
+) => {
+    const getDestinationType = (type: string) => {
+        if (type.endsWith('-int') && direction === 'basic') {
+            return type.replace(/-int$/, '-basic');
+        } else if (type.endsWith('-basic') && direction === 'int') {
+            return type.replace(/-basic$/, '-int');
+        }
+        return undefined;
+    };
+
+    const currType = graph.getNodeAttribute(station, 'type') as string;
+    const destType = getDestinationType(currType);
+
+    if (!destType) return undefined;
+    if (!Object.values(StationType).includes(destType as StationType)) {
+        return undefined;
+    }
+    return destType as StationType;
+};
+
+/**
+ * Automatically change the station type to basic or interchange.
+ * No-op if the station is already the correct type or the station has one type
+ * for both basic and interchange (e.g. Hong Kong MTR).
+ */
+export const checkAncChangeStationIntType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId
+) => {
+    const lines = graph.directedEdges(station);
+    const lineColorStr: Set<string> = new Set<string>();
+    const lineColor: Theme[] = [];
+
+    for (const l of lines) {
+        const style = graph.getEdgeAttributes(l).style;
+        if (!dynamicColorInjection.has(style)) continue;
+        const color = (graph.getEdgeAttributes(l)[style] as AttributesWithColor).color;
+        if (!lineColorStr.has(color.toString())) {
+            lineColorStr.add(color.toString());
+            lineColor.push(color);
+        }
+    }
+
+    if (lineColorStr.size > 1) {
+        const type = makeStationType(graph, station, 'int');
+        if (type) changeStationType(graph, station, type);
+    } else if (lineColorStr.size === 1) {
+        const type = makeStationType(graph, station, 'basic');
+        if (type) {
+            changeStationType(graph, station, type);
+            changeNodesColorInBatch(graph, 'any', lineColor[0], [station], []);
+        }
+    }
+};

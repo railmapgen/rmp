@@ -34,6 +34,7 @@ import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNe
 import { StationCity } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import {
+    setAutoChangeStationType,
     setAutoParallel,
     setGridLines,
     setPredictNextNode,
@@ -67,7 +68,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames, gridLines, snapLines, predictNextNode },
+        preference: { autoParallel, randomStationsNames, gridLines, snapLines, predictNextNode, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const {
         keepLastPath,
@@ -192,6 +193,15 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Switch
                                         isChecked={predictNextNode}
                                         onChange={({ target: { checked } }) => dispatch(setPredictNextNode(checked))}
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.autoChangeStationType')}</Text>
+                                    <Switch
+                                        isChecked={autoChangeStationType}
+                                        onChange={({ target: { checked } }) =>
+                                            dispatch(setAutoChangeStationType(checked))
+                                        }
                                     />
                                 </HStack>
                             </VStack>

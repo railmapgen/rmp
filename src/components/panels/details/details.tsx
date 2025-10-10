@@ -3,7 +3,7 @@ import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader 
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Id } from '../../../constants/constants';
+import { Id, StnId } from '../../../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -16,6 +16,7 @@ import {
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
+import { checkAncChangeStationIntType } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -36,6 +37,9 @@ const DetailsPanel = () => {
         isDetailsOpen,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoChangeStationType },
+    } = useRootSelector(state => state.app);
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
@@ -64,7 +68,14 @@ const DetailsPanel = () => {
         dispatch(clearSelected());
         selected.forEach(s => {
             if (graph.current.hasNode(s)) graph.current.dropNode(s);
-            else if (graph.current.hasEdge(s)) graph.current.dropEdge(s);
+            else if (graph.current.hasEdge(s)) {
+                const [u, v] = graph.current.extremities(s);
+                graph.current.dropEdge(s);
+
+                // Automatically change the station type to basic if the station is connected by lines in a single color.
+                if (autoChangeStationType && u.startsWith('stn')) checkAncChangeStationIntType(graph.current, u as StnId);
+                if (autoChangeStationType && v.startsWith('stn')) checkAncChangeStationIntType(graph.current, v as StnId);
+            }
         });
         hardRefresh();
     };
