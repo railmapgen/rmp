@@ -2,7 +2,7 @@ import { Box, Heading } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MiscNodeId, StnId } from '../../../constants/constants';
+import { NodeId } from '../../../constants/constants';
 import { LinePathType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
@@ -46,10 +46,7 @@ export default function InfoSection() {
         let parallelIndex = -1; // default to turn off
         if (val) {
             const attr = graph.current.getEdgeAttributes(selectedFirst);
-            const [source, target] = graph.current.extremities(selectedFirst) as [
-                StnId | MiscNodeId,
-                StnId | MiscNodeId,
-            ];
+            const [source, target] = graph.current.extremities(selectedFirst) as [NodeId, NodeId];
             parallelIndex = makeParallelIndex(graph.current, attr.type, source, target, startFrom);
         }
         handleParallelIndexChange(parallelIndex);

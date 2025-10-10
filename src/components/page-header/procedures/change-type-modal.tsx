@@ -20,7 +20,7 @@ import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railm
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CityCode, LineId, MiscNodeId, StnId, Theme } from '../../../constants/constants';
+import { CityCode, LineId, MiscNodeId, NodeId, StnId, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -34,11 +34,11 @@ import {
     changeStationsTypeInBatch,
     changeZIndexInBatch,
 } from '../../../util/change-types';
-import { findThemes } from '../../../util/graph';
+import { findThemes } from '../../../util/color';
+import { usePaletteTheme } from '../../../util/hooks';
 import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
-import { usePaletteTheme } from '../../../util/hooks';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
@@ -259,7 +259,7 @@ export const ChangeTypeModal = (props: {
                     graph.current,
                     (isSelect
                         ? [...selected].filter(id => id.startsWith('stn') || id.startsWith('misc_node'))
-                        : graph.current.nodes()) as (StnId | MiscNodeId)[],
+                        : graph.current.nodes()) as NodeId[],
                     (isSelect ? [...selected].filter(id => id.startsWith('line')) : graph.current.edges()) as LineId[]
                 ).map(
                     theme =>

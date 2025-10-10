@@ -1,4 +1,3 @@
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, SnapLine } from '../constants/constants';
 import { Size } from './hooks';
@@ -55,13 +54,16 @@ export const roundToMultiple = (value: number, base: number): number => {
  * @param svgViewBoxMin The viewport relative to each DOMRect.
  * @returns The canvas size.
  */
-export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
+export const calculateCanvasSize = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    padding = 50
+) => {
     let [xMin, yMin, xMax, yMax] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
 
-    graph.forEachNode((node, _) => {
-        const nodeElm = document.getElementById(node) as SVGSVGElement | null;
-        if (nodeElm) {
-            const rect = transformedBoundingBox(nodeElm);
+    [...graph.nodes(), ...graph.edges()].forEach(id => {
+        const elem = document.getElementById(id) as SVGSVGElement | null;
+        if (elem) {
+            const rect = transformedBoundingBox(elem);
             xMin = Math.min(rect.x, xMin);
             yMin = Math.min(rect.y, yMin);
             xMax = Math.max(rect.x + rect.width, xMax);
@@ -69,10 +71,10 @@ export const calculateCanvasSize = (graph: MultiDirectedGraph<NodeAttributes, Ed
         }
     });
 
-    xMin -= 50;
-    yMin -= 50;
-    xMax += 100;
-    yMax += 100;
+    xMin -= padding;
+    yMin -= padding;
+    xMax += padding;
+    yMax += padding;
 
     return { xMin, yMin, xMax, yMax };
 };
@@ -141,7 +143,7 @@ export const makeSnapLinesPath = (
  * @param el The element to getBBox.
  * @returns The SVGRect with respect to its own transformation attribute.
  */
-const transformedBoundingBox = (el: SVGSVGElement) => {
+export const transformedBoundingBox = (el: SVGSVGElement) => {
     const bb = el.getBBox();
     const svg = el.ownerSVGElement!;
     const m = (el.parentNode! as SVGSVGElement).getScreenCTM()!.inverse().multiply(el.getScreenCTM()!);
@@ -176,9 +178,9 @@ const transformedBoundingBox = (el: SVGSVGElement) => {
 };
 
 export const isMacClient = navigator.platform.startsWith('Mac');
-export const isTouchClient =
+export const isTouchClient = (): boolean =>
     'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
-export const isMobileClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
+export const isPortraitClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
 
 export const shuffle = <T>(arr: T[]): T[] => {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -188,15 +190,21 @@ export const shuffle = <T>(arr: T[]): T[] => {
     return arr;
 };
 
-export const getRandomHexColor = (): `#${string}` => {
-    const color = Math.floor(Math.random() * 0xffffff);
-    return `#${color.toString(16).padStart(6, '0')}`;
-};
+/**
+ * Removes hyphens and capitalizes the first letter following each hyphen.
+ * Converts a kebab-case string to camelCase or PascalCase (depending on the first word's case).
+ * * @param str The string to convert.
+ * @returns The converted string (e.g., "shmetroNumLineBadge").
+ */
+export const toCamelCase = (str: string): string => {
+    // Regex: Matches a hyphen (-) followed by any word character (\w).
+    // The 'g' flag ensures global matching (finds all instances).
+    return str.replace(/-(\w)/g, (match, letter) => {
+        // match: The full matched string, e.g., "-n", "-l", "-b"
+        // letter: The captured group (\w), e.g., "n", "l", "b"
 
-export const getContrastingColor = (hex: `#${string}`): MonoColour => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? MonoColour.black : MonoColour.white;
+        // Returns the uppercase version of the captured letter.
+        // This replaces the original "-letter" part.
+        return letter.toUpperCase();
+    });
 };

@@ -252,6 +252,18 @@
                     "italic": "Italic",
                     "bold": "Bold",
                     "outline": "Outline"
+                },
+                "fill": {
+                    "displayName": "Fill area",
+                    "opacity": "Fill opacity",
+                    "patterns": "Patterns",
+                    "logo": "Branding",
+                    "trees": "Trees",
+                    "water": "Water",
+                    "noClosedPath": "No closed path",
+                    "createSquare": "Create square",
+                    "createTriangle": "Create triangle",
+                    "createCircle": "Create circle"
                 }
             },
             "stations": {
@@ -701,6 +713,7 @@
             "termsAndConditions": "Terms and Conditions",
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
+            "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
             "confirm": "Download"
         },
         "donation": {
@@ -748,7 +761,8 @@
                 },
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
-                "predictNextNode": "Predict next nodes when a node is selected"
+                "predictNextNode": "Predict next nodes when a node is selected",
+                "autoChangeStationType": "Automatically switch between basic and interchange station"
             },
             "shortcuts": {
                 "title": "Shortcuts",

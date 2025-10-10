@@ -252,6 +252,18 @@
                     "italic": "이탤릭체",
                     "bold": "굵게",
                     "outline": "테두리"
+                },
+                "fill": {
+                    "displayName": "채우기 영역",
+                    "opacity": "채우기 불투명도",
+                    "patterns": "패턴",
+                    "logo": "브랜딩",
+                    "trees": "나무",
+                    "water": "물",
+                    "noClosedPath": "닫힌 경로 없음",
+                    "createSquare": "정사각형 만들기",
+                    "createTriangle": "삼각형 만들기",
+                    "createCircle": "원 만들기"
                 }
             },
             "stations": {
@@ -700,6 +712,7 @@
             "termsAndConditions": "약관 및 세칙",
             "termsAndConditionsInfo": "동의",
             "period": ".",
+            "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
             "confirm": "다운로드"
         },
         "donation": {
@@ -747,7 +760,8 @@
                 },
                 "gridline": "격자 가이드 라인 표시",
                 "snapline": "가이드 라인과 포인트에 자동 스냅",
-                "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기"
+                "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
+                "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환"
             },
             "shortcuts": {
                 "title": "바로 가기",

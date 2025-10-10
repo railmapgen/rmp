@@ -2,9 +2,9 @@ import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
+import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
-import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 import stations from '../components/svgs/stations/stations';
 import {
     EdgeAttributes,
@@ -12,6 +12,7 @@ import {
     LineId,
     MiscNodeId,
     NodeAttributes,
+    NodeId,
     StnId,
     Theme,
 } from '../constants/constants';
@@ -130,7 +131,7 @@ export const changeLinePathType = (
         // so that makeParallelIndex won't consider this line as an existing line
         let parallelIndex = -1;
         if (autoParallel && newLinePathType !== LinePathType.Simple) {
-            const [source, target] = graph.extremities(selectedFirst) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
             const startFrom = (newAttrs as NonSimpleLinePathAttributes).startFrom;
             parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
         }
@@ -311,15 +312,18 @@ export const increaseZIndexInBatch = (
     });
 };
 
-const changeStationIntType = (
+/**
+ * Helper to find the corresponding station type when changing between basic and interchange.
+ */
+const makeStationType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId,
-    to: 'int' | 'basic'
+    direction: 'int' | 'basic'
 ) => {
     const getDestinationType = (type: string) => {
-        if (type.endsWith('-int') && to === 'basic') {
+        if (type.endsWith('-int') && direction === 'basic') {
             return type.replace(/-int$/, '-basic');
-        } else if (type.endsWith('-basic') && to === 'int') {
+        } else if (type.endsWith('-basic') && direction === 'int') {
             return type.replace(/-basic$/, '-int');
         }
         return undefined;
@@ -328,39 +332,44 @@ const changeStationIntType = (
     const currType = graph.getNodeAttribute(station, 'type') as string;
     const destType = getDestinationType(currType);
 
-    if (!destType) return;
+    if (!destType) return undefined;
     if (!Object.values(StationType).includes(destType as StationType)) {
-        return;
+        return undefined;
     }
-
-    changeStationType(graph, station, destType as StationType);
+    return destType as StationType;
 };
 
-export const autoChangeStationIntType = (
+/**
+ * Automatically change the station type to basic or interchange.
+ * No-op if the station is already the correct type or the station has one type
+ * for both basic and interchange (e.g. Hong Kong MTR).
+ */
+export const checkAncChangeStationIntType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    station: StnId,
-    to: 'int' | 'basic'
+    station: StnId
 ) => {
     const lines = graph.directedEdges(station);
-    let lineColorStr: string | undefined = undefined;
-    let lineColor: Theme | undefined = undefined;
+    const lineColorStr: Set<string> = new Set<string>();
+    const lineColor: Theme[] = [];
+
     for (const l of lines) {
         const style = graph.getEdgeAttributes(l).style;
         if (!dynamicColorInjection.has(style)) continue;
         const color = (graph.getEdgeAttributes(l)[style] as AttributesWithColor).color;
-        if (lineColorStr && lineColorStr !== color.toString()) {
-            // 2 colors
-            if (to === 'int') changeStationIntType(graph, station, to);
-            return;
-        } else if (!lineColorStr) {
-            // 1 color
-            lineColorStr = color.toString();
-            lineColor = color;
+        if (!lineColorStr.has(color.toString())) {
+            lineColorStr.add(color.toString());
+            lineColor.push(color);
         }
     }
-    if (lineColorStr && to === 'basic') {
-        // 1 color and is to downgrade to basic station
-        changeStationIntType(graph, station, to);
-        changeNodesColorInBatch(graph, 'any', lineColor!, [station], []);
+
+    if (lineColorStr.size > 1) {
+        const type = makeStationType(graph, station, 'int');
+        if (type) changeStationType(graph, station, type);
+    } else if (lineColorStr.size === 1) {
+        const type = makeStationType(graph, station, 'basic');
+        if (type) {
+            changeStationType(graph, station, type);
+            changeNodesColorInBatch(graph, 'any', lineColor[0], [station], []);
+        }
     }
 };

@@ -1,4 +1,5 @@
 /* eslint-disable import/order */
+import React from 'react';
 import { AttrsProps, MiscNodeId } from './constants';
 import { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
@@ -27,6 +28,7 @@ import { GuangdongIntercityRailwayLineBadgeAttributes } from '../components/svgs
 import { LondonArrowAttributes } from '../components/svgs/nodes/london-arrow';
 import { ChengduRTLineBadgeAttributes } from '../components/svgs/nodes/chengdurt-line-badge';
 import { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
+import { FillAttributes } from '../components/svgs/nodes/fill';
 
 export enum MiscNodeType {
     Virtual = 'virtual',
@@ -35,6 +37,7 @@ export enum MiscNodeType {
     I18nText = 'i18n-text',
     Master = 'master',
     Image = 'image',
+    Fill = 'fill',
     ShmetroNumLineBadge = 'shmetro-num-line-badge',
     ShmetroTextLineBadge = 'shmetro-text-line-badge',
     GzmtrLineBadge = 'gzmtr-line-badge',
@@ -65,6 +68,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.I18nText]?: I18nTextAttributes;
     [MiscNodeType.Master]?: MasterAttributes;
     [MiscNodeType.Image]?: ImageAttributes;
+    [MiscNodeType.Fill]?: FillAttributes;
     [MiscNodeType.ShmetroNumLineBadge]?: ShmetroNumLineBadgeAttributes;
     [MiscNodeType.ShmetroTextLineBadge]?: ShmetroTextLineBadgeAttributes;
     [MiscNodeType.GzmtrLineBadge]?: GzmtrLineBadgeAttributes;
@@ -124,7 +128,7 @@ export interface Node<T> {
     /**
      * The icon displayed in the tools panel.
      */
-    icon: JSX.Element;
+    icon: React.JSX.Element;
     /**
      * Default attributes for this component.
      */

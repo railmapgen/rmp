@@ -15,8 +15,8 @@ import {
     refreshNodesThunk,
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
-import { isMobileClient } from '../../../util/helpers';
-import { autoChangeStationIntType } from '../../../util/change-types';
+import { isPortraitClient } from '../../../util/helpers';
+import { checkAncChangeStationIntType } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -37,12 +37,15 @@ const DetailsPanel = () => {
         isDetailsOpen,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoChangeStationType },
+    } = useRootSelector(state => state.app);
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     const handleClose = () => {
-        if (!isMobileClient()) {
+        if (!isPortraitClient()) {
             dispatch(clearSelected());
         } else {
             dispatch(hideDetailsPanel());
@@ -68,8 +71,12 @@ const DetailsPanel = () => {
             else if (graph.current.hasEdge(s)) {
                 const [u, v] = graph.current.extremities(s);
                 graph.current.dropEdge(s);
-                if (u.startsWith('stn')) autoChangeStationIntType(graph.current, u as StnId, 'basic');
-                if (v.startsWith('stn')) autoChangeStationIntType(graph.current, v as StnId, 'basic');
+
+                // Automatically change the station type to basic if the station is connected by lines in a single color.
+                if (autoChangeStationType && u.startsWith('stn'))
+                    checkAncChangeStationIntType(graph.current, u as StnId);
+                if (autoChangeStationType && v.startsWith('stn'))
+                    checkAncChangeStationIntType(graph.current, v as StnId);
             }
         });
         hardRefresh();
