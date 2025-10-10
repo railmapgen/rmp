@@ -749,4 +749,40 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":57}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('57 -> 58', () => {
+        // Bump save version to support image node.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":57}';
+        const newParam = UPGRADE_COLLECTION[57](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":58}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('58 -> 59', () => {
+        // Bump save version to support fill node.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":58}';
+        const newParam = UPGRADE_COLLECTION[58](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":59}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('59 -> 60', () => {
+        // Bump save version to add misc_node_ and line_ prefixes to those created by fill.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"fill","fill":{"color":["shanghai","sh1","#E3002B","#fff"],"opacity":0.5,"selectedPatterns":["logo"]}}},{"key":"eMZ4qM9kV_","attributes":{"x":200,"y":0,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"j1aYfHvCR4","attributes":{"x":200,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"EC8JvVjy_w","attributes":{"x":0,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}}],"edges":[{"key":"F8xAOYi2HD","source":"misc_node_BWQKUyEEpZ","target":"eMZ4qM9kV_","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"is9sS_6myT","source":"eMZ4qM9kV_","target":"j1aYfHvCR4","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"fvw1dCbd1N","source":"j1aYfHvCR4","target":"EC8JvVjy_w","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"yS5ncPa5gr","source":"EC8JvVjy_w","target":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}}]},"version":59}';
+        const newParam = UPGRADE_COLLECTION[59](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"fill","fill":{"color":["shanghai","sh1","#E3002B","#fff"],"opacity":0.5,"selectedPatterns":["logo"]}}},{"key":"misc_node_eMZ4qM9kV_","attributes":{"x":200,"y":0,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"misc_node_j1aYfHvCR4","attributes":{"x":200,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"misc_node_EC8JvVjy_w","attributes":{"x":0,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}}],"edges":[{"key":"line_F8xAOYi2HD","source":"misc_node_BWQKUyEEpZ","target":"misc_node_eMZ4qM9kV_","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_is9sS_6myT","source":"misc_node_eMZ4qM9kV_","target":"misc_node_j1aYfHvCR4","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_fvw1dCbd1N","source":"misc_node_j1aYfHvCR4","target":"misc_node_EC8JvVjy_w","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_yS5ncPa5gr","source":"misc_node_EC8JvVjy_w","target":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}}]},"version":60}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

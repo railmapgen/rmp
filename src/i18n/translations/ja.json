@@ -254,6 +254,18 @@
                     "italic": "イタリック体",
                     "bold": "太字",
                     "outline": "縁取り"
+                },
+                "fill": {
+                    "displayName": "塗りつぶし範囲",
+                    "opacity": "塗りつぶし透明度",
+                    "patterns": "模様",
+                    "logo": "銘柄",
+                    "trees": "木々",
+                    "water": "水面",
+                    "noClosedPath": "閉じたパスがありません",
+                    "createSquare": "正方形を作成",
+                    "createTriangle": "三角形を作成",
+                    "createCircle": "円を作成"
                 }
             },
             "stations": {
@@ -702,6 +714,7 @@
             "termsAndConditions": "利用規約",
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
+            "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
             "confirm": "ダウンロード"
         },
         "donation": {

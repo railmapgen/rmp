@@ -252,6 +252,18 @@
                     "italic": "斜體",
                     "bold": "粗體",
                     "outline": "描邊"
+                },
+                "fill": {
+                    "displayName": "填充區域",
+                    "opacity": "填充透明度",
+                    "patterns": "圖案",
+                    "logo": "品牌標誌",
+                    "trees": "樹木",
+                    "water": "水域",
+                    "noClosedPath": "沒有閉合路徑",
+                    "createSquare": "建立正方形",
+                    "createTriangle": "建立三角形",
+                    "createCircle": "建立圓形"
                 }
             },
             "stations": {
@@ -699,6 +711,7 @@
             "termsAndConditions": "條款及細則",
             "termsAndConditionsInfo": "我同意",
             "period": "。",
+            "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
             "confirm": "下載"
         },
         "donation": {

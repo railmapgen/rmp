@@ -15,7 +15,7 @@ import {
     refreshNodesThunk,
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
-import { isMobileClient } from '../../../util/helpers';
+import { isMobileClient, isPortraitClient } from '../../../util/helpers';
 import { checkStationInt } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
@@ -45,7 +45,7 @@ const DetailsPanel = () => {
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     const handleClose = () => {
-        if (!isMobileClient()) {
+        if (!isPortraitClient()) {
             dispatch(clearSelected());
         } else {
             dispatch(hideDetailsPanel());

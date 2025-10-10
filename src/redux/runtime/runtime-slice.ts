@@ -4,13 +4,14 @@ import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 import { RootState } from '..';
-import { CityCode, Id, MiscNodeId, NodeType, RuntimeMode, StationCity, StnId, Theme } from '../../constants/constants';
+import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
+import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
-import { isMobileClient } from '../../util/helpers';
+import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
@@ -30,7 +31,7 @@ interface RuntimeState {
      * defined by the pointer down event, undefined if on pointer up.
      */
     pointerPosition?: { x: number; y: number };
-    active: StnId | MiscNodeId | 'background' | undefined;
+    active: NodeId | 'background' | undefined;
     /**
      * The state of the details panel.
      * On desktop, it is either 'show' or 'close'.
@@ -84,6 +85,11 @@ interface RuntimeState {
      * Cached random station names.
      */
     stationNames: { [key in StationCity]?: { [key in keyof Translation]: string }[] };
+    /**
+     * The types of nodes that exist in the current graph.
+     */
+    existsNodeTypes: Set<NodeType>;
+    radialTouchMenu: RadialTouchMenuState;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
 }
 
@@ -113,6 +119,8 @@ const initialState: RuntimeState = {
         mostFrequentStationType: StationType.ShmetroBasic,
     },
     stationNames: {},
+    radialTouchMenu: defaultRadialTouchMenuState,
+    existsNodeTypes: new Set<NodeType>(),
     globalAlerts: {},
 };
 
@@ -124,7 +132,7 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     dispatch(setRefreshNodes());
 
     let [stations, miscNodes, masters] = [0, 0, 0];
-    const existsTypes: { [k in NodeType]?: number } = {};
+    const existsNodeTypesCount: { [k in NodeType]?: number } = {};
     window.graph.forEachNode((id, attr) => {
         const { type } = attr;
         if (id.startsWith('stn')) {
@@ -136,10 +144,10 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
             masters += 1;
         }
 
-        existsTypes[type] = (existsTypes[type] || 0) + 1;
+        existsNodeTypesCount[type] = (existsNodeTypesCount[type] || 0) + 1;
     });
 
-    const mostFrequentStationType = (Object.entries(existsTypes) as [StationType, number][])
+    const mostFrequentStationType = (Object.entries(existsNodeTypesCount) as [StationType, number][])
         .filter(([type]) => STATION_TYPE_VALUES.has(type))
         .reduce((a, b) => (b[1] > a[1] ? b : a), [StationType.ShmetroBasic, 0])[0];
     dispatch(setNodesCount({ stations, miscNodes, masters, mostFrequentStationType }));
@@ -153,7 +161,10 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
         );
     }
 
-    const languages = (Object.keys(existsTypes) as NodeType[]).filter(t => t in Node2Font).flatMap(t => Node2Font[t]!);
+    const existsNodeTypes = Object.keys(existsNodeTypesCount) as NodeType[];
+    dispatch(setExistsNodeTypes(new Set<NodeType>(existsNodeTypes)));
+
+    const languages = existsNodeTypes.filter(t => t in Node2Font).flatMap(t => Node2Font[t]!);
     dispatch(loadFonts([...new Set(languages)]));
 });
 
@@ -189,14 +200,14 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
  *
  * `detailsOpen = state.selected.size > 0 && !state.mode.startsWith('line') && !state.active`
  *
- * |           --           | detailsOpen === true | detailsOpen === false |
- * |------------------------|----------------------|----------------------|
- * | isMobileClient === true | 'show' or 'hide'     | 'close'              |
- * | isMobileClient === false| 'show'               | 'close'              |
+ * |                      --                      | detailsOpen === true | detailsOpen === false |
+ * |----------------------------------------------|----------------------|----------------------|
+ * | isMobileClient === true && selected.size > 1 | 'show' or 'hide'     | 'close'              |
+ * | isMobileClient === false                     | 'show'               | 'close'              |
  */
 const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
     if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
-        if (isMobileClient()) {
+        if (isPortraitClient() && state.selected.size > 1) {
             return 'hide';
         }
         return 'show';
@@ -227,7 +238,7 @@ const runtimeSlice = createSlice({
         setPointerPosition: (state, action: PayloadAction<{ x: number; y: number } | undefined>) => {
             state.pointerPosition = action.payload;
         },
-        setActive: (state, action: PayloadAction<StnId | MiscNodeId | 'background' | undefined>) => {
+        setActive: (state, action: PayloadAction<NodeId | 'background' | undefined>) => {
             state.active = action.payload;
             state.isDetailsOpen = getIsDetailsOpen(state);
         },
@@ -294,6 +305,15 @@ const runtimeSlice = createSlice({
         ) => {
             state.stationNames[action.payload.cityName] = action.payload.names;
         },
+        setExistsNodeTypes: (state, action: PayloadAction<Set<NodeType>>) => {
+            state.existsNodeTypes = action.payload;
+        },
+        setRadialTouchMenu: (state, action: PayloadAction<RadialTouchMenuState>) => {
+            state.radialTouchMenu = action.payload;
+        },
+        closeRadialTouchMenu: state => {
+            state.radialTouchMenu = defaultRadialTouchMenuState;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -344,6 +364,9 @@ export const {
     closePaletteAppClip,
     onPaletteAppClipEmit,
     setStationNames,
+    setExistsNodeTypes,
+    setRadialTouchMenu,
+    closeRadialTouchMenu,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

@@ -1,6 +1,6 @@
 import { Text } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, MiscNodeId, StnId } from '../../../constants/constants';
+import { AttrsProps, NodeId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
@@ -55,7 +55,7 @@ export const LineSpecificAttributes = () => {
     const recalculateParallelIndex = (id: string, startFrom: 'from' | 'to') => {
         let parallelIndex = -1;
         if (autoParallel) {
-            const [source, target] = window.graph.extremities(id) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            const [source, target] = window.graph.extremities(id) as [NodeId, NodeId];
             parallelIndex = makeParallelIndex(window.graph, type, source, target, startFrom);
         }
         window.graph.setEdgeAttribute(id, 'parallelIndex', parallelIndex);

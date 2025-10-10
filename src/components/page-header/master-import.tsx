@@ -18,8 +18,8 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { defaultMasterTransform, MasterParam } from '../../constants/master';
+import { getContrastingColor, getRandomHexColor } from '../../util/color';
 import { getMasterNodeTypes } from '../../util/graph';
-import { getContrastingColor, getRandomHexColor } from '../../util/helpers';
 
 const RMP_MASTER_CHANNEL_NAME = 'RMP_MASTER_CHANNEL';
 const RMP_MASTER_CHANNEL_POST = 'MASTER_POST';

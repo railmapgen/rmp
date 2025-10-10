@@ -3,7 +3,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
-import { MiscNodeId, StnId } from '../../../constants/constants';
+import { NodeId } from '../../../constants/constants';
 import { ExternalStationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { addSelected, clearSelected } from '../../../redux/runtime/runtime-slice';
@@ -53,11 +53,11 @@ export default function LineExtremitiesSection() {
 
     const handleSource = useEvent(() => {
         dispatch(clearSelected());
-        dispatch(addSelected(source as StnId | MiscNodeId));
+        dispatch(addSelected(source as NodeId));
     });
     const handleTarget = useEvent(() => {
         dispatch(clearSelected());
-        dispatch(addSelected(target as StnId | MiscNodeId));
+        dispatch(addSelected(target as NodeId));
     });
 
     const fields: RmgFieldsField[] = [
