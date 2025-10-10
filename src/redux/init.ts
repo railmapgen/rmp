@@ -6,6 +6,7 @@ import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
 import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
+    setAutoChangeStationType,
     setAutoParallel,
     setGridLines,
     setPredictNextNode,
@@ -44,6 +45,8 @@ export const initStore = async (store: RootStore) => {
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
         if ('predictNextNode' in appState.preference)
             store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
+        if ('autoChangeStationType' in appState.preference)
+            store.dispatch(setAutoChangeStationType(appState.preference.autoChangeStationType));
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));
