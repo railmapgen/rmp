@@ -37,7 +37,7 @@ import {
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
-import { checkStationInt } from '../util/change-types';
+import { checkAncChangeStationIntType } from '../util/change-types';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -247,8 +247,8 @@ const SvgWrapper = () => {
                         graph.current.dropEdge(s);
 
                         // Automatically change the station type to interchange if the station is connected by lines in a single color.
-                        if (autoChangeStationType && u.startsWith('stn')) checkStationInt(graph.current, u as StnId);
-                        if (autoChangeStationType && v.startsWith('stn')) checkStationInt(graph.current, v as StnId);
+                        if (autoChangeStationType && u.startsWith('stn')) checkAncChangeStationIntType(graph.current, u as StnId);
+                        if (autoChangeStationType && v.startsWith('stn')) checkAncChangeStationIntType(graph.current, v as StnId);
                     }
                 });
                 dispatch(clearSelected());

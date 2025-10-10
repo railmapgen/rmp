@@ -31,7 +31,7 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
-import { checkStationInt } from '../util/change-types';
+import { checkAncChangeStationIntType } from '../util/change-types';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
@@ -338,10 +338,10 @@ const SvgCanvas = () => {
 
                     // Automatically change the station type to interchange if the station is connected by lines of different colors
                     if (autoChangeStationType && source.startsWith('stn')) {
-                        checkStationInt(graph.current, source as StnId);
+                        checkAncChangeStationIntType(graph.current, source as StnId);
                     }
                     if (autoChangeStationType && target.startsWith('stn')) {
-                        checkStationInt(graph.current, target as StnId);
+                        checkAncChangeStationIntType(graph.current, target as StnId);
                     }
 
                     dispatch(setSelected(new Set([newLineId])));

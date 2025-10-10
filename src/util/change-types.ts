@@ -312,6 +312,9 @@ export const increaseZIndexInBatch = (
     });
 };
 
+/**
+ * Helper to find the corresponding station type when changing between basic and interchange.
+ */
 const makeStationType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId,
@@ -336,7 +339,12 @@ const makeStationType = (
     return destType as StationType;
 };
 
-export const checkStationInt = (
+/**
+ * Automatically change the station type to basic or interchange.
+ * No-op if the station is already the correct type or the station has one type
+ * for both basic and interchange (e.g. Hong Kong MTR).
+ */
+export const checkAncChangeStationIntType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId
 ) => {
