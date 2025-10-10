@@ -5,7 +5,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
-import { Events, Id, NodeId, RuntimeMode } from '../constants/constants';
+import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';

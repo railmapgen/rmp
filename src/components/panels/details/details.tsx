@@ -15,7 +15,7 @@ import {
     refreshNodesThunk,
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
-import { isMobileClient, isPortraitClient } from '../../../util/helpers';
+import { isPortraitClient } from '../../../util/helpers';
 import { checkStationInt } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
