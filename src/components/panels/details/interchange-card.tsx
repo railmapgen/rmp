@@ -110,11 +110,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                                 size="sm"
                                 variant="ghost"
                                 aria-label={t('panel.details.stations.interchange.add')}
-                                onClick={() =>
-                                    interchangeList.length < maximumTransfers
-                                        ? onAdd?.(i + 1, [...runtimeTheme, '', ''])
-                                        : {}
-                                }
+                                onClick={() => onAdd?.(i + 1, [...runtimeTheme, '', ''])}
                                 icon={<MdAdd />}
                                 isDisabled={interchangeList.length >= maximumTransfers}
                             />
