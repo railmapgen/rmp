@@ -344,7 +344,7 @@ const makeStationType = (
  * No-op if the station is already the correct type or the station has one type
  * for both basic and interchange (e.g. Hong Kong MTR).
  */
-export const checkAncChangeStationIntType = (
+export const checkAndChangeStationIntType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId
 ) => {

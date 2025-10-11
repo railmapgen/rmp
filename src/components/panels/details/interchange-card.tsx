@@ -1,10 +1,8 @@
-import { Box, HStack, IconButton, Text } from '@chakra-ui/react';
-import { RmgCard, RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { Box, Divider, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
+import { RmgCard, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import { CityCode } from '../../../constants/constants';
+import { MdAdd, MdArrowDownward, MdArrowUpward, MdDelete } from 'react-icons/md';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import ThemeButton from '../theme-button';
@@ -12,16 +10,21 @@ import { InterchangeInfo } from './interchange-field';
 
 interface InterchangeCardProps {
     interchangeList: InterchangeInfo[];
-    onAdd?: (info: InterchangeInfo) => void;
+    maximumTransfers: number;
+    onAdd?: (index: number, info: InterchangeInfo) => void;
     onDelete?: (index: number) => void;
     onUpdate?: (index: number, info: InterchangeInfo) => void;
+    onUp?: (index: number) => void;
+    onDown?: (index: number) => void;
+    foshan?: boolean;
 }
 
 export default function InterchangeCard(props: InterchangeCardProps) {
-    const { interchangeList, onAdd, onDelete, onUpdate } = props;
+    const { interchangeList, maximumTransfers, onAdd, onDelete, onUpdate, onDown, onUp, foshan } = props;
     const dispatch = useRootDispatch();
     const {
         paletteAppClip: { input, output },
+        theme: runtimeTheme,
     } = useRootSelector(state => state.runtime);
 
     const { t } = useTranslation();
@@ -48,15 +51,24 @@ export default function InterchangeCard(props: InterchangeCardProps) {
             type: 'input',
             label: t('panel.details.stations.common.lineCode'),
             value: it[4],
-            minW: '80px',
-            onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5]]),
+            minW: '40px',
+            onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], val, it[5], ...it.slice(6)]),
         },
         {
             type: 'input',
             label: t('panel.details.stations.common.stationCode'),
             value: it[5],
-            minW: '80px',
-            onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val]),
+            minW: '40px',
+            onChange: val => onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], val, ...it.slice(6)]),
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.gzmtrInt.foshan'),
+            isChecked: it[6] === 'fs',
+            minW: '20px',
+            hidden: !foshan,
+            onChange: val =>
+                onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], it[5], val ? 'fs' : 'gz', ...it.slice(7)]),
         },
     ]);
 
@@ -72,15 +84,15 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                         size="sm"
                         variant="ghost"
                         aria-label={t('panel.details.stations.interchange.add')}
-                        onClick={() => onAdd?.([CityCode.Shanghai, '', '#aaaaaa', MonoColour.white, '', ''])}
+                        onClick={() => onAdd?.(0, [...runtimeTheme, '', ''])}
                         icon={<MdAdd />}
                     />
                 </HStack>
             )}
 
             {interchangeList.map((it, i) => (
-                <HStack key={i} spacing={0.5} data-testid={`interchange-card-stack-${i}`}>
-                    <RmgLabel label={t('color')} minW="40px" noLabel={i !== 0}>
+                <VStack key={`${it.toString()}-${i}`} spacing={0.5} data-testid={`interchange-card-stack-${i}`} my={2}>
+                    <HStack>
                         <ThemeButton
                             theme={[it[0], it[1], it[2], it[3]]}
                             onClick={() => {
@@ -88,32 +100,59 @@ export default function InterchangeCard(props: InterchangeCardProps) {
                                 dispatch(openPaletteAppClip([it[0], it[1], it[2], it[3]]));
                             }}
                         />
-                    </RmgLabel>
 
-                    <RmgFields fields={interchangeFields[i]} noLabel={i !== 0} />
+                        <RmgFields fields={interchangeFields[i]} />
+                    </HStack>
+                    <HStack width="100%">
+                        {onAdd && (
+                            <IconButton
+                                flex="1"
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('panel.details.stations.interchange.add')}
+                                onClick={() => onAdd?.(i + 1, [...runtimeTheme, '', ''])}
+                                icon={<MdAdd />}
+                                isDisabled={interchangeList.length >= maximumTransfers}
+                            />
+                        )}
 
-                    {onAdd && i === interchangeFields.length - 1 ? (
-                        <IconButton
-                            size="sm"
-                            variant="ghost"
-                            aria-label={t('panel.details.stations.interchange.copy')}
-                            onClick={() => onAdd?.(interchangeList.slice(-1)[0])} // duplicate last leg
-                            icon={<MdContentCopy />}
-                        />
-                    ) : (
-                        <Box minW={8} />
-                    )}
+                        {onUp && (
+                            <IconButton
+                                flex="1"
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('panel.details.stations.interchange.up')}
+                                onClick={() => onUp?.(i)} // duplicate last leg
+                                icon={<MdArrowUpward />}
+                                isDisabled={i === 0}
+                            />
+                        )}
 
-                    {onDelete && (
-                        <IconButton
-                            size="sm"
-                            variant="ghost"
-                            aria-label={t('panel.details.stations.interchange.remove')}
-                            onClick={() => onDelete?.(i)}
-                            icon={<MdDelete />}
-                        />
-                    )}
-                </HStack>
+                        {onDown && (
+                            <IconButton
+                                flex="1"
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('panel.details.stations.interchange.down')}
+                                onClick={() => onDown?.(i)} // duplicate last leg
+                                icon={<MdArrowDownward />}
+                                isDisabled={i === interchangeList.length - 1}
+                            />
+                        )}
+
+                        {onDelete && (
+                            <IconButton
+                                flex="1"
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('panel.details.stations.interchange.remove')}
+                                onClick={() => onDelete?.(i)}
+                                icon={<MdDelete />}
+                            />
+                        )}
+                    </HStack>
+                    <Divider />
+                </VStack>
             ))}
         </RmgCard>
     );

@@ -292,7 +292,8 @@
                     "nameZh": "中文名稱",
                     "nameEn": "英文名稱",
                     "add": "添加換乘",
-                    "copy": "復製換乘",
+                    "up": "上移轉乘站",
+                    "down": "下移轉乘站",
                     "remove": "刪除換乘"
                 },
                 "shmetroBasic": {

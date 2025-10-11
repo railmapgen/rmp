@@ -255,20 +255,18 @@ const KunmingRTIntAttrsComponent = (props: AttrsProps<KunmingRTIntStationAttribu
             },
             minW: 'full',
         },
-        {
-            type: 'custom',
-            label: t('panel.details.stations.interchange.title'),
-            component: (
-                <InterchangeField
-                    stationType={StationType.KunmingRTInt}
-                    defaultAttrs={defaultKunmingRTIntStationAttributes}
-                    maximumTransfers={[3, 0, 0]}
-                />
-            ),
-        },
     ];
 
-    return <RmgFields fields={fields} />;
+    return (
+        <>
+            <RmgFields fields={fields} />
+            <InterchangeField
+                stationType={StationType.KunmingRTInt}
+                defaultAttrs={defaultKunmingRTIntStationAttributes}
+                maximumTransfers={[3, 0, 0]}
+            />
+        </>
+    );
 };
 
 const kunmingRTIntStationIcon = (

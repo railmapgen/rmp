@@ -31,7 +31,7 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
-import { checkAncChangeStationIntType } from '../util/change-types';
+import { checkAndChangeStationIntType } from '../util/change-types';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
@@ -337,10 +337,10 @@ const SvgCanvas = () => {
                     });
 
                     if (autoChangeStationType && source.startsWith('stn')) {
-                        checkAncChangeStationIntType(graph.current, source as StnId);
+                        checkAndChangeStationIntType(graph.current, source as StnId);
                     }
                     if (autoChangeStationType && target.startsWith('stn')) {
-                        checkAncChangeStationIntType(graph.current, target as StnId);
+                        checkAndChangeStationIntType(graph.current, target as StnId);
                     }
 
                     dispatch(setSelected(new Set([newLineId])));
