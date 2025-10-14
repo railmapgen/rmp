@@ -101,7 +101,7 @@ describe('findShortestClosedPath', () => {
         graph.addDirectedEdgeWithKey('e1', 'A', 'B');
         graph.addDirectedEdgeWithKey('e2', 'B', 'C');
         graph.addDirectedEdgeWithKey('e3', 'C', 'D');
-        graph.addDirectedEdgeWithKey('e4', 'D', 'A');
+        graph.addDirectedEdgeWithKey('e4', 'A', 'D');
 
         // Path is A->B->C->D->A, which has 5 nodes. maxNodes=5 should succeed.
         const result = findShortestClosedPath(graph, 'A' as MiscNodeId, 5);
@@ -151,16 +151,27 @@ describe('findShortestClosedPath', () => {
         graph.addDirectedEdgeWithKey('e_ab', 'A', 'B');
         graph.addDirectedEdgeWithKey('e_bc', 'B', 'C');
         // Two ways to get back to A from C
-        graph.addDirectedEdgeWithKey('e_ca_short', 'C', 'A');
-        graph.addDirectedEdgeWithKey('e_ca_long', 'C', 'A');
+        graph.addDirectedEdgeWithKey('e_ca_1', 'C', 'A');
+        graph.addDirectedEdgeWithKey('e_ca_2', 'C', 'A');
+
+        const result = findShortestClosedPath(graph, 'A' as MiscNodeId);
+        expect(result).toBeDefined();
+        expect(result?.nodes).toEqual(['A', 'C', 'A']);
+        expect(result?.edges).toEqual(['e_ca_2', 'e_ca_1']);
+    });
+
+    it('should find a closed path with a non-adjacent edges', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('A', { x: 0, y: 0, type: MiscNodeType.Virtual, visible: true, zIndex: 0, virtual: {} });
+        graph.addNode('B', { x: 1, y: 0, type: MiscNodeType.Virtual, visible: true, zIndex: 0, virtual: {} });
+        graph.addNode('C', { x: 0, y: 1, type: MiscNodeType.Virtual, visible: true, zIndex: 0, virtual: {} });
+        graph.addDirectedEdgeWithKey('e1', 'A', 'B');
+        graph.addDirectedEdgeWithKey('e2', 'C', 'B');
+        graph.addDirectedEdgeWithKey('e3', 'C', 'A');
 
         const result = findShortestClosedPath(graph, 'A' as MiscNodeId);
         expect(result).toBeDefined();
         expect(result?.nodes).toEqual(['A', 'B', 'C', 'A']);
-        // The algorithm is BFS-based, so it's not guaranteed which edge it finds first if they are at the same depth.
-        // The important part is that it finds a valid shortest path.
-        expect(result?.edges).toContain('e_ab');
-        expect(result?.edges).toContain('e_bc');
-        expect(['e_ca_short', 'e_ca_long']).toContain(result?.edges[2]);
+        expect(result?.edges).toEqual(['e1', 'e2', 'e3']);
     });
 });

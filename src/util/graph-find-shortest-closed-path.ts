@@ -16,7 +16,7 @@ export const findShortestClosedPath = (
     }
 
     // The queue now only stores the current node and the length between current node and the starting node.
-    const queue: { node: NodeId; step: number }[] = [{ node: startNode, step: 0 }];
+    const queue: { node: NodeId; step: number }[] = [{ node: startNode, step: 1 }];
 
     // `visited` map stores the "parent" and "edge" for each visited node to reconstruct the path later.
     // The value is the path from the startNode.
@@ -50,8 +50,8 @@ export const findShortestClosedPath = (
                     edgesV.push(visited.get(curr)!.edge);
                 }
                 return {
-                    nodes: [...nodesU.reverse(), ...nodesV],
-                    edges: [...edgesU.reverse(), edge as LineId, ...edgesV],
+                    nodes: [...nodesV.toReversed(), ...nodesU],
+                    edges: [...edgesV.toReversed(), edge as LineId, ...edgesU],
                 };
             }
         }
