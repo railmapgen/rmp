@@ -15,82 +15,45 @@ export const findShortestClosedPath = (
         return undefined;
     }
 
-    // The queue now only stores the current node, its parent, and the edge used to reach it.
-    const queue: { node: NodeId; parent: NodeId; edge: LineId }[] = [];
+    // The queue now only stores the current node and the length between current node and the starting node.
+    const queue: { node: NodeId; step: number }[] = [{ node: startNode, step: 1 }];
 
     // `visited` map stores the "parent" and "edge" for each visited node to reconstruct the path later.
     // The value is the path from the startNode.
     const visited = new Map<NodeId, { parent: NodeId; edge: LineId }>();
 
-    // Initialize the queue with neighbors of the start node.
-    graph.forEachOutEdge(startNode, (edge, _attrs, _source, target) => {
-        const neighbor = target as NodeId;
-        if (neighbor === startNode) return; // Avoid self-loops at the very beginning
-        if (!visited.has(neighbor)) {
-            visited.set(neighbor, { parent: startNode, edge: edge as LineId });
-            queue.push({ node: neighbor, parent: startNode, edge: edge as LineId });
-        }
-    });
-
-    let shortestPath: { nodes: NodeId[]; edges: LineId[] } | undefined;
+    visited.set(startNode, { parent: 'misc_node_origin', edge: 'line_undefined' });
 
     while (queue.length > 0) {
-        const { node } = queue.shift()!;
+        const { node: u, step } = queue.shift()!;
+        if (step * 2 >= maxNodes) break;
 
-        // Reconstruct path to check length
-        const tempPath: NodeId[] = [];
-        let curr = node;
-        while (visited.has(curr)) {
-            tempPath.push(curr);
-            const parentInfo = visited.get(curr)!;
-            curr = parentInfo.parent;
-        }
-        const currentPathLength = tempPath.length;
+        for (const { edge, source, target } of graph.edgeEntries(u)) {
+            const v = (source === u ? target : source) as NodeId;
 
-        if (shortestPath && currentPathLength >= shortestPath.nodes.length - 1) {
-            continue;
-        }
-        // The current path to `node` has `currentPathLength` edges.
-        // A cycle would add one more edge, making the total length `currentPathLength + 1`.
-        // The number of nodes in a cycle is `edges + 1`.
-        // So, the final cycle would have `currentPathLength + 2` nodes.
-        // We stop if this would exceed maxNodes.
-        if (currentPathLength + 2 > maxNodes) {
-            continue;
-        }
-
-        graph.forEachOutEdge(node, (edge, _attrs, _source, target) => {
-            const neighbor = target as NodeId;
-
-            if (neighbor === startNode) {
-                // Found a cycle back to the start node.
-                const pathNodes = [startNode];
-                const pathEdges: LineId[] = [];
-                let pathCurr = node;
-
-                pathEdges.unshift(edge as LineId); // Add the final edge
-                while (pathCurr !== startNode && visited.has(pathCurr)) {
-                    pathNodes.unshift(pathCurr);
-                    const parentInfo = visited.get(pathCurr)!;
-                    pathEdges.unshift(parentInfo.edge);
-                    pathCurr = parentInfo.parent;
+            if (!visited.has(v)) {
+                // Not visited yet
+                visited.set(v, { parent: u, edge: edge as LineId });
+                queue.push({ node: v, step: step + 1 });
+            } else if (v !== visited.get(u)!.parent && v !== u) {
+                // Found the shortest cycle
+                const nodesU: NodeId[] = [u];
+                const nodesV: NodeId[] = [v];
+                const edgesU: LineId[] = [];
+                const edgesV: LineId[] = [];
+                for (let curr = u; visited.get(curr)!.parent !== 'misc_node_origin'; curr = visited.get(curr)!.parent) {
+                    nodesU.push(visited.get(curr)!.parent);
+                    edgesU.push(visited.get(curr)!.edge);
                 }
-                pathNodes.unshift(startNode);
-
-                const finalPath = { nodes: pathNodes, edges: pathEdges };
-
-                if (!shortestPath || finalPath.nodes.length < shortestPath.nodes.length) {
-                    shortestPath = finalPath;
+                for (let curr = v; visited.get(curr)!.parent !== 'misc_node_origin'; curr = visited.get(curr)!.parent) {
+                    nodesV.push(visited.get(curr)!.parent);
+                    edgesV.push(visited.get(curr)!.edge);
                 }
-                return; // Continue search for even shorter paths on the same level
+                return {
+                    nodes: [...nodesV.toReversed(), ...nodesU],
+                    edges: [...edgesV.toReversed(), edge as LineId, ...edgesU],
+                };
             }
-
-            if (!visited.has(neighbor)) {
-                visited.set(neighbor, { parent: node, edge: edge as LineId });
-                queue.push({ node: neighbor, parent: node, edge: edge as LineId });
-            }
-        });
+        }
     }
-
-    return shortestPath;
 };
