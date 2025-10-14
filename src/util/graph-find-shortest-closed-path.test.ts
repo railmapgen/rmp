@@ -160,7 +160,7 @@ describe('findShortestClosedPath', () => {
         expect(result?.edges).toEqual(['e_ca_2', 'e_ca_1']);
     });
 
-    it('should find a closed path with a non-adjacent edges', () => {
+    it('should find a closed path with non-adjacent edges', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         graph.addNode('A', { x: 0, y: 0, type: MiscNodeType.Virtual, visible: true, zIndex: 0, virtual: {} });
         graph.addNode('B', { x: 1, y: 0, type: MiscNodeType.Virtual, visible: true, zIndex: 0, virtual: {} });
