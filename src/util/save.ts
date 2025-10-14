@@ -808,7 +808,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                         int.stationCode,
                     ]),
                 ];
-                attr.interchanges = undefined;
+                delete attr.interchanges;
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 61, graph: graph.export() });
