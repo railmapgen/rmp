@@ -16,7 +16,7 @@ import {
 } from '../../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
-import { checkAncChangeStationIntType } from '../../../util/change-types';
+import { checkAndChangeStationIntType } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -74,9 +74,9 @@ const DetailsPanel = () => {
 
                 // Automatically change the station type to basic if the station is connected by lines in a single color.
                 if (autoChangeStationType && u.startsWith('stn'))
-                    checkAncChangeStationIntType(graph.current, u as StnId);
+                    checkAndChangeStationIntType(graph.current, u as StnId);
                 if (autoChangeStationType && v.startsWith('stn'))
-                    checkAncChangeStationIntType(graph.current, v as StnId);
+                    checkAndChangeStationIntType(graph.current, v as StnId);
             }
         });
         hardRefresh();

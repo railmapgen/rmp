@@ -292,7 +292,8 @@
                     "nameZh": "Chinese name",
                     "nameEn": "English name",
                     "add": "Add interchange",
-                    "copy": "Copy interchange",
+                    "up": "Move up interchange",
+                    "down": "Move down interchange",
                     "remove": "Remove interchange"
                 },
                 "shmetroBasic": {
