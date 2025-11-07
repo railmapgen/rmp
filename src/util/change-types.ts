@@ -7,6 +7,7 @@ import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/sta
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import stations from '../components/svgs/stations/stations';
 import {
+    CityCode,
     EdgeAttributes,
     GraphAttributes,
     LineId,
@@ -352,12 +353,20 @@ export const checkAndChangeStationIntType = (
     const lineColorStr: Set<string> = new Set<string>();
     const lineColor: Theme[] = [];
 
+    const getColorStr = (theme: Theme) => {
+        if (theme[0] !== CityCode.Other) {
+            return theme[0].toString() + '/' + theme[1].toString();
+        } else {
+            return theme[2].toString() + '/' + theme[3].toString();
+        }
+    };
+
     for (const l of lines) {
         const style = graph.getEdgeAttributes(l).style;
         if (!dynamicColorInjection.has(style)) continue;
         const color = (graph.getEdgeAttributes(l)[style] as AttributesWithColor).color;
-        if (!lineColorStr.has(color.toString())) {
-            lineColorStr.add(color.toString());
+        if (!lineColorStr.has(getColorStr(color))) {
+            lineColorStr.add(getColorStr(color));
             lineColor.push(color);
         }
     }
