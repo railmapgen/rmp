@@ -1,5 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
+import { InterchangeInfo, StationAttributesWithInterchange } from '../components/panels/details/interchange-field';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
@@ -341,6 +342,25 @@ const makeStationType = (
 };
 
 /**
+ * Helper to check if a station type supports the transfer/interchange property.
+ */
+const supportsTransferProperty = (stationType: StationType): boolean => {
+    const stationTypesWithTransfer = [
+        StationType.GzmtrInt,
+        StationType.GzmtrInt2024,
+        StationType.ChongqingRTInt,
+        StationType.ChongqingRTInt2021,
+        StationType.KunmingRTInt,
+        StationType.MRTInt,
+        StationType.MTR,
+        StationType.OsakaMetro,
+        StationType.SuzhouRTInt,
+        StationType.TokyoMetroInt,
+    ];
+    return stationTypesWithTransfer.includes(stationType);
+};
+
+/**
  * Automatically change the station type to basic or interchange.
  * No-op if the station is already the correct type or the station has one type
  * for both basic and interchange (e.g. Hong Kong MTR).
@@ -373,7 +393,30 @@ export const checkAndChangeStationIntType = (
 
     if (lineColorStr.size > 1) {
         const type = makeStationType(graph, station, 'int');
-        if (type) changeStationType(graph, station, type);
+        if (type) {
+            changeStationType(graph, station, type);
+
+            // Populate the transfer property if the station type supports it
+            if (supportsTransferProperty(type)) {
+                const transferInfo: InterchangeInfo[] = lineColor.map(color => [...color, '', '']);
+                const attrs = graph.getNodeAttribute(station, type) as StationAttributesWithInterchange;
+                if (attrs) {
+                    attrs.transfer = [transferInfo];
+                    graph.mergeNodeAttributes(station, { [type]: attrs });
+                }
+            }
+        } else {
+            // Handle case where station type doesn't have a basic/int pair but supports transfer
+            const currentType = graph.getNodeAttribute(station, 'type') as StationType;
+            if (supportsTransferProperty(currentType)) {
+                const transferInfo: InterchangeInfo[] = lineColor.map(color => [...color, '', '']);
+                const attrs = graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange;
+                if (attrs) {
+                    attrs.transfer = [transferInfo];
+                    graph.mergeNodeAttributes(station, { [currentType]: attrs });
+                }
+            }
+        }
     } else if (lineColorStr.size === 1) {
         const type = makeStationType(graph, station, 'basic');
         if (type) {
