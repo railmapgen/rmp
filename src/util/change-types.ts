@@ -361,6 +361,13 @@ const supportsTransferProperty = (stationType: StationType): boolean => {
 };
 
 /**
+ * Helper to create transfer info from line colors.
+ */
+const createTransferInfo = (lineColors: Theme[]): InterchangeInfo[] => {
+    return lineColors.map(color => [color[0], color[1], color[2], color[3], '', ''] as InterchangeInfo);
+};
+
+/**
  * Automatically change the station type to basic or interchange.
  * No-op if the station is already the correct type or the station has one type
  * for both basic and interchange (e.g. Hong Kong MTR).
@@ -398,7 +405,7 @@ export const checkAndChangeStationIntType = (
 
             // Populate the transfer property if the station type supports it
             if (supportsTransferProperty(type)) {
-                const transferInfo: InterchangeInfo[] = lineColor.map(color => [...color, '', '']);
+                const transferInfo = createTransferInfo(lineColor);
                 const attrs = graph.getNodeAttribute(station, type) as StationAttributesWithInterchange;
                 if (attrs) {
                     attrs.transfer = [transferInfo];
@@ -409,7 +416,7 @@ export const checkAndChangeStationIntType = (
             // Handle case where station type doesn't have a basic/int pair but supports transfer
             const currentType = graph.getNodeAttribute(station, 'type') as StationType;
             if (supportsTransferProperty(currentType)) {
-                const transferInfo: InterchangeInfo[] = lineColor.map(color => [...color, '', '']);
+                const transferInfo = createTransferInfo(lineColor);
                 const attrs = graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange;
                 if (attrs) {
                     attrs.transfer = [transferInfo];
