@@ -22,7 +22,7 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
         [id, handlePointerDown]
     );
 
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
+    const bgColor = useColorModeValue('white', '#1A202C');
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
