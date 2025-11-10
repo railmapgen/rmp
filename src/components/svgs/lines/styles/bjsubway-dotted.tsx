@@ -1,4 +1,3 @@
-import { useColorModeValue } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
@@ -22,12 +21,9 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
         [id, handlePointerDown]
     );
 
-    const bgColor = useColorModeValue('white', '#1A202C');
-
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="2 2" />
-            <path d={path} fill="none" stroke={bgColor} strokeWidth="3.4" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth="3.4" strokeDasharray="2 2" />
         </g>
     );
 };
