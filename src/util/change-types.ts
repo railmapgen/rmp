@@ -315,6 +315,48 @@ export const increaseZIndexInBatch = (
 };
 
 /**
+ * Helper to check if a station type supports the transfer/interchange property.
+ */
+const supportsTransferProperty = (stationType: StationType): boolean => {
+    const stationTypesWithTransfer = [
+        StationType.GzmtrInt,
+        StationType.GzmtrInt2024,
+        StationType.ChongqingRTInt,
+        StationType.ChongqingRTInt2021,
+        StationType.KunmingRTInt,
+        StationType.MRTInt,
+        StationType.MTR,
+        StationType.OsakaMetro,
+        StationType.SuzhouRTInt,
+        StationType.TokyoMetroInt,
+    ];
+    return stationTypesWithTransfer.includes(stationType);
+};
+
+/**
+ * Helper to create transfer info from line colors.
+ */
+const createTransferInfo = (lineColors: Theme[]): InterchangeInfo[] => {
+    return lineColors.map(color => [color[0], color[1], color[2], color[3], '', ''] as InterchangeInfo);
+};
+
+/**
+ * Helper to update the transfer property on a station.
+ */
+const updateStationTransfer = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId,
+    stationType: StationType,
+    transferInfo: InterchangeInfo[]
+) => {
+    const attrs = graph.getNodeAttribute(station, stationType) as StationAttributesWithInterchange;
+    if (attrs) {
+        attrs.transfer = [transferInfo];
+        graph.mergeNodeAttributes(station, { [stationType]: attrs });
+    }
+};
+
+/**
  * Helper to find the corresponding station type when changing between basic and interchange.
  */
 const makeStationType = (
@@ -339,32 +381,6 @@ const makeStationType = (
         return undefined;
     }
     return destType as StationType;
-};
-
-/**
- * Helper to check if a station type supports the transfer/interchange property.
- */
-const supportsTransferProperty = (stationType: StationType): boolean => {
-    const stationTypesWithTransfer = [
-        StationType.GzmtrInt,
-        StationType.GzmtrInt2024,
-        StationType.ChongqingRTInt,
-        StationType.ChongqingRTInt2021,
-        StationType.KunmingRTInt,
-        StationType.MRTInt,
-        StationType.MTR,
-        StationType.OsakaMetro,
-        StationType.SuzhouRTInt,
-        StationType.TokyoMetroInt,
-    ];
-    return stationTypesWithTransfer.includes(stationType);
-};
-
-/**
- * Helper to create transfer info from line colors.
- */
-const createTransferInfo = (lineColors: Theme[]): InterchangeInfo[] => {
-    return lineColors.map(color => [color[0], color[1], color[2], color[3], '', ''] as InterchangeInfo);
 };
 
 /**
@@ -406,22 +422,14 @@ export const checkAndChangeStationIntType = (
             // Populate the transfer property if the station type supports it
             if (supportsTransferProperty(type)) {
                 const transferInfo = createTransferInfo(lineColor);
-                const attrs = graph.getNodeAttribute(station, type) as StationAttributesWithInterchange;
-                if (attrs) {
-                    attrs.transfer = [transferInfo];
-                    graph.mergeNodeAttributes(station, { [type]: attrs });
-                }
+                updateStationTransfer(graph, station, type, transferInfo);
             }
         } else {
             // Handle case where station type doesn't have a basic/int pair but supports transfer
             const currentType = graph.getNodeAttribute(station, 'type') as StationType;
             if (supportsTransferProperty(currentType)) {
                 const transferInfo = createTransferInfo(lineColor);
-                const attrs = graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange;
-                if (attrs) {
-                    attrs.transfer = [transferInfo];
-                    graph.mergeNodeAttributes(station, { [currentType]: attrs });
-                }
+                updateStationTransfer(graph, station, currentType, transferInfo);
             }
         }
     } else if (lineColorStr.size === 1) {
