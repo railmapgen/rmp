@@ -38,6 +38,18 @@ type StationsWithoutNameOffsetAttributes =
     | LondonTubeBasicStationAttributes
     | ShanghaiSuburbanRailwayStationAttributes
     | OsakaMetroStationAttributes;
+const stationTypesWithTransfer = [
+    StationType.GzmtrInt,
+    StationType.GzmtrInt2024,
+    StationType.ChongqingRTInt,
+    StationType.ChongqingRTInt2021,
+    StationType.KunmingRTInt,
+    StationType.MRTInt,
+    StationType.MTR,
+    StationType.OsakaMetro,
+    StationType.SuzhouRTInt,
+    StationType.TokyoMetroInt,
+];
 
 /**
  * Change a station's type.
@@ -315,25 +327,6 @@ export const increaseZIndexInBatch = (
 };
 
 /**
- * Helper to check if a station type supports the transfer/interchange property.
- */
-const supportsTransferProperty = (stationType: StationType): boolean => {
-    const stationTypesWithTransfer = [
-        StationType.GzmtrInt,
-        StationType.GzmtrInt2024,
-        StationType.ChongqingRTInt,
-        StationType.ChongqingRTInt2021,
-        StationType.KunmingRTInt,
-        StationType.MRTInt,
-        StationType.MTR,
-        StationType.OsakaMetro,
-        StationType.SuzhouRTInt,
-        StationType.TokyoMetroInt,
-    ];
-    return stationTypesWithTransfer.includes(stationType);
-};
-
-/**
  * Helper to create transfer info from line colors.
  */
 const createTransferInfo = (lineColors: Theme[]): InterchangeInfo[] => {
@@ -415,21 +408,31 @@ export const checkAndChangeStationIntType = (
     }
 
     if (lineColorStr.size > 1) {
+        const currentType = graph.getNodeAttribute(station, 'type') as StationType;
         const type = makeStationType(graph, station, 'int');
+
+        const currentTransfer = ((stationTypesWithTransfer.includes(currentType)
+            ? (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer
+            : undefined) || [[]])[0];
         if (type) {
             changeStationType(graph, station, type);
 
             // Populate the transfer property if the station type supports it
-            if (supportsTransferProperty(type)) {
-                const transferInfo = createTransferInfo(lineColor);
-                updateStationTransfer(graph, station, type, transferInfo);
+            if (stationTypesWithTransfer.includes(type)) {
+                const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
+                const newTransferInfo = createTransferInfo(
+                    lineColor.filter(t => !currentTransfer.find(c => getColorStr(t) === getColorStr(c as Theme)))
+                );
+                updateStationTransfer(graph, station, type, [...existTransferInfo, ...newTransferInfo]);
             }
         } else {
             // Handle case where station type doesn't have a basic/int pair but supports transfer
-            const currentType = graph.getNodeAttribute(station, 'type') as StationType;
-            if (supportsTransferProperty(currentType)) {
-                const transferInfo = createTransferInfo(lineColor);
-                updateStationTransfer(graph, station, currentType, transferInfo);
+            if (stationTypesWithTransfer.includes(currentType)) {
+                const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
+                const newTransferInfo = createTransferInfo(
+                    lineColor.filter(t => !currentTransfer.find(c => getColorStr(t) === getColorStr(c as Theme)))
+                );
+                updateStationTransfer(graph, station, currentType, [...existTransferInfo, ...newTransferInfo]);
             }
         }
     } else if (lineColorStr.size === 1) {

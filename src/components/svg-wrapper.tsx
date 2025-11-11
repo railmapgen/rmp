@@ -129,10 +129,6 @@ const SvgWrapper = () => {
                 type,
                 [type]: attr,
             });
-            // Check and update transfer info for newly added stations
-            if (isStation) {
-                checkAndChangeStationIntType(graph.current, id as StnId);
-            }
             // console.log('down', active, offset);
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
             refreshAndSave();
