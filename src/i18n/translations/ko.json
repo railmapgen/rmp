@@ -340,7 +340,8 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
-                    "open": "개통여부"
+                    "open": "개통여부",
+                    "construction": "공사중"
                 },
                 "bjsubwayInt": {
                     "displayName": "베이징 지하철 환승역",

@@ -340,7 +340,8 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",
-                    "open": "是否開通"
+                    "open": "開通",
+                    "construction": "施工"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地鐵換乘車站",

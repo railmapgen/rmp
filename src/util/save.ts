@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 61;
+export const CURRENT_VERSION = 62;
 
 /**
  * Load the tutorial.
@@ -790,7 +790,6 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         );
         return JSON.stringify({ ...p, version: 60, graph: newGraph.export() });
     },
-
     60: param => {
         // Bump save version to convert Tokyo Int transfer information to new format.
         const p = JSON.parse(param);
@@ -813,4 +812,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 61, graph: graph.export() });
     },
+    61: param =>
+        // Bump save version to support construction attribute for bjsubwayBasic.
+        JSON.stringify({ ...JSON.parse(param), version: 62 }),
 };

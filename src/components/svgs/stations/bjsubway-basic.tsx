@@ -29,6 +29,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         nameOffsetX = defaultBjsubwayBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultBjsubwayBasicStationAttributes.nameOffsetY,
         open = defaultBjsubwayBasicStationAttributes.open,
+        construction = defaultBjsubwayBasicStationAttributes.construction,
     } = attrs[StationType.BjsubwayBasic] ?? defaultBjsubwayBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -44,13 +45,15 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    const secondLine = !open || construction;
+
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-4, -(names[1].split('\n').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+            return [-4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -(names[1].split('\n').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
+            return [0, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
         } else if (oX === 'right' && oY === 'top') {
-            return [4, -(names[1].split('\n').length + (!open ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+            return [4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
         } else if (oX === 'left' && oY === 'bottom') {
             return [-4, names[0].split('\n').length * LINE_HEIGHT[oY] + 1];
         } else if (oX === 'middle' && oY === 'bottom') {
@@ -74,7 +77,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                 r="4"
                 stroke="black"
                 strokeWidth="0.5"
-                strokeDasharray={open ? undefined : '1.5'}
+                strokeDasharray={secondLine ? '1.5' : undefined}
                 fill="white"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -98,14 +101,14 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                     {...getLangStyle(TextLanguage.en)}
                     baseOffset={1}
                 />
-                {!open && (
+                {secondLine && (
                     <text
                         dy={names[1].split('\n').length * LINE_HEIGHT.en + 2}
                         fontSize={LINE_HEIGHT.en}
                         dominantBaseline="hanging"
                         {...getLangStyle(TextLanguage.zh)}
                     >
-                        (暂缓开通)
+                        {!open ? '(暂缓开通)' : '(施工封闭)'}
                     </text>
                 )}
             </g>
@@ -123,6 +126,7 @@ export interface BjsubwayBasicStationAttributes extends StationAttributes {
      * Whether to show a (暂缓开通) hint.
      */
     open: boolean;
+    construction: boolean;
 }
 
 const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
@@ -130,6 +134,7 @@ const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     open: true,
+    construction: false,
 };
 
 const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttributes>) => {
@@ -194,10 +199,24 @@ const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttri
             label: t('panel.details.stations.bjsubwayBasic.open'),
             oneLine: true,
             isChecked: attrs.open ?? defaultBjsubwayBasicStationAttributes.open,
+            isDisabled: attrs.construction ?? false,
             onChange: val => {
                 attrs.open = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.bjsubwayBasic.construction'),
+            oneLine: true,
+            isChecked: attrs.construction ?? defaultBjsubwayBasicStationAttributes.construction,
+            isDisabled: !(attrs.open ?? true),
+            onChange: val => {
+                attrs.construction = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
         },
     ];
 

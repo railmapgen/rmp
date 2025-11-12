@@ -799,4 +799,16 @@ describe('Unit tests for param upgrade function', () => {
         // And the updated save has only version field changed.
         expect(newParam).toEqual(expectParam);
     });
+
+    it('61 -> 62', () => {
+        // Bump save version to support construction attribute for bjsubwayBasic.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":61}';
+        const newParam = UPGRADE_COLLECTION[61](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":62}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
