@@ -38,18 +38,18 @@ type StationsWithoutNameOffsetAttributes =
     | LondonTubeBasicStationAttributes
     | ShanghaiSuburbanRailwayStationAttributes
     | OsakaMetroStationAttributes;
-const stationTypesWithTransfer = [
-    StationType.GzmtrInt,
-    StationType.GzmtrInt2024,
-    StationType.ChongqingRTInt,
-    StationType.ChongqingRTInt2021,
-    StationType.KunmingRTInt,
-    StationType.MRTInt,
-    StationType.MTR,
-    StationType.OsakaMetro,
-    StationType.SuzhouRTInt,
-    StationType.TokyoMetroInt,
-];
+/**
+ * Helper to check if a station type supports the transfer/interchange property.
+ * Dynamically checks if the station has a 'transfer' property in its attributes.
+ */
+const supportsTransferProperty = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId
+): boolean => {
+    const stationType = graph.getNodeAttribute(station, 'type') as StationType;
+    const attrs = graph.getNodeAttribute(station, stationType);
+    return !!(attrs && 'transfer' in attrs);
+};
 
 /**
  * Change a station's type.
@@ -328,6 +328,13 @@ export const increaseZIndexInBatch = (
 
 /**
  * Helper to create transfer info from line colors.
+ *
+ * InterchangeInfo structure:
+ * [CityCode, LineCode, Color, TextColor, StationCode, AdditionalInfo, ...FutureExtensions]
+ * - Elements 0-3: Theme information (CityCode, LineCode, Color, TextColor)
+ * - Element 4: Station code (empty string for auto-fill)
+ * - Element 5: Additional info (empty string for auto-fill)
+ * - Element 6+: Reserved for future extensions (e.g., 'foshan' indicator for gzmtr-int-2024)
  */
 const createTransferInfo = (lineColors: Theme[]): InterchangeInfo[] => {
     return lineColors.map(color => [color[0], color[1], color[2], color[3], '', ''] as InterchangeInfo);
@@ -377,14 +384,12 @@ const makeStationType = (
 };
 
 /**
- * Automatically change the station type to basic or interchange.
- * No-op if the station is already the correct type or the station has one type
- * for both basic and interchange (e.g. Hong Kong MTR).
+ * Helper to get line colors from a station's connected edges.
  */
-export const checkAndChangeStationIntType = (
+const getStationLineColors = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId
-) => {
+): { lineColorStr: Set<string>; lineColor: Theme[] } => {
     const lines = graph.directedEdges(station);
     const lineColorStr: Set<string> = new Set<string>();
     const lineColor: Theme[] = [];
@@ -407,39 +412,105 @@ export const checkAndChangeStationIntType = (
         }
     }
 
-    if (lineColorStr.size > 1) {
-        const currentType = graph.getNodeAttribute(station, 'type') as StationType;
-        const type = makeStationType(graph, station, 'int');
+    return { lineColorStr, lineColor };
+};
 
-        const currentTransfer = ((stationTypesWithTransfer.includes(currentType)
-            ? (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer
-            : undefined) || [[]])[0];
+/**
+ * Automatically update station type based on the number of distinct line colors.
+ * - Changes to interchange type if multiple line colors are detected
+ * - Changes to basic type if only one line color is detected
+ * - No-op if the station is already the correct type or has one type for both basic and interchange
+ *
+ * @param graph Graph instance
+ * @param station Station ID
+ * @returns true if the type was changed, false otherwise
+ */
+export const autoUpdateStationType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId
+): boolean => {
+    const { lineColorStr, lineColor } = getStationLineColors(graph, station);
+
+    if (lineColorStr.size > 1) {
+        const type = makeStationType(graph, station, 'int');
         if (type) {
             changeStationType(graph, station, type);
-
-            // Populate the transfer property if the station type supports it
-            if (stationTypesWithTransfer.includes(type)) {
-                const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
-                const newTransferInfo = createTransferInfo(
-                    lineColor.filter(t => !currentTransfer.find(c => getColorStr(t) === getColorStr(c as Theme)))
-                );
-                updateStationTransfer(graph, station, type, [...existTransferInfo, ...newTransferInfo]);
-            }
-        } else {
-            // Handle case where station type doesn't have a basic/int pair but supports transfer
-            if (stationTypesWithTransfer.includes(currentType)) {
-                const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
-                const newTransferInfo = createTransferInfo(
-                    lineColor.filter(t => !currentTransfer.find(c => getColorStr(t) === getColorStr(c as Theme)))
-                );
-                updateStationTransfer(graph, station, currentType, [...existTransferInfo, ...newTransferInfo]);
-            }
+            return true;
         }
     } else if (lineColorStr.size === 1) {
         const type = makeStationType(graph, station, 'basic');
         if (type) {
             changeStationType(graph, station, type);
             changeNodesColorInBatch(graph, 'any', lineColor[0], [station], []);
+            return true;
         }
     }
+
+    return false;
+};
+
+/**
+ * Automatically populate transfer information based on connected line colors.
+ * - Merges existing transfer info with new line colors
+ * - Filters out transfer info for lines that are no longer connected
+ * - Only updates stations that support the transfer property
+ *
+ * @param graph Graph instance
+ * @param station Station ID
+ * @returns true if transfer info was updated, false otherwise
+ */
+export const autoPopulateTransfer = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId
+): boolean => {
+    if (!supportsTransferProperty(graph, station)) {
+        return false;
+    }
+
+    const { lineColorStr, lineColor } = getStationLineColors(graph, station);
+    const currentType = graph.getNodeAttribute(station, 'type') as StationType;
+
+    const getColorStr = (theme: Theme) => {
+        if (theme[0] !== CityCode.Other) {
+            return theme[0].toString() + '/' + theme[1].toString();
+        } else {
+            return theme[2].toString() + '/' + theme[3].toString();
+        }
+    };
+
+    // Get current transfer info, defaulting to empty array if not set
+    const currentTransfer = ((graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange)
+        .transfer || [[]])[0];
+
+    // Filter existing transfer info to keep only those still connected
+    const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
+
+    // Create transfer info for new lines not already in transfer
+    const newTransferInfo = createTransferInfo(
+        lineColor.filter(t => !currentTransfer.find(c => getColorStr(t) === getColorStr(c as Theme)))
+    );
+
+    // Update only if there are changes
+    const combinedTransfer = [...existTransferInfo, ...newTransferInfo];
+    if (JSON.stringify(currentTransfer) !== JSON.stringify(combinedTransfer)) {
+        updateStationTransfer(graph, station, currentType, combinedTransfer);
+        return true;
+    }
+
+    return false;
+};
+
+/**
+ * Automatically change the station type AND populate transfer information based on connected lines.
+ * This is a convenience wrapper that calls both autoUpdateStationType and autoPopulateTransfer.
+ *
+ * @param graph Graph instance
+ * @param station Station ID
+ */
+export const checkAndChangeStationIntType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    station: StnId
+) => {
+    autoUpdateStationType(graph, station);
+    autoPopulateTransfer(graph, station);
 };
