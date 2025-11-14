@@ -33,6 +33,7 @@ import {
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
     changeZIndexInBatch,
+    checkAndChangeStationIntType,
 } from '../../../util/change-types';
 import { findThemes } from '../../../util/color';
 import { usePaletteTheme } from '../../../util/hooks';
@@ -66,7 +67,7 @@ export const ChangeTypeModal = (props: {
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
     const {
-        preference: { autoParallel },
+        preference: { autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { activeSubscriptions } = useRootSelector(state => state.account);
 
@@ -290,6 +291,7 @@ export const ChangeTypeModal = (props: {
             : (graph.current.edges() as LineId[]);
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
             changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);
+            if (autoChangeStationType) stations.forEach(s => checkAndChangeStationIntType(graph.current, s as StnId));
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
             changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines);
