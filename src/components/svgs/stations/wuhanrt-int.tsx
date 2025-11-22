@@ -218,7 +218,7 @@ const wuhanRTIntStation: Station<WuhanRTIntStationAttributes> = {
         cities: [CityCode.Wuhan],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
-        tags: ['interchange'],
+        tags: [],
     },
 };
 
