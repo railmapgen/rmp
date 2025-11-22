@@ -17,15 +17,15 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 const NAME_DY_WUHAN_INT = {
     top: {
         lineHeight: 6.67,
-        offset: 3.5 + 1.5 + 10, // offset + baseOffset + radius
+        offset: 2.5 + 7, // offset + baseOffset + radius
     },
     middle: {
         lineHeight: 0,
         offset: 0,
     },
     bottom: {
-        lineHeight: 12.67,
-        offset: -0.17 + 1 + 10, // offset + baseOffset + radius
+        lineHeight: 10,
+        offset: -0.17 + 1 + 7, // offset + baseOffset + radius
     },
 };
 
@@ -50,8 +50,8 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const radius = 10;
-    const textX = nameOffsetX === 'left' ? -radius - 5 : nameOffsetX === 'right' ? radius + 5 : 0;
+    const radius = 7.5;
+    const textX = nameOffsetX === 'left' ? -radius - 1 : nameOffsetX === 'right' ? radius + 1 : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_WUHAN_INT[nameOffsetY].lineHeight +
             NAME_DY_WUHAN_INT[nameOffsetY].offset) *
@@ -73,7 +73,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             {/* Transfer icon - scaled to fill the circle */}
-            <g transform="scale(0.35)" transform-origin="0 0">
+            <g transform="scale(0.32)" transform-origin="0 0">
                 <path
                     fill="#0067a1"
                     fillRule="evenodd"
@@ -87,18 +87,14 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                     transform="translate(-49.84, -50.15)"
                 />
             </g>
-            <g
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
-                className="rmp-name-outline"
-                strokeWidth="1"
-            >
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={12.67}
-                    lineHeight={12.67}
+                    fontSize={10}
+                    lineHeight={10}
                     grow="up"
                     baseOffset={1}
+                    fontWeight="bold"
                     {...getLangStyle(TextLanguage.zh)}
                 />
                 <MultilineText
@@ -108,6 +104,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                     lineHeight={6.67}
                     grow="down"
                     baseOffset={1.5}
+                    fontWeight="bold"
                     {...getLangStyle(TextLanguage.en)}
                 />
             </g>

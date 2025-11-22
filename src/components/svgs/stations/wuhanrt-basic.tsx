@@ -19,15 +19,15 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 export const NAME_DY_WUHAN_BASIC = {
     top: {
         lineHeight: 6.67,
-        offset: 3.5 + 1.5 + 5, // offset + baseOffset + iconRadius
+        offset: 3.25 + 3.25, // offset + iconRadius
     },
     middle: {
         lineHeight: 0,
         offset: 0,
     },
     bottom: {
-        lineHeight: 12.67,
-        offset: -0.17 + 1 + 5, // offset + baseOffset + iconRadius
+        lineHeight: 10,
+        offset: -0.17 + 1 + 5, // offset + iconRadius
     },
 };
 
@@ -53,7 +53,7 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const textX = nameOffsetX === 'left' ? -10 : nameOffsetX === 'right' ? 10 : 0;
+    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_WUHAN_BASIC[nameOffsetY].lineHeight +
             NAME_DY_WUHAN_BASIC[nameOffsetY].offset) *
@@ -64,25 +64,20 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
-                r={5}
+                r={3.25}
                 stroke={color[2]}
-                strokeWidth="2"
+                strokeWidth="1"
                 fill="white"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
-                className="rmp-name-outline"
-                strokeWidth="1"
-            >
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
-                    fontSize={12.67}
-                    lineHeight={12.67}
+                    fontSize={10}
+                    lineHeight={10}
                     grow="up"
                     baseOffset={1}
                     {...getLangStyle(TextLanguage.zh)}
@@ -177,10 +172,7 @@ const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttribu
             type: 'custom',
             label: t('color'),
             component: (
-                <ColorField
-                    type={StationType.WuhanRTBasic}
-                    defaultTheme={defaultWuhanRTBasicStationAttributes.color}
-                />
+                <ColorField type={StationType.WuhanRTBasic} defaultTheme={defaultWuhanRTBasicStationAttributes.color} />
             ),
         },
     ];
@@ -190,7 +182,7 @@ const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttribu
 
 const wuhanRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" fill="white" />
+        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" fill="white" />
     </svg>
 );
 
