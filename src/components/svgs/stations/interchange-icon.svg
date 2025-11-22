@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff;
+        stroke: #0067a1;
+        stroke-miterlimit: 10;
+        stroke-width: 3px;
+      }
+
+      .cls-2 {
+        fill: #0067a1;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.6.0, SVG Export Plug-In . SVG Version: 1.2.0 Build 709)  -->
+  <g>
+    <g id="_圖層_1" data-name="圖層_1">
+      <circle class="cls-1" cx="49.84" cy="50.15" r="24" transform="translate(-13.98 80.57) rotate(-70.66)"/>
+      <path class="cls-2" d="M42.16,44.08c0-6.09,6.41-7.73,8.38-7.73,0,0-.01-1.41,0-1.41-6.85,0-12.27,4.18-12.27,9.14v8.54h-4.18l6.13,7.27,6.13-7.27h-4.18v-8.54Z"/>
+      <path class="cls-2" d="M57.53,56.22c0,6.09-6.41,7.73-8.38,7.73,0,0,.01,1.41,0,1.41,6.85,0,12.27-4.18,12.27-9.14v-8.54h4.18s-6.13-7.27-6.13-7.27l-6.13,7.27h4.18v8.54Z"/>
+    </g>
+  </g>
+</svg>
