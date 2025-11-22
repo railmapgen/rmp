@@ -195,9 +195,9 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
         },
         {
             type: 'input',
-            label: t('panel.details.stations.wuhanRTInt.height'),
+            label: t('panel.details.stations.wuhanrt-int.height'),
             value: attrs.height.toString(),
-            validator: val => Number.isInteger(val),
+            validator: val => Number.isInteger(Number(val)),
             onChange: val => {
                 attrs.height = Number(val);
                 handleAttrsUpdate(id, attrs);
@@ -206,9 +206,9 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
         },
         {
             type: 'input',
-            label: t('panel.details.stations.wuhanRTInt.width'),
+            label: t('panel.details.stations.wuhanrt-int.width'),
             value: attrs.width.toString(),
-            validator: val => Number.isInteger(val),
+            validator: val => Number.isInteger(Number(val)),
             onChange: val => {
                 attrs.width = Number(val);
                 handleAttrsUpdate(id, attrs);
