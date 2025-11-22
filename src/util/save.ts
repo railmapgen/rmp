@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 62;
+export const CURRENT_VERSION = 63;
 
 /**
  * Load the tutorial.
@@ -815,4 +815,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     61: param =>
         // Bump save version to support construction attribute for bjsubwayBasic.
         JSON.stringify({ ...JSON.parse(param), version: 62 }),
+    62: param =>
+        // Bump save version to support wuhan rail transit basic and int stations.
+        JSON.stringify({ ...JSON.parse(param), version: 63 }),
 };
