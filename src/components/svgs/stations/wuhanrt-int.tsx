@@ -17,7 +17,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 const NAME_DY_WUHAN_INT = {
     top: {
         lineHeight: 6.67,
-        offset: 3.5 + 1.5 + 7, // offset + baseOffset + radius
+        offset: 3.5 + 1.5 + 10, // offset + baseOffset + radius
     },
     middle: {
         lineHeight: 0,
@@ -25,7 +25,7 @@ const NAME_DY_WUHAN_INT = {
     },
     bottom: {
         lineHeight: 12.67,
-        offset: -0.17 + 1 + 7, // offset + baseOffset + radius
+        offset: -0.17 + 1 + 10, // offset + baseOffset + radius
     },
 };
 
@@ -50,7 +50,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const radius = 7;
+    const radius = 10;
     const textX = nameOffsetX === 'left' ? -radius - 5 : nameOffsetX === 'right' ? radius + 5 : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_WUHAN_INT[nameOffsetY].lineHeight +
@@ -66,14 +66,14 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                 r={radius}
                 fill="white"
                 stroke="#0067a1"
-                strokeWidth="0.8"
+                strokeWidth="1.2"
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            {/* Transfer icon - scaled to fit inside 7px radius circle */}
-            <g transform="scale(0.12)" transform-origin="0 0">
+            {/* Transfer icon - scaled to fit inside 10px radius circle */}
+            <g transform="scale(0.18)" transform-origin="0 0">
                 <path
                     fill="#0067a1"
                     fillRule="evenodd"
@@ -193,8 +193,8 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
 
 const wuhanRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="7" fill="white" stroke="currentColor" strokeWidth="0.8" />
-        <g transform="translate(12, 12) scale(0.12)">
+        <circle cx="12" cy="12" r="10" fill="white" stroke="currentColor" strokeWidth="1.2" />
+        <g transform="translate(12, 12) scale(0.18)">
             <path
                 fill="currentColor"
                 fillRule="evenodd"
