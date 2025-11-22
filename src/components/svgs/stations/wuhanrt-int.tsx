@@ -72,8 +72,8 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            {/* Transfer icon - scaled to fit inside 10px radius circle */}
-            <g transform="scale(0.18)" transform-origin="0 0">
+            {/* Transfer icon - scaled to fill the circle */}
+            <g transform="scale(0.35)" transform-origin="0 0">
                 <path
                     fill="#0067a1"
                     fillRule="evenodd"
@@ -194,7 +194,7 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
 const wuhanRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <circle cx="12" cy="12" r="10" fill="white" stroke="currentColor" strokeWidth="1.2" />
-        <g transform="translate(12, 12) scale(0.18)">
+        <g transform="translate(12, 12) scale(0.35)">
             <path
                 fill="currentColor"
                 fillRule="evenodd"
