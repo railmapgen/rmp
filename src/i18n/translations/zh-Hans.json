@@ -503,6 +503,12 @@
                     "translationMaxWidth": "英文名称长度",
                     "up": "上",
                     "down": "下"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "武汉轨道交通基本车站"
+                },
+                "wuhanRTInt": {
+                    "displayName": "武汉轨道交通换乘车站"
                 }
             },
             "lines": {

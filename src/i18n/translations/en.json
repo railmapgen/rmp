@@ -504,6 +504,12 @@
                     "translationMaxWidth": "English Name Length",
                     "up": "Up",
                     "down": "Down"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "Wuhan Rail Transit basic station"
+                },
+                "wuhanRTInt": {
+                    "displayName": "Wuhan Rail Transit interchange station"
                 }
             },
             "lines": {

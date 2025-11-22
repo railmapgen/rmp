@@ -506,6 +506,12 @@
                     "translationMaxWidth": "英語駅名の長さ",
                     "up": "上",
                     "down": "下"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "武漢軌道交通基本駅"
+                },
+                "wuhanRTInt": {
+                    "displayName": "武漢軌道交通乗換駅"
                 }
             },
             "lines": {
