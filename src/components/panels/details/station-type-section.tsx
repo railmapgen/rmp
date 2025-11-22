@@ -15,7 +15,7 @@ import { StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
-import { changeStationType, checkAndChangeStationIntType } from '../../../util/change-types';
+import { autoPopulateTransfer, changeStationType } from '../../../util/change-types';
 import stations from '../../svgs/stations/stations';
 
 export default function StationTypeSection() {
@@ -56,7 +56,7 @@ export default function StationTypeSection() {
         if (newType) {
             changeStationType(graph.current, selectedFirst!, newType);
             if (autoChangeStationType && selectedFirst.startsWith('stn'))
-                checkAndChangeStationIntType(graph.current, selectedFirst! as StnId);
+                autoPopulateTransfer(graph.current, selectedFirst! as StnId);
             hardRefresh();
         }
     };
