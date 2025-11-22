@@ -6,7 +6,6 @@ import {
     defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
-    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -18,7 +17,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 const NAME_DY_WUHAN_INT = {
     top: {
         lineHeight: 6.67,
-        offset: 3.5 + 1.5, // offset + baseOffset
+        offset: 3.5 + 1.5 + 5, // offset + baseOffset + radius
     },
     middle: {
         lineHeight: 0,
@@ -26,7 +25,7 @@ const NAME_DY_WUHAN_INT = {
     },
     bottom: {
         lineHeight: 12.67,
-        offset: -0.17 + 1, // offset + baseOffset
+        offset: -0.17 + 1 + 5, // offset + baseOffset + radius
     },
 };
 
@@ -36,9 +35,6 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultWuhanRTIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultWuhanRTIntStationAttributes.nameOffsetY,
-        rotate = defaultWuhanRTIntStationAttributes.rotate,
-        width = defaultWuhanRTIntStationAttributes.width,
-        height = defaultWuhanRTIntStationAttributes.height,
     } = attrs[StationType.WuhanRTInt] ?? defaultWuhanRTIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -54,42 +50,45 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const iconWidth =
-        rotate === 0 || rotate === 180 ? width : rotate === 90 || rotate === 270 ? height : width * Math.SQRT1_2;
-    const iconHeight =
-        rotate === 0 || rotate === 180 ? height : rotate === 90 || rotate === 270 ? width : width * Math.SQRT1_2;
-    // x should be ±10 in default (width=10), 10 - 10 / 2 = 5
-    const textDX = nameOffsetX === 'left' ? -5 : nameOffsetX === 'right' ? 5 : 0;
-    // if icon grows the same direction of the text, add the extra icon length to text
-    const textX = (Math.abs(textDX) + iconWidth / 2) * Math.sign(textDX);
-    const textDY =
+    const radius = 5;
+    const textX = nameOffsetX === 'left' ? -radius - 5 : nameOffsetX === 'right' ? radius + 5 : 0;
+    const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_WUHAN_INT[nameOffsetY].lineHeight +
             NAME_DY_WUHAN_INT[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
-    const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id}>
-            <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
-                <rect
-                    id={`stn_core_${id}`}
-                    x={-width / 2}
-                    y={-height / 2}
-                    height={height}
-                    width={width}
-                    ry={height / 2}
-                    stroke="black"
-                    strokeWidth="1"
-                    fill="white"
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            {/* White circle background */}
+            <circle
+                id={`stn_core_${id}`}
+                r={radius}
+                fill="white"
+                stroke="#0067a1"
+                strokeWidth="0.6"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
+            {/* Transfer icon - scaled to fit inside 5px radius circle */}
+            <g transform="scale(0.08)" transform-origin="0 0">
+                <path
+                    fill="#0067a1"
+                    fillRule="evenodd"
+                    d="M42.16,44.08c0-6.09,6.41-7.73,8.38-7.73,0,0-.01-1.41,0-1.41-6.85,0-12.27,4.18-12.27,9.14v8.54h-4.18l6.13,7.27,6.13-7.27h-4.18v-8.54Z"
+                    transform="translate(-49.84, -50.15)"
+                />
+                <path
+                    fill="#0067a1"
+                    fillRule="evenodd"
+                    d="M57.53,56.22c0,6.09-6.41,7.73-8.38,7.73,0,0,.01,1.41,0,1.41,6.85,0,12.27-4.18,12.27-9.14v-8.54h4.18s-6.13-7.27-6.13-7.27l-6.13,7.27h4.18v8.54Z"
+                    transform="translate(-49.84, -50.15)"
                 />
             </g>
             <g
-                transform={`translate(${x + textX}, ${y + textY})`}
+                transform={`translate(${textX}, ${textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="1"
@@ -122,18 +121,12 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
 export interface WuhanRTIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
-    rotate: Rotate;
-    width: number;
-    height: number;
 }
 
 const defaultWuhanRTIntStationAttributes: WuhanRTIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
-    rotate: 0,
-    height: 5,
-    width: 10,
 };
 
 const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>) => {
@@ -193,39 +186,6 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
             },
             minW: 'full',
         },
-        {
-            type: 'input',
-            label: t('panel.details.stations.wuhanrt-int.height'),
-            value: attrs.height.toString(),
-            validator: val => Number.isInteger(Number(val)),
-            onChange: val => {
-                attrs.height = Number(val);
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'input',
-            label: t('panel.details.stations.wuhanrt-int.width'),
-            value: attrs.width.toString(),
-            validator: val => Number.isInteger(Number(val)),
-            onChange: val => {
-                attrs.width = Number(val);
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-            onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
     ];
 
     return <RmgFields fields={fields} />;
@@ -233,7 +193,21 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
 
 const wuhanRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <rect x="7" y="9.5" height="5" width="10" ry="2.5" stroke="currentColor" fill="none" />
+        <circle cx="12" cy="12" r="5" fill="white" stroke="currentColor" strokeWidth="0.6" />
+        <g transform="translate(12, 12) scale(0.08)">
+            <path
+                fill="currentColor"
+                fillRule="evenodd"
+                d="M42.16,44.08c0-6.09,6.41-7.73,8.38-7.73,0,0-.01-1.41,0-1.41-6.85,0-12.27,4.18-12.27,9.14v8.54h-4.18l6.13,7.27,6.13-7.27h-4.18v-8.54Z"
+                transform="translate(-49.84, -50.15)"
+            />
+            <path
+                fill="currentColor"
+                fillRule="evenodd"
+                d="M57.53,56.22c0,6.09-6.41,7.73-8.38,7.73,0,0,.01,1.41,0,1.41,6.85,0,12.27-4.18,12.27-9.14v-8.54h4.18s-6.13-7.27-6.13-7.27l-6.13,7.27h4.18v8.54Z"
+                transform="translate(-49.84, -50.15)"
+            />
+        </g>
     </svg>
 );
 

@@ -1,4 +1,5 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -12,6 +13,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const NAME_DY_WUHAN_BASIC = {
@@ -35,6 +37,7 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultWuhanRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultWuhanRTBasicStationAttributes.nameOffsetY,
+        color = defaultWuhanRTBasicStationAttributes.color,
     } = attrs[StationType.WuhanRTBasic] ?? defaultWuhanRTBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -62,9 +65,8 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
             <circle
                 id={`stn_core_${id}`}
                 r={2.5}
-                stroke="black"
-                strokeWidth="1"
-                fill="white"
+                stroke="none"
+                fill={color[2]}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -101,7 +103,7 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
 /**
  * WuhanRTBasicStation specific props.
  */
-export interface WuhanRTBasicStationAttributes extends StationAttributes {
+export interface WuhanRTBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
 }
@@ -110,6 +112,7 @@ const defaultWuhanRTBasicStationAttributes: WuhanRTBasicStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    color: [CityCode.Wuhan, 'wuhan1', '#28628E', MonoColour.white],
 };
 
 const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttributes>) => {
@@ -169,6 +172,16 @@ const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttribu
             },
             minW: 'full',
         },
+        {
+            type: 'custom',
+            label: t('color'),
+            component: (
+                <ColorField
+                    type={StationType.WuhanRTBasic}
+                    defaultTheme={defaultWuhanRTBasicStationAttributes.color}
+                />
+            ),
+        },
     ];
 
     return <RmgFields fields={fields} />;
@@ -176,7 +189,7 @@ const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttribu
 
 const wuhanRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="2.5" stroke="currentColor" fill="none" />
+        <circle cx="12" cy="12" r="2.5" fill="currentColor" />
     </svg>
 );
 
