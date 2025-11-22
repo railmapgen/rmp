@@ -503,6 +503,14 @@
                     "translationMaxWidth": "영어 이름 길이",
                     "up": "위쪽",
                     "down": "아래쪽"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "우한 도시철도 기본역"
+                },
+                "wuhanRTInt": {
+                    "displayName": "우한 도시철도 환승역",
+                    "height": "높이",
+                    "width": "너비"
                 }
             },
             "lines": {
