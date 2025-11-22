@@ -19,7 +19,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 export const NAME_DY_WUHAN_BASIC = {
     top: {
         lineHeight: 6.67,
-        offset: 3.5 + 1.5 + 2.5, // offset + baseOffset + iconRadius
+        offset: 3.5 + 1.5 + 3.5, // offset + baseOffset + iconRadius
     },
     middle: {
         lineHeight: 0,
@@ -27,7 +27,7 @@ export const NAME_DY_WUHAN_BASIC = {
     },
     bottom: {
         lineHeight: 12.67,
-        offset: -0.17 + 1 + 2.5, // offset + baseOffset + iconRadius
+        offset: -0.17 + 1 + 3.5, // offset + baseOffset + iconRadius
     },
 };
 
@@ -64,7 +64,7 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
-                r={2.5}
+                r={3.5}
                 stroke="none"
                 fill={color[2]}
                 onPointerDown={onPointerDown}
@@ -189,7 +189,7 @@ const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttribu
 
 const wuhanRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+        <circle cx="12" cy="12" r="3.5" fill="currentColor" />
     </svg>
 );
 
