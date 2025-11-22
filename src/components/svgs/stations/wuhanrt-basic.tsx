@@ -76,7 +76,6 @@ const WuhanRTBasicStation = (props: StationComponentProps) => {
                 transform={`translate(${textX}, ${textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
-                fill="white"
                 strokeWidth="1"
             >
                 <MultilineText
