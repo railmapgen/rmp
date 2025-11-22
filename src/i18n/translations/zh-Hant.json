@@ -505,12 +505,10 @@
                     "down": "下"
                 },
                 "wuhanRTBasic": {
-                    "displayName": "武漢軌道交通基本站"
+                    "displayName": "武漢軌道交通基本車站"
                 },
                 "wuhanRTInt": {
-                    "displayName": "武漢軌道交通換乘站",
-                    "height": "高度",
-                    "width": "寬度"
+                    "displayName": "武漢軌道交通換乘車站"
                 }
             },
             "lines": {

@@ -511,9 +511,7 @@
                     "displayName": "武漢軌道交通基本駅"
                 },
                 "wuhanRTInt": {
-                    "displayName": "武漢軌道交通乗換駅",
-                    "height": "高さ",
-                    "width": "幅"
+                    "displayName": "武漢軌道交通乗換駅"
                 }
             },
             "lines": {

@@ -509,9 +509,7 @@
                     "displayName": "Wuhan Rail Transit basic station"
                 },
                 "wuhanRTInt": {
-                    "displayName": "Wuhan Rail Transit interchange station",
-                    "height": "Height",
-                    "width": "Width"
+                    "displayName": "Wuhan Rail Transit interchange station"
                 }
             },
             "lines": {

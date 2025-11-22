@@ -505,12 +505,10 @@
                     "down": "下"
                 },
                 "wuhanRTBasic": {
-                    "displayName": "武汉轨道交通基本站"
+                    "displayName": "武汉轨道交通基本车站"
                 },
                 "wuhanRTInt": {
-                    "displayName": "武汉轨道交通换乘站",
-                    "height": "高度",
-                    "width": "宽度"
+                    "displayName": "武汉轨道交通换乘车站"
                 }
             },
             "lines": {
