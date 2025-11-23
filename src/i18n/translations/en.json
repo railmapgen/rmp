@@ -510,6 +510,12 @@
                 },
                 "wuhanRTInt": {
                     "displayName": "Wuhan Rail Transit interchange station"
+                },
+                "csmetroBasic": {
+                    "displayName": "Changsha Metro basic station"
+                },
+                "csmetroInt": {
+                    "displayName": "Changsha Metro interchange station"
                 }
             },
             "lines": {

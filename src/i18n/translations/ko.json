@@ -509,6 +509,12 @@
                 },
                 "wuhanRTInt": {
                     "displayName": "우한 도시철도 환승역"
+                },
+                "csmetroBasic": {
+                    "displayName": "창사 지하철 기본역"
+                },
+                "csmetroInt": {
+                    "displayName": "창사 지하철 환승역"
                 }
             },
             "lines": {

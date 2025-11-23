@@ -509,6 +509,12 @@
                 },
                 "wuhanRTInt": {
                     "displayName": "武漢軌道交通換乘車站"
+                },
+                "csmetroBasic": {
+                    "displayName": "長沙軌道交通基本車站"
+                },
+                "csmetroInt": {
+                    "displayName": "長沙軌道交通換乘車站"
                 }
             },
             "lines": {

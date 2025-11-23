@@ -34,6 +34,7 @@ const dynamicColorInjectionStationKeys = [
     StationType.ChongqingRTInt2021,
     StationType.ChengduRTBasic,
     StationType.WuhanRTBasic,
+    StationType.CsmetroBasic,
 ] as const;
 const dynamicColorInjectionMiscNodeKeys = [
     MiscNodeType.Text,

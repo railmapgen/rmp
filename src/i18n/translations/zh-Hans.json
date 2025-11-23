@@ -509,6 +509,12 @@
                 },
                 "wuhanRTInt": {
                     "displayName": "武汉轨道交通换乘车站"
+                },
+                "csmetroBasic": {
+                    "displayName": "长沙轨道交通基本车站"
+                },
+                "csmetroInt": {
+                    "displayName": "长沙轨道交通换乘车站"
                 }
             },
             "lines": {
