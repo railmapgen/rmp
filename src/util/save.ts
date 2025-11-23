@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 63;
+export const CURRENT_VERSION = 64;
 
 /**
  * Load the tutorial.
@@ -818,4 +818,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     62: param =>
         // Bump save version to support wuhan rail transit basic and int stations.
         JSON.stringify({ ...JSON.parse(param), version: 63 }),
+    63: param =>
+        // Bump save version to support Changsha metro stations (csmetro).
+        JSON.stringify({ ...JSON.parse(param), version: 64 }),
 };
