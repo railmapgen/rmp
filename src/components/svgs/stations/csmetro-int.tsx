@@ -232,7 +232,7 @@ const csmetroIntStation: Station<CsmetroIntStationAttributes> = {
     attrsComponent: csmetroIntAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.csmetroInt.displayName',
-        cities: [CityCode.Other],
+        cities: [CityCode.Changsha],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: ['interchange'],

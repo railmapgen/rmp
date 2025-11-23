@@ -187,7 +187,7 @@ const csmetroBasicStation: Station<CsmetroBasicStationAttributes> = {
     attrsComponent: csmetroBasicAttrsComponent,
     metadata: {
         displayName: 'panel.details.stations.csmetroBasic.displayName',
-        cities: [CityCode.Other],
+        cities: [CityCode.Changsha],
         canvas: [CanvasType.RailMap],
         categories: [CategoriesType.Metro],
         tags: [],
