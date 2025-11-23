@@ -35,6 +35,8 @@ import chengduRTIntStation from './chengdurt-int';
 import osakaMetroStation from './osaka-metro';
 import wuhanRTBasicStation from './wuhanrt-basic';
 import wuhanRTIntStation from './wuhanrt-int';
+import csmetroBasicStation from './csmetro-basic';
+import csmetroIntStation from './csmetro-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -73,6 +75,8 @@ const stations = {
     [StationType.OsakaMetro]: osakaMetroStation,
     [StationType.WuhanRTBasic]: wuhanRTBasicStation,
     [StationType.WuhanRTInt]: wuhanRTIntStation,
+    [StationType.CsmetroBasic]: csmetroBasicStation,
+    [StationType.CsmetroInt]: csmetroIntStation,
 };
 
 export default stations;
