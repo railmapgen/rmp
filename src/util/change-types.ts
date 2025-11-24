@@ -479,8 +479,8 @@ export const autoPopulateTransfer = (
     };
 
     // Get current transfer info, defaulting to empty array if not set
-    const currentTransfer = ((graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange)
-        .transfer || [[]])[0];
+    const currentTransfer =
+        (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer?.at(0) ?? [];
 
     // Filter existing transfer info to keep only those still connected
     const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
