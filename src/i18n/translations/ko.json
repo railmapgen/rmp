@@ -515,6 +515,12 @@
                 },
                 "csmetroInt": {
                     "displayName": "창사 지하철 환승역"
+                },
+                "hzmetroBasic": {
+                    "displayName": "항저우 지하철 기본역"
+                },
+                "hzmetroInt": {
+                    "displayName": "항저우 지하철 환승역"
                 }
             },
             "lines": {

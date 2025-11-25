@@ -518,6 +518,12 @@
                 },
                 "csmetroInt": {
                     "displayName": "長沙メトロ乗り換え駅"
+                },
+                "hzmetroBasic": {
+                    "displayName": "杭州メトロ基本駅"
+                },
+                "hzmetroInt": {
+                    "displayName": "杭州メトロ乗り換え駅"
                 }
             },
             "lines": {
