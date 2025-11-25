@@ -39,6 +39,8 @@ import { WuhanRTBasicStationAttributes } from '../components/svgs/stations/wuhan
 import { WuhanRTIntStationAttributes } from '../components/svgs/stations/wuhanrt-int';
 import { CsmetroBasicStationAttributes } from '../components/svgs/stations/csmetro-basic';
 import { CsmetroIntStationAttributes } from '../components/svgs/stations/csmetro-int';
+import { HzmetroBasicStationAttributes } from '../components/svgs/stations/hzmetro-basic';
+import { HzmetroIntStationAttributes } from '../components/svgs/stations/hzmetro-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -79,6 +81,8 @@ export enum StationType {
     WuhanRTInt = 'wuhanrt-int',
     CsmetroBasic = 'csmetro-basic',
     CsmetroInt = 'csmetro-int',
+    HzmetroBasic = 'hzmetro-basic',
+    HzmetroInt = 'hzmetro-int',
 }
 
 export interface ExternalStationAttributes {
@@ -120,6 +124,8 @@ export interface ExternalStationAttributes {
     [StationType.WuhanRTInt]?: WuhanRTIntStationAttributes;
     [StationType.CsmetroBasic]?: CsmetroBasicStationAttributes;
     [StationType.CsmetroInt]?: CsmetroIntStationAttributes;
+    [StationType.HzmetroBasic]?: HzmetroBasicStationAttributes;
+    [StationType.HzmetroInt]?: HzmetroIntStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
