@@ -121,7 +121,7 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0],
+            value: attrs.names[0] ?? defaultHzmetroBasicStationAttributes.names[0],
             onChange: val => {
                 attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
@@ -141,7 +141,7 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
+            value: attrs.nameOffsetX ?? defaultHzmetroBasicStationAttributes.nameOffsetX,
             options: {
                 left: t('panel.details.stations.common.left'),
                 middle: t('panel.details.stations.common.middle'),
@@ -157,7 +157,7 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
+            value: attrs.nameOffsetY ?? defaultHzmetroBasicStationAttributes.nameOffsetY,
             options: {
                 top: t('panel.details.stations.common.top'),
                 middle: t('panel.details.stations.common.middle'),

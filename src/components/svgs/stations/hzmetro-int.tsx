@@ -174,7 +174,7 @@ const HzmetroIntAttrsComponent: React.FC<AttrsProps<HzmetroIntStationAttributes>
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameZh'),
-            value: attrs.names[0],
+            value: attrs.names[0] ?? defaultHzmetroIntStationAttributes.names[0],
             onChange: val => {
                 attrs.names[0] = val;
                 handleAttrsUpdate(id, attrs);
@@ -184,7 +184,7 @@ const HzmetroIntAttrsComponent: React.FC<AttrsProps<HzmetroIntStationAttributes>
         {
             type: 'textarea',
             label: t('panel.details.stations.common.nameEn'),
-            value: attrs.names[1],
+            value: attrs.names[1] ?? defaultHzmetroIntStationAttributes.names[1],
             onChange: val => {
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
@@ -226,7 +226,7 @@ const HzmetroIntAttrsComponent: React.FC<AttrsProps<HzmetroIntStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
+            value: attrs.rotate ?? defaultHzmetroIntStationAttributes.rotate,
             options: {
                 0: '0',
                 45: '45',
