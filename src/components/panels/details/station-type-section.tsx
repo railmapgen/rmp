@@ -11,10 +11,11 @@ import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StationType } from '../../../constants/stations';
+import { StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
-import { changeStationType } from '../../../util/change-types';
+import { autoPopulateTransfer, changeStationType } from '../../../util/change-types';
 import stations from '../../svgs/stations/stations';
 
 export default function StationTypeSection() {
@@ -29,6 +30,9 @@ export default function StationTypeSection() {
         selected,
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
+    const {
+        preference: { autoChangeStationType },
+    } = useRootSelector(state => state.app);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
@@ -51,6 +55,8 @@ export default function StationTypeSection() {
     const handleChangeStationType = () => {
         if (newType) {
             changeStationType(graph.current, selectedFirst!, newType);
+            if (autoChangeStationType && selectedFirst.startsWith('stn'))
+                autoPopulateTransfer(graph.current, selectedFirst! as StnId);
             hardRefresh();
         }
     };
