@@ -56,16 +56,16 @@ const JREastBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const iconWidth = (Math.max(...lines) - Math.min(...lines) + 1) * LINE_WIDTH;
-    const iconDX1 = (Math.min(...lines) - 0.5) * LINE_WIDTH;
-    const iconRotateDX1 =
-        Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2 - 1;
-    const iconRotateDX2 =
-        Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2 + 1;
-    const iconRotateDY1 =
-        Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2;
-    const iconRotateDY2 =
-        Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
+    // when all lines go beyond 0 or below 0, count 0 in so (x, y) is always inside the icon
+    // this should also make text to always avoid (x, y)
+    const min = Math.min(...lines) > 0 ? 0 : Math.min(...lines);
+    const max = Math.max(...lines) < 0 ? 0 : Math.max(...lines);
+    const iconWidth = (max - min + 1) * LINE_WIDTH;
+    const iconDX1 = (min - 0.5) * LINE_WIDTH;
+    const iconRotateDX1 = Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * min - LINE_WIDTH / 2 - 1;
+    const iconRotateDX2 = Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * max + LINE_WIDTH / 2 + 1;
+    const iconRotateDY1 = Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * min - LINE_WIDTH / 2;
+    const iconRotateDY2 = Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * max + LINE_WIDTH / 2;
 
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
     const textJAHeight = names[0].split('\n').length * (nameOffsetY === 'middle' ? 0 : NAME_JRE_BASIC.ja.size);
