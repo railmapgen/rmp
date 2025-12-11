@@ -130,7 +130,7 @@ export const ChangeTypeModal = (props: {
                     type: 'select',
                     label: t('panel.details.info.zIndex'),
                     value: zIndex,
-                    options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
+                    options: Object.fromEntries(Array.from({ length: 21 }, (_, i) => [i - 10, (i - 10).toString()])),
                     onChange: val => setZIndex(Number(val)),
                 },
             ],
