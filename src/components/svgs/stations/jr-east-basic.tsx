@@ -36,12 +36,14 @@ const JREastBasicStation = (props: StationComponentProps) => {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultJREastBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultJREastBasicStationAttributes.nameOffsetY,
-        rotate = defaultJREastBasicStationAttributes.rotate,
+        // rotate = defaultJREastBasicStationAttributes.rotate,
+        rotate: rotate_ = defaultJREastBasicStationAttributes.rotate,
         textOneLine = defaultJREastBasicStationAttributes.textOneLine,
         textVertical = defaultJREastBasicStationAttributes.textVertical,
         important = defaultJREastBasicStationAttributes.important,
         lines = defaultJREastBasicStationAttributes.lines,
     } = attrs[StationType.JREastBasic] ?? defaultJREastBasicStationAttributes;
+    const rotate = (rotate_ % 180) as 0 | 45 | 90 | 135;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -355,7 +357,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
             value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            options: { 0: '─', 45: '╲', 90: '│', 135: '╱' },
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
                 handleAttrsUpdate(id, attrs);
