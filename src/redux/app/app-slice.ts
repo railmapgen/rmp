@@ -43,6 +43,12 @@ export interface AppState {
         snapLines: boolean;
         predictNextNode: boolean;
         autoChangeStationType: boolean;
+        /**
+         * Whether to disable warnings when changing types.
+         */
+        disableWarning: {
+            changeType: boolean;
+        };
     };
 }
 
@@ -62,6 +68,9 @@ export const initialState: AppState = {
         snapLines: true,
         predictNextNode: true,
         autoChangeStationType: true,
+        disableWarning: {
+            changeType: false,
+        },
     },
 };
 
@@ -99,6 +108,9 @@ const appSlice = createSlice({
         setAutoChangeStationType: (state, action: PayloadAction<boolean>) => {
             state.preference.autoChangeStationType = action.payload;
         },
+        setDisableWarningChangeType: (state, action: PayloadAction<boolean>) => {
+            state.preference.disableWarning.changeType = action.payload;
+        },
     },
 });
 
@@ -113,5 +125,6 @@ export const {
     setSnapLines,
     setPredictNextNode,
     setAutoChangeStationType,
+    setDisableWarningChangeType,
 } = appSlice.actions;
 export default appSlice.reducer;

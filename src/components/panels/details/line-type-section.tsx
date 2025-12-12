@@ -6,6 +6,7 @@ import {
     AlertDialogHeader,
     AlertDialogOverlay,
     Button,
+    Checkbox,
 } from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
@@ -13,6 +14,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
@@ -29,7 +31,7 @@ export default function LineTypeSection() {
     }, [dispatch, refreshEdgesThunk, saveGraph]);
 
     const {
-        preference: { autoParallel },
+        preference: { autoParallel, disableWarning },
     } = useRootSelector(state => state.app);
     const { selected, theme } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
@@ -37,6 +39,7 @@ export default function LineTypeSection() {
 
     const [isChangeTypeWarningOpen, setIsChangeTypeWarningOpen] = React.useState(false);
     const cancelRef = React.useRef(null);
+    const [dontShowAgain, setDontShowAgain] = React.useState(false);
 
     const availableLinePathOptions = Object.fromEntries(
         Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
@@ -92,7 +95,11 @@ export default function LineTypeSection() {
                 handleChangeLineStyleType();
                 setNewLineStyleType(undefined);
             }
+            if (dontShowAgain) {
+                dispatch(setDisableWarningChangeType(true));
+            }
         }
+        setDontShowAgain(false);
         setIsChangeTypeWarningOpen(false);
     };
 
@@ -106,7 +113,13 @@ export default function LineTypeSection() {
                     value={currentLinePathType}
                     onChange={({ target: { value } }) => {
                         setNewLinePathType(value as LinePathType);
-                        setIsChangeTypeWarningOpen(true);
+                        if (!disableWarning.changeType) {
+                            setIsChangeTypeWarningOpen(true);
+                        } else {
+                            changeLinePathType(graph.current, selectedFirst!, value as LinePathType, autoParallel);
+                            setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
+                            hardRefresh();
+                        }
                     }}
                 />
             </RmgLabel>
@@ -118,7 +131,13 @@ export default function LineTypeSection() {
                     value={currentLineStyleType}
                     onChange={({ target: { value } }) => {
                         setNewLineStyleType(value as LineStyleType);
-                        setIsChangeTypeWarningOpen(true);
+                        if (!disableWarning.changeType) {
+                            setIsChangeTypeWarningOpen(true);
+                        } else {
+                            changeLineStyleType(graph.current, selectedFirst!, value as LineStyleType, theme);
+                            setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
+                            hardRefresh();
+                        }
                     }}
                 />
             </RmgLabel>
@@ -132,7 +151,16 @@ export default function LineTypeSection() {
                 <AlertDialogOverlay>
                     <AlertDialogContent>
                         <AlertDialogHeader>{t('warning')}</AlertDialogHeader>
-                        <AlertDialogBody>{t('panel.details.changeLineTypeContent')}</AlertDialogBody>
+                        <AlertDialogBody>
+                            {t('panel.details.changeLineTypeContent')}
+                            <Checkbox
+                                mt={4}
+                                isChecked={dontShowAgain}
+                                onChange={e => setDontShowAgain(e.target.checked)}
+                            >
+                                {t('noShowAgain')}
+                            </Checkbox>
+                        </AlertDialogBody>
                         <AlertDialogFooter>
                             <Button ref={cancelRef} onClick={() => handleClose(false)}>
                                 {t('cancel')}

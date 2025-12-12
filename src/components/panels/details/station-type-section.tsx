@@ -6,6 +6,7 @@ import {
     AlertDialogHeader,
     AlertDialogOverlay,
     Button,
+    Checkbox,
 } from '@chakra-ui/react';
 import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import React from 'react';
@@ -13,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { StationType } from '../../../constants/stations';
 import { StnId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { autoPopulateTransfer, changeStationType } from '../../../util/change-types';
@@ -31,7 +33,7 @@ export default function StationTypeSection() {
         refresh: { nodes: refreshNodes },
     } = useRootSelector(state => state.runtime);
     const {
-        preference: { autoChangeStationType },
+        preference: { autoChangeStationType, disableWarning },
     } = useRootSelector(state => state.app);
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
@@ -39,6 +41,7 @@ export default function StationTypeSection() {
     const [isChangeTypeWarningOpen, setIsChangeTypeWarningOpen] = React.useState(false);
     const cancelRef = React.useRef(null);
     const [newType, setNewType] = React.useState<StationType | undefined>(undefined);
+    const [dontShowAgain, setDontShowAgain] = React.useState(false);
 
     const [currentStationType, setCurrentStationType] = React.useState<StationType>(StationType.ShmetroBasic);
     React.useEffect(() => {
@@ -61,8 +64,14 @@ export default function StationTypeSection() {
         }
     };
     const handleClose = (proceed: boolean) => {
-        if (proceed) handleChangeStationType();
+        if (proceed) {
+            handleChangeStationType();
+            if (dontShowAgain) {
+                dispatch(setDisableWarningChangeType(true));
+            }
+        }
         setNewType(undefined);
+        setDontShowAgain(false);
         setIsChangeTypeWarningOpen(false);
     };
 
@@ -75,7 +84,14 @@ export default function StationTypeSection() {
                     value={currentStationType}
                     onChange={({ target: { value } }) => {
                         setNewType(value as StationType);
-                        setIsChangeTypeWarningOpen(true);
+                        if (!disableWarning.changeType) {
+                            setIsChangeTypeWarningOpen(true);
+                        } else {
+                            changeStationType(graph.current, selectedFirst!, value as StationType);
+                            if (autoChangeStationType && selectedFirst.startsWith('stn'))
+                                autoPopulateTransfer(graph.current, selectedFirst! as StnId);
+                            hardRefresh();
+                        }
                     }}
                 />
             </RmgLabel>
@@ -88,7 +104,16 @@ export default function StationTypeSection() {
                 <AlertDialogOverlay>
                     <AlertDialogContent>
                         <AlertDialogHeader>{t('warning')}</AlertDialogHeader>
-                        <AlertDialogBody>{t('panel.details.changeStationTypeContent')}</AlertDialogBody>
+                        <AlertDialogBody>
+                            {t('panel.details.changeStationTypeContent')}
+                            <Checkbox
+                                mt={4}
+                                isChecked={dontShowAgain}
+                                onChange={e => setDontShowAgain(e.target.checked)}
+                            >
+                                {t('noShowAgain')}
+                            </Checkbox>
+                        </AlertDialogBody>
                         <AlertDialogFooter>
                             <Button ref={cancelRef} onClick={() => handleClose(false)}>
                                 {t('cancel')}
