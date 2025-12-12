@@ -88,8 +88,9 @@ export default function StationTypeSection() {
                             setIsChangeTypeWarningOpen(true);
                         } else {
                             changeStationType(graph.current, selectedFirst!, value as StationType);
-                            if (autoChangeStationType && selectedFirst.startsWith('stn'))
+                            if (autoChangeStationType && selectedFirst.startsWith('stn')) {
                                 autoPopulateTransfer(graph.current, selectedFirst! as StnId);
+                            }
                             hardRefresh();
                         }
                     }}
