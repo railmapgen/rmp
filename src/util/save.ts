@@ -838,7 +838,6 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                     attr.lines = attr.lines.map((line: number) => -line);
                     attr.rotate = attr.rotate % 180;
                 }
-                console.log(attr);
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 66, graph: graph.export() });
