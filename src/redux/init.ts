@@ -8,6 +8,7 @@ import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
@@ -47,6 +48,10 @@ export const initStore = async (store: RootStore) => {
             store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
         if ('autoChangeStationType' in appState.preference)
             store.dispatch(setAutoChangeStationType(appState.preference.autoChangeStationType));
+        if ('disableWarning' in appState.preference) {
+            if ('changeType' in appState.preference.disableWarning)
+                store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
+        }
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));

@@ -36,6 +36,7 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
@@ -68,7 +69,15 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames, gridLines, snapLines, predictNextNode, autoChangeStationType },
+        preference: {
+            autoParallel,
+            randomStationsNames,
+            gridLines,
+            snapLines,
+            predictNextNode,
+            autoChangeStationType,
+            disableWarning: { changeType: disableWarningChangeType },
+        },
     } = useRootSelector(state => state.app);
     const {
         keepLastPath,
@@ -201,6 +210,15 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         isChecked={autoChangeStationType}
                                         onChange={({ target: { checked } }) =>
                                             dispatch(setAutoChangeStationType(checked))
+                                        }
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.disableWarningChangeType')}</Text>
+                                    <Switch
+                                        isChecked={disableWarningChangeType}
+                                        onChange={({ target: { checked } }) =>
+                                            dispatch(setDisableWarningChangeType(checked))
                                         }
                                     />
                                 </HStack>

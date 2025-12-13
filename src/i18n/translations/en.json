@@ -781,7 +781,8 @@
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
-                "autoChangeStationType": "Automatically switch between basic and interchange station"
+                "autoChangeStationType": "Automatically switch between basic and interchange station",
+                "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {
                 "title": "Shortcuts",
