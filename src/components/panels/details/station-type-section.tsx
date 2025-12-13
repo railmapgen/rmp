@@ -55,7 +55,7 @@ export default function StationTypeSection() {
         Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
     ) as { [k in StationType]: string };
 
-    const handleChangeStationType = () => {
+    const handleChangeStationType = (newType: StationType) => {
         if (newType) {
             changeStationType(graph.current, selectedFirst!, newType);
             if (autoChangeStationType && selectedFirst.startsWith('stn'))
@@ -64,8 +64,8 @@ export default function StationTypeSection() {
         }
     };
     const handleClose = (proceed: boolean) => {
-        if (proceed) {
-            handleChangeStationType();
+        if (proceed && newType) {
+            handleChangeStationType(newType);
             if (dontShowAgain) {
                 dispatch(setDisableWarningChangeType(true));
             }
@@ -83,11 +83,11 @@ export default function StationTypeSection() {
                     disabledOptions={[currentStationType]}
                     value={currentStationType}
                     onChange={({ target: { value } }) => {
-                        setNewType(value as StationType);
                         if (!disableWarning.changeType) {
+                            setNewType(value as StationType);
                             setIsChangeTypeWarningOpen(true);
                         } else {
-                            handleChangeStationType();
+                            handleChangeStationType(value as StationType);
                         }
                     }}
                 />

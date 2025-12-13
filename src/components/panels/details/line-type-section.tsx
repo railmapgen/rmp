@@ -72,14 +72,14 @@ export default function LineTypeSection() {
         lineStyleType => !lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType)
     );
 
-    const handleChangeLinePathType = () => {
+    const handleChangeLinePathType = (newLinePathType: LinePathType) => {
         if (newLinePathType) {
             changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
             setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
             hardRefresh();
         }
     };
-    const handleChangeLineStyleType = () => {
+    const handleChangeLineStyleType = (newLineStyleType: LineStyleType) => {
         if (newLineStyleType) {
             changeLineStyleType(graph.current, selectedFirst!, newLineStyleType, theme);
             setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
@@ -89,10 +89,10 @@ export default function LineTypeSection() {
     const handleClose = (proceed: boolean) => {
         if (proceed) {
             if (newLinePathType) {
-                handleChangeLinePathType();
+                handleChangeLinePathType(newLinePathType);
                 setNewLinePathType(undefined);
             } else if (newLineStyleType) {
-                handleChangeLineStyleType();
+                handleChangeLineStyleType(newLineStyleType);
                 setNewLineStyleType(undefined);
             }
             if (dontShowAgain) {
@@ -112,11 +112,11 @@ export default function LineTypeSection() {
                     defaultValue={currentLinePathType}
                     value={currentLinePathType}
                     onChange={({ target: { value } }) => {
-                        setNewLinePathType(value as LinePathType);
                         if (!disableWarning.changeType) {
+                            setNewLinePathType(value as LinePathType);
                             setIsChangeTypeWarningOpen(true);
                         } else {
-                            handleChangeLinePathType();
+                            handleChangeLinePathType(value as LinePathType);
                         }
                     }}
                 />
@@ -128,11 +128,11 @@ export default function LineTypeSection() {
                     defaultValue={currentLineStyleType}
                     value={currentLineStyleType}
                     onChange={({ target: { value } }) => {
-                        setNewLineStyleType(value as LineStyleType);
                         if (!disableWarning.changeType) {
+                            setNewLineStyleType(value as LineStyleType);
                             setIsChangeTypeWarningOpen(true);
                         } else {
-                            handleChangeLineStyleType();
+                            handleChangeLineStyleType(value as LineStyleType);
                         }
                     }}
                 />
