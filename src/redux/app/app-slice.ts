@@ -44,9 +44,12 @@ export interface AppState {
         predictNextNode: boolean;
         autoChangeStationType: boolean;
         /**
-         * Whether to disable warnings when changing types.
+         * Whether to disable warnings.
          */
         disableWarning: {
+            /**
+             * Whether to disable the change type warning dialog when changing station/line types.
+             */
             changeType: boolean;
         };
     };
