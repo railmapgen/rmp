@@ -79,7 +79,10 @@ const SvgWrapper = () => {
     const { height, width } = getCanvasSize(size);
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
-    const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
+    const isParallelDisabled =
+        !autoParallel || // Disabled if autoParallel is off
+        // Or disabled only if autoParallel is on and user has no cloud subscription and exceeds free limit
+        (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
 
     const makeStationName = useMakeStationName();
     useFonts();
