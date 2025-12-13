@@ -116,9 +116,7 @@ export default function LineTypeSection() {
                         if (!disableWarning.changeType) {
                             setIsChangeTypeWarningOpen(true);
                         } else {
-                            changeLinePathType(graph.current, selectedFirst!, value as LinePathType, autoParallel);
-                            setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
-                            hardRefresh();
+                            handleChangeLinePathType();
                         }
                     }}
                 />
@@ -134,9 +132,7 @@ export default function LineTypeSection() {
                         if (!disableWarning.changeType) {
                             setIsChangeTypeWarningOpen(true);
                         } else {
-                            changeLineStyleType(graph.current, selectedFirst!, value as LineStyleType, theme);
-                            setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
-                            hardRefresh();
+                            handleChangeLineStyleType();
                         }
                     }}
                 />
