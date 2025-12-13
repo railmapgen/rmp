@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 65;
+export const CURRENT_VERSION = 66;
 
 /**
  * Load the tutorial.
@@ -824,4 +824,23 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     64: param =>
         // Bump save version to support Hangzhou Metro stations (hzmetro).
         JSON.stringify({ ...JSON.parse(param), version: 65 }),
+    65: param => {
+        // Bump save version to update JR East lines information when rotate is greater or equal to 180.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.JREastBasic)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (attr.rotate >= 180) {
+                    attr.lines = attr.lines.map((line: number) => -line);
+                    attr.rotate = attr.rotate % 180;
+                }
+                console.log(attr);
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 66, graph: graph.export() });
+    },
 };

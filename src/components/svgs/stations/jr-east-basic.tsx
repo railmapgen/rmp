@@ -7,7 +7,6 @@ import {
     defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
-    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -16,6 +15,8 @@ import {
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
+
+type Rotate = 0 | 45 | 90 | 135;
 
 const NAME_JRE_BASIC = {
     ja: {
@@ -36,14 +37,12 @@ const JREastBasicStation = (props: StationComponentProps) => {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultJREastBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultJREastBasicStationAttributes.nameOffsetY,
-        // rotate = defaultJREastBasicStationAttributes.rotate,
-        rotate: rotate_ = defaultJREastBasicStationAttributes.rotate,
+        rotate = defaultJREastBasicStationAttributes.rotate,
         textOneLine = defaultJREastBasicStationAttributes.textOneLine,
         textVertical = defaultJREastBasicStationAttributes.textVertical,
         important = defaultJREastBasicStationAttributes.important,
         lines = defaultJREastBasicStationAttributes.lines,
     } = attrs[StationType.JREastBasic] ?? defaultJREastBasicStationAttributes;
-    const rotate = (rotate_ % 180) as 0 | 45 | 90 | 135;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
