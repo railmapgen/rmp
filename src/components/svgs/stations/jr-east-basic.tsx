@@ -7,7 +7,6 @@ import {
     defaultStationAttributes,
     NameOffsetX,
     NameOffsetY,
-    Rotate,
     Station,
     StationAttributes,
     StationComponentProps,
@@ -16,6 +15,8 @@ import {
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
+
+type Rotate = 0 | 45 | 90 | 135;
 
 const NAME_JRE_BASIC = {
     ja: {
@@ -56,16 +57,16 @@ const JREastBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const iconWidth = (Math.max(...lines) - Math.min(...lines) + 1) * LINE_WIDTH;
-    const iconDX1 = (Math.min(...lines) - 0.5) * LINE_WIDTH;
-    const iconRotateDX1 =
-        Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2 - 1;
-    const iconRotateDX2 =
-        Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2 + 1;
-    const iconRotateDY1 =
-        Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.min(...lines) - LINE_WIDTH / 2;
-    const iconRotateDY2 =
-        Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * Math.max(...lines) + LINE_WIDTH / 2;
+    // when all lines go beyond 0 or below 0, count 0 in so (x, y) is always inside the icon
+    // this should also make text to always avoid (x, y)
+    const min = Math.min(...lines) > 0 ? 0 : Math.min(...lines);
+    const max = Math.max(...lines) < 0 ? 0 : Math.max(...lines);
+    const iconWidth = (max - min + 1) * LINE_WIDTH;
+    const iconDX1 = (min - 0.5) * LINE_WIDTH;
+    const iconRotateDX1 = Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * min - LINE_WIDTH / 2 - 1;
+    const iconRotateDX2 = Math.abs(Math.cos((rotate * Math.PI) / 180)) * LINE_WIDTH * max + LINE_WIDTH / 2 + 1;
+    const iconRotateDY1 = Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * min - LINE_WIDTH / 2;
+    const iconRotateDY2 = Math.abs(Math.sin((rotate * Math.PI) / 180)) * LINE_WIDTH * max + LINE_WIDTH / 2;
 
     const textDX = nameOffsetX === 'left' ? iconRotateDX1 : nameOffsetX === 'right' ? iconRotateDX2 : 0;
     const textJAHeight = names[0].split('\n').length * (nameOffsetY === 'middle' ? 0 : NAME_JRE_BASIC.ja.size);
@@ -355,7 +356,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
             value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            options: { 0: '─', 45: '╲', 90: '│', 135: '╱' },
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
                 handleAttrsUpdate(id, attrs);
