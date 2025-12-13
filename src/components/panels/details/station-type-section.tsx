@@ -111,6 +111,7 @@ export default function StationTypeSection() {
                                 mt={4}
                                 isChecked={dontShowAgain}
                                 onChange={e => setDontShowAgain(e.target.checked)}
+                                width="100%"
                             >
                                 {t('noShowAgain')}
                             </Checkbox>

@@ -157,6 +157,7 @@ export default function LineTypeSection() {
                                 mt={4}
                                 isChecked={dontShowAgain}
                                 onChange={e => setDontShowAgain(e.target.checked)}
+                                width="100%"
                             >
                                 {t('noShowAgain')}
                             </Checkbox>
