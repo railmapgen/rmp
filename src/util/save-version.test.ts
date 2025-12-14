@@ -23,7 +23,12 @@ describe('parseVersionFromSave', () => {
     });
 
     it('should return undefined for non-integer version', () => {
-        const saveStr = JSON.stringify({ version: '66', graph: {}, svgViewBoxZoom: 100, svgViewBoxMin: { x: 0, y: 0 } });
+        const saveStr = JSON.stringify({
+            version: '66',
+            graph: {},
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+        });
         expect(parseVersionFromSave(saveStr)).toBeUndefined();
     });
 

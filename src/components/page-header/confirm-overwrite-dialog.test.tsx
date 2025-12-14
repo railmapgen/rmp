@@ -39,12 +39,7 @@ describe('ConfirmOverwriteDialog', () => {
 
     it('should not show version warning when saveVersion equals CURRENT_VERSION', () => {
         render(
-            <ConfirmOverwriteDialog
-                isOpen={true}
-                onClose={vi.fn()}
-                onConfirm={vi.fn()}
-                saveVersion={CURRENT_VERSION}
-            />
+            <ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} saveVersion={CURRENT_VERSION} />
         );
 
         expect(screen.getByText('Confirm overwrite')).toBeInTheDocument();
@@ -67,7 +62,9 @@ describe('ConfirmOverwriteDialog', () => {
 
     it('should show version warning when saveVersion is greater than CURRENT_VERSION', () => {
         const newerVersion = CURRENT_VERSION + 10;
-        render(<ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} saveVersion={newerVersion} />);
+        render(
+            <ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} saveVersion={newerVersion} />
+        );
 
         expect(screen.getByText('Confirm overwrite')).toBeInTheDocument();
         expect(

@@ -67,7 +67,7 @@ export const parseVersionFromSave = (saveStr: string): number | undefined => {
     try {
         const save = JSON.parse(saveStr);
         if ('version' in save && Number.isInteger(save.version)) {
-            return Number(save.version);
+            return save.version;
         }
     } catch {
         // Invalid JSON or missing version field
