@@ -1,6 +1,12 @@
 import React from 'react';
 import { AttrsProps } from '../../../../constants/constants';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import {
+    LINE_WIDTH,
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+} from '../../../../constants/lines';
 
 const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttributes>) => {
     const { id, path, handlePointerDown } = props;
@@ -16,8 +22,8 @@ const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttri
             d={path}
             fill="none"
             stroke="black"
-            strokeWidth="5"
-            strokeDasharray="0 10 10 10"
+            strokeWidth={LINE_WIDTH}
+            strokeDasharray={`0 ${LINE_WIDTH * 2} ${LINE_WIDTH * 2} ${LINE_WIDTH * 2}`}
             strokeLinecap="round"
             cursor="pointer"
             onPointerDown={onPointerDown}

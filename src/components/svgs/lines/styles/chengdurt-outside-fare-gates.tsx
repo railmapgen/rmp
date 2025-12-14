@@ -2,7 +2,13 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../../constants/constants';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import {
+    LINE_WIDTH,
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+} from '../../../../constants/lines';
 
 const ChengduRTOutsideFareGates = (props: LineStyleComponentProps<ChengduRTOutsideFareGatesAttributes>) => {
     const { id, path, newLine, handlePointerDown } = props;
@@ -18,8 +24,8 @@ const ChengduRTOutsideFareGates = (props: LineStyleComponentProps<ChengduRTOutsi
             d={path}
             fill="none"
             stroke="#b4b4b5"
-            strokeWidth="5"
-            strokeDasharray="6 5"
+            strokeWidth={LINE_WIDTH}
+            strokeDasharray={`${LINE_WIDTH + 1} ${LINE_WIDTH}`}
             cursor="pointer"
             onPointerDown={newLine ? undefined : onPointerDown}
             pointerEvents={newLine ? 'none' : undefined}

@@ -124,6 +124,8 @@ export interface ExternalLineStyleAttributes {
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
+export const LINE_WIDTH = 5;
+
 export type Path = `M${string}`;
 
 export interface LineWrapperComponentProps {

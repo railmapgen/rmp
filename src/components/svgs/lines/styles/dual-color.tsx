@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdOutlineSwapVert } from 'react-icons/md';
 import { AttrsProps, CityCode, Theme } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -40,8 +41,8 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth="2.5" strokeLinecap="round" />
-            <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth="2.5" strokeLinecap="round" />
+            <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
+            <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
         </g>
     );
 };

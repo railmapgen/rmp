@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdOutlineSwapVert } from 'react-icons/md';
 import { AttrsProps, CityCode, Theme } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -41,39 +42,45 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
             <defs>
                 <marker
                     id={`slantSeparator45${colorB[2]}A`}
-                    markerWidth="5"
-                    markerHeight="5"
-                    refX="2.5"
-                    refY="2.5"
+                    markerWidth={LINE_WIDTH}
+                    markerHeight={LINE_WIDTH}
+                    refX={LINE_WIDTH / 2}
+                    refY={LINE_WIDTH / 2}
                     orient="auto-start-reverse"
                     markerUnits="userSpaceOnUse"
                 >
-                    <polygon points="0,5 2.5,5 2.5,2.5" fill={colorB[2]} />
+                    <polygon
+                        points={`0,${LINE_WIDTH} ${LINE_WIDTH / 2},${LINE_WIDTH} ${LINE_WIDTH / 2},${LINE_WIDTH / 2}`}
+                        fill={colorB[2]}
+                    />
                 </marker>
                 <marker
                     id={`slantSeparator45${colorA[2]}B`}
-                    markerWidth="5"
-                    markerHeight="5"
-                    refX="2.5"
-                    refY="2.5"
+                    markerWidth={LINE_WIDTH}
+                    markerHeight={LINE_WIDTH}
+                    refX={LINE_WIDTH / 2}
+                    refY={LINE_WIDTH / 2}
                     orient="auto-start-reverse"
                     markerUnits="userSpaceOnUse"
                 >
-                    <polygon points="0,5 2.5,5 2.5,2.5" fill={colorA[2]} />
+                    <polygon
+                        points={`0,${LINE_WIDTH} ${LINE_WIDTH / 2},${LINE_WIDTH} ${LINE_WIDTH / 2},${LINE_WIDTH / 2}`}
+                        fill={colorA[2]}
+                    />
                 </marker>
             </defs>
             <path
                 d={pathA}
                 fill="none"
                 stroke={colorA[2]}
-                strokeWidth="5"
+                strokeWidth={LINE_WIDTH}
                 marker-end={`url(#slantSeparator45${colorB[2]}A)`}
             />
             <path
                 d={pathB}
                 fill="none"
                 stroke={colorB[2]}
-                strokeWidth="5"
+                strokeWidth={LINE_WIDTH}
                 marker-start={`url(#slantSeparator45${colorA[2]}B)`}
             />
         </g>

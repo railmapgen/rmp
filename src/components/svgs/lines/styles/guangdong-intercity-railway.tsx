@@ -1,7 +1,13 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { CityCode } from '../../../../constants/constants';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import {
+    LINE_WIDTH,
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+} from '../../../../constants/lines';
 import { ColorAttribute } from '../../../panels/details/color-field';
 
 const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongIntercityRailwayAttributes>) => {
@@ -16,8 +22,8 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeLinecap="round" />
-            <path d={path} fill="none" stroke={color[3]} strokeWidth="2.5" strokeDasharray="7.5" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH / 2} strokeDasharray="7.5" />
         </g>
     );
 };

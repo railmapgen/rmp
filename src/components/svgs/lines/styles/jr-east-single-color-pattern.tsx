@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -12,8 +13,6 @@ import {
 } from '../../../../constants/lines';
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
-
-const LINE_WIDTH = 5;
 const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
 const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
