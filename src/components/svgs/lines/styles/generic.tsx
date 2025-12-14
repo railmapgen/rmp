@@ -2,7 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { AttrsProps, CityCode } from '../../../../constants/constants';
+import { AttrsProps, CityCode, Theme } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
     LinePathAttributes,
@@ -20,6 +20,9 @@ const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
         width = defaultGenericAttributes.width,
         linecap = defaultGenericAttributes.linecap,
         dasharray = defaultGenericAttributes.dasharray,
+        outline = defaultGenericAttributes.outline,
+        outlineColor = defaultGenericAttributes.outlineColor,
+        outlineWidth = defaultGenericAttributes.outlineWidth,
     } = styleAttrs ?? defaultGenericAttributes;
 
     const onPointerDown = React.useCallback(
@@ -27,18 +30,41 @@ const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
         [id, handlePointerDown]
     );
 
+    if (!outline) {
+        return (
+            <path
+                id={id}
+                d={path}
+                fill="none"
+                stroke={color[2]}
+                strokeWidth={width}
+                strokeLinecap={linecap}
+                strokeDasharray={dasharray}
+                cursor="pointer"
+                onPointerDown={onPointerDown}
+            />
+        );
+    }
+
     return (
-        <path
-            id={id}
-            d={path}
-            fill="none"
-            stroke={color[2]}
-            strokeWidth={width}
-            strokeLinecap={linecap}
-            strokeDasharray={dasharray}
-            cursor="pointer"
-            onPointerDown={onPointerDown}
-        />
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+            <path
+                d={path}
+                fill="none"
+                stroke={outlineColor[2]}
+                strokeWidth={outlineWidth}
+                strokeLinecap={linecap}
+                strokeDasharray={dasharray}
+            />
+            <path
+                d={path}
+                fill="none"
+                stroke={color[2]}
+                strokeWidth={width}
+                strokeLinecap={linecap}
+                strokeDasharray={dasharray}
+            />
+        </g>
     );
 };
 
@@ -49,6 +75,9 @@ export interface GenericAttributes extends LinePathAttributes, ColorAttribute {
     width: number;
     linecap: 'butt' | 'round' | 'square';
     dasharray: string;
+    outline: boolean;
+    outlineColor: Theme;
+    outlineWidth: number;
 }
 
 const defaultGenericAttributes: GenericAttributes = {
@@ -56,6 +85,9 @@ const defaultGenericAttributes: GenericAttributes = {
     width: LINE_WIDTH,
     linecap: 'round',
     dasharray: '',
+    outline: false,
+    outlineColor: [CityCode.Shanghai, 'sh1', '#000000', MonoColour.white],
+    outlineWidth: LINE_WIDTH + 2,
 };
 
 const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
@@ -102,6 +134,43 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
                 handleAttrsUpdate(id, attrs);
             },
         },
+        {
+            type: 'switch',
+            label: t('panel.details.lines.generic.outline'),
+            oneLine: true,
+            isChecked: attrs.outline ?? defaultGenericAttributes.outline,
+            onChange: val => {
+                attrs.outline = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        ...((attrs.outline ?? defaultGenericAttributes.outline)
+            ? [
+                  {
+                      type: 'custom' as const,
+                      label: t('panel.details.lines.generic.outlineColor'),
+                      component: (
+                          <ColorField
+                              type={LineStyleType.Generic}
+                              colorKey="outlineColor"
+                              defaultTheme={defaultGenericAttributes.outlineColor}
+                          />
+                      ),
+                  },
+                  {
+                      type: 'input' as const,
+                      label: t('panel.details.lines.generic.outlineWidth'),
+                      variant: 'number' as const,
+                      value: (attrs.outlineWidth ?? defaultGenericAttributes.outlineWidth).toString(),
+                      validator: (val: string) => !Number.isNaN(val) && Number(val) > 0,
+                      onChange: (val: string) => {
+                          attrs.outlineWidth = Number(val);
+                          handleAttrsUpdate(id, attrs);
+                      },
+                  },
+              ]
+            : []),
     ];
 
     return <RmgFields fields={fields} />;

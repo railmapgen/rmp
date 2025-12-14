@@ -659,7 +659,10 @@
           "linecapButt": "Butt",
           "linecapRound": "Round",
           "linecapSquare": "Square",
-          "dasharray": "Dash array"
+          "dasharray": "Dash array",
+          "outline": "Outline",
+          "outlineColor": "Outline color",
+          "outlineWidth": "Outline width"
         }
       },
       "edge": {},

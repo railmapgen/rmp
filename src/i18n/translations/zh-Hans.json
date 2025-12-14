@@ -658,7 +658,10 @@
           "linecapButt": "平头",
           "linecapRound": "圆头",
           "linecapSquare": "方头",
-          "dasharray": "虚线数组"
+          "dasharray": "虚线数组",
+          "outline": "描边",
+          "outlineColor": "描边颜色",
+          "outlineWidth": "描边宽度"
         }
       },
       "edges": {},

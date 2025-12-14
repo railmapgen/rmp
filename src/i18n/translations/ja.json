@@ -661,7 +661,10 @@
           "linecapButt": "バット",
           "linecapRound": "ラウンド",
           "linecapSquare": "スクエア",
-          "dasharray": "破線配列"
+          "dasharray": "破線配列",
+          "outline": "アウトライン",
+          "outlineColor": "アウトライン色",
+          "outlineWidth": "アウトライン幅"
         }
       },
       "edges": {},
