@@ -5,6 +5,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -26,7 +27,7 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" strokeDasharray="2 2" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeDasharray="2 2" />
             <path d={path} fill="none" stroke={bgColor} strokeWidth="3.4" />
         </g>
     );

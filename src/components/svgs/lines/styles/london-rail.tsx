@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode, Theme } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -27,12 +28,12 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
 
     return !limitedService ? (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth="5" strokeLinecap="round" />
+            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path d={path} fill="none" stroke={colorForeground[2]} strokeWidth="2" strokeDasharray="7 3" />
         </g>
     ) : (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth="5" strokeLinecap="round" />
+            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path d={path} fill="none" stroke={colorForeground[2]} strokeWidth="4.25" strokeLinecap="round" />
             <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth="2" strokeDasharray="7 3" />
         </g>

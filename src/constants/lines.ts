@@ -38,6 +38,8 @@ import { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chong
 import { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 
+export const LINE_WIDTH = 5;
+
 export enum LinePathType {
     Diagonal = 'diagonal',
     Perpendicular = 'perpendicular',

@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -27,7 +28,7 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
             d={path}
             fill="none"
             stroke={color[2]}
-            strokeWidth="2.5"
+            strokeWidth={LINE_WIDTH / 2}
             strokeLinecap="round"
             cursor="pointer"
             onPointerDown={onPointerDown}

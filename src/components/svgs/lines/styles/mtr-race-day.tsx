@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -27,9 +28,9 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
             d={path}
             fill="none"
             stroke={color[2]}
-            strokeWidth="5"
+            strokeWidth={LINE_WIDTH}
             strokeLinecap="butt"
-            strokeDasharray="5 2.5"
+            strokeDasharray={`${LINE_WIDTH} ${LINE_WIDTH / 2}`}
             cursor="pointer"
             onPointerDown={onPointerDown}
         />

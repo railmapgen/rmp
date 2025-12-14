@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -27,7 +28,7 @@ const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAtt
             d={path}
             fill="none"
             stroke={color[2]}
-            strokeWidth="5"
+            strokeWidth={LINE_WIDTH}
             cursor="pointer"
             onPointerDown={onPointerDown}
         />

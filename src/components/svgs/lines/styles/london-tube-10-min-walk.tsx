@@ -1,5 +1,11 @@
 import React from 'react';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import {
+    LINE_WIDTH,
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+} from '../../../../constants/lines';
 
 const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkAttributes>) => {
     const { id, path, handlePointerDown } = props;
@@ -14,8 +20,8 @@ const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkA
             d={path}
             fill="none"
             stroke="black"
-            strokeWidth="5"
-            strokeDasharray="5 2.5"
+            strokeWidth={LINE_WIDTH}
+            strokeDasharray={`${LINE_WIDTH} ${LINE_WIDTH / 2}`}
             cursor="pointer"
             onPointerDown={onPointerDown}
         />

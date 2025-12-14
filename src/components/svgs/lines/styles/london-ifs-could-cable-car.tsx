@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -24,7 +25,7 @@ const LondonIFSCloudCableCar = (props: LineStyleComponentProps<LondonIFSCloudCab
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
             <path d={path} fill="none" stroke="white" strokeWidth="3" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth="1" />
         </g>
