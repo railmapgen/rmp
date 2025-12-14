@@ -691,7 +691,8 @@
             "confirmOverwrite": {
                 "title": "Confirm overwrite",
                 "body": "This action will overwrite your current project. Any unsaved changes will be lost. Are you sure you want to continue?",
-                "overwrite": "Overwrite"
+                "overwrite": "Overwrite",
+                "newerVersion": "Warning: This save file is from a newer version ({{saveVersion}}) than the current version ({{currentVersion}}). Loading it may cause errors or undefined behavior."
             }
         },
         "download": {

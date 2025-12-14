@@ -11,7 +11,7 @@ import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
-import { getInitialParam, RMPSave, upgrade } from '../../util/save';
+import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
@@ -185,7 +185,12 @@ export default function OpenActions() {
                 <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
             </Menu>
 
-            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmLoad} />
+            <ConfirmOverwriteDialog
+                isOpen={isConfirmOpen}
+                onClose={onConfirmClose}
+                onConfirm={handleConfirmLoad}
+                saveVersion={paramToLoad ? parseVersionFromSave(paramToLoad) : undefined}
+            />
         </>
     );
 }

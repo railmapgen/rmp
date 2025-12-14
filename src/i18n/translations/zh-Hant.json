@@ -690,7 +690,8 @@
             "confirmOverwrite": {
                 "title": "確認覆蓋",
                 "body": "此操作將覆蓋當前項目。所有未保存的更改將丟失。確定要繼續嗎？",
-                "overwrite": "覆蓋"
+                "overwrite": "覆蓋",
+                "newerVersion": "警告：此存檔檔案來自更新的版本（{{saveVersion}}），高於當前版本（{{currentVersion}}）。載入它可能會導致錯誤或未定義的行為。"
             }
         },
         "download": {

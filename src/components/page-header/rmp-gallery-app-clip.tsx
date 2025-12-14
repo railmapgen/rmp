@@ -199,7 +199,12 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                 <iframe src="/rmp-gallery/" loading="lazy" />
                 <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
             </RmgAppClip>
-            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmOpen} />
+            <ConfirmOverwriteDialog
+                isOpen={isConfirmOpen}
+                onClose={onConfirmClose}
+                onConfirm={handleConfirmOpen}
+                saveVersion={workToLoad?.version}
+            />
         </>
     );
 }

@@ -690,7 +690,8 @@
             "confirmOverwrite": {
                 "title": "확인 덮어쓰기",
                 "body": "이 작업은 현재 프로젝트를 덮어씁니다. 저장하지 않은 모든 변경 사항이 손실됩니다. 계속하시겠습니까?",
-                "overwrite": "덮어쓰기"
+                "overwrite": "덮어쓰기",
+                "newerVersion": "경고: 이 저장 파일은 현재 버전({{currentVersion}})보다 최신 버전({{saveVersion}})에서 가져온 것입니다. 로드하면 오류나 정의되지 않은 동작이 발생할 수 있습니다."
             }
         },
         "download": {
