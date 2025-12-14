@@ -30,7 +30,7 @@ import londonTubeTerminal from './styles/london-tube-terminal';
 import londonRail from './styles/london-rail';
 import londonSandwich from './styles/london-sandwich';
 import londonLutonAirportDART from './styles/london-DART';
-import londonIFSCloudCableCar from './styles/london-ifs-could-cable-car';
+import londonIFSCloudCableCar from './styles/london-ifs-cloud-cable-car';
 import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
 import chongqingRTLoop from './styles/chongqingrt-loop';
 import chongqingRTLineBadge from './styles/chongqingrt-line-badge';
