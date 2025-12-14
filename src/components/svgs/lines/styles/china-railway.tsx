@@ -25,7 +25,7 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
-            <path d={path} fill="none" stroke={color[3]} strokeWidth="4.67" strokeDasharray="17.5" />
+            <path d={path} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH - 0.33} strokeDasharray="17.5" />
         </g>
     );
 };

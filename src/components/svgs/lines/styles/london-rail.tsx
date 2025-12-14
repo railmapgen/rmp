@@ -29,13 +29,31 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
     return !limitedService ? (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
-            <path d={path} fill="none" stroke={colorForeground[2]} strokeWidth="2" strokeDasharray="7 3" />
+            <path
+                d={path}
+                fill="none"
+                stroke={colorForeground[2]}
+                strokeWidth={(LINE_WIDTH / 5) * 2}
+                strokeDasharray="7 3"
+            />
         </g>
     ) : (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
-            <path d={path} fill="none" stroke={colorForeground[2]} strokeWidth="4.25" strokeLinecap="round" />
-            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth="2" strokeDasharray="7 3" />
+            <path
+                d={path}
+                fill="none"
+                stroke={colorForeground[2]}
+                strokeWidth={(LINE_WIDTH / 5) * 4.25}
+                strokeLinecap="round"
+            />
+            <path
+                d={path}
+                fill="none"
+                stroke={colorForeground[2]}
+                strokeWidth={(LINE_WIDTH / 5) * 2}
+                strokeDasharray="7 3"
+            />
         </g>
     );
 };
