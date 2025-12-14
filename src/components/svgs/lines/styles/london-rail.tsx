@@ -50,7 +50,7 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
             <path
                 d={path}
                 fill="none"
-                stroke={colorForeground[2]}
+                stroke={colorBackground[2]}
                 strokeWidth={(LINE_WIDTH / 5) * 2}
                 strokeDasharray="7 3"
             />
