@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 66;
+export const CURRENT_VERSION = 67;
 
 /**
  * Load the tutorial.
@@ -842,4 +842,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 66, graph: graph.export() });
     },
+    66: param =>
+        // Bump save version to support generic line style.
+        JSON.stringify({ ...JSON.parse(param), version: 67 }),
 };
