@@ -12,34 +12,34 @@ describe('parseVersionFromSave', () => {
         expect(parseVersionFromSave(saveStr)).toBe(100);
     });
 
-    it('should return undefined for invalid JSON', () => {
+    it('should throw error for invalid JSON', () => {
         const saveStr = 'invalid json';
-        expect(parseVersionFromSave(saveStr)).toBeUndefined();
+        expect(() => parseVersionFromSave(saveStr)).toThrow();
     });
 
-    it('should return undefined for missing version field', () => {
+    it('should throw error for missing version field', () => {
         const saveStr = JSON.stringify({ graph: {}, svgViewBoxZoom: 100, svgViewBoxMin: { x: 0, y: 0 } });
-        expect(parseVersionFromSave(saveStr)).toBeUndefined();
+        expect(() => parseVersionFromSave(saveStr)).toThrow('Cannot parse version from the uploaded file');
     });
 
-    it('should return undefined for non-integer version', () => {
+    it('should throw error for non-integer version', () => {
         const saveStr = JSON.stringify({
             version: '66',
             graph: {},
             svgViewBoxZoom: 100,
             svgViewBoxMin: { x: 0, y: 0 },
         });
-        expect(parseVersionFromSave(saveStr)).toBeUndefined();
+        expect(() => parseVersionFromSave(saveStr)).toThrow('Cannot parse version from the uploaded file');
     });
 
-    it('should return undefined for float version', () => {
+    it('should throw error for float version', () => {
         const saveStr = JSON.stringify({
             version: 66.5,
             graph: {},
             svgViewBoxZoom: 100,
             svgViewBoxMin: { x: 0, y: 0 },
         });
-        expect(parseVersionFromSave(saveStr)).toBeUndefined();
+        expect(() => parseVersionFromSave(saveStr)).toThrow('Cannot parse version from the uploaded file');
     });
 
     it('should correctly identify version newer than CURRENT_VERSION', () => {
