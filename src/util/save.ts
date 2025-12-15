@@ -61,18 +61,18 @@ export const CURRENT_VERSION = 66;
 
 /**
  * Parse the version from a save string without fully validating the save.
- * Returns undefined if the version cannot be parsed.
+ *
+ * @param saveStr The save string.
+ * @returns The version number.
+ * @throws Error if the version cannot be parsed.
  */
-export const parseVersionFromSave = (saveStr: string): number | undefined => {
-    try {
-        const save = JSON.parse(saveStr);
-        if ('version' in save && Number.isInteger(save.version)) {
-            return save.version;
-        }
-    } catch {
-        // Invalid JSON or missing version field
+export const parseVersionFromSave = (saveStr: string): number => {
+    const save = JSON.parse(saveStr);
+    if ('version' in save && Number.isInteger(save.version)) {
+        return save.version;
     }
-    return undefined;
+    // Invalid JSON or missing version field
+    throw new Error('Cannot parse version from the uploaded file');
 };
 
 /**

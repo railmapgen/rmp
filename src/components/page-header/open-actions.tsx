@@ -104,7 +104,8 @@ export default function OpenActions() {
             try {
                 const paramStr = await readFileAsText(file);
                 setParamToLoad(paramStr);
-                setVersionToLoad(parseVersionFromSave(paramStr) ?? 0);
+                const version = parseVersionFromSave(paramStr);
+                setVersionToLoad(version);
                 onConfirmOpen();
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
@@ -122,7 +123,7 @@ export default function OpenActions() {
     const handleLoadTutorial = async () => {
         const initialParam = await getInitialParam();
         setParamToLoad(initialParam);
-        setVersionToLoad(parseVersionFromSave(initialParam) ?? 0);
+        setVersionToLoad(parseVersionFromSave(initialParam));
         onConfirmOpen();
     };
 
