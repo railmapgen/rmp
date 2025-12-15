@@ -42,6 +42,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const dispatch = useRootDispatch();
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [workToLoad, setWorkToLoad] = React.useState<RMPSave | null>(null);
+    const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
 
     const {
         telemetry: { project: isAllowProjectTelemetry },
@@ -56,8 +57,8 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         dispatch(refreshEdgesThunk());
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
 
-    const handleOpenTemplate = async (rmpSave: RMPSave) => {
-        // templates may be obsolete and require upgrades
+    const handleOpenWork = async (rmpSave: RMPSave) => {
+        // works may be obsolete and require upgrades
         const { version, images, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
@@ -86,15 +87,15 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const handleConfirmOpen = async () => {
         if (workToLoad) {
-            await handleOpenTemplate(workToLoad);
+            await handleOpenWork(workToLoad);
         }
         onConfirmClose();
         setWorkToLoad(null);
     };
 
-    const fetchAndApplyTemplate = async (id: string, host?: string) => {
+    const fetchAndApplyWork = async (id: string, host?: string) => {
         const urlPrefix = host ? `https://${host}` : '';
-        const template = (await (
+        const work = (await (
             (
                 await Promise.allSettled([
                     fetch(`${urlPrefix}/rmp-gallery/resources/real_world/${id}.json`),
@@ -104,8 +105,9 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         )
             .find(rep => rep.value.status === 200)
             ?.value.json()) as RMPSave | undefined;
-        if (template) {
-            setWorkToLoad(template);
+        if (work) {
+            setWorkToLoad(work);
+            setVersionToLoad(work.version);
             onConfirmOpen();
 
             if (isAllowAppTelemetry) {
@@ -135,8 +137,9 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             if (rep.status !== 200) {
                 throw new Error(t('header.open.importFailContent'));
             }
-            const work = await rep.json();
-            setWorkToLoad(work as RMPSave);
+            const work = (await rep.json()) as RMPSave;
+            setWorkToLoad(work);
+            setVersionToLoad(work.version);
             onConfirmOpen();
 
             if (isAllowAppTelemetry) {
@@ -162,7 +165,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     //
     // Since rmt will pass all params in `searchParams` here,
     // e.g. https://railmapgen.github.io/?app=rmp&searchParams=id.hostname
-    // we will split id and host name from it and `fetchAndApplyTemplate`.
+    // we will split id and host name from it and `fetchAndApplyWork`.
     //
     // It's really ugly to have multiple search params in searchParams after `encodeURIComponent`,
     // so we are joining id and host by '.'.
@@ -176,7 +179,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             let host: string | undefined = undefined;
             if (firstDotIndex !== -1) host = params.substring(firstDotIndex + 1);
             if (host === 'org') fetchAndApplyShare(id);
-            else fetchAndApplyTemplate(id, host);
+            else fetchAndApplyWork(id, host);
             // clear the search params in rmt, otherwise it will be preserved and re-imported every time
             rmgRuntime.updateAppMetadata({ search: '' });
         }
@@ -186,7 +189,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         CHN.onmessage = e => {
             const { event, data: id } = e.data;
             if (event === RMP_GALLERY_CHANNEL_EVENT) {
-                fetchAndApplyTemplate(id);
+                fetchAndApplyWork(id);
                 onClose();
             }
         };
@@ -199,7 +202,12 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                 <iframe src="/rmp-gallery/" loading="lazy" />
                 <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
             </RmgAppClip>
-            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmOpen} />
+            <ConfirmOverwriteDialog
+                isOpen={isConfirmOpen}
+                onClose={onConfirmClose}
+                onConfirm={handleConfirmOpen}
+                saveVersion={versionToLoad}
+            />
         </>
     );
 }

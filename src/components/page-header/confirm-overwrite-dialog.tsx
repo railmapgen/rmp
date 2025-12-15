@@ -6,14 +6,17 @@ import {
     AlertDialogHeader,
     AlertDialogOverlay,
     Button,
+    Text,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { CURRENT_VERSION } from '../../util/save';
 
 interface ConfirmOverwriteDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
+    saveVersion: number;
 }
 
 /**
@@ -21,9 +24,11 @@ interface ConfirmOverwriteDialogProps {
  * Used when importing data from various sources that would replace the current graph.
  */
 export default function ConfirmOverwriteDialog(props: ConfirmOverwriteDialogProps) {
-    const { isOpen, onClose, onConfirm } = props;
+    const { isOpen, onClose, onConfirm, saveVersion } = props;
     const { t } = useTranslation();
     const cancelRef = React.useRef<HTMLButtonElement | null>(null);
+
+    const isNewerVersion = saveVersion > CURRENT_VERSION;
 
     return (
         <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
@@ -32,7 +37,17 @@ export default function ConfirmOverwriteDialog(props: ConfirmOverwriteDialogProp
                     <AlertDialogHeader fontSize="lg" fontWeight="bold">
                         {t('header.open.confirmOverwrite.title')}
                     </AlertDialogHeader>
-                    <AlertDialogBody>{t('header.open.confirmOverwrite.body')}</AlertDialogBody>
+                    <AlertDialogBody>
+                        {t('header.open.confirmOverwrite.body')}
+                        {isNewerVersion && (
+                            <Text mt={4} color="orange.500" fontWeight="semibold">
+                                {t('header.open.confirmOverwrite.newerVersion', {
+                                    saveVersion,
+                                    currentVersion: CURRENT_VERSION,
+                                })}
+                            </Text>
+                        )}
+                    </AlertDialogBody>
                     <AlertDialogFooter>
                         <Button ref={cancelRef} onClick={onClose}>
                             {t('cancel')}

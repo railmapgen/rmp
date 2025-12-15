@@ -60,6 +60,22 @@ export interface RMPSave {
 export const CURRENT_VERSION = 66;
 
 /**
+ * Parse the version from a save string without fully validating the save.
+ *
+ * @param saveStr The save string.
+ * @returns The version number.
+ * @throws Error if the version cannot be parsed.
+ */
+export const parseVersionFromSave = (saveStr: string): number => {
+    const save = JSON.parse(saveStr);
+    if ('version' in save && Number.isInteger(save.version)) {
+        return save.version;
+    }
+    // Invalid JSON or missing version field
+    throw new Error('Cannot parse version from the uploaded file');
+};
+
+/**
  * Load the tutorial.
  */
 export const getInitialParam = async () => JSON.stringify((await import('../saves/tutorial.json')).default);

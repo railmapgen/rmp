@@ -693,7 +693,8 @@
             "confirmOverwrite": {
                 "title": "上書きの確認",
                 "body": "この操作により現在のプロジェクトが上書きされます。未保存の変更はすべて失われます。続行してもよろしいですか？",
-                "overwrite": "上書き"
+                "overwrite": "上書き",
+                "newerVersion": "警告：この作品は新しいバージョン（{{saveVersion}}）からのもので、現在のバージョン（{{currentVersion}}）より新しいです。読み込むと失敗や未定義の動作が発生する可能性があります。"
             }
         },
         "download": {
