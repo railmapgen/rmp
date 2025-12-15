@@ -16,7 +16,7 @@ export default defineConfig([
 
     eslint.configs.recommended,
 
-    ...tseslint.configs.recommended.map((config) => ({
+    ...tseslint.configs.recommended.map(config => ({
         ...config,
         files: ['**/*.ts', '**/*.tsx'],
     })),
@@ -24,20 +24,26 @@ export default defineConfig([
     importPlugin.flatConfigs.recommended,
 
     {
-        files: ['**/*.ts', '**/*.tsx'],
-        plugins: { react: reactPlugin, prettier: prettierPlugin },
+        plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': [
-                'warn',
+                'error',
                 {
                     endOfLine: 'auto',
                 },
             ],
+        },
+    },
+
+    {
+        files: ['**/*.ts', '**/*.tsx'],
+        plugins: { react: reactPlugin },
+        rules: {
             'no-constant-condition': ['error', { checkLoops: false }],
 
             ...reactPlugin.configs.recommended.rules,
             ...reactPlugin.configs['jsx-runtime'].rules,
-            "react/display-name": "off",
+            'react/display-name': 'off',
 
             // This is a temporary hack and should be removed after fixing the type error in rmg-components.
             '@typescript-eslint/ban-ts-comment': [
@@ -80,13 +86,13 @@ export default defineConfig([
     },
 
     {
-        files: ["**/*.test.ts"],
+        files: ['**/*.test.ts'],
         languageOptions: {
-            ecmaVersion: "latest",
-            sourceType: "module",
+            ecmaVersion: 'latest',
+            sourceType: 'module',
             globals: {
-                ...globals.browser, 
-                ...globals.jest, 
+                ...globals.browser,
+                ...globals.jest,
             },
         },
     },
