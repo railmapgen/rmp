@@ -35,6 +35,7 @@ import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
 import chongqingRTLoop from './styles/chongqingrt-loop';
 import chongqingRTLineBadge from './styles/chongqingrt-line-badge';
 import chengduRTOutsideFareGates from './styles/chengdurt-outside-fare-gates';
+import generic from './styles/generic';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -76,4 +77,5 @@ export const lineStyles = {
     [LineStyleType.ChongqingRTLoop]: chongqingRTLoop,
     [LineStyleType.ChongqingRTLineBadge]: chongqingRTLineBadge,
     [LineStyleType.ChengduRTOutsideFareGates]: chengduRTOutsideFareGates,
+    [LineStyleType.Generic]: generic,
 };

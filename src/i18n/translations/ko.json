@@ -1,925 +1,933 @@
 {
-    "color": "색깔",
-    "warning": "경고",
-    "cancel": "취소",
-    "apply": "사용",
-    "remove": "삭제",
-    "close": "다시",
-    "noShowAgain": "표시하지 않기",
-    "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
-
-    "panel": {
-        "tools": {
-            "showLess": "적게 표시",
-            "section": {
-                "lineDrawing": "선 그리기",
-                "stations": "역",
-                "miscellaneousNodes": "기타 노드"
-            },
-            "select": "선택하다",
-            "learnHowToAdd": {
-                "station": "역을 추가하는 방법 배우기!",
-                "misc-node": "노드를 추가하는 방법 배우기!",
-                "line": "라인 스타일을 추가하는 방법 배우기!"
-            }
-        },
-        "details": {
-            "header": "상세한 상황",
-            "info": {
-                "title": "기본정보",
-                "id": "고유 식별자",
-                "zIndex": "깊이",
-                "stationType": "역 유형",
-                "linePathType": "선분 경로 유형",
-                "lineStyleType": "선분 스타일 유형",
-                "type": "유형",
-                "parallel": "평행선",
-                "parallelIndex": "평행 인덱스"
-            },
-            "multipleSelection": {
-                "title": "다중 선택",
-                "change": "선택한 속성 변경",
-                "selected": "선택한 개체:",
-                "show": "보여주다",
-                "station": "역",
-                "miscNode": "기타 노드",
-                "edge": "윤곽"
-            },
-            "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
-            "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
-            "changeType": "종류 변경",
-            "nodePosition": {
-                "title": "노드 위치",
-                "pos": {
-                    "x": "가로 좌표",
-                    "y": "세로 좌표"
-                }
-            },
-            "lineExtremities": {
-                "title": "선분 양단",
-                "source": "시작점",
-                "target": "종말점",
-                "sourceName": "시작점 명칭",
-                "targetName": "종말점 명칭"
-            },
-            "specificAttrsTitle": "독특 속성",
-            "unknown": {
-                "error": "이런 :( 우리는 이 {{category}}를 인식할 수 없습니다. 아마도 더 최근 버전에서 생성되었을 것입니다.",
-                "node": "노드",
-                "lineType": "선분 경로",
-                "lineStyle": "선분 스타일"
-            },
-            "nodes": {
-                "common": {
-                    "nameZh": "한자 노선명칭",
-                    "nameEn": "영문 노선명칭",
-                    "nameJa": "일본 노선명칭",
-                    "num": "노선 번호"
-                },
-                "virtual": {
-                    "displayName": "가상 노드"
-                },
-                "shmetroNumLineBadge": {
-                    "displayName": "상해 지하철 디지털 노선 표지"
-                },
-                "shmetroTextLineBadge": {
-                    "displayName": "상해 지하철 문자 노선 표지"
-                },
-                "gzmtrLineBadge": {
-                    "displayName": "광저우 지하철 노선 표지",
-                    "tram": "시가 전차",
-                    "span": "행 범위 숫자"
-                },
-                "bjsubwayNumLineBadge": {
-                    "displayName": "베이징 지하철 노선 배지"
-                },
-                "bjsubwayTextLineBadge": {
-                    "displayName": "베이징 지하철 텍스트 라인 배지"
-                },
-                "berlinSBahnLineBadge": {
-                    "displayName": "베를린 S반 노선 배지"
-                },
-                "berlinUBahnLineBadge": {
-                    "displayName": "베를린 U반 노선 배지"
-                },
-                "suzhouRTNumLineBadge": {
-                    "displayName": "수주 철도 번호 라인 배지",
-                    "branch": "지선입니다"
-                },
-                "chongqingRTNumLineBadge": {
-                    "displayName": "충칭 철도 교통 디지털 노선 식별"
-                },
-                "chongqingRTTextLineBadge": {
-                    "displayName": "충칭 철도 교통 텍스트 라인 표시"
-                },
-                "chongqingRTNumLineBadge2021": {
-                    "displayName": "충칭 철도 교통 디지털 노선 식별 (2021)"
-                },
-                "chongqingRTTextLineBadge2021": {
-                    "displayName": "충칭 철도 교통 텍스트 라인 표시 (2021)",
-                    "isRapid": "고속 / 직속 열차 식별"
-                },
-                "shenzhenMetroNumLineBadge": {
-                    "displayName": "심천 지하철 번호 라인 배지",
-                    "branch": "지선입니다"
-                },
-                "mrtDestinationNumbers": {
-                    "displayName": "싱가포르 MRT 목적지 번호"
-                },
-                "mrtLineBadge": {
-                    "displayName": "싱가포르 MRT 노선 배지",
-                    "isTram": "LRT 노선 배지입니다"
-                },
-                "jrEastLineBadge": {
-                    "displayName": "JR 동일본 라인 배지",
-                    "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
-                },
-                "qingdaoMetroNumLineBadge": {
-                    "displayName": "칭다오 지하철 번호 라인 배지",
-                    "numEn": "영어로 된 줄 번호",
-                    "showText": "텍스트 표시"
-                },
-                "guangdongIntercityRailwayLineBadge": {
-                    "displayName": "광동 시외 철도 노선 표지판"
-                },
-                "londonArrow": {
-                    "displayName": "런던 화살표",
-                    "type": "유형",
-                    "continuation": "계속",
-                    "sandwich": "샌드위치",
-                    "tube": "튜브"
-                },
-                "chengduRTLineBadge": {
-                    "displayName": "청두 도시철도 노선 표식",
-                    "badgeType": {
-                        "displayName": "유형",
-                        "normal": "일반",
-                        "suburban": "교외 철도",
-                        "tram": "노면 전차"
-                    }
-                },
-                "taipeiMetroLineBadge": {
-                    "displayName": "타이페이 지하철 노선 뱃지",
-                    "tram": "트램"
-                },
-                "image": {
-                    "displayName": "이미지",
-                    "label": "라벨",
-                    "scale": "크기 조절",
-                    "rotate": "회전",
-                    "opacity": "불투명도",
-                    "preview": "미리보기"
-                },
-                "master": {
-                    "displayName": "마스터 노드",
-                    "type": "마스터 노드 유형",
-                    "undefined": "정의되지 않음"
-                },
-                "facilities": {
-                    "displayName": "시설",
-                    "type": "유형",
-                    "airport": "공항",
-                    "airport_2024": "공항 2024",
-                    "maglev": "자기부상열차",
-                    "disney": "디즈니",
-                    "railway": "기차역",
-                    "railway_2024": "기차역 2024",
-                    "hsr": "고속철도 (HSR)",
-                    "airport_hk": "홍콩 공항",
-                    "disney_hk": "홍콩 디즈니",
-                    "ngong_ping_360": "옹핑 360",
-                    "tiananmen": "천안문",
-                    "airport_bj": "베이징 공항",
-                    "bus_terminal_suzhou": "쑤저우 버스 터미널",
-                    "railway_suzhou": "쑤저우 기차역",
-                    "bus_interchange": "버스 환승 센터",
-                    "airport_sg": "창이 공항",
-                    "cruise_centre": "크루즈 센터",
-                    "sentosa_express": "센토사 익스프레스",
-                    "cable_car": "케이블카",
-                    "merlion": "멀라이언",
-                    "marina_bay_sands": "마리나 베이 샌즈",
-                    "gardens_by_the_bay": "가든스 바이 더 베이",
-                    "singapore_flyer": "싱가포르 플라이어",
-                    "esplanade": "에스플러네이드",
-                    "airport_qingdao": "칭다오 공항",
-                    "railway_qingdao": "칭다오 기차역",
-                    "coach_station_qingdao": "칭다오 시외 버스 터미널",
-                    "cruise_terminal_qingdao": "칭다오 크루즈 터미널",
-                    "tram_qingdao": "칭다오 트램",
-                    "airport_guangzhou": "광저우 공항",
-                    "railway_guangzhou": "광저우 기차역",
-                    "intercity_guangzhou": "광저우 시외 철도",
-                    "river_craft": "수상 교통 환승장",
-                    "airport_london": "런던 공항",
-                    "coach_station_london": "빅토리아 코치 스테이션",
-                    "airport_chongqing": "충칭 공항",
-                    "railway_chongqing": "충칭 기차역",
-                    "coach_station_chongqing": "충칭 시외 버스 터미널",
-                    "bus_station_chongqing": "충칭 버스 정류장",
-                    "shipping_station_chongqing": "충칭 여객선 터미널",
-                    "airport_chengdu": "청두 공항",
-                    "railway_chengdu": "청두 기차역",
-                    "railway_taiwan": "대만 철도",
-                    "hsr_taiwan": "대만 고속철도 (HSR)"
-                },
-                "text": {
-                    "displayName": "임의 글자",
-                    "content": "내용",
-                    "fontSize": "글자 대소",
-                    "lineHeight": "행고도",
-                    "textAnchor": "글자 앵커",
-                    "start": "시작",
-                    "middle": "가운데",
-                    "end": "끝",
-                    "auto": "자동",
-                    "hanging": "매달리는",
-                    "dominantBaseline": "현성 바셀린",
-                    "language": "언어로 된 글꼴 종류",
-                    "zh": "중국어",
-                    "en": "영어",
-                    "mtr_zh": "홍콩 MTR 중국어",
-                    "mtr_en": "홍콩 MTR 영어",
-                    "berlin": "베를린 S/U Bahn",
-                    "mrt": "싱가포르 MRT",
-                    "jreast_ja": "JR 동일본어",
-                    "jreast_en": "JR 동일본 영어",
-                    "tokyo_en": "도쿄 지하철 영어",
-                    "tube": "런던 지하철",
-                    "taipei": "타이페이 지하철",
-                    "fontSynthesisWarning": "글꼴이 지원하는 경우에만 굵게 및 기울임꼴 스타일을 사용할 수 있습니다.",
-                    "rotate": "회전",
-                    "italic": "이탤릭체",
-                    "bold": "굵게",
-                    "outline": "테두리"
-                },
-                "fill": {
-                    "displayName": "채우기 영역",
-                    "opacity": "채우기 불투명도",
-                    "patterns": "패턴",
-                    "logo": "브랜딩",
-                    "trees": "나무",
-                    "water": "물",
-                    "noClosedPath": "닫힌 경로 없음",
-                    "createSquare": "정사각형 만들기",
-                    "createTriangle": "삼각형 만들기",
-                    "createCircle": "원 만들기"
-                }
-            },
-            "stations": {
-                "common": {
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "nameJa": "일본 명칭",
-                    "nameOffsetX": "명칭 가로 이동",
-                    "nameOffsetY": "명칭 세로 이동",
-                    "rotate": "역회전각도",
-                    "lineCode": "노선 번호",
-                    "stationCode": "역 번호",
-                    "left": "왼쪽",
-                    "middle": "가운데",
-                    "right": "오른쪽",
-                    "top": "위",
-                    "bottom": "아래"
-                },
-                "interchange": {
-                    "title": "환승",
-                    "within": "같은 역에서 환승한",
-                    "outStation": "역을 나가 환승한",
-                    "outSystem": "시스템외환승",
-                    "addGroup": "환승 조합 추가",
-                    "noInterchanges": "비환승역",
-                    "nameZh": "한자 명칭",
-                    "nameEn": "영문 명칭",
-                    "add": "환승 추가",
-                    "up": "환승역 위로 이동",
-                    "down": "환승역 아래로 이동",
-                    "remove": "환승 삭제"
-                },
-                "shmetroBasic": {
-                    "displayName": "상해 지하철의 기본 역"
-                },
-                "shmetroBasic2020": {
-                    "displayName": "상해 지하철 기본 역(2020년)"
-                },
-                "shmetroInt": {
-                    "displayName": "상해 지하철 환승역",
-                    "height": "역 높이",
-                    "width": "역 폭"
-                },
-                "shmetroOsysi": {
-                    "displayName": "상하이 지하철 시스템 외환승 역"
-                },
-                "shanghaiSuburbanRailway": {
-                    "displayName": "상하이 기차역"
-                },
-                "gzmtrBasic": {
-                    "displayName": "광저우 지하철 기본역",
-                    "open": "개통여부",
-                    "secondaryNameZh": "한자 제2명칭",
-                    "secondaryNameEn": "영문 제2명칭",
-                    "tram": "시가 전차"
-                },
-                "gzmtrInt": {
-                    "displayName": "광저우 지하철 환승역",
-                    "open": "개통여부",
-                    "secondaryNameZh": "한자 제2명칭",
-                    "secondaryNameEn": "영문 제2명칭",
-                    "foshan": "포산"
-                },
-                "gzmtrInt2024": {
-                    "displayName": "광저우 지하철 환승역 (2024)",
-                    "columns": "역 열 수",
-                    "topHeavy": "상단에 더 많은 역 우선 배치",
-                    "anchorAt": "앵커 위치",
-                    "anchorAtNone": "중앙",
-                    "osiPosition": "역을 나가 환승",
-                    "osiPositionNone": "없음",
-                    "osiPositionLeft": "왼쪽",
-                    "osiPositionRight": "오른쪽"
-                },
-                "bjsubwayBasic": {
-                    "displayName": "베이징 지하철 기본역",
-                    "open": "개통여부",
-                    "construction": "공사중"
-                },
-                "bjsubwayInt": {
-                    "displayName": "베이징 지하철 환승역",
-                    "outOfStation": "역을 나가 환승"
-                },
-                "mtr": {
-                    "displayName": "홍콩 MTR 역"
-                },
-                "suzhouRTBasic": {
-                    "displayName": "쑤저우 궤도교통 기본역",
-                    "textVertical": "수직 이름"
-                },
-                "suzhouRTInt": {
-                    "displayName": "쑤저우 궤도교통 환승역"
-                },
-                "kunmingRTBasic": {
-                    "displayName": "쿤밍 궤도교통 기본역"
-                },
-                "kunmingRTInt": {
-                    "displayName": "쿤밍 궤도교통 환승역"
-                },
-                "MRTBasic": {
-                    "displayName": "싱가포르MRT기본역",
-                    "isTram": "LRT역이에요"
-                },
-                "MRTInt": {
-                    "displayName": "싱가포르MRT환승역"
-                },
-                "jrEastBasic": {
-                    "displayName": "JR 동일본 기본 역",
-                    "nameOffset": "이름 오프셋",
-                    "textOneLine": "한 줄로 표시된 이름",
-                    "textVertical": "수직 이름",
-                    "important": "중요한 역",
-                    "lines": "환승 노선 오프셋"
-                },
-                "jrEastImportant": {
-                    "displayName": "JR 동일본 중요 역",
-                    "textVertical": "수직 이름",
-                    "mostImportant": "가장 중요한 역",
-                    "minLength": "스테이션의 최소 길이"
-                },
-                "foshanMetroBasic": {
-                    "displayName": "포산 지하철 기본역",
-                    "open": "개통여부",
-                    "secondaryNameZh": "한자 제2명칭",
-                    "secondaryNameEn": "영문 제2명칭",
-                    "tram": "시가 전차"
-                },
-                "qingdaoMetro": {
-                    "displayName": "칭다오 지하철역",
-                    "isInt": "환승역인가"
-                },
-                "tokyoMetroBasic": {
-                    "displayName": "도쿄메트로 기본역",
-                    "nameOffset": "이름 오프셋",
-                    "textVertical": "업종명"
-                },
-                "tokyoMetroInt": {
-                    "displayName": "도쿄메트로 환승역",
-                    "mereOffset": {
-                        "displayName": "단순한 오프셋 이름",
-                        "none": "없음",
-                        "left1": "왼쪽(적음)",
-                        "left2": "왼쪽(더)",
-                        "right1": "오른쪽(적음)",
-                        "right2": "맞아요 (더)",
-                        "up": "위로",
-                        "down": "아래에"
-                    },
-                    "importance": {
-                        "displayName": "역 중요성",
-                        "default": "기본",
-                        "middle": "가운데",
-                        "high": "높은"
-                    },
-                    "align": {
-                        "displayName": "아이콘 정렬",
-                        "horizontal": "수평의",
-                        "vertical": "수직의"
-                    }
-                },
-                "londonTubeCommon": {
-                    "stepFreeAccess": "단차 없는 접근",
-                    "stepFreeAccessNone": "없음",
-                    "stepFreeAccessTrain": "거리에서 열차까지",
-                    "stepFreeAccessPlatform": "거리에서 플랫폼까지"
-                },
-                "londonTubeBasic": {
-                    "displayName": "런던 지하철 기본역",
-                    "terminal": "종착역",
-                    "terminalNameRotate": "터미널 이름 회전",
-                    "shareTracks": "선로 공유",
-                    "shareTracksIndex": "선로 공유 지수"
-                },
-                "londonTubeInt": {
-                    "displayName": "런던 지하철 환승역"
-                },
-                "londonRiverServicesInt": {
-                    "displayName": "런던 강 서비스 환승역"
-                },
-                "guangdongIntercityRailway": {
-                    "displayName": "광둥 시외 기차역"
-                },
-                "chongqingRTBasic": {
-                    "displayName": "충칭 궤도교통 기본역",
-                    "isLoop": "순환역"
-                },
-                "chongqingRTInt": {
-                    "displayName": "충칭 궤도교통 환승역",
-                    "textDistance": {
-                        "x": "가로 문자 거리",
-                        "y": "세로 문자 거리",
-                        "near": "가까이",
-                        "far": "멀리"
-                    }
-                },
-                "chongqingRTBasic2021": {
-                    "displayName": "충칭 궤도교통 기본역 (2021)",
-                    "open": "개통여부"
-                },
-                "chongqingRTInt2021": {
-                    "displayName": "충칭 도시철도 환승역 (2021)",
-                    "isRapid": "급행/직통 열차 정차역",
-                    "isWide": "광폭 역",
-                    "wideDirection": {
-                        "displayName": "방향",
-                        "vertical": "세로",
-                        "horizontal": "가로"
-                    }
-                },
-                "chengduRTBasic": {
-                    "displayName": "청두 도시철도 기본 역",
-                    "isVertical": "종관 역",
-                    "stationType": {
-                        "displayName": "역 유형",
-                        "normal": "일반 역",
-                        "branchTerminal": "지선 종점역",
-                        "joint": "공선 환승역",
-                        "tram": "노면 전차역"
-                    },
-                    "rotation": "회전 각도"
-                },
-                "chengduRTInt": {
-                    "displayName": "청두 도시철도 환승역"
-                },
-                "osakaMetro": {
-                    "displayName": "오사카 지하철역",
-                    "stationType": "역 유형",
-                    "normalType": "일반 역",
-                    "throughType": "직결 운행",
-                    "oldName": "이전 역 이름",
-                    "nameVertical": "이름 세로 표시",
-                    "stationVertical": "역 세로 레이아웃",
-                    "nameOverallPosition": "이름 전체 위치",
-                    "nameOffsetPosition": "이름 오프셋 위치",
-                    "nameMaxWidth": "일본어 이름 길이",
-                    "oldNameMaxWidth": "이전 역 이름 길이",
-                    "translationMaxWidth": "영어 이름 길이",
-                    "up": "위쪽",
-                    "down": "아래쪽"
-                },
-                "wuhanRTBasic": {
-                    "displayName": "우한 도시철도 기본역"
-                },
-                "wuhanRTInt": {
-                    "displayName": "우한 도시철도 환승역"
-                },
-                "csmetroBasic": {
-                    "displayName": "창사 지하철 기본역"
-                },
-                "csmetroInt": {
-                    "displayName": "창사 지하철 환승역"
-                },
-                "hzmetroBasic": {
-                    "displayName": "항저우 지하철 기본역"
-                },
-                "hzmetroInt": {
-                    "displayName": "항저우 지하철 환승역"
-                }
-            },
-            "lines": {
-                "reconcileId": "연결 선분 고유 식별자",
-                "common": {
-                    "offsetFrom": "시작점 오프셋",
-                    "offsetTo": "끝점 오프셋",
-                    "startFrom": "여기서부터 시작",
-                    "roundCornerFactor": "회전원각인자",
-                    "from": "에서",
-                    "to": "까지",
-                    "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
-                    "changeInBaseLine": "기본선에서 변경하십시오:"
-                },
-                "simple": {
-                    "displayName": "기본 선분",
-                    "offset": "오프셋"
-                },
-                "diagonal": {
-                    "displayName": "135° 접힌 선분"
-                },
-                "perpendicular": {
-                    "displayName": "90° 수직 선분"
-                },
-                "rotatePerpendicular": {
-                    "displayName": "90° 수직 경로 회전"
-                },
-                "singleColor": {
-                    "displayName": "단색 스타일"
-                },
-                "shmetroVirtualInt": {
-                    "displayName": "상해 지하철 역 환승 모습"
-                },
-                "shanghaiSuburbanRailway": {
-                    "displayName": "상하이 도시철도 스타일",
-                    "isEnd": "끝 범위"
-                },
-                "gzmtrVirtualInt": {
-                    "displayName": "광저우 지하철 역 환승 모습"
-                },
-                "gzmtrLoop": {
-                    "displayName": "광저우 지하철 순환선 스타일"
-                },
-                "chinaRailway": {
-                    "displayName": "중국 철도 모습"
-                },
-                "bjsubwaySingleColor": {
-                    "displayName": "베이징 지하철 단색 스타일"
-                },
-                "bjsubwayTram": {
-                    "displayName": "베이징 지하철 노면 전차 모습"
-                },
-                "bjsubwayDotted": {
-                    "displayName": "베이징 지하철 점선 스타일"
-                },
-                "dualColor": {
-                    "displayName": "이색 스타일",
-                    "swap": "색을 바꾸기",
-                    "colorA": "색깔 A",
-                    "colorB": "색깔 B"
-                },
-                "river": {
-                    "displayName": "강 스타일",
-                    "width": "폭"
-                },
-                "mtrRaceDays": {
-                    "displayName": "홍콩 MTR 경마일 스타일"
-                },
-                "mtrLightRail": {
-                    "displayName": "홍콩 MTR 경전철 스타일"
-                },
-                "mtrUnpaidArea": {
-                    "displayName": "홍콩 MTR 미결제 구역 스타일"
-                },
-                "mtrPaidArea": {
-                    "displayName": "홍콩 MTR 결제완료 구역 스타일"
-                },
-                "mrtUnderConstruction": {
-                    "displayName": "싱가포르 MRT 공사중 스타일"
-                },
-                "mrtSentosaExpress": {
-                    "displayName": "싱가포르 MRT 센토사 익스프레스 스타일"
-                },
-                "mrtTapeOut": {
-                    "displayName": "싱가포르 MRT 환승을 위한 탭 아웃 스타일"
-                },
-                "jrEastSingleColor": {
-                    "displayName": "JR 동일본 단색 스타일"
-                },
-                "jrEastSingleColorPattern": {
-                    "displayName": "JR 동일본 단색 크로스해치 패턴 스타일"
-                },
-                "lrtSingleColor": {
-                    "displayName": "싱가포르 LRT 단색 스타일"
-                },
-                "londonTubeInternalInt": {
-                    "displayName": "런던 지하철 내부 환승 스타일"
-                },
-                "londonTube10MinWalk": {
-                    "displayName": "런던 지하철 10분 이내 도보 환승 스타일"
-                },
-                "londonTubeTerminal": {
-                    "displayName": "런던 지하철 종착 스타일"
-                },
-                "londonRail": {
-                    "displayName": "런던 철도 스타일",
-                    "limitedService": "제한 서비스/혼잡 시간대만",
-                    "colorBackground": "배경 색상",
-                    "colorForeground": "전경 색상"
-                },
-                "londonSandwich": {
-                    "displayName": "런던 샌드위치 스타일"
-                },
-                "londonLutonAirportDART": {
-                    "displayName": "런던 루튼 공항 DART 스타일"
-                },
-                "londonIFSCloudCableCar": {
-                    "displayName": "런던 IFS 클라우드 케이블카 스타일"
-                },
-                "guangdongIntercityRailway": {
-                    "displayName": "광동성 도시간 철도 스타일"
-                },
-                "chongqingRTLineBadge": {
-                    "displayName": "충칭 궤도교통 노선 표지 연결선 스타일"
-                },
-                "chongqingRTLoop": {
-                    "displayName": "충칭 궤도교통 순환선 스타일"
-                },
-                "chengduRTOutsideFareGates": {
-                    "displayName": "청두 도시철도 개찰구 환승 방식"
-                }
-            },
-            "edges": {},
-            "image": {
-                "importTitle": "이미지 패널",
-                "exportTitle": "프로젝트에 이미지 첨부",
-                "local": "로컬 이미지",
-                "server": "서버 이미지",
-                "add": "이미지 업로드",
-                "error": "이미지 업로드에 실패했습니다!",
-                "loading": "이미지를 불러오는 중..."
-            },
-            "footer": {
-                "duplicate": "복사",
-                "copy": "복사",
-                "remove": "삭제"
-            }
-        }
+  "color": "색깔",
+  "warning": "경고",
+  "cancel": "취소",
+  "apply": "사용",
+  "remove": "삭제",
+  "close": "다시",
+  "noShowAgain": "표시하지 않기",
+  "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
+  "panel": {
+    "tools": {
+      "showLess": "적게 표시",
+      "section": {
+        "lineDrawing": "선 그리기",
+        "stations": "역",
+        "miscellaneousNodes": "기타 노드"
+      },
+      "select": "선택하다",
+      "learnHowToAdd": {
+        "station": "역을 추가하는 방법 배우기!",
+        "misc-node": "노드를 추가하는 방법 배우기!",
+        "line": "라인 스타일을 추가하는 방법 배우기!"
+      }
     },
-
-    "header": {
-        "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
-        "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
-        "search": "방송국 검색",
-        "open": {
-            "new": "신 프로젝트",
-            "config": "프로젝트 가져오기",
-            "projectRMG": "RMG 프로젝트에서 가져오기",
-            "invalidType": "잘못된 파일 형식입니다! JSON 형식의 파일만 허용됩니다.",
-            "unknownError": "업로드된 파일의 파싱 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
-            "gallery": "갤러리에서 가져오기",
-            "tutorial": "튜토리얼 시작",
-            "importOK": "템플릿 {{id}}가 가져 왔습니다.",
-            "importOKContent": "이 변경 사항에 만족하지 않으십니까? Ctrl + Z 또는 실행 취소 버튼을 사용하여 실행 취소하세요.",
-            "importFail": "{{id}}를 가져올 수 없습니다.",
-            "importFailContent": "파일을 찾을 수 없습니다.",
-            "confirmOverwrite": {
-                "title": "확인 덮어쓰기",
-                "body": "이 작업은 현재 프로젝트를 덮어씁니다. 저장하지 않은 모든 변경 사항이 손실됩니다. 계속하시겠습니까?",
-                "overwrite": "덮어쓰기"
-            }
-        },
-        "download": {
-            "config": "프로젝트 내보내기",
-            "image": "사진 내보내기",
-            "2rmg": {
-                "title": "RMG 프로젝트로 내보내기",
-                "type": {
-                    "line": "일직선",
-                    "loop": "고리",
-                    "branch": "지선"
-                },
-                "placeholder": {
-                    "chinese": "중국어 라인 이름",
-                    "english": "영어 줄 이름",
-                    "lineCode": "노선 번호"
-                },
-                "info1": "이 기능은 RMP 프로젝트를 RMG 프로젝트로 변환하는 데 사용됩니다.",
-                "info2": "변환할 수 있는 사용 가능한 라인들은 다음과 같습니다. 왼쪽 텍스트 상자에 중국어 라인 이름을 입력하고, 가운데에 영어 라인 이름을 입력하며, 오른쪽에 (광저우 메트로 스타일용) 라인 코드를 입력한 다음, 오른쪽의 다운로드 버튼을 클릭하여 RMG 프로젝트를 저장할 수 있습니다.",
-                "noline": "사용 가능한 라인이 없습니다.",
-                "download": "다운로드",
-                "downloadInfo": "출발 역을 선택하고 클릭하십시오."
-            },
-            "format": "파일 종류",
-            "png": "PNG 이미지",
-            "svg": "SVG 이미지",
-            "svgVersion": "버전",
-            "svg1.1": "1.1 (Adobe Illustrator 호환)",
-            "svg2": "2 (현대 브라우저 호환)",
-            "transparent": "투명 배경",
-            "scale": "확대/축소",
-            "disabledScaleOptions": "이미지가 이 브라우저에는 너무 큽니다.",
-            "disabledScaleOptionsSolution": "<link1>구독하고</link1> <link2>데스크톱 앱을 다운로드하여</link2> 큰 이미지를 렌더링하세요.",
-            "imageTooBig": "이미지가 너무 크기 때문에 브라우저에서 생성할 수 없습니다!",
-            "isSystemFontsOnly": "시스템 글꼴만 사용하십시오 (글꼴 표시가 다를 수 있습니다).",
-            "shareInfo1": "이 사진을 공유할 때",
-            "shareInfo2": "링크를 첨부할 것입니다.",
-            "termsAndConditions": "약관 및 세칙",
-            "termsAndConditionsInfo": "동의",
-            "period": ".",
-            "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
-            "confirm": "다운로드"
-        },
-        "donation": {
-            "title": "기부",
-            "openCollective": "Open Collective",
-            "viaUSD": "Paypal 또는 Visa 카드를 통해 달러로 기부하기.",
-            "afdian": "爱发电",
-            "viaCNY": "Alipay 또는 Wechat Pay를 통해 인민폐로 기부하기."
-        },
-        "settings": {
-            "title": "설정",
-            "pro": "이것은 PRO 기능이며, 구독이 필요한 계정입니다.",
-            "proWithTrial": "이것은 PRO 기능이며, 제한된 무료 체험이 가능합니다.",
-            "proLimitExceed": {
-                "master": "마스터 노드가 무료 사용 한도를 초과했습니다.",
-                "parallel": "평행선이 무료 사용 한도를 초과했습니다.",
-                "solution": "경고를 해제하려면 이 항목들을 제거하거나 구독을 통해 더 많은 기능을 잠금 해제하세요!"
-            },
-            "status": {
-                "title": "상태",
-                "count": {
-                    "stations": "역 개수:",
-                    "miscNodes": "기타 노드 개수:",
-                    "lines": "노선 개수:",
-                    "masters": "마스터 노드 개수:",
-                    "parallel": "평행선이 개수:"
-                },
-                "subscription": {
-                    "content": "구독 상태:",
-                    "logged-out": "현재 로그아웃 상태입니다.",
-                    "free": "로그인 완료! 더 많은 기능을 사용하려면 구독하세요!",
-                    "subscriber": "구독해주셔서 감사합니다! 모든 기능을 즐기세요!",
-                    "expired": "로그인 상태가 만료되었습니다. 다시 로그인 해주세요."
-                }
-            },
-            "preference": {
-                "title": "선호",
-                "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
-                "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
-                "randomStationNames": {
-                    "title": "생성 시 역 이름을 랜덤으로 설정",
-                    "none": "없음",
-                    "shmetro": "상하이",
-                    "bjsubway": "베이징"
-                },
-                "gridline": "격자 가이드 라인 표시",
-                "snapline": "가이드 라인과 포인트에 자동 스냅",
-                "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
-                "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환",
-                "disableWarningChangeType": "역 또는 노선 유형을 변경할 때 경고 비활성화"
-            },
-            "shortcuts": {
-                "title": "바로 가기",
-                "keys": "키",
-                "description": "설명",
-                "f": "마지막 도구 사용.",
-                "s": "프레임 선택.",
-                "c": "자기 레이아웃을 활성화하거나 비활성화합니다.",
-                "arrows": "캔버스를 약간 이동합니다.",
-                "ijkl": "선택한 역을 약간 이동합니다.",
-                "shift": "여러 항목 선택.",
-                "alt": "드래그 중 누르고 있으면 자동 스냅이 일시적으로 비활성화됩니다.",
-                "delete": "선택한 역을 삭제합니다.",
-                "cut": "잘라내기.",
-                "copy": "복사하다.",
-                "paste": "붙여넣다.",
-                "undo": "취소하다.",
-                "redo": "다시 하다."
-            },
-            "procedures": {
-                "title": "절차",
-                "translate": {
-                    "title": "노드 좌표 변환",
-                    "content": "모든 노드의 x 및 y에 다음 오프셋을 추가:",
-                    "x": "X축",
-                    "y": "Y축"
-                },
-                "scale": {
-                    "title": "스케일 노드의 좌표",
-                    "content": "모든 노드의 x 및 y에 다음 값을 곱하:",
-                    "factor": "스케일 팩터"
-                },
-                "changeType": {
-                    "title": "모든 객체의 속성 변경",
-                    "any": "어느"
-                },
-                "changeZIndex": "일괄적으로 깊이 변경",
-                "changeStationType": {
-                    "title": "역의 종류를 대량으로 수정",
-                    "changeFrom": "이 유형의 모든 역:",
-                    "changeTo": "이 유형의 역으로 변환:",
-                    "info": "역 유형을 변경하면 이름을 제외한 모든 고유한 속성이 제거됩니다.저장했다가 다시 실행!"
-                },
-                "changeLineStyleType": {
-                    "title": "일괄적으로 선 스타일 변경",
-                    "changeFrom": "이 스타일의 모든 선을 변경하세요:",
-                    "changeTo": "이 스타일에:",
-                    "info": "선 스타일을 변경하면 연결을 제외한 선의 모든 특정 속성이 제거됩니다. 변경하기 전에 저장하세요!"
-                },
-                "changeLinePathType": {
-                    "title": "일괄적으로 라인 경로 변경",
-                    "changeFrom": "이 경로의 모든 줄을 변경하세요:",
-                    "changeTo": "이 길로:"
-                },
-                "changeColor": {
-                    "title": "일괄 색상 변경",
-                    "changeFrom": "이 색상의 모든 개체를 변경합니다.:",
-                    "changeTo": "이 색상에:",
-                    "any": "모든 색상에서"
-                },
-                "removeLines": {
-                    "title": "단일 색상의 선 제거",
-                    "content": "이 색상의 선을 제거하세요: "
-                },
-                "updateColor": {
-                    "title": "색상 업데이트",
-                    "content": "최신 값으로 모든 색상을 업데이트합니다.",
-                    "success": "모든 색상을 성공적으로 업데이트했습니다.",
-                    "error": "모든 색상을 업데이트하는 동안 오류가 발생했습니다: {{e}}."
-                },
-                "unlockSimplePath": {
-                    "title": "간단 경로 잠금 해제",
-                    "content1": "Rail Map Painter 애플리케이션은 확립된 관례를 준수하면서도 철도지도 작성을 위한 대화식 플랫폼을 제공하기 위해 노력합니다. 이러한 관례 중 하나는 특히 해리 벡의 혁신적인 작업에서 비롯되었습니다. 그의 개척적인 기여는 공식적으로 1932년에 인정받았으며 일반 대중으로부터 즉각적인 찬사를 받았습니다. 현재는 정보 디자인 분야에서 중요한 본보기로 자리 잡고 있습니다. 이 패러다임적인 접근 방식은 전 세계적인 규모의 교통 카토그래피에서 널리 구현되었으나 성공의 정도는 다양합니다.",
-                    "content2": "이 애플리케이션은 기존 관례에 위배될 가능성이 있기 때문에 간단한 경로를 활용하는 옵션을 기본 설정으로 가려놓았습니다. 또한 Rail Map Painter 갤러리에 제출되는 작품은 엄격한 심사를 받으며, 단일 색상 스타일로 간단한 경로를 사용하는 작품은 명확히 거부됩니다.",
-                    "content3": "그래도 이 옵션을 잠금 해제하고 기부할 때 Easy Path를 사용할 수 있는 기회를 보유하고 있습니다. 획득 후에도 단순 경로의 사용은 단색 스타일로 제한된다는 점에 유의해야 합니다.",
-                    "check": "간단한 경로 잠금 해제",
-                    "unlocked": "이미 해제됨"
-                },
-                "masterManager": {
-                    "title": "모든 마스터 노드를 관리",
-                    "id": "ID",
-                    "label": "레이블",
-                    "type": "유형",
-                    "types": {
-                        "MiscNode": "기타 노드",
-                        "Station": "스테이션"
-                    },
-                    "importTitle": "마스터 매개변수 업로드",
-                    "importFrom": "가져온 스타일 사용",
-                    "importOther": "새 스타일 가져오기",
-                    "importParam": "구성 정보 붙여넣기"
-                }
-            },
-            "telemetry": {
-                "title": "원격 측정",
-                "info": "지하철 노선도 그리기를 개선하고 기여자가 프로젝트를 향상시키는 데 동기를 부여하기 위해 Google Analytics를 통해 익명의 사용 데이터를 수집합니다. 이 데이터는 사용자 경험을 향상하고 도구 기능을 최적화하는 데에만 사용되며, 제3자와 절대 공유되지 않습니다.",
-                "essential": "기본",
-                "essentialTooltip": "지하철 노선도 툴킷에서 이 전역 설정을 변경하세요",
-                "essentialInfo": "지하철 노선도 그리기는 도구를 언제, 어떻게 사용하는지 이해하기 위해 기본적인 사용 데이터를 수집합니다. 안심하세요. 개인 식별이 가능한 정보나 프로젝트 데이터는 절대 수집되지 않습니다.",
-                "essentialLink": "Google Analytics에서 수집할 수 있는 세부 필드를 보려면 이 링크를 클릭하세요.",
-                "additional": "추가",
-                "additionalInfo": "지하철 노선도 그리기는 프로젝트 생성이나 역 추가와 같은 입력 시의 상호작용 데이터도 수집합니다. 이러한 추가 데이터도 익명으로 처리되며, 도구를 개선하기 위한 통계 분석에만 사용됩니다."
-            }
-        },
-        "about": {
-            "title": "대함",
-            "rmp": "지하철 노선도 그리기",
-            "railmapgen": "철도 지도 툴킷 프로젝트 노선도 툴킷",
-            "desc": "다양한 도시의 역을 자유롭게 끌어서 90도 또는 135도의 둥근 모서리 선으로 연결함으로써 여러분만의 철도 지도를 디자인해요!",
-            "content1": "우리가 가졌던 자유와 평등을 기념한다.",
-            "content2": "2022년 6월 1일 상해",
-            "contributors": "기여자",
-            "coreContributors": "핵심 기여자",
-            "styleContributors": "스타일 기여자",
-            "langonginc": "기억에 남을 삶을 살아보세요.",
-            "203IhzElttil": "상하이 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
-            "Swiftiecott": "베이징 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
-            "Minwtraft": "광저우 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
-            "contactUs": "우리에게 연락하기",
-            "github": "프로젝트 저장소",
-            "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
-            "slack": "슬랙 그룹",
-            "slackContent": "이 슬랙 채널에서 채팅해요!"
+    "details": {
+      "header": "상세한 상황",
+      "info": {
+        "title": "기본정보",
+        "id": "고유 식별자",
+        "zIndex": "깊이",
+        "stationType": "역 유형",
+        "linePathType": "선분 경로 유형",
+        "lineStyleType": "선분 스타일 유형",
+        "type": "유형",
+        "parallel": "평행선",
+        "parallelIndex": "평행 인덱스"
+      },
+      "multipleSelection": {
+        "title": "다중 선택",
+        "change": "선택한 속성 변경",
+        "selected": "선택한 개체:",
+        "show": "보여주다",
+        "station": "역",
+        "miscNode": "기타 노드",
+        "edge": "윤곽"
+      },
+      "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
+      "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
+      "changeType": "종류 변경",
+      "nodePosition": {
+        "title": "노드 위치",
+        "pos": {
+          "x": "가로 좌표",
+          "y": "세로 좌표"
         }
-    },
-
-    "contextMenu": {
+      },
+      "lineExtremities": {
+        "title": "선분 양단",
+        "source": "시작점",
+        "target": "종말점",
+        "sourceName": "시작점 명칭",
+        "targetName": "종말점 명칭"
+      },
+      "specificAttrsTitle": "독특 속성",
+      "unknown": {
+        "error": "이런 :( 우리는 이 {{category}}를 인식할 수 없습니다. 아마도 더 최근 버전에서 생성되었을 것입니다.",
+        "node": "노드",
+        "lineType": "선분 경로",
+        "lineStyle": "선분 스타일"
+      },
+      "nodes": {
+        "common": {
+          "nameZh": "한자 노선명칭",
+          "nameEn": "영문 노선명칭",
+          "nameJa": "일본 노선명칭",
+          "num": "노선 번호"
+        },
+        "virtual": {
+          "displayName": "가상 노드"
+        },
+        "shmetroNumLineBadge": {
+          "displayName": "상해 지하철 디지털 노선 표지"
+        },
+        "shmetroTextLineBadge": {
+          "displayName": "상해 지하철 문자 노선 표지"
+        },
+        "gzmtrLineBadge": {
+          "displayName": "광저우 지하철 노선 표지",
+          "tram": "시가 전차",
+          "span": "행 범위 숫자"
+        },
+        "bjsubwayNumLineBadge": {
+          "displayName": "베이징 지하철 노선 배지"
+        },
+        "bjsubwayTextLineBadge": {
+          "displayName": "베이징 지하철 텍스트 라인 배지"
+        },
+        "berlinSBahnLineBadge": {
+          "displayName": "베를린 S반 노선 배지"
+        },
+        "berlinUBahnLineBadge": {
+          "displayName": "베를린 U반 노선 배지"
+        },
+        "suzhouRTNumLineBadge": {
+          "displayName": "수주 철도 번호 라인 배지",
+          "branch": "지선입니다"
+        },
+        "chongqingRTNumLineBadge": {
+          "displayName": "충칭 철도 교통 디지털 노선 식별"
+        },
+        "chongqingRTTextLineBadge": {
+          "displayName": "충칭 철도 교통 텍스트 라인 표시"
+        },
+        "chongqingRTNumLineBadge2021": {
+          "displayName": "충칭 철도 교통 디지털 노선 식별 (2021)"
+        },
+        "chongqingRTTextLineBadge2021": {
+          "displayName": "충칭 철도 교통 텍스트 라인 표시 (2021)",
+          "isRapid": "고속 / 직속 열차 식별"
+        },
+        "shenzhenMetroNumLineBadge": {
+          "displayName": "심천 지하철 번호 라인 배지",
+          "branch": "지선입니다"
+        },
+        "mrtDestinationNumbers": {
+          "displayName": "싱가포르 MRT 목적지 번호"
+        },
+        "mrtLineBadge": {
+          "displayName": "싱가포르 MRT 노선 배지",
+          "isTram": "LRT 노선 배지입니다"
+        },
+        "jrEastLineBadge": {
+          "displayName": "JR 동일본 라인 배지",
+          "crosshatchPatternFill": "크로스해치 패턴으로 채우기"
+        },
+        "qingdaoMetroNumLineBadge": {
+          "displayName": "칭다오 지하철 번호 라인 배지",
+          "numEn": "영어로 된 줄 번호",
+          "showText": "텍스트 표시"
+        },
+        "guangdongIntercityRailwayLineBadge": {
+          "displayName": "광동 시외 철도 노선 표지판"
+        },
+        "londonArrow": {
+          "displayName": "런던 화살표",
+          "type": "유형",
+          "continuation": "계속",
+          "sandwich": "샌드위치",
+          "tube": "튜브"
+        },
+        "chengduRTLineBadge": {
+          "displayName": "청두 도시철도 노선 표식",
+          "badgeType": {
+            "displayName": "유형",
+            "normal": "일반",
+            "suburban": "교외 철도",
+            "tram": "노면 전차"
+          }
+        },
+        "taipeiMetroLineBadge": {
+          "displayName": "타이페이 지하철 노선 뱃지",
+          "tram": "트램"
+        },
+        "image": {
+          "displayName": "이미지",
+          "label": "라벨",
+          "scale": "크기 조절",
+          "rotate": "회전",
+          "opacity": "불투명도",
+          "preview": "미리보기"
+        },
+        "master": {
+          "displayName": "마스터 노드",
+          "type": "마스터 노드 유형",
+          "undefined": "정의되지 않음"
+        },
+        "facilities": {
+          "displayName": "시설",
+          "type": "유형",
+          "airport": "공항",
+          "airport_2024": "공항 2024",
+          "maglev": "자기부상열차",
+          "disney": "디즈니",
+          "railway": "기차역",
+          "railway_2024": "기차역 2024",
+          "hsr": "고속철도 (HSR)",
+          "airport_hk": "홍콩 공항",
+          "disney_hk": "홍콩 디즈니",
+          "ngong_ping_360": "옹핑 360",
+          "tiananmen": "천안문",
+          "airport_bj": "베이징 공항",
+          "bus_terminal_suzhou": "쑤저우 버스 터미널",
+          "railway_suzhou": "쑤저우 기차역",
+          "bus_interchange": "버스 환승 센터",
+          "airport_sg": "창이 공항",
+          "cruise_centre": "크루즈 센터",
+          "sentosa_express": "센토사 익스프레스",
+          "cable_car": "케이블카",
+          "merlion": "멀라이언",
+          "marina_bay_sands": "마리나 베이 샌즈",
+          "gardens_by_the_bay": "가든스 바이 더 베이",
+          "singapore_flyer": "싱가포르 플라이어",
+          "esplanade": "에스플러네이드",
+          "airport_qingdao": "칭다오 공항",
+          "railway_qingdao": "칭다오 기차역",
+          "coach_station_qingdao": "칭다오 시외 버스 터미널",
+          "cruise_terminal_qingdao": "칭다오 크루즈 터미널",
+          "tram_qingdao": "칭다오 트램",
+          "airport_guangzhou": "광저우 공항",
+          "railway_guangzhou": "광저우 기차역",
+          "intercity_guangzhou": "광저우 시외 철도",
+          "river_craft": "수상 교통 환승장",
+          "airport_london": "런던 공항",
+          "coach_station_london": "빅토리아 코치 스테이션",
+          "airport_chongqing": "충칭 공항",
+          "railway_chongqing": "충칭 기차역",
+          "coach_station_chongqing": "충칭 시외 버스 터미널",
+          "bus_station_chongqing": "충칭 버스 정류장",
+          "shipping_station_chongqing": "충칭 여객선 터미널",
+          "airport_chengdu": "청두 공항",
+          "railway_chengdu": "청두 기차역",
+          "railway_taiwan": "대만 철도",
+          "hsr_taiwan": "대만 고속철도 (HSR)"
+        },
+        "text": {
+          "displayName": "임의 글자",
+          "content": "내용",
+          "fontSize": "글자 대소",
+          "lineHeight": "행고도",
+          "textAnchor": "글자 앵커",
+          "start": "시작",
+          "middle": "가운데",
+          "end": "끝",
+          "auto": "자동",
+          "hanging": "매달리는",
+          "dominantBaseline": "현성 바셀린",
+          "language": "언어로 된 글꼴 종류",
+          "zh": "중국어",
+          "en": "영어",
+          "mtr_zh": "홍콩 MTR 중국어",
+          "mtr_en": "홍콩 MTR 영어",
+          "berlin": "베를린 S/U Bahn",
+          "mrt": "싱가포르 MRT",
+          "jreast_ja": "JR 동일본어",
+          "jreast_en": "JR 동일본 영어",
+          "tokyo_en": "도쿄 지하철 영어",
+          "tube": "런던 지하철",
+          "taipei": "타이페이 지하철",
+          "fontSynthesisWarning": "글꼴이 지원하는 경우에만 굵게 및 기울임꼴 스타일을 사용할 수 있습니다.",
+          "rotate": "회전",
+          "italic": "이탤릭체",
+          "bold": "굵게",
+          "outline": "테두리"
+        },
+        "fill": {
+          "displayName": "채우기 영역",
+          "opacity": "채우기 불투명도",
+          "patterns": "패턴",
+          "logo": "브랜딩",
+          "trees": "나무",
+          "water": "물",
+          "noClosedPath": "닫힌 경로 없음",
+          "createSquare": "정사각형 만들기",
+          "createTriangle": "삼각형 만들기",
+          "createCircle": "원 만들기"
+        }
+      },
+      "stations": {
+        "common": {
+          "nameZh": "한자 명칭",
+          "nameEn": "영문 명칭",
+          "nameJa": "일본 명칭",
+          "nameOffsetX": "명칭 가로 이동",
+          "nameOffsetY": "명칭 세로 이동",
+          "rotate": "역회전각도",
+          "lineCode": "노선 번호",
+          "stationCode": "역 번호",
+          "left": "왼쪽",
+          "middle": "가운데",
+          "right": "오른쪽",
+          "top": "위",
+          "bottom": "아래"
+        },
+        "interchange": {
+          "title": "환승",
+          "within": "같은 역에서 환승한",
+          "outStation": "역을 나가 환승한",
+          "outSystem": "시스템외환승",
+          "addGroup": "환승 조합 추가",
+          "noInterchanges": "비환승역",
+          "nameZh": "한자 명칭",
+          "nameEn": "영문 명칭",
+          "add": "환승 추가",
+          "up": "환승역 위로 이동",
+          "down": "환승역 아래로 이동",
+          "remove": "환승 삭제"
+        },
+        "shmetroBasic": {
+          "displayName": "상해 지하철의 기본 역"
+        },
+        "shmetroBasic2020": {
+          "displayName": "상해 지하철 기본 역(2020년)"
+        },
+        "shmetroInt": {
+          "displayName": "상해 지하철 환승역",
+          "height": "역 높이",
+          "width": "역 폭"
+        },
+        "shmetroOsysi": {
+          "displayName": "상하이 지하철 시스템 외환승 역"
+        },
+        "shanghaiSuburbanRailway": {
+          "displayName": "상하이 기차역"
+        },
+        "gzmtrBasic": {
+          "displayName": "광저우 지하철 기본역",
+          "open": "개통여부",
+          "secondaryNameZh": "한자 제2명칭",
+          "secondaryNameEn": "영문 제2명칭",
+          "tram": "시가 전차"
+        },
+        "gzmtrInt": {
+          "displayName": "광저우 지하철 환승역",
+          "open": "개통여부",
+          "secondaryNameZh": "한자 제2명칭",
+          "secondaryNameEn": "영문 제2명칭",
+          "foshan": "포산"
+        },
+        "gzmtrInt2024": {
+          "displayName": "광저우 지하철 환승역 (2024)",
+          "columns": "역 열 수",
+          "topHeavy": "상단에 더 많은 역 우선 배치",
+          "anchorAt": "앵커 위치",
+          "anchorAtNone": "중앙",
+          "osiPosition": "역을 나가 환승",
+          "osiPositionNone": "없음",
+          "osiPositionLeft": "왼쪽",
+          "osiPositionRight": "오른쪽"
+        },
+        "bjsubwayBasic": {
+          "displayName": "베이징 지하철 기본역",
+          "open": "개통여부",
+          "construction": "공사중"
+        },
+        "bjsubwayInt": {
+          "displayName": "베이징 지하철 환승역",
+          "outOfStation": "역을 나가 환승"
+        },
+        "mtr": {
+          "displayName": "홍콩 MTR 역"
+        },
+        "suzhouRTBasic": {
+          "displayName": "쑤저우 궤도교통 기본역",
+          "textVertical": "수직 이름"
+        },
+        "suzhouRTInt": {
+          "displayName": "쑤저우 궤도교통 환승역"
+        },
+        "kunmingRTBasic": {
+          "displayName": "쿤밍 궤도교통 기본역"
+        },
+        "kunmingRTInt": {
+          "displayName": "쿤밍 궤도교통 환승역"
+        },
+        "MRTBasic": {
+          "displayName": "싱가포르MRT기본역",
+          "isTram": "LRT역이에요"
+        },
+        "MRTInt": {
+          "displayName": "싱가포르MRT환승역"
+        },
+        "jrEastBasic": {
+          "displayName": "JR 동일본 기본 역",
+          "nameOffset": "이름 오프셋",
+          "textOneLine": "한 줄로 표시된 이름",
+          "textVertical": "수직 이름",
+          "important": "중요한 역",
+          "lines": "환승 노선 오프셋"
+        },
+        "jrEastImportant": {
+          "displayName": "JR 동일본 중요 역",
+          "textVertical": "수직 이름",
+          "mostImportant": "가장 중요한 역",
+          "minLength": "스테이션의 최소 길이"
+        },
+        "foshanMetroBasic": {
+          "displayName": "포산 지하철 기본역",
+          "open": "개통여부",
+          "secondaryNameZh": "한자 제2명칭",
+          "secondaryNameEn": "영문 제2명칭",
+          "tram": "시가 전차"
+        },
+        "qingdaoMetro": {
+          "displayName": "칭다오 지하철역",
+          "isInt": "환승역인가"
+        },
+        "tokyoMetroBasic": {
+          "displayName": "도쿄메트로 기본역",
+          "nameOffset": "이름 오프셋",
+          "textVertical": "업종명"
+        },
+        "tokyoMetroInt": {
+          "displayName": "도쿄메트로 환승역",
+          "mereOffset": {
+            "displayName": "단순한 오프셋 이름",
+            "none": "없음",
+            "left1": "왼쪽(적음)",
+            "left2": "왼쪽(더)",
+            "right1": "오른쪽(적음)",
+            "right2": "맞아요 (더)",
+            "up": "위로",
+            "down": "아래에"
+          },
+          "importance": {
+            "displayName": "역 중요성",
+            "default": "기본",
+            "middle": "가운데",
+            "high": "높은"
+          },
+          "align": {
+            "displayName": "아이콘 정렬",
+            "horizontal": "수평의",
+            "vertical": "수직의"
+          }
+        },
+        "londonTubeCommon": {
+          "stepFreeAccess": "단차 없는 접근",
+          "stepFreeAccessNone": "없음",
+          "stepFreeAccessTrain": "거리에서 열차까지",
+          "stepFreeAccessPlatform": "거리에서 플랫폼까지"
+        },
+        "londonTubeBasic": {
+          "displayName": "런던 지하철 기본역",
+          "terminal": "종착역",
+          "terminalNameRotate": "터미널 이름 회전",
+          "shareTracks": "선로 공유",
+          "shareTracksIndex": "선로 공유 지수"
+        },
+        "londonTubeInt": {
+          "displayName": "런던 지하철 환승역"
+        },
+        "londonRiverServicesInt": {
+          "displayName": "런던 강 서비스 환승역"
+        },
+        "guangdongIntercityRailway": {
+          "displayName": "광둥 시외 기차역"
+        },
+        "chongqingRTBasic": {
+          "displayName": "충칭 궤도교통 기본역",
+          "isLoop": "순환역"
+        },
+        "chongqingRTInt": {
+          "displayName": "충칭 궤도교통 환승역",
+          "textDistance": {
+            "x": "가로 문자 거리",
+            "y": "세로 문자 거리",
+            "near": "가까이",
+            "far": "멀리"
+          }
+        },
+        "chongqingRTBasic2021": {
+          "displayName": "충칭 궤도교통 기본역 (2021)",
+          "open": "개통여부"
+        },
+        "chongqingRTInt2021": {
+          "displayName": "충칭 도시철도 환승역 (2021)",
+          "isRapid": "급행/직통 열차 정차역",
+          "isWide": "광폭 역",
+          "wideDirection": {
+            "displayName": "방향",
+            "vertical": "세로",
+            "horizontal": "가로"
+          }
+        },
+        "chengduRTBasic": {
+          "displayName": "청두 도시철도 기본 역",
+          "isVertical": "종관 역",
+          "stationType": {
+            "displayName": "역 유형",
+            "normal": "일반 역",
+            "branchTerminal": "지선 종점역",
+            "joint": "공선 환승역",
+            "tram": "노면 전차역"
+          },
+          "rotation": "회전 각도"
+        },
+        "chengduRTInt": {
+          "displayName": "청두 도시철도 환승역"
+        },
+        "osakaMetro": {
+          "displayName": "오사카 지하철역",
+          "stationType": "역 유형",
+          "normalType": "일반 역",
+          "throughType": "직결 운행",
+          "oldName": "이전 역 이름",
+          "nameVertical": "이름 세로 표시",
+          "stationVertical": "역 세로 레이아웃",
+          "nameOverallPosition": "이름 전체 위치",
+          "nameOffsetPosition": "이름 오프셋 위치",
+          "nameMaxWidth": "일본어 이름 길이",
+          "oldNameMaxWidth": "이전 역 이름 길이",
+          "translationMaxWidth": "영어 이름 길이",
+          "up": "위쪽",
+          "down": "아래쪽"
+        },
+        "wuhanRTBasic": {
+          "displayName": "우한 도시철도 기본역"
+        },
+        "wuhanRTInt": {
+          "displayName": "우한 도시철도 환승역"
+        },
+        "csmetroBasic": {
+          "displayName": "창사 지하철 기본역"
+        },
+        "csmetroInt": {
+          "displayName": "창사 지하철 환승역"
+        },
+        "hzmetroBasic": {
+          "displayName": "항저우 지하철 기본역"
+        },
+        "hzmetroInt": {
+          "displayName": "항저우 지하철 환승역"
+        }
+      },
+      "lines": {
+        "reconcileId": "연결 선분 고유 식별자",
+        "common": {
+          "offsetFrom": "시작점 오프셋",
+          "offsetTo": "끝점 오프셋",
+          "startFrom": "여기서부터 시작",
+          "roundCornerFactor": "회전원각인자",
+          "from": "에서",
+          "to": "까지",
+          "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
+          "changeInBaseLine": "기본선에서 변경하십시오:"
+        },
+        "simple": {
+          "displayName": "기본 선분",
+          "offset": "오프셋"
+        },
+        "diagonal": {
+          "displayName": "135° 접힌 선분"
+        },
+        "perpendicular": {
+          "displayName": "90° 수직 선분"
+        },
+        "rotatePerpendicular": {
+          "displayName": "90° 수직 경로 회전"
+        },
+        "singleColor": {
+          "displayName": "단색 스타일"
+        },
+        "shmetroVirtualInt": {
+          "displayName": "상해 지하철 역 환승 모습"
+        },
+        "shanghaiSuburbanRailway": {
+          "displayName": "상하이 도시철도 스타일",
+          "isEnd": "끝 범위"
+        },
+        "gzmtrVirtualInt": {
+          "displayName": "광저우 지하철 역 환승 모습"
+        },
+        "gzmtrLoop": {
+          "displayName": "광저우 지하철 순환선 스타일"
+        },
+        "chinaRailway": {
+          "displayName": "중국 철도 모습"
+        },
+        "bjsubwaySingleColor": {
+          "displayName": "베이징 지하철 단색 스타일"
+        },
+        "bjsubwayTram": {
+          "displayName": "베이징 지하철 노면 전차 모습"
+        },
+        "bjsubwayDotted": {
+          "displayName": "베이징 지하철 점선 스타일"
+        },
+        "dualColor": {
+          "displayName": "이색 스타일",
+          "swap": "색을 바꾸기",
+          "colorA": "색깔 A",
+          "colorB": "색깔 B"
+        },
+        "river": {
+          "displayName": "강 스타일",
+          "width": "폭"
+        },
+        "mtrRaceDays": {
+          "displayName": "홍콩 MTR 경마일 스타일"
+        },
+        "mtrLightRail": {
+          "displayName": "홍콩 MTR 경전철 스타일"
+        },
+        "mtrUnpaidArea": {
+          "displayName": "홍콩 MTR 미결제 구역 스타일"
+        },
+        "mtrPaidArea": {
+          "displayName": "홍콩 MTR 결제완료 구역 스타일"
+        },
+        "mrtUnderConstruction": {
+          "displayName": "싱가포르 MRT 공사중 스타일"
+        },
+        "mrtSentosaExpress": {
+          "displayName": "싱가포르 MRT 센토사 익스프레스 스타일"
+        },
+        "mrtTapeOut": {
+          "displayName": "싱가포르 MRT 환승을 위한 탭 아웃 스타일"
+        },
+        "jrEastSingleColor": {
+          "displayName": "JR 동일본 단색 스타일"
+        },
+        "jrEastSingleColorPattern": {
+          "displayName": "JR 동일본 단색 크로스해치 패턴 스타일"
+        },
+        "lrtSingleColor": {
+          "displayName": "싱가포르 LRT 단색 스타일"
+        },
+        "londonTubeInternalInt": {
+          "displayName": "런던 지하철 내부 환승 스타일"
+        },
+        "londonTube10MinWalk": {
+          "displayName": "런던 지하철 10분 이내 도보 환승 스타일"
+        },
+        "londonTubeTerminal": {
+          "displayName": "런던 지하철 종착 스타일"
+        },
+        "londonRail": {
+          "displayName": "런던 철도 스타일",
+          "limitedService": "제한 서비스/혼잡 시간대만",
+          "colorBackground": "배경 색상",
+          "colorForeground": "전경 색상"
+        },
+        "londonSandwich": {
+          "displayName": "런던 샌드위치 스타일"
+        },
+        "londonLutonAirportDART": {
+          "displayName": "런던 루튼 공항 DART 스타일"
+        },
+        "londonIFSCloudCableCar": {
+          "displayName": "런던 IFS 클라우드 케이블카 스타일"
+        },
+        "guangdongIntercityRailway": {
+          "displayName": "광동성 도시간 철도 스타일"
+        },
+        "chongqingRTLineBadge": {
+          "displayName": "충칭 궤도교통 노선 표지 연결선 스타일"
+        },
+        "chongqingRTLoop": {
+          "displayName": "충칭 궤도교통 순환선 스타일"
+        },
+        "chengduRTOutsideFareGates": {
+          "displayName": "청두 도시철도 개찰구 환승 방식"
+        },
+        "generic": {
+          "displayName": "일반 스타일",
+          "width": "너비",
+          "linecap": "라인 캡",
+          "linecapButt": "버트",
+          "linecapRound": "라운드",
+          "linecapSquare": "스퀘어",
+          "dasharray": "대시 배열",
+          "outline": "외곽선",
+          "outlineColor": "외곽선 색상",
+          "outlineWidth": "외곽선 너비"
+        }
+      },
+      "edges": {},
+      "image": {
+        "importTitle": "이미지 패널",
+        "exportTitle": "프로젝트에 이미지 첨부",
+        "local": "로컬 이미지",
+        "server": "서버 이미지",
+        "add": "이미지 업로드",
+        "error": "이미지 업로드에 실패했습니다!",
+        "loading": "이미지를 불러오는 중..."
+      },
+      "footer": {
+        "duplicate": "복사",
         "copy": "복사",
-        "cut": "잘라내기", 
-        "paste": "붙여넣기",
-        "delete": "삭제",
-        "refresh": "새로 고침",
-        "placeTop": "맨 앞으로",
-        "placeBottom": "맨 뒤로",
-        "placeDefault": "기본 위치로",
-        "placeUp": "한 단계 앞으로",
-        "placeDown": "한 단계 뒤로"
+        "remove": "삭제"
+      }
+    }
+  },
+  "header": {
+    "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
+    "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
+    "search": "방송국 검색",
+    "open": {
+      "new": "신 프로젝트",
+      "config": "프로젝트 가져오기",
+      "projectRMG": "RMG 프로젝트에서 가져오기",
+      "invalidType": "잘못된 파일 형식입니다! JSON 형식의 파일만 허용됩니다.",
+      "unknownError": "업로드된 파일의 파싱 중 알 수 없는 오류가 발생했습니다. 다시 시도해주세요.",
+      "gallery": "갤러리에서 가져오기",
+      "tutorial": "튜토리얼 시작",
+      "importOK": "템플릿 {{id}}가 가져 왔습니다.",
+      "importOKContent": "이 변경 사항에 만족하지 않으십니까? Ctrl + Z 또는 실행 취소 버튼을 사용하여 실행 취소하세요.",
+      "importFail": "{{id}}를 가져올 수 없습니다.",
+      "importFailContent": "파일을 찾을 수 없습니다.",
+      "confirmOverwrite": {
+        "title": "확인 덮어쓰기",
+        "body": "이 작업은 현재 프로젝트를 덮어씁니다. 저장하지 않은 모든 변경 사항이 손실됩니다. 계속하시겠습니까?",
+        "overwrite": "덮어쓰기"
+      }
     },
-
-    "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
+    "download": {
+      "config": "프로젝트 내보내기",
+      "image": "사진 내보내기",
+      "2rmg": {
+        "title": "RMG 프로젝트로 내보내기",
+        "type": {
+          "line": "일직선",
+          "loop": "고리",
+          "branch": "지선"
+        },
+        "placeholder": {
+          "chinese": "중국어 라인 이름",
+          "english": "영어 줄 이름",
+          "lineCode": "노선 번호"
+        },
+        "info1": "이 기능은 RMP 프로젝트를 RMG 프로젝트로 변환하는 데 사용됩니다.",
+        "info2": "변환할 수 있는 사용 가능한 라인들은 다음과 같습니다. 왼쪽 텍스트 상자에 중국어 라인 이름을 입력하고, 가운데에 영어 라인 이름을 입력하며, 오른쪽에 (광저우 메트로 스타일용) 라인 코드를 입력한 다음, 오른쪽의 다운로드 버튼을 클릭하여 RMG 프로젝트를 저장할 수 있습니다.",
+        "noline": "사용 가능한 라인이 없습니다.",
+        "download": "다운로드",
+        "downloadInfo": "출발 역을 선택하고 클릭하십시오."
+      },
+      "format": "파일 종류",
+      "png": "PNG 이미지",
+      "svg": "SVG 이미지",
+      "svgVersion": "버전",
+      "svg1.1": "1.1 (Adobe Illustrator 호환)",
+      "svg2": "2 (현대 브라우저 호환)",
+      "transparent": "투명 배경",
+      "scale": "확대/축소",
+      "disabledScaleOptions": "이미지가 이 브라우저에는 너무 큽니다.",
+      "disabledScaleOptionsSolution": "<link1>구독하고</link1> <link2>데스크톱 앱을 다운로드하여</link2> 큰 이미지를 렌더링하세요.",
+      "imageTooBig": "이미지가 너무 크기 때문에 브라우저에서 생성할 수 없습니다!",
+      "isSystemFontsOnly": "시스템 글꼴만 사용하십시오 (글꼴 표시가 다를 수 있습니다).",
+      "shareInfo1": "이 사진을 공유할 때",
+      "shareInfo2": "링크를 첨부할 것입니다.",
+      "termsAndConditions": "약관 및 세칙",
+      "termsAndConditionsInfo": "동의",
+      "period": ".",
+      "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
+      "confirm": "다운로드"
+    },
+    "donation": {
+      "title": "기부",
+      "openCollective": "Open Collective",
+      "viaUSD": "Paypal 또는 Visa 카드를 통해 달러로 기부하기.",
+      "afdian": "爱发电",
+      "viaCNY": "Alipay 또는 Wechat Pay를 통해 인민폐로 기부하기."
+    },
+    "settings": {
+      "title": "설정",
+      "pro": "이것은 PRO 기능이며, 구독이 필요한 계정입니다.",
+      "proWithTrial": "이것은 PRO 기능이며, 제한된 무료 체험이 가능합니다.",
+      "proLimitExceed": {
+        "master": "마스터 노드가 무료 사용 한도를 초과했습니다.",
+        "parallel": "평행선이 무료 사용 한도를 초과했습니다.",
+        "solution": "경고를 해제하려면 이 항목들을 제거하거나 구독을 통해 더 많은 기능을 잠금 해제하세요!"
+      },
+      "status": {
+        "title": "상태",
+        "count": {
+          "stations": "역 개수:",
+          "miscNodes": "기타 노드 개수:",
+          "lines": "노선 개수:",
+          "masters": "마스터 노드 개수:",
+          "parallel": "평행선이 개수:"
+        },
+        "subscription": {
+          "content": "구독 상태:",
+          "logged-out": "현재 로그아웃 상태입니다.",
+          "free": "로그인 완료! 더 많은 기능을 사용하려면 구독하세요!",
+          "subscriber": "구독해주셔서 감사합니다! 모든 기능을 즐기세요!",
+          "expired": "로그인 상태가 만료되었습니다. 다시 로그인 해주세요."
+        }
+      },
+      "preference": {
+        "title": "선호",
+        "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
+        "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
+        "randomStationNames": {
+          "title": "생성 시 역 이름을 랜덤으로 설정",
+          "none": "없음",
+          "shmetro": "상하이",
+          "bjsubway": "베이징"
+        },
+        "gridline": "격자 가이드 라인 표시",
+        "snapline": "가이드 라인과 포인트에 자동 스냅",
+        "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
+        "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환",
+        "disableWarningChangeType": "역 또는 노선 유형을 변경할 때 경고 비활성화"
+      },
+      "shortcuts": {
+        "title": "바로 가기",
+        "keys": "키",
+        "description": "설명",
+        "f": "마지막 도구 사용.",
+        "s": "프레임 선택.",
+        "c": "자기 레이아웃을 활성화하거나 비활성화합니다.",
+        "arrows": "캔버스를 약간 이동합니다.",
+        "ijkl": "선택한 역을 약간 이동합니다.",
+        "shift": "여러 항목 선택.",
+        "alt": "드래그 중 누르고 있으면 자동 스냅이 일시적으로 비활성화됩니다.",
+        "delete": "선택한 역을 삭제합니다.",
+        "cut": "잘라내기.",
+        "copy": "복사하다.",
+        "paste": "붙여넣다.",
+        "undo": "취소하다.",
+        "redo": "다시 하다."
+      },
+      "procedures": {
+        "title": "절차",
+        "translate": {
+          "title": "노드 좌표 변환",
+          "content": "모든 노드의 x 및 y에 다음 오프셋을 추가:",
+          "x": "X축",
+          "y": "Y축"
+        },
+        "scale": {
+          "title": "스케일 노드의 좌표",
+          "content": "모든 노드의 x 및 y에 다음 값을 곱하:",
+          "factor": "스케일 팩터"
+        },
+        "changeType": {
+          "title": "모든 객체의 속성 변경",
+          "any": "어느"
+        },
+        "changeZIndex": "일괄적으로 깊이 변경",
+        "changeStationType": {
+          "title": "역의 종류를 대량으로 수정",
+          "changeFrom": "이 유형의 모든 역:",
+          "changeTo": "이 유형의 역으로 변환:",
+          "info": "역 유형을 변경하면 이름을 제외한 모든 고유한 속성이 제거됩니다.저장했다가 다시 실행!"
+        },
+        "changeLineStyleType": {
+          "title": "일괄적으로 선 스타일 변경",
+          "changeFrom": "이 스타일의 모든 선을 변경하세요:",
+          "changeTo": "이 스타일에:",
+          "info": "선 스타일을 변경하면 연결을 제외한 선의 모든 특정 속성이 제거됩니다. 변경하기 전에 저장하세요!"
+        },
+        "changeLinePathType": {
+          "title": "일괄적으로 라인 경로 변경",
+          "changeFrom": "이 경로의 모든 줄을 변경하세요:",
+          "changeTo": "이 길로:"
+        },
+        "changeColor": {
+          "title": "일괄 색상 변경",
+          "changeFrom": "이 색상의 모든 개체를 변경합니다.:",
+          "changeTo": "이 색상에:",
+          "any": "모든 색상에서"
+        },
+        "removeLines": {
+          "title": "단일 색상의 선 제거",
+          "content": "이 색상의 선을 제거하세요: "
+        },
+        "updateColor": {
+          "title": "색상 업데이트",
+          "content": "최신 값으로 모든 색상을 업데이트합니다.",
+          "success": "모든 색상을 성공적으로 업데이트했습니다.",
+          "error": "모든 색상을 업데이트하는 동안 오류가 발생했습니다: {{e}}."
+        },
+        "unlockSimplePath": {
+          "title": "간단 경로 잠금 해제",
+          "content1": "Rail Map Painter 애플리케이션은 확립된 관례를 준수하면서도 철도지도 작성을 위한 대화식 플랫폼을 제공하기 위해 노력합니다. 이러한 관례 중 하나는 특히 해리 벡의 혁신적인 작업에서 비롯되었습니다. 그의 개척적인 기여는 공식적으로 1932년에 인정받았으며 일반 대중으로부터 즉각적인 찬사를 받았습니다. 현재는 정보 디자인 분야에서 중요한 본보기로 자리 잡고 있습니다. 이 패러다임적인 접근 방식은 전 세계적인 규모의 교통 카토그래피에서 널리 구현되었으나 성공의 정도는 다양합니다.",
+          "content2": "이 애플리케이션은 기존 관례에 위배될 가능성이 있기 때문에 간단한 경로를 활용하는 옵션을 기본 설정으로 가려놓았습니다. 또한 Rail Map Painter 갤러리에 제출되는 작품은 엄격한 심사를 받으며, 단일 색상 스타일로 간단한 경로를 사용하는 작품은 명확히 거부됩니다.",
+          "content3": "그래도 이 옵션을 잠금 해제하고 기부할 때 Easy Path를 사용할 수 있는 기회를 보유하고 있습니다. 획득 후에도 단순 경로의 사용은 단색 스타일로 제한된다는 점에 유의해야 합니다.",
+          "check": "간단한 경로 잠금 해제",
+          "unlocked": "이미 해제됨"
+        },
+        "masterManager": {
+          "title": "모든 마스터 노드를 관리",
+          "id": "ID",
+          "label": "레이블",
+          "type": "유형",
+          "types": {
+            "MiscNode": "기타 노드",
+            "Station": "스테이션"
+          },
+          "importTitle": "마스터 매개변수 업로드",
+          "importFrom": "가져온 스타일 사용",
+          "importOther": "새 스타일 가져오기",
+          "importParam": "구성 정보 붙여넣기"
+        }
+      },
+      "telemetry": {
+        "title": "원격 측정",
+        "info": "지하철 노선도 그리기를 개선하고 기여자가 프로젝트를 향상시키는 데 동기를 부여하기 위해 Google Analytics를 통해 익명의 사용 데이터를 수집합니다. 이 데이터는 사용자 경험을 향상하고 도구 기능을 최적화하는 데에만 사용되며, 제3자와 절대 공유되지 않습니다.",
+        "essential": "기본",
+        "essentialTooltip": "지하철 노선도 툴킷에서 이 전역 설정을 변경하세요",
+        "essentialInfo": "지하철 노선도 그리기는 도구를 언제, 어떻게 사용하는지 이해하기 위해 기본적인 사용 데이터를 수집합니다. 안심하세요. 개인 식별이 가능한 정보나 프로젝트 데이터는 절대 수집되지 않습니다.",
+        "essentialLink": "Google Analytics에서 수집할 수 있는 세부 필드를 보려면 이 링크를 클릭하세요.",
+        "additional": "추가",
+        "additionalInfo": "지하철 노선도 그리기는 프로젝트 생성이나 역 추가와 같은 입력 시의 상호작용 데이터도 수집합니다. 이러한 추가 데이터도 익명으로 처리되며, 도구를 개선하기 위한 통계 분석에만 사용됩니다."
+      }
+    },
+    "about": {
+      "title": "대함",
+      "rmp": "지하철 노선도 그리기",
+      "railmapgen": "철도 지도 툴킷 프로젝트 노선도 툴킷",
+      "desc": "다양한 도시의 역을 자유롭게 끌어서 90도 또는 135도의 둥근 모서리 선으로 연결함으로써 여러분만의 철도 지도를 디자인해요!",
+      "content1": "우리가 가졌던 자유와 평등을 기념한다.",
+      "content2": "2022년 6월 1일 상해",
+      "contributors": "기여자",
+      "coreContributors": "핵심 기여자",
+      "styleContributors": "스타일 기여자",
+      "langonginc": "기억에 남을 삶을 살아보세요.",
+      "203IhzElttil": "상하이 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
+      "Swiftiecott": "베이징 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
+      "Minwtraft": "광저우 지하철의 역들이 원래 디자인과 일치하도록 확실한 작업을 해준 그에게 특별한 감사의 말씀을 전합니다.",
+      "contactUs": "우리에게 연락하기",
+      "github": "프로젝트 저장소",
+      "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
+      "slack": "슬랙 그룹",
+      "slackContent": "이 슬랙 채널에서 채팅해요!"
+    }
+  },
+  "contextMenu": {
+    "copy": "복사",
+    "cut": "잘라내기",
+    "paste": "붙여넣기",
+    "delete": "삭제",
+    "refresh": "새로 고침",
+    "placeTop": "맨 앞으로",
+    "placeBottom": "맨 뒤로",
+    "placeDefault": "기본 위치로",
+    "placeUp": "한 단계 앞으로",
+    "placeDown": "한 단계 뒤로"
+  },
+  "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
 }
