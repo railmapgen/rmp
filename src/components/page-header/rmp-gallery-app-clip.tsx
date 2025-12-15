@@ -42,6 +42,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     const dispatch = useRootDispatch();
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [workToLoad, setWorkToLoad] = React.useState<RMPSave | null>(null);
+    const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
 
     const {
         telemetry: { project: isAllowProjectTelemetry },
@@ -106,6 +107,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             ?.value.json()) as RMPSave | undefined;
         if (template) {
             setWorkToLoad(template);
+            setVersionToLoad(template.version ?? 0);
             onConfirmOpen();
 
             if (isAllowAppTelemetry) {
@@ -137,6 +139,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             }
             const work = await rep.json();
             setWorkToLoad(work as RMPSave);
+            setVersionToLoad((work as RMPSave).version ?? 0);
             onConfirmOpen();
 
             if (isAllowAppTelemetry) {
@@ -203,7 +206,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                 isOpen={isConfirmOpen}
                 onClose={onConfirmClose}
                 onConfirm={handleConfirmOpen}
-                saveVersion={workToLoad?.version}
+                saveVersion={versionToLoad}
             />
         </>
     );

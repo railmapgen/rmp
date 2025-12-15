@@ -21,6 +21,7 @@ export default function OpenActions() {
     const { t } = useTranslation();
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
+    const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
 
     const size = useWindowSize();
     const { height } = getCanvasSize(size);
@@ -103,6 +104,7 @@ export default function OpenActions() {
             try {
                 const paramStr = await readFileAsText(file);
                 setParamToLoad(paramStr);
+                setVersionToLoad(parseVersionFromSave(paramStr) ?? 0);
                 onConfirmOpen();
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
@@ -120,6 +122,7 @@ export default function OpenActions() {
     const handleLoadTutorial = async () => {
         const initialParam = await getInitialParam();
         setParamToLoad(initialParam);
+        setVersionToLoad(parseVersionFromSave(initialParam) ?? 0);
         onConfirmOpen();
     };
 
@@ -189,7 +192,7 @@ export default function OpenActions() {
                 isOpen={isConfirmOpen}
                 onClose={onConfirmClose}
                 onConfirm={handleConfirmLoad}
-                saveVersion={paramToLoad ? parseVersionFromSave(paramToLoad) : undefined}
+                saveVersion={versionToLoad}
             />
         </>
     );

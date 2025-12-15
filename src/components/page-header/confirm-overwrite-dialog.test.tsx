@@ -25,8 +25,8 @@ vi.mock('react-i18next', async () => {
 });
 
 describe('ConfirmOverwriteDialog', () => {
-    it('should not show version warning when saveVersion is undefined', () => {
-        render(<ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} />);
+    it('should not show version warning when saveVersion is 0', () => {
+        render(<ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} saveVersion={0} />);
 
         expect(screen.getByText('Confirm overwrite')).toBeInTheDocument();
         expect(
@@ -75,7 +75,7 @@ describe('ConfirmOverwriteDialog', () => {
     });
 
     it('should render buttons correctly', () => {
-        render(<ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} />);
+        render(<ConfirmOverwriteDialog isOpen={true} onClose={vi.fn()} onConfirm={vi.fn()} saveVersion={0} />);
 
         expect(screen.getByText('Cancel')).toBeInTheDocument();
         expect(screen.getByText('Overwrite')).toBeInTheDocument();

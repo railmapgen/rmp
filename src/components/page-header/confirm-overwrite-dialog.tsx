@@ -16,7 +16,7 @@ interface ConfirmOverwriteDialogProps {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    saveVersion?: number;
+    saveVersion: number;
 }
 
 /**
@@ -28,7 +28,7 @@ export default function ConfirmOverwriteDialog(props: ConfirmOverwriteDialogProp
     const { t } = useTranslation();
     const cancelRef = React.useRef<HTMLButtonElement | null>(null);
 
-    const isNewerVersion = saveVersion !== undefined && saveVersion > CURRENT_VERSION;
+    const isNewerVersion = saveVersion > CURRENT_VERSION;
 
     return (
         <AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
