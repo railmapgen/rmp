@@ -158,7 +158,7 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
             },
         ];
         return (
-            <Flex width="100%" direction="row">
+            <Flex width="100%" direction="row" key={attrs.randomId}>
                 <RmgFields fields={field} minW="120px" />
                 <Flex direction="row" mr="auto">
                     <Button onClick={() => setOpenImport(attrs.randomId)}>

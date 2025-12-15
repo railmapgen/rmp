@@ -74,14 +74,14 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
                 fill="none"
                 stroke={colorA[2]}
                 strokeWidth={LINE_WIDTH}
-                marker-end={`url(#slantSeparator45${colorB[2]}A)`}
+                markerEnd={`url(#slantSeparator45${colorB[2]}A)`}
             />
             <path
                 d={pathB}
                 fill="none"
                 stroke={colorB[2]}
                 strokeWidth={LINE_WIDTH}
-                marker-start={`url(#slantSeparator45${colorA[2]}B)`}
+                markerStart={`url(#slantSeparator45${colorA[2]}B)`}
             />
         </g>
     );

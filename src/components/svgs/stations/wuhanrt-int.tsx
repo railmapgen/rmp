@@ -73,7 +73,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             {/* Transfer icon - scaled to fill the circle */}
-            <g transform="scale(0.32)" transform-origin="0 0">
+            <g transform="scale(0.32)">
                 <path
                     fill="#0067a1"
                     fillRule="evenodd"

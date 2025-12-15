@@ -122,7 +122,6 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             patternUnits="userSpaceOnUse"
                             width={pattern.width}
                             height={pattern.height}
-                            fill="none"
                             stroke={patternColor}
                             strokeWidth="0.6"
                             strokeLinecap="round"
@@ -131,6 +130,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             <path
                                 transform="translate(0,0)"
                                 d="M10 20 L10 14 L4 16 L10 8 L4 10 L10 2 L16 10 L10 8 L16 16 L10 14"
+                                fill="none"
                             />
                         </pattern>
                         <pattern
@@ -138,14 +138,13 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             patternUnits="userSpaceOnUse"
                             width={pattern.width}
                             height={pattern.height}
-                            fill="none"
                             stroke={patternColor}
                             strokeWidth="0.8"
                             strokeLinecap="round"
                         >
-                            <path transform="translate(20,0)" d="M2 4 Q7 -2 12 4 T18 4" />
-                            <path transform="translate(20,0)" d="M2 10 Q7 4 12 10 T18 10" />
-                            <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" />
+                            <path transform="translate(20,0)" d="M2 4 Q7 -2 12 4 T18 4" fill="none" />
+                            <path transform="translate(20,0)" d="M2 10 Q7 4 12 10 T18 10" fill="none" />
+                            <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" fill="none" />
                         </pattern>
                     </defs>
                     <path d={fillPath} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />

@@ -92,6 +92,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
             <image
                 ref={imgEl}
                 href={import.meta.env.BASE_URL + `images/facilities/${type}.svg`}
+                // eslint-disable-next-line react/no-unknown-property
                 onLoad={() => setBBox(imgEl.current!.getBBox())}
             />
         </g>
