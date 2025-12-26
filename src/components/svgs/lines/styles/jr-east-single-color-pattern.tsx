@@ -13,9 +13,34 @@ import {
 } from '../../../../constants/lines';
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
+
 const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
 const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
+
+const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
+    const { id, type, path, newLine, handlePointerDown } = props;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+
+    const [paths, setPaths] = React.useState({ outline: path, pA: path, pB: path });
+    React.useEffect(() => {
+        // TODO: the calculation of outline paths is done twice (pre and main component).
+        const p = makeShortPathOutline(path, type, -2.5, 2.5);
+        if (!p) return;
+        setPaths(p);
+    }, [path]);
+
+    return (
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+            <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
+            <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
+        </g>
+    );
+};
 
 const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
     const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -29,6 +54,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
 
     const [paths, setPaths] = React.useState({ outline: path, pA: path, pB: path });
     React.useEffect(() => {
+        // TODO: the calculation of outline paths is done twice (pre and main component).
         const p = makeShortPathOutline(path, type, -2.5, 2.5);
         if (!p) return;
         setPaths(p);
@@ -37,7 +63,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <defs>
-                <clipPath id="jr_east_fill_pattern_clip_path" patternUnits="userSpaceOnUse">
+                <clipPath id={`jr_east_fill_pattern_clip_path_${id}`} patternUnits="userSpaceOnUse">
                     <polygon points={`0,0 0,${PATTERN_CLIP_PATH_D} ${PATTERN_CLIP_PATH_D},0`} />
                     <polygon
                         points={`${PATTERN_LEN},${PATTERN_LEN} ${
@@ -60,7 +86,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                         stroke="white"
                         strokeWidth={PATTERN_WIDTH}
                         strokeOpacity="50%"
-                        clipPath={`url(#jr_east_fill_pattern_clip_path)`}
+                        clipPath={`url(#jr_east_fill_pattern_clip_path_${id})`}
                     />
                     <line
                         x1={PATTERN_LEN}
@@ -74,8 +100,6 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                 </pattern>
             </defs>
             <path d={paths.outline} fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`} />
-            <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
-            <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
         </g>
     );
 };
@@ -110,6 +134,7 @@ const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleCo
 };
 
 const jrEastSingleColorPattern: LineStyle<JREastSingleColorPatternAttributes> = {
+    preComponent: JREastSingleColorPatternPre,
     component: JREastSingleColorPattern,
     defaultAttrs: defaultJREastSingleColorPatternAttributes,
     attrsComponent: jrEastSingleColorPatternAttrsComponent,
