@@ -20,6 +20,8 @@ import {
 } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
+import { MiscNodeType } from '../constants/nodes';
+import { MasterParam } from '../constants/master';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
 const stationsWithoutNameOffset = [
@@ -279,16 +281,31 @@ export const changeNodesColorInBatch = (
     [...stations, ...miscNodes].forEach(node => {
         const thisType = graph.getNodeAttributes(node).type;
         const attrs = graph.getNodeAttribute(node, thisType);
-        if ((attrs as AttributesWithColor)['color'] !== undefined) {
-            const color = (attrs as AttributesWithColor)['color'];
-            if (
-                currentColor === 'any' ||
-                (color[0] == currentColor[0] &&
-                    color[1] == currentColor[1] &&
-                    color[2] == currentColor[2] &&
-                    color[3] == currentColor[3])
-            )
-                (attrs as AttributesWithColor)['color'] = newColor;
+        if ((attrs as AttributesWithColor | MasterParam)['color'] !== undefined) {
+            if (thisType !== MiscNodeType.Master) {
+                const color = (attrs as AttributesWithColor).color;
+                if (
+                    currentColor === 'any' ||
+                    (color[0] == currentColor[0] &&
+                        color[1] == currentColor[1] &&
+                        color[2] == currentColor[2] &&
+                        color[3] == currentColor[3])
+                ) {
+                    (attrs as AttributesWithColor).color = newColor;
+                }
+            } else {
+                const color = (attrs as MasterParam).color!.value as Theme | undefined;
+                if (
+                    currentColor === 'any' ||
+                    color === undefined ||
+                    (color[0] == currentColor[0] &&
+                        color[1] == currentColor[1] &&
+                        color[2] == currentColor[2] &&
+                        color[3] == currentColor[3])
+                ) {
+                    (attrs as MasterParam).color!.value = newColor;
+                }
+            }
         }
         graph.mergeNodeAttributes(node, { [thisType]: attrs });
     });
