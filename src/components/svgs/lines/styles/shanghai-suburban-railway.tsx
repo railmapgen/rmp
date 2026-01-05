@@ -82,7 +82,12 @@ const shanghaiSuburbanRailway: LineStyle<ShanghaiSuburbanRailwayAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.shanghaiSuburbanRailway.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

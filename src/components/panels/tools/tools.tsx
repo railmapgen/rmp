@@ -68,7 +68,6 @@ const ToolsPanel = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         preference: {
-            unlockSimplePathAttempts,
             toolsPanel: { expand: isToolsExpanded },
         },
     } = useRootSelector(state => state.app);
@@ -152,7 +151,7 @@ const ToolsPanel = () => {
                             </Flex>
 
                             {Object.values(LinePathType)
-                                .filter(type => !(type === LinePathType.Simple && unlockSimplePathAttempts >= 0))
+                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
                                 .map(type => (
                                     <Button
                                         key={type}

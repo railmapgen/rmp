@@ -68,6 +68,7 @@ const simplePath: LinePath<SimplePathAttributes> = {
     defaultAttrs: defaultSimplePathAttributes,
     attrsComponent,
     metadata: { displayName: 'panel.details.lines.simple.displayName' },
+    isPro: true,
 };
 
 export default simplePath;

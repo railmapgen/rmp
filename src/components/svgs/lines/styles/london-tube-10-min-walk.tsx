@@ -43,7 +43,12 @@ const londonTube10MinWalk: LineStyle<LondonTube10MinWalkAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.londonTube10MinWalk.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

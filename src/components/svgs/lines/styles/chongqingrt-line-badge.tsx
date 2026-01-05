@@ -70,7 +70,12 @@ const chongqingRTLineBadge: LineStyle<ChongqingRTLineBadgeAttributes> = {
     attrsComponent: chongqingRTLineBadgeAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.chongqingRTLineBadge.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 
