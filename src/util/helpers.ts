@@ -182,14 +182,6 @@ export const isTouchClient = (): boolean =>
     'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
 export const isPortraitClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
 
-export const shuffle = <T>(arr: T[]): T[] => {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-};
-
 /**
  * Removes hyphens and capitalizes the first letter following each hyphen.
  * Converts a kebab-case string to camelCase or PascalCase (depending on the first word's case).
