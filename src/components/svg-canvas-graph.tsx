@@ -19,25 +19,25 @@ import {
     setPointerPosition,
     setSelected,
 } from '../redux/runtime/runtime-slice';
+import { checkAndChangeStationIntType } from '../util/change-types';
 import { findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
     getMousePosition,
     getViewpointSize,
-    makeSnapLinesPath,
     pointerPosToSVGCoord,
     roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
-import { checkAndChangeStationIntType } from '../util/change-types';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
     getSnapLineDistance,
     getSnapLines,
     isNodeSupportSnapLine,
+    makeSnapLinesPath,
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
