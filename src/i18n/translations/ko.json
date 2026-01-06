@@ -345,7 +345,8 @@
                 },
                 "bjsubwayInt": {
                     "displayName": "베이징 지하철 환승역",
-                    "outOfStation": "역을 나가 환승"
+                    "outOfStation": "역을 나가 환승",
+                    "scale": "역명 가로 크기 조절"
                 },
                 "mtr": {
                     "displayName": "홍콩 MTR 역"

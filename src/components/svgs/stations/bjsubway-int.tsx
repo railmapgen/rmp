@@ -25,6 +25,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
         nameOffsetX = defaultBjsubwayIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultBjsubwayIntStationAttributes.nameOffsetY,
         outOfStation = defaultBjsubwayIntStationAttributes.outOfStation,
+        scale = defaultBjsubwayIntStationAttributes.scale,
     } = attrs[StationType.BjsubwayInt] ?? defaultBjsubwayIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -42,24 +43,24 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-5, -names[1].split('\n').length * LINE_HEIGHT[oY] - 4];
+            return [-5, -names[1].split('\n').length * LINE_HEIGHT[oY] - 4 - (outOfStation ? 12.5 : 0), -2];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] - 7];
+            return [0, -names[1].split('\n').length * LINE_HEIGHT[oY] - 6 - (outOfStation ? 12.5 : 0), 0];
         } else if (oX === 'right' && oY === 'top') {
-            return [5, -names[1].split('\n').length * LINE_HEIGHT[oY] - 4];
+            return [5, -names[1].split('\n').length * LINE_HEIGHT[oY] - 4 - (outOfStation ? 12.5 : 0), 2];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-5, names[0].split('\n').length * LINE_HEIGHT[oY] + 4];
+            return [-5, names[0].split('\n').length * LINE_HEIGHT[oY] + 4, -2];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 7];
+            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 7, 0];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [5, names[0].split('\n').length * LINE_HEIGHT[oY] + 4];
+            return [5, names[0].split('\n').length * LINE_HEIGHT[oY] + 4, 2];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-8, 0];
+            return [-8, 1, -2];
         } else if (oX === 'right' && oY === 'middle') {
-            return [8, 0];
-        } else return [0, 0];
+            return [8, 1, 2];
+        } else return [0, 0, 0];
     };
-    const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
+    const [textX, textY, outOfStationOffset] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
@@ -101,6 +102,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     grow="up"
                     {...getLangStyle(TextLanguage.zh)}
                     baseOffset={1}
+                    transform={`scale(${scale} 1)`}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
@@ -109,7 +111,43 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     grow="down"
                     {...getLangStyle(TextLanguage.en)}
                     baseOffset={1}
+                    transform={`scale(${scale} 1)`}
                 />
+                {outOfStation && (
+                    <g>
+                        <text
+                            dx={outOfStationOffset}
+                            dy={names[1].split('\n').length * LINE_HEIGHT.en + 1}
+                            fontSize={LINE_HEIGHT.en}
+                            dominantBaseline="hanging"
+                            {...getLangStyle(TextLanguage.zh)}
+                        >
+                            站内换乘
+                        </text>
+                        <text
+                            dx={outOfStationOffset}
+                            dy={(names[1].split('\n').length + 1) * LINE_HEIGHT.en + 2}
+                            fontSize={LINE_HEIGHT.en}
+                            dominantBaseline="hanging"
+                            {...getLangStyle(TextLanguage.zh)}
+                        >
+                            暂缓开通
+                        </text>
+                        <text
+                            fontSize="12"
+                            dx={
+                                -outOfStationOffset / 1.8 +
+                                (outOfStationOffset < 0 ? 25 : outOfStationOffset === 0 ? 12.5 : 0)
+                            }
+                            dy={names[1].split('\n').length * LINE_HEIGHT.en + 10}
+                            letterSpacing={25}
+                            fontWeight={200}
+                            transform="scale(0.8 1)"
+                        >
+                            ()
+                        </text>
+                    </g>
+                )}
             </g>
         </g>
     );
@@ -122,6 +160,7 @@ export interface BjsubwayIntStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
     outOfStation: boolean;
+    scale: number;
 }
 
 const defaultBjsubwayIntStationAttributes: BjsubwayIntStationAttributes = {
@@ -129,6 +168,7 @@ const defaultBjsubwayIntStationAttributes: BjsubwayIntStationAttributes = {
     nameOffsetX: 'right',
     nameOffsetY: 'top',
     outOfStation: false,
+    scale: 1,
 };
 
 const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttributes>) => {
@@ -187,6 +227,19 @@ const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttribute
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'slider',
+            label: t('panel.details.stations.bjsubwayInt.scale'),
+            value: attrs.scale ?? defaultBjsubwayIntStationAttributes.scale,
+            onChange: val => {
+                attrs.scale = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            step: 0.025,
+            min: 0.5,
+            max: 1,
         },
         {
             type: 'switch',
