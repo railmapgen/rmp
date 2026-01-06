@@ -174,13 +174,14 @@ export interface LineStyleComponentProps<
  */
 interface LineBase<T extends LinePathAttributes> {
     /**
-     * The icon displayed in the tools panel.
-     */
-    icon: React.JSX.Element;
-    /**
      * Default attributes for this component.
      */
     defaultAttrs: T;
+    /**
+     * Indicate whether or not this line path/style is a pro-only feature.
+     * Default to false.
+     */
+    isPro?: boolean;
 }
 
 export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsProps<T> {
@@ -192,8 +193,8 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
      * Changing the `startFrom` attr should result in new parallel recalculation.
      * Passing it to each line path implementation and only call it in `startFrom`'s field onChange.
      *
-     * Note: Call this fuction before updating the `startFrom` attr as parallelIndex
-     * is calculated based on it and changing it before calcuation will result in
+     * Note: Call this function before updating the `startFrom` attr as parallelIndex
+     * is calculated based on it and changing it before calculation will result in
      * considering this line (e.g. from -> to) as an existing line (e.g. to).
      * ```ts
      * onChange: val => {
@@ -205,6 +206,7 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
      */
     recalculateParallelIndex: (id: string, startFrom: 'from' | 'to') => void;
 }
+
 export interface LinePathAttributes {}
 /**
  * The type a line path should export.
@@ -214,6 +216,10 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * The line path component.
      */
     generatePath: PathGenerator<T>;
+    /**
+     * The icon displayed in the tools panel.
+     */
+    icon: React.JSX.Element;
     /**
      * A React component that allows user to change the attributes.
      * Will be displayed in the details panel.
@@ -237,7 +243,7 @@ export interface LineStyleAttributes {}
 /**
  * The type a line style should export.
  */
-export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<T>, 'icon'> {
+export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
     /**
      * The line style component.
      */

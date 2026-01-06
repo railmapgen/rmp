@@ -64,7 +64,12 @@ const gzmtrLoop: LineStyle<GZMTRLoopAttributes> = {
     attrsComponent: gzmtrLoopAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.gzmtrLoop.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

@@ -72,7 +72,12 @@ const mrtUnderConstruction: LineStyle<MRTUnderConstructionAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mrtUnderConstruction.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

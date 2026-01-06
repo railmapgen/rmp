@@ -30,6 +30,7 @@ export default function LineTypeSection() {
         dispatch(refreshEdgesThunk());
     }, [dispatch, refreshEdgesThunk, saveGraph]);
 
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         preference: { autoParallel, disableWarning },
     } = useRootSelector(state => state.app);
@@ -66,10 +67,14 @@ export default function LineTypeSection() {
     }, [selectedFirst]);
 
     const disabledLinePathOptions = Object.values(LinePathType).filter(
-        linePathType => !lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType)
+        linePathType =>
+            !lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType) ||
+            (linePaths[linePathType].isPro && !activeSubscriptions.RMP_CLOUD)
     );
     const disabledLineStyleOptions = Object.values(LineStyleType).filter(
-        lineStyleType => !lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType)
+        lineStyleType =>
+            !lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType) ||
+            (lineStyles[lineStyleType].isPro && !activeSubscriptions.RMP_CLOUD)
     );
 
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {

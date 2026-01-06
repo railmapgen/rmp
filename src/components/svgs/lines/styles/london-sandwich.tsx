@@ -77,7 +77,12 @@ const londonSandwich: LineStyle<LondonSandwichAttributes> = {
     attrsComponent: LondonSandwichAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.londonSandwich.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

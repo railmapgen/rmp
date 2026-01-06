@@ -69,7 +69,12 @@ const londonTubeTerminal: LineStyle<LondonTubeTerminalAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.londonTubeTerminal.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

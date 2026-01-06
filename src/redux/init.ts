@@ -17,7 +17,6 @@ import {
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
-    setUnlockSimplePath,
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
@@ -35,8 +34,6 @@ export const initStore = async (store: RootStore) => {
         if ('project' in appState.telemetry) store.dispatch(setTelemetryProject(appState.telemetry.project));
     }
     if ('preference' in appState) {
-        if ('unlockSimplePathAttempts' in appState.preference)
-            store.dispatch(setUnlockSimplePath(appState.preference.unlockSimplePathAttempts));
         if ('toolsPanel' in appState.preference && 'expand' in appState.preference.toolsPanel)
             store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
         if ('autoParallel' in appState.preference) store.dispatch(setAutoParallel(appState.preference.autoParallel));
