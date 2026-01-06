@@ -58,7 +58,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
             return [-8, 1, -2];
         } else if (oX === 'right' && oY === 'middle') {
             return [8, 1, 2];
-        } else return [0, 0];
+        } else return [0, 0, 0];
     };
     const [textX, textY, outOfStationOffset] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
