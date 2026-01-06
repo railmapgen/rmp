@@ -861,4 +861,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_test1","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"jr-east-basic","jr-east-basic":{"names":["駅","Stn"],"nameOffsetX":"right","nameOffsetY":"top","rotate":90,"lines":[1,2],"textAnchor":"start","textXAdjust":0,"textYAdjust":0}}},{"key":"stn_test2","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"jr-east-basic","jr-east-basic":{"names":["駅2","Stn2"],"nameOffsetX":"left","nameOffsetY":"bottom","rotate":90,"lines":[-3,4],"textAnchor":"end","textXAdjust":5,"textYAdjust":-5}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":66}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('66 -> 67', () => {
+        // Bump save version to add scale to bjsubway basic and interchange stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"bjsubway-basic","bjsubway-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","open":true,"construction":false}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"bjsubway-int","bjsubway-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","outOfStation":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":66}';
+        const newParam = UPGRADE_COLLECTION[66](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"bjsubway-basic","bjsubway-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","open":true,"construction":false,"scale":1}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"bjsubway-int","bjsubway-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","outOfStation":false,"scale":1}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":67}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

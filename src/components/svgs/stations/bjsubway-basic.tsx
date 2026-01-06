@@ -16,7 +16,7 @@ import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
     zh: 9,
-    en: 6.2,
+    en: 5.2,
     top: 6.2 + 1,
     middle: 0,
     bottom: 9 + 1,
@@ -30,6 +30,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         nameOffsetY = defaultBjsubwayBasicStationAttributes.nameOffsetY,
         open = defaultBjsubwayBasicStationAttributes.open,
         construction = defaultBjsubwayBasicStationAttributes.construction,
+        scale = defaultBjsubwayBasicStationAttributes.scale,
     } = attrs[StationType.BjsubwayBasic] ?? defaultBjsubwayBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -51,7 +52,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         if (oX === 'left' && oY === 'top') {
             return [-4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 4];
+            return [0, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 3.5];
         } else if (oX === 'right' && oY === 'top') {
             return [4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
         } else if (oX === 'left' && oY === 'bottom') {
@@ -61,9 +62,9 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         } else if (oX === 'right' && oY === 'bottom') {
             return [4, names[0].split('\n').length * LINE_HEIGHT[oY] + 1];
         } else if (oX === 'left' && oY === 'middle') {
-            return [-5, 0];
+            return [-5, 1];
         } else if (oX === 'right' && oY === 'middle') {
-            return [5, 0];
+            return [5, 1];
         } else return [0, 0];
     };
 
@@ -92,6 +93,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                     grow="up"
                     {...getLangStyle(TextLanguage.zh)}
                     baseOffset={1}
+                    transform={`scale(${scale} 1)`}
                 />
                 <MultilineText
                     text={names[1].split('\n')}
@@ -100,6 +102,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                     grow="down"
                     {...getLangStyle(TextLanguage.en)}
                     baseOffset={1}
+                    transform={`scale(${scale} 1)`}
                 />
                 {secondLine && (
                     <text
@@ -127,6 +130,7 @@ export interface BjsubwayBasicStationAttributes extends StationAttributes {
      */
     open: boolean;
     construction: boolean;
+    scale: number;
 }
 
 const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
@@ -135,6 +139,7 @@ const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
     nameOffsetY: 'top',
     open: true,
     construction: false,
+    scale: 1,
 };
 
 const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttributes>) => {
@@ -192,6 +197,19 @@ const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttri
                 attrs.nameOffsetY = val as NameOffsetY;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'slider',
+            label: t('panel.details.stations.bjsubwayBasic.scale'),
+            value: attrs.scale ?? defaultBjsubwayBasicStationAttributes.scale,
+            onChange: val => {
+                attrs.scale = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            step: 0.025,
+            min: 0.5,
+            max: 1,
             minW: 'full',
         },
         {

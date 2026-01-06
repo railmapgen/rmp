@@ -347,7 +347,8 @@
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地下鉄乗り換え駅",
-                    "outOfStation": "改札外乗り換え"
+                    "outOfStation": "改札外乗り換え",
+                    "scale": "駅名の横方向スケール"
                 },
                 "mtr": {
                     "displayName": "香港MTR駅",

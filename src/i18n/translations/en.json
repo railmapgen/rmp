@@ -345,7 +345,8 @@
                 },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",
-                    "outOfStation": "Out of station interchange"
+                    "outOfStation": "Out of station interchange",
+                    "scale": "Names horizontal scale"
                 },
                 "mtr": {
                     "displayName": "Hongkong MTR station",
