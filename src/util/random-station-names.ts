@@ -201,6 +201,6 @@ export const useMakeStationName = () => {
             }
             return structuredClone(attrNames);
         },
-        [dispatch, isRandomStationNamesDisabled]
+        [dispatch, isRandomStationNamesDisabled, randomStationsNames]
     );
 };

@@ -172,13 +172,14 @@ const PredictNextNode = () => {
 
         // preserve attributes from the selected station if applicable
         const attr = structuredClone(
-            isStation
+            isStation && nodeType === window.graph.getNodeAttribute(selectedID, 'type')
                 ? window.graph.getNodeAttribute(selectedID, nodeType as StationType)
                 : { ...stations, ...miscNodes }[nodeType].defaultAttrs
         );
         // inject runtime color if registered in dynamicColorInjection
         if (dynamicColorInjection.has(nodeType)) (attr as AttributesWithColor).color = runtimeTheme;
-        // add random names for stations
+        // add random names for stations only when enabled
+        // otherwise use the default names or the existing names from the selected station
         const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
         if (isStation && !isRandomStationNamesDisabled) {
             (attr as StationAttributes).names = await makeStationName(nodeType as StationType);
