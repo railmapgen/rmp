@@ -102,22 +102,6 @@ export const getViewpointSize = (
     yMax: (height * svgViewBoxZoom) / 100 + svgViewBoxMin.y,
 });
 
-export const makeSnapLinesPath = (
-    p: SnapLine,
-    viewpointSize: ReturnType<typeof getViewpointSize>
-): [number, number, number, number] => {
-    const { xMin, yMin, xMax, yMax } = viewpointSize;
-    if (p.a === 0) {
-        return [xMin, xMax, -p.c / p.b, -p.c / p.b];
-    } else if (p.b === 0) {
-        return [-p.c / p.a, -p.c / p.a, yMin, yMax];
-    } else {
-        const k = -p.a / p.b;
-        const b = -p.c / p.b;
-        return [xMin, xMax, k * xMin + b, k * xMax + b];
-    }
-};
-
 /**
  * Calculate the bounding box of the current element, with respect to its own transformation attribute.
  *
@@ -181,14 +165,6 @@ export const isMacClient = navigator.platform.startsWith('Mac');
 export const isTouchClient = (): boolean =>
     'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
 export const isPortraitClient = (): boolean => window.matchMedia('(max-width: 600px)').matches;
-
-export const shuffle = <T>(arr: T[]): T[] => {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-};
 
 /**
  * Removes hyphens and capitalizes the first letter following each hyphen.

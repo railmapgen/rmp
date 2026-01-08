@@ -51,7 +51,6 @@ import { ChangeTypeModal } from './procedures/change-type-modal';
 import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
 import { ScaleNodesModal } from './procedures/scale-nodes-modal';
 import { TranslateNodesModal } from './procedures/translate-nodes-modal';
-import { UnlockSimplePathModal } from './procedures/unlock-simple-path-modal';
 import { UpdateColorModal } from './procedures/update-color-modal';
 import { StatusSection } from './status-section';
 
@@ -92,7 +91,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isChangeTypeOpen, setIsChangeTypeOpen] = React.useState(false);
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUpdateColorOpen, setIsUpdateColorOpen] = React.useState(false);
-    const [isUnlockSimplePathOpen, setIsUnlockSimplePathOpen] = React.useState(false);
     const [isManagerOpen, setIsManagerOpen] = React.useState(false);
 
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
@@ -296,28 +294,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <UpdateColorModal
                                     isOpen={isUpdateColorOpen}
                                     onClose={() => setIsUpdateColorOpen(false)}
-                                />
-
-                                <Button
-                                    sx={procedureButtonStyle}
-                                    rightIcon={<MdReadMore />}
-                                    onClick={() => setIsUnlockSimplePathOpen(true)}
-                                >
-                                    {t('header.settings.procedures.unlockSimplePath.title')}
-                                    <Tooltip label={t('header.settings.pro')}>
-                                        <Badge
-                                            ml="1"
-                                            color="gray.50"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            mr="auto"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tooltip>
-                                </Button>
-                                <UnlockSimplePathModal
-                                    isOpen={isUnlockSimplePathOpen}
-                                    onClose={() => setIsUnlockSimplePathOpen(false)}
                                 />
 
                                 <Button

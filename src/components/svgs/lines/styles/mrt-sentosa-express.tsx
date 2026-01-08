@@ -48,7 +48,12 @@ const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mrtSentosaExpress.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

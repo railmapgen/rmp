@@ -122,7 +122,12 @@ const londonRail: LineStyle<LondonRailAttributes> = {
     attrsComponent: londonRailAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.londonRail.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 
