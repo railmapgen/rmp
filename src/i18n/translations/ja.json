@@ -343,7 +343,8 @@
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
                     "open": "開業済み",
-                    "construction": "工事中"
+                    "construction": "工事中",
+                    "scale": "駅名の横方向スケール"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地下鉄乗り換え駅",

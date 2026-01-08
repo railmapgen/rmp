@@ -341,7 +341,8 @@
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
                     "open": "Is opened",
-                    "construction": "Is under construction"
+                    "construction": "Is under construction",
+                    "scale": "Names horizontal scale"
                 },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",

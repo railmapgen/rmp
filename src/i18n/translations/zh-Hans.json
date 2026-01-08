@@ -341,7 +341,8 @@
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
                     "open": "开通",
-                    "construction": "施工"
+                    "construction": "施工",
+                    "scale": "站名横向缩放"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地铁换乘车站",
