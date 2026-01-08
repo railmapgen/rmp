@@ -110,6 +110,22 @@ interface TextTag {
     opacity?: number;
 }
 
+export enum StationTypeOption {
+    Suzhou = 'suzhou',
+    Beijing = 'beijing',
+}
+
+export const stationTypeOptions: Record<StationTypeOption, { basic: StationType; int: StationType }> = {
+    [StationTypeOption.Suzhou]: {
+        basic: StationType.SuzhouRTBasic,
+        int: StationType.SuzhouRTInt,
+    },
+    [StationTypeOption.Beijing]: {
+        basic: StationType.BjsubwayBasic,
+        int: StationType.BjsubwayInt,
+    },
+};
+
 const stationIds = new Map<number, StnId | MiscNodeId>();
 const stationPoints = new Map<number, Point>();
 
@@ -143,7 +159,6 @@ const createMiscNode = (
     config: Partial<MiscNodeAttributes[MiscNodeType]> = {}
 ) => {
     const id: MiscNodeId = `misc_node_${nanoid(10)}`;
-    console.log(point, id, point);
     stationIds.set(point.id, id);
     const attr = {
         ...structuredClone(miscNodes[type].defaultAttrs),
@@ -334,7 +349,8 @@ const createLine = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, Gr
 
 export const convertAarcToRmp = (
     aarc: string,
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    stationTypeOption: StationTypeOption = StationTypeOption.Suzhou
 ) => {
     stationIds.clear();
     stationPoints.clear();
@@ -342,7 +358,7 @@ export const convertAarcToRmp = (
     aarcSave.points.forEach(point => {
         stationPoints.set(point.id, point);
         if (point.sta === 1) {
-            createStation(graph, point, StationType.SuzhouRTBasic);
+            createStation(graph, point, stationTypeOptions[stationTypeOption].basic);
         } else {
             createMiscNode(graph, point, MiscNodeType.Virtual);
         }
@@ -352,7 +368,6 @@ export const convertAarcToRmp = (
     });
     stationIds.forEach(id => {
         if (id.startsWith('stn')) {
-            console.log('Updating station type and transfers for', id);
             autoUpdateStationType(graph, id as StnId);
             autoPopulateTransfer(graph, id as StnId);
         }
