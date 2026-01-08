@@ -50,17 +50,17 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
-            return [-4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+            return [-4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 2];
         } else if (oX === 'middle' && oY === 'top') {
-            return [0, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 3.5];
+            return [0, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 3];
         } else if (oX === 'right' && oY === 'top') {
-            return [4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 1];
+            return [4, -(names[1].split('\n').length + (secondLine ? 1 : 0)) * LINE_HEIGHT[oY] - 2];
         } else if (oX === 'left' && oY === 'bottom') {
-            return [-4, names[0].split('\n').length * LINE_HEIGHT[oY] + 1];
+            return [-4, names[0].split('\n').length * LINE_HEIGHT[oY] + 2.5];
         } else if (oX === 'middle' && oY === 'bottom') {
-            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 4];
+            return [0, names[0].split('\n').length * LINE_HEIGHT[oY] + 3.5];
         } else if (oX === 'right' && oY === 'bottom') {
-            return [4, names[0].split('\n').length * LINE_HEIGHT[oY] + 1];
+            return [4, names[0].split('\n').length * LINE_HEIGHT[oY] + 2.5];
         } else if (oX === 'left' && oY === 'middle') {
             return [-5, 1];
         } else if (oX === 'right' && oY === 'middle') {
