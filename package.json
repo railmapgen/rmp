@@ -28,7 +28,7 @@
         "react-i18next": "^15.7.3",
         "react-icons": "^5.4.0",
         "react-redux": "^9.2.0",
-        "react-router-dom": "^7.9.1",
+        "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
         "rollup": "^4.55.1",
         "vite-plugin-svgr": "^4.5.0"
