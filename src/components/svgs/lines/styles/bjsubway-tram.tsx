@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -23,8 +24,8 @@ const BjsubwayTram = (props: LineStyleComponentProps<BjsubwayTramAttributes>) =>
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="5" />
-            <path d={path} fill="none" stroke="white" strokeWidth="1.67" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
+            <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH / 3} />
         </g>
     );
 };

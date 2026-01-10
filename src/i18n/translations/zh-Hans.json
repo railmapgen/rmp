@@ -252,6 +252,18 @@
                     "italic": "斜体",
                     "bold": "粗体",
                     "outline": "描边"
+                },
+                "fill": {
+                    "displayName": "填充区域",
+                    "opacity": "填充透明度",
+                    "patterns": "图案",
+                    "logo": "品牌标识",
+                    "trees": "树木",
+                    "water": "水域",
+                    "noClosedPath": "没有闭合路径",
+                    "createSquare": "创建正方形",
+                    "createTriangle": "创建三角形",
+                    "createCircle": "创建圆形"
                 }
             },
             "stations": {
@@ -280,7 +292,8 @@
                     "nameZh": "中文名称",
                     "nameEn": "英文名称",
                     "add": "添加换乘",
-                    "copy": "复制换乘",
+                    "up": "上移换乘站",
+                    "down": "下移换乘站",
                     "remove": "删除换乘"
                 },
                 "shmetroBasic": {
@@ -327,7 +340,8 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
-                    "open": "是否开通"
+                    "open": "开通",
+                    "construction": "施工"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地铁换乘车站",
@@ -489,6 +503,24 @@
                     "translationMaxWidth": "英文名称长度",
                     "up": "上",
                     "down": "下"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "武汉轨道交通基本车站"
+                },
+                "wuhanRTInt": {
+                    "displayName": "武汉轨道交通换乘车站"
+                },
+                "csmetroBasic": {
+                    "displayName": "长沙轨道交通基本车站"
+                },
+                "csmetroInt": {
+                    "displayName": "长沙轨道交通换乘车站"
+                },
+                "hzmetroBasic": {
+                    "displayName": "杭州地铁基本车站"
+                },
+                "hzmetroInt": {
+                    "displayName": "杭州地铁换乘车站"
                 }
             },
             "lines": {
@@ -658,7 +690,8 @@
             "confirmOverwrite": {
                 "title": "确认覆盖",
                 "body": "此操作将覆盖当前项目。所有未保存的更改将丢失。确定要继续吗？",
-                "overwrite": "覆盖"
+                "overwrite": "覆盖",
+                "newerVersion": "警告：此存档文件来自更新的版本（{{saveVersion}}），高于当前版本（{{currentVersion}}）。加载它可能会导致错误或未定义的行为。"
             }
         },
         "download": {
@@ -699,6 +732,7 @@
             "termsAndConditions": "条款及细则",
             "termsAndConditionsInfo": "我同意",
             "period": "。",
+            "rmpInfoSpecificNodeExists": "某些节点需要显示此信息。",
             "confirm": "下载"
         },
         "donation": {
@@ -746,7 +780,9 @@
                 },
                 "gridline": "显示网格参考线",
                 "snapline": "磁性吸附到参考线",
-                "predictNextNode": "当选择一个节点时预测下一个节点"
+                "predictNextNode": "当选择一个节点时预测下一个节点",
+                "autoChangeStationType": "自动切换基本车站与换乘车站",
+                "disableWarningChangeType": "更改车站或线段类型时禁用警告"
             },
             "shortcuts": {
                 "title": "快捷键",

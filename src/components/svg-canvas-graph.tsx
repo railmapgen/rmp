@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
+import { Events, LineId, MiscNodeId, NodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -19,14 +19,7 @@ import {
     setPointerPosition,
     setSelected,
 } from '../redux/runtime/runtime-slice';
-import {
-    findNodesInRectangle,
-    getNearestSnapLine,
-    getNearestSnapPoints,
-    getSnapLineDistance,
-    getSnapLines,
-    isNodeSupportSnapLine,
-} from '../util/graph';
+import { findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
     getMousePosition,
@@ -38,6 +31,14 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
+import { checkAndChangeStationIntType } from '../util/change-types';
+import {
+    getNearestSnapLine,
+    getNearestSnapPoints,
+    getSnapLineDistance,
+    getSnapLines,
+    isNodeSupportSnapLine,
+} from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
 import { linePaths } from './svgs/lines/lines';
@@ -49,6 +50,7 @@ const connectableNodesType = [
     ...Object.values(StationType),
     MiscNodeType.Virtual,
     MiscNodeType.Master,
+    MiscNodeType.Fill,
     MiscNodeType.LondonArrow,
     MiscNodeType.ChongqingRTNumLineBadge2021,
     MiscNodeType.ChongqingRTTextLineBadge2021,
@@ -66,7 +68,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, gridLines: useGridLines, snapLines: useSnapLines },
+        preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -87,7 +89,7 @@ const SvgCanvas = () => {
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
     // nodes in the current svg view, pre-calculated for performance
-    const [nodesInViewRange, setNodesInViewRange] = React.useState<(StnId | MiscNodeId)[]>([]);
+    const [nodesInViewRange, setNodesInViewRange] = React.useState<NodeId[]>([]);
     // the active (drawn) snap lines for the current dragging node (length <= 2)
     // it is only valid in one dragging operation and will be reset in pointer up
     const [activeSnapLines, setActiveSnapLines] = React.useState<SnapLine[]>([]);
@@ -113,7 +115,7 @@ const SvgCanvas = () => {
     // the active snap points, only used when there is only one active snap line
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
 
-    const handlePointerDown = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
         e.currentTarget.setPointerCapture(e.pointerId);
         const { x, y } = getMousePosition(e);
@@ -130,7 +132,7 @@ const SvgCanvas = () => {
             // no shift key -> non multiple selection case
             if (!selected.has(node)) {
                 // set the current as the only one no matter what the previous selected were
-                dispatch(setSelected(new Set<StnId | MiscNodeId>([node])));
+                dispatch(setSelected(new Set<NodeId>([node])));
             } else {
                 // no-op as users may drag the previously selected node(s) for the current selected
             }
@@ -146,7 +148,7 @@ const SvgCanvas = () => {
         }
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
-    const handlePointerMove = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerMove = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         const { x, y } = getMousePosition(e);
         // in normal case, the element is already captured in pointer down
         // however in predict-next-node, the element is created without pointer capture
@@ -297,7 +299,7 @@ const SvgCanvas = () => {
             });
         }
     });
-    const handlePointerUp = useEvent((node: StnId | MiscNodeId, e: React.PointerEvent<SVGElement>) => {
+    const handlePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.currentTarget.releasePointerCapture(e.pointerId);
 
         if (mode.startsWith('line')) {
@@ -317,10 +319,7 @@ const SvgCanvas = () => {
             if (couldSourceBeConnected && matchedPrefix) {
                 const type = mode.slice(5) as LinePathType;
                 const newLineId: LineId = `line_${nanoid(10)}`;
-                const [source, target] = [
-                    active! as StnId | MiscNodeId,
-                    id!.slice(matchedPrefix.length) as StnId | MiscNodeId,
-                ];
+                const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
                     const parallelIndex = autoParallel
                         ? makeParallelIndex(graph.current, type, source, target, 'from')
@@ -336,6 +335,14 @@ const SvgCanvas = () => {
                         reconcileId: '',
                         parallelIndex,
                     });
+
+                    if (autoChangeStationType && source.startsWith('stn')) {
+                        checkAndChangeStationIntType(graph.current, source as StnId);
+                    }
+                    if (autoChangeStationType && target.startsWith('stn')) {
+                        checkAndChangeStationIntType(graph.current, target as StnId);
+                    }
+
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                     dispatch(saveGraph(graph.current.export()));

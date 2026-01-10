@@ -20,7 +20,7 @@ import { RmgAutoComplete, RmgFields, RmgFieldsField, RmgLineBadge } from '@railm
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CityCode, LineId, MiscNodeId, StnId, Theme } from '../../../constants/constants';
+import { CityCode, LineId, MiscNodeId, NodeId, StnId, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -33,12 +33,13 @@ import {
     changeNodesColorInBatch,
     changeStationsTypeInBatch,
     changeZIndexInBatch,
+    checkAndChangeStationIntType,
 } from '../../../util/change-types';
-import { findThemes } from '../../../util/graph';
+import { findThemes } from '../../../util/color';
+import { usePaletteTheme } from '../../../util/hooks';
 import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
-import { usePaletteTheme } from '../../../util/hooks';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
 
@@ -66,7 +67,7 @@ export const ChangeTypeModal = (props: {
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
     const {
-        preference: { autoParallel },
+        preference: { autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
     const { activeSubscriptions } = useRootSelector(state => state.account);
 
@@ -129,7 +130,7 @@ export const ChangeTypeModal = (props: {
                     type: 'select',
                     label: t('panel.details.info.zIndex'),
                     value: zIndex,
-                    options: Object.fromEntries(Array.from({ length: 11 }, (_, i) => [i - 5, (i - 5).toString()])),
+                    options: Object.fromEntries(Array.from({ length: 21 }, (_, i) => [i - 10, (i - 10).toString()])),
                     onChange: val => setZIndex(Number(val)),
                 },
             ],
@@ -259,7 +260,7 @@ export const ChangeTypeModal = (props: {
                     graph.current,
                     (isSelect
                         ? [...selected].filter(id => id.startsWith('stn') || id.startsWith('misc_node'))
-                        : graph.current.nodes()) as (StnId | MiscNodeId)[],
+                        : graph.current.nodes()) as NodeId[],
                     (isSelect ? [...selected].filter(id => id.startsWith('line')) : graph.current.edges()) as LineId[]
                 ).map(
                     theme =>
@@ -290,6 +291,7 @@ export const ChangeTypeModal = (props: {
             : (graph.current.edges() as LineId[]);
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
             changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);
+            if (autoChangeStationType) stations.forEach(s => checkAndChangeStationIntType(graph.current, s as StnId));
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
             changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines);
@@ -315,7 +317,13 @@ export const ChangeTypeModal = (props: {
                 );
         }
         if (isZIndexSwitch) {
-            changeZIndexInBatch(graph.current, stations, miscNodes, lines, zIndex);
+            changeZIndexInBatch(
+                graph.current,
+                !filter || filter.includes('station') ? stations : [],
+                !filter || filter.includes('misc-node') ? miscNodes : [],
+                !filter || filter.includes('line') ? lines : [],
+                zIndex
+            );
         }
         hardRefresh();
         onClose();

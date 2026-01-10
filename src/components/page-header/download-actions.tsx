@@ -35,7 +35,7 @@ import { Events } from '../../constants/constants';
 import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
-import { downloadAs, downloadBlobAs, makeRenderReadySVGElement } from '../../util/download';
+import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, rmpInfoSpecificNodeExists } from '../../util/download';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
@@ -68,6 +68,7 @@ export default function DownloadActions() {
     } = useRootSelector(state => state.app);
     const { languages } = useRootSelector(state => state.fonts);
     const param = useRootSelector(state => state.param);
+    const { existsNodeTypes } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
 
@@ -124,6 +125,7 @@ export default function DownloadActions() {
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
+    const [isAttachDisabled, setIsAttachDisabled] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
@@ -148,6 +150,13 @@ export default function DownloadActions() {
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
             );
             setResvgScaleOptions(disabledScales);
+
+            if (rmpInfoSpecificNodeExists(existsNodeTypes)) {
+                setIsAttachSelected(false);
+                setIsAttachDisabled(true);
+            } else {
+                setIsAttachDisabled(false);
+            }
         }
     }, [isDownloadModalOpen]);
 
@@ -185,11 +194,13 @@ export default function DownloadActions() {
             isAttachSelected,
             isSystemFontsOnly,
             languages,
+            existsNodeTypes,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
         // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
-        const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ');
+        // ASCII control characters will also break the rendering, reported in #1224
+        const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
@@ -268,7 +279,7 @@ export default function DownloadActions() {
                 </MenuItem>
             </MenuList>
 
-            <Modal size="xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
+            <Modal size="2xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>{t('header.download.image')}</ModalHeader>
@@ -286,22 +297,27 @@ export default function DownloadActions() {
                         >
                             <Text>{t('header.download.isSystemFontsOnly')}</Text>
                         </Checkbox>
-                        <Checkbox
-                            id="share_info"
-                            isChecked={isAttachSelected}
-                            onChange={e => setIsAttachSelected(e.target.checked)}
-                        >
-                            <Text>
-                                {t('header.download.shareInfo1')}
-                                <Link
-                                    color="teal.500"
-                                    onClick={() => window.open('https://railmapgen.github.io/rmp', '_blank')}
-                                >
-                                    {t('header.about.rmp')} <Icon as={MdOpenInNew} />
-                                </Link>
-                                {t('header.download.shareInfo2')}
-                            </Text>
-                        </Checkbox>
+                        <HStack>
+                            <Checkbox
+                                id="share_info"
+                                isChecked={isAttachSelected}
+                                isDisabled={isAttachDisabled && !RMP_EXPORT}
+                                onChange={e => setIsAttachSelected(e.target.checked)}
+                            >
+                                <Text>
+                                    {t('header.download.shareInfo1')}
+                                    <Link color="teal.500" href="https://railmapgen.org/rmp">
+                                        {t('header.about.rmp')} <Icon as={MdOpenInNew} />
+                                    </Link>
+                                    {t('header.download.shareInfo2')}
+                                </Text>
+                            </Checkbox>
+                            {isAttachDisabled && (
+                                <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                                    PRO
+                                </Badge>
+                            )}
+                        </HStack>
                         <Checkbox
                             id="agree_terms"
                             isChecked={isTermsAndConditionsSelected}
@@ -316,6 +332,14 @@ export default function DownloadActions() {
                             </Text>
                         </Checkbox>
 
+                        {isAttachDisabled && (
+                            <Alert status="error" mt="4">
+                                <AlertIcon />
+                                <Box>
+                                    <AlertTitle>{t('header.download.rmpInfoSpecificNodeExists')}</AlertTitle>
+                                </Box>
+                            </Alert>
+                        )}
                         {format === 'png' && resvgScaleOptions.includes(scale) && !isTauri && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />

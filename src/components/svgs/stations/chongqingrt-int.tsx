@@ -305,19 +305,17 @@ const ChongqingRTIntAttrsComponent = (props: AttrsProps<ChongqingRTIntStationAtt
             },
             minW: 'full',
         },
-        {
-            type: 'custom',
-            label: t('panel.details.stations.interchange.title'),
-            component: (
-                <InterchangeField
-                    stationType={StationType.ChongqingRTInt}
-                    defaultAttrs={defaultChongqingRTIntStationAttributes}
-                    maximumTransfers={[3, 0, 0]}
-                />
-            ),
-        },
     ];
-    return <RmgFields fields={fields} />;
+    return (
+        <>
+            <RmgFields fields={fields} />
+            <InterchangeField
+                stationType={StationType.ChongqingRTInt}
+                defaultAttrs={defaultChongqingRTIntStationAttributes}
+                maximumTransfers={[3, 0, 0]}
+            />
+        </>
+    );
 };
 
 const chongqingRTIntStationIcon = (

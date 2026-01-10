@@ -749,4 +749,116 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":57}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('57 -> 58', () => {
+        // Bump save version to support image node.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":57}';
+        const newParam = UPGRADE_COLLECTION[57](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":58}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('58 -> 59', () => {
+        // Bump save version to support fill node.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":58}';
+        const newParam = UPGRADE_COLLECTION[58](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":59}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('59 -> 60', () => {
+        // Bump save version to add misc_node_ and line_ prefixes to those created by fill.
+        const oldParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"fill","fill":{"color":["shanghai","sh1","#E3002B","#fff"],"opacity":0.5,"selectedPatterns":["logo"]}}},{"key":"eMZ4qM9kV_","attributes":{"x":200,"y":0,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"j1aYfHvCR4","attributes":{"x":200,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"EC8JvVjy_w","attributes":{"x":0,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}}],"edges":[{"key":"F8xAOYi2HD","source":"misc_node_BWQKUyEEpZ","target":"eMZ4qM9kV_","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"is9sS_6myT","source":"eMZ4qM9kV_","target":"j1aYfHvCR4","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"fvw1dCbd1N","source":"j1aYfHvCR4","target":"EC8JvVjy_w","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"yS5ncPa5gr","source":"EC8JvVjy_w","target":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}}]},"version":59}';
+        const newParam = UPGRADE_COLLECTION[59](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"fill","fill":{"color":["shanghai","sh1","#E3002B","#fff"],"opacity":0.5,"selectedPatterns":["logo"]}}},{"key":"misc_node_eMZ4qM9kV_","attributes":{"x":200,"y":0,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"misc_node_j1aYfHvCR4","attributes":{"x":200,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}},{"key":"misc_node_EC8JvVjy_w","attributes":{"x":0,"y":200,"type":"virtual","virtual":{},"visible":true,"zIndex":0}}],"edges":[{"key":"line_F8xAOYi2HD","source":"misc_node_BWQKUyEEpZ","target":"misc_node_eMZ4qM9kV_","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_is9sS_6myT","source":"misc_node_eMZ4qM9kV_","target":"misc_node_j1aYfHvCR4","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_fvw1dCbd1N","source":"misc_node_j1aYfHvCR4","target":"misc_node_EC8JvVjy_w","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_yS5ncPa5gr","source":"misc_node_EC8JvVjy_w","target":"misc_node_BWQKUyEEpZ","attributes":{"visible":true,"zIndex":0,"type":"perpendicular","perpendicular":{"startFrom":"from","offsetFrom":0,"offsetTo":0,"roundCornerFactor":18.33},"style":"single-color","single-color":{"color":["shanghai","sh1","#E3002B","#fff"]},"reconcileId":"","parallelIndex":-1}}]},"version":60}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('60 -> 61', () => {
+        // Bump save version to convert Tokyo Metro Int transfer information to fit with Interchange-Card.
+        const oldParam =
+            '{"svgViewBoxZoom":20,"svgViewBoxMin":{"x":258.68593749999997,"y":273.70625},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_diueKg5PAd","attributes":{"visible":true,"zIndex":0,"x":320,"y":345,"type":"tokyo-metro-int","tokyo-metro-int":{"names":["日本橋"],"nameOffsetX":"right","nameOffsetY":"middle","mereOffset":"none","textVertical":false,"interchanges":[{"lineCode":"A","stationCode":"13","color":["tokyo","a","#dd4231","#fff"]}],"align":"horizontal","importance":"default"}}}],"edges":[]},"version":60}';
+        // Upgrade it with your newly added function.
+        const newParam = UPGRADE_COLLECTION[60](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"svgViewBoxZoom":20,"svgViewBoxMin":{"x":258.68593749999997,"y":273.70625},"images":[],"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_diueKg5PAd","attributes":{"visible":true,"zIndex":0,"x":320,"y":345,"type":"tokyo-metro-int","tokyo-metro-int":{"names":["日本橋"],"nameOffsetX":"right","nameOffsetY":"middle","mereOffset":"none","textVertical":false,"align":"horizontal","importance":"default","transfer":[[["tokyo","a","#dd4231","#fff","A","13"]]]}}}],"edges":[]},"version":61}';
+        // And the updated save has only version field changed.
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('61 -> 62', () => {
+        // Bump save version to support construction attribute for bjsubwayBasic.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":61}';
+        const newParam = UPGRADE_COLLECTION[61](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":62}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('62 -> 63', () => {
+        // Bump save version to support wuhan rail transit basic and int stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":62}';
+        const newParam = UPGRADE_COLLECTION[62](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":63}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('63 -> 64', () => {
+        // Bump save version to support Changsha Metro stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":63}';
+        const newParam = UPGRADE_COLLECTION[63](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":64}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('64 -> 65', () => {
+        // Bump save version to support Hangzhou Metro stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":64}';
+        const newParam = UPGRADE_COLLECTION[64](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":65}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('65 -> 66', () => {
+        // Bump save version to update JR East lines information when rotate is greater or equal to 180.
+        // 1st station should not change (rotate < 180).
+        // 2nd station should have lines negated and rotate modulo 180 (rotate >= 180).
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_test1","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"jr-east-basic","jr-east-basic":{"names":["駅","Stn"],"nameOffsetX":"right","nameOffsetY":"top","rotate":90,"lines":[1,2],"textAnchor":"start","textXAdjust":0,"textYAdjust":0}}},{"key":"stn_test2","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"jr-east-basic","jr-east-basic":{"names":["駅2","Stn2"],"nameOffsetX":"left","nameOffsetY":"bottom","rotate":270,"lines":[3,-4],"textAnchor":"end","textXAdjust":5,"textYAdjust":-5}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":65}';
+        const newParam = UPGRADE_COLLECTION[65](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_test1","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"jr-east-basic","jr-east-basic":{"names":["駅","Stn"],"nameOffsetX":"right","nameOffsetY":"top","rotate":90,"lines":[1,2],"textAnchor":"start","textXAdjust":0,"textYAdjust":0}}},{"key":"stn_test2","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"jr-east-basic","jr-east-basic":{"names":["駅2","Stn2"],"nameOffsetX":"left","nameOffsetY":"bottom","rotate":90,"lines":[-3,4],"textAnchor":"end","textXAdjust":5,"textYAdjust":-5}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":66}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

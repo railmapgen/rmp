@@ -33,6 +33,12 @@ import chongqingRTIntStation2021 from './chongqingrt-int-2021';
 import chengduRTBasicStation from './chengdurt-basic';
 import chengduRTIntStation from './chengdurt-int';
 import osakaMetroStation from './osaka-metro';
+import wuhanRTBasicStation from './wuhanrt-basic';
+import wuhanRTIntStation from './wuhanrt-int';
+import csmetroBasicStation from './csmetro-basic';
+import csmetroIntStation from './csmetro-int';
+import hzmetroBasicStation from './hzmetro-basic';
+import hzmetroIntStation from './hzmetro-int';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -69,6 +75,12 @@ const stations = {
     [StationType.ChengduRTBasic]: chengduRTBasicStation,
     [StationType.ChengduRTInt]: chengduRTIntStation,
     [StationType.OsakaMetro]: osakaMetroStation,
+    [StationType.WuhanRTBasic]: wuhanRTBasicStation,
+    [StationType.WuhanRTInt]: wuhanRTIntStation,
+    [StationType.CsmetroBasic]: csmetroBasicStation,
+    [StationType.CsmetroInt]: csmetroIntStation,
+    [StationType.HzmetroBasic]: hzmetroBasicStation,
+    [StationType.HzmetroInt]: hzmetroIntStation,
 };
 
 export default stations;

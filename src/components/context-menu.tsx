@@ -21,15 +21,21 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
+    const { activeSubscriptions } = useRootSelector(state => state.account);
+    const {
+        preference: { autoParallel },
+    } = useRootSelector(state => state.app);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
-    const { activeSubscriptions } = useRootSelector(state => state.account);
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
-    const isParallelDisabled = !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE;
+    const isParallelDisabled =
+        !autoParallel || // Disabled if autoParallel is off
+        // Or disabled only if autoParallel is on and user has no cloud subscription and exceeds free limit
+        (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
 
     const hasSelection = selected.size > 0;
     const menuRef = React.useRef<HTMLDivElement>(null);

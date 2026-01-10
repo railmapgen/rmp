@@ -1,5 +1,5 @@
 import React from 'react';
-import { Id, LineId, MiscNodeId, StnId } from '../constants/constants';
+import { LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -31,7 +31,7 @@ const SvgLayer = React.memo(
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
                 i - 10,
-                { pre: [] as JSX.Element[], main: [] as JSX.Element[], post: [] as JSX.Element[] },
+                { pre: [] as React.JSX.Element[], main: [] as React.JSX.Element[], post: [] as React.JSX.Element[] },
             ])
         );
         for (const element of elements) {

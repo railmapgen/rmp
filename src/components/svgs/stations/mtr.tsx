@@ -240,20 +240,18 @@ const MTRStationAttrsComponent = (props: AttrsProps<MTRStationAttributes>) => {
             },
             minW: 'full',
         },
-        {
-            type: 'custom',
-            label: 'panel.details.stations.interchange.title',
-            component: (
-                <InterchangeField
-                    stationType={StationType.MTR}
-                    defaultAttrs={defaultMTRStationAttributes}
-                    maximumTransfers={[99, 0, 0]}
-                />
-            ),
-        },
     ];
 
-    return <RmgFields fields={fields} />;
+    return (
+        <>
+            <RmgFields fields={fields} />
+            <InterchangeField
+                stationType={StationType.MTR}
+                defaultAttrs={defaultMTRStationAttributes}
+                maximumTransfers={[1000, 0, 0]}
+            />
+        </>
+    );
 };
 
 const mtrStationIcon = (

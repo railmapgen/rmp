@@ -1,4 +1,5 @@
 /* eslint-disable import/order */
+import React from 'react';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId } from './constants';
 import { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
@@ -34,6 +35,12 @@ import { ChongqingRTIntStation2021Attributes } from '../components/svgs/stations
 import { ChengduRTBasicStationAttributes } from '../components/svgs/stations/chengdurt-basic';
 import { ChengduRTIntStationAttributes } from '../components/svgs/stations/chengdurt-int';
 import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
+import { WuhanRTBasicStationAttributes } from '../components/svgs/stations/wuhanrt-basic';
+import { WuhanRTIntStationAttributes } from '../components/svgs/stations/wuhanrt-int';
+import { CsmetroBasicStationAttributes } from '../components/svgs/stations/csmetro-basic';
+import { CsmetroIntStationAttributes } from '../components/svgs/stations/csmetro-int';
+import { HzmetroBasicStationAttributes } from '../components/svgs/stations/hzmetro-basic';
+import { HzmetroIntStationAttributes } from '../components/svgs/stations/hzmetro-int';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -70,6 +77,12 @@ export enum StationType {
     ChengduRTBasic = 'chengdurt-basic',
     ChengduRTInt = 'chengdurt-int',
     OsakaMetro = 'osaka-metro',
+    WuhanRTBasic = 'wuhanrt-basic',
+    WuhanRTInt = 'wuhanrt-int',
+    CsmetroBasic = 'csmetro-basic',
+    CsmetroInt = 'csmetro-int',
+    HzmetroBasic = 'hzmetro-basic',
+    HzmetroInt = 'hzmetro-int',
 }
 
 export interface ExternalStationAttributes {
@@ -107,6 +120,12 @@ export interface ExternalStationAttributes {
     [StationType.ChengduRTBasic]?: ChengduRTBasicStationAttributes;
     [StationType.ChengduRTInt]?: ChengduRTIntStationAttributes;
     [StationType.OsakaMetro]?: OsakaMetroStationAttributes;
+    [StationType.WuhanRTBasic]?: WuhanRTBasicStationAttributes;
+    [StationType.WuhanRTInt]?: WuhanRTIntStationAttributes;
+    [StationType.CsmetroBasic]?: CsmetroBasicStationAttributes;
+    [StationType.CsmetroInt]?: CsmetroIntStationAttributes;
+    [StationType.HzmetroBasic]?: HzmetroBasicStationAttributes;
+    [StationType.HzmetroInt]?: HzmetroIntStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
@@ -162,7 +181,7 @@ export interface Station<T extends StationAttributes> {
     /**
      * The icon displayed in the tools panel.
      */
-    icon: JSX.Element;
+    icon: React.JSX.Element;
     /**
      * Default attributes for this component.
      */

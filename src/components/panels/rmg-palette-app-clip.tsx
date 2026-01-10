@@ -43,7 +43,7 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
             parentId: appClipId,
         });
 
-    const channelRef = React.useRef<BroadcastChannel>();
+    const channelRef = React.useRef<BroadcastChannel | undefined>(undefined);
 
     React.useEffect(() => {
         const channel = new BroadcastChannel(CHANNEL_PREFIX + appClipId);

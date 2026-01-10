@@ -252,6 +252,18 @@
                     "italic": "Italic",
                     "bold": "Bold",
                     "outline": "Outline"
+                },
+                "fill": {
+                    "displayName": "Fill area",
+                    "opacity": "Fill opacity",
+                    "patterns": "Patterns",
+                    "logo": "Branding",
+                    "trees": "Trees",
+                    "water": "Water",
+                    "noClosedPath": "No closed path",
+                    "createSquare": "Create square",
+                    "createTriangle": "Create triangle",
+                    "createCircle": "Create circle"
                 }
             },
             "stations": {
@@ -280,7 +292,8 @@
                     "nameZh": "Chinese name",
                     "nameEn": "English name",
                     "add": "Add interchange",
-                    "copy": "Copy interchange",
+                    "up": "Move up interchange",
+                    "down": "Move down interchange",
                     "remove": "Remove interchange"
                 },
                 "shmetroBasic": {
@@ -327,7 +340,8 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
-                    "open": "Is opened"
+                    "open": "Is opened",
+                    "construction": "Is under construction"
                 },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",
@@ -490,6 +504,24 @@
                     "translationMaxWidth": "English Name Length",
                     "up": "Up",
                     "down": "Down"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "Wuhan Rail Transit basic station"
+                },
+                "wuhanRTInt": {
+                    "displayName": "Wuhan Rail Transit interchange station"
+                },
+                "csmetroBasic": {
+                    "displayName": "Changsha Metro basic station"
+                },
+                "csmetroInt": {
+                    "displayName": "Changsha Metro interchange station"
+                },
+                "hzmetroBasic": {
+                    "displayName": "Hangzhou Metro basic station"
+                },
+                "hzmetroInt": {
+                    "displayName": "Hangzhou Metro interchange station"
                 }
             },
             "lines": {
@@ -659,7 +691,8 @@
             "confirmOverwrite": {
                 "title": "Confirm overwrite",
                 "body": "This action will overwrite your current project. Any unsaved changes will be lost. Are you sure you want to continue?",
-                "overwrite": "Overwrite"
+                "overwrite": "Overwrite",
+                "newerVersion": "Warning: This save file is from a newer version ({{saveVersion}}) than the current version ({{currentVersion}}). Loading it may cause errors or undefined behavior."
             }
         },
         "download": {
@@ -700,6 +733,7 @@
             "termsAndConditions": "Terms and Conditions",
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
+            "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
             "confirm": "Download"
         },
         "donation": {
@@ -747,7 +781,9 @@
                 },
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
-                "predictNextNode": "Predict next nodes when a node is selected"
+                "predictNextNode": "Predict next nodes when a node is selected",
+                "autoChangeStationType": "Automatically switch between basic and interchange station",
+                "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {
                 "title": "Shortcuts",

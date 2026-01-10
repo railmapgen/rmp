@@ -1,7 +1,7 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { Events, LineId, MiscNodeId, NodeAttributes, NodeType, StnId, Theme } from '../constants/constants';
+import { Events, LineId, NodeAttributes, NodeId, NodeType, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
@@ -23,8 +23,6 @@ import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import virtual from './svgs/nodes/virtual';
 import stations from './svgs/stations/stations';
-
-type NodeID = StnId | MiscNodeId;
 
 const VirtualNodeComponent = virtual.component;
 const diagonalPathGenerator = diagonalPath.generatePath;
@@ -156,7 +154,7 @@ const PredictNextNode = () => {
 
         const rand = nanoid(10);
         const isStation = STATION_TYPE_VALUES.has(nodeType as StationType);
-        const nextID: NodeID = isStation ? `stn_${rand}` : `misc_node_${rand}`;
+        const nextID: NodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
 
         // deep copy to prevent mutual reference
         const attr = structuredClone({ ...stations, ...miscNodes }[nodeType].defaultAttrs);
@@ -177,7 +175,7 @@ const PredictNextNode = () => {
 
         const pathType = LinePathType.Diagonal;
         const newLineId: LineId = `line_${nanoid(10)}`;
-        const [source, target] = [selectedID as NodeID, nextID];
+        const [source, target] = [selectedID as NodeId, nextID];
         const parallelIndex = autoParallel ? 0 : -1;
         const startFrom = isStation ? path2StartFrom : path1StartFrom;
         window.graph.addDirectedEdgeWithKey(newLineId, source, target, {

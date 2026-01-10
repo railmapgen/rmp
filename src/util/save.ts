@@ -2,8 +2,10 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
+import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import { TextAttributes } from '../components/svgs/nodes/text';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 import { FoshanMetroBasicStationAttributes } from '../components/svgs/stations/foshan-metro-basic';
@@ -38,7 +40,6 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { ParamState } from '../redux/param/param-slice';
-import { TextAttributes } from '../components/svgs/nodes/text';
 import { TextLanguage } from './fonts';
 
 /**
@@ -56,7 +57,23 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 57;
+export const CURRENT_VERSION = 66;
+
+/**
+ * Parse the version from a save string without fully validating the save.
+ *
+ * @param saveStr The save string.
+ * @returns The version number.
+ * @throws Error if the version cannot be parsed.
+ */
+export const parseVersionFromSave = (saveStr: string): number => {
+    const save = JSON.parse(saveStr);
+    if ('version' in save && Number.isInteger(save.version)) {
+        return save.version;
+    }
+    // Invalid JSON or missing version field
+    throw new Error('Cannot parse version from the uploaded file');
+};
 
 /**
  * Load the tutorial.
@@ -762,4 +779,83 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     56: param =>
         // Bump save version to support Osaka Metro stations.
         JSON.stringify({ ...JSON.parse(param), version: 57 }),
+    57: param =>
+        // Bump save version to support image node.
+        JSON.stringify({ ...JSON.parse(param), version: 58 }),
+    58: param =>
+        // Bump save version to support fill node.
+        JSON.stringify({ ...JSON.parse(param), version: 59 }),
+    59: param => {
+        // Bump save version to add misc_node_ and line_ prefixes to those created by fill.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        const newGraph = updateGraphKeys(
+            graph,
+            key => {
+                const type = graph.getNodeAttribute(key, 'type');
+                if (type === MiscNodeType.Virtual && !key.startsWith('misc_node_')) {
+                    return `misc_node_${key}`;
+                }
+                return key;
+            },
+            key => {
+                if (key.startsWith('line_')) return key;
+                return `line_${key}`;
+            }
+        );
+        return JSON.stringify({ ...p, version: 60, graph: newGraph.export() });
+    },
+    60: param => {
+        // Bump save version to convert Tokyo Int transfer information to new format.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.TokyoMetroInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                attr.transfer = [
+                    attr.interchanges.map((int: { lineCode: string; stationCode: string; color: Theme }) => [
+                        ...int.color,
+                        int.lineCode,
+                        int.stationCode,
+                    ]),
+                ];
+                delete attr.interchanges;
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 61, graph: graph.export() });
+    },
+    61: param =>
+        // Bump save version to support construction attribute for bjsubwayBasic.
+        JSON.stringify({ ...JSON.parse(param), version: 62 }),
+    62: param =>
+        // Bump save version to support wuhan rail transit basic and int stations.
+        JSON.stringify({ ...JSON.parse(param), version: 63 }),
+    63: param =>
+        // Bump save version to support Changsha metro stations (csmetro).
+        JSON.stringify({ ...JSON.parse(param), version: 64 }),
+    64: param =>
+        // Bump save version to support Hangzhou Metro stations (hzmetro).
+        JSON.stringify({ ...JSON.parse(param), version: 65 }),
+    65: param => {
+        // Bump save version to update JR East lines information when rotate is greater or equal to 180.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.JREastBasic)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (attr.rotate >= 180) {
+                    attr.lines = attr.lines.map((line: number) => -line);
+                    attr.rotate = attr.rotate % 180;
+                }
+                graph.mergeNodeAttributes(node, { [type]: attr });
+            });
+        return JSON.stringify({ ...p, version: 66, graph: graph.export() });
+    },
 };

@@ -4,9 +4,12 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
+import { RootStore, startRootListening } from '.';
 import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
+    setAutoChangeStationType,
     setAutoParallel,
+    setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
@@ -18,7 +21,6 @@ import {
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
-import { RootStore, startRootListening } from '.';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -44,6 +46,12 @@ export const initStore = async (store: RootStore) => {
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
         if ('predictNextNode' in appState.preference)
             store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
+        if ('autoChangeStationType' in appState.preference)
+            store.dispatch(setAutoChangeStationType(appState.preference.autoChangeStationType));
+        if ('disableWarning' in appState.preference) {
+            if ('changeType' in appState.preference.disableWarning)
+                store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
+        }
     }
     if ('state' in loginState) {
         store.dispatch(setState(loginState.state));

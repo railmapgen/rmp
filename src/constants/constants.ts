@@ -67,8 +67,9 @@ export type Theme = [CityCode, string, ColourHex, MonoColour];
 export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
+export type NodeId = StnId | MiscNodeId;
 
-export type Id = StnId | MiscNodeId | LineId;
+export type Id = NodeId | LineId;
 
 /**
  * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)
@@ -96,7 +97,7 @@ export interface SnapLine {
     a: number;
     b: number;
     c: number;
-    node: StnId | MiscNodeId;
+    node: NodeId;
     x: number;
     y: number;
 }
@@ -175,6 +176,9 @@ export enum CityCode {
     Suzhou = 'suzhou',
     Taipei = 'taipei',
     Tokyo = 'tokyo',
+    Wuhan = 'wuhan',
+    Changsha = 'changsha',
+    Hangzhou = 'hangzhou',
 }
 
 export enum StationCity {

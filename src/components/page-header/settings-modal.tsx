@@ -2,6 +2,7 @@ import {
     Badge,
     Box,
     Button,
+    HStack,
     Icon,
     Kbd,
     Link,
@@ -33,7 +34,9 @@ import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNe
 import { StationCity } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import {
+    setAutoChangeStationType,
     setAutoParallel,
+    setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
@@ -66,7 +69,15 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames, gridLines, snapLines, predictNextNode },
+        preference: {
+            autoParallel,
+            randomStationsNames,
+            gridLines,
+            snapLines,
+            predictNextNode,
+            autoChangeStationType,
+            disableWarning: { changeType: disableWarningChangeType },
+        },
     } = useRootSelector(state => state.app);
     const {
         keepLastPath,
@@ -111,15 +122,15 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             <Text as="b" fontSize="xl">
                                 {t('header.settings.preference.title')}
                             </Text>
-                            <Box mt="3">
-                                <Box display="flex" mb="1">
+                            <VStack spacing="0" mt="3" align="stretch">
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.keepLastPath')}</Text>
                                     <Switch
                                         isChecked={keepLastPath}
                                         onChange={({ target: { checked } }) => dispatch(setKeepLastPath(checked))}
                                     />
-                                </Box>
-                                <Box display="flex" mb="1">
+                                </HStack>
+                                <HStack mb="1">
                                     <Text>{t('header.settings.preference.autoParallel')}</Text>
                                     <Badge ml="auto" colorScheme="green">
                                         New
@@ -139,8 +150,8 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         isChecked={autoParallel}
                                         onChange={({ target: { checked } }) => dispatch(setAutoParallel(checked))}
                                     />
-                                </Box>
-                                <Box mb="1" display="flex">
+                                </HStack>
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.randomStationNames.title')}</Text>
                                     <Badge ml="auto" colorScheme="green">
                                         New
@@ -171,29 +182,47 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             {t(`header.settings.preference.randomStationNames.${StationCity.Bjsubway}`)}
                                         </option>
                                     </Select>
-                                </Box>
-                                <Box display="flex" mb="1">
+                                </HStack>
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.gridline')}</Text>
                                     <Switch
                                         isChecked={gridLines}
                                         onChange={({ target: { checked } }) => dispatch(setGridLines(checked))}
                                     />
-                                </Box>
-                                <Box display="flex" mb="1">
+                                </HStack>
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.snapline')}</Text>
                                     <Switch
                                         isChecked={snapLines}
                                         onChange={({ target: { checked } }) => dispatch(setSnapLines(checked))}
                                     />
-                                </Box>
-                                <Box display="flex" mb="1">
+                                </HStack>
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.predictNextNode')}</Text>
                                     <Switch
                                         isChecked={predictNextNode}
                                         onChange={({ target: { checked } }) => dispatch(setPredictNextNode(checked))}
                                     />
-                                </Box>
-                            </Box>
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.autoChangeStationType')}</Text>
+                                    <Switch
+                                        isChecked={autoChangeStationType}
+                                        onChange={({ target: { checked } }) =>
+                                            dispatch(setAutoChangeStationType(checked))
+                                        }
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.disableWarningChangeType')}</Text>
+                                    <Switch
+                                        isChecked={disableWarningChangeType}
+                                        onChange={({ target: { checked } }) =>
+                                            dispatch(setDisableWarningChangeType(checked))
+                                        }
+                                    />
+                                </HStack>
+                            </VStack>
                         </Box>
 
                         <Box width="100%" mb="3">

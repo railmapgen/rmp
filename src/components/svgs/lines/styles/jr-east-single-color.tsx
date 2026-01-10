@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
+    LINE_WIDTH,
     LinePathAttributes,
     LinePathType,
     LineStyle,
@@ -11,6 +12,21 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
+
+const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
+    const { id, path, newLine, handlePointerDown } = props;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+
+    return (
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+            <path d={path} fill="none" stroke="black" strokeWidth={LINE_WIDTH + 0.1} />
+        </g>
+    );
+};
 
 const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -23,8 +39,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke="black" strokeWidth="5.1" />
-            <path d={path} fill="none" stroke={color[2]} strokeWidth="4.9" />
+            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH - 0.1} />
         </g>
     );
 };
@@ -59,6 +74,7 @@ const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttr
 };
 
 const jrEastSingleColor: LineStyle<JREastSingleColorAttributes> = {
+    preComponent: JREastSingleColorPre,
     component: JREastSingleColor,
     defaultAttrs: defaultJREastSingleColorAttributes,
     attrsComponent: jrEastSingleColorAttrsComponent,

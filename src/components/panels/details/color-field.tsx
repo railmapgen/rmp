@@ -33,8 +33,14 @@ const dynamicColorInjectionStationKeys = [
     StationType.ChongqingRTBasic2021,
     StationType.ChongqingRTInt2021,
     StationType.ChengduRTBasic,
+    StationType.WuhanRTBasic,
+    StationType.CsmetroBasic,
+    StationType.HzmetroBasic,
 ] as const;
 const dynamicColorInjectionMiscNodeKeys = [
+    MiscNodeType.Text,
+    MiscNodeType.I18nText,
+    MiscNodeType.Fill,
     MiscNodeType.ShmetroNumLineBadge,
     MiscNodeType.ShmetroTextLineBadge,
     MiscNodeType.GzmtrLineBadge,

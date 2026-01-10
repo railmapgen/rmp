@@ -1,10 +1,9 @@
-import { Button, FormLabel, VStack, useColorModeValue } from '@chakra-ui/react';
-import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
+import { useColorModeValue } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fmetro';
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd } from 'react-icons/md';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -16,9 +15,8 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { TextLanguage, getLangStyle } from '../../../util/fonts';
-import { InterchangeInfo, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
-import { InterchangeCardGZMTR, defaultGZMTRTransferInfo } from './gzmtr-int-common';
 
 const CODE_POS = [
     [[0, 0]],
@@ -285,15 +283,15 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                         key={`gzmtr_int_${id}_stn_${i}`}
                         transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})`}
                     >
-                        {info[6] === 'gz' ? (
-                            <StationNumber
+                        {info[6] === 'fs' ? (
+                            <FoshanStationNumber
                                 strokeColour={info[2]}
                                 lineNum={info[4]}
                                 stnNum={info[5]}
                                 textProps={{ ...getLangStyle(TextLanguage.en) }}
                             />
                         ) : (
-                            <FoshanStationNumber
+                            <StationNumber
                                 strokeColour={info[2]}
                                 lineNum={info[4]}
                                 stnNum={info[5]}
@@ -505,92 +503,14 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
         },
     ];
 
-    const maximumTransfers = [4, 4, 0];
-    const transfer = attrs.transfer ?? defaultGzmtrIntStationAttributes.transfer;
-
-    const handleAdd = (setIndex: number) => (interchangeInfo: InterchangeInfo) => {
-        const newTransferInfo = structuredClone(transfer);
-        if (newTransferInfo.length <= setIndex) {
-            for (let i = newTransferInfo.length; i <= setIndex; i++) {
-                newTransferInfo[i] = [defaultGZMTRTransferInfo];
-            }
-        }
-        newTransferInfo[setIndex].push(interchangeInfo);
-
-        attrs.transfer = newTransferInfo;
-        handleAttrsUpdate(id, attrs);
-    };
-
-    const handleDelete = (setIndex: number) => (interchangeIndex: number) => {
-        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex) {
-            const newTransferInfo = transfer.map((set, setIdx) =>
-                setIdx === setIndex ? set.filter((_, intIdx) => intIdx !== interchangeIndex) : set
-            );
-
-            attrs.transfer = newTransferInfo;
-            handleAttrsUpdate(id, attrs);
-        }
-    };
-
-    const handleUpdate = (setIndex: number) => (interchangeIndex: number, interchangeInfo: InterchangeInfo) => {
-        if (transfer.length > setIndex && transfer[setIndex].length > interchangeIndex) {
-            const newTransferInfo = transfer.map((set, setIdx) =>
-                setIdx === setIndex
-                    ? set.map((int, intIdx) =>
-                          intIdx === interchangeIndex
-                              ? ([0, 1, 2, 3, 4, 5, 6].map(i =>
-                                    interchangeInfo[i] === undefined ? int[i] : interchangeInfo[i]
-                                ) as InterchangeInfo)
-                              : int
-                      )
-                    : set
-            );
-
-            attrs.transfer = newTransferInfo;
-            handleAttrsUpdate(id, attrs);
-        }
-    };
-
-    const handleAddInterchangeGroup = () => handleAdd(transfer.length)(defaultGZMTRTransferInfo);
-
     return (
         <>
             <RmgFields fields={fields} />
-
-            <RmgLabel label={t('panel.details.stations.interchange.title')}>
-                <VStack align="flex-start">
-                    {transfer.map((infoList, i) => (
-                        <React.Fragment key={i}>
-                            <FormLabel size="xs">
-                                {i === 0
-                                    ? t('panel.details.stations.interchange.within')
-                                    : i === 1
-                                      ? t('panel.details.stations.interchange.outStation')
-                                      : t('panel.details.stations.interchange.outSystem')}
-                            </FormLabel>
-
-                            <InterchangeCardGZMTR
-                                interchangeList={infoList}
-                                onAdd={maximumTransfers[i] > infoList.length ? handleAdd(i) : undefined}
-                                onDelete={handleDelete(i)}
-                                onUpdate={handleUpdate(i)}
-                            />
-                        </React.Fragment>
-                    ))}
-
-                    {maximumTransfers[transfer.length] > 0 && (
-                        <Button
-                            size="xs"
-                            variant="ghost"
-                            alignSelf="flex-end"
-                            leftIcon={<MdAdd />}
-                            onClick={handleAddInterchangeGroup}
-                        >
-                            {t('panel.details.stations.interchange.addGroup')}
-                        </Button>
-                    )}
-                </VStack>
-            </RmgLabel>
+            <InterchangeField
+                stationType={StationType.GzmtrInt}
+                defaultAttrs={defaultGzmtrIntStationAttributes}
+                maximumTransfers={[4, 4, 0]}
+            />
         </>
     );
 };

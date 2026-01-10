@@ -254,6 +254,18 @@
                     "italic": "イタリック体",
                     "bold": "太字",
                     "outline": "縁取り"
+                },
+                "fill": {
+                    "displayName": "塗りつぶし範囲",
+                    "opacity": "塗りつぶし透明度",
+                    "patterns": "模様",
+                    "logo": "銘柄",
+                    "trees": "木々",
+                    "water": "水面",
+                    "noClosedPath": "閉じたパスがありません",
+                    "createSquare": "正方形を作成",
+                    "createTriangle": "三角形を作成",
+                    "createCircle": "円を作成"
                 }
             },
             "stations": {
@@ -282,7 +294,8 @@
                     "nameZh": "中国語の駅名",
                     "nameEn": "英語の駅名",
                     "add": "乗り換えを追加",
-                    "copy": "乗り換えをコピー",
+                    "up": "乗換駅を上に移動",
+                    "down": "乗換駅を下に移動",
                     "remove": "乗り換えを削除"
                 },
                 "shmetroBasic": {
@@ -329,7 +342,8 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
-                    "open": "開業済み"
+                    "open": "開業済み",
+                    "construction": "工事中"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地下鉄乗り換え駅",
@@ -492,6 +506,24 @@
                     "translationMaxWidth": "英語駅名の長さ",
                     "up": "上",
                     "down": "下"
+                },
+                "wuhanRTBasic": {
+                    "displayName": "武漢軌道交通基本駅"
+                },
+                "wuhanRTInt": {
+                    "displayName": "武漢軌道交通乗換駅"
+                },
+                "csmetroBasic": {
+                    "displayName": "長沙メトロ基本駅"
+                },
+                "csmetroInt": {
+                    "displayName": "長沙メトロ乗り換え駅"
+                },
+                "hzmetroBasic": {
+                    "displayName": "杭州メトロ基本駅"
+                },
+                "hzmetroInt": {
+                    "displayName": "杭州メトロ乗り換え駅"
                 }
             },
             "lines": {
@@ -661,7 +693,8 @@
             "confirmOverwrite": {
                 "title": "上書きの確認",
                 "body": "この操作により現在のプロジェクトが上書きされます。未保存の変更はすべて失われます。続行してもよろしいですか？",
-                "overwrite": "上書き"
+                "overwrite": "上書き",
+                "newerVersion": "警告：この作品は新しいバージョン（{{saveVersion}}）からのもので、現在のバージョン（{{currentVersion}}）より新しいです。読み込むと失敗や未定義の動作が発生する可能性があります。"
             }
         },
         "download": {
@@ -702,6 +735,7 @@
             "termsAndConditions": "利用規約",
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
+            "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
             "confirm": "ダウンロード"
         },
         "donation": {
@@ -749,7 +783,9 @@
                 },
                 "gridline": "グリッドガイドラインを表示",
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
-                "predictNextNode": "節点を選択したときに次の節点を予測する"
+                "predictNextNode": "節点を選択したときに次の節点を予測する",
+                "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える",
+                "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする"
             },
             "shortcuts": {
                 "title": "ショートカット",

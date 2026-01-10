@@ -11,7 +11,7 @@ import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
-import { getInitialParam, RMPSave, upgrade } from '../../util/save';
+import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
@@ -21,6 +21,7 @@ export default function OpenActions() {
     const { t } = useTranslation();
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
+    const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
 
     const size = useWindowSize();
     const { height } = getCanvasSize(size);
@@ -103,6 +104,8 @@ export default function OpenActions() {
             try {
                 const paramStr = await readFileAsText(file);
                 setParamToLoad(paramStr);
+                const version = parseVersionFromSave(paramStr);
+                setVersionToLoad(version);
                 onConfirmOpen();
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
@@ -120,6 +123,7 @@ export default function OpenActions() {
     const handleLoadTutorial = async () => {
         const initialParam = await getInitialParam();
         setParamToLoad(initialParam);
+        setVersionToLoad(parseVersionFromSave(initialParam));
         onConfirmOpen();
     };
 
@@ -185,7 +189,12 @@ export default function OpenActions() {
                 <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
             </Menu>
 
-            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmLoad} />
+            <ConfirmOverwriteDialog
+                isOpen={isConfirmOpen}
+                onClose={onConfirmClose}
+                onConfirm={handleConfirmLoad}
+                saveVersion={versionToLoad}
+            />
         </>
     );
 }

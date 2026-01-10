@@ -1,5 +1,11 @@
 import React from 'react';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import {
+    LINE_WIDTH,
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+} from '../../../../constants/lines';
 
 const LondonTubeInternalIntPre = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
     const { id, path, handlePointerDown } = props;
@@ -26,7 +32,7 @@ const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternal
 
     return (
         <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+            <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
         </g>
     );
 };

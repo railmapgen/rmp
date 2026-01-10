@@ -106,7 +106,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     const masterTransform = attrs.transform ?? defaultMasterTransform;
 
-    const elements = React.useMemo(() => dfsCreateElement(attrs.svgs), [attrs]);
+    const elements = React.useMemo(() => dfsCreateElement(attrs.svgs), [JSON.stringify(attrs)]);
 
     return React.createElement(
         'g',

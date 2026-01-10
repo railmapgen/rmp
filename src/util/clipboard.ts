@@ -1,11 +1,13 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { LinePathType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
+import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
-type NodesWithAttrs = { [key in StnId | MiscNodeId]: NodeAttributes };
+type NodesWithAttrs = { [key in NodeId]: NodeAttributes };
 type EdgesWithAttrs = {
-    [key in LineId]: { attr: EdgeAttributes; source: StnId | MiscNodeId; target: StnId | MiscNodeId };
+    [key in LineId]: { attr: EdgeAttributes; source: NodeId; target: NodeId };
 };
 interface ClipboardData {
     app: 'rmp';
@@ -26,7 +28,7 @@ export const exportSelectedNodesAndEdges = (
     let countNode = 0;
     selected.forEach(id => {
         if (graph.hasNode(id)) {
-            const node = id as StnId | MiscNodeId;
+            const node = id as NodeId;
             const attr = graph.getNodeAttributes(node);
             nodesWithAttrs[node] = attr;
             sumX += attr.x;
@@ -34,7 +36,7 @@ export const exportSelectedNodesAndEdges = (
             countNode++;
         } else if (graph.hasEdge(id)) {
             const edge = id as LineId;
-            const [source, target] = graph.extremities(edge) as [StnId | MiscNodeId, StnId | MiscNodeId];
+            const [source, target] = graph.extremities(edge) as [NodeId, NodeId];
             edgesWithAttrs[edge] = {
                 attr: graph.getEdgeAttributes(edge),
                 source,
@@ -57,8 +59,8 @@ export const exportSelectedNodesAndEdges = (
  * Import nodes and edges from the clipboard data. Version of the data must be the same as the current.
  * @param s The text from the clipboard.
  * @param graph The graph.
- * @param filterMaster Whether filter master nodes on paste (no subscription only).
- * @param filterParallel Whether filter parallel lines on paste (no subscription only).
+ * @param isMasterDisabled Whether filter master nodes on paste (no subscription only).
+ * @param isParallelDisabled Whether filter parallel lines on paste (no subscription only).
  * @param x The central x of the svg canvas. Nodes and edges added will repositioned around this point.
  * @param y The central y of the svg canvas. Nodes and edges added will repositioned around this point.
  * @returns The nodes and edges added to the graph.
@@ -66,8 +68,8 @@ export const exportSelectedNodesAndEdges = (
 export const importSelectedNodesAndEdges = (
     s: string,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    filterMaster: boolean,
-    filterParallel: boolean,
+    isMasterDisabled: boolean,
+    isParallelDisabled: boolean,
     x: number,
     y: number
 ) => {
@@ -91,29 +93,18 @@ export const importSelectedNodesAndEdges = (
 
     // Filter master nodes if requested.
     // Note users might exceed the current limit (3) if copy and paste 2 master nodes.
-    // This will result in a 4 node situation. A finer solution might be required.
+    // This will result in a 4 node situation. A finer solution may be implemented.
     const { nodesWithAttrs, edgesWithAttrs, avgX, avgY } = JSON.parse(renamedS) as ClipboardData;
-    const filteredNodes = filterMaster
+    const filteredNodes = isMasterDisabled
         ? Object.fromEntries(Object.entries(nodesWithAttrs).filter(([_, attrs]) => attrs.type !== MiscNodeType.Master))
         : nodesWithAttrs;
-    const filteredEdges = filterMaster
+    const filteredEdges = isMasterDisabled
         ? Object.fromEntries(
               Object.entries(edgesWithAttrs).filter(
                   ([_, { source, target }]) => source in filteredNodes && target in filteredNodes
               )
           )
         : edgesWithAttrs;
-
-    // Set parallelIndex to -1 (disable) if requested.
-    // Note users might exceed the current limit (5) if copy and paste 1...4 parallel lines.
-    // This will result in a at max 8 parallel lines situation. A finer solution might be required.
-    if (filterParallel) {
-        for (const edge in filteredEdges) {
-            if (filteredEdges[edge as LineId].attr.parallelIndex >= 0) {
-                filteredEdges[edge as LineId].attr.parallelIndex = -1;
-            }
-        }
-    }
 
     // add nodes and edges into the graph
     const [offsetX, offsetY] = [x - avgX, y - avgY];
@@ -122,12 +113,28 @@ export const importSelectedNodesAndEdges = (
         attr.y += offsetY;
         graph.addNode(node, attr);
     });
-    Object.entries(filteredEdges).forEach(([edge, { attr, source, target }]) =>
-        graph.addDirectedEdgeWithKey(edge, source, target, attr)
-    );
+    Object.entries(filteredEdges).forEach(([edge, { attr, source, target }]) => {
+        // tweak parallel index
+        if (isParallelDisabled) {
+            // Set parallelIndex to -1 (disable) if not enabled.
+            // Note users might exceed the current limit (5) if copy and paste 1...4 parallel lines.
+            // This will result in a at max 8 parallel lines situation. A finer solution may be implemented.
+            attr.parallelIndex = -1;
+        } else {
+            const { type } = attr;
+            if (!(source in renamedMap || target in renamedMap)) {
+                // When the user only copy the lines, not the nodes, from the current graph and paste back,
+                // we should recalculate the parallel index to avoid overlap.
+                const { startFrom } = attr[type] as NonSimpleLinePathAttributes;
+                attr.parallelIndex = makeParallelIndex(graph, type, source, target, startFrom);
+            }
+        }
+
+        graph.addDirectedEdgeWithKey(edge, source, target, attr);
+    });
 
     return {
-        nodes: new Set(Object.keys(filteredNodes)) as Set<StnId | MiscNodeId>,
+        nodes: new Set(Object.keys(filteredNodes)) as Set<NodeId>,
         edges: new Set(Object.keys(filteredEdges)) as Set<LineId>,
     };
 };

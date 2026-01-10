@@ -31,7 +31,7 @@ import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/l
 import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
 import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
 import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
-import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-could-cable-car';
+import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-cloud-cable-car';
 import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
 import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
 import { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
@@ -124,6 +124,8 @@ export interface ExternalLineStyleAttributes {
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
 
+export const LINE_WIDTH = 5;
+
 export type Path = `M${string}`;
 
 export interface LineWrapperComponentProps {
@@ -174,7 +176,7 @@ interface LineBase<T extends LinePathAttributes> {
     /**
      * The icon displayed in the tools panel.
      */
-    icon: JSX.Element;
+    icon: React.JSX.Element;
     /**
      * Default attributes for this component.
      */

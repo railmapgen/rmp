@@ -2,7 +2,13 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../../constants/constants';
-import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
+import {
+    LINE_WIDTH,
+    LinePathAttributes,
+    LinePathType,
+    LineStyle,
+    LineStyleComponentProps,
+} from '../../../../constants/lines';
 
 const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSuburbanRailwayAttributes>) => {
     const { id, path, styleAttrs, handlePointerDown } = props;
@@ -17,7 +23,7 @@ const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSubur
 
     return (
         <g id={`${id}.pre`} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={path} fill="none" stroke="#898989" strokeWidth="5" strokeLinecap={outStrokeLinecap} />
+            <path d={path} fill="none" stroke="#898989" strokeWidth={LINE_WIDTH} strokeLinecap={outStrokeLinecap} />
         </g>
     );
 };
