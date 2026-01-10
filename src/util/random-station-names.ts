@@ -187,7 +187,7 @@ export const useMakeStationName = () => {
         async (type: StationType) => {
             const attrNames = stations[type].defaultAttrs.names;
             if (!isRandomStationNamesDisabled) {
-                const result = await dispatch(getOneStationName(StationCity.Shmetro));
+                const result = await dispatch(getOneStationName(randomStationsNames));
                 if (getOneStationName.fulfilled.match(result)) {
                     const names = result.payload as [string, ...string[]];
                     // fill or truncate
@@ -201,6 +201,6 @@ export const useMakeStationName = () => {
             }
             return structuredClone(attrNames);
         },
-        [dispatch, isRandomStationNamesDisabled]
+        [dispatch, isRandomStationNamesDisabled, randomStationsNames]
     );
 };
