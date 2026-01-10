@@ -16,25 +16,26 @@ import {
     Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
+import { RmgSelect } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconContext } from 'react-icons';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { Theme } from '../../../constants/constants';
-import { LinePathType } from '../../../constants/lines';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setToolsPanelExpansion } from '../../../redux/app/app-slice';
-import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
+import { setLineStyle, setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
-import { linePaths } from '../../svgs/lines/lines';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
-import { localizedMiscNodes, localizedStaions } from './localized-order';
+import { localizedLineStyles, localizedMiscNodes, localizedStaions } from './localized-order';
 
 const buttonStyle: SystemStyleObject = {
     justifyContent: 'flex-start',
@@ -73,6 +74,7 @@ const ToolsPanel = () => {
     } = useRootSelector(state => state.app);
     const {
         mode,
+        lineStyle,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
@@ -93,8 +95,20 @@ const ToolsPanel = () => {
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
     const handleLine = (type: LinePathType) => dispatch(setMode(`line-${type}`));
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
+    const handleLineStyle = (type: LineStyleType) => dispatch(setLineStyle(type));
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
+    const availableLineStyles =
+        localizedLineStyles[i18n.language as LanguageCode]?.filter(
+            style => activeSubscriptions.RMP_CLOUD || !lineStyles[style].isPro
+        ) ?? [];
+    const lineStyleOptions = React.useMemo(
+        () =>
+            Object.fromEntries(
+                availableLineStyles.map(style => [style, t(lineStyles[style].metadata.displayName).toString()])
+            ),
+        [availableLineStyles, t]
+    );
 
     return (
         <Flex
@@ -149,6 +163,15 @@ const ToolsPanel = () => {
                                     {isTextShown ? t('color') : undefined}
                                 </Text>
                             </Flex>
+                            <Box px="1" py="2">
+                                <RmgSelect
+                                    options={lineStyleOptions}
+                                    defaultValue={lineStyle}
+                                    value={lineStyle}
+                                    onChange={({ target: { value } }) => handleLineStyle(value as LineStyleType)}
+                                    placeholder={t('panel.details.info.lineStyleType').toString()}
+                                />
+                            </Box>
 
                             {Object.values(LinePathType)
                                 .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)

@@ -159,7 +159,6 @@ export interface LineStyleComponentProps<
     path: Path;
     styleAttrs: T;
     /**
-     * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
      * Indicate whether or not this line is created in progress.
      * If true, we need to set pointer-events to none
      * so elementsFromPoint will return the underlying station instead of this line.

@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultMTRRaceDaysAttributes.color } = styleAttrs ?? defaultMTRRaceDaysAttributes;
 
     const onPointerDown = React.useCallback(
@@ -32,7 +32,8 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
             strokeLinecap="butt"
             strokeDasharray={`${LINE_WIDTH} ${LINE_WIDTH / 2}`}
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

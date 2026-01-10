@@ -19,7 +19,7 @@ const STROKE_WIDTH_OUTER = (STATION_ICON_HEIGHT + STATION_ICON_STROKE) * STATION
 const STROKE_WIDTH_INNER = (STATION_ICON_HEIGHT - STATION_ICON_STROKE) * STATION_ICON_SCALE;
 
 const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultGZMTRLoopAttributes.color } = styleAttrs ?? defaultGZMTRLoopAttributes;
 
     const onPointerDown = React.useCallback(
@@ -28,7 +28,12 @@ const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
+            cursor="pointer"
+        >
             <path d={path} fill="none" stroke="black" strokeWidth={STROKE_WIDTH_OUTER} />
             <path d={path} fill="none" stroke={color[2]} strokeWidth={STROKE_WIDTH_INNER} strokeLinecap="round" />
         </g>

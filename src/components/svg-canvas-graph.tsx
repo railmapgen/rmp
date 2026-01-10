@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { Events, LineId, MiscNodeId, NodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
-import { LinePathType, LineStyleType } from '../constants/lines';
+import { ExternalLineStyleAttributes, LinePathType, LineStyleComponentProps, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -39,10 +39,10 @@ import {
     isNodeSupportSnapLine,
     makeSnapLinesPath,
 } from '../util/snap-lines';
+import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { linePaths } from './svgs/lines/lines';
-import singleColor from './svgs/lines/styles/single-color';
+import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -57,6 +57,10 @@ const connectableNodesType = [
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.GzmtrLineBadge,
 ];
+
+type StyleComponent = React.FC<
+    LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
+>;
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -78,6 +82,7 @@ const SvgCanvas = () => {
         refresh: { nodes: refreshNodes, edges: refreshEdges },
         mode,
         keepLastPath,
+        lineStyle: selectedLineStyle,
         theme,
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
@@ -85,6 +90,23 @@ const SvgCanvas = () => {
 
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
+    const resolveLineStyleType = React.useCallback(
+        (styleType: LineStyleType, pathType: LinePathType) =>
+            lineStyles[styleType].metadata.supportLinePathType.includes(pathType)
+                ? styleType
+                : LineStyleType.SingleColor,
+        []
+    );
+    const buildLineStyleAttrs = React.useCallback(
+        (styleType: LineStyleType) => {
+            const attrs = structuredClone(lineStyles[styleType].defaultAttrs) as NonNullable<
+                ExternalLineStyleAttributes[LineStyleType]
+            >;
+            if (dynamicColorInjection.has(styleType)) (attrs as AttributesWithColor).color = theme;
+            return attrs;
+        },
+        [theme]
+    );
 
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
@@ -318,6 +340,8 @@ const SvgCanvas = () => {
 
             if (couldSourceBeConnected && matchedPrefix) {
                 const type = mode.slice(5) as LinePathType;
+                const styleType = resolveLineStyleType(selectedLineStyle, type);
+                const styleAttrs = buildLineStyleAttrs(styleType);
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
@@ -326,12 +350,12 @@ const SvgCanvas = () => {
                         : -1;
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
-                        zIndex: 0,
+                        zIndex: styleType === LineStyleType.River ? -5 : 0,
                         type,
                         // deep copy to prevent mutual reference
                         [type]: structuredClone(linePaths[type].defaultAttrs),
-                        style: LineStyleType.SingleColor,
-                        [LineStyleType.SingleColor]: { color: theme },
+                        style: styleType,
+                        [styleType]: styleAttrs,
                         reconcileId: '',
                         parallelIndex,
                     });
@@ -445,7 +469,18 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    const SingleColor = singleColor.component;
+    const previewLinePathType = React.useMemo(
+        () => (mode.startsWith('line') ? (mode.slice(5) as LinePathType) : undefined),
+        [mode]
+    );
+    const previewLineStyleType = React.useMemo(
+        () => (previewLinePathType ? resolveLineStyleType(selectedLineStyle, previewLinePathType) : undefined),
+        [previewLinePathType, resolveLineStyleType, selectedLineStyle]
+    );
+    const previewStyleAttrs = React.useMemo(
+        () => (previewLineStyleType ? buildLineStyleAttrs(previewLineStyleType) : undefined),
+        [buildLineStyleAttrs, previewLineStyleType]
+    );
 
     return (
         <>
@@ -456,23 +491,73 @@ const SvgCanvas = () => {
                 handlePointerUp={handlePointerUp}
                 handleEdgePointerDown={handleEdgePointerDown}
             />
-            {mode.startsWith('line') && active && active !== 'background' && (
-                <SingleColor
-                    id="line_create_in_progress___no_use"
-                    type={mode.slice(5) as LinePathType}
-                    path={linePaths[mode.slice(5) as LinePathType].generatePath(
+            {previewLinePathType &&
+                previewLineStyleType &&
+                previewStyleAttrs &&
+                active &&
+                active !== 'background' &&
+                (() => {
+                    const path = linePaths[previewLinePathType].generatePath(
                         graph.current.getNodeAttribute(active, 'x'),
                         graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
                         graph.current.getNodeAttribute(active, 'y'),
                         graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                         // @ts-expect-error
-                        linePaths[mode.slice(5) as LinePathType].defaultAttrs
-                    )}
-                    styleAttrs={{ color: theme }}
-                    newLine
-                    handlePointerDown={() => {}} // no use
-                />
-            )}
+                        linePaths[previewLinePathType].defaultAttrs
+                    );
+                    const PreStyleComponent = lineStyles[previewLineStyleType].preComponent as
+                        | StyleComponent
+                        | undefined;
+                    const StyleComponent = lineStyles[previewLineStyleType].component as StyleComponent;
+                    const PostStyleComponent = lineStyles[previewLineStyleType].postComponent as
+                        | StyleComponent
+                        | undefined;
+
+                    return (
+                        <>
+                            {PreStyleComponent && (
+                                <PreStyleComponent
+                                    id="line_create_in_progress___pre"
+                                    type={previewLinePathType}
+                                    path={path}
+                                    styleAttrs={
+                                        previewStyleAttrs as NonNullable<
+                                            ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
+                                        >
+                                    }
+                                    newLine
+                                    handlePointerDown={() => {}}
+                                />
+                            )}
+                            <StyleComponent
+                                id="line_create_in_progress___no_use"
+                                type={previewLinePathType}
+                                path={path}
+                                styleAttrs={
+                                    previewStyleAttrs as NonNullable<
+                                        ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
+                                    >
+                                }
+                                newLine
+                                handlePointerDown={() => {}} // no use
+                            />
+                            {PostStyleComponent && (
+                                <PostStyleComponent
+                                    id="line_create_in_progress___post"
+                                    type={previewLinePathType}
+                                    path={path}
+                                    styleAttrs={
+                                        previewStyleAttrs as NonNullable<
+                                            ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
+                                        >
+                                    }
+                                    newLine
+                                    handlePointerDown={() => {}}
+                                />
+                            )}
+                        </>
+                    );
+                })()}
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path
