@@ -9,7 +9,7 @@ import {
 } from '../../../../constants/lines';
 
 const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -26,7 +26,8 @@ const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttri
             strokeDasharray={`0 ${LINE_WIDTH * 2} ${LINE_WIDTH * 2} ${LINE_WIDTH * 2}`}
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

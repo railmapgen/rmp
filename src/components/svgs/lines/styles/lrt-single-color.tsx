@@ -12,7 +12,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultLRTSingleColorAttributes.color } = styleAttrs ?? defaultLRTSingleColorAttributes;
 
     const onPointerDown = React.useCallback(
@@ -29,7 +29,8 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
             strokeWidth="2.157"
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

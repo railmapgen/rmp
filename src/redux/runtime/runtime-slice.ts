@@ -6,6 +6,7 @@ import type { Draft } from 'immer';
 import { RootState } from '..';
 import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
 import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
+import { LineStyleType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
@@ -50,6 +51,10 @@ interface RuntimeState {
         images: number;
     };
     mode: RuntimeMode;
+    /**
+     * Selected line style when drawing new lines.
+     */
+    lineStyle: LineStyleType;
     /**
      * The last tool used by the user.
      * Will be undefined on first load.
@@ -103,6 +108,7 @@ const initialState: RuntimeState = {
         images: Date.now(),
     },
     mode: 'free',
+    lineStyle: LineStyleType.SingleColor,
     lastTool: undefined,
     keepLastPath: false,
     theme: [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white],
@@ -262,6 +268,9 @@ const runtimeSlice = createSlice({
             state.mode = action.payload;
             state.isDetailsOpen = getIsDetailsOpen(state);
         },
+        setLineStyle: (state, action: PayloadAction<LineStyleType>) => {
+            state.lineStyle = action.payload;
+        },
         setKeepLastPath: (state, action: PayloadAction<boolean>) => {
             state.keepLastPath = action.payload;
         },
@@ -358,6 +367,7 @@ export const {
     setRefreshEdges,
     setRefreshImages,
     setMode,
+    setLineStyle,
     setKeepLastPath,
     setTheme,
     openPaletteAppClip,

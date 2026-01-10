@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultLondonTubeTerminalAttributes.color } = styleAttrs ?? defaultLondonTubeTerminalAttributes;
 
     const onPointerDown = React.useCallback(
@@ -30,7 +30,8 @@ const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAtt
             stroke={color[2]}
             strokeWidth={LINE_WIDTH}
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

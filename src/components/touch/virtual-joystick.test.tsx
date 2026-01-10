@@ -4,6 +4,7 @@ import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
 import { CityCode, Id, NodeType, Theme } from '../../constants/constants';
+import { LineStyleType } from '../../constants/lines';
 import { StationType } from '../../constants/stations';
 import accountSlice from '../../redux/account/account-slice';
 import appSlice from '../../redux/app/app-slice';
@@ -62,6 +63,7 @@ describe('VirtualJoystick', () => {
                     isDetailsOpen: 'close' as const,
                     refresh: { nodes: 0, edges: 0, images: 0 },
                     mode: 'free' as const,
+                    lineStyle: LineStyleType.SingleColor,
                     lastTool: undefined,
                     keepLastPath: false,
                     theme: [CityCode.Shanghai, 'sh1', '#000000', MonoColour.white] as Theme,

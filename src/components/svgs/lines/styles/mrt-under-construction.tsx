@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructionAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultMRTUnderConstructionAttributes.color } = styleAttrs ?? defaultMRTUnderConstructionAttributes;
 
     const onPointerDown = React.useCallback(
@@ -32,7 +32,8 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
             strokeDasharray="0 10"
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
