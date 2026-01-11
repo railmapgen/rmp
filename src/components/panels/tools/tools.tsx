@@ -109,27 +109,39 @@ const ToolsPanel = () => {
         }
     }, [mode]);
 
+    const findCompatibleStyle = (pathType: LinePathType, currentStyle: LineStyleType): LineStyleType => {
+        // Check if current style supports the path
+        if (lineStyles[currentStyle]?.metadata.supportLinePathType.includes(pathType)) {
+            return currentStyle;
+        }
+        // Find first compatible style
+        const compatibleEntry = Object.entries(lineStyles).find(([_, style]) =>
+            style.metadata.supportLinePathType.includes(pathType)
+        );
+        return (compatibleEntry?.[0] as LineStyleType) ?? LineStyleType.SingleColor;
+    };
+
+    const findCompatiblePath = (styleType: LineStyleType, currentPath: LinePathType | undefined): LinePathType => {
+        // Check if style supports the current path
+        if (currentPath && lineStyles[styleType]?.metadata.supportLinePathType.includes(currentPath)) {
+            return currentPath;
+        }
+        // Return first compatible path
+        return lineStyles[styleType]?.metadata.supportLinePathType[0] ?? LinePathType.Diagonal;
+    };
+
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
 
     const handleLine = (pathType: LinePathType) => {
         setSelectedPath(pathType);
-        // Auto-select style: use current selected style if it supports the path, otherwise use first compatible style
-        const compatibleStyle = lineStyles[selectedStyle]?.metadata.supportLinePathType.includes(pathType)
-            ? selectedStyle
-            : ((Object.entries(lineStyles).find(([_, style]) =>
-                  style.metadata.supportLinePathType.includes(pathType)
-              )?.[0] as LineStyleType) ?? LineStyleType.SingleColor);
+        const compatibleStyle = findCompatibleStyle(pathType, selectedStyle);
         setSelectedStyle(compatibleStyle);
         dispatch(setMode(`line-${pathType}/${compatibleStyle}`));
     };
 
     const handleLineStyle = (styleType: LineStyleType) => {
         setSelectedStyle(styleType);
-        // Auto-select path: use current selected path if the style supports it, otherwise use first compatible path
-        const compatiblePath =
-            selectedPath && lineStyles[styleType]?.metadata.supportLinePathType.includes(selectedPath)
-                ? selectedPath
-                : (lineStyles[styleType]?.metadata.supportLinePathType[0] ?? LinePathType.Diagonal);
+        const compatiblePath = findCompatiblePath(styleType, selectedPath);
         setSelectedPath(compatiblePath);
         dispatch(setMode(`line-${compatiblePath}/${styleType}`));
     };
@@ -230,7 +242,6 @@ const ToolsPanel = () => {
                                     {isTextShown ? t(style.metadata.displayName) : undefined}
                                 </Button>
                             ))}
-                            <LearnHowToAdd type="line" expand={isTextShown} />
 
                             <Button
                                 aria-label={MiscNodeType.Virtual}
@@ -241,6 +252,7 @@ const ToolsPanel = () => {
                             >
                                 {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                             </Button>
+                            <LearnHowToAdd type="line" expand={isTextShown} />
                         </AccordionPanel>
                     </AccordionItem>
 
