@@ -41,7 +41,7 @@ import {
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { linePaths } from './svgs/lines/lines';
+import { linePaths, lineStyles } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
@@ -317,7 +317,11 @@ const SvgCanvas = () => {
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
             if (couldSourceBeConnected && matchedPrefix) {
-                const type = mode.slice(5) as LinePathType;
+                // Parse mode to extract path type and style type
+                const modeParts = mode.slice(5).split('/');
+                const type = modeParts[0] as LinePathType;
+                const style = modeParts[1] as LineStyleType | undefined ?? LineStyleType.SingleColor;
+                
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
@@ -330,8 +334,8 @@ const SvgCanvas = () => {
                         type,
                         // deep copy to prevent mutual reference
                         [type]: structuredClone(linePaths[type].defaultAttrs),
-                        style: LineStyleType.SingleColor,
-                        [LineStyleType.SingleColor]: { color: theme },
+                        style,
+                        [style]: structuredClone(lineStyles[style].defaultAttrs),
                         reconcileId: '',
                         parallelIndex,
                     });

@@ -2,7 +2,7 @@ import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -10,7 +10,7 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g id={id} onPointerDown={newLine ? undefined : onPointerDown} cursor="pointer" pointerEvents={newLine ? 'none' : undefined}>
             <path d={path} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
             <path d={path} fill="none" stroke="white" strokeWidth="4.33" strokeLinecap="round" />
         </g>
