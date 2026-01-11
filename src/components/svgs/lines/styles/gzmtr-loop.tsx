@@ -28,7 +28,12 @@ const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
     );
 
     return (
-        <g id={id} onPointerDown={newLine ? undefined : onPointerDown} cursor="pointer" pointerEvents={newLine ? 'none' : undefined}>
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke="black" strokeWidth={STROKE_WIDTH_OUTER} />
             <path d={path} fill="none" stroke={color[2]} strokeWidth={STROKE_WIDTH_INNER} strokeLinecap="round" />
         </g>

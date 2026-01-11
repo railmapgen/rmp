@@ -23,8 +23,12 @@ const LondonSandwichPre = (props: LineStyleComponentProps<LondonSandwichAttribut
     );
 
     return (
-        <g id={`${id}.pre`} onPointerDown={newLine ? undefined : onPointerDown}
-            pointerEvents={newLine ? 'none' : undefined} cursor="pointer">
+        <g
+            id={`${id}.pre`}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
+            cursor="pointer"
+        >
             <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
         </g>
     );
@@ -40,7 +44,12 @@ const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>
     );
 
     return (
-        <g id={id} onPointerDown={newLine ? undefined : onPointerDown} cursor="pointer" pointerEvents={newLine ? 'none' : undefined}>
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke={color[3]} strokeWidth="1.67" strokeLinecap="round" />
         </g>
     );

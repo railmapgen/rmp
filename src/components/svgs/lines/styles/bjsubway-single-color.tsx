@@ -23,7 +23,12 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
     );
 
     return (
-        <g id={id} onPointerDown={newLine ? undefined : onPointerDown} cursor="pointer" pointerEvents={newLine ? 'none' : undefined}>
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH * 1.2} strokeLinecap="round" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
         </g>

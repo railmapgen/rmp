@@ -40,7 +40,12 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
     }, [path]);
 
     return (
-        <g id={id} onPointerDown={newLine ? undefined : onPointerDown} cursor="pointer" pointerEvents={newLine ? 'none' : undefined}>
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
             <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
         </g>

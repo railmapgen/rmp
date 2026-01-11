@@ -38,7 +38,12 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
     const pathB = `M ${midPoint[0]} ${midPoint[1]} L ${endPoint[0]} ${endPoint[1]}`;
 
     return (
-        <g id={id} onPointerDown={newLine ? undefined : onPointerDown} cursor="pointer" pointerEvents={newLine ? 'none' : undefined}>
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <defs>
                 <marker
                     id={`slantSeparator45${colorB[2]}A`}

@@ -110,38 +110,37 @@ const ToolsPanel = () => {
     }, [mode]);
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
-    
+
     const handleLine = (pathType: LinePathType) => {
         setSelectedPath(pathType);
         // Auto-select style: use current selected style if it supports the path, otherwise use first compatible style
         const compatibleStyle = lineStyles[selectedStyle]?.metadata.supportLinePathType.includes(pathType)
             ? selectedStyle
-            : (Object.entries(lineStyles).find(([_, style]) => 
-                style.metadata.supportLinePathType.includes(pathType)
-              )?.[0] as LineStyleType) ?? LineStyleType.SingleColor;
+            : ((Object.entries(lineStyles).find(([_, style]) =>
+                  style.metadata.supportLinePathType.includes(pathType)
+              )?.[0] as LineStyleType) ?? LineStyleType.SingleColor);
         setSelectedStyle(compatibleStyle);
         dispatch(setMode(`line-${pathType}/${compatibleStyle}`));
     };
-    
+
     const handleLineStyle = (styleType: LineStyleType) => {
         setSelectedStyle(styleType);
         // Auto-select path: use current selected path if the style supports it, otherwise use first compatible path
-        const compatiblePath = selectedPath && lineStyles[styleType]?.metadata.supportLinePathType.includes(selectedPath)
-            ? selectedPath
-            : lineStyles[styleType]?.metadata.supportLinePathType[0] ?? LinePathType.Diagonal;
+        const compatiblePath =
+            selectedPath && lineStyles[styleType]?.metadata.supportLinePathType.includes(selectedPath)
+                ? selectedPath
+                : (lineStyles[styleType]?.metadata.supportLinePathType[0] ?? LinePathType.Diagonal);
         setSelectedPath(compatiblePath);
         dispatch(setMode(`line-${compatiblePath}/${styleType}`));
     };
-    
+
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
-    
+
     // Get styles compatible with selected path
     const compatibleStyles = selectedPath
-        ? Object.entries(lineStyles).filter(([_, style]) =>
-            style.metadata.supportLinePathType.includes(selectedPath)
-          )
+        ? Object.entries(lineStyles).filter(([_, style]) => style.metadata.supportLinePathType.includes(selectedPath))
         : Object.entries(lineStyles);
 
     return (
@@ -215,7 +214,7 @@ const ToolsPanel = () => {
                                         {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                     </Button>
                                 ))}
-                            
+
                             <Text fontWeight="600" pl="2.5" pt="2" fontSize="sm">
                                 {isTextShown ? t('panel.tools.section.lineStyle') : undefined}
                             </Text>
@@ -232,7 +231,7 @@ const ToolsPanel = () => {
                                 </Button>
                             ))}
                             <LearnHowToAdd type="line" expand={isTextShown} />
-                            
+
                             <Button
                                 aria-label={MiscNodeType.Virtual}
                                 leftIcon={miscNodes[MiscNodeType.Virtual].icon}
