@@ -129,10 +129,10 @@ const ToolsPanel = () => {
             return currentStyle;
         }
         // Find first compatible style, fallback to SingleColor
-        const compatibleEntry = Object.entries(lineStyles).find(([styleType, _]) =>
+        const compatibleStyleEntry = Object.entries(lineStyles).find(([styleType, _]) =>
             isStyleCompatible(styleType as LineStyleType, pathType)
         );
-        return (compatibleEntry?.[0] as LineStyleType) ?? LineStyleType.SingleColor;
+        return (compatibleStyleEntry?.[0] as LineStyleType) ?? LineStyleType.SingleColor;
     };
 
     const findCompatiblePath = (styleType: LineStyleType, currentPath: LinePathType | undefined): LinePathType => {
@@ -141,10 +141,10 @@ const ToolsPanel = () => {
             return currentPath;
         }
         // Find first compatible path, fallback to Diagonal
-        const compatibleEntry = Object.entries(linePaths).find(([pathType, _]) =>
+        const compatiblePathEntry = Object.entries(linePaths).find(([pathType, _]) =>
             isPathCompatible(pathType as LinePathType, styleType)
         );
-        return (compatibleEntry?.[0] as LinePathType) ?? LinePathType.Diagonal;
+        return (compatiblePathEntry?.[0] as LinePathType) ?? LinePathType.Diagonal;
     };
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
