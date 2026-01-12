@@ -109,25 +109,42 @@ const ToolsPanel = () => {
         }
     }, [mode]);
 
+    const isStyleCompatible = (styleType: LineStyleType, pathType: LinePathType): boolean => {
+        const style = lineStyles[styleType];
+        const pathSupported = style?.metadata.supportLinePathType.includes(pathType);
+        const subscriptionOk = !style?.isPro || activeSubscriptions.RMP_CLOUD;
+        return pathSupported && subscriptionOk;
+    };
+
+    const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
+        const path = linePaths[pathType];
+        const styleSupported = lineStyles[styleType]?.metadata.supportLinePathType.includes(pathType);
+        const subscriptionOk = !path?.isPro || activeSubscriptions.RMP_CLOUD;
+        return styleSupported && subscriptionOk;
+    };
+
     const findCompatibleStyle = (pathType: LinePathType, currentStyle: LineStyleType): LineStyleType => {
-        // Check if current style supports the path
-        if (lineStyles[currentStyle]?.metadata.supportLinePathType.includes(pathType)) {
+        // Check if current style is compatible with the path
+        if (isStyleCompatible(currentStyle, pathType)) {
             return currentStyle;
         }
-        // Find first compatible style
-        const compatibleEntry = Object.entries(lineStyles).find(([_, style]) =>
-            style.metadata.supportLinePathType.includes(pathType)
+        // Find first compatible style, fallback to SingleColor
+        const compatibleEntry = Object.entries(lineStyles).find(([styleType, _]) =>
+            isStyleCompatible(styleType as LineStyleType, pathType)
         );
         return (compatibleEntry?.[0] as LineStyleType) ?? LineStyleType.SingleColor;
     };
 
     const findCompatiblePath = (styleType: LineStyleType, currentPath: LinePathType | undefined): LinePathType => {
-        // Check if style supports the current path
-        if (currentPath && lineStyles[styleType]?.metadata.supportLinePathType.includes(currentPath)) {
+        // Check if current path is compatible with the style
+        if (currentPath && isPathCompatible(currentPath, styleType)) {
             return currentPath;
         }
-        // Return first compatible path
-        return lineStyles[styleType]?.metadata.supportLinePathType[0] ?? LinePathType.Diagonal;
+        // Find first compatible path, fallback to Diagonal
+        const compatibleEntry = Object.entries(linePaths).find(([pathType, _]) =>
+            isPathCompatible(pathType as LinePathType, styleType)
+        );
+        return (compatibleEntry?.[0] as LinePathType) ?? LinePathType.Diagonal;
     };
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
@@ -149,11 +166,6 @@ const ToolsPanel = () => {
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
-
-    // Get styles compatible with selected path
-    const compatibleStyles = selectedPath
-        ? Object.entries(lineStyles).filter(([_, style]) => style.metadata.supportLinePathType.includes(selectedPath))
-        : Object.entries(lineStyles);
 
     return (
         <Flex
@@ -221,6 +233,7 @@ const ToolsPanel = () => {
                                         leftIcon={linePaths[type].icon}
                                         onClick={() => handleLine(type)}
                                         variant={selectedPath === type ? 'solid' : 'outline'}
+                                        isDisabled={selectedStyle ? !isPathCompatible(type, selectedStyle) : false}
                                         sx={buttonStyle}
                                     >
                                         {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
@@ -230,12 +243,17 @@ const ToolsPanel = () => {
                             <Text fontWeight="600" pl="2.5" pt="2" fontSize="sm">
                                 {isTextShown ? t('panel.tools.section.lineStyle') : undefined}
                             </Text>
-                            {compatibleStyles.map(([styleType, style]) => (
+                            {Object.entries(lineStyles).map(([styleType, style]) => (
                                 <Button
                                     key={styleType}
                                     aria-label={styleType}
                                     onClick={() => handleLineStyle(styleType as LineStyleType)}
                                     variant={selectedStyle === styleType ? 'solid' : 'outline'}
+                                    isDisabled={
+                                        selectedPath
+                                            ? !isStyleCompatible(styleType as LineStyleType, selectedPath)
+                                            : false
+                                    }
                                     sx={buttonStyle}
                                     fontSize="xs"
                                 >

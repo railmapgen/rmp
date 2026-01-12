@@ -320,7 +320,7 @@ const SvgCanvas = () => {
                 // Parse mode to extract path type and style type
                 const modeParts = mode.slice(5).split('/');
                 const type = modeParts[0] as LinePathType;
-                const style = (modeParts[1] as LineStyleType | undefined) ?? LineStyleType.SingleColor;
+                const style = modeParts[1] as LineStyleType;
 
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];

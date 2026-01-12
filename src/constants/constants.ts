@@ -82,7 +82,6 @@ export type ActiveType = Id | 'background';
 export type RuntimeMode =
     | 'free'
     | 'select'
-    | `line-${LinePathType}`
     | `line-${LinePathType}/${LineStyleType}`
     | `station-${StationType}`
     | `misc-node-${MiscNodeType}`;
