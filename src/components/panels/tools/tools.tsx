@@ -194,11 +194,11 @@ const ToolsPanel = () => {
                             <Text fontWeight="600" pl="2.5" pt="2" fontSize="sm">
                                 {isTextShown ? t('panel.tools.section.linePath') : undefined}
                             </Text>
-                            {Object.values(LinePathType)
-                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                                .map(type => {
-                                    const { path: currentPath, style: currentStyle } = getLinePathAndStyle();
-                                    return (
+                            {(() => {
+                                const { path: currentPath, style: currentStyle } = getLinePathAndStyle();
+                                return Object.values(LinePathType)
+                                    .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
+                                    .map(type => (
                                         <Button
                                             key={type}
                                             aria-label={type}
@@ -210,15 +210,15 @@ const ToolsPanel = () => {
                                         >
                                             {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                         </Button>
-                                    );
-                                })}
+                                    ));
+                            })()}
 
                             <Text fontWeight="600" pl="2.5" pt="2" fontSize="sm">
                                 {isTextShown ? t('panel.tools.section.lineStyle') : undefined}
                             </Text>
-                            {Object.entries(lineStyles).map(([styleType, style]) => {
+                            {(() => {
                                 const { path: currentPath, style: currentStyle } = getLinePathAndStyle();
-                                return (
+                                return Object.entries(lineStyles).map(([styleType, style]) => (
                                     <Button
                                         key={styleType}
                                         aria-label={styleType}
@@ -234,8 +234,8 @@ const ToolsPanel = () => {
                                     >
                                         {isTextShown ? t(style.metadata.displayName) : undefined}
                                     </Button>
-                                );
-                            })}
+                                ));
+                            })()}
 
                             <Button
                                 aria-label={MiscNodeType.Virtual}
