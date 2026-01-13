@@ -21,7 +21,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconContext } from 'react-icons';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
-import { Theme } from '../../../constants/constants';
+import { getLinePathAndStyle, RuntimeMode, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
@@ -73,6 +73,7 @@ const ToolsPanel = () => {
     } = useRootSelector(state => state.app);
     const {
         mode,
+        lastTool,
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
@@ -90,17 +91,7 @@ const ToolsPanel = () => {
         dispatch(setToolsPanelExpansion(!isToolsExpanded));
     };
 
-    // Helper function to extract path and style from mode
-    const getLinePathAndStyle = (): { path: LinePathType | undefined; style: LineStyleType | undefined } => {
-        if (mode.startsWith('line-')) {
-            const parts = mode.slice(5).split('/');
-            return {
-                path: parts[0] as LinePathType,
-                style: parts[1] as LineStyleType | undefined,
-            };
-        }
-        return { path: undefined, style: undefined };
-    };
+    const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
 
     const isStyleCompatible = (styleType: LineStyleType, pathType: LinePathType): boolean => {
         const style = lineStyles[styleType];
@@ -108,26 +99,25 @@ const ToolsPanel = () => {
         const subscriptionOk = !style?.isPro || activeSubscriptions.RMP_CLOUD;
         return pathSupported && subscriptionOk;
     };
-
     const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
         const path = linePaths[pathType];
         const styleSupported = lineStyles[styleType]?.metadata.supportLinePathType.includes(pathType);
         const subscriptionOk = !path?.isPro || activeSubscriptions.RMP_CLOUD;
         return styleSupported && subscriptionOk;
     };
-
-    const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
-
     const handleLine = (pathType: LinePathType) => {
-        const { style: currentStyle } = getLinePathAndStyle();
+        let { style: currentStyle } = getLinePathAndStyle(mode);
+        // When user click the background and mode becomes 'free', we try to recover last used style.
+        if (!currentStyle && lastTool) currentStyle = getLinePathAndStyle(lastTool as RuntimeMode).style;
         // If current style is compatible with new path, keep it; otherwise use SingleColor
         const newStyle =
             currentStyle && isStyleCompatible(currentStyle, pathType) ? currentStyle : LineStyleType.SingleColor;
         dispatch(setMode(`line-${pathType}/${newStyle}`));
     };
-
     const handleLineStyle = (styleType: LineStyleType) => {
-        const { path: currentPath } = getLinePathAndStyle();
+        let { path: currentPath } = getLinePathAndStyle(mode);
+        // When user click the background and mode becomes 'free', we try to recover last used path.
+        if (!currentPath && lastTool) currentPath = getLinePathAndStyle(lastTool as RuntimeMode).path;
         // If current path is compatible with new style, keep it; otherwise use Diagonal
         const newPath = currentPath && isPathCompatible(currentPath, styleType) ? currentPath : LinePathType.Diagonal;
         dispatch(setMode(`line-${newPath}/${styleType}`));
@@ -135,6 +125,7 @@ const ToolsPanel = () => {
 
     const handleMiscNode = (type: MiscNodeType) => dispatch(setMode(`misc-node-${type}`));
 
+    const { path: currentPath, style: currentStyle } = getLinePathAndStyle(mode);
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
 
     return (
@@ -164,7 +155,7 @@ const ToolsPanel = () => {
             </Button>
 
             <Flex className="tools" overflow="auto">
-                <Accordion width="100%" allowMultiple defaultIndex={[0, 1, 2]}>
+                <Accordion width="100%" allowMultiple defaultIndex={[0, 2, 3]}>
                     <Button
                         aria-label="select"
                         leftIcon={selectIcon}
@@ -191,51 +182,21 @@ const ToolsPanel = () => {
                                 </Text>
                             </Flex>
 
-                            <Text fontWeight="600" pl="2.5" pt="2" fontSize="sm">
-                                {isTextShown ? t('panel.tools.section.linePath') : undefined}
-                            </Text>
-                            {(() => {
-                                const { path: currentPath, style: currentStyle } = getLinePathAndStyle();
-                                return Object.values(LinePathType)
-                                    .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                                    .map(type => (
-                                        <Button
-                                            key={type}
-                                            aria-label={type}
-                                            leftIcon={linePaths[type].icon}
-                                            onClick={() => handleLine(type)}
-                                            variant={currentPath === type ? 'solid' : 'outline'}
-                                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
-                                            sx={buttonStyle}
-                                        >
-                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                        </Button>
-                                    ));
-                            })()}
-
-                            <Text fontWeight="600" pl="2.5" pt="2" fontSize="sm">
-                                {isTextShown ? t('panel.tools.section.lineStyle') : undefined}
-                            </Text>
-                            {(() => {
-                                const { path: currentPath, style: currentStyle } = getLinePathAndStyle();
-                                return Object.entries(lineStyles).map(([styleType, style]) => (
+                            {Object.values(LinePathType)
+                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
+                                .map(type => (
                                     <Button
-                                        key={styleType}
-                                        aria-label={styleType}
-                                        onClick={() => handleLineStyle(styleType as LineStyleType)}
-                                        variant={currentStyle === styleType ? 'solid' : 'outline'}
-                                        isDisabled={
-                                            currentPath
-                                                ? !isStyleCompatible(styleType as LineStyleType, currentPath)
-                                                : false
-                                        }
+                                        key={type}
+                                        aria-label={type}
+                                        leftIcon={linePaths[type].icon}
+                                        onClick={() => handleLine(type)}
+                                        variant={currentPath === type ? 'solid' : 'outline'}
+                                        isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
                                         sx={buttonStyle}
-                                        fontSize="xs"
                                     >
-                                        {isTextShown ? t(style.metadata.displayName) : undefined}
+                                        {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                     </Button>
-                                ));
-                            })()}
+                                ))}
 
                             <Button
                                 aria-label={MiscNodeType.Virtual}
@@ -246,7 +207,38 @@ const ToolsPanel = () => {
                             >
                                 {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                             </Button>
-                            <LearnHowToAdd type="line" expand={isTextShown} />
+                        </AccordionPanel>
+                    </AccordionItem>
+
+                    <AccordionItem>
+                        <AccordionButton sx={accordionButtonStyle}>
+                            {isTextShown && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.lineStyles')}
+                                </Box>
+                            )}
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            {Object.entries(lineStyles).map(([styleType, style]) => (
+                                <Button
+                                    key={styleType}
+                                    aria-label={styleType}
+                                    leftIcon={<Box boxSize="40px" />}
+                                    onClick={() => handleLineStyle(styleType as LineStyleType)}
+                                    variant={currentStyle === styleType ? 'solid' : 'outline'}
+                                    isDisabled={
+                                        currentPath
+                                            ? !isStyleCompatible(styleType as LineStyleType, currentPath)
+                                            : false
+                                    }
+                                    sx={buttonStyle}
+                                >
+                                    {isTextShown ? t(style.metadata.displayName) : undefined}
+                                </Button>
+                            ))}
+
+                            <LearnHowToAdd type="line-styles" expand={isTextShown} />
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -343,21 +335,17 @@ const ToolsPanel = () => {
 
 export default ToolsPanel;
 
-export const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line'; expand: boolean }) => {
+const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean }) => {
     const { type, expand } = props;
     const { t } = useTranslation();
 
-    const doc = type === 'misc-node' ? 'nodes' : type === 'station' ? 'stations' : 'line-styles';
-    const fontSize = type === 'line' ? 'xs' : undefined;
-    const size = type === 'line' ? '30px' : '40px';
+    const doc = type === 'misc-node' ? 'nodes' : type;
 
     return (
-        <HStack fontSize={fontSize}>
-            {type !== 'line' && (
-                <IconContext.Provider value={{ style: { padding: 5 }, size }}>
-                    <MdCode />
-                </IconContext.Provider>
-            )}
+        <HStack>
+            <IconContext.Provider value={{ style: { padding: 5 }, size: '40px' }}>
+                <MdCode />
+            </IconContext.Provider>
             {expand && (
                 <>
                     <Link

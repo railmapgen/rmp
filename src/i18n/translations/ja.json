@@ -15,6 +15,7 @@
             "showLess": "表示を減らす",
             "section": {
                 "lineDrawing": "路線描画",
+                "lineStyles": "路線風格",
                 "stations": "駅",
                 "miscellaneousNodes": "その他の節点"
             },
@@ -22,7 +23,7 @@
             "learnHowToAdd": {
                 "station": "駅を追加する方法を学ぶ！",
                 "misc-node": "節点を追加する方法を学ぶ！",
-                "line": "路線風格を追加する方法を学ぶ！"
+                "line-styles": "路線風格を追加する方法を学ぶ！"
             }
         },
         "details": {

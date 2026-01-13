@@ -13,6 +13,7 @@
             "showLess": "显示更少",
             "section": {
                 "lineDrawing": "线段绘制",
+                "lineStyles": "线段样式",
                 "stations": "车站",
                 "miscellaneousNodes": "杂项节点"
             },
@@ -20,7 +21,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加车站！",
                 "misc-node": "了解如何添加节点！",
-                "line": "了解如何添加线段样式！"
+                "line-styles": "了解如何添加线段样式！"
             }
         },
         "details": {

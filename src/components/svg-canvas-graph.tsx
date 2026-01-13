@@ -2,7 +2,16 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, NodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
+import {
+    Events,
+    getLinePathAndStyle,
+    LineId,
+    MiscNodeId,
+    NodeId,
+    SnapLine,
+    SnapPoint,
+    StnId,
+} from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -449,7 +458,13 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    const SingleColor = singleColor.component;
+    // Prepare line style component and attributes for the line being created.
+    const { path, style } = getLinePathAndStyle(mode);
+    const linePath = path || LinePathType.Diagonal;
+    const lineStyle = style || LineStyleType.SingleColor;
+    const LineStyleComponent = lineStyles[lineStyle].component;
+    const lineStyleAttrs = lineStyles[lineStyle].defaultAttrs;
+    if ('color' in lineStyleAttrs) lineStyleAttrs.color = theme;
 
     return (
         <>
@@ -461,18 +476,19 @@ const SvgCanvas = () => {
                 handleEdgePointerDown={handleEdgePointerDown}
             />
             {mode.startsWith('line') && active && active !== 'background' && (
-                <SingleColor
+                <LineStyleComponent
                     id="line_create_in_progress___no_use"
-                    type={mode.slice(5) as LinePathType}
-                    path={linePaths[mode.slice(5) as LinePathType].generatePath(
+                    type={linePath}
+                    path={linePaths[linePath].generatePath(
                         graph.current.getNodeAttribute(active, 'x'),
                         graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
                         graph.current.getNodeAttribute(active, 'y'),
                         graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                         // @ts-expect-error
-                        linePaths[mode.slice(5) as LinePathType].defaultAttrs
+                        linePaths[linePath].defaultAttrs
                     )}
-                    styleAttrs={{ color: theme }}
+                    // @ts-expect-error
+                    styleAttrs={lineStyleAttrs}
                     newLine
                     handlePointerDown={() => {}} // no use
                 />

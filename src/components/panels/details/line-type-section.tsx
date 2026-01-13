@@ -20,7 +20,6 @@ import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
-import { LearnHowToAdd } from '../tools/tools';
 
 export default function LineTypeSection() {
     const { i18n, t } = useTranslation();
@@ -142,7 +141,6 @@ export default function LineTypeSection() {
                     }}
                 />
             </RmgLabel>
-            <LearnHowToAdd type="line" expand />
 
             <AlertDialog
                 isOpen={isChangeTypeWarningOpen}
