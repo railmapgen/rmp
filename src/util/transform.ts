@@ -5,8 +5,6 @@ type TransformGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAt
 
 export type FlipDirection = 'vertical' | 'horizontal' | 'diagonal45' | 'diagonal135';
 
-const normalizeAngle = (deg: number) => ((deg % 360) + 360) % 360;
-
 const getSelectedNodes = (graph: TransformGraph, selected: Set<string>): NodeId[] =>
     [...selected].filter(id => graph.hasNode(id)) as NodeId[];
 
@@ -23,15 +21,6 @@ const getSelectionCenter = (graph: TransformGraph, nodes: NodeId[]) => {
         cx: (minX + maxX) / 2,
         cy: (minY + maxY) / 2,
     };
-};
-
-const updateRotateAttribute = (graph: TransformGraph, node: NodeId, updater: (angle: number) => number) => {
-    const type = graph.getNodeAttribute(node, 'type');
-    const typeAttr = graph.getNodeAttribute(node, type) as Record<string, unknown> | undefined;
-    if (typeAttr && typeof typeAttr.rotate === 'number') {
-        const nextRotate = updater(typeAttr.rotate);
-        graph.mergeNodeAttributes(node, { [type]: { ...typeAttr, rotate: normalizeAngle(nextRotate) } });
-    }
 };
 
 /**
@@ -59,25 +48,9 @@ export const rotateSelectedNodes = (
         const newX = cx + dx * cos - dy * sin;
         const newY = cy + dx * sin + dy * cos;
         graph.mergeNodeAttributes(node, { x: Number(newX.toFixed(2)), y: Number(newY.toFixed(2)) });
-        updateRotateAttribute(graph, node, angle => angle + angleDegClockwise);
     });
 
     return true;
-};
-
-const flipRotate = (angle: number, direction: FlipDirection) => {
-    switch (direction) {
-        case 'vertical':
-            return 180 - angle;
-        case 'horizontal':
-            return -angle;
-        case 'diagonal45':
-            return 90 - angle;
-        case 'diagonal135':
-            return 270 - angle;
-        default:
-            return angle;
-    }
 };
 
 export const flipSelectedNodes = (graph: TransformGraph, selected: Set<string>, direction: FlipDirection): boolean => {
@@ -117,7 +90,6 @@ export const flipSelectedNodes = (graph: TransformGraph, selected: Set<string>, 
         }
 
         graph.mergeNodeAttributes(node, { x: Number(newX.toFixed(2)), y: Number(newY.toFixed(2)) });
-        updateRotateAttribute(graph, node, angle => flipRotate(angle, direction));
     });
 
     return true;

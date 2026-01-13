@@ -330,38 +330,36 @@ const SvgWrapper = () => {
             dispatch(redoAction());
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
-        } else if (e.key === 'q' || e.key === 'e') {
-            const angle = (e.key === 'e' ? 1 : -1) * (e.altKey ? 5 : 45);
-            const rotated = rotateSelectedNodes(graph.current, selected, angle);
-
-            if (rotated) {
+        } else if (e.key === 'r') {
+            const angle = (e.altKey ? 5 : 45) * 1;
+            if (rotateSelectedNodes(graph.current, selected, angle)) {
                 refreshAndSave();
-            } else if (e.key === 'e') {
-                // fallback to toggling startFrom between 'from' and 'to' when only an edge is selected
-                const [selectedFirst] = selected;
-                if (selected.size === 1 && graph.current.hasEdge(selectedFirst)) {
-                    const attr = graph.current.getEdgeAttributes(selectedFirst);
-                    const { type } = attr;
+            }
+        } else if (e.key === 'e') {
+            // switch startFrom between 'from' and 'to' when an edge is selected
+            const [selectedFirst] = selected;
+            if (selected.size === 1 && graph.current.hasEdge(selectedFirst)) {
+                const attr = graph.current.getEdgeAttributes(selectedFirst);
+                const { type } = attr;
 
-                    // only work for non-simple line types that have startFrom
-                    if (type !== LinePathType.Simple && attr[type]) {
-                        const lineAttrs = attr[type] as NonSimpleLinePathAttributes;
-                        const currentStartFrom = lineAttrs.startFrom || 'from';
-                        const newStartFrom = currentStartFrom === 'from' ? 'to' : 'from';
+                // only work for non-simple line types that have startFrom
+                if (type !== LinePathType.Simple && attr[type]) {
+                    const lineAttrs = attr[type] as NonSimpleLinePathAttributes;
+                    const currentStartFrom = lineAttrs.startFrom || 'from';
+                    const newStartFrom = currentStartFrom === 'from' ? 'to' : 'from';
 
-                        // recalculate parallel index if auto parallel is enabled
-                        let parallelIndex = attr.parallelIndex;
-                        if (autoParallel) {
-                            const [source, target] = graph.current.extremities(selectedFirst) as [NodeId, NodeId];
-                            parallelIndex = makeParallelIndex(graph.current, type, source, target, newStartFrom);
-                        }
-
-                        // update the startFrom attribute
-                        const updatedLineAttrs = { ...lineAttrs, startFrom: newStartFrom };
-                        graph.current.mergeEdgeAttributes(selectedFirst, { [type]: updatedLineAttrs, parallelIndex });
-
-                        refreshAndSave();
+                    // recalculate parallel index if auto parallel is enabled
+                    let parallelIndex = attr.parallelIndex;
+                    if (autoParallel) {
+                        const [source, target] = graph.current.extremities(selectedFirst) as [NodeId, NodeId];
+                        parallelIndex = makeParallelIndex(graph.current, type, source, target, newStartFrom);
                     }
+
+                    // update the startFrom attribute
+                    const updatedLineAttrs = { ...lineAttrs, startFrom: newStartFrom };
+                    graph.current.mergeEdgeAttributes(selectedFirst, { [type]: updatedLineAttrs, parallelIndex });
+
+                    refreshAndSave();
                 }
             }
         }

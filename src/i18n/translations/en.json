@@ -796,7 +796,7 @@
                 "c": "Enable or disable magnetic layout.",
                 "arrows": "Move the canvas a little bit.",
                 "ijkl": "Move the selected station(s) a little bit.",
-                "rotate": "Rotate selected nodes clockwise or counterclockwise. Hold Alt for 5° steps.",
+                "rotate": "Rotate selected nodes clockwise. Hold Alt for 5° steps.",
                 "shift": "Multiple selection.",
                 "alt": "Hold down while dragging to temporarily disable auto-snapping.",
                 "delete": "Delete the selected station(s).",

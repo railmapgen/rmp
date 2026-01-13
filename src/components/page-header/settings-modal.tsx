@@ -362,10 +362,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tr>
                                         <Tr>
                                             <Td>
-                                                <Box display="flex" flexDirection="row">
-                                                    <Kbd>q</Kbd>
-                                                    <Kbd>e</Kbd>
-                                                </Box>
+                                                <Kbd>r</Kbd>
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.rotate')}</Td>
                                         </Tr>
