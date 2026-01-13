@@ -36,6 +36,7 @@ import {
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
+import { rotateSelectedNodes } from '../util/transform';
 import { useMakeStationName } from '../util/random-station-names';
 import { checkAndChangeStationIntType } from '../util/change-types';
 import ContextMenu from './context-menu';
@@ -329,6 +330,11 @@ const SvgWrapper = () => {
             dispatch(redoAction());
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
+        } else if (e.key === 'r') {
+            const angle = (e.altKey ? 5 : 45) * 1;
+            if (rotateSelectedNodes(graph.current, selected, angle)) {
+                refreshAndSave();
+            }
         } else if (e.key === 'e') {
             // switch startFrom between 'from' and 'to' when an edge is selected
             const [selectedFirst] = selected;

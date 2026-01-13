@@ -362,6 +362,12 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tr>
                                         <Tr>
                                             <Td>
+                                                <Kbd>r</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.rotate')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
                                                 {isMacClient ? <Kbd sx={macKeyStyle}>&#8679;</Kbd> : <Kbd>shift</Kbd>}
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.shift')}</Td>
