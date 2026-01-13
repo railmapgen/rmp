@@ -19,7 +19,7 @@ import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { ColorField } from '../../../panels/details/color-field';
 
 const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
-    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { colorA = defaultMRTTapeOutAttributes.colorA, colorB = defaultMRTTapeOutAttributes.colorB } =
         styleAttrs ?? defaultMRTTapeOutAttributes;
 

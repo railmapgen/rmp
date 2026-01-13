@@ -326,11 +326,8 @@ const SvgCanvas = () => {
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
             if (couldSourceBeConnected && matchedPrefix) {
-                // Parse mode to extract path type and style type
-                const modeParts = mode.slice(5).split('/');
-                const type = modeParts[0] as LinePathType;
-                const style = modeParts[1] as LineStyleType;
-
+                const { path, style: style_ } = getLinePathAndStyle(mode);
+                const [type, style] = [path!, style_!]; // assured by startsWith('line') check
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
@@ -463,7 +460,7 @@ const SvgCanvas = () => {
     const linePath = path || LinePathType.Diagonal;
     const lineStyle = style || LineStyleType.SingleColor;
     const LineStyleComponent = lineStyles[lineStyle].component;
-    const lineStyleAttrs = lineStyles[lineStyle].defaultAttrs;
+    const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
     if ('color' in lineStyleAttrs) lineStyleAttrs.color = theme;
 
     return (
