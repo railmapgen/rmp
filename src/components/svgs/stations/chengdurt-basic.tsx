@@ -215,15 +215,16 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         baseOffset={1}
                     />
                 </g>
-            ) : (
+            ) : nameOffsetX == 'middle' ? (
                 <>
                     <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                         <MultilineTextVertical
-                            text={names[0].split('\n')}
+                            text={names[0].split('\n').reverse()}
                             fontSize={LINE_HEIGHT.zh}
                             lineWidth={LINE_HEIGHT.zh}
                             grow="bidirectional"
                             dominantBaseline="central"
+                            textOrientation="upright"
                             {...getLangStyle(TextLanguage.zh)}
                         />
                     </g>
@@ -231,6 +232,60 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         transform={`translate(${textX + (LINE_HEIGHT.zh * names[0].split('\n').length) / 2 + 3}, ${textY})rotate(90)`}
                         textAnchor={textAnchor}
                     >
+                        <MultilineText
+                            text={names[1].split('\n')}
+                            fontSize={LINE_HEIGHT.en}
+                            lineHeight={LINE_HEIGHT.en}
+                            grow="up"
+                            {...getLangStyle(TextLanguage.en)}
+                            dominantBaseline="central"
+                        />
+                    </g>
+                </>
+            ) : nameOffsetX == 'right' ? (
+                <>
+                    <g
+                        transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 9}, ${textY + (nameOffsetY == 'top' ? 1 : nameOffsetY == 'bottom' ? -1 : 0)})`}
+                        textAnchor={textAnchor}
+                    >
+                        <MultilineTextVertical
+                            text={names[0].split('\n').reverse()}
+                            fontSize={LINE_HEIGHT.zh}
+                            lineWidth={LINE_HEIGHT.zh + 1}
+                            grow="bidirectional"
+                            dominantBaseline="central"
+                            textOrientation="upright"
+                            {...getLangStyle(TextLanguage.zh)}
+                        />
+                    </g>
+                    <g transform={`translate(${textX + 3}, ${textY})rotate(90)`} textAnchor={textAnchor}>
+                        <MultilineText
+                            text={names[1].split('\n')}
+                            fontSize={LINE_HEIGHT.en}
+                            lineHeight={LINE_HEIGHT.en}
+                            grow="up"
+                            {...getLangStyle(TextLanguage.en)}
+                            dominantBaseline="central"
+                        />
+                    </g>
+                </>
+            ) : (
+                <>
+                    <g
+                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - 13}, ${textY + (nameOffsetY == 'top' ? 1 : nameOffsetY == 'bottom' ? -1 : 0)})`}
+                        textAnchor={textAnchor}
+                    >
+                        <MultilineTextVertical
+                            text={names[0].split('\n').reverse()}
+                            fontSize={LINE_HEIGHT.zh}
+                            lineWidth={LINE_HEIGHT.zh + 1}
+                            grow="bidirectional"
+                            dominantBaseline="central"
+                            textOrientation="upright"
+                            {...getLangStyle(TextLanguage.zh)}
+                        />
+                    </g>
+                    <g transform={`translate(${textX - 7}, ${textY})rotate(90)`} textAnchor={textAnchor}>
                         <MultilineText
                             text={names[1].split('\n')}
                             fontSize={LINE_HEIGHT.en}
@@ -299,9 +354,9 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
             disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
-                if (attrs.nameOffsetX != 'middle') {
-                    attrs.direction = 'horizontal';
-                }
+                // if (attrs.nameOffsetX != 'middle') {
+                //     attrs.direction = 'horizontal';
+                // }
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -314,9 +369,9 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
             disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
-                if (attrs.nameOffsetY == 'middle') {
-                    attrs.direction = 'horizontal';
-                }
+                // if (attrs.nameOffsetY == 'middle') {
+                //     attrs.direction = 'horizontal';
+                // }
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -340,7 +395,7 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
-            isDisabled: attrs.nameOffsetX != 'middle' || attrs.nameOffsetY == 'middle',
+            // isDisabled: attrs.nameOffsetX != 'middle' || attrs.nameOffsetY == 'middle',
             // In fact, if it is undefined, it will be disabled so we don't need to check it:)
         },
         {
