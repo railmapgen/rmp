@@ -275,7 +275,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
             ) : (
                 <>
                     <g
-                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY + (nameOffsetY == 'top' ? 1 : nameOffsetY == 'bottom' ? -1 : 0)})`}
+                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY})`}
                         textAnchor={textAnchor}
                     >
                         <MultilineTextVertical
