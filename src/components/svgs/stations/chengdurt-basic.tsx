@@ -221,7 +221,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         <MultilineTextVertical
                             text={names[0].split('\n').reverse()}
                             fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh}
+                            lineWidth={LINE_HEIGHT.zh + 1}
                             grow="bidirectional"
                             dominantBaseline="central"
                             textOrientation="upright"
@@ -245,7 +245,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
             ) : nameOffsetX == 'right' ? (
                 <>
                     <g
-                        transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 9}, ${textY + (nameOffsetY == 'top' ? 1 : nameOffsetY == 'bottom' ? -1 : 0)})`}
+                        transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 5}, ${textY})`}
                         textAnchor={textAnchor}
                     >
                         <MultilineTextVertical
@@ -258,7 +258,10 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                             {...getLangStyle(TextLanguage.zh)}
                         />
                     </g>
-                    <g transform={`translate(${textX + 3}, ${textY})rotate(90)`} textAnchor={textAnchor}>
+                    <g
+                        transform={`translate(${textX + (names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1) + 12}, ${textY})rotate(90)`}
+                        textAnchor={textAnchor}
+                    >
                         <MultilineText
                             text={names[1].split('\n')}
                             fontSize={LINE_HEIGHT.en}
@@ -272,7 +275,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
             ) : (
                 <>
                     <g
-                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - 13}, ${textY + (nameOffsetY == 'top' ? 1 : nameOffsetY == 'bottom' ? -1 : 0)})`}
+                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY})`}
                         textAnchor={textAnchor}
                     >
                         <MultilineTextVertical
@@ -285,7 +288,10 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                             {...getLangStyle(TextLanguage.zh)}
                         />
                     </g>
-                    <g transform={`translate(${textX - 7}, ${textY})rotate(90)`} textAnchor={textAnchor}>
+                    <g
+                        transform={`translate(${textX - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 7}, ${textY})rotate(90)`}
+                        textAnchor={textAnchor}
+                    >
                         <MultilineText
                             text={names[1].split('\n')}
                             fontSize={LINE_HEIGHT.en}
