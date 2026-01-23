@@ -5,6 +5,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
+import { NODES_MOVE_DISTANCE } from '../constants/canvas';
 import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
@@ -23,6 +24,7 @@ import {
     setSelected,
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
+import { checkAndChangeStationIntType } from '../util/change-types';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import {
@@ -37,7 +39,6 @@ import {
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
-import { checkAndChangeStationIntType } from '../util/change-types';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -265,9 +266,8 @@ const SvgWrapper = () => {
             const y_factor = e.key.endsWith('Up') ? -1 : e.key.endsWith('Down') ? 1 : 0;
             dispatch(setSvgViewBoxMin(pointerPosToSVGCoord(d * x_factor, d * y_factor, svgViewBoxZoom, svgViewBoxMin)));
         } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
-            const d = 10;
-            const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * d;
-            const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * d;
+            const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * NODES_MOVE_DISTANCE;
+            const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * NODES_MOVE_DISTANCE;
             if (selected.size > 0) {
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {

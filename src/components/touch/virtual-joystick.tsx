@@ -7,15 +7,13 @@ import {
     MdKeyboardArrowRight,
     MdKeyboardArrowUp,
 } from 'react-icons/md';
+import { NODES_MOVE_DISTANCE } from '../../constants/canvas';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { exportSelectedNodesAndEdges } from '../../util/clipboard';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
-
-// Movement distance (same as keyboard controls in svg-wrapper.tsx)
-const MOVE_DISTANCE = 10;
 
 /**
  * Virtual joystick component for touch devices to move selected nodes.
@@ -43,8 +41,8 @@ export const VirtualJoystick: React.FC = () => {
             if (selected.size > 0) {
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttribute(s, 'x', x => (x ?? 0) + xFactor * MOVE_DISTANCE);
-                        graph.current.updateNodeAttribute(s, 'y', y => (y ?? 0) + yFactor * MOVE_DISTANCE);
+                        graph.current.updateNodeAttribute(s, 'x', x => (x ?? 0) + xFactor * NODES_MOVE_DISTANCE);
+                        graph.current.updateNodeAttribute(s, 'y', y => (y ?? 0) + yFactor * NODES_MOVE_DISTANCE);
                     }
                 });
                 refreshAndSave();

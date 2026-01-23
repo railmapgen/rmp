@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, SnapLine } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { Size } from './hooks';
 
 export const getMousePosition = (e: React.MouseEvent) => {

@@ -1,14 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
-import {
-    EdgeAttributes,
-    GraphAttributes,
-    MiscNodeId,
-    NodeAttributes,
-    NodeId,
-    SnapLine,
-    SnapPoint,
-    StnId,
-} from '../constants/constants';
+import { SnapLine, SnapPoint } from '../constants/canvas';
+import { EdgeAttributes, GraphAttributes, MiscNodeId, NodeAttributes, NodeId, StnId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { getViewpointSize } from './helpers';
 

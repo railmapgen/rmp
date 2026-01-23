@@ -2,16 +2,8 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import {
-    Events,
-    getLinePathAndStyle,
-    LineId,
-    MiscNodeId,
-    NodeId,
-    SnapLine,
-    SnapPoint,
-    StnId,
-} from '../constants/constants';
+import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
+import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -51,7 +43,6 @@ import {
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
 import { linePaths, lineStyles } from './svgs/lines/lines';
-import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -289,11 +280,11 @@ const SvgCanvas = () => {
                             ...attr,
                             x: roundToMultiple(
                                 attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : 5
+                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
                             ),
                             y: roundToMultiple(
                                 attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : 5
+                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
                             ),
                         }));
                     }
