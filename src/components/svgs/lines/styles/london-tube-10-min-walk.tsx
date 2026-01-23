@@ -8,7 +8,7 @@ import {
 } from '../../../../constants/lines';
 
 const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
@@ -23,7 +23,8 @@ const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkA
             strokeWidth={LINE_WIDTH}
             strokeDasharray={`${LINE_WIDTH} ${LINE_WIDTH / 2}`}
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

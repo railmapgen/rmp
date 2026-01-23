@@ -12,15 +12,16 @@
         "tools": {
             "showLess": "Show less",
             "section": {
-                "lineDrawing": "Line drawing",
+                "lineDrawing": "Line Drawing",
+                "lineStyles": "Line Styles",
                 "stations": "Stations",
-                "miscellaneousNodes": "Miscellaneous nodes"
+                "miscellaneousNodes": "Miscellaneous Nodes"
             },
             "select": "Select",
             "learnHowToAdd": {
                 "station": "Learn how to add your stations!",
                 "misc-node": "Learn how to add your nodes!",
-                "line": "Learn how to add your line styles!"
+                "line-styles": "Learn how to add your line styles!"
             }
         },
         "details": {

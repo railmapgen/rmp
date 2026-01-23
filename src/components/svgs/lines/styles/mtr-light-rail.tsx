@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultMTRLightRailAttributes.color } = styleAttrs ?? defaultMTRLightRailAttributes;
 
     const onPointerDown = React.useCallback(
@@ -31,7 +31,8 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
             strokeWidth={LINE_WIDTH / 2}
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

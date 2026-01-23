@@ -2,7 +2,16 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, NodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
+import {
+    Events,
+    getLinePathAndStyle,
+    LineId,
+    MiscNodeId,
+    NodeId,
+    SnapLine,
+    SnapPoint,
+    StnId,
+} from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -41,7 +50,7 @@ import {
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { linePaths } from './svgs/lines/lines';
+import { linePaths, lineStyles } from './svgs/lines/lines';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
@@ -317,7 +326,8 @@ const SvgCanvas = () => {
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
             if (couldSourceBeConnected && matchedPrefix) {
-                const type = mode.slice(5) as LinePathType;
+                const { path, style: style_ } = getLinePathAndStyle(mode);
+                const [type, style] = [path!, style_!]; // assured by startsWith('line') check
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
@@ -330,8 +340,8 @@ const SvgCanvas = () => {
                         type,
                         // deep copy to prevent mutual reference
                         [type]: structuredClone(linePaths[type].defaultAttrs),
-                        style: LineStyleType.SingleColor,
-                        [LineStyleType.SingleColor]: { color: theme },
+                        style,
+                        [style]: structuredClone(lineStyles[style].defaultAttrs),
                         reconcileId: '',
                         parallelIndex,
                     });
@@ -445,7 +455,13 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    const SingleColor = singleColor.component;
+    // Prepare line style component and attributes for the line being created.
+    const { path, style } = getLinePathAndStyle(mode);
+    const linePath = path || LinePathType.Diagonal;
+    const lineStyle = style || LineStyleType.SingleColor;
+    const LineStyleComponent = lineStyles[lineStyle].component;
+    const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
+    if ('color' in lineStyleAttrs) lineStyleAttrs.color = theme;
 
     return (
         <>
@@ -457,18 +473,19 @@ const SvgCanvas = () => {
                 handleEdgePointerDown={handleEdgePointerDown}
             />
             {mode.startsWith('line') && active && active !== 'background' && (
-                <SingleColor
+                <LineStyleComponent
                     id="line_create_in_progress___no_use"
-                    type={mode.slice(5) as LinePathType}
-                    path={linePaths[mode.slice(5) as LinePathType].generatePath(
+                    type={linePath}
+                    path={linePaths[linePath].generatePath(
                         graph.current.getNodeAttribute(active, 'x'),
                         graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
                         graph.current.getNodeAttribute(active, 'y'),
                         graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                         // @ts-expect-error
-                        linePaths[mode.slice(5) as LinePathType].defaultAttrs
+                        linePaths[linePath].defaultAttrs
                     )}
-                    styleAttrs={{ color: theme }}
+                    // @ts-expect-error
+                    styleAttrs={lineStyleAttrs}
                     newLine
                     handlePointerDown={() => {}} // no use
                 />

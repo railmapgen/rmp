@@ -82,9 +82,27 @@ export type ActiveType = Id | 'background';
 export type RuntimeMode =
     | 'free'
     | 'select'
-    | `line-${LinePathType}`
+    | `line-${LinePathType}/${LineStyleType}`
     | `station-${StationType}`
     | `misc-node-${MiscNodeType}`;
+
+/**
+ * Helper function to extract path and style from mode
+ * @param mode The current runtime mode.
+ * @returns The line path and style extracted from the mode.
+ */
+export const getLinePathAndStyle = (
+    mode: RuntimeMode
+): { path: LinePathType | undefined; style: LineStyleType | undefined } => {
+    if (mode.startsWith('line-')) {
+        const parts = mode.slice(5).split('/');
+        return {
+            path: parts[0] as LinePathType,
+            style: parts[1] as LineStyleType,
+        };
+    }
+    return { path: undefined, style: undefined };
+};
 
 /**
  * Structure for guide lines when dragging / moving the nodes.

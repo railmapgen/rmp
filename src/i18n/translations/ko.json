@@ -13,6 +13,7 @@
             "showLess": "적게 표시",
             "section": {
                 "lineDrawing": "선 그리기",
+                "lineStyles": "선 스타일",
                 "stations": "역",
                 "miscellaneousNodes": "기타 노드"
             },
@@ -20,7 +21,7 @@
             "learnHowToAdd": {
                 "station": "역을 추가하는 방법 배우기!",
                 "misc-node": "노드를 추가하는 방법 배우기!",
-                "line": "라인 스타일을 추가하는 방법 배우기!"
+                "line-styles": "라인 스타일을 추가하는 방법 배우기!"
             }
         },
         "details": {

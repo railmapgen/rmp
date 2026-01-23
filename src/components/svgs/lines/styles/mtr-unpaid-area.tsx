@@ -2,7 +2,7 @@ import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -18,7 +18,8 @@ const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) 
             strokeWidth="1.33"
             strokeDasharray="2.66 1.33"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
