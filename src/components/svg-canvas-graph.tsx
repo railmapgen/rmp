@@ -322,6 +322,9 @@ const SvgCanvas = () => {
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
+                    const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
+                    // TODO: there should be some way for a style to disable auto theme injection
+                    if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
                     const parallelIndex = autoParallel
                         ? makeParallelIndex(graph.current, type, source, target, 'from')
                         : -1;
@@ -332,7 +335,7 @@ const SvgCanvas = () => {
                         // deep copy to prevent mutual reference
                         [type]: structuredClone(linePaths[type].defaultAttrs),
                         style,
-                        [style]: structuredClone(lineStyles[style].defaultAttrs),
+                        [style]: styleAttr,
                         reconcileId: '',
                         parallelIndex,
                     });
@@ -452,7 +455,8 @@ const SvgCanvas = () => {
     const lineStyle = style || LineStyleType.SingleColor;
     const LineStyleComponent = lineStyles[lineStyle].component;
     const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
-    if ('color' in lineStyleAttrs) lineStyleAttrs.color = theme;
+    // TODO: there should be some way for a style to disable auto theme injection
+    if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
 
     return (
         <>

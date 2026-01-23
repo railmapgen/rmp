@@ -47,7 +47,6 @@ const defaultMTRLightRailAttributes: MTRLightRailAttributes = {
 };
 
 const MTRLightRailAttrsComponent = (props: AttrsProps<MTRLightRailAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [

@@ -31,7 +31,7 @@ export interface GzmtrVirtualIntAttributes extends LinePathAttributes {}
 
 const defaultGzmtrVirtualIntAttributes: GzmtrVirtualIntAttributes = {};
 
-const attrsComponent = () => null;
+const attrsComponent = () => undefined;
 
 const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
     component: GzmtrVirtualInt,

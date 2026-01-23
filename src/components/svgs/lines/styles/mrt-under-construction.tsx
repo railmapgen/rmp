@@ -48,13 +48,12 @@ const defaultMRTUnderConstructionAttributes: MRTUnderConstructionAttributes = {
 };
 
 const attrsComponent = (props: AttrsProps<MRTUnderConstructionAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField
                     type={LineStyleType.MRTUnderConstruction}

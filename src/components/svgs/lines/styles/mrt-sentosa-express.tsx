@@ -39,9 +39,7 @@ export interface MRTSentosaExpressAttributes extends LinePathAttributes {}
 
 const defaultMRTSentosaExpressAttributes: MRTSentosaExpressAttributes = {};
 
-const attrsComponent = (_: AttrsProps<MRTSentosaExpressAttributes>) => {
-    return null;
-};
+const attrsComponent = () => undefined;
 
 const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
     component: MRTSentosaExpress,
