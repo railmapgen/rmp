@@ -1,6 +1,9 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { linePaths } from '../components/svgs/lines/lines';
+import miscNodes from '../components/svgs/nodes/misc-nodes';
+import stations from '../components/svgs/stations/stations';
 import {
     CityCode,
     EdgeAttributes,
@@ -11,12 +14,9 @@ import {
     StnId,
     Theme,
 } from '../constants/constants';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
-import stations from '../components/svgs/stations/stations';
-import { MiscNodeAttributes, MiscNodeType } from '../constants/nodes';
-import miscNodes from '../components/svgs/nodes/misc-nodes';
 import { ExternalLinePathAttributes, LinePathType, LineStyleType } from '../constants/lines';
-import { linePaths } from '../components/svgs/lines/lines';
+import { MiscNodeAttributes, MiscNodeType } from '../constants/nodes';
+import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { autoPopulateTransfer, autoUpdateStationType, changeNodesColorInBatch } from './change-types';
 import { TextLanguage } from './fonts';
 

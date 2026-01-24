@@ -1,7 +1,7 @@
-import React from 'react';
 import {
     Button,
-    Image,
+    Circle,
+    HStack,
     Modal,
     ModalBody,
     ModalCloseButton,
@@ -9,25 +9,18 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
     Text,
-    Textarea,
     VStack,
-    HStack,
-    Circle,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
-import { useTranslation } from 'react-i18next';
 import { MultiDirectedGraph } from 'graphology';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { useRootDispatch } from '../../redux';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { convertAarcToRmp, StationTypeOption } from '../../util/import-from-aarc';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 
 interface ImportFromAarcProps {
     isOpen: boolean;

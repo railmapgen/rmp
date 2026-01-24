@@ -696,10 +696,10 @@
                 "newerVersion": "Warning: This save file is from a newer version ({{saveVersion}}) than the current version ({{currentVersion}}). Loading it may cause errors or undefined behavior."
             },
             "otherPlatform": {
-                "title": "Import from other platforms",
-                "desc": "Upload your project file to RMP.",
+                "title": "Import from other tools",
+                "desc": "Import your stations and lines from other supported tools.",
                 "step1": "Upload",
-                "step2": "Confirm",
+                "step2": "Clear current and Overwrite",
                 "mode": {
                     "desc": "Format your stations to this city's style.",
                     "beijing": "Beijing",
