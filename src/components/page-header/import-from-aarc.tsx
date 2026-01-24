@@ -91,7 +91,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
 
     const modeOptions: Record<string, string> = Object.values(StationTypeOption).reduce<Record<string, string>>(
         (acc, v) => {
-            acc[v] = t(`aarc.import.mode.${v}`);
+            acc[v] = t(`header.open.otherPlatform.mode.${v}`);
             return acc;
         },
         {}
@@ -100,7 +100,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     const modeFields: RmgFieldsField[] = [
         {
             type: 'select',
-            label: t('aarc.import.mode'),
+            label: t('header.open.otherPlatform.mode.desc'),
             value: mode,
             options: modeOptions,
             onChange: value => setMode(value as string),
@@ -111,7 +111,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
         <Modal isOpen={isOpen} onClose={handleClose} size="lg" isCentered>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{t('aarc')}</ModalHeader>
+                <ModalHeader>{t('header.open.otherPlatform.title')}</ModalHeader>
                 <ModalCloseButton onClick={handleClose} />
                 <ModalBody pb={0}>
                     <HStack justify="center" spacing={8} mb={2}>
@@ -120,7 +120,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 1
                             </Circle>
                             <Text fontSize="sm" color={step === 1 ? 'blue.500' : 'gray.500'}>
-                                {t('aarc.import.step1')}
+                                {t('header.open.otherPlatform.step1')}
                             </Text>
                         </HStack>
                         <HStack>
@@ -128,7 +128,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 2
                             </Circle>
                             <Text fontSize="sm" color={step === 2 ? 'blue.500' : 'gray.500'}>
-                                {t('aarc.import.step2')}
+                                {t('header.open.otherPlatform.step2')}
                             </Text>
                         </HStack>
                     </HStack>
@@ -138,7 +138,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                         <ModalBody pt={2}>
                             <VStack align="stretch" spacing={4}>
                                 <Text fontSize="sm" color="gray.500">
-                                    {t('aarc.import.description')}
+                                    {t('header.open.otherPlatform.desc')}
                                 </Text>
                                 <input
                                     type="file"
@@ -179,8 +179,8 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                         <>
                             <ModalBody pt={2}>
                                 <VStack align="stretch" spacing={4}>
-                                    <Text fontSize="sm" color="gray.500">
-                                        Nodes: {nodeCount}, Edges: {edgeCount}
+                                    <Text fontSize="md">
+                                        {t('header.open.otherPlatform.detected', { x: nodeCount, y: edgeCount })}
                                     </Text>
                                 </VStack>
                             </ModalBody>
@@ -200,9 +200,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                         <>
                             <ModalBody pt={2}>
                                 <VStack align="stretch" spacing={4}>
-                                    <Text fontSize="sm" color="gray.500">
-                                        {t('aarc.import.error')}
-                                    </Text>
+                                    <Text fontSize="md">{t('header.open.otherPlatform.error')}</Text>
                                 </VStack>
                             </ModalBody>
                             <ModalFooter>

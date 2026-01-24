@@ -183,7 +183,7 @@ export default function OpenActions() {
                     </MenuItem>
 
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenAarc(true)}>
-                        {t('header.open.aarc')}
+                        {t('header.open.otherPlatform.title')}
                         <Badge ml="1" colorScheme="green">
                             New
                         </Badge>
