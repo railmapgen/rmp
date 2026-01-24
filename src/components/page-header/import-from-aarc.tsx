@@ -22,10 +22,12 @@ import {
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
+import { MultiDirectedGraph } from 'graphology';
 import { useRootDispatch } from '../../redux';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { convertAarcToRmp, StationTypeOption } from '../../util/import-from-aarc';
+import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 
 interface ImportFromAarcProps {
     isOpen: boolean;
@@ -44,6 +46,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     const [step, setStep] = React.useState<1 | 2>(1);
     const [mode, setMode] = React.useState('suzhou');
     const graph = React.useRef(window.graph);
+    const graphNew = React.useRef(new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>());
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
@@ -51,13 +54,30 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
         dispatch(refreshEdgesThunk());
     }, [dispatch]);
 
+    const [nodeCount, setNodeCount] = React.useState(0);
+    const [edgeCount, setEdgeCount] = React.useState(0);
+
     const handleImport = () => {
         if (!text.trim()) return;
         dispatch(clearSelected());
+
+        graphNew.current.clear();
+        if (convertAarcToRmp(text, graphNew.current)) {
+            setNodeCount(graphNew.current.nodes().length);
+            setEdgeCount(graphNew.current.edges().length);
+        } else {
+            setNodeCount(0);
+            setEdgeCount(0);
+        }
+
+        setStep(2);
+    };
+
+    const confirmImport = () => {
         graph.current.clear();
+        graph.current.import(graphNew.current.export());
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
-        convertAarcToRmp(text, graph.current);
         refreshAndSave();
         setStep(1);
         onClose();
@@ -66,7 +86,6 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     const handleClose = () => {
         setStep(1);
         setText('');
-        setMode('new');
         onClose();
     };
 
@@ -118,26 +137,9 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                     <>
                         <ModalBody pt={2}>
                             <VStack align="stretch" spacing={4}>
-                                <Image src="/images/shanghai.png" alt="AARC import" borderRadius="md" />
                                 <Text fontSize="sm" color="gray.500">
                                     {t('aarc.import.description')}
                                 </Text>
-                            </VStack>
-                        </ModalBody>
-                        <ModalFooter>
-                            <Button variant="ghost" mr={3} onClick={handleClose}>
-                                {t('close')}
-                            </Button>
-                            <Button colorScheme="blue" onClick={() => setStep(2)}>
-                                {t('next')}
-                            </Button>
-                        </ModalFooter>
-                    </>
-                )}
-                {step === 2 && (
-                    <>
-                        <ModalBody pt={2}>
-                            <VStack align="stretch" spacing={4}>
                                 <input
                                     type="file"
                                     accept="application/json,.json"
@@ -166,20 +168,53 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                             <Button variant="ghost" mr={3} onClick={handleClose}>
                                 {t('close')}
                             </Button>
-                            <Button variant="outline" mr={3} onClick={() => setStep(1)}>
-                                {t('previous')}
-                            </Button>
-                            <Button
-                                colorScheme="blue"
-                                onClick={handleImport}
-                                isDisabled={!text.trim()}
-                                aria-label="Import"
-                            >
-                                {t('import')}
+                            <Button colorScheme="blue" onClick={handleImport} isDisabled={!text.trim()}>
+                                {t('next')}
                             </Button>
                         </ModalFooter>
                     </>
                 )}
+                {step === 2 &&
+                    (nodeCount > 0 && edgeCount > 0 ? (
+                        <>
+                            <ModalBody pt={2}>
+                                <VStack align="stretch" spacing={4}>
+                                    <Text fontSize="sm" color="gray.500">
+                                        Nodes: {nodeCount}, Edges: {edgeCount}
+                                    </Text>
+                                </VStack>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="ghost" mr={3} onClick={handleClose}>
+                                    {t('close')}
+                                </Button>
+                                <Button variant="outline" mr={3} onClick={() => setStep(1)}>
+                                    {t('previous')}
+                                </Button>
+                                <Button colorScheme="blue" onClick={confirmImport}>
+                                    {t('confirm')}
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    ) : (
+                        <>
+                            <ModalBody pt={2}>
+                                <VStack align="stretch" spacing={4}>
+                                    <Text fontSize="sm" color="gray.500">
+                                        {t('aarc.import.error')}
+                                    </Text>
+                                </VStack>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="ghost" mr={3} onClick={handleClose}>
+                                    {t('close')}
+                                </Button>
+                                <Button variant="outline" mr={3} onClick={() => setStep(1)}>
+                                    {t('previous')}
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    ))}
             </ModalContent>
         </Modal>
     );

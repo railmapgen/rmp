@@ -587,6 +587,20 @@ const handleTextTag = (
     );
 };
 
+const isAarcSave = (data: any): data is AarcSave => {
+    return (
+        data &&
+        typeof data === 'object' &&
+        typeof data.idIncre === 'number' &&
+        Array.isArray(data.points) &&
+        Array.isArray(data.lines) &&
+        Array.isArray(data.textTags) &&
+        Array.isArray(data.cvsSize) &&
+        data.config &&
+        typeof data.config === 'object'
+    );
+};
+
 export const convertAarcToRmp = (
     aarc: string,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -595,7 +609,11 @@ export const convertAarcToRmp = (
     stationIds.clear();
     stationPoints.clear();
     interchangeGroups.clear();
-    const aarcSave: AarcSave = JSON.parse(aarc);
+    const aarcSave = JSON.parse(aarc);
+
+    if (!isAarcSave(aarcSave)) {
+        return false;
+    }
 
     // Create stations and virtual nodes.
     aarcSave.points.forEach(point => {
@@ -649,4 +667,6 @@ export const convertAarcToRmp = (
             autoPopulateTransfer(graph, id as StnId);
         }
     });
+
+    return true;
 };
