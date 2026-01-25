@@ -521,10 +521,13 @@
                     "displayName": "Changsha Metro interchange station"
                 },
                 "hzmetroBasic": {
-                    "displayName": "Hangzhou Metro basic station"
+                    "displayName": "Hangzhou Metro basic station",
+                    "scale": "Names horizontal scale"
                 },
                 "hzmetroInt": {
-                    "displayName": "Hangzhou Metro interchange station"
+                    "displayName": "Hangzhou Metro interchange station",
+                    "mirror": "Icon mirroring",
+                    "scale": "Names horizontal scale"
                 }
             },
             "lines": {

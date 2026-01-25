@@ -523,10 +523,13 @@
                     "displayName": "長沙メトロ乗り換え駅"
                 },
                 "hzmetroBasic": {
-                    "displayName": "杭州メトロ基本駅"
+                    "displayName": "杭州メトロ基本駅",
+                    "scale": "駅名の横方向スケール"
                 },
                 "hzmetroInt": {
-                    "displayName": "杭州メトロ乗り換え駅"
+                    "displayName": "杭州メトロ乗り換え駅",
+                    "mirror": "アイコンミラーリング",
+                    "scale": "駅名の横方向スケール"
                 }
             },
             "lines": {
@@ -602,7 +605,7 @@
                     "displayName": "香港MTR改札外乗り換え風格"
                 },
                 "mtrPaidArea": {
-                    "displayName": "香港MTR改札内乗り換え風格"
+                    "displayName": "香港MRT改札内乗り換え風格"
                 },
                 "mrtUnderConstruction": {
                     "displayName": "シンガポールMRT工事中風格"

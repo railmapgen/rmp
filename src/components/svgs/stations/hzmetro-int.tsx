@@ -21,16 +21,20 @@ import { NAME_DY, MultilineText } from '../common/multiline-text';
  * Accepts an extra attribute `rotate` (one of allowed Rotate values) to rotate the SVG.
  */
 export interface HzmetroIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
-    rotate: Rotate;
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    rotate: Rotate;
+    mirror: boolean;
+    scale: number;
 }
 
 const defaultHzmetroIntStationAttributes: HzmetroIntStationAttributes = {
     ...defaultStationAttributes,
-    rotate: 0,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    rotate: 0,
+    mirror: false,
+    scale: 1,
     transfer: [[]],
 };
 
@@ -41,6 +45,8 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
         nameOffsetX = defaultHzmetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultHzmetroIntStationAttributes.nameOffsetY,
         rotate = defaultHzmetroIntStationAttributes.rotate,
+        mirror = defaultHzmetroIntStationAttributes.mirror,
+        scale = defaultHzmetroIntStationAttributes.scale,
         transfer = defaultHzmetroIntStationAttributes.transfer,
     } = attrs[StationType.HzmetroInt] ?? defaultHzmetroIntStationAttributes;
 
@@ -74,7 +80,7 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
 
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
-            <g transform={`rotate(${rotate})`}>
+            <g transform={`rotate(${rotate}) scale(${mirror ? -1 : 1}, 1)`}>
                 {transfer[0].length <= 2 ? (
                     <g transform="translate(-16.6265 -16.6265)">
                         <circle fill="white" cx="16.6265" cy="16.6265" r="12.098" />
@@ -106,11 +112,11 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
                         <circle fill="white" cx="17.4805" cy="16.9095" r="12.098" />
                         <path
                             fill={t1}
-                            d="M15.551,5.62A11.492,11.492,0,0,1,28.6,15.283c.046.319.07.635.089.949h3.828A15.1,15.1,0,0,0,9.841,3.855l1.8,3.107A11.446,11.446,0,0,1,15.551,5.62Z"
+                            d="M5.862,18.648A11.487,11.487,0,0,1,11.636,6.962L9.841,3.855a15.1,15.1,0,0,0,.013,26.169l1.769-3.064A11.46,11.46,0,0,1,5.862,18.648Z"
                         />
                         <path
                             fill={t2}
-                            d="M5.862,18.648A11.487,11.487,0,0,1,11.636,6.962L9.841,3.855a15.1,15.1,0,0,0,.013,26.169l1.769-3.064A11.46,11.46,0,0,1,5.862,18.648Z"
+                            d="M15.551,5.62A11.492,11.492,0,0,1,28.6,15.283c.046.319.07.635.089.949h3.828A15.1,15.1,0,0,0,9.841,3.855l1.8,3.107A11.446,11.446,0,0,1,15.551,5.62Z"
                         />
                         <path
                             fill={t3}
@@ -122,11 +128,11 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
                         />
                         <polygon
                             fill={t2}
-                            points="22.509 16.267 24.45 20.993 20.822 23.942 22.266 26.198 15.301 24.668 16.296 20.138 16.723 20.806 16.103 23.629 19.94 24.472 19.068 23.11 23.006 20.59 22.509 16.267"
+                            points="14.154 12.92 17.515 9.072 21.774 11.001 23.148 8.702 24.889 15.617 20.392 16.75 20.798 16.069 23.601 15.363 22.642 11.554 21.813 12.942 17.8 10.544 14.154 12.92"
                         />
                         <polygon
                             fill={t3}
-                            points="14.154 12.92 17.515 9.072 21.774 11.001 23.148 8.702 24.889 15.617 20.392 16.75 20.798 16.069 23.601 15.363 22.642 11.554 21.813 12.942 17.8 10.544 14.154 12.92"
+                            points="22.509 16.267 24.45 20.993 20.822 23.942 22.266 26.198 15.301 24.668 16.296 20.138 16.723 20.806 16.103 23.629 19.94 24.472 19.068 23.11 23.006 20.59 22.509 16.267"
                         />
                     </g>
                 )}
@@ -141,7 +147,7 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
                 />
             </g>
 
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g transform={`translate(${textX}, ${textY}) scale(${scale} 1)`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={18}
@@ -154,7 +160,7 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
                 <MultilineText
                     y={2}
                     text={names[1].split('\n')}
-                    dx={nameOffsetX === 'right' ? 1.67 : 0}
+                    dx={nameOffsetX === 'right' ? 1.67 : nameOffsetX === 'left' ? -2.67 : 0}
                     fontSize={12}
                     lineHeight={12}
                     grow="down"
@@ -241,6 +247,30 @@ const HzmetroIntAttrsComponent: React.FC<AttrsProps<HzmetroIntStationAttributes>
                 attrs.rotate = Number(val) as any;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.hzmetroInt.mirror'),
+            isChecked: attrs.mirror ?? defaultHzmetroIntStationAttributes.mirror,
+            onChange: val => {
+                attrs.mirror = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+            oneLine: true,
+        },
+        {
+            type: 'slider',
+            label: t('panel.details.stations.hzmetroInt.scale'),
+            value: attrs.scale ?? defaultHzmetroIntStationAttributes.scale,
+            onChange: val => {
+                attrs.scale = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            step: 0.025,
+            min: 0.5,
+            max: 1,
             minW: 'full',
         },
         // Interchange editor (transfer list)

@@ -520,10 +520,13 @@
                     "displayName": "长沙轨道交通换乘车站"
                 },
                 "hzmetroBasic": {
-                    "displayName": "杭州地铁基本车站"
+                    "displayName": "杭州地铁基本车站",
+                    "scale": "站名横向缩放"
                 },
                 "hzmetroInt": {
-                    "displayName": "杭州地铁换乘车站"
+                    "displayName": "杭州地铁换乘车站",
+                    "mirror": "图标镜像",
+                    "scale": "站名横向缩放"
                 }
             },
             "lines": {
