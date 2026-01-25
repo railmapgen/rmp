@@ -699,7 +699,7 @@
                 "title": "Import from other tools",
                 "desc": "Import your stations and lines from other supported tools.",
                 "step1": "Upload",
-                "step2": "Clear current and Overwrite",
+                "step2": "Import",
                 "mode": {
                     "desc": "Format your stations to this city's style.",
                     "beijing": "Beijing",
@@ -715,7 +715,7 @@
                 "error": "The save file you submitted is not supported.",
                 "next": "Next",
                 "previous": "Previous",
-                "confirm": "Overwrite"
+                "confirm": "Clear current and Overwrite"
             }
         },
         "download": {
