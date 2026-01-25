@@ -696,6 +696,28 @@
                 "body": "This action will overwrite your current project. Any unsaved changes will be lost. Are you sure you want to continue?",
                 "overwrite": "Overwrite",
                 "newerVersion": "Warning: This save file is from a newer version ({{saveVersion}}) than the current version ({{currentVersion}}). Loading it may cause errors or undefined behavior."
+            },
+            "otherPlatform": {
+                "title": "Import from other tools",
+                "desc": "Import your stations and lines from other supported tools.",
+                "step1": "Upload",
+                "step2": "Import",
+                "mode": {
+                    "desc": "Format your stations to this city's style.",
+                    "beijing": "Beijing",
+                    "changsha": "Changsha",
+                    "chengdu": "Chengdu",
+                    "hangzhou": "Hangzhou",
+                    "kunming": "Kunming",
+                    "shanghai": "Shanghai",
+                    "suzhou": "Suzhou",
+                    "wuhan": "Wuhan"
+                },
+                "detected": "Save file from AARC detected. Preparing to import {{x}} stations and {{y}} lines.",
+                "error": "The save file you submitted is not supported.",
+                "next": "Next",
+                "previous": "Previous",
+                "confirm": "Clear current and Overwrite"
             }
         },
         "download": {

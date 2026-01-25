@@ -695,6 +695,28 @@
                 "body": "此操作将覆盖当前项目。所有未保存的更改将丢失。确定要继续吗？",
                 "overwrite": "覆盖",
                 "newerVersion": "警告：此存档文件来自更新的版本（{{saveVersion}}），高于当前版本（{{currentVersion}}）。加载它可能会导致错误或未定义的行为。"
+            },
+            "otherPlatform": {
+                "title": "从其他工具导入",
+                "desc": "从其他支持的工具导入您的车站和线路。",
+                "step1": "上传",
+                "step2": "导入",
+                "mode": {
+                    "desc": "将您的车站格式化为该城市的样式。",
+                    "beijing": "北京",
+                    "changsha": "长沙",
+                    "chengdu": "成都",
+                    "hangzhou": "杭州",
+                    "kunming": "昆明",
+                    "shanghai": "上海",
+                    "suzhou": "苏州",
+                    "wuhan": "武汉"
+                },
+                "detected": "检测到 AARC 存档文件。准备导入 {{x}} 个车站和 {{y}} 条线路。",
+                "error": "您提交的存档文件不受支持。",
+                "next": "下一步",
+                "previous": "上一步",
+                "confirm": "清除当前并覆盖"
             }
         },
         "download": {

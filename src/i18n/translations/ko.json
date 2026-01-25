@@ -694,7 +694,29 @@
                 "title": "확인 덮어쓰기",
                 "body": "이 작업은 현재 프로젝트를 덮어씁니다. 저장하지 않은 모든 변경 사항이 손실됩니다. 계속하시겠습니까?",
                 "overwrite": "덮어쓰기",
-                "newerVersion": "경고: 이 저장 파일은 현재 버전({{currentVersion}})보다 최신 버전({{saveVersion}})에서 가져온 것입니다. 로드하면 오류나 정의되지 않은 동작이 발생할 수 있습니다."
+                "newerVersion": "경고: 이 저장 파일은 현재 버전({{currentVersion}})보다 최신 버전({{saveVersion}})에서 생성되었습니다. 불러오면 오류나 정의되지 않은 동작이 발생할 수 있습니다."
+            },
+            "otherPlatform": {
+                "title": "다른 도구에서 가져오기",
+                "desc": "지원되는 다른 도구에서 역과 노선을 가져옵니다.",
+                "step1": "업로드",
+                "step2": "가져오기",
+                "mode": {
+                    "desc": "이 도시의 스타일에 맞게 역 형식을 지정합니다.",
+                    "beijing": "베이징",
+                    "changsha": "창사",
+                    "chengdu": "청두",
+                    "hangzhou": "항저우",
+                    "kunming": "쿤밍",
+                    "shanghai": "상하이",
+                    "suzhou": "쑤저우",
+                    "wuhan": "우한"
+                },
+                "detected": "AARC 저장 파일이 감지되었습니다. {{x}}개의 역과 {{y}}개의 노선을 가져올 준비를 하고 있습니다.",
+                "error": "제출한 저장 파일은 지원되지 않습니다.",
+                "next": "다음",
+                "previous": "이전",
+                "confirm": "현재 내용 지우고 덮어쓰기"
             }
         },
         "download": {
