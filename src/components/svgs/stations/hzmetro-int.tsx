@@ -16,10 +16,6 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY, MultilineText } from '../common/multiline-text';
 
-/**
- * Minimal interchange station for Hangzhou Metro (hzmetro-int).
- * Accepts an extra attribute `rotate` (one of allowed Rotate values) to rotate the SVG.
- */
 export interface HzmetroIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
