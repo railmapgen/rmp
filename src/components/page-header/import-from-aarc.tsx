@@ -30,11 +30,6 @@ interface ImportFromAarcProps {
     onClose: () => void;
 }
 
-/**
- * Simple modal that accepts pasted/imported text in a textarea.
- * - Close button simply closes the modal.
- * - Import button calls onImport(text) and then closes the modal.
- */
 export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps) {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
