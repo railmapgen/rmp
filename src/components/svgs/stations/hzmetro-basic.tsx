@@ -175,7 +175,7 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
         },
         {
             type: 'slider',
-            label: t('panel.details.stations.hzmetroInt.scale'),
+            label: t('panel.details.stations.hzmetroBasic.scale'),
             value: attrs.scale ?? defaultHzmetroBasicStationAttributes.scale,
             onChange: val => {
                 attrs.scale = val;
