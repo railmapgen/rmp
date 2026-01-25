@@ -878,7 +878,7 @@ describe('Unit tests for param upgrade function', () => {
         // Bump save version to add scale to bjsubway basic and interchange stations.
         const oldParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"hzmetro-basic","hzmetro-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","color":["hangzhou","1","#dd4231","#fff"]}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"hzmetro-int","hzmetro-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[]]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":66}';
-        const newParam = UPGRADE_COLLECTION[66](oldParam);
+        const newParam = UPGRADE_COLLECTION[67](oldParam);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
