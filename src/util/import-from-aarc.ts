@@ -603,7 +603,7 @@ const isAarcSave = (data: any): data is AarcSave => {
     );
 };
 
-export const convertAarcToRmp = (
+export const convertAARCToRmp = (
     aarc: string,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     stationTypeOption: StationTypeOption = StationTypeOption.Suzhou

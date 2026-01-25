@@ -12,8 +12,8 @@ import {
     Text,
     VStack,
 } from '@chakra-ui/react';
-import { logger } from '@railmapgen/rmg-runtime';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,7 @@ import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { autoPopulateTransfer, changeStationsTypeInBatch } from '../../util/change-types';
-import { convertAarcToRmp, StationTypeOption, stationTypeOptions } from '../../util/import-from-aarc';
+import { convertAARCToRmp, StationTypeOption, stationTypeOptions } from '../../util/import-from-aarc';
 
 interface ImportFromAarcProps {
     isOpen: boolean;
@@ -54,7 +54,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
 
         try {
             graphNew.current.clear();
-            convertAarcToRmp(text, graphNew.current);
+            convertAARCToRmp(text, graphNew.current);
             setNodeCount(graphNew.current.nodes().length);
             setEdgeCount(graphNew.current.edges().length);
         } catch (error) {
