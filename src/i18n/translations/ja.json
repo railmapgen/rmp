@@ -523,10 +523,13 @@
                     "displayName": "長沙メトロ乗り換え駅"
                 },
                 "hzmetroBasic": {
-                    "displayName": "杭州メトロ基本駅"
+                    "displayName": "杭州メトロ基本駅",
+                    "scale": "駅名の横方向スケール"
                 },
                 "hzmetroInt": {
-                    "displayName": "杭州メトロ乗り換え駅"
+                    "displayName": "杭州メトロ乗り換え駅",
+                    "mirror": "アイコンミラーリング",
+                    "scale": "駅名の横方向スケール"
                 }
             },
             "lines": {

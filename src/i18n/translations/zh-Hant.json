@@ -520,10 +520,13 @@
                     "displayName": "長沙軌道交通換乘車站"
                 },
                 "hzmetroBasic": {
-                    "displayName": "杭州地鐵基本車站"
+                    "displayName": "杭州地鐵基本車站",
+                    "scale": "站名橫向縮放"
                 },
                 "hzmetroInt": {
-                    "displayName": "杭州地鐵換乘車站"
+                    "displayName": "杭州地鐵換乘車站",
+                    "mirror": "圖標鏡像",
+                    "scale": "站名橫向縮放"
                 }
             },
             "lines": {

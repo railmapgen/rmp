@@ -520,10 +520,13 @@
                     "displayName": "창사 지하철 환승역"
                 },
                 "hzmetroBasic": {
-                    "displayName": "항저우 지하철 기본역"
+                    "displayName": "항저우 지하철 기본역",
+                    "scale": "역명 가로 크기 조절"
                 },
                 "hzmetroInt": {
-                    "displayName": "항저우 지하철 환승역"
+                    "displayName": "항저우 지하철 환승역",
+                    "mirror": "아이콘 미러링",
+                    "scale": "역명 가로 크기 조절"
                 }
             },
             "lines": {
