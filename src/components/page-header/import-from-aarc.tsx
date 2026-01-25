@@ -229,7 +229,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 <Button variant="ghost" mr={3} onClick={handleClose}>
                                     {t('close')}
                                 </Button>
-                                <Button variant="outline" mr={3} onClick={() => setStep(1)}>
+                                <Button variant="outline" onClick={handlePrevious}>
                                     {t('previous')}
                                 </Button>
                             </ModalFooter>
