@@ -712,7 +712,10 @@
                     "wuhan": "Wuhan"
                 },
                 "detected": "Save file from AARC detected. Preparing to import {{x}} stations and {{y}} lines.",
-                "error": "The save file you submitted is not supported."
+                "error": "The save file you submitted is not supported.",
+                "next": "Next",
+                "previous": "Previous",
+                "confirm": "Overwrite"
             }
         },
         "download": {

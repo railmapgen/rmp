@@ -12,6 +12,7 @@ import {
     Text,
     VStack,
 } from '@chakra-ui/react';
+import { logger } from '@railmapgen/rmg-runtime';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
@@ -37,7 +38,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     const { t } = useTranslation();
     const [text, setText] = React.useState('');
     const [step, setStep] = React.useState<1 | 2>(1);
-    const [mode, setMode] = React.useState('suzhou');
+    const [mode, setMode] = React.useState<StationTypeOption>(StationTypeOption.Suzhou);
     const graph = React.useRef(window.graph);
     const graphNew = React.useRef(new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>());
 
@@ -54,11 +55,13 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
         if (!text.trim()) return;
         dispatch(clearSelected());
 
-        graphNew.current.clear();
-        if (convertAarcToRmp(text, graphNew.current)) {
+        try {
+            graphNew.current.clear();
+            convertAarcToRmp(text, graphNew.current);
             setNodeCount(graphNew.current.nodes().length);
             setEdgeCount(graphNew.current.edges().length);
-        } else {
+        } catch (error) {
+            logger.error('ImportFromAarc.handleImport():: Error occurred while importing data from other tools', error);
             setNodeCount(0);
             setEdgeCount(0);
         }
@@ -73,7 +76,13 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
         refreshAndSave();
         setStep(1);
+        setText('');
         onClose();
+    };
+
+    const handlePrevious = () => {
+        setStep(1);
+        setText('');
     };
 
     const handleClose = () => {
@@ -96,7 +105,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
             label: t('header.open.otherPlatform.mode.desc'),
             value: mode,
             options: modeOptions,
-            onChange: value => setMode(value as string),
+            onChange: value => setMode(value as StationTypeOption),
         },
     ];
 
@@ -162,7 +171,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 {t('close')}
                             </Button>
                             <Button colorScheme="blue" onClick={handleImport} isDisabled={!text.trim()}>
-                                {t('next')}
+                                {t('header.open.otherPlatform.next')}
                             </Button>
                         </ModalFooter>
                     </>
@@ -181,11 +190,11 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 <Button variant="ghost" mr={3} onClick={handleClose}>
                                     {t('close')}
                                 </Button>
-                                <Button variant="outline" mr={3} onClick={() => setStep(1)}>
-                                    {t('previous')}
+                                <Button variant="outline" mr={3} onClick={handlePrevious}>
+                                    {t('header.open.otherPlatform.previous')}
                                 </Button>
-                                <Button colorScheme="blue" onClick={confirmImport}>
-                                    {t('confirm')}
+                                <Button colorScheme="red" onClick={confirmImport}>
+                                    {t('header.open.otherPlatform.confirm')}
                                 </Button>
                             </ModalFooter>
                         </>

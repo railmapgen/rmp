@@ -472,10 +472,7 @@ const createInterchange = (
         graph.edges(id).forEach(line => {
             replaceLine(graph, line as LineId, id as StnId, intId as StnId, offset);
         });
-    });
-    ids.forEach(id => {
         graph.dropNode(id);
-        // to-do: should delete id from stationIds
     });
 };
 
@@ -564,27 +561,32 @@ const handleTextTag = (
 ) => {
     const p1: CreateMiscNodeCommonAttrs = { id: tag.id, pos: tag.pos };
     const p2: CreateMiscNodeCommonAttrs = { id: tag.id + 1e9, pos: tag.pos };
-    console.log(tag.textOp ?? defaultTextOp);
-    createTextTag(
-        graph,
-        p1,
-        tag.text ?? '',
-        tag.textOp ?? defaultTextOp,
-        tag.anchorX ?? 0,
-        tag.anchorY ?? 0,
-        config.textTagPlain && config.textTagPlain.fontSize ? config.textTagPlain.fontSize : 1,
-        theme
-    );
-    createTextTag(
-        graph,
-        p2,
-        tag.textS ?? '',
-        tag.textSOp ?? defaultTextOp,
-        tag.anchorX ?? 0,
-        tag.anchorY ?? 0,
-        config.textTagPlain && config.textTagPlain.subFontSize ? config.textTagPlain.subFontSize : 1,
-        theme
-    );
+    const t1 = tag.text?.trim();
+    const t2 = tag.textS?.trim();
+    if (t1) {
+        createTextTag(
+            graph,
+            p1,
+            tag.text ?? '',
+            tag.textOp ?? defaultTextOp,
+            tag.anchorX ?? 0,
+            tag.anchorY ?? 0,
+            config.textTagPlain && config.textTagPlain.fontSize ? config.textTagPlain.fontSize : 1,
+            theme
+        );
+    }
+    if (t2) {
+        createTextTag(
+            graph,
+            p2,
+            tag.textS ?? '',
+            tag.textSOp ?? defaultTextOp,
+            tag.anchorX ?? 0,
+            tag.anchorY ?? 0,
+            config.textTagPlain && config.textTagPlain.subFontSize ? config.textTagPlain.subFontSize : 1,
+            theme
+        );
+    }
 };
 
 const isAarcSave = (data: any): data is AarcSave => {
@@ -612,7 +614,7 @@ export const convertAarcToRmp = (
     const aarcSave = JSON.parse(aarc);
 
     if (!isAarcSave(aarcSave)) {
-        return false;
+        throw new Error('Invalid AARC save data');
     }
 
     // Create stations and virtual nodes.
@@ -632,12 +634,20 @@ export const convertAarcToRmp = (
 
     // Update interchanges.
     const groups = findInterchangeGroups(graph);
+    const nodesToRemove = new Set<StnId>();
 
     let index = 0;
     groups.forEach(ids => {
         createInterchange(graph, index, ids, stationTypeOption);
+        ids.forEach(id => nodesToRemove.add(id));
         index++;
     });
+
+    for (const [key, val] of stationIds) {
+        if (nodesToRemove.has(val as StnId)) {
+            stationIds.delete(key);
+        }
+    }
 
     // Create text tags.
     aarcSave.textTags.forEach(tag => {
@@ -667,6 +677,4 @@ export const convertAarcToRmp = (
             autoPopulateTransfer(graph, id as StnId);
         }
     });
-
-    return true;
 };
