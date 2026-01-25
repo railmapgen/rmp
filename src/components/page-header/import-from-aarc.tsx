@@ -17,11 +17,13 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, StnId } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
 import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
-import { convertAarcToRmp, StationTypeOption } from '../../util/import-from-aarc';
+import { autoPopulateTransfer, changeStationsTypeInBatch } from '../../util/change-types';
+import { convertAarcToRmp, StationTypeOption, stationTypeOptions } from '../../util/import-from-aarc';
 
 interface ImportFromAarcProps {
     isOpen: boolean;
@@ -70,24 +72,42 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     };
 
     const confirmImport = () => {
+        changeStationsTypeInBatch(
+            graphNew.current,
+            StationType.SuzhouRTBasic,
+            stationTypeOptions[mode].basic,
+            graphNew.current.nodes().filter(id => id.startsWith('stn_')) as StnId[]
+        );
+        changeStationsTypeInBatch(
+            graphNew.current,
+            StationType.SuzhouRTInt,
+            stationTypeOptions[mode].int,
+            graphNew.current.nodes().filter(id => id.startsWith('stn_')) as StnId[]
+        );
+        graphNew.current
+            .nodes()
+            .filter(id => id.startsWith('stn_'))
+            .forEach(id => {
+                autoPopulateTransfer(graphNew.current, id as StnId);
+            });
         graph.current.clear();
         graph.current.import(graphNew.current.export());
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
         refreshAndSave();
-        setStep(1);
         setText('');
+        setStep(1);
         onClose();
     };
 
     const handlePrevious = () => {
-        setStep(1);
         setText('');
+        setStep(1);
     };
 
     const handleClose = () => {
-        setStep(1);
         setText('');
+        setStep(1);
         onClose();
     };
 
@@ -163,7 +183,6 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                     }}
                                     aria-label="Upload JSON file"
                                 />
-                                <RmgFields fields={modeFields} />
                             </VStack>
                         </ModalBody>
                         <ModalFooter>
@@ -184,6 +203,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                     <Text fontSize="md">
                                         {t('header.open.otherPlatform.detected', { x: nodeCount, y: edgeCount })}
                                     </Text>
+                                    <RmgFields fields={modeFields} />
                                 </VStack>
                             </ModalBody>
                             <ModalFooter>
