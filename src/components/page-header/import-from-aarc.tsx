@@ -181,9 +181,6 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                             </VStack>
                         </ModalBody>
                         <ModalFooter>
-                            <Button variant="ghost" mr={3} onClick={handleClose}>
-                                {t('close')}
-                            </Button>
                             <Button colorScheme="blue" onClick={handleImport} isDisabled={!text.trim()}>
                                 {t('header.open.otherPlatform.next')}
                             </Button>
@@ -202,9 +199,6 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 </VStack>
                             </ModalBody>
                             <ModalFooter>
-                                <Button variant="ghost" mr={3} onClick={handleClose}>
-                                    {t('close')}
-                                </Button>
                                 <Button variant="outline" mr={3} onClick={handlePrevious}>
                                     {t('header.open.otherPlatform.previous')}
                                 </Button>
@@ -221,9 +215,6 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                 </VStack>
                             </ModalBody>
                             <ModalFooter>
-                                <Button variant="ghost" mr={3} onClick={handleClose}>
-                                    {t('close')}
-                                </Button>
                                 <Button variant="outline" onClick={handlePrevious}>
                                     {t('previous')}
                                 </Button>
