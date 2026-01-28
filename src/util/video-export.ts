@@ -100,7 +100,7 @@ const createFrameSVG = async (
     // Hide nodes that shouldn't be visible yet by removing them from the DOM
     graph.forEachNode(node => {
         if (!visibleNodes.has(node as NodeId)) {
-            const nodeElem = elem.querySelector(`#${node}`);
+            const nodeElem = elem.getElementById(node);
             if (nodeElem) {
                 nodeElem.remove();
             }
@@ -110,7 +110,7 @@ const createFrameSVG = async (
     // Hide edges that shouldn't be visible yet and apply progress to visible ones
     graph.forEachEdge(edge => {
         const edgeId = edge as LineId;
-        const edgeElem = elem.querySelector(`#${edgeId}`);
+        const edgeElem = elem.getElementById(edgeId);
 
         if (!edgeElem) return;
 
