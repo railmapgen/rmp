@@ -87,27 +87,9 @@ const createFrameSVG = async (
     languages: TextLanguage[],
     existsNodeTypes: Set<any>
 ): Promise<{ elem: SVGSVGElement; width: number; height: number }> => {
-    // Clone the graph to modify visibility
-    const clonedGraph = graph.copy();
-
-    // Hide nodes that shouldn't be visible yet
-    clonedGraph.forEachNode(node => {
-        if (!visibleNodes.has(node as NodeId)) {
-            clonedGraph.setNodeAttribute(node, 'visible', false);
-        }
-    });
-
-    // Hide edges and apply progress
-    clonedGraph.forEachEdge(edge => {
-        const edgeId = edge as LineId;
-        if (!visibleEdges.has(edgeId)) {
-            clonedGraph.setEdgeAttribute(edge, 'visible', false);
-        }
-    });
-
-    // Create the SVG element
+    // Create the base SVG element from the current graph
     const { elem, width, height } = await makeRenderReadySVGElement(
-        clonedGraph,
+        graph,
         false, // don't generate RMP info
         isSystemFontsOnly,
         languages,
@@ -115,16 +97,36 @@ const createFrameSVG = async (
         2 // SVG version 2
     );
 
-    // Apply edge progress by clipping paths
-    edgeProgress.forEach((progress, edgeId) => {
-        if (progress < 1) {
-            const edgeElem = elem.querySelector(`#${edgeId}`);
-            if (edgeElem) {
+    // Hide nodes that shouldn't be visible yet by removing them from the DOM
+    graph.forEachNode(node => {
+        if (!visibleNodes.has(node as NodeId)) {
+            const nodeElem = elem.querySelector(`#${node}`);
+            if (nodeElem) {
+                nodeElem.remove();
+            }
+        }
+    });
+
+    // Hide edges that shouldn't be visible yet and apply progress to visible ones
+    graph.forEachEdge(edge => {
+        const edgeId = edge as LineId;
+        const edgeElem = elem.querySelector(`#${edgeId}`);
+
+        if (!edgeElem) return;
+
+        if (!visibleEdges.has(edgeId)) {
+            // Edge not visible yet, remove it
+            edgeElem.remove();
+        } else {
+            // Edge is visible, apply progress animation
+            const progress = edgeProgress.get(edgeId) || 1;
+            if (progress < 1) {
                 const pathElem = edgeElem.querySelector('path');
                 if (pathElem) {
                     const totalLength = pathElem.getTotalLength();
                     const dashLength = totalLength * progress;
                     pathElem.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
+                    pathElem.setAttribute('stroke-dashoffset', '0');
                 }
             }
         }
