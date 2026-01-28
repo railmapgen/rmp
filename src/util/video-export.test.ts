@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MultiDirectedGraph } from 'graphology';
-import { generateAnimationSequence } from './video-export';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../constants/constants';
 import { StationType } from '../constants/stations';
+import { generateAnimationSequence } from './video-export';
 
 describe('generateAnimationSequence', () => {
     it('should order nodes from left to right, top to bottom', () => {
@@ -85,7 +85,7 @@ describe('generateAnimationSequence', () => {
 
         // Nodes should be ordered left to right
         expect(sequence.nodes).toEqual(['node1', 'node2', 'node3']);
-        
+
         // edge1 connects node1-node2 (max index 1)
         // edge2 connects node2-node3 (max index 2)
         // So edge1 should come before edge2
