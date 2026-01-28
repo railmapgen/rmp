@@ -771,7 +771,9 @@
                 "generating": "正在生成視頻...",
                 "progress": "進度：{{progress}}%",
                 "description": "此功能會導出一個動畫視頻，展示節點和線段逐步繪製的過程。",
-                "format": "WebM格式"
+                "format": "WebM格式",
+                "error": "視頻導出失敗，請重試。",
+                "noNodes": "無法導出視頻：圖中沒有節點。"
             }
         },
         "donation": {

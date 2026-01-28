@@ -18,10 +18,15 @@ export interface AnimationSequence {
     edges: LineId[];
 }
 
+// Animation timing constants
+const NODE_ANIMATION_RATIO = 0.3; // 30% of animation time for nodes appearing
+const EDGE_ANIMATION_RATIO = 0.7; // 70% of animation time for edges drawing
+const HORIZONTAL_GROUPING_THRESHOLD = 50; // Threshold for grouping nodes horizontally
+
 /**
  * Determines the order in which nodes and edges should be animated.
- * Nodes are ordered by their topological distance from the leftmost node.
- * Edges are ordered after their connected nodes.
+ * Nodes are ordered by their spatial position (left to right, then top to bottom).
+ * Edges are ordered after their connected nodes based on when both endpoints appear.
  */
 export const generateAnimationSequence = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
@@ -35,9 +40,9 @@ export const generateAnimationSequence = (
         nodePositions.push({ id: node as NodeId, x: attr.x, y: attr.y });
     });
 
-    // Sort nodes by position (left to right, then top to bottom)
+    // Sort nodes by spatial position (left to right, then top to bottom)
     nodePositions.sort((a, b) => {
-        if (Math.abs(a.x - b.x) > 50) {
+        if (Math.abs(a.x - b.x) > HORIZONTAL_GROUPING_THRESHOLD) {
             return a.x - b.x;
         }
         return a.y - b.y;
@@ -184,11 +189,17 @@ export const exportVideo = async (
 
     // Generate animation sequence
     const sequence = generateAnimationSequence(graph);
+
+    // Validate that we have something to animate
+    if (sequence.nodes.length === 0) {
+        throw new Error('No nodes to animate');
+    }
+
     const totalFrames = Math.floor(fps * duration);
 
     // Calculate timing
-    const nodeFrames = Math.floor(totalFrames * 0.3); // 30% of time for nodes
-    const edgeFrames = totalFrames - nodeFrames; // 70% of time for edges
+    const nodeFrames = Math.floor(totalFrames * NODE_ANIMATION_RATIO);
+    const edgeFrames = totalFrames - nodeFrames;
     const framesPerNode = sequence.nodes.length > 0 ? nodeFrames / sequence.nodes.length : 0;
     const framesPerEdge = sequence.edges.length > 0 ? edgeFrames / sequence.edges.length : 0;
 
@@ -212,14 +223,17 @@ export const exportVideo = async (
         }
 
         // Determine which edges should be visible and their progress
-        if (frame >= nodeFrames) {
+        if (frame >= nodeFrames && sequence.edges.length > 0) {
             const edgeFrame = frame - nodeFrames;
             const currentEdgeIndex = Math.floor(edgeFrame / framesPerEdge);
 
             // Add completed edges
             for (let i = 0; i < currentEdgeIndex && i < sequence.edges.length; i++) {
-                visibleEdges.add(sequence.edges[i]);
-                edgeProgress.set(sequence.edges[i], 1);
+                const edge = sequence.edges[i];
+                if (!visibleEdges.has(edge)) {
+                    visibleEdges.add(edge);
+                }
+                edgeProgress.set(edge, 1);
             }
 
             // Add current edge with progress

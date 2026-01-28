@@ -139,6 +139,28 @@ export default function DownloadActions() {
     const [videoProgress, setVideoProgress] = React.useState(0);
     const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
 
+    // Validation for video export inputs
+    const validateAndSetFps = (value: string) => {
+        const num = Number(value);
+        if (!isNaN(num) && num >= 1 && num <= 60) {
+            setVideoFps(num);
+        }
+    };
+
+    const validateAndSetDuration = (value: string) => {
+        const num = Number(value);
+        if (!isNaN(num) && num >= 1 && num <= 300) {
+            setVideoDuration(num);
+        }
+    };
+
+    const validateAndSetQuality = (value: string) => {
+        const num = Number(value);
+        if (!isNaN(num) && num >= 1 && num <= 100) {
+            setVideoQuality(num);
+        }
+    };
+
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
         const getMaxArea = async () => {
@@ -475,21 +497,21 @@ export default function DownloadActions() {
                                     type: 'input',
                                     label: t('header.download.videoExport.fps'),
                                     value: videoFps.toString(),
-                                    onChange: value => setVideoFps(Number(value) || 30),
+                                    onChange: validateAndSetFps,
                                     minW: 'full',
                                 },
                                 {
                                     type: 'input',
                                     label: t('header.download.videoExport.duration'),
                                     value: videoDuration.toString(),
-                                    onChange: value => setVideoDuration(Number(value) || 10),
+                                    onChange: validateAndSetDuration,
                                     minW: 'full',
                                 },
                                 {
                                     type: 'input',
                                     label: t('header.download.videoExport.quality'),
                                     value: videoQuality.toString(),
-                                    onChange: value => setVideoQuality(Number(value) || 95),
+                                    onChange: validateAndSetQuality,
                                     minW: 'full',
                                 },
                                 {

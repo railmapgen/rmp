@@ -772,7 +772,9 @@
                 "generating": "Generating video...",
                 "progress": "Progress: {{progress}}%",
                 "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
-                "format": "WebM format"
+                "format": "WebM format",
+                "error": "Video export failed. Please try again.",
+                "noNodes": "Cannot export video: No nodes in the graph."
             }
         },
         "donation": {

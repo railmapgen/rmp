@@ -771,7 +771,9 @@
                 "generating": "正在生成视频...",
                 "progress": "进度：{{progress}}%",
                 "description": "此功能会导出一个动画视频，展示节点和线段逐步绘制的过程。",
-                "format": "WebM格式"
+                "format": "WebM格式",
+                "error": "视频导出失败，请重试。",
+                "noNodes": "无法导出视频：图中没有节点。"
             }
         },
         "donation": {
