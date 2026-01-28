@@ -1,0 +1,263 @@
+import { MultiDirectedGraph } from 'graphology';
+import WebMWriter from 'webm-writer';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { TextLanguage } from './fonts';
+import { makeRenderReadySVGElement } from './download';
+
+export interface VideoExportOptions {
+    fps: number;
+    duration: number;
+    isTransparent: boolean;
+    scale: number;
+    isSystemFontsOnly: boolean;
+    quality: number;
+}
+
+export interface AnimationSequence {
+    nodes: NodeId[];
+    edges: LineId[];
+}
+
+/**
+ * Determines the order in which nodes and edges should be animated.
+ * Nodes are ordered by their topological distance from the leftmost node.
+ * Edges are ordered after their connected nodes.
+ */
+export const generateAnimationSequence = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+): AnimationSequence => {
+    const nodes: NodeId[] = [];
+    const edges: LineId[] = [];
+
+    // Collect all nodes with their positions
+    const nodePositions: Array<{ id: NodeId; x: number; y: number }> = [];
+    graph.forEachNode((node, attr) => {
+        nodePositions.push({ id: node as NodeId, x: attr.x, y: attr.y });
+    });
+
+    // Sort nodes by position (left to right, then top to bottom)
+    nodePositions.sort((a, b) => {
+        if (Math.abs(a.x - b.x) > 50) {
+            return a.x - b.x;
+        }
+        return a.y - b.y;
+    });
+
+    nodes.push(...nodePositions.map(n => n.id));
+
+    // Collect edges and sort them based on when their connected nodes appear
+    const edgeList: Array<{ id: LineId; sourceIndex: number; targetIndex: number }> = [];
+    graph.forEachEdge((edge, attr, source, target) => {
+        const sourceIndex = nodes.indexOf(source as NodeId);
+        const targetIndex = nodes.indexOf(target as NodeId);
+        edgeList.push({
+            id: edge as LineId,
+            sourceIndex,
+            targetIndex,
+        });
+    });
+
+    // Sort edges: they should appear after both their source and target nodes
+    edgeList.sort((a, b) => {
+        const aMax = Math.max(a.sourceIndex, a.targetIndex);
+        const bMax = Math.max(b.sourceIndex, b.targetIndex);
+        return aMax - bMax;
+    });
+
+    edges.push(...edgeList.map(e => e.id));
+
+    return { nodes, edges };
+};
+
+/**
+ * Creates an SVG element with only the specified nodes and edges visible.
+ * Used to generate individual frames for the animation.
+ */
+const createFrameSVG = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    visibleNodes: Set<NodeId>,
+    visibleEdges: Set<LineId>,
+    edgeProgress: Map<LineId, number>, // 0 to 1, representing how much of the edge is drawn
+    isSystemFontsOnly: boolean,
+    languages: TextLanguage[],
+    existsNodeTypes: Set<any>
+): Promise<{ elem: SVGSVGElement; width: number; height: number }> => {
+    // Clone the graph to modify visibility
+    const clonedGraph = graph.copy();
+
+    // Hide nodes that shouldn't be visible yet
+    clonedGraph.forEachNode(node => {
+        if (!visibleNodes.has(node as NodeId)) {
+            clonedGraph.setNodeAttribute(node, 'visible', false);
+        }
+    });
+
+    // Hide edges and apply progress
+    clonedGraph.forEachEdge(edge => {
+        const edgeId = edge as LineId;
+        if (!visibleEdges.has(edgeId)) {
+            clonedGraph.setEdgeAttribute(edge, 'visible', false);
+        }
+    });
+
+    // Create the SVG element
+    const { elem, width, height } = await makeRenderReadySVGElement(
+        clonedGraph,
+        false, // don't generate RMP info
+        isSystemFontsOnly,
+        languages,
+        existsNodeTypes,
+        2 // SVG version 2
+    );
+
+    // Apply edge progress by clipping paths
+    edgeProgress.forEach((progress, edgeId) => {
+        if (progress < 1) {
+            const edgeElem = elem.querySelector(`#${edgeId}`);
+            if (edgeElem) {
+                const pathElem = edgeElem.querySelector('path');
+                if (pathElem) {
+                    const totalLength = pathElem.getTotalLength();
+                    const dashLength = totalLength * progress;
+                    pathElem.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
+                }
+            }
+        }
+    });
+
+    return { elem, width, height };
+};
+
+/**
+ * Renders an SVG element to a canvas at the specified scale.
+ */
+const renderSVGToCanvas = async (
+    svgElem: SVGSVGElement,
+    width: number,
+    height: number,
+    scale: number,
+    isTransparent: boolean,
+    bgColor: string
+): Promise<HTMLCanvasElement> => {
+    const canvas = document.createElement('canvas');
+    const scaledWidth = (width * scale) / 100;
+    const scaledHeight = (height * scale) / 100;
+    canvas.width = scaledWidth;
+    canvas.height = scaledHeight;
+
+    const ctx = canvas.getContext('2d')!;
+
+    // Set background if not transparent
+    if (!isTransparent) {
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, scaledWidth, scaledHeight);
+    }
+
+    // Convert SVG to data URL
+    const svgString = svgElem.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
+    const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+            resolve(canvas);
+        };
+        img.onerror = reject;
+        img.src = src;
+    });
+};
+
+/**
+ * Exports the graph as an animated video file (WebM format).
+ * Animates nodes appearing in sequence, followed by edges drawing progressively.
+ */
+export const exportVideo = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    languages: TextLanguage[],
+    existsNodeTypes: Set<any>,
+    options: VideoExportOptions,
+    bgColor: string,
+    onProgress?: (progress: number) => void
+): Promise<Blob> => {
+    const { fps, duration, isTransparent, scale, isSystemFontsOnly, quality } = options;
+
+    // Generate animation sequence
+    const sequence = generateAnimationSequence(graph);
+    const totalFrames = Math.floor(fps * duration);
+
+    // Calculate timing
+    const nodeFrames = Math.floor(totalFrames * 0.3); // 30% of time for nodes
+    const edgeFrames = totalFrames - nodeFrames; // 70% of time for edges
+    const framesPerNode = sequence.nodes.length > 0 ? nodeFrames / sequence.nodes.length : 0;
+    const framesPerEdge = sequence.edges.length > 0 ? edgeFrames / sequence.edges.length : 0;
+
+    // Initialize video writer
+    const videoWriter = new WebMWriter({
+        quality: quality / 100,
+        frameRate: fps,
+        transparent: isTransparent,
+    });
+
+    // Generate frames
+    const visibleNodes = new Set<NodeId>();
+    const visibleEdges = new Set<LineId>();
+    const edgeProgress = new Map<LineId, number>();
+
+    for (let frame = 0; frame < totalFrames; frame++) {
+        // Determine which nodes should be visible
+        const currentNodeIndex = Math.floor(frame / framesPerNode);
+        for (let i = 0; i <= currentNodeIndex && i < sequence.nodes.length; i++) {
+            visibleNodes.add(sequence.nodes[i]);
+        }
+
+        // Determine which edges should be visible and their progress
+        if (frame >= nodeFrames) {
+            const edgeFrame = frame - nodeFrames;
+            const currentEdgeIndex = Math.floor(edgeFrame / framesPerEdge);
+
+            // Add completed edges
+            for (let i = 0; i < currentEdgeIndex && i < sequence.edges.length; i++) {
+                visibleEdges.add(sequence.edges[i]);
+                edgeProgress.set(sequence.edges[i], 1);
+            }
+
+            // Add current edge with progress
+            if (currentEdgeIndex < sequence.edges.length) {
+                const edge = sequence.edges[currentEdgeIndex];
+                visibleEdges.add(edge);
+                const progress = (edgeFrame % framesPerEdge) / framesPerEdge;
+                edgeProgress.set(edge, progress);
+            }
+        }
+
+        // Create frame SVG
+        const { elem, width, height } = await createFrameSVG(
+            graph,
+            visibleNodes,
+            visibleEdges,
+            edgeProgress,
+            isSystemFontsOnly,
+            languages,
+            existsNodeTypes
+        );
+
+        // Render to canvas
+        const canvas = await renderSVGToCanvas(elem, width, height, scale, isTransparent, bgColor);
+
+        // Add frame to video
+        videoWriter.addFrame(canvas);
+
+        // Clean up
+        elem.remove();
+
+        // Report progress
+        if (onProgress) {
+            onProgress((frame + 1) / totalFrames);
+        }
+    }
+
+    // Complete video and return blob
+    const blob = await videoWriter.complete();
+    return blob;
+};

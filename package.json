@@ -31,7 +31,8 @@
         "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
         "rollup": "^4.56.0",
-        "vite-plugin-svgr": "^4.5.0"
+        "vite-plugin-svgr": "^4.5.0",
+        "webm-writer": "^1.0.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",

@@ -725,6 +725,7 @@
         "download": {
             "config": "导出项目",
             "image": "导出图片",
+            "video": "导出视频",
             "2rmg": {
                 "title": "导出RMG项目",
                 "type": {
@@ -761,7 +762,17 @@
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些节点需要显示此信息。",
-            "confirm": "下载"
+            "confirm": "下载",
+            "videoExport": {
+                "title": "导出视频",
+                "fps": "帧率（FPS）",
+                "duration": "时长（秒）",
+                "quality": "视频质量",
+                "generating": "正在生成视频...",
+                "progress": "进度：{{progress}}%",
+                "description": "此功能会导出一个动画视频，展示节点和线段逐步绘制的过程。",
+                "format": "WebM格式"
+            }
         },
         "donation": {
             "title": "捐赠",

@@ -728,6 +728,7 @@
         "download": {
             "config": "作品をエクスポート",
             "image": "画像をエクスポート",
+            "video": "ビデオをエクスポート",
             "2rmg": {
                 "title": "RMG作品へエクスポート",
                 "type": {
@@ -764,7 +765,17 @@
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
             "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
-            "confirm": "ダウンロード"
+            "confirm": "ダウンロード",
+            "videoExport": {
+                "title": "ビデオをエクスポート",
+                "fps": "フレームレート（FPS）",
+                "duration": "長さ（秒）",
+                "quality": "ビデオ品質",
+                "generating": "ビデオを生成中...",
+                "progress": "進捗：{{progress}}%",
+                "description": "この機能は、ノードとラインが段階的に描画されるアニメーションビデオをエクスポートします。",
+                "format": "WebM形式"
+            }
         },
         "donation": {
             "title": "寄付",
