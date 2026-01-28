@@ -290,13 +290,8 @@ export default function DownloadActions() {
                 quality: videoQuality,
             };
 
-            const blob = await exportVideo(
-                graph.current,
-                languages,
-                existsNodeTypes,
-                options,
-                bgColor,
-                progress => setVideoProgress(Math.floor(progress * 100))
+            const blob = await exportVideo(graph.current, languages, existsNodeTypes, options, bgColor, progress =>
+                setVideoProgress(Math.floor(progress * 100))
             );
 
             downloadBlobAs(`RMP_${new Date().valueOf()}.webm`, blob);
@@ -513,10 +508,7 @@ export default function DownloadActions() {
                             ]}
                         />
                         <br />
-                        <Checkbox
-                            isChecked={isSystemFontsOnly}
-                            onChange={e => setIsSystemFontsOnly(e.target.checked)}
-                        >
+                        <Checkbox isChecked={isSystemFontsOnly} onChange={e => setIsSystemFontsOnly(e.target.checked)}>
                             <Text>{t('header.download.isSystemFontsOnly')}</Text>
                         </Checkbox>
                         <Checkbox
