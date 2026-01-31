@@ -4,8 +4,6 @@
     "cancel": "Cancel",
     "apply": "Apply",
     "remove": "Remove",
-                "copyAttrs": "Copy Attributes",
-                "pasteAttrs": "Paste Attributes",
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
@@ -676,7 +674,6 @@
                 "duplicate": "Duplicate",
                 "copy": "Copy",
                 "remove": "Remove",
-                "copyAttrs": "Copy Attributes",
                 "pasteAttrs": "Paste Attributes"
             }
         }

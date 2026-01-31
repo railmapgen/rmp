@@ -6,8 +6,6 @@
     "cancel": "キャンセル",
     "apply": "適用",
     "remove": "削除",
-                "copyAttrs": "属性をコピー",
-                "pasteAttrs": "属性を貼り付け",
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
@@ -678,7 +676,6 @@
                 "duplicate": "重複",
                 "copy": "複製",
                 "remove": "削除",
-                "copyAttrs": "属性をコピー",
                 "pasteAttrs": "属性を貼り付け"
             }
         }

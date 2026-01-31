@@ -4,8 +4,6 @@
     "cancel": "취소",
     "apply": "사용",
     "remove": "삭제",
-                "copyAttrs": "속성 복사",
-                "pasteAttrs": "속성 붙여넣기",
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
@@ -675,7 +673,6 @@
                 "duplicate": "복사",
                 "copy": "복사",
                 "remove": "삭제",
-                "copyAttrs": "속성 복사",
                 "pasteAttrs": "속성 붙여넣기"
             }
         }
