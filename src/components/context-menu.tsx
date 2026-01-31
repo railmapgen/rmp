@@ -234,6 +234,53 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 >
                     {t('contextMenu.delete')}
                 </MenuItem>
+                <Divider />
+                <MenuItem
+                    onClick={() => {
+                        handleZIndex(10);
+                        onClose();
+                    }}
+                    isDisabled={!hasSelection}
+                >
+                    {t('contextMenu.placeTop')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleZIndex(-10);
+                        onClose();
+                    }}
+                    isDisabled={!hasSelection}
+                >
+                    {t('contextMenu.placeBottom')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleZIndex(0);
+                        onClose();
+                    }}
+                    isDisabled={!hasSelection}
+                >
+                    {t('contextMenu.placeDefault')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handlePlaceUp();
+                        onClose();
+                    }}
+                    isDisabled={!hasSelection}
+                >
+                    {t('contextMenu.placeUp')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handlePlaceDown();
+                        onClose();
+                    }}
+                    isDisabled={!hasSelection}
+                >
+                    {t('contextMenu.placeDown')}
+                </MenuItem>
+                <Divider />
                 <MenuItem
                     onClick={() => {
                         handleRotate(45);
@@ -287,52 +334,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                     isDisabled={!hasNodeSelection}
                 >
                     {t('contextMenu.flipDiagonal135')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(10);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeTop')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(-10);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeBottom')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(0);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeDefault')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePlaceUp();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeUp')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePlaceDown();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeDown')}
                 </MenuItem>
             </Box>
         </Portal>
