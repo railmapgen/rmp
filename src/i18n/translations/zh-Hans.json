@@ -4,6 +4,8 @@
     "cancel": "取消",
     "apply": "应用",
     "remove": "移除",
+                "copyAttrs": "复制属性",
+                "pasteAttrs": "粘贴属性",
     "close": "关闭",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
@@ -672,7 +674,9 @@
             "footer": {
                 "duplicate": "重复",
                 "copy": "复制",
-                "remove": "移除"
+                "remove": "移除",
+                "copyAttrs": "复制属性",
+                "pasteAttrs": "粘贴属性"
             }
         }
     },
@@ -939,7 +943,9 @@
         "placeBottom": "置底",
         "placeDefault": "还原位置",
         "placeUp": "上移一层",
-        "placeDown": "下移一层"
+        "placeDown": "下移一层",
+        "copyAttrs": "复制属性",
+        "pasteAttrs": "粘贴属性"
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"

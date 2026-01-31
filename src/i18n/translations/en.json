@@ -4,6 +4,8 @@
     "cancel": "Cancel",
     "apply": "Apply",
     "remove": "Remove",
+                "copyAttrs": "Copy Attributes",
+                "pasteAttrs": "Paste Attributes",
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
@@ -673,7 +675,9 @@
             "footer": {
                 "duplicate": "Duplicate",
                 "copy": "Copy",
-                "remove": "Remove"
+                "remove": "Remove",
+                "copyAttrs": "Copy Attributes",
+                "pasteAttrs": "Paste Attributes"
             }
         }
     },
@@ -940,7 +944,9 @@
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",
         "placeUp": "Place one level up",
-        "placeDown": "Place one level down"
+        "placeDown": "Place one level down",
+        "copyAttrs": "Copy Attributes",
+        "pasteAttrs": "Paste Attributes"
     },
 
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."

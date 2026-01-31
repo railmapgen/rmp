@@ -6,6 +6,8 @@
     "cancel": "キャンセル",
     "apply": "適用",
     "remove": "削除",
+                "copyAttrs": "属性をコピー",
+                "pasteAttrs": "属性を貼り付け",
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
@@ -675,7 +677,9 @@
             "footer": {
                 "duplicate": "重複",
                 "copy": "複製",
-                "remove": "削除"
+                "remove": "削除",
+                "copyAttrs": "属性をコピー",
+                "pasteAttrs": "属性を貼り付け"
             }
         }
     },
@@ -941,7 +945,9 @@
         "placeBottom": "最背面へ",
         "placeDefault": "デフォルト位置へ",
         "placeUp": "一つ前へ",
-        "placeDown": "一つ後ろへ"
+        "placeDown": "一つ後ろへ",
+        "copyAttrs": "属性をコピー",
+        "pasteAttrs": "属性を貼り付け"
     },
 
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"

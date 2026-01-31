@@ -4,6 +4,8 @@
     "cancel": "취소",
     "apply": "사용",
     "remove": "삭제",
+                "copyAttrs": "속성 복사",
+                "pasteAttrs": "속성 붙여넣기",
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
@@ -672,7 +674,9 @@
             "footer": {
                 "duplicate": "복사",
                 "copy": "복사",
-                "remove": "삭제"
+                "remove": "삭제",
+                "copyAttrs": "속성 복사",
+                "pasteAttrs": "속성 붙여넣기"
             }
         }
     },
@@ -939,7 +943,9 @@
         "placeBottom": "맨 뒤로",
         "placeDefault": "기본 위치로",
         "placeUp": "한 단계 앞으로",
-        "placeDown": "한 단계 뒤로"
+        "placeDown": "한 단계 뒤로",
+        "copyAttrs": "속성 복사",
+        "pasteAttrs": "속성 붙여넣기"
     },
 
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."

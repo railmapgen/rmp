@@ -1,7 +1,21 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { LinePathType } from '../constants/lines';
+import {
+    EdgeAttributes,
+    EdgeType,
+    GraphAttributes,
+    Id,
+    LineId,
+    NodeAttributes,
+    NodeId,
+    NodeType,
+} from '../constants/constants';
+import {
+    ExternalLinePathAttributes,
+    ExternalLineStyleAttributes,
+    LinePathType,
+    LineStyleType,
+} from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 
@@ -9,14 +23,51 @@ type NodesWithAttrs = { [key in NodeId]: NodeAttributes };
 type EdgesWithAttrs = {
     [key in LineId]: { attr: EdgeAttributes; source: NodeId; target: NodeId };
 };
+
+/**
+ * Clipboard data type discriminator.
+ * - 'elements': Copy of entire nodes/edges (default, existing behavior)
+ * - 'node-attrs': Copy of specific attributes for a node
+ * - 'edge-attrs': Copy of specific attributes for an edge (line)
+ */
+export type ClipboardType = 'elements' | 'node-attrs' | 'edge-attrs';
+
 interface ClipboardData {
     app: 'rmp';
     version: number;
+    type?: ClipboardType; // Optional for backward compatibility
     nodesWithAttrs: NodesWithAttrs;
     edgesWithAttrs: EdgesWithAttrs;
     avgX: number;
     avgY: number;
 }
+
+/**
+ * Clipboard data for specific node attributes copy/paste.
+ */
+export interface NodeSpecificAttrsClipboardData {
+    app: 'rmp';
+    version: number;
+    type: 'node-attrs';
+    nodeType: NodeType;
+    specificAttrs: Record<string, unknown>;
+}
+
+/**
+ * Clipboard data for specific edge attributes copy/paste.
+ * For edges, only roundCornerFactor from path (if present) and all style attributes are copied.
+ */
+export interface EdgeSpecificAttrsClipboardData {
+    app: 'rmp';
+    version: number;
+    type: 'edge-attrs';
+    pathType: EdgeType;
+    styleType: LineStyleType;
+    roundCornerFactor?: number;
+    styleAttrs: Record<string, unknown>;
+}
+
+export type SpecificAttrsClipboardData = NodeSpecificAttrsClipboardData | EdgeSpecificAttrsClipboardData;
 
 export const exportSelectedNodesAndEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -137,4 +188,205 @@ export const importSelectedNodesAndEdges = (
         nodes: new Set(Object.keys(filteredNodes)) as Set<NodeId>,
         edges: new Set(Object.keys(filteredEdges)) as Set<LineId>,
     };
+};
+
+/**
+ * Export specific attributes of a single node.
+ * @param graph The graph.
+ * @param nodeId The ID of the node.
+ * @returns JSON string of the specific attributes.
+ */
+export const exportNodeSpecificAttrs = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodeId: NodeId
+): string => {
+    const nodeType = graph.getNodeAttribute(nodeId, 'type');
+    const specificAttrs = (graph.getNodeAttribute(nodeId, nodeType) ?? {}) as Record<string, unknown>;
+
+    const data: NodeSpecificAttrsClipboardData = {
+        app: 'rmp',
+        version: 1,
+        type: 'node-attrs',
+        nodeType,
+        specificAttrs,
+    };
+    return JSON.stringify(data);
+};
+
+/**
+ * Export specific attributes of a single edge (line).
+ * For edges, only roundCornerFactor from path (if present) and all style attributes are copied.
+ * @param graph The graph.
+ * @param edgeId The ID of the edge.
+ * @returns JSON string of the specific attributes.
+ */
+export const exportEdgeSpecificAttrs = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    edgeId: LineId
+): string => {
+    const pathType = graph.getEdgeAttribute(edgeId, 'type');
+    const styleType = graph.getEdgeAttribute(edgeId, 'style');
+    const pathAttrs = (graph.getEdgeAttribute(edgeId, pathType) ?? {}) as Record<string, unknown>;
+    const styleAttrs = (graph.getEdgeAttribute(edgeId, styleType) ?? {}) as Record<string, unknown>;
+
+    const data: EdgeSpecificAttrsClipboardData = {
+        app: 'rmp',
+        version: 1,
+        type: 'edge-attrs',
+        pathType,
+        styleType,
+        styleAttrs,
+    };
+
+    // Only include roundCornerFactor if present in path attributes
+    if ('roundCornerFactor' in pathAttrs) {
+        data.roundCornerFactor = pathAttrs.roundCornerFactor as number;
+    }
+
+    return JSON.stringify(data);
+};
+
+/**
+ * Parse clipboard text and determine its type.
+ * @param s The clipboard text.
+ * @returns The parsed clipboard data, or null if invalid.
+ */
+export const parseClipboardData = (
+    s: string
+): { type: ClipboardType; data: ClipboardData | SpecificAttrsClipboardData } | null => {
+    try {
+        const parsed = JSON.parse(s);
+        if (parsed.app !== 'rmp' || parsed.version !== 1) {
+            return null;
+        }
+
+        if (parsed.type === 'node-attrs') {
+            return { type: 'node-attrs', data: parsed as NodeSpecificAttrsClipboardData };
+        } else if (parsed.type === 'edge-attrs') {
+            return { type: 'edge-attrs', data: parsed as EdgeSpecificAttrsClipboardData };
+        } else {
+            // Default to elements for backward compatibility
+            return { type: 'elements', data: parsed as ClipboardData };
+        }
+    } catch {
+        return null;
+    }
+};
+
+/**
+ * Import specific attributes to nodes.
+ * @param graph The graph.
+ * @param targetIds Set of node IDs to apply the attributes to.
+ * @param data The clipboard data containing node-specific attributes.
+ * @returns True if attributes were successfully applied.
+ */
+export const importNodeSpecificAttrs = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    targetIds: Set<NodeId>,
+    data: NodeSpecificAttrsClipboardData
+): boolean => {
+    let success = false;
+    targetIds.forEach(nodeId => {
+        const targetNodeType = graph.getNodeAttribute(nodeId, 'type');
+        // Only paste if the node types match
+        if (targetNodeType === data.nodeType) {
+            graph.mergeNodeAttributes(nodeId, { [targetNodeType]: data.specificAttrs });
+            success = true;
+        }
+    });
+    return success;
+};
+
+/**
+ * Import specific attributes to edges.
+ * For edges, roundCornerFactor is applied to path attrs, and all style attrs are applied.
+ * Style attrs are only applied if the edge has the same style type.
+ * @param graph The graph.
+ * @param targetIds Set of edge IDs to apply the attributes to.
+ * @param data The clipboard data containing edge-specific attributes.
+ * @returns True if attributes were successfully applied.
+ */
+export const importEdgeSpecificAttrs = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    targetIds: Set<LineId>,
+    data: EdgeSpecificAttrsClipboardData
+): boolean => {
+    let success = false;
+    targetIds.forEach(edgeId => {
+        const targetPathType = graph.getEdgeAttribute(edgeId, 'type');
+        const targetStyleType = graph.getEdgeAttribute(edgeId, 'style');
+
+        // Apply roundCornerFactor if present and path type matches
+        if (data.roundCornerFactor !== undefined && targetPathType === data.pathType) {
+            const currentPathAttrs = (graph.getEdgeAttribute(edgeId, targetPathType) ?? {}) as Record<string, unknown>;
+            graph.mergeEdgeAttributes(edgeId, {
+                [targetPathType]: { ...currentPathAttrs, roundCornerFactor: data.roundCornerFactor },
+            });
+            success = true;
+        }
+
+        // Apply style attributes if style type matches
+        if (targetStyleType === data.styleType) {
+            graph.mergeEdgeAttributes(edgeId, { [targetStyleType]: data.styleAttrs });
+            success = true;
+        }
+    });
+    return success;
+};
+
+/**
+ * Check if all selected elements have the same type.
+ * @param graph The graph.
+ * @param selected Set of selected element IDs.
+ * @returns Object containing whether all are same type, the type category ('node' or 'edge'), and the specific type.
+ */
+export const getSelectedElementsType = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    selected: Set<Id>
+): {
+    allSameType: boolean;
+    category: 'node' | 'edge' | 'mixed' | null;
+    nodeType?: NodeType;
+    edgeStyleType?: LineStyleType;
+} => {
+    if (selected.size === 0) {
+        return { allSameType: false, category: null };
+    }
+
+    let hasNodes = false;
+    let hasEdges = false;
+    let nodeType: NodeType | undefined;
+    let edgeStyleType: LineStyleType | undefined;
+    let allSameNodeType = true;
+    let allSameEdgeStyleType = true;
+
+    selected.forEach(id => {
+        if (graph.hasNode(id)) {
+            hasNodes = true;
+            const type = graph.getNodeAttribute(id, 'type');
+            if (nodeType === undefined) {
+                nodeType = type;
+            } else if (nodeType !== type) {
+                allSameNodeType = false;
+            }
+        } else if (graph.hasEdge(id)) {
+            hasEdges = true;
+            const style = graph.getEdgeAttribute(id, 'style');
+            if (edgeStyleType === undefined) {
+                edgeStyleType = style;
+            } else if (edgeStyleType !== style) {
+                allSameEdgeStyleType = false;
+            }
+        }
+    });
+
+    if (hasNodes && hasEdges) {
+        return { allSameType: false, category: 'mixed' };
+    } else if (hasNodes) {
+        return { allSameType: allSameNodeType, category: 'node', nodeType };
+    } else if (hasEdges) {
+        return { allSameType: allSameEdgeStyleType, category: 'edge', edgeStyleType };
+    }
+
+    return { allSameType: false, category: null };
 };
