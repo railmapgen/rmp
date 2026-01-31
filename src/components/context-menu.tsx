@@ -39,8 +39,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
 
     const hasSelection = selected.size > 0;
-    const hasNodeSelection = React.useMemo(
-        () => [...selected].some(id => graph.current.hasNode(id)),
+    const hasMoreThanOneNodeSelection = React.useMemo(
+        () => [...selected].filter(id => graph.current.hasNode(id)).length > 1,
         [selected, graph]
     );
     const menuRef = React.useRef<HTMLDivElement>(null);
@@ -286,7 +286,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         handleRotate(45);
                         onClose();
                     }}
-                    isDisabled={!hasNodeSelection}
+                    isDisabled={!hasMoreThanOneNodeSelection}
                 >
                     {t('contextMenu.rotateCW')}
                 </MenuItem>
@@ -295,7 +295,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         handleRotate(-45);
                         onClose();
                     }}
-                    isDisabled={!hasNodeSelection}
+                    isDisabled={!hasMoreThanOneNodeSelection}
                 >
                     {t('contextMenu.rotateCCW')}
                 </MenuItem>
@@ -304,7 +304,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         handleFlip('vertical');
                         onClose();
                     }}
-                    isDisabled={!hasNodeSelection}
+                    isDisabled={!hasMoreThanOneNodeSelection}
                 >
                     {t('contextMenu.flipVertical')}
                 </MenuItem>
@@ -313,7 +313,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         handleFlip('horizontal');
                         onClose();
                     }}
-                    isDisabled={!hasNodeSelection}
+                    isDisabled={!hasMoreThanOneNodeSelection}
                 >
                     {t('contextMenu.flipHorizontal')}
                 </MenuItem>
@@ -322,7 +322,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         handleFlip('diagonal45');
                         onClose();
                     }}
-                    isDisabled={!hasNodeSelection}
+                    isDisabled={!hasMoreThanOneNodeSelection}
                 >
                     {t('contextMenu.flipDiagonal45')}
                 </MenuItem>
@@ -331,7 +331,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         handleFlip('diagonal135');
                         onClose();
                     }}
-                    isDisabled={!hasNodeSelection}
+                    isDisabled={!hasMoreThanOneNodeSelection}
                 >
                     {t('contextMenu.flipDiagonal135')}
                 </MenuItem>
