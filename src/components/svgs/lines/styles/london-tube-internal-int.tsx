@@ -7,26 +7,6 @@ import {
     LineStyleComponentProps,
 } from '../../../../constants/lines';
 
-const LondonTubeInternalIntPre = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
-    const { id, path, newLine, handlePointerDown } = props;
-
-    const onPointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
-        [id, handlePointerDown]
-    );
-
-    return (
-        <g
-            id={`${id}.pre`}
-            onPointerDown={newLine ? undefined : onPointerDown}
-            pointerEvents={newLine ? 'none' : undefined}
-            cursor="pointer"
-        >
-            <path d={path} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
-        </g>
-    );
-};
-
 const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
     const { id, path, newLine, handlePointerDown } = props;
 
@@ -38,6 +18,26 @@ const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternal
     return (
         <g
             id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
+            cursor="pointer"
+        >
+            <path d={path} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
+        </g>
+    );
+};
+
+const LondonTubeInternalIntPost = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
+    const { id, path, newLine, handlePointerDown } = props;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+
+    return (
+        <g
+            id={`${id}.post`}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
@@ -58,7 +58,7 @@ const attrsComponent = () => undefined;
 
 const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
     component: LondonTubeInternalInt,
-    preComponent: LondonTubeInternalIntPre,
+    postComponent: LondonTubeInternalIntPost,
     defaultAttrs: defaultLondonTubeInternalIntAttributes,
     attrsComponent,
     metadata: {
