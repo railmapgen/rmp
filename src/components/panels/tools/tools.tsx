@@ -95,15 +95,15 @@ const ToolsPanel = () => {
 
     const isStyleCompatible = (styleType: LineStyleType, pathType: LinePathType): boolean => {
         const style = lineStyles[styleType];
-        const pathSupported = style?.metadata.supportLinePathType.includes(pathType);
-        const subscriptionOk = !style?.isPro || activeSubscriptions.RMP_CLOUD;
-        return pathSupported && subscriptionOk;
+        const pathSupported = style.metadata.supportLinePathType.includes(pathType);
+        const subscriptionOK = !style.isPro || activeSubscriptions.RMP_CLOUD;
+        return pathSupported && subscriptionOK;
     };
     const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
         const path = linePaths[pathType];
-        const styleSupported = lineStyles[styleType]?.metadata.supportLinePathType.includes(pathType);
-        const subscriptionOk = !path?.isPro || activeSubscriptions.RMP_CLOUD;
-        return styleSupported && subscriptionOk;
+        const styleSupported = lineStyles[styleType].metadata.supportLinePathType.includes(pathType);
+        const subscriptionOK = !path.isPro || activeSubscriptions.RMP_CLOUD;
+        return styleSupported && subscriptionOK;
     };
     const handleLine = (pathType: LinePathType) => {
         let { style: currentStyle } = getLinePathAndStyle(mode);

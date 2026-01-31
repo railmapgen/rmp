@@ -21,6 +21,25 @@ import { changeLinePathType, changeLineStyleType } from '../../../util/change-ty
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
 
+/**
+ * Returns true if the given line path type and line style type combination
+ * is always compatible for legacy reasons.
+ */
+const legacyCompatibleLinePathAndStyle = (pathType: LinePathType, styleType: LineStyleType) => {
+    const legacySimplePathAvailableStyles = [
+        LineStyleType.ShmetroVirtualInt,
+        LineStyleType.GzmtrVirtualInt,
+        LineStyleType.River,
+        LineStyleType.MTRPaidArea,
+        LineStyleType.MTRUnpaidArea,
+        LineStyleType.MRTTapeOut,
+    ];
+    if (pathType === LinePathType.Simple && legacySimplePathAvailableStyles.includes(styleType)) {
+        return true;
+    }
+    return false;
+};
+
 export default function LineTypeSection() {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -67,13 +86,15 @@ export default function LineTypeSection() {
 
     const disabledLinePathOptions = Object.values(LinePathType).filter(
         linePathType =>
-            !lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType) ||
-            (linePaths[linePathType].isPro && !activeSubscriptions.RMP_CLOUD)
+            !legacyCompatibleLinePathAndStyle(linePathType, currentLineStyleType) &&
+            (!lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType) ||
+                (linePaths[linePathType].isPro && !activeSubscriptions.RMP_CLOUD))
     );
     const disabledLineStyleOptions = Object.values(LineStyleType).filter(
         lineStyleType =>
-            !lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType) ||
-            (lineStyles[lineStyleType].isPro && !activeSubscriptions.RMP_CLOUD)
+            !legacyCompatibleLinePathAndStyle(currentLinePathType, lineStyleType) &&
+            (!lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType) ||
+                (lineStyles[lineStyleType].isPro && !activeSubscriptions.RMP_CLOUD))
     );
 
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {
