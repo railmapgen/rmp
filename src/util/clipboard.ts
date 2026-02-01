@@ -18,6 +18,7 @@ import {
 } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
+import { CURRENT_VERSION } from './save';
 
 type NodesWithAttrs = { [key in NodeId]: NodeAttributes };
 type EdgesWithAttrs = {
@@ -26,16 +27,22 @@ type EdgesWithAttrs = {
 
 /**
  * Clipboard data type discriminator.
- * - 'elements': Copy of entire nodes/edges (default, existing behavior)
+ * - 'elements': Copy of entire nodes/edges
  * - 'node-attrs': Copy of specific attributes for a node
  * - 'edge-attrs': Copy of specific attributes for an edge (line)
  */
 export type ClipboardType = 'elements' | 'node-attrs' | 'edge-attrs';
 
+/**
+ * Current clipboard format version. Increment this when clipboard data structure changes.
+ */
+export const CLIPBOARD_VERSION = 1;
+
 interface ClipboardData {
     app: 'rmp';
     version: number;
-    type?: ClipboardType; // Optional for backward compatibility
+    saveVersion: number;
+    type: ClipboardType;
     nodesWithAttrs: NodesWithAttrs;
     edgesWithAttrs: EdgesWithAttrs;
     avgX: number;
@@ -48,6 +55,7 @@ interface ClipboardData {
 export interface NodeSpecificAttrsClipboardData {
     app: 'rmp';
     version: number;
+    saveVersion: number;
     type: 'node-attrs';
     nodeType: NodeType;
     specificAttrs: Record<string, unknown>;
@@ -60,6 +68,7 @@ export interface NodeSpecificAttrsClipboardData {
 export interface EdgeSpecificAttrsClipboardData {
     app: 'rmp';
     version: number;
+    saveVersion: number;
     type: 'edge-attrs';
     pathType: EdgeType;
     styleType: LineStyleType;
@@ -97,7 +106,9 @@ export const exportSelectedNodesAndEdges = (
     });
     const data: ClipboardData = {
         app: 'rmp',
-        version: 1,
+        version: CLIPBOARD_VERSION,
+        saveVersion: CURRENT_VERSION,
+        type: 'elements',
         nodesWithAttrs,
         edgesWithAttrs,
         avgX: sumX / countNode,
@@ -107,7 +118,7 @@ export const exportSelectedNodesAndEdges = (
 };
 
 /**
- * Import nodes and edges from the clipboard data. Version of the data must be the same as the current.
+ * Import nodes and edges from the clipboard data. Version and saveVersion of the data must match current.
  * @param s The text from the clipboard.
  * @param graph The graph.
  * @param isMasterDisabled Whether filter master nodes on paste (no subscription only).
@@ -124,8 +135,9 @@ export const importSelectedNodesAndEdges = (
     x: number,
     y: number
 ) => {
-    const { nodesWithAttrs: nodes, edgesWithAttrs: edges, version } = JSON.parse(s) as ClipboardData;
-    if (version !== 1) throw Error(`Unrecognized version: ${version}`);
+    const { nodesWithAttrs: nodes, edgesWithAttrs: edges, version, saveVersion } = JSON.parse(s) as ClipboardData;
+    if (version !== CLIPBOARD_VERSION) throw Error(`Unrecognized clipboard version: ${version}`);
+    if (saveVersion !== CURRENT_VERSION) throw Error(`Save version mismatch: ${saveVersion} vs ${CURRENT_VERSION}`);
 
     // rename id to be not existed in the current graph
     const renamedMap: { [key in string]: string } = {};
@@ -205,7 +217,8 @@ export const exportNodeSpecificAttrs = (
 
     const data: NodeSpecificAttrsClipboardData = {
         app: 'rmp',
-        version: 1,
+        version: CLIPBOARD_VERSION,
+        saveVersion: CURRENT_VERSION,
         type: 'node-attrs',
         nodeType,
         specificAttrs,
@@ -231,7 +244,8 @@ export const exportEdgeSpecificAttrs = (
 
     const data: EdgeSpecificAttrsClipboardData = {
         app: 'rmp',
-        version: 1,
+        version: CLIPBOARD_VERSION,
+        saveVersion: CURRENT_VERSION,
         type: 'edge-attrs',
         pathType,
         styleType,
@@ -249,14 +263,22 @@ export const exportEdgeSpecificAttrs = (
 /**
  * Parse clipboard text and determine its type.
  * @param s The clipboard text.
- * @returns The parsed clipboard data, or null if invalid.
+ * @returns The parsed clipboard data, or null if invalid or versions don't match.
  */
 export const parseClipboardData = (
     s: string
 ): { type: ClipboardType; data: ClipboardData | SpecificAttrsClipboardData } | null => {
     try {
         const parsed = JSON.parse(s);
-        if (parsed.app !== 'rmp' || parsed.version !== 1) {
+        if (parsed.app !== 'rmp') {
+            return null;
+        }
+        // Validate clipboard version
+        if (parsed.version !== CLIPBOARD_VERSION) {
+            return null;
+        }
+        // Validate save version
+        if (parsed.saveVersion !== CURRENT_VERSION) {
             return null;
         }
 
@@ -264,10 +286,10 @@ export const parseClipboardData = (
             return { type: 'node-attrs', data: parsed as NodeSpecificAttrsClipboardData };
         } else if (parsed.type === 'edge-attrs') {
             return { type: 'edge-attrs', data: parsed as EdgeSpecificAttrsClipboardData };
-        } else {
-            // Default to elements for backward compatibility
+        } else if (parsed.type === 'elements') {
             return { type: 'elements', data: parsed as ClipboardData };
         }
+        return null;
     } catch {
         return null;
     }
@@ -299,7 +321,7 @@ export const importNodeSpecificAttrs = (
 
 /**
  * Import specific attributes to edges.
- * For edges, roundCornerFactor is applied to path attrs, and all style attrs are applied.
+ * For edges, roundCornerFactor is applied if the target path has this attribute.
  * Style attrs are only applied if the edge has the same style type.
  * @param graph The graph.
  * @param targetIds Set of edge IDs to apply the attributes to.
@@ -316,22 +338,40 @@ export const importEdgeSpecificAttrs = (
         const targetPathType = graph.getEdgeAttribute(edgeId, 'type');
         const targetStyleType = graph.getEdgeAttribute(edgeId, 'style');
 
-        // Apply roundCornerFactor if present and path type matches
-        if (data.roundCornerFactor !== undefined && targetPathType === data.pathType) {
-            const currentPathAttrs = (graph.getEdgeAttribute(edgeId, targetPathType) ?? {}) as Record<string, unknown>;
-            graph.mergeEdgeAttributes(edgeId, {
-                [targetPathType]: { ...currentPathAttrs, roundCornerFactor: data.roundCornerFactor },
-            });
-            success = true;
-        }
-
-        // Apply style attributes if style type matches
+        // Apply style attributes if style type matches (required for edge paste)
         if (targetStyleType === data.styleType) {
             graph.mergeEdgeAttributes(edgeId, { [targetStyleType]: data.styleAttrs });
             success = true;
+
+            // Apply roundCornerFactor if clipboard has it AND target path has this attribute
+            if (data.roundCornerFactor !== undefined) {
+                const currentPathAttrs = (graph.getEdgeAttribute(edgeId, targetPathType) ?? {}) as Record<
+                    string,
+                    unknown
+                >;
+                // Check if target path type supports roundCornerFactor
+                if ('roundCornerFactor' in currentPathAttrs || hasRoundCornerFactor(targetPathType)) {
+                    graph.mergeEdgeAttributes(edgeId, {
+                        [targetPathType]: { ...currentPathAttrs, roundCornerFactor: data.roundCornerFactor },
+                    });
+                }
+            }
         }
     });
     return success;
+};
+
+/**
+ * Check if a path type supports roundCornerFactor attribute.
+ */
+const hasRoundCornerFactor = (pathType: EdgeType): boolean => {
+    // diagonal, perpendicular, and rotate-perpendicular paths have roundCornerFactor
+    // simple path does NOT have roundCornerFactor
+    return (
+        pathType === LinePathType.Diagonal ||
+        pathType === LinePathType.Perpendicular ||
+        pathType === LinePathType.RotatePerpendicular
+    );
 };
 
 /**

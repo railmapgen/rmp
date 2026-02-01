@@ -12,7 +12,9 @@ import {
     getSelectedElementsType,
     NodeSpecificAttrsClipboardData,
     EdgeSpecificAttrsClipboardData,
+    CLIPBOARD_VERSION,
 } from './clipboard';
+import { CURRENT_VERSION } from './save';
 
 describe('Unit tests for specific attributes clipboard functions', () => {
     let graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -141,7 +143,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
         it('should parse node-attrs clipboard data', () => {
             const data: NodeSpecificAttrsClipboardData = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
                 type: 'node-attrs',
                 nodeType: StationType.ShmetroBasic,
                 specificAttrs: { names: ['Test'] },
@@ -156,7 +159,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
         it('should parse edge-attrs clipboard data', () => {
             const data: EdgeSpecificAttrsClipboardData = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
                 type: 'edge-attrs',
                 pathType: LinePathType.Diagonal,
                 styleType: LineStyleType.SingleColor,
@@ -170,10 +174,12 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             expect(result?.type).toBe('edge-attrs');
         });
 
-        it('should parse elements clipboard data (backward compatibility)', () => {
+        it('should parse elements clipboard data', () => {
             const data = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
+                type: 'elements',
                 nodesWithAttrs: {},
                 edgesWithAttrs: {},
                 avgX: 0,
@@ -190,6 +196,19 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             expect(parseClipboardData('not json')).toBeNull();
             expect(parseClipboardData(JSON.stringify({ app: 'other' }))).toBeNull();
             expect(parseClipboardData(JSON.stringify({ app: 'rmp', version: 999 }))).toBeNull();
+            // Missing saveVersion should also return null
+            expect(parseClipboardData(JSON.stringify({ app: 'rmp', version: CLIPBOARD_VERSION }))).toBeNull();
+            // Wrong saveVersion should return null
+            expect(
+                parseClipboardData(
+                    JSON.stringify({
+                        app: 'rmp',
+                        version: CLIPBOARD_VERSION,
+                        saveVersion: CURRENT_VERSION + 1,
+                        type: 'elements',
+                    })
+                )
+            ).toBeNull();
         });
     });
 
@@ -215,7 +234,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             const data: NodeSpecificAttrsClipboardData = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
                 type: 'node-attrs',
                 nodeType: StationType.ShmetroBasic,
                 specificAttrs: { names: ['新站', 'New Station'], nameOffsetX: 'left' },
@@ -247,7 +267,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             const data: NodeSpecificAttrsClipboardData = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
                 type: 'node-attrs',
                 nodeType: StationType.ShmetroBasic,
                 specificAttrs: { names: ['新站', 'New Station'] },
@@ -279,7 +300,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             const data: EdgeSpecificAttrsClipboardData = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
                 type: 'edge-attrs',
                 pathType: LinePathType.Diagonal,
                 styleType: LineStyleType.SingleColor,
@@ -316,7 +338,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             const data: EdgeSpecificAttrsClipboardData = {
                 app: 'rmp',
-                version: 1,
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
                 type: 'edge-attrs',
                 pathType: LinePathType.Diagonal,
                 styleType: LineStyleType.SingleColor,
