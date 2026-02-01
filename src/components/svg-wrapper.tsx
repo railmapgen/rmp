@@ -331,7 +331,7 @@ const SvgWrapper = () => {
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
         } else if (e.key === 'r') {
-            const angle = (e.altKey ? 5 : 45) * 1;
+            const angle = e.altKey ? 5 : 45;
             if (rotateSelectedNodes(graph.current, selected, angle)) {
                 refreshAndSave();
             }
