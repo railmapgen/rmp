@@ -404,6 +404,42 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Tr>
                                         <Tr>
                                             <Td>
+                                                {isMacClient ? (
+                                                    <>
+                                                        <Kbd sx={macKeyStyle}>&#8679;</Kbd>
+                                                        {' + '}
+                                                        <Kbd sx={macKeyStyle}>&#8984;</Kbd>
+                                                        {' + '}
+                                                        <Kbd>c</Kbd>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Kbd>ctrl</Kbd> + <Kbd>shift</Kbd> + <Kbd>c</Kbd>
+                                                    </>
+                                                )}
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.copyAttrs')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                {isMacClient ? (
+                                                    <>
+                                                        <Kbd sx={macKeyStyle}>&#8679;</Kbd>
+                                                        {' + '}
+                                                        <Kbd sx={macKeyStyle}>&#8984;</Kbd>
+                                                        {' + '}
+                                                        <Kbd>v</Kbd>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Kbd>ctrl</Kbd> + <Kbd>shift</Kbd> + <Kbd>v</Kbd>
+                                                    </>
+                                                )}
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.pasteAttrs')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
                                                 {isMacClient ? <Kbd sx={macKeyStyle}>&#8984;</Kbd> : <Kbd>ctrl</Kbd>}
                                                 {' + '}
                                                 <Kbd>z</Kbd>

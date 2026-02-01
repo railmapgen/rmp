@@ -6,7 +6,7 @@ import React from 'react';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
-import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
+import { Events, Id, NodeId, RuntimeMode, StnId, LineId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
@@ -25,7 +25,18 @@ import {
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
-import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
+import {
+    exportSelectedNodesAndEdges,
+    importSelectedNodesAndEdges,
+    exportNodeSpecificAttrs,
+    exportEdgeSpecificAttrs,
+    parseClipboardData,
+    importNodeSpecificAttrs,
+    importEdgeSpecificAttrs,
+    getSelectedElementsType,
+    NodeSpecificAttrsClipboardData,
+    EdgeSpecificAttrsClipboardData,
+} from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
@@ -322,6 +333,54 @@ const SvgWrapper = () => {
             const allElements = structuredClone(nodes) as Set<Id>;
             edges.forEach(s => allElements.add(s));
             dispatch(setSelected(allElements));
+        } else if (e.key === 'C' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
+            // Copy specific attributes (Ctrl+Shift+C or Cmd+Shift+C)
+            if (selected.size === 1) {
+                const [id] = selected;
+                if (graph.current.hasNode(id)) {
+                    const s = exportNodeSpecificAttrs(graph.current, id as NodeId);
+                    navigator.clipboard.writeText(s);
+                } else if (graph.current.hasEdge(id)) {
+                    const s = exportEdgeSpecificAttrs(graph.current, id as LineId);
+                    navigator.clipboard.writeText(s);
+                }
+            }
+        } else if (e.key === 'V' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
+            // Paste specific attributes (Ctrl+Shift+V or Cmd+Shift+V)
+            try {
+                const s = await navigator.clipboard.readText();
+                const parsed = parseClipboardData(s);
+                if (!parsed) return;
+
+                const selectionInfo = getSelectedElementsType(graph.current, selected);
+                if (parsed.type === 'node-attrs' && selectionInfo.category === 'node') {
+                    const nodeIds = new Set<NodeId>();
+                    selected.forEach(id => {
+                        if (graph.current.hasNode(id)) {
+                            nodeIds.add(id as NodeId);
+                        }
+                    });
+                    if (
+                        importNodeSpecificAttrs(graph.current, nodeIds, parsed.data as NodeSpecificAttrsClipboardData)
+                    ) {
+                        refreshAndSave();
+                    }
+                } else if (parsed.type === 'edge-attrs' && selectionInfo.category === 'edge') {
+                    const edgeIds = new Set<LineId>();
+                    selected.forEach(id => {
+                        if (graph.current.hasEdge(id)) {
+                            edgeIds.add(id as LineId);
+                        }
+                    });
+                    if (
+                        importEdgeSpecificAttrs(graph.current, edgeIds, parsed.data as EdgeSpecificAttrsClipboardData)
+                    ) {
+                        refreshAndSave();
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to read clipboard:', error);
+            }
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)

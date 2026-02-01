@@ -673,8 +673,8 @@
                 "duplicate": "重複",
                 "copy": "複製",
                 "remove": "移除",
-                "copyAttrs": "複製屬性",
-                "pasteAttrs": "貼上屬性"
+                "copyAttrs": "複製獨特屬性",
+                "pasteAttrs": "貼上獨特屬性"
             }
         }
     },
@@ -829,6 +829,8 @@
                 "cut": "剪切。",
                 "copy": "複製。",
                 "paste": "貼上。",
+                "copyAttrs": "複製獨特屬性。",
+                "pasteAttrs": "貼上獨特屬性。",
                 "undo": "撤銷。",
                 "redo": "重做。"
             },
@@ -942,8 +944,8 @@
         "placeDefault": "還原位置",
         "placeUp": "上移一層",
         "placeDown": "下移一層",
-        "copyAttrs": "複製屬性",
-        "pasteAttrs": "貼上屬性"
+        "copyAttrs": "複製獨特屬性",
+        "pasteAttrs": "貼上獨特屬性"
     },
 
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"

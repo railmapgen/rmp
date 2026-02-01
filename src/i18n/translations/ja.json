@@ -676,7 +676,8 @@
                 "duplicate": "重複",
                 "copy": "複製",
                 "remove": "削除",
-                "pasteAttrs": "属性を貼り付け"
+                "copyAttrs": "独自属性をコピー",
+                "pasteAttrs": "独自属性を貼り付け"
             }
         }
     },
@@ -831,6 +832,8 @@
                 "cut": "切り取る。",
                 "copy": "複製する。",
                 "paste": "貼り付ける。",
+                "copyAttrs": "独自属性をコピーする。",
+                "pasteAttrs": "独自属性を貼り付ける。",
                 "undo": "元に戻す。",
                 "redo": "やり直す。"
             },
@@ -943,8 +946,8 @@
         "placeDefault": "デフォルト位置へ",
         "placeUp": "一つ前へ",
         "placeDown": "一つ後ろへ",
-        "copyAttrs": "属性をコピー",
-        "pasteAttrs": "属性を貼り付け"
+        "copyAttrs": "独自属性をコピー",
+        "pasteAttrs": "独自属性を貼り付け"
     },
 
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"

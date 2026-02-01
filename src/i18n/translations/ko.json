@@ -673,7 +673,8 @@
                 "duplicate": "복사",
                 "copy": "복사",
                 "remove": "삭제",
-                "pasteAttrs": "속성 붙여넣기"
+                "copyAttrs": "고유 속성 복사",
+                "pasteAttrs": "고유 속성 붙여넣기"
             }
         }
     },
@@ -828,6 +829,8 @@
                 "cut": "잘라내기.",
                 "copy": "복사하다.",
                 "paste": "붙여넣다.",
+                "copyAttrs": "고유 속성 복사.",
+                "pasteAttrs": "고유 속성 붙여넣기.",
                 "undo": "취소하다.",
                 "redo": "다시 하다."
             },
@@ -941,8 +944,8 @@
         "placeDefault": "기본 위치로",
         "placeUp": "한 단계 앞으로",
         "placeDown": "한 단계 뒤로",
-        "copyAttrs": "속성 복사",
-        "pasteAttrs": "속성 붙여넣기"
+        "copyAttrs": "고유 속성 복사",
+        "pasteAttrs": "고유 속성 붙여넣기"
     },
 
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."

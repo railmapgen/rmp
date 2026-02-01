@@ -674,7 +674,8 @@
                 "duplicate": "Duplicate",
                 "copy": "Copy",
                 "remove": "Remove",
-                "pasteAttrs": "Paste Attributes"
+                "copyAttrs": "Copy Specific Attributes",
+                "pasteAttrs": "Paste Specific Attributes"
             }
         }
     },
@@ -829,6 +830,8 @@
                 "cut": "Cut.",
                 "copy": "Copy.",
                 "paste": "Paste.",
+                "copyAttrs": "Copy specific attributes.",
+                "pasteAttrs": "Paste specific attributes.",
                 "undo": "Undo.",
                 "redo": "Redo."
             },
@@ -942,8 +945,8 @@
         "placeDefault": "Place to default",
         "placeUp": "Place one level up",
         "placeDown": "Place one level down",
-        "copyAttrs": "Copy Attributes",
-        "pasteAttrs": "Paste Attributes"
+        "copyAttrs": "Copy Specific Attributes",
+        "pasteAttrs": "Paste Specific Attributes"
     },
 
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."

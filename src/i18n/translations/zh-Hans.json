@@ -673,7 +673,8 @@
                 "duplicate": "重复",
                 "copy": "复制",
                 "remove": "移除",
-                "pasteAttrs": "粘贴属性"
+                "copyAttrs": "复制独特属性",
+                "pasteAttrs": "粘贴独特属性"
             }
         }
     },
@@ -828,6 +829,8 @@
                 "cut": "剪切。",
                 "copy": "复制。",
                 "paste": "粘贴。",
+                "copyAttrs": "复制独特属性。",
+                "pasteAttrs": "粘贴独特属性。",
                 "undo": "撤销。",
                 "redo": "重做。"
             },
@@ -941,8 +944,8 @@
         "placeDefault": "还原位置",
         "placeUp": "上移一层",
         "placeDown": "下移一层",
-        "copyAttrs": "复制属性",
-        "pasteAttrs": "粘贴属性"
+        "copyAttrs": "复制独特属性",
+        "pasteAttrs": "粘贴独特属性"
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
