@@ -824,6 +824,7 @@
                 "c": "マグネティックレイアウトを有効または無効にします。",
                 "arrows": "キャンバスを少し移動します。",
                 "ijkl": "選択した駅を少し移動します。",
+                "rotate": "選択したノードを時計回りに回転します（Alt で 5° ステップ）。",
                 "shift": "複数選択。",
                 "alt": "引きずる時に押し続けると自動スナップが一時的に無効化されます。",
                 "delete": "選択した駅を削除します。",
@@ -941,7 +942,13 @@
         "placeBottom": "最背面へ",
         "placeDefault": "デフォルト位置へ",
         "placeUp": "一つ前へ",
-        "placeDown": "一つ後ろへ"
+        "placeDown": "一つ後ろへ",
+        "rotateCW": "45° 時計回りに回転",
+        "rotateCCW": "45° 反時計回りに回転",
+        "flipVertical": "垂直に反転",
+        "flipHorizontal": "水平に反転",
+        "flipDiagonal45": "45° 線で反転",
+        "flipDiagonal135": "135° 線で反転"
     },
 
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"

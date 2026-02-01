@@ -821,6 +821,7 @@
                 "c": "启用或停用磁性布局。",
                 "arrows": "稍微移动画布。",
                 "ijkl": "稍微移动所选站点。",
+                "rotate": "顺时针旋转所选节点（按住 Alt 为 5° 步进）。",
                 "shift": "多选。",
                 "alt": "拖动时按下临时停用磁性布局。",
                 "delete": "删除所选站点。",
@@ -939,7 +940,13 @@
         "placeBottom": "置底",
         "placeDefault": "还原位置",
         "placeUp": "上移一层",
-        "placeDown": "下移一层"
+        "placeDown": "下移一层",
+        "rotateCW": "顺时针旋转45°",
+        "rotateCCW": "逆时针旋转45°",
+        "flipVertical": "垂直翻转",
+        "flipHorizontal": "水平翻转",
+        "flipDiagonal45": "沿45°线翻转",
+        "flipDiagonal135": "沿135°线翻转"
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
