@@ -118,7 +118,8 @@ export const exportSelectedNodesAndEdges = (
 };
 
 /**
- * Import nodes and edges from the clipboard data. Version and saveVersion of the data must match current.
+ * Import nodes and edges from the clipboard data.
+ * Validates that clipboard version matches CLIPBOARD_VERSION and saveVersion matches CURRENT_VERSION.
  * @param s The text from the clipboard.
  * @param graph The graph.
  * @param isMasterDisabled Whether filter master nodes on paste (no subscription only).
@@ -343,18 +344,15 @@ export const importEdgeSpecificAttrs = (
             graph.mergeEdgeAttributes(edgeId, { [targetStyleType]: data.styleAttrs });
             success = true;
 
-            // Apply roundCornerFactor if clipboard has it AND target path has this attribute
-            if (data.roundCornerFactor !== undefined) {
+            // Apply roundCornerFactor if clipboard has it AND target path supports this attribute
+            if (data.roundCornerFactor !== undefined && hasRoundCornerFactor(targetPathType)) {
                 const currentPathAttrs = (graph.getEdgeAttribute(edgeId, targetPathType) ?? {}) as Record<
                     string,
                     unknown
                 >;
-                // Check if target path type supports roundCornerFactor
-                if ('roundCornerFactor' in currentPathAttrs || hasRoundCornerFactor(targetPathType)) {
-                    graph.mergeEdgeAttributes(edgeId, {
-                        [targetPathType]: { ...currentPathAttrs, roundCornerFactor: data.roundCornerFactor },
-                    });
-                }
+                graph.mergeEdgeAttributes(edgeId, {
+                    [targetPathType]: { ...currentPathAttrs, roundCornerFactor: data.roundCornerFactor },
+                });
             }
         }
     });
