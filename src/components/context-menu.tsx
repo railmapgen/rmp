@@ -41,7 +41,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const hasSelection = selected.size > 0;
     const hasMoreThanOneNodeSelection = React.useMemo(
         () => [...selected].filter(id => graph.current.hasNode(id)).length > 1,
-        [selected, graph]
+        [selected]
     );
     const menuRef = React.useRef<HTMLDivElement>(null);
 
