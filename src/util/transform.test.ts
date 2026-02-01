@@ -109,4 +109,60 @@ describe('transform helpers', () => {
         expect(graph135.getNodeAttribute('e', 'x')).toBeCloseTo(5);
         expect(graph135.getNodeAttribute('e', 'y')).toBeCloseTo(3);
     });
+
+    it('returns false and leaves nodes untouched when selection is empty or missing', () => {
+        const graph = createGraph();
+        graph.addNode('solo', {
+            visible: true,
+            zIndex: 0,
+            x: 3,
+            y: 7,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: {} as any,
+        } as any);
+
+        const rotatedEmpty = rotateSelectedNodes(graph, new Set(), 45);
+        expect(rotatedEmpty).toBe(false);
+        expect(graph.getNodeAttribute('solo', 'x')).toBe(3);
+        expect(graph.getNodeAttribute('solo', 'y')).toBe(7);
+
+        const rotatedMissing = rotateSelectedNodes(graph, new Set(['ghost']), 45);
+        expect(rotatedMissing).toBe(false);
+        expect(graph.getNodeAttribute('solo', 'x')).toBe(3);
+        expect(graph.getNodeAttribute('solo', 'y')).toBe(7);
+    });
+
+    it('handles single node rotation and mixed selections with missing ids', () => {
+        const graph = createGraph();
+        graph.addNode('center', {
+            visible: true,
+            zIndex: 0,
+            x: 10,
+            y: 0,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: {} as any,
+        } as any);
+
+        const singleRotated = rotateSelectedNodes(graph, new Set(['center']), 90);
+        expect(singleRotated).toBe(true);
+        expect(graph.getNodeAttribute('center', 'x')).toBeCloseTo(10);
+        expect(graph.getNodeAttribute('center', 'y')).toBeCloseTo(0);
+
+        graph.addNode('neighbor', {
+            visible: true,
+            zIndex: 0,
+            x: 12,
+            y: 0,
+            type: StationType.ShmetroBasic,
+            [StationType.ShmetroBasic]: {} as any,
+        } as any);
+
+        const mixedRotated = rotateSelectedNodes(graph, new Set(['neighbor', 'ghost']), 90);
+        expect(mixedRotated).toBe(true);
+        // rotates around the existing selection center (neighbor only), so coordinates stay the same
+        expect(graph.getNodeAttribute('neighbor', 'x')).toBeCloseTo(12);
+        expect(graph.getNodeAttribute('neighbor', 'y')).toBeCloseTo(0);
+        expect(graph.getNodeAttribute('center', 'x')).toBeCloseTo(10);
+        expect(graph.getNodeAttribute('center', 'y')).toBeCloseTo(0);
+    });
 });
