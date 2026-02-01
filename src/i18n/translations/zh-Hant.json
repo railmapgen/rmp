@@ -935,11 +935,13 @@
     },
 
     "contextMenu": {
+        "refresh": "重新整理",
         "copy": "複製",
         "cut": "剪下", 
         "paste": "貼上",
         "delete": "刪除",
-        "refresh": "重新整理",
+        "copyAttrs": "複製獨特屬性",
+        "pasteAttrs": "貼上獨特屬性",
         "placeTop": "置頂",
         "placeBottom": "置底",
         "placeDefault": "還原位置",
@@ -950,9 +952,7 @@
         "flipVertical": "垂直翻轉",
         "flipHorizontal": "水平翻轉",
         "flipDiagonal45": "沿45°線翻轉",
-        "flipDiagonal135": "沿135°線翻轉",
-        "copyAttrs": "複製獨特屬性",
-        "pasteAttrs": "貼上獨特屬性"
+        "flipDiagonal135": "沿135°線翻轉"
     },
 
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"

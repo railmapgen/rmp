@@ -936,11 +936,13 @@
     },
 
     "contextMenu": {
+        "refresh": "Refresh",
         "copy": "Copy",
         "cut": "Cut", 
         "paste": "Paste",
         "delete": "Delete",
-        "refresh": "Refresh",
+        "copyAttrs": "Copy Specific Attributes",
+        "pasteAttrs": "Paste Specific Attributes",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",
@@ -951,9 +953,7 @@
         "flipVertical": "Flip vertically",
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
-        "flipDiagonal135": "Flip across 135° line",
-        "copyAttrs": "Copy Specific Attributes",
-        "pasteAttrs": "Paste Specific Attributes"
+        "flipDiagonal135": "Flip across 135° line"
     },
 
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
