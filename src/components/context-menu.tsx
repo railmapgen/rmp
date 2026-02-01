@@ -21,6 +21,7 @@ import {
 } from '../util/clipboard';
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
+import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
 
 interface ContextMenuProps {
     isOpen: boolean;
@@ -49,6 +50,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
 
     const hasSelection = selected.size > 0;
+    const hasMoreThanOneNodeSelection = React.useMemo(
+        () => [...selected].filter(id => graph.current.hasNode(id)).length > 1,
+        [selected]
+    );
     const menuRef = React.useRef<HTMLDivElement>(null);
 
     // Check selection type for copy/paste attributes
@@ -158,11 +163,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const handlePlaceDown = useEvent(() => {
         if (selected.size > 0) {
             const [selectedFirst] = selected;
-            const currentZIndex = graph.current.hasNode(selectedFirst)
-                ? graph.current.getNodeAttribute(selectedFirst, 'zIndex')
-                : graph.current.hasEdge(selectedFirst)
-                  ? graph.current.getEdgeAttribute(selectedFirst, 'zIndex')
-                  : 0;
+            let currentZIndex = 0;
+            if (graph.current.hasNode(selectedFirst)) {
+                currentZIndex = graph.current.getNodeAttribute(selectedFirst, 'zIndex');
+            } else if (graph.current.hasEdge(selectedFirst)) {
+                currentZIndex = graph.current.getEdgeAttribute(selectedFirst, 'zIndex');
+            }
             handleZIndex(currentZIndex - 1);
         }
     });
@@ -210,6 +216,18 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         } catch (error) {
             // Handle clipboard read error
             console.warn('Failed to read clipboard:', error);
+        }
+    });
+
+    const handleRotate = useEvent((angle: number) => {
+        if (rotateSelectedNodes(graph.current, selected, angle)) {
+            refreshAndSave();
+        }
+    });
+
+    const handleFlip = useEvent((direction: 'vertical' | 'horizontal' | 'diagonal45' | 'diagonal135') => {
+        if (flipSelectedNodes(graph.current, selected, direction)) {
+            refreshAndSave();
         }
     });
 
@@ -343,6 +361,61 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                     isDisabled={!hasSelection}
                 >
                     {t('contextMenu.placeDown')}
+                </MenuItem>
+                <Divider />
+                <MenuItem
+                    onClick={() => {
+                        handleRotate(45);
+                        onClose();
+                    }}
+                    isDisabled={!hasMoreThanOneNodeSelection}
+                >
+                    {t('contextMenu.rotateCW')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleRotate(-45);
+                        onClose();
+                    }}
+                    isDisabled={!hasMoreThanOneNodeSelection}
+                >
+                    {t('contextMenu.rotateCCW')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleFlip('vertical');
+                        onClose();
+                    }}
+                    isDisabled={!hasMoreThanOneNodeSelection}
+                >
+                    {t('contextMenu.flipVertical')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleFlip('horizontal');
+                        onClose();
+                    }}
+                    isDisabled={!hasMoreThanOneNodeSelection}
+                >
+                    {t('contextMenu.flipHorizontal')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleFlip('diagonal45');
+                        onClose();
+                    }}
+                    isDisabled={!hasMoreThanOneNodeSelection}
+                >
+                    {t('contextMenu.flipDiagonal45')}
+                </MenuItem>
+                <MenuItem
+                    onClick={() => {
+                        handleFlip('diagonal135');
+                        onClose();
+                    }}
+                    isDisabled={!hasMoreThanOneNodeSelection}
+                >
+                    {t('contextMenu.flipDiagonal135')}
                 </MenuItem>
             </Box>
         </Portal>
