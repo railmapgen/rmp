@@ -33,21 +33,28 @@ export default function AppRoot() {
     }, []);
 
     // CNY 2026 promotion: Check if we're in the promotional period and unlock RMP_CLOUD
+    const [cnyNotificationShown, setCnyNotificationShown] = React.useState(false);
+
     React.useEffect(() => {
         const isLoggedIn = accountState === 'free' || accountState === 'subscriber';
         if (!isLoggedIn) return;
 
+        let isActive = true;
+
         const checkAndApplyCNYPromotion = async () => {
             const isInPeriod = await checkCNY2026Period();
-            if (isInPeriod) {
+            if (isInPeriod && isActive) {
                 // Show notification only once per session
-                dispatch(
-                    setGlobalAlert({
-                        status: 'info',
-                        message: t('happyChineseNewYear'),
-                        url: 'https://en.wikipedia.org/wiki/Chinese_New_Year',
-                    })
-                );
+                if (!cnyNotificationShown) {
+                    dispatch(
+                        setGlobalAlert({
+                            status: 'info',
+                            message: t('happyChineseNewYear'),
+                            url: 'https://en.wikipedia.org/wiki/Chinese_New_Year',
+                        })
+                    );
+                    setCnyNotificationShown(true);
+                }
                 // Enable RMP_CLOUD for all logged-in users during CNY period
                 if (!activeSubscriptions.RMP_CLOUD) {
                     dispatch(
@@ -66,8 +73,11 @@ export default function AppRoot() {
         // Check every 15 minutes
         const intervalId = setInterval(checkAndApplyCNYPromotion, CNY_CHECK_INTERVAL);
 
-        return () => clearInterval(intervalId);
-    }, [accountState]);
+        return () => {
+            isActive = false;
+            clearInterval(intervalId);
+        };
+    }, [accountState, activeSubscriptions, cnyNotificationShown, dispatch, t]);
 
     return (
         <RmgThemeProvider>
