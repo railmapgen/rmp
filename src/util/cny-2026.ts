@@ -21,7 +21,7 @@ interface TimeAPIIOResponse {
 /**
  * Fetches the current time from multiple time servers.
  * Returns the first successful response as a Unix timestamp in milliseconds.
- * Falls back to local time if all servers fail.
+ * Returns 0 (epoch) if all servers fail - never uses local time to prevent manipulation.
  */
 export const fetchNetworkTime = async (): Promise<number> => {
     for (const server of TIME_SERVERS) {
@@ -56,9 +56,9 @@ export const fetchNetworkTime = async (): Promise<number> => {
         }
     }
 
-    // Fallback to local time if all servers fail
-    logger.debug('CNY 2026: All time servers failed, using local time');
-    return Date.now();
+    // Never fallback to local time - return epoch (1970) to deny free access when network fails
+    logger.debug('CNY 2026: All time servers failed, returning epoch time');
+    return 0;
 };
 
 /**

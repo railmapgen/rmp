@@ -35,26 +35,34 @@ export default function AppRoot() {
     // CNY 2026 promotion: Check if we're in the promotional period and unlock RMP_CLOUD
     const [cnyNotificationShown, setCnyNotificationShown] = React.useState(false);
 
+    // Show CNY notification once per session (always, regardless of login or period)
     React.useEffect(() => {
-        const isLoggedIn = accountState === 'free' || accountState === 'subscriber';
-        if (!isLoggedIn) return;
+        if (!cnyNotificationShown) {
+            const timeoutId = setTimeout(() => {
+                dispatch(
+                    setGlobalAlert({
+                        status: 'info',
+                        message: t('happyChineseNewYear'),
+                        url: 'https://en.wikipedia.org/wiki/Chinese_New_Year',
+                    })
+                );
+                setCnyNotificationShown(true);
+            }, 1000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [cnyNotificationShown, dispatch, t]);
 
+    // Check CNY period and enable RMP_CLOUD for logged-in users
+    React.useEffect(() => {
         let isActive = true;
 
         const checkAndApplyCNYPromotion = async () => {
+            // Check login status inside to handle users logging in during use
+            const isLoggedIn = accountState === 'free' || accountState === 'subscriber';
+            if (!isLoggedIn || !isActive) return;
+
             const isInPeriod = await checkCNY2026Period();
             if (isInPeriod && isActive) {
-                // Show notification only once per session
-                if (!cnyNotificationShown) {
-                    dispatch(
-                        setGlobalAlert({
-                            status: 'info',
-                            message: t('happyChineseNewYear'),
-                            url: 'https://en.wikipedia.org/wiki/Chinese_New_Year',
-                        })
-                    );
-                    setCnyNotificationShown(true);
-                }
                 // Enable RMP_CLOUD for all logged-in users during CNY period
                 if (!activeSubscriptions.RMP_CLOUD) {
                     dispatch(
@@ -77,7 +85,7 @@ export default function AppRoot() {
             isActive = false;
             clearInterval(intervalId);
         };
-    }, [accountState, activeSubscriptions, cnyNotificationShown, dispatch, t]);
+    }, [accountState, activeSubscriptions, dispatch]);
 
     return (
         <RmgThemeProvider>
