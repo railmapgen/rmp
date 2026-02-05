@@ -949,5 +949,7 @@
         "flipDiagonal135": "沿135°线翻转"
     },
 
-    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
+    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
+
+    "happyChineseNewYear": "🎇 恭贺新禧！2026年春节期间（2月15日至23日），云端功能向所有用户限时免费开放。"
 }

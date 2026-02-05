@@ -950,5 +950,7 @@
         "flipDiagonal135": "Flip across 135° line"
     },
 
-    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
+
+    "happyChineseNewYear": "🎇 Happy Chinese New Year 2026! Cloud features are free for all users during the festival period (Feb 15-23)."
 }
