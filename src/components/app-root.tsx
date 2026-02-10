@@ -5,7 +5,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
+import { setActiveSubscriptions } from '../redux/account/account-slice';
 import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runtime-slice';
+import { checkCNY2026Period, CNY_CHECK_INTERVAL } from '../util/cny-2026';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
@@ -18,6 +20,8 @@ export default function AppRoot() {
     const {
         paletteAppClip: { input },
     } = useRootSelector(state => state.runtime);
+    const accountState = useRootSelector(state => state.account.state);
+    const activeSubscriptions = useRootSelector(state => state.account.activeSubscriptions);
     const { t } = useTranslation();
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
@@ -27,6 +31,55 @@ export default function AppRoot() {
             setIsShowRMTMessage(true);
         }
     }, []);
+
+    // Track if RMP_CLOUD was enabled by CNY promotion (to revert when period ends)
+    const cnyPromoAppliedRef = React.useRef(false);
+
+    // Check CNY period and enable RMP_CLOUD for logged-in users
+    React.useEffect(() => {
+        let isActive = true;
+
+        const checkAndApplyCNYPromotion = async () => {
+            // Check login status inside to handle users logging in during use
+            const isLoggedIn = accountState === 'free' || accountState === 'subscriber';
+            const isInPeriod = await checkCNY2026Period();
+
+            if (!isActive) return;
+
+            if (isInPeriod && isLoggedIn) {
+                // Enable RMP_CLOUD for all logged-in users during CNY period
+                if (!activeSubscriptions.RMP_CLOUD) {
+                    cnyPromoAppliedRef.current = true;
+                    dispatch(
+                        setActiveSubscriptions({
+                            ...activeSubscriptions,
+                            RMP_CLOUD: true,
+                        })
+                    );
+                }
+            } else if (cnyPromoAppliedRef.current && activeSubscriptions.RMP_CLOUD) {
+                // Revert RMP_CLOUD if it was enabled by CNY promotion and period has ended
+                cnyPromoAppliedRef.current = false;
+                dispatch(
+                    setActiveSubscriptions({
+                        ...activeSubscriptions,
+                        RMP_CLOUD: false,
+                    })
+                );
+            }
+        };
+
+        // Check immediately on mount
+        checkAndApplyCNYPromotion();
+
+        // Check every 15 minutes
+        const intervalId = setInterval(checkAndApplyCNYPromotion, CNY_CHECK_INTERVAL);
+
+        return () => {
+            isActive = false;
+            clearInterval(intervalId);
+        };
+    }, [accountState, activeSubscriptions, dispatch]);
 
     return (
         <RmgThemeProvider>
