@@ -42,9 +42,10 @@ export default function AppRoot() {
         const checkAndApplyCNYPromotion = async () => {
             // Check login status inside to handle users logging in during use
             const isLoggedIn = accountState === 'free' || accountState === 'subscriber';
+            const isInPeriod = await checkCNY2026Period();
+
             if (!isActive) return;
 
-            const isInPeriod = await checkCNY2026Period();
             if (isInPeriod && isLoggedIn) {
                 // Enable RMP_CLOUD for all logged-in users during CNY period
                 if (!activeSubscriptions.RMP_CLOUD) {
