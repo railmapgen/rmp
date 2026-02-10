@@ -32,6 +32,9 @@ export default function AppRoot() {
         }
     }, []);
 
+    // Track if RMP_CLOUD was enabled by CNY promotion (to revert when period ends)
+    const cnyPromoAppliedRef = React.useRef(false);
+
     // Check CNY period and enable RMP_CLOUD for logged-in users
     React.useEffect(() => {
         let isActive = true;
@@ -39,12 +42,13 @@ export default function AppRoot() {
         const checkAndApplyCNYPromotion = async () => {
             // Check login status inside to handle users logging in during use
             const isLoggedIn = accountState === 'free' || accountState === 'subscriber';
-            if (!isLoggedIn || !isActive) return;
+            if (!isActive) return;
 
             const isInPeriod = await checkCNY2026Period();
-            if (isInPeriod && isActive) {
+            if (isInPeriod && isLoggedIn) {
                 // Enable RMP_CLOUD for all logged-in users during CNY period
                 if (!activeSubscriptions.RMP_CLOUD) {
+                    cnyPromoAppliedRef.current = true;
                     dispatch(
                         setActiveSubscriptions({
                             ...activeSubscriptions,
@@ -52,6 +56,15 @@ export default function AppRoot() {
                         })
                     );
                 }
+            } else if (cnyPromoAppliedRef.current && activeSubscriptions.RMP_CLOUD) {
+                // Revert RMP_CLOUD if it was enabled by CNY promotion and period has ended
+                cnyPromoAppliedRef.current = false;
+                dispatch(
+                    setActiveSubscriptions({
+                        ...activeSubscriptions,
+                        RMP_CLOUD: false,
+                    })
+                );
             }
         };
 

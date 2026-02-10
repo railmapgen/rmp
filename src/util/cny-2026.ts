@@ -25,15 +25,14 @@ interface TimeAPIIOResponse {
  */
 export const fetchNetworkTime = async (): Promise<number> => {
     for (const server of TIME_SERVERS) {
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
+        try {
             const response = await fetch(server, {
                 signal: controller.signal,
                 cache: 'no-store',
             });
-            clearTimeout(timeoutId);
 
             if (!response.ok) continue;
 
@@ -53,6 +52,8 @@ export const fetchNetworkTime = async (): Promise<number> => {
             }
         } catch (error) {
             logger.debug(`CNY 2026: Failed to fetch time from ${server}: ${error}`);
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 
