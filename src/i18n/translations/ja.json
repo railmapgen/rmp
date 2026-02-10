@@ -951,7 +951,5 @@
         "flipDiagonal135": "135° 線で反転"
     },
 
-    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
-
-    "happyChineseNewYear": "🎇 旧正月おめでとうございます！2026年春節期間中（2月15日～23日）、クラウド機能が全ユーザーに無料で開放されます。"
+    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }

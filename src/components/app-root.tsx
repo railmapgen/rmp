@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setActiveSubscriptions } from '../redux/account/account-slice';
-import { closePaletteAppClip, onPaletteAppClipEmit, setGlobalAlert } from '../redux/runtime/runtime-slice';
+import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runtime-slice';
 import { checkCNY2026Period, CNY_CHECK_INTERVAL } from '../util/cny-2026';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
@@ -22,10 +22,7 @@ export default function AppRoot() {
     } = useRootSelector(state => state.runtime);
     const accountState = useRootSelector(state => state.account.state);
     const activeSubscriptions = useRootSelector(state => state.account.activeSubscriptions);
-    const {
-        t,
-        i18n: { language: lang },
-    } = useTranslation();
+    const { t } = useTranslation();
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
 
@@ -34,26 +31,6 @@ export default function AppRoot() {
             setIsShowRMTMessage(true);
         }
     }, []);
-
-    // CNY 2026 promotion: Check if we're in the promotional period and unlock RMP_CLOUD
-    const [cnyNotificationShown, setCnyNotificationShown] = React.useState(false);
-
-    // Show CNY notification once per session (always, regardless of login or period)
-    React.useEffect(() => {
-        if (!cnyNotificationShown) {
-            const timeoutId = setTimeout(() => {
-                dispatch(
-                    setGlobalAlert({
-                        status: 'warning',
-                        message: t('happyChineseNewYear'),
-                        url: `https://railmapgen.org/rmt-blog/${lang}/rmg-7th-newyear`,
-                    })
-                );
-                setCnyNotificationShown(true);
-            }, 1000);
-            return () => clearTimeout(timeoutId);
-        }
-    }, [cnyNotificationShown, dispatch, t]);
 
     // Check CNY period and enable RMP_CLOUD for logged-in users
     React.useEffect(() => {
