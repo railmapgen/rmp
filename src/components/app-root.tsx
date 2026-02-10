@@ -22,7 +22,10 @@ export default function AppRoot() {
     } = useRootSelector(state => state.runtime);
     const accountState = useRootSelector(state => state.account.state);
     const activeSubscriptions = useRootSelector(state => state.account.activeSubscriptions);
-    const { t } = useTranslation();
+    const {
+        t,
+        i18n: { language: lang },
+    } = useTranslation();
 
     const [isShowRMTMessage, setIsShowRMTMessage] = React.useState(false);
 
@@ -41,9 +44,9 @@ export default function AppRoot() {
             const timeoutId = setTimeout(() => {
                 dispatch(
                     setGlobalAlert({
-                        status: 'info',
+                        status: 'warning',
                         message: t('happyChineseNewYear'),
-                        url: 'https://en.wikipedia.org/wiki/Chinese_New_Year',
+                        url: `https://railmapgen.org/rmt-blog/${lang}/rmg-7th-newyear`,
                     })
                 );
                 setCnyNotificationShown(true);
