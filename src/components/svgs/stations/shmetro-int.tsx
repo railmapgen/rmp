@@ -92,7 +92,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 transform={`translate(${x + textX}, ${y + textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
-                strokeWidth="1"
+                strokeWidth="2.5"
             >
                 <MultilineText
                     text={names[0].split('\n')}

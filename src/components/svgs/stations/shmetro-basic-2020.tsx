@@ -139,7 +139,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
                 textAnchor={ROTATE_CONST[rotate].textAnchor}
                 className="rmp-name-outline"
-                strokeWidth="1"
+                strokeWidth="2.5"
             >
                 <MultilineText
                     text={names[0].split('\n')}
