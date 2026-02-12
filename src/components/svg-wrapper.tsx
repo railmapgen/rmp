@@ -427,7 +427,7 @@ const SvgWrapper = () => {
                 </defs>
                 {gridLines && (
                     <GridLines
-                        svgViewBoxMin={svgViewBoxMin}
+                        svgViewBoxMin={renderViewBoxMin}
                         svgViewBoxZoom={svgViewBoxZoom}
                         svgWidth={width}
                         svgHeight={height}
