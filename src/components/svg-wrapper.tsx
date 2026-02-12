@@ -99,17 +99,25 @@ const SvgWrapper = () => {
         position: { x: 0, y: 0 },
     });
 
-    // background moving related
-    const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
-    const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
-    const backgroundOffsetRef = React.useRef({ x: 0, y: 0 });
-    const [renderViewBoxMin, setRenderViewBoxMin] = React.useState(svgViewBoxMin);
+    const viewportRef = React.useRef<SVGGElement>(null);
     const rafRef = React.useRef<number | null>(null);
 
-    // Keep renderViewBoxMin in sync with Redux svgViewBoxMin
-    React.useEffect(() => {
-        setRenderViewBoxMin(svgViewBoxMin);
-    }, [svgViewBoxMin]);
+    const dragStartRef = React.useRef({ x: 0, y: 0 });
+    const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+
+    const updateViewportTransform = React.useCallback((min: { x: number; y: number }, zoom: number) => {
+        if (viewportRef.current) {
+            const scale = 100 / zoom;
+            const tx = -min.x * scale;
+            const ty = -min.y * scale;
+
+            viewportRef.current.setAttribute('transform', `translate(${tx}, ${ty}) scale(${scale})`);
+        }
+    }, []);
+
+    React.useLayoutEffect(() => {
+        updateViewportTransform(svgViewBoxMin, svgViewBoxZoom);
+    }, [svgViewBoxMin, svgViewBoxZoom, updateViewportTransform]);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
@@ -155,8 +163,8 @@ const SvgWrapper = () => {
             }
 
             // set initial position of the pointer, this is used in handleBackgroundMove
-            setOffset({ x, y });
-            setSvgViewBoxMinTmp(svgViewBoxMin);
+            dragStartRef.current = { x, y };
+            initialViewBoxMinRef.current = svgViewBoxMin;
             if (!e.shiftKey) {
                 // when user holding the shift key and mis-click the background
                 // preserve the current selection
@@ -176,21 +184,32 @@ const SvgWrapper = () => {
             }
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
-            backgroundOffsetRef.current = {
-                x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
-                y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
-            };
             if (!rafRef.current) {
                 rafRef.current = requestAnimationFrame(() => {
-                    setRenderViewBoxMin({ ...backgroundOffsetRef.current });
+                    const dx = x - dragStartRef.current.x;
+                    const dy = y - dragStartRef.current.y;
+
+                    const deltaSvgX = (dx * svgViewBoxZoom) / 100;
+                    const deltaSvgY = (dy * svgViewBoxZoom) / 100;
+
+                    const tempMin = {
+                        x: initialViewBoxMinRef.current.x - deltaSvgX,
+                        y: initialViewBoxMinRef.current.y - deltaSvgY,
+                    };
+
+                    // This is the core of background dragging:
+                    // Update the viewport transform immediately for smooth dragging experience,
+                    // but only dispatch the final viewBoxMin to Redux store when user releases the pointer (in handleBackgroundUp).
+                    updateViewportTransform(tempMin, svgViewBoxZoom);
+
                     rafRef.current = null;
                 });
             }
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+        const { x, y } = getMousePosition(e);
         if (mode === 'select') {
-            const { x, y } = getMousePosition(e);
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
             const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
@@ -209,10 +228,25 @@ const SvgWrapper = () => {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
             }
-            const nextViewBoxMin = backgroundOffsetRef.current ?? renderViewBoxMin;
-            setRenderViewBoxMin(nextViewBoxMin);
-            dispatch(setSvgViewBoxMin(nextViewBoxMin));
-            dispatch(setActive(undefined)); // svg mouse event only
+
+            const { x, y } = getMousePosition(e);
+            const dx = x - dragStartRef.current.x;
+            const dy = y - dragStartRef.current.y;
+
+            if (dx !== 0 || dy !== 0) {
+                const deltaSvgX = (dx * svgViewBoxZoom) / 100;
+                const deltaSvgY = (dy * svgViewBoxZoom) / 100;
+
+                const finalMin = {
+                    x: initialViewBoxMinRef.current.x - deltaSvgX,
+                    y: initialViewBoxMinRef.current.y - deltaSvgY,
+                };
+
+                // Dispatch: Update Redux -> Component Rerender -> useEffect -> updateViewportTransform
+                dispatch(setSvgViewBoxMin(finalMin));
+            }
+
+            dispatch(setActive(undefined));
         }
     });
 
@@ -220,21 +254,18 @@ const SvgWrapper = () => {
         let newSvgViewBoxZoom = svgViewBoxZoom;
         if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) newSvgViewBoxZoom = svgViewBoxZoom + 10;
         else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) newSvgViewBoxZoom = svgViewBoxZoom - 10;
-        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
 
-        // the position the pointer points will still be in the same place after zooming
         const { x, y } = getMousePosition(e);
         const bbox = e.currentTarget.getBoundingClientRect();
-        // calculate the proportion of the pointer in the canvas
         const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
-        // the final svgViewBoxMin will be the position the pointer points minus
-        // the left/top part of the new canvas (new width/height times the proportion)
-        dispatch(
-            setSvgViewBoxMin({
-                x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-                y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
-            })
-        );
+
+        const newMin = {
+            x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+            y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+        };
+
+        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+        dispatch(setSvgViewBoxMin(newMin));
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
@@ -410,7 +441,7 @@ const SvgWrapper = () => {
                 style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
                 height={height}
                 width={width}
-                viewBox={`${renderViewBoxMin.x} ${renderViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${(height * svgViewBoxZoom) / 100}`}
+                viewBox={`0 0 ${width} ${height}`}
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
@@ -425,34 +456,37 @@ const SvgWrapper = () => {
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
                 </defs>
-                {gridLines && (
-                    <GridLines
-                        svgViewBoxMin={renderViewBoxMin}
-                        svgViewBoxZoom={svgViewBoxZoom}
-                        svgWidth={width}
-                        svgHeight={height}
-                    />
-                )}
-                {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
-                {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-                <utils.SvgAssetsContextProvider>
-                    <SvgCanvas />
-                </utils.SvgAssetsContextProvider>
-                {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                    <rect
-                        x={selectCoord.sx}
-                        y={selectCoord.sy}
-                        width={selectCoord.ex - selectCoord.sx}
-                        height={selectCoord.ey - selectCoord.sy}
-                        rx="2"
-                        stroke="#b5b5b6"
-                        strokeWidth="2"
-                        strokeOpacity="0.4"
-                        fill="#b5b5b6"
-                        opacity="0.75"
-                    />
-                )}
+
+                <g ref={viewportRef}>
+                    {gridLines && (
+                        <GridLines
+                            svgViewBoxMin={svgViewBoxMin}
+                            svgViewBoxZoom={svgViewBoxZoom}
+                            svgWidth={width}
+                            svgHeight={height}
+                        />
+                    )}
+                    {isTouchClient() && mode === 'free' && <TouchOverlay />}
+                    {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
+                    {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                    <utils.SvgAssetsContextProvider>
+                        <SvgCanvas />
+                    </utils.SvgAssetsContextProvider>
+                    {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                        <rect
+                            x={selectCoord.sx}
+                            y={selectCoord.sy}
+                            width={selectCoord.ex - selectCoord.sx}
+                            height={selectCoord.ey - selectCoord.sy}
+                            rx="2"
+                            stroke="#b5b5b6"
+                            strokeWidth="2"
+                            strokeOpacity="0.4"
+                            fill="#b5b5b6"
+                            opacity="0.75"
+                        />
+                    )}
+                </g>
                 {isTouchClient() && [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
                     <VirtualJoystick />
                 )}
