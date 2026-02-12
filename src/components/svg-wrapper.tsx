@@ -377,6 +377,16 @@ const SvgWrapper = () => {
         }
     });
 
+    // Cleanup RAF on unmount to prevent calling setRenderViewBoxMin after unmount
+    React.useEffect(() => {
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+        };
+    }, []);
+
     const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
     React.useEffect(() => {
         setSelectCoord({
