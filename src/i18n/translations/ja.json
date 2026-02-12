@@ -675,7 +675,9 @@
             "footer": {
                 "duplicate": "重複",
                 "copy": "複製",
-                "remove": "削除"
+                "remove": "削除",
+                "copyAttrs": "独自属性をコピー",
+                "pasteAttrs": "独自属性を貼り付け"
             }
         }
     },
@@ -831,6 +833,8 @@
                 "cut": "切り取る。",
                 "copy": "複製する。",
                 "paste": "貼り付ける。",
+                "copyAttrs": "独自属性をコピーする。",
+                "pasteAttrs": "独自属性を貼り付ける。",
                 "undo": "元に戻す。",
                 "redo": "やり直す。"
             },
@@ -933,11 +937,13 @@
     },
 
     "contextMenu": {
+        "refresh": "更新",
         "copy": "コピー",
         "cut": "切り取り", 
         "paste": "貼り付け",
         "delete": "削除",
-        "refresh": "更新",
+        "copyAttrs": "独自属性をコピー",
+        "pasteAttrs": "独自属性を貼り付け",
         "placeTop": "最前面へ",
         "placeBottom": "最背面へ",
         "placeDefault": "デフォルト位置へ",

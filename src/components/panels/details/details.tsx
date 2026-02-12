@@ -1,9 +1,9 @@
-import { Box, Button, Heading, HStack } from '@chakra-ui/react';
+import { Box, Button, Heading, HStack, VStack } from '@chakra-ui/react';
 import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelFooter, RmgSidePanelHeader } from '@railmapgen/rmg-components';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Id, StnId } from '../../../constants/constants';
+import { Id, LineId, NodeId, StnId } from '../../../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -14,7 +14,17 @@ import {
     refreshEdgesThunk,
     refreshNodesThunk,
 } from '../../../redux/runtime/runtime-slice';
-import { exportSelectedNodesAndEdges } from '../../../util/clipboard';
+import {
+    exportSelectedNodesAndEdges,
+    exportNodeSpecificAttrs,
+    exportEdgeSpecificAttrs,
+    parseClipboardData,
+    importNodeSpecificAttrs,
+    importEdgeSpecificAttrs,
+    getSelectedElementsType,
+    NodeSpecificAttrsClipboardData,
+    EdgeSpecificAttrsClipboardData,
+} from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
 import { checkAndChangeStationIntType } from '../../../util/change-types';
 import InfoSection from './info-section';
@@ -43,6 +53,12 @@ const DetailsPanel = () => {
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
+
+    // Check if we can paste specific attributes
+    const selectionInfo = getSelectedElementsType(graph.current, selected);
+    const canCopyAttrs = selected.size === 1;
+    const canPasteAttrs =
+        selectionInfo.allSameType && (selectionInfo.category === 'node' || selectionInfo.category === 'edge');
 
     const handleClose = () => {
         if (!isPortraitClient()) {
@@ -82,6 +98,52 @@ const DetailsPanel = () => {
         hardRefresh();
     };
 
+    const handleCopyAttrs = () => {
+        if (selected.size !== 1) return;
+        const id = selectedFirst;
+
+        if (graph.current.hasNode(id)) {
+            const s = exportNodeSpecificAttrs(graph.current, id as NodeId);
+            navigator.clipboard.writeText(s);
+        } else if (graph.current.hasEdge(id)) {
+            const s = exportEdgeSpecificAttrs(graph.current, id as LineId);
+            navigator.clipboard.writeText(s);
+        }
+    };
+
+    const handlePasteAttrs = async () => {
+        try {
+            const s = await navigator.clipboard.readText();
+            const parsed = parseClipboardData(s);
+            if (!parsed) return;
+
+            if (parsed.type === 'node-attrs' && selectionInfo.category === 'node') {
+                const nodeIds = new Set<NodeId>();
+                selected.forEach(id => {
+                    if (graph.current.hasNode(id)) {
+                        nodeIds.add(id as NodeId);
+                    }
+                });
+                if (importNodeSpecificAttrs(graph.current, nodeIds, parsed.data as NodeSpecificAttrsClipboardData)) {
+                    hardRefresh();
+                }
+            } else if (parsed.type === 'edge-attrs' && selectionInfo.category === 'edge') {
+                const edgeIds = new Set<LineId>();
+                selected.forEach(id => {
+                    if (graph.current.hasEdge(id)) {
+                        edgeIds.add(id as LineId);
+                    }
+                });
+                if (importEdgeSpecificAttrs(graph.current, edgeIds, parsed.data as EdgeSpecificAttrsClipboardData)) {
+                    hardRefresh();
+                }
+            }
+        } catch (error) {
+            // Handle clipboard read error
+            console.warn('Failed to read clipboard:', error);
+        }
+    };
+
     return (
         <RmgSidePanel isOpen={isDetailsOpen === 'show'} width={300} header="Dummy header" alwaysOverlay>
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
@@ -103,27 +165,37 @@ const DetailsPanel = () => {
                 )}
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
-                <HStack>
-                    {selected.size === 1 && graph.current.hasNode(selectedFirst) && (
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDuplicate(selectedFirst)}
-                            isDisabled={
-                                graph.current.getNodeAttributes(selectedFirst).type === MiscNodeType.Master &&
-                                isMasterDisabled
-                            }
-                        >
-                            {t('panel.details.footer.duplicate')}
+                <VStack spacing={2} align="stretch">
+                    <HStack>
+                        {selected.size === 1 && graph.current.hasNode(selectedFirst) && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDuplicate(selectedFirst)}
+                                isDisabled={
+                                    graph.current.getNodeAttributes(selectedFirst).type === MiscNodeType.Master &&
+                                    isMasterDisabled
+                                }
+                            >
+                                {t('panel.details.footer.duplicate')}
+                            </Button>
+                        )}
+                        <Button size="sm" variant="outline" onClick={() => handleCopy(selected)}>
+                            {t('panel.details.footer.copy')}
                         </Button>
-                    )}
-                    <Button size="sm" variant="outline" onClick={() => handleCopy(selected)}>
-                        {t('panel.details.footer.copy')}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
-                        {t('panel.details.footer.remove')}
-                    </Button>
-                </HStack>
+                        <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
+                            {t('panel.details.footer.remove')}
+                        </Button>
+                    </HStack>
+                    <HStack>
+                        <Button size="sm" variant="outline" onClick={handleCopyAttrs} isDisabled={!canCopyAttrs}>
+                            {t('panel.details.footer.copyAttrs')}
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={handlePasteAttrs} isDisabled={!canPasteAttrs}>
+                            {t('panel.details.footer.pasteAttrs')}
+                        </Button>
+                    </HStack>
+                </VStack>
             </RmgSidePanelFooter>
         </RmgSidePanel>
     );
