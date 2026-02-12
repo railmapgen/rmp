@@ -102,6 +102,9 @@ const SvgWrapper = () => {
     // background moving related
     const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
+    const backgroundOffsetRef = React.useRef({ x: 0, y: 0 });
+    const [renderViewBoxMin, setRenderViewBoxMin] = React.useState(svgViewBoxMin);
+    const rafRef = React.useRef<number | null>(null);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
@@ -155,7 +158,6 @@ const SvgWrapper = () => {
                 dispatch(setActive('background'));
                 dispatch(clearSelected());
             }
-            // console.log(x, y, svgViewBoxMin);
         } else if (mode === 'select') {
             setSelectStart(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
             setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
@@ -169,13 +171,16 @@ const SvgWrapper = () => {
             }
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
-            dispatch(
-                setSvgViewBoxMin({
-                    x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
-                    y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
-                })
-            );
-            // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
+            backgroundOffsetRef.current = {
+                x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
+                y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
+            };
+            if (!rafRef.current) {
+                rafRef.current = requestAnimationFrame(() => {
+                    setRenderViewBoxMin({ ...backgroundOffsetRef.current });
+                    rafRef.current = null;
+                });
+            }
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
@@ -194,8 +199,8 @@ const SvgWrapper = () => {
         // when user holding the shift key and mis-click the background
         // preserve the current selection
         if (active === 'background' && !e.shiftKey) {
+            dispatch(setSvgViewBoxMin(renderViewBoxMin));
             dispatch(setActive(undefined)); // svg mouse event only
-            // console.log('up', active);
         }
     });
 
@@ -212,12 +217,12 @@ const SvgWrapper = () => {
         const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
         // the final svgViewBoxMin will be the position the pointer points minus
         // the left/top part of the new canvas (new width/height times the proportion)
-        dispatch(
-            setSvgViewBoxMin({
-                x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-                y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
-            })
-        );
+        const newSvgViewBoxMin = {
+            x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+            y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+        };
+        setRenderViewBoxMin(newSvgViewBoxMin);
+        dispatch(setSvgViewBoxMin(newSvgViewBoxMin));
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
@@ -383,9 +388,7 @@ const SvgWrapper = () => {
                 style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
                 height={height}
                 width={width}
-                viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
-                    (height * svgViewBoxZoom) / 100
-                }`}
+                viewBox={`${renderViewBoxMin.x} ${renderViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${(height * svgViewBoxZoom) / 100}`}
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
