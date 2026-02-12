@@ -277,7 +277,9 @@ const SvgWrapper = () => {
             const d = 100;
             const x_factor = e.key.endsWith('Left') ? -1 : e.key.endsWith('Right') ? 1 : 0;
             const y_factor = e.key.endsWith('Up') ? -1 : e.key.endsWith('Down') ? 1 : 0;
-            dispatch(setSvgViewBoxMin(pointerPosToSVGCoord(d * x_factor, d * y_factor, svgViewBoxZoom, svgViewBoxMin)));
+            const newSvgViewBoxMin = pointerPosToSVGCoord(d * x_factor, d * y_factor, svgViewBoxZoom, svgViewBoxMin);
+            setRenderViewBoxMin(newSvgViewBoxMin);
+            dispatch(setSvgViewBoxMin(newSvgViewBoxMin));
         } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
             const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * NODES_MOVE_DISTANCE;
             const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * NODES_MOVE_DISTANCE;
