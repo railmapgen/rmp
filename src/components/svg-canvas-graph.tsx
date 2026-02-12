@@ -8,7 +8,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { saveGraph } from '../redux/param/param-slice';
+import { saveGraph, setSvgViewBoxMin } from '../redux/param/param-slice';
 import {
     addSelected,
     clearSelected,
@@ -156,6 +156,34 @@ const SvgCanvas = () => {
         e.currentTarget.setPointerCapture(e.pointerId);
 
         if (mode === 'free' && active === node) {
+            // Edge scrolling during drag
+            const edgeThreshold = 50; // pixels from edge to trigger scrolling
+            const scrollSpeed = 2; // pixels to scroll per frame
+            
+            let shouldScrollX = 0;
+            let shouldScrollY = 0;
+            
+            // Check if pointer is near canvas edges
+            if (x < edgeThreshold) {
+                shouldScrollX = -scrollSpeed;
+            } else if (x > width - edgeThreshold) {
+                shouldScrollX = scrollSpeed;
+            }
+            
+            if (y < edgeThreshold) {
+                shouldScrollY = -scrollSpeed;
+            } else if (y > height - edgeThreshold) {
+                shouldScrollY = scrollSpeed;
+            }
+            
+            // Apply scrolling if needed
+            if (shouldScrollX !== 0 || shouldScrollY !== 0) {
+                dispatch(setSvgViewBoxMin({
+                    x: svgViewBoxMin.x + (shouldScrollX * svgViewBoxZoom) / 100,
+                    y: svgViewBoxMin.y + (shouldScrollY * svgViewBoxZoom) / 100,
+                }));
+            }
+
             if (!e.altKey && useSnapLines) {
                 // node start position (fromX, fromY)
                 const fromX = graph.current.getNodeAttribute(node, 'x');
@@ -271,6 +299,34 @@ const SvgCanvas = () => {
                     }
                 });
             } else {
+                // Edge scrolling during drag (legacy mode)
+                const edgeThreshold = 50; // pixels from edge to trigger scrolling
+                const scrollSpeed = 2; // pixels to scroll per frame
+                
+                let shouldScrollX = 0;
+                let shouldScrollY = 0;
+                
+                // Check if pointer is near canvas edges
+                if (x < edgeThreshold) {
+                    shouldScrollX = -scrollSpeed;
+                } else if (x > width - edgeThreshold) {
+                    shouldScrollX = scrollSpeed;
+                }
+                
+                if (y < edgeThreshold) {
+                    shouldScrollY = -scrollSpeed;
+                } else if (y > height - edgeThreshold) {
+                    shouldScrollY = scrollSpeed;
+                }
+                
+                // Apply scrolling if needed
+                if (shouldScrollX !== 0 || shouldScrollY !== 0) {
+                    dispatch(setSvgViewBoxMin({
+                        x: svgViewBoxMin.x + (shouldScrollX * svgViewBoxZoom) / 100,
+                        y: svgViewBoxMin.y + (shouldScrollY * svgViewBoxZoom) / 100,
+                    }));
+                }
+
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
                 setActiveSnapPoint(undefined);
