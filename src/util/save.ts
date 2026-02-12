@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 68;
+export const CURRENT_VERSION = 69;
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -905,5 +905,30 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 }
             });
         return JSON.stringify({ ...p, version: 68, graph: graph.export() });
+    },
+    68: param => {
+        // Bump save version to add minorOffset to beijing subway basic and interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes(
+                (node, attr) =>
+                    node.startsWith('stn') &&
+                    (attr.type === StationType.BjsubwayBasic || attr.type === StationType.BjsubwayInt)
+            )
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (typeof attr.minorOffsetX !== 'number') {
+                    attr.minorOffsetX = '0';
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+                if (typeof attr.minorOffsetY !== 'number') {
+                    attr.minorOffsetY = '0';
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 69, graph: graph.export() });
     },
 };

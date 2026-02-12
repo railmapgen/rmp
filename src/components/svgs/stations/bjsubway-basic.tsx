@@ -1,4 +1,4 @@
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgButtonGroup, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -31,6 +31,8 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
         open = defaultBjsubwayBasicStationAttributes.open,
         construction = defaultBjsubwayBasicStationAttributes.construction,
         scale = defaultBjsubwayBasicStationAttributes.scale,
+        minorOffsetX = defaultBjsubwayBasicStationAttributes.minorOffsetX,
+        minorOffsetY = defaultBjsubwayBasicStationAttributes.minorOffsetY,
     } = attrs[StationType.BjsubwayBasic] ?? defaultBjsubwayBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -71,6 +73,17 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
     const [textX, textY] = getTextOffset(nameOffsetX, nameOffsetY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
+    const getMinorTextOffset = (offset: '-2' | '-1' | '0' | '1' | '2') => {
+        if (offset === '-2') return -8;
+        else if (offset === '-1') return -2.5;
+        else if (offset === '0') return 0;
+        else if (offset === '1') return 2.5;
+        else if (offset === '2') return 8;
+        else return 0;
+    };
+    const minorTextX = getMinorTextOffset(minorOffsetX);
+    const minorTextY = getMinorTextOffset(minorOffsetY);
+
     return (
         <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
@@ -85,7 +98,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g transform={`translate(${textX + minorTextX}, ${textY + minorTextY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={LINE_HEIGHT.zh}
@@ -131,6 +144,8 @@ export interface BjsubwayBasicStationAttributes extends StationAttributes {
     open: boolean;
     construction: boolean;
     scale: number;
+    minorOffsetX: '-2' | '-1' | '0' | '1' | '2';
+    minorOffsetY: '-2' | '-1' | '0' | '1' | '2';
 }
 
 const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
@@ -140,6 +155,8 @@ const defaultBjsubwayBasicStationAttributes: BjsubwayBasicStationAttributes = {
     open: true,
     construction: false,
     scale: 1,
+    minorOffsetX: '0',
+    minorOffsetY: '0',
 };
 
 const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttributes>) => {
@@ -234,6 +251,72 @@ const BJSubwayBasicAttrsComponent = (props: AttrsProps<BjsubwayBasicStationAttri
                 attrs.construction = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('panel.details.stations.bjsubwayBasic.minorOffset.labelX'),
+            component: (
+                <RmgButtonGroup
+                    selections={[
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.-2'),
+                            value: '-2',
+                        },
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.-1'),
+                            value: '-1',
+                        },
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.0'),
+                            value: '0',
+                        },
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.1'),
+                            value: '1',
+                        },
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.2'),
+                            value: '2',
+                        },
+                    ]}
+                    defaultValue={attrs.minorOffsetX ?? defaultBjsubwayBasicStationAttributes.minorOffsetX}
+                    onChange={val => {
+                        attrs.minorOffsetX = val as '-2' | '-1' | '0' | '1' | '2';
+                        handleAttrsUpdate(id, attrs);
+                    }}
+                    multiSelect={false}
+                />
+            ),
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: t('panel.details.stations.bjsubwayBasic.minorOffset.labelY'),
+            component: (
+                <RmgButtonGroup
+                    selections={[
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.-1'),
+                            value: '-1',
+                        },
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.0'),
+                            value: '0',
+                        },
+                        {
+                            label: t('panel.details.stations.bjsubwayBasic.minorOffset.1'),
+                            value: '1',
+                        },
+                    ]}
+                    defaultValue={attrs.minorOffsetY ?? defaultBjsubwayBasicStationAttributes.minorOffsetY}
+                    onChange={val => {
+                        attrs.minorOffsetY = val as '-2' | '-1' | '0' | '1' | '2';
+                        handleAttrsUpdate(id, attrs);
+                    }}
+                    multiSelect={false}
+                />
+            ),
             minW: 'full',
         },
     ];
