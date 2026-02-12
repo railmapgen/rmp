@@ -199,7 +199,14 @@ const SvgWrapper = () => {
         // when user holding the shift key and mis-click the background
         // preserve the current selection
         if (active === 'background' && !e.shiftKey) {
-            dispatch(setSvgViewBoxMin(renderViewBoxMin));
+            // finalize background drag using the latest offset, not a potentially stale renderViewBoxMin
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+            const nextViewBoxMin = backgroundOffsetRef.current ?? renderViewBoxMin;
+            setRenderViewBoxMin(nextViewBoxMin);
+            dispatch(setSvgViewBoxMin(nextViewBoxMin));
             dispatch(setActive(undefined)); // svg mouse event only
         }
     });
