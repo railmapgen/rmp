@@ -106,6 +106,11 @@ const SvgWrapper = () => {
     const [renderViewBoxMin, setRenderViewBoxMin] = React.useState(svgViewBoxMin);
     const rafRef = React.useRef<number | null>(null);
 
+    // Keep renderViewBoxMin in sync with Redux svgViewBoxMin
+    React.useEffect(() => {
+        setRenderViewBoxMin(svgViewBoxMin);
+    }, [svgViewBoxMin]);
+
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
             // close context menu if it's open
@@ -224,12 +229,12 @@ const SvgWrapper = () => {
         const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
         // the final svgViewBoxMin will be the position the pointer points minus
         // the left/top part of the new canvas (new width/height times the proportion)
-        const newSvgViewBoxMin = {
-            x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-            y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
-        };
-        setRenderViewBoxMin(newSvgViewBoxMin);
-        dispatch(setSvgViewBoxMin(newSvgViewBoxMin));
+        dispatch(
+            setSvgViewBoxMin({
+                x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+                y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+            })
+        );
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
@@ -277,9 +282,7 @@ const SvgWrapper = () => {
             const d = 100;
             const x_factor = e.key.endsWith('Left') ? -1 : e.key.endsWith('Right') ? 1 : 0;
             const y_factor = e.key.endsWith('Up') ? -1 : e.key.endsWith('Down') ? 1 : 0;
-            const newSvgViewBoxMin = pointerPosToSVGCoord(d * x_factor, d * y_factor, svgViewBoxZoom, svgViewBoxMin);
-            setRenderViewBoxMin(newSvgViewBoxMin);
-            dispatch(setSvgViewBoxMin(newSvgViewBoxMin));
+            dispatch(setSvgViewBoxMin(pointerPosToSVGCoord(d * x_factor, d * y_factor, svgViewBoxZoom, svgViewBoxMin)));
         } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
             const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * NODES_MOVE_DISTANCE;
             const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * NODES_MOVE_DISTANCE;
