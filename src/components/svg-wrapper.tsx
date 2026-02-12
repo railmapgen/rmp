@@ -106,6 +106,12 @@ const SvgWrapper = () => {
     const [renderViewBoxMin, setRenderViewBoxMin] = React.useState(svgViewBoxMin);
     const rafRef = React.useRef<number | null>(null);
 
+    // Keep renderViewBoxMin in sync with the Redux svgViewBoxMin so that the
+    // rendered viewBox and pointer coordinate conversions remain consistent
+    React.useEffect(() => {
+        setRenderViewBoxMin(svgViewBoxMin);
+    }, [svgViewBoxMin]);
+
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
             // close context menu if it's open
