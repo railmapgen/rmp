@@ -106,16 +106,6 @@ const SvgWrapper = () => {
     const [renderViewBoxMin, setRenderViewBoxMin] = React.useState(svgViewBoxMin);
     const rafRef = React.useRef<number | null>(null);
 
-    // Cleanup RAF on unmount to prevent calling setRenderViewBoxMin after unmount
-    React.useEffect(() => {
-        return () => {
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current);
-                rafRef.current = null;
-            }
-        };
-    }, []);
-
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
             // close context menu if it's open
@@ -386,6 +376,16 @@ const SvgWrapper = () => {
             }
         }
     });
+
+    // Cleanup RAF on unmount to prevent calling setRenderViewBoxMin after unmount
+    React.useEffect(() => {
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+        };
+    }, []);
 
     const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
     React.useEffect(() => {
