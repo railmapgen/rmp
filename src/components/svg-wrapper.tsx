@@ -104,16 +104,21 @@ const SvgWrapper = () => {
 
     const dragStartRef = React.useRef({ x: 0, y: 0 });
     const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+    const [gridLineOffset, setGridLineOffset] = React.useState({ x: 0, y: 0, zoom: 1 });
 
-    const updateViewportTransform = React.useCallback((min: { x: number; y: number }, zoom: number) => {
-        if (viewportRef.current) {
-            const scale = 100 / zoom;
-            const tx = -min.x * scale;
-            const ty = -min.y * scale;
+    const updateViewportTransform = React.useCallback(
+        (min: { x: number; y: number }, zoom: number) => {
+            if (viewportRef.current) {
+                const scale = 100 / zoom;
+                const x = -min.x * scale;
+                const y = -min.y * scale;
 
-            viewportRef.current.setAttribute('transform', `translate(${tx}, ${ty}) scale(${scale})`);
-        }
-    }, []);
+                viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+                if (gridLines) setGridLineOffset({ x: min.x, y: min.y, zoom });
+            }
+        },
+        [gridLines]
+    );
 
     React.useLayoutEffect(() => {
         updateViewportTransform(svgViewBoxMin, svgViewBoxZoom);
@@ -460,8 +465,8 @@ const SvgWrapper = () => {
                 <g ref={viewportRef}>
                     {gridLines && (
                         <GridLines
-                            svgViewBoxMin={svgViewBoxMin}
-                            svgViewBoxZoom={svgViewBoxZoom}
+                            svgViewBoxMin={gridLineOffset}
+                            svgViewBoxZoom={gridLineOffset.zoom}
                             svgWidth={width}
                             svgHeight={height}
                         />
