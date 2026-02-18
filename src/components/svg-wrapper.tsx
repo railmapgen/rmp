@@ -256,7 +256,6 @@ const SvgWrapper = () => {
                 rafRef.current = null;
             }
 
-            const { x, y } = getMousePosition(e);
             // never rely on viewportRef to get the final svgViewBoxMin as it may still in progress
             const finalSVGViewBoxMin = makeSVGViewBoxMin(x, y);
             // Only update svgViewBoxMin at the end of dragging for better performance and
