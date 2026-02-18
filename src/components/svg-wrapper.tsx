@@ -103,6 +103,21 @@ const SvgWrapper = () => {
     const dragStartRef = React.useRef({ x: 0, y: 0 });
     const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
 
+    // helper function to calculate the new svgViewBoxMin based on the current
+    // mouse position and the initial position when dragging starts
+    const makeSVGViewBoxMin = (x: number, y: number) => {
+        const dx = x - dragStartRef.current.x;
+        const dy = y - dragStartRef.current.y;
+
+        const deltaSvgX = (dx * svgViewBoxZoom) / 100;
+        const deltaSvgY = (dy * svgViewBoxZoom) / 100;
+
+        return {
+            x: initialViewBoxMinRef.current.x - deltaSvgX,
+            y: initialViewBoxMinRef.current.y - deltaSvgY,
+        };
+    };
+
     // grid line requires svgViewBoxMin and svgViewBoxZoom to calculate the position of grid lines
     const [gridLineOffset, setGridLineOffset] = React.useState({ x: 0, y: 0, zoom: 1 });
 
@@ -111,14 +126,14 @@ const SvgWrapper = () => {
     // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
     const viewportRef = React.useRef<SVGGElement>(null);
     const updateViewportTransform = React.useCallback(
-        (min: { x: number; y: number }, zoom: number) => {
+        (svgViewBoxMin: { x: number; y: number }, svgViewBoxZoom: number) => {
             if (viewportRef.current) {
-                const scale = 100 / zoom;
-                const x = -min.x * scale;
-                const y = -min.y * scale;
+                const scale = 100 / svgViewBoxZoom;
+                const x = -svgViewBoxMin.x * scale;
+                const y = -svgViewBoxMin.y * scale;
 
                 viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
-                if (gridLines) setGridLineOffset({ x: min.x, y: min.y, zoom });
+                if (gridLines) setGridLineOffset({ x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom });
             }
         },
         [gridLines]
@@ -213,18 +228,8 @@ const SvgWrapper = () => {
                 // Use requestAnimationFrame to throttle the updates to at most
                 // once per frame for better performance during dragging.
                 rafRef.current = requestAnimationFrame(() => {
-                    const dx = x - dragStartRef.current.x;
-                    const dy = y - dragStartRef.current.y;
-
-                    const deltaSvgX = (dx * svgViewBoxZoom) / 100;
-                    const deltaSvgY = (dy * svgViewBoxZoom) / 100;
-
-                    const tempMin = {
-                        x: initialViewBoxMinRef.current.x - deltaSvgX,
-                        y: initialViewBoxMinRef.current.y - deltaSvgY,
-                    };
-
-                    updateViewportTransform(tempMin, svgViewBoxZoom);
+                    const tempSVGViewBoxMin = makeSVGViewBoxMin(x, y);
+                    updateViewportTransform(tempSVGViewBoxMin, svgViewBoxZoom);
                     rafRef.current = null;
                 });
             }
@@ -246,29 +251,18 @@ const SvgWrapper = () => {
         // when user holding the shift key and mis-click the background
         // preserve the current selection
         if (active === 'background' && !e.shiftKey) {
-            // finalize background drag using the latest offset, not a potentially stale renderViewBoxMin
             if (rafRef.current) {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
             }
 
             const { x, y } = getMousePosition(e);
-            const dx = x - dragStartRef.current.x;
-            const dy = y - dragStartRef.current.y;
-
-            if (dx !== 0 || dy !== 0) {
-                const deltaSvgX = (dx * svgViewBoxZoom) / 100;
-                const deltaSvgY = (dy * svgViewBoxZoom) / 100;
-
-                const finalMin = {
-                    x: initialViewBoxMinRef.current.x - deltaSvgX,
-                    y: initialViewBoxMinRef.current.y - deltaSvgY,
-                };
-
-                // Only update store at the end of dragging for better performance and correctness.
-                // Update Redux -> Component Rerender -> useLayoutEffect -> updateViewportTransform
-                dispatch(setSvgViewBoxMin(finalMin));
-            }
+            // never rely on viewportRef to get the final svgViewBoxMin as it may still in progress
+            const finalSVGViewBoxMin = makeSVGViewBoxMin(x, y);
+            // Only update svgViewBoxMin at the end of dragging for better performance and
+            // compatibility with existing code that relies on it.
+            // Update Redux -> Component Rerender -> useLayoutEffect -> updateViewportTransform
+            dispatch(setSvgViewBoxMin(finalSVGViewBoxMin));
 
             dispatch(setActive(undefined));
         }
