@@ -149,7 +149,7 @@ const SvgWrapper = () => {
     // instead of dispatching Redux action which will cause re-render on every pointer move.
     const rafRef = React.useRef<number | null>(null);
 
-    // cleanup RAF on unmount to prevent calling setRenderViewBoxMin after unmount
+    // cleanup RAF on unmount to prevent calling updateViewportTransform after unmount
     React.useEffect(() => {
         return () => {
             if (rafRef.current) {
