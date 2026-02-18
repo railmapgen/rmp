@@ -99,13 +99,17 @@ const SvgWrapper = () => {
         position: { x: 0, y: 0 },
     });
 
-    const viewportRef = React.useRef<SVGGElement>(null);
-    const rafRef = React.useRef<number | null>(null);
-
+    // background dragging related
     const dragStartRef = React.useRef({ x: 0, y: 0 });
     const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+
+    // grid line requires svgViewBoxMin and svgViewBoxZoom to calculate the position of grid lines
     const [gridLineOffset, setGridLineOffset] = React.useState({ x: 0, y: 0, zoom: 1 });
 
+    // Instead of dispatching action to update svgViewBoxMin|Zoom on every pointer move during dragging,
+    // we update the viewport transform directly for better performance.
+    // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
+    const viewportRef = React.useRef<SVGGElement>(null);
     const updateViewportTransform = React.useCallback(
         (min: { x: number; y: number }, zoom: number) => {
             if (viewportRef.current) {
@@ -119,10 +123,26 @@ const SvgWrapper = () => {
         },
         [gridLines]
     );
-
     React.useLayoutEffect(() => {
+        // Update the viewport when actions other than dragging change svgViewBoxMin|Zoom.
+        // They do affect performance, but unlike dragging, they are not continuous in a second,
+        // so it's acceptable to update viewport in a useLayoutEffect instead of RAF.
         updateViewportTransform(svgViewBoxMin, svgViewBoxZoom);
     }, [svgViewBoxMin, svgViewBoxZoom, updateViewportTransform]);
+
+    // Rely on RAF to update viewBoxMin during background dragging for better performance,
+    // instead of dispatching Redux action which will cause re-render on every pointer move.
+    const rafRef = React.useRef<number | null>(null);
+
+    // cleanup RAF on unmount to prevent calling setRenderViewBoxMin after unmount
+    React.useEffect(() => {
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+        };
+    }, []);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
@@ -190,6 +210,8 @@ const SvgWrapper = () => {
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
             if (!rafRef.current) {
+                // Use requestAnimationFrame to throttle the updates to at most
+                // once per frame for better performance during dragging.
                 rafRef.current = requestAnimationFrame(() => {
                     const dx = x - dragStartRef.current.x;
                     const dy = y - dragStartRef.current.y;
@@ -202,11 +224,7 @@ const SvgWrapper = () => {
                         y: initialViewBoxMinRef.current.y - deltaSvgY,
                     };
 
-                    // This is the core of background dragging:
-                    // Update the viewport transform immediately for smooth dragging experience,
-                    // but only dispatch the final viewBoxMin to Redux store when user releases the pointer (in handleBackgroundUp).
                     updateViewportTransform(tempMin, svgViewBoxZoom);
-
                     rafRef.current = null;
                 });
             }
@@ -247,7 +265,8 @@ const SvgWrapper = () => {
                     y: initialViewBoxMinRef.current.y - deltaSvgY,
                 };
 
-                // Dispatch: Update Redux -> Component Rerender -> useEffect -> updateViewportTransform
+                // Only update store at the end of dragging for better performance and correctness.
+                // Update Redux -> Component Rerender -> useLayoutEffect -> updateViewportTransform
                 dispatch(setSvgViewBoxMin(finalMin));
             }
 
@@ -418,16 +437,6 @@ const SvgWrapper = () => {
         }
     });
 
-    // Cleanup RAF on unmount to prevent calling setRenderViewBoxMin after unmount
-    React.useEffect(() => {
-        return () => {
-            if (rafRef.current) {
-                cancelAnimationFrame(rafRef.current);
-                rafRef.current = null;
-            }
-        };
-    }, []);
-
     const [selectCoord, setSelectCoord] = React.useState({ sx: 0, sy: 0, ex: 0, ey: 0 });
     React.useEffect(() => {
         setSelectCoord({
@@ -462,15 +471,12 @@ const SvgWrapper = () => {
                     </pattern>
                 </defs>
 
-                <g ref={viewportRef}>
-                    {gridLines && (
-                        <GridLines
-                            svgViewBoxMin={gridLineOffset}
-                            svgViewBoxZoom={gridLineOffset.zoom}
-                            svgWidth={width}
-                            svgHeight={height}
-                        />
-                    )}
+                <g
+                    // Additional 'transform' such as `translate(${x}, ${y}) scale(${scale})` will be applied to
+                    // this group in updateViewportTransform, so all its children will be transformed accordingly.
+                    ref={viewportRef}
+                >
+                    {gridLines && <GridLines gridLineOffset={gridLineOffset} svgWidth={width} svgHeight={height} />}
                     {isTouchClient() && mode === 'free' && <TouchOverlay />}
                     {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
                     {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
@@ -491,11 +497,12 @@ const SvgWrapper = () => {
                             opacity="0.75"
                         />
                     )}
+                    {isTouchClient() &&
+                        [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
+                            <VirtualJoystick />
+                        )}
+                    <RadialTouchMenu />
                 </g>
-                {isTouchClient() && [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
-                    <VirtualJoystick />
-                )}
-                <RadialTouchMenu />
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (
