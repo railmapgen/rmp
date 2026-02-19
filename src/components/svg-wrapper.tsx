@@ -98,10 +98,29 @@ const SvgWrapper = () => {
         isOpen: false,
         position: { x: 0, y: 0 },
     });
-
+    
     // background moving related
     const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
     const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
+
+    // prevent browser zoom when ctrl + wheel or cmd + wheel
+    const svgRef = React.useRef<SVGSVGElement>(null);
+
+    React.useEffect(() => {
+        const svgInfo = svgRef.current;
+        if (!svgInfo) return;
+
+        const preventBrowserZoom = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+            }
+        };
+
+        svgInfo.addEventListener('wheel', preventBrowserZoom, { passive: false });
+        return () => {
+            svgInfo.removeEventListener('wheel', preventBrowserZoom);
+        };
+    }, []);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
@@ -386,6 +405,7 @@ const SvgWrapper = () => {
                 viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
                     (height * svgViewBoxZoom) / 100
                 }`}
+                ref={svgRef}
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
