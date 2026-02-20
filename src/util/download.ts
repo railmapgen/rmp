@@ -90,6 +90,8 @@ export const makeRenderReadySVGElement = async (
     elem.querySelectorAll('.removeMe').forEach(el => {
         el.remove();
     });
+    // remove transform set by updateViewportTransform for dragging performance
+    elem.querySelector('g')?.removeAttribute('transform');
 
     if (!isSystemFontsOnly) {
         // add additional fonts data to the final svg in encoded base64 format
