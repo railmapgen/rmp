@@ -343,12 +343,30 @@
                     "displayName": "베이징 지하철 기본역",
                     "open": "개통여부",
                     "construction": "공사중",
-                    "scale": "역명 가로 크기 조절"
+                    "scale": "역명 가로 크기 조절",
+                    "minorOffset": {
+                        "labelX": "관측소 이름의 수평 변위",
+                        "labelY": "관측소 이름의 수직 변위",
+                        "-2": "-2x",
+                        "-1": "-1x",
+                        "0": "0x",
+                        "1": "1x",
+                        "2": "2x"
+                    }
                 },
                 "bjsubwayInt": {
                     "displayName": "베이징 지하철 환승역",
                     "outOfStation": "역을 나가 환승",
-                    "scale": "역명 가로 크기 조절"
+                    "scale": "역명 가로 크기 조절",
+                    "minorOffset": {
+                        "labelX": "관측소 이름의 수평 변위",
+                        "labelY": "관측소 이름의 수직 변위",
+                        "-2": "-2x",
+                        "-1": "-1x",
+                        "0": "0x",
+                        "1": "1x",
+                        "2": "2x"
+                    }
                 },
                 "mtr": {
                     "displayName": "홍콩 MTR 역"
