@@ -672,7 +672,9 @@
             "footer": {
                 "duplicate": "重复",
                 "copy": "复制",
-                "remove": "移除"
+                "remove": "移除",
+                "copyAttrs": "复制独特属性",
+                "pasteAttrs": "粘贴独特属性"
             }
         }
     },
@@ -828,6 +830,8 @@
                 "cut": "剪切。",
                 "copy": "复制。",
                 "paste": "粘贴。",
+                "copyAttrs": "复制独特属性。",
+                "pasteAttrs": "粘贴独特属性。",
                 "undo": "撤销。",
                 "redo": "重做。"
             },
@@ -931,11 +935,13 @@
     },
 
     "contextMenu": {
+        "refresh": "刷新",
         "copy": "复制",
         "cut": "剪切", 
         "paste": "粘贴",
         "delete": "删除",
-        "refresh": "刷新",
+        "copyAttrs": "复制独特属性",
+        "pasteAttrs": "粘贴独特属性",
         "placeTop": "置顶",
         "placeBottom": "置底",
         "placeDefault": "还原位置",

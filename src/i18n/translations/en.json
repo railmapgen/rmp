@@ -673,7 +673,9 @@
             "footer": {
                 "duplicate": "Duplicate",
                 "copy": "Copy",
-                "remove": "Remove"
+                "remove": "Remove",
+                "copyAttrs": "Copy Specific Attributes",
+                "pasteAttrs": "Paste Specific Attributes"
             }
         }
     },
@@ -829,6 +831,8 @@
                 "cut": "Cut.",
                 "copy": "Copy.",
                 "paste": "Paste.",
+                "copyAttrs": "Copy specific attributes.",
+                "pasteAttrs": "Paste specific attributes.",
                 "undo": "Undo.",
                 "redo": "Redo."
             },
@@ -932,11 +936,13 @@
     },
 
     "contextMenu": {
+        "refresh": "Refresh",
         "copy": "Copy",
         "cut": "Cut", 
         "paste": "Paste",
         "delete": "Delete",
-        "refresh": "Refresh",
+        "copyAttrs": "Copy Specific Attributes",
+        "pasteAttrs": "Paste Specific Attributes",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",
