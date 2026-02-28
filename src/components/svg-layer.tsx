@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
+import { Id, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -11,6 +11,7 @@ import { default as allStations } from './svgs/stations/stations';
 
 interface SvgLayerProps {
     elements: Element[];
+    selected: Set<Id>;
     handlePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
@@ -24,7 +25,8 @@ type StyleComponent = React.FC<
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
-        const { elements, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } = props;
+        const { elements, selected, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } =
+            props;
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
@@ -42,7 +44,8 @@ const SvgLayer = React.memo(
 
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
-                    layers[element.line!.attr.zIndex].pre.push(
+                    const isSelected = selected.has(element.id);
+                    const preComponent = (
                         <PreStyleComponent
                             key={`${element.id}.pre`}
                             id={element.id as LineId}
@@ -53,10 +56,16 @@ const SvgLayer = React.memo(
                             handlePointerDown={handleEdgePointerDown}
                         />
                     );
+                    layers[element.line!.attr.zIndex].pre.push(
+                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {preComponent}
+                        </g>
+                    );
                 }
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
-                layers[element.line!.attr.zIndex].main.push(
+                const isSelected = selected.has(element.id);
+                const component = (
                     <StyleComponent
                         key={element.id}
                         id={element.id as LineId}
@@ -68,9 +77,16 @@ const SvgLayer = React.memo(
                     />
                 );
 
+                layers[element.line!.attr.zIndex].main.push(
+                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        {component}
+                    </g>
+                );
+
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
                 if (PostStyleComponent) {
-                    layers[element.line!.attr.zIndex].post.push(
+                    const isSelected = selected.has(element.id);
+                    const postComponent = (
                         <PostStyleComponent
                             key={`${element.id}.post`}
                             id={element.id as LineId}
@@ -81,6 +97,11 @@ const SvgLayer = React.memo(
                             handlePointerDown={handleEdgePointerDown}
                         />
                     );
+                    layers[element.line!.attr.zIndex].post.push(
+                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {postComponent}
+                        </g>
+                    );
                 }
             } else if (element.type === 'station') {
                 const attr = element.station!;
@@ -88,7 +109,8 @@ const SvgLayer = React.memo(
 
                 const PreStationComponent = allStations[type]?.preComponent;
                 if (PreStationComponent) {
-                    layers[element.station!.zIndex].pre.push(
+                    const isSelected = selected.has(element.id);
+                    const preComponent = (
                         <PreStationComponent
                             key={`${element.id}.pre`}
                             id={element.id as StnId}
@@ -100,10 +122,16 @@ const SvgLayer = React.memo(
                             handlePointerUp={handlePointerUp}
                         />
                     );
+                    layers[element.station!.zIndex].pre.push(
+                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {preComponent}
+                        </g>
+                    );
                 }
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
-                layers[element.station!.zIndex].main.push(
+                const isSelected = selected.has(element.id);
+                const component = (
                     <StationComponent
                         key={element.id}
                         id={element.id as StnId}
@@ -116,9 +144,16 @@ const SvgLayer = React.memo(
                     />
                 );
 
+                layers[element.station!.zIndex].main.push(
+                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        {component}
+                    </g>
+                );
+
                 const PostStationComponent = allStations[type]?.postComponent;
                 if (PostStationComponent) {
-                    layers[element.station!.zIndex].post.push(
+                    const isSelected = selected.has(element.id);
+                    const postComponent = (
                         <PostStationComponent
                             key={`${element.id}.post`}
                             id={element.id as StnId}
@@ -130,6 +165,11 @@ const SvgLayer = React.memo(
                             handlePointerUp={handlePointerUp}
                         />
                     );
+                    layers[element.station!.zIndex].post.push(
+                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {postComponent}
+                        </g>
+                    );
                 }
             } else if (element.type === 'misc-node') {
                 const attr = element.miscNode!;
@@ -137,7 +177,8 @@ const SvgLayer = React.memo(
 
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
-                    layers[element.miscNode!.zIndex].pre.push(
+                    const isSelected = selected.has(element.id);
+                    const preComponent = (
                         <PreMiscNodeComponent
                             key={`${element.id}.pre`}
                             id={element.id as MiscNodeId}
@@ -150,10 +191,16 @@ const SvgLayer = React.memo(
                             handlePointerUp={handlePointerUp}
                         />
                     );
+                    layers[element.miscNode!.zIndex].pre.push(
+                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {preComponent}
+                        </g>
+                    );
                 }
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-                layers[element.miscNode!.zIndex].main.push(
+                const isSelected = selected.has(element.id);
+                const component = (
                     <MiscNodeComponent
                         key={element.id}
                         id={element.id as MiscNodeId}
@@ -167,9 +214,16 @@ const SvgLayer = React.memo(
                     />
                 );
 
+                layers[element.miscNode!.zIndex].main.push(
+                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        {component}
+                    </g>
+                );
+
                 const PostMiscNodeComponent = miscNodes[type]?.postComponent;
                 if (PostMiscNodeComponent) {
-                    layers[element.miscNode!.zIndex].post.push(
+                    const isSelected = selected.has(element.id);
+                    const postComponent = (
                         <PostMiscNodeComponent
                             key={`${element.id}.post`}
                             id={element.id as MiscNodeId}
@@ -182,6 +236,11 @@ const SvgLayer = React.memo(
                             handlePointerUp={handlePointerUp}
                         />
                     );
+                    layers[element.miscNode!.zIndex].post.push(
+                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                            {postComponent}
+                        </g>
+                    );
                 }
             }
         }
@@ -192,7 +251,7 @@ const SvgLayer = React.memo(
 
         return jsxElements;
     },
-    (prevProps, nextProps) => prevProps.elements === nextProps.elements
+    (prevProps, nextProps) => prevProps.elements === nextProps.elements && prevProps.selected === nextProps.selected
 );
 
 export default SvgLayer;

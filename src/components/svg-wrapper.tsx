@@ -462,6 +462,32 @@ const SvgWrapper = () => {
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
+                    <filter
+                        id="selected-glow"
+                        // Only apply the filter to the area within the current viewbox
+                        // to correctly show when a path has no width/height in certain directions.
+                        x={svgViewBoxMin.x}
+                        y={svgViewBoxMin.y}
+                        width={(width * svgViewBoxZoom) / 100}
+                        height={(height * svgViewBoxZoom) / 100}
+                        filterUnits="userSpaceOnUse"
+                    >
+                        <feColorMatrix
+                            in="SourceAlpha"
+                            type="matrix"
+                            values="0 0 0 1 0 
+                                    0 0 0 1 0 
+                                    0 0 0 0 0 
+                                    0 0 0 1 0"
+                            result="yellowBase"
+                        />
+                        <feMorphology operator="dilate" radius="1.5" in="yellowBase" result="thickYellow" />
+                        <feGaussianBlur in="thickYellow" stdDeviation="3" result="blur1" />
+                        <feMerge>
+                            <feMergeNode in="blur1" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
                 </defs>
 
                 <g
