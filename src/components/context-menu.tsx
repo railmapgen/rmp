@@ -264,7 +264,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         {t('contextMenu.placeDefault')}
                     </MenuItem>
                 </Box>
-                <Divider orientation="vertical" />
+                <Box width="0.5px" bg="gray.200" alignSelf="stretch" _dark={{ bg: 'gray.600' }} />
                 <Box minW="150px">
                     <MenuItem
                         onClick={() => {
