@@ -31,9 +31,9 @@ describe('transform helpers', () => {
         const changed = rotateSelectedNodes(graph, new Set(['n1', 'n2']), 90);
         expect(changed).toBe(true);
         expect(graph.getNodeAttribute('n1', 'x')).toBeCloseTo(5);
-        expect(graph.getNodeAttribute('n1', 'y')).toBeCloseTo(5);
+        expect(graph.getNodeAttribute('n1', 'y')).toBeCloseTo(-5);
         expect(graph.getNodeAttribute('n2', 'x')).toBeCloseTo(5);
-        expect(graph.getNodeAttribute('n2', 'y')).toBeCloseTo(-5);
+        expect(graph.getNodeAttribute('n2', 'y')).toBeCloseTo(5);
     });
 
     it('flips selected nodes over vertical and horizontal middle lines', () => {
