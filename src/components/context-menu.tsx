@@ -184,157 +184,162 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 borderRadius="md"
                 boxShadow="lg"
                 py={1}
-                minW="150px"
+                display="flex"
                 _dark={{
                     bg: 'gray.700',
                     borderColor: 'gray.600',
                 }}
             >
-                <MenuItem
-                    onClick={() => {
-                        handleRefresh();
-                        onClose();
-                    }}
-                >
-                    {t('contextMenu.refresh')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleCopy();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.copy')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleCut();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.cut')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePaste();
-                        onClose();
-                    }}
-                >
-                    {t('contextMenu.paste')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleDelete();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.delete')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(10);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeTop')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(-10);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeBottom')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(0);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeDefault')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePlaceUp();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeUp')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePlaceDown();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeDown')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleRotate(45);
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.rotateCW')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleRotate(-45);
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.rotateCCW')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('vertical');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipVertical')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('horizontal');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipHorizontal')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('diagonal45');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipDiagonal45')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('diagonal135');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipDiagonal135')}
-                </MenuItem>
+                <Box minW="150px">
+                    <MenuItem
+                        onClick={() => {
+                            handleRefresh();
+                            onClose();
+                        }}
+                    >
+                        {t('contextMenu.refresh')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleCopy();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.copy')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleCut();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.cut')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handlePaste();
+                            onClose();
+                        }}
+                    >
+                        {t('contextMenu.paste')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleDelete();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.delete')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleZIndex(10);
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeTop')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleZIndex(-10);
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeBottom')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleZIndex(0);
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeDefault')}
+                    </MenuItem>
+                </Box>
+                <Divider orientation="vertical" />
+                <Box minW="150px">
+                    <MenuItem
+                        onClick={() => {
+                            handlePlaceUp();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeUp')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handlePlaceDown();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeDown')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleRotate(45);
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.rotateCW')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleRotate(-45);
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.rotateCCW')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('vertical');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipVertical')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('horizontal');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipHorizontal')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('diagonal45');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipDiagonal45')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('diagonal135');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipDiagonal135')}
+                    </MenuItem>
+                </Box>
             </Box>
         </Portal>
     );
