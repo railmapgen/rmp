@@ -343,12 +343,30 @@
                     "displayName": "Beijing Subway basic station",
                     "open": "Is opened",
                     "construction": "Is under construction",
-                    "scale": "Names horizontal scale"
+                    "scale": "Names horizontal scale",
+                    "minorOffset": {
+                        "labelX": "Minor names offset X",
+                        "labelY": "Minor names offset Y",
+                        "-2": "-2x",
+                        "-1": "-1x",
+                        "0": "0x",
+                        "1": "1x",
+                        "2": "2x"
+                    }
                 },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",
                     "outOfStation": "Out of station interchange",
-                    "scale": "Names horizontal scale"
+                    "scale": "Names horizontal scale",
+                    "minorOffset": {
+                        "labelX": "Minor names offset X",
+                        "labelY": "Minor names offset Y",
+                        "-2": "-2x",
+                        "-1": "-1x",
+                        "0": "0x",
+                        "1": "1x",
+                        "2": "2x"
+                    }
                 },
                 "mtr": {
                     "displayName": "Hongkong MTR station",
