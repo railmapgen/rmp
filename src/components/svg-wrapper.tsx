@@ -158,6 +158,24 @@ const SvgWrapper = () => {
             }
         };
     }, []);
+    // prevent browser zoom when ctrl + wheel or cmd + wheel
+    const svgRef = React.useRef<SVGSVGElement>(null);
+
+    React.useEffect(() => {
+        const svgInfo = svgRef.current;
+        if (!svgInfo) return;
+
+        const preventBrowserZoom = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+            }
+        };
+
+        svgInfo.addEventListener('wheel', preventBrowserZoom, { passive: false });
+        return () => {
+            svgInfo.removeEventListener('wheel', preventBrowserZoom);
+        };
+    }, []);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
@@ -269,8 +287,9 @@ const SvgWrapper = () => {
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
         let newSvgViewBoxZoom = svgViewBoxZoom;
-        if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) newSvgViewBoxZoom = svgViewBoxZoom + 10;
-        else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) newSvgViewBoxZoom = svgViewBoxZoom - 10;
+        const zoomStep = e.ctrlKey || e.metaKey ? 5 : 10;
+        if (e.deltaY > 0 && svgViewBoxZoom + zoomStep < 400) newSvgViewBoxZoom = svgViewBoxZoom + zoomStep;
+        else if (e.deltaY < 0 && svgViewBoxZoom - zoomStep > 0) newSvgViewBoxZoom = svgViewBoxZoom - zoomStep;
 
         const { x, y } = getMousePosition(e);
         const bbox = e.currentTarget.getBoundingClientRect();
@@ -449,6 +468,7 @@ const SvgWrapper = () => {
                 height={height}
                 width={width}
                 viewBox={`0 0 ${width} ${height}`}
+                ref={svgRef}
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
