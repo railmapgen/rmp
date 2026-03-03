@@ -244,15 +244,25 @@ const ToolsPanel = () => {
                                     </Button>
                                 ))}
 
-                            <Button
-                                aria-label={MiscNodeType.Virtual}
-                                leftIcon={miscNodes[MiscNodeType.Virtual].icon}
-                                onClick={() => handleMiscNode(MiscNodeType.Virtual)}
-                                variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
-                                sx={buttonStyle}
-                            >
-                                {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
-                            </Button>
+                            <HStack spacing={0} w="100%">
+                                <Button
+                                    aria-label={MiscNodeType.Virtual}
+                                    leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                                    onClick={() => handleMiscNode(MiscNodeType.Virtual)}
+                                    variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
+                                    sx={buttonStyle}
+                                    flex={1}
+                                >
+                                    {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                                </Button>
+                                {isTextShown && (
+                                    <FavoriteButton
+                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Virtual)}
+                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Virtual))}
+                                        ariaLabel={`favorite-${MiscNodeType.Virtual}`}
+                                    />
+                                )}
+                            </HStack>
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -344,33 +354,43 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            <Button
-                                aria-label={MiscNodeType.Master}
-                                leftIcon={miscNodes[MiscNodeType.Master].icon}
-                                onClick={() => handleMiscNode(MiscNodeType.Master)}
-                                variant={mode === `misc-node-${MiscNodeType.Master}` ? 'solid' : 'outline'}
-                                isDisabled={isMasterDisabled}
-                                sx={buttonStyle}
-                            >
-                                {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
-                                {isTextShown ? (
-                                    <>
-                                        <Badge ml="1" colorScheme="green">
-                                            New
-                                        </Badge>
-                                        <Tooltip label={t('header.settings.proWithTrial')}>
-                                            <Badge
-                                                ml="1"
-                                                color="gray.50"
-                                                background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                mr="auto"
-                                            >
-                                                PRO
+                            <HStack spacing={0} w="100%">
+                                <Button
+                                    aria-label={MiscNodeType.Master}
+                                    leftIcon={miscNodes[MiscNodeType.Master].icon}
+                                    onClick={() => handleMiscNode(MiscNodeType.Master)}
+                                    variant={mode === `misc-node-${MiscNodeType.Master}` ? 'solid' : 'outline'}
+                                    isDisabled={isMasterDisabled}
+                                    sx={buttonStyle}
+                                    flex={1}
+                                >
+                                    {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
+                                    {isTextShown ? (
+                                        <>
+                                            <Badge ml="1" colorScheme="green">
+                                                New
                                             </Badge>
-                                        </Tooltip>
-                                    </>
-                                ) : undefined}
-                            </Button>
+                                            <Tooltip label={t('header.settings.proWithTrial')}>
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                    mr="auto"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tooltip>
+                                        </>
+                                    ) : undefined}
+                                </Button>
+                                {isTextShown && (
+                                    <FavoriteButton
+                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Master)}
+                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Master))}
+                                        ariaLabel={`favorite-${MiscNodeType.Master}`}
+                                    />
+                                )}
+                            </HStack>
                             {getFilteredMiscNodes().map(type => (
                                 <HStack key={type} spacing={0} w="100%">
                                     <Button
