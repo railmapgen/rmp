@@ -18,7 +18,6 @@ import {
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
-    toggleFavoriteLinePath,
     toggleFavoriteLineStyle,
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
@@ -60,14 +59,7 @@ export const initStore = async (store: RootStore) => {
         }
         if ('favorites' in appState.preference) {
             // Load favorites with error handling for invalid/missing IDs
-            if (
-                'linePaths' in appState.preference.favorites &&
-                Array.isArray(appState.preference.favorites.linePaths)
-            ) {
-                appState.preference.favorites.linePaths.forEach((type: string) => {
-                    store.dispatch(toggleFavoriteLinePath(type as any));
-                });
-            }
+            // Note: Line paths favorites are no longer used (always show all paths)
             if (
                 'lineStyles' in appState.preference.favorites &&
                 Array.isArray(appState.preference.favorites.lineStyles)

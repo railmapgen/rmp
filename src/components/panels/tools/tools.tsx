@@ -31,7 +31,6 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import {
     setShowOnlyFavorites,
     setToolsPanelExpansion,
-    toggleFavoriteLinePath,
     toggleFavoriteLineStyle,
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
@@ -50,6 +49,7 @@ const buttonStyle: SystemStyleObject = {
     p: 0,
     w: '100%',
     h: 10,
+    _focus: { boxShadow: 'none' },
 };
 
 const accordionButtonStyle: SystemStyleObject = {
@@ -140,13 +140,7 @@ const ToolsPanel = () => {
 
     // Filter logic: only show items that are favorited when showOnlyFavorites is true
     // Handle error cases: filter out any IDs that don't exist in the current data
-    const getFilteredLinePaths = React.useCallback(() => {
-        const allPaths = Object.values(LinePathType).filter(
-            type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD
-        );
-        if (!showOnlyFavorites) return allPaths;
-        return allPaths.filter(type => favorites.linePaths.includes(type));
-    }, [showOnlyFavorites, favorites.linePaths, activeSubscriptions.RMP_CLOUD]);
+    // Note: Line paths are always shown regardless of favorites filter
 
     const getFilteredLineStyles = React.useCallback(() => {
         const allStyles = Object.entries(lineStyles);
@@ -234,28 +228,21 @@ const ToolsPanel = () => {
                                 </Text>
                             </Flex>
 
-                            {getFilteredLinePaths().map(type => (
-                                <HStack key={type} spacing={0} w="100%">
+                            {Object.values(LinePathType)
+                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
+                                .map(type => (
                                     <Button
+                                        key={type}
                                         aria-label={type}
                                         leftIcon={linePaths[type].icon}
                                         onClick={() => handleLine(type)}
                                         variant={currentPath === type ? 'solid' : 'outline'}
                                         isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
                                         sx={buttonStyle}
-                                        flex={1}
                                     >
                                         {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                     </Button>
-                                    {isTextShown && (
-                                        <FavoriteButton
-                                            isFavorite={favorites.linePaths.includes(type)}
-                                            onToggle={() => dispatch(toggleFavoriteLinePath(type))}
-                                            ariaLabel={`favorite-${type}`}
-                                        />
-                                    )}
-                                </HStack>
-                            ))}
+                                ))}
 
                             <Button
                                 aria-label={MiscNodeType.Virtual}
