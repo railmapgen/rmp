@@ -172,9 +172,9 @@ const ToolsPanel = () => {
     const miscellaneousVisibleCount = filteredMiscNodes.length + 1; // master
 
     const shouldHideLineDrawingAccordionButton = showOnlyFavorites;
-    const shouldHideLineStylesAccordionButton = showOnlyFavorites && lineStylesVisibleCount <= 3;
-    const shouldHideStationsAccordionButton = showOnlyFavorites && stationsVisibleCount <= 3;
-    const shouldHideMiscAccordionButton = showOnlyFavorites && miscellaneousVisibleCount <= 3;
+    const shouldHideLineStylesAccordionButton = showOnlyFavorites && lineStylesVisibleCount <= 5;
+    const shouldHideStationsAccordionButton = showOnlyFavorites && stationsVisibleCount <= 5;
+    const shouldHideMiscAccordionButton = showOnlyFavorites && miscellaneousVisibleCount <= 5;
 
     const lineDrawingContent = (
         <>
