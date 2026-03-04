@@ -45,6 +45,7 @@ import FavoriteButton from './favorite-button';
 import { localizedMiscNodes, localizedStaions } from './localized-order';
 
 const buttonStyle: SystemStyleObject = {
+    borderRadius: 0,
     justifyContent: 'flex-start',
     p: 0,
     w: '100%',
@@ -202,15 +203,23 @@ const ToolsPanel = () => {
 
             <Flex className="tools" overflow="auto">
                 <Accordion width="100%" allowMultiple defaultIndex={[0, 2, 3]}>
-                    <Button
-                        aria-label="select"
-                        leftIcon={selectIcon}
-                        onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
-                        variant={mode === 'select' ? 'solid' : 'outline'}
-                        sx={buttonStyle}
-                    >
-                        {isTextShown ? t('panel.tools.select') : undefined}
-                    </Button>
+                    <Flex w="100%" align="stretch">
+                        <Box
+                            w="4px"
+                            bg={mode === 'select' ? 'blue.500' : 'transparent'}
+                            transition="background-color 0.2s"
+                        />
+                        <Button
+                            aria-label="select"
+                            leftIcon={selectIcon}
+                            onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
+                            variant="ghost"
+                            sx={buttonStyle}
+                            flex={1}
+                        >
+                            {isTextShown ? t('panel.tools.select') : undefined}
+                        </Button>
+                    </Flex>
                     <AccordionItem>
                         <AccordionButton sx={accordionButtonStyle}>
                             {isTextShown && (
@@ -231,29 +240,43 @@ const ToolsPanel = () => {
                             {Object.values(LinePathType)
                                 .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
                                 .map(type => (
-                                    <Button
-                                        key={type}
-                                        aria-label={type}
-                                        leftIcon={linePaths[type].icon}
-                                        onClick={() => handleLine(type)}
-                                        variant={currentPath === type ? 'solid' : 'outline'}
-                                        isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
-                                        sx={buttonStyle}
-                                    >
-                                        {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                    </Button>
+                                    <Flex key={type} w="100%" align="stretch">
+                                        <Box
+                                            w="4px"
+                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                            transition="background-color 0.2s"
+                                        />
+                                        <Button
+                                            aria-label={type}
+                                            leftIcon={linePaths[type].icon}
+                                            onClick={() => handleLine(type)}
+                                            variant="ghost"
+                                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
+                                            sx={buttonStyle}
+                                            flex={1}
+                                        >
+                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                        </Button>
+                                    </Flex>
                                 ))}
 
-                            <Button
-                                aria-label={MiscNodeType.Virtual}
-                                leftIcon={miscNodes[MiscNodeType.Virtual].icon}
-                                onClick={() => handleMiscNode(MiscNodeType.Virtual)}
-                                variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
-                                sx={buttonStyle}
-                                flex={1}
-                            >
-                                {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
-                            </Button>
+                            <Flex w="100%" align="stretch">
+                                <Box
+                                    w="4px"
+                                    bg={mode === `misc-node-${MiscNodeType.Virtual}` ? 'blue.500' : 'transparent'}
+                                    transition="background-color 0.2s"
+                                />
+                                <Button
+                                    aria-label={MiscNodeType.Virtual}
+                                    leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                                    onClick={() => handleMiscNode(MiscNodeType.Virtual)}
+                                    variant="ghost"
+                                    sx={buttonStyle}
+                                    flex={1}
+                                >
+                                    {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                                </Button>
+                            </Flex>
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -268,12 +291,17 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             {getFilteredLineStyles().map(([styleType, style]) => (
-                                <HStack key={styleType} spacing={0} w="100%">
+                                <Flex key={styleType} w="100%" align="stretch">
+                                    <Box
+                                        w="4px"
+                                        bg={currentStyle === styleType ? 'blue.500' : 'transparent'}
+                                        transition="background-color 0.2s"
+                                    />
                                     <Button
                                         aria-label={styleType}
                                         leftIcon={<Box boxSize="40px" />}
                                         onClick={() => handleLineStyle(styleType as LineStyleType)}
-                                        variant={currentStyle === styleType ? 'solid' : 'outline'}
+                                        variant="ghost"
                                         isDisabled={
                                             currentPath
                                                 ? !isStyleCompatible(styleType as LineStyleType, currentPath)
@@ -293,7 +321,7 @@ const ToolsPanel = () => {
                                             ariaLabel={`favorite-${styleType}`}
                                         />
                                     )}
-                                </HStack>
+                                </Flex>
                             ))}
 
                             <LearnHowToAdd type="line-styles" expand={isTextShown} />
@@ -311,12 +339,17 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             {getFilteredStations().map(type => (
-                                <HStack key={type} spacing={0} w="100%">
+                                <Flex key={type} w="100%" align="stretch">
+                                    <Box
+                                        w="4px"
+                                        bg={mode === `station-${type}` ? 'blue.500' : 'transparent'}
+                                        transition="background-color 0.2s"
+                                    />
                                     <Button
                                         aria-label={type}
                                         leftIcon={stations[type].icon}
                                         onClick={() => handleStation(type)}
-                                        variant={mode === `station-${type}` ? 'solid' : 'outline'}
+                                        variant="ghost"
                                         sx={buttonStyle}
                                         flex={1}
                                     >
@@ -329,7 +362,7 @@ const ToolsPanel = () => {
                                             ariaLabel={`favorite-${type}`}
                                         />
                                     )}
-                                </HStack>
+                                </Flex>
                             ))}
                             <LearnHowToAdd type="station" expand={isTextShown} />
                         </AccordionPanel>
@@ -345,12 +378,17 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            <HStack spacing={0} w="100%">
+                            <Flex w="100%" align="stretch">
+                                <Box
+                                    w="4px"
+                                    bg={mode === `misc-node-${MiscNodeType.Master}` ? 'blue.500' : 'transparent'}
+                                    transition="background-color 0.2s"
+                                />
                                 <Button
                                     aria-label={MiscNodeType.Master}
                                     leftIcon={miscNodes[MiscNodeType.Master].icon}
                                     onClick={() => handleMiscNode(MiscNodeType.Master)}
-                                    variant={mode === `misc-node-${MiscNodeType.Master}` ? 'solid' : 'outline'}
+                                    variant="ghost"
                                     isDisabled={isMasterDisabled}
                                     sx={buttonStyle}
                                     flex={1}
@@ -381,14 +419,19 @@ const ToolsPanel = () => {
                                         ariaLabel={`favorite-${MiscNodeType.Master}`}
                                     />
                                 )}
-                            </HStack>
+                            </Flex>
                             {getFilteredMiscNodes().map(type => (
-                                <HStack key={type} spacing={0} w="100%">
+                                <Flex key={type} w="100%" align="stretch">
+                                    <Box
+                                        w="4px"
+                                        bg={mode === `misc-node-${type}` ? 'blue.500' : 'transparent'}
+                                        transition="background-color 0.2s"
+                                    />
                                     <Button
                                         aria-label={type}
                                         leftIcon={miscNodes[type].icon}
                                         onClick={() => handleMiscNode(type)}
-                                        variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
+                                        variant="ghost"
                                         sx={buttonStyle}
                                         flex={1}
                                     >
@@ -401,7 +444,7 @@ const ToolsPanel = () => {
                                             ariaLabel={`favorite-${type}`}
                                         />
                                     )}
-                                </HStack>
+                                </Flex>
                             ))}
                             <LearnHowToAdd type="misc-node" expand={isTextShown} />
                         </AccordionPanel>
