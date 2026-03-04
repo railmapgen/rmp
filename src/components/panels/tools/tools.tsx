@@ -77,7 +77,7 @@ const ToolsPanel = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         preference: {
-            toolsPanel: { expand: isToolsExpanded, showOnlyFavorites, hideLearnHowToAdd },
+            toolsPanel: { expand: isToolsExpanded, showOnlyFavorites },
             favorites,
         },
     } = useRootSelector(state => state.app);
@@ -248,7 +248,7 @@ const ToolsPanel = () => {
                 </HStack>
             ))}
 
-            <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={hideLearnHowToAdd} />
+            <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={showOnlyFavorites} />
         </>
     );
 
@@ -275,7 +275,7 @@ const ToolsPanel = () => {
                     )}
                 </HStack>
             ))}
-            <LearnHowToAdd type="station" expand={isTextShown} hidden={hideLearnHowToAdd} />
+            <LearnHowToAdd type="station" expand={isTextShown} hidden={showOnlyFavorites} />
         </>
     );
 
@@ -339,7 +339,7 @@ const ToolsPanel = () => {
                     )}
                 </HStack>
             ))}
-            <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={hideLearnHowToAdd} />
+            <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={showOnlyFavorites} />
         </>
     );
 
