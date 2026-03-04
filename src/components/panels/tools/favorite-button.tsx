@@ -24,7 +24,6 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ isFavorite, onToggle, a
             size="sm"
             color="pink.400"
             _hover={{ color: 'pink.500' }}
-            _focus={{ boxShadow: 'none' }}
         />
     );
 };

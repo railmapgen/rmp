@@ -140,7 +140,7 @@ const ToolsPanel = () => {
 
     // Filter logic: only show items that are favorited when showOnlyFavorites is true
     // Handle error cases: filter out any IDs that don't exist in the current data
-    // Note: Line paths are always shown regardless of favorites filter
+    // Note: All line paths are always shown regardless of favorites filter
 
     const getFilteredLineStyles = React.useCallback(() => {
         const allStyles = Object.entries(lineStyles);
@@ -244,25 +244,16 @@ const ToolsPanel = () => {
                                     </Button>
                                 ))}
 
-                            <HStack spacing={0} w="100%">
-                                <Button
-                                    aria-label={MiscNodeType.Virtual}
-                                    leftIcon={miscNodes[MiscNodeType.Virtual].icon}
-                                    onClick={() => handleMiscNode(MiscNodeType.Virtual)}
-                                    variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
-                                    sx={buttonStyle}
-                                    flex={1}
-                                >
-                                    {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
-                                </Button>
-                                {isTextShown && (
-                                    <FavoriteButton
-                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Virtual)}
-                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Virtual))}
-                                        ariaLabel={`favorite-${MiscNodeType.Virtual}`}
-                                    />
-                                )}
-                            </HStack>
+                            <Button
+                                aria-label={MiscNodeType.Virtual}
+                                leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                                onClick={() => handleMiscNode(MiscNodeType.Virtual)}
+                                variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
+                                sx={buttonStyle}
+                                flex={1}
+                            >
+                                {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                            </Button>
                         </AccordionPanel>
                     </AccordionItem>
 

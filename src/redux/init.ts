@@ -58,8 +58,7 @@ export const initStore = async (store: RootStore) => {
                 store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
         }
         if ('favorites' in appState.preference) {
-            // Load favorites with error handling for invalid/missing IDs
-            // Note: Line paths favorites are no longer used (always show all paths)
+            // load favorites with error handling for invalid/missing IDs
             if (
                 'lineStyles' in appState.preference.favorites &&
                 Array.isArray(appState.preference.favorites.lineStyles)
