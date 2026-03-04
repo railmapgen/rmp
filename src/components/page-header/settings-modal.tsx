@@ -38,6 +38,7 @@ import {
     setAutoParallel,
     setDisableWarningChangeType,
     setGridLines,
+    setHideLearnHowToAdd,
     setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
@@ -69,6 +70,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const {
         telemetry: { project: isAllowProjectTelemetry },
         preference: {
+            toolsPanel: { hideLearnHowToAdd },
             autoParallel,
             randomStationsNames,
             gridLines,
@@ -218,6 +220,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         onChange={({ target: { checked } }) =>
                                             dispatch(setDisableWarningChangeType(checked))
                                         }
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.hideLearnHowToAdd')}</Text>
+                                    <Switch
+                                        isChecked={hideLearnHowToAdd}
+                                        onChange={({ target: { checked } }) => dispatch(setHideLearnHowToAdd(checked))}
                                     />
                                 </HStack>
                             </VStack>

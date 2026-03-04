@@ -35,6 +35,10 @@ export interface AppState {
              * Whether to show only favorited tools.
              */
             showOnlyFavorites: boolean;
+            /**
+             * Whether to hide "Learn how to add" links in tools panel.
+             */
+            hideLearnHowToAdd: boolean;
         };
         /**
          * Whether to enable parallel for new lines.
@@ -75,6 +79,7 @@ export const initialState: AppState = {
         toolsPanel: {
             expand: true,
             showOnlyFavorites: false,
+            hideLearnHowToAdd: false,
         },
         autoParallel: true,
         randomStationsNames: 'none',
@@ -131,6 +136,9 @@ const appSlice = createSlice({
         setShowOnlyFavorites: (state, action: PayloadAction<boolean>) => {
             state.preference.toolsPanel.showOnlyFavorites = action.payload;
         },
+        setHideLearnHowToAdd: (state, action: PayloadAction<boolean>) => {
+            state.preference.toolsPanel.hideLearnHowToAdd = action.payload;
+        },
         toggleFavoriteLinePath: (state, action: PayloadAction<LinePathType>) => {
             const index = state.preference.favorites.linePaths.indexOf(action.payload);
             if (index === -1) {
@@ -178,6 +186,7 @@ export const {
     setAutoChangeStationType,
     setDisableWarningChangeType,
     setShowOnlyFavorites,
+    setHideLearnHowToAdd,
     toggleFavoriteLinePath,
     toggleFavoriteLineStyle,
     toggleFavoriteStation,

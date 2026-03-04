@@ -11,6 +11,7 @@ import {
     setAutoParallel,
     setDisableWarningChangeType,
     setGridLines,
+    setHideLearnHowToAdd,
     setPredictNextNode,
     setRandomStationsNames,
     setShowOnlyFavorites,
@@ -43,6 +44,8 @@ export const initStore = async (store: RootStore) => {
                 store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
             if ('showOnlyFavorites' in appState.preference.toolsPanel)
                 store.dispatch(setShowOnlyFavorites(appState.preference.toolsPanel.showOnlyFavorites));
+            if ('hideLearnHowToAdd' in appState.preference.toolsPanel)
+                store.dispatch(setHideLearnHowToAdd(appState.preference.toolsPanel.hideLearnHowToAdd));
         }
         if ('autoParallel' in appState.preference) store.dispatch(setAutoParallel(appState.preference.autoParallel));
         if ('randomStationsNames' in appState.preference)
