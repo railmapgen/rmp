@@ -48,7 +48,7 @@ export const makeStationPath = (
 };
 
 const MTRStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMTRStationAttributes.nameOffsetX,
@@ -86,7 +86,7 @@ const MTRStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <path
                 transform={`rotate(${rotate})`}
                 d={path}

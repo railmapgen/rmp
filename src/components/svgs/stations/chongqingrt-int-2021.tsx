@@ -25,7 +25,7 @@ export const LINE_HEIGHT = {
 };
 
 const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultChongqingRTIntStation2021Attributes.nameOffsetX,
@@ -121,7 +121,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
     const fgColor = color[3];
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`} textAnchor="middle">
+        <g textAnchor="middle">
             <rect
                 x={-width / 2}
                 y={-height / 2}

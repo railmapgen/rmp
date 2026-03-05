@@ -11,7 +11,6 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="#565656"

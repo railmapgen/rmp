@@ -10,7 +10,7 @@ import { ColorAttribute } from '../../panels/details/color-field';
 const GuangdongIntercityRailwayLineBadge = (
     props: NodeComponentProps<GuangdongIntercityRailwayLineBadgeAttributes>
 ) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultGuangdongIntercityRailwayLineBadgeAttributes.names,
         color = defaultGuangdongIntercityRailwayLineBadgeAttributes.color,
@@ -35,8 +35,6 @@ const GuangdongIntercityRailwayLineBadge = (
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

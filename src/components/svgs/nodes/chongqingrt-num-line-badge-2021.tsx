@@ -8,7 +8,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLineBadge2021Attributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         num = defaultChongqingRTNumLineBadge2021Attributes.num,
         color = defaultChongqingRTNumLineBadge2021Attributes.color,
@@ -33,7 +33,7 @@ const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLin
     const sX = Number.isInteger(num) ? (Number(num) >= 10 ? 9.5 : 10.5) : 10.5;
 
     return (
-        <g transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform="translate(-10.5, -10.5)">
                 <rect fill={color[2]} x="0" width="21" height="21" rx="3" ry="3" />
                 <rect
