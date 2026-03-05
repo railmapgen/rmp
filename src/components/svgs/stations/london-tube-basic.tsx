@@ -218,9 +218,9 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const accessibleDY = Math.cos((rotate * Math.PI) / 180) * accessibleD;
 
     return (
-        <g id={id}>
+        <g>
             <g
-                transform={`translate(${x}, ${y})rotate(${rotate})`}
+                transform={`rotate(${rotate})`}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -249,7 +249,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                 )}
             </g>
             <g
-                transform={`translate(${x + textDx}, ${y + textDy})`}
+                transform={`translate(${textDx}, ${textDy})`}
                 textAnchor={ROTATE_CONST[textRotate].textAnchor}
                 fill="#003888"
             >

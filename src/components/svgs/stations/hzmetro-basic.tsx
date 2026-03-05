@@ -62,7 +62,7 @@ const HzmetroBasicStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle
                 id={`stn_core_${id}`}
                 r={3.25}

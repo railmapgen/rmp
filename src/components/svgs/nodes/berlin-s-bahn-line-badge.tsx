@@ -31,8 +31,6 @@ const BerlinUBahnLineBadge = (props: NodeComponentProps<BerlinSBahnLineBadgeAttr
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

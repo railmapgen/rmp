@@ -64,8 +64,8 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id}>
-            <g transform={`translate(${x - 6}, ${y - 6})`}>
+        <g>
+            <g transform={`translate(-6, -6)`}>
                 <circle cx="6" cy="6" r="6" stroke="black" strokeWidth="1" fill="white" />
                 <path
                     d={PATH_ARROW}
@@ -94,7 +94,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     className="removeMe"
                 />
             </g>
-            <g transform={`translate(${x + textX}, ${y + textY})`} textAnchor={textAnchor}>
+            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={LINE_HEIGHT.zh}

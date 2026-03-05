@@ -110,7 +110,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     return React.createElement(
         'g',
-        { id: id, transform: `translate(${x}, ${y})`, ...gPointerEvents },
+        { ...gPointerEvents },
         attrs.randomId ? (
             <g
                 transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}

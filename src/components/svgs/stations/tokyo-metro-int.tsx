@@ -191,7 +191,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
               : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {align === 'horizontal' ? (
                 <>
                     <rect

@@ -28,7 +28,6 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
 
     return !limitedService ? (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}

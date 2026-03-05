@@ -32,8 +32,7 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})scale(${tram ? 0.8 : 1})`}
+            transform={`scale(${tram ? 0.8 : 1})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

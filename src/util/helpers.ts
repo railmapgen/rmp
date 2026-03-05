@@ -1,5 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { Size } from './hooks';
 
 export const getMousePosition = (e: React.MouseEvent) => {
@@ -183,4 +183,55 @@ export const toCamelCase = (str: string): string => {
         // This replaces the original "-letter" part.
         return letter.toUpperCase();
     });
+};
+
+export const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const transform = el.getAttribute('transform') || '';
+
+    const match = transform.match(/translate\(([-\d.]+)[ ,]([-\d.]+)\)/);
+
+    let x = 0;
+    let y = 0;
+
+    if (match) {
+        x = parseFloat(match[1]);
+        y = parseFloat(match[2]);
+    }
+
+    const newX = x + dx;
+    const newY = y + dy;
+
+    const newTransform = transform.replace(/translate\(([-\d.]+)[ ,]([-\d.]+)\)/, `translate(${newX},${newY})`);
+
+    if (match) {
+        el.setAttribute('transform', newTransform);
+    } else {
+        el.setAttribute('transform', `translate(${newX},${newY}) ${transform}`);
+    }
+};
+
+export const updatePathDRecursive = (id: LineId, pathD: string) => {
+    const root = document.getElementById(id);
+    if (!root) return;
+
+    function traverse(node: Element) {
+        if (node.tagName.toLowerCase() === 'path') {
+            const path = node as SVGPathElement;
+            const d = path.getAttribute('d');
+
+            if (d) {
+                const newD = pathD;
+                path.setAttribute('d', newD);
+            }
+        }
+
+        for (const child of Array.from(node.children)) {
+            traverse(child);
+        }
+    }
+
+    traverse(root);
 };

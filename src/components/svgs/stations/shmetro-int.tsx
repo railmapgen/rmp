@@ -70,8 +70,8 @@ const ShmetroIntStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id}>
-            <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
+        <g>
+            <g transform={`rotate(${rotate})`}>
                 <rect
                     id={`stn_core_${id}`}
                     x={-width / 2}
@@ -89,7 +89,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
                 />
             </g>
             <g
-                transform={`translate(${x + textX}, ${y + textY})`}
+                transform={`translate(${textX}, ${textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"

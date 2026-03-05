@@ -31,8 +31,6 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

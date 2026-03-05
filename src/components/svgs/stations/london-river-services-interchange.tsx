@@ -61,9 +61,8 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
     const dominantBaseline = nameOffsetY === 'top' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
 
     return (
-        <g id={id}>
+        <g>
             <g
-                transform={`translate(${x}, ${y})`}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -78,7 +77,7 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
                 {/* Below is an overlay element that has the id info but can not be seen. */}
                 <circle id={`stn_core_${id}`} r={1.5 * X_HEIGHT} fill="white" fillOpacity="0" className="removeMe" />
             </g>
-            <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
+            <g transform={`translate(${textDx}, ${textDy})`} textAnchor={textAnchor} fill="#003888">
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE}

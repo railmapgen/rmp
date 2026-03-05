@@ -85,7 +85,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g
                 transform={`rotate(${rotate})`}
                 onPointerDown={onPointerDown}

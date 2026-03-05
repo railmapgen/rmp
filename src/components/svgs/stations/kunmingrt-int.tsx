@@ -72,9 +72,9 @@ const KunmingRTIntStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id}>
+        <g>
             <g
-                transform={`translate(${x}, ${y})rotate(${rotate})`}
+                transform={`rotate(${rotate})`}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -137,7 +137,7 @@ const KunmingRTIntStation = (props: StationComponentProps) => {
                 )}
             </g>
             <g
-                transform={`translate(${x + textX}, ${y + textY})`}
+                transform={`translate(${textX}, ${textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"

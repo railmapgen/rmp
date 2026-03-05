@@ -121,7 +121,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
     const fgColor = color[3];
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`} textAnchor="middle">
+        <g textAnchor="middle">
             <rect
                 x={-width / 2}
                 y={-height / 2}
