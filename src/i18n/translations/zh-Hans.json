@@ -13,6 +13,7 @@
             "showLess": "显示更少",
             "section": {
                 "lineDrawing": "线段绘制",
+                "lineStyles": "线段样式",
                 "stations": "车站",
                 "miscellaneousNodes": "杂项节点"
             },
@@ -20,7 +21,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加车站！",
                 "misc-node": "了解如何添加节点！",
-                "line": "了解如何添加线段样式！"
+                "line-styles": "了解如何添加线段样式！"
             }
         },
         "details": {
@@ -341,11 +342,13 @@
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
                     "open": "开通",
-                    "construction": "施工"
+                    "construction": "施工",
+                    "scale": "站名横向缩放"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地铁换乘车站",
-                    "outOfStation": "出站换乘"
+                    "outOfStation": "出站换乘",
+                    "scale": "站名横向缩放"
                 },
                 "mtr": {
                     "displayName": "香港MTR车站"
@@ -517,10 +520,13 @@
                     "displayName": "长沙轨道交通换乘车站"
                 },
                 "hzmetroBasic": {
-                    "displayName": "杭州地铁基本车站"
+                    "displayName": "杭州地铁基本车站",
+                    "scale": "站名横向缩放"
                 },
                 "hzmetroInt": {
-                    "displayName": "杭州地铁换乘车站"
+                    "displayName": "杭州地铁换乘车站",
+                    "mirror": "图标镜像",
+                    "scale": "站名横向缩放"
                 }
             },
             "lines": {
@@ -692,6 +698,28 @@
                 "body": "此操作将覆盖当前项目。所有未保存的更改将丢失。确定要继续吗？",
                 "overwrite": "覆盖",
                 "newerVersion": "警告：此存档文件来自更新的版本（{{saveVersion}}），高于当前版本（{{currentVersion}}）。加载它可能会导致错误或未定义的行为。"
+            },
+            "otherPlatform": {
+                "title": "从其他工具导入",
+                "desc": "从其他支持的工具导入您的车站和线路。",
+                "step1": "上传",
+                "step2": "导入",
+                "mode": {
+                    "desc": "将您的车站格式化为该城市的样式。",
+                    "beijing": "北京",
+                    "changsha": "长沙",
+                    "chengdu": "成都",
+                    "hangzhou": "杭州",
+                    "kunming": "昆明",
+                    "shanghai": "上海",
+                    "suzhou": "苏州",
+                    "wuhan": "武汉"
+                },
+                "detected": "检测到 AARC 存档文件。准备导入 {{x}} 个车站和 {{y}} 条线路。",
+                "error": "您提交的存档文件不受支持。",
+                "next": "下一步",
+                "previous": "上一步",
+                "confirm": "清除当前并覆盖"
             }
         },
         "download": {
@@ -793,6 +821,7 @@
                 "c": "启用或停用磁性布局。",
                 "arrows": "稍微移动画布。",
                 "ijkl": "稍微移动所选站点。",
+                "rotate": "顺时针旋转所选节点（按住 Alt 为 5° 步进）。",
                 "shift": "多选。",
                 "alt": "拖动时按下临时停用磁性布局。",
                 "delete": "删除所选站点。",
@@ -853,14 +882,6 @@
                     "success": "成功更新所有颜色。",
                     "error": "更新所有颜色时出错：{{e}}。"
                 },
-                "unlockSimplePath": {
-                    "title": "解锁简单路径",
-                    "content1": "地铁线路图绘制器应用致力于在遵循既定惯例的前提下，提供一个有利于创建地铁线路图的互动平台。在这些惯例中，一种特别著名的风格源自哈利·贝克的创新工作。他的开创性贡献于1932年得到官方认可，并在大众中迅速赢得了声誉。目前，它在信息设计领域具有重要的示范意义，在全球范围内的交通制图中得到了广泛的实施，尽管成功程度有所不同。",
-                    "content2": "应用程序固有地隐藏了使用简单路径的选项，因为其部署有可能违反既定的惯例。默认情况下，此特定功能保持隐蔽。此外，提交到地铁线路图绘制器画廊的作品将经过严格的审查，坚决拒绝使用单色风格的简单路径的构图。",
-                    "content3": "尽管如此，我们仍然保留了解锁此选项的机会，当您订阅后，方可使用简单路径。需要注意的是，即使获得后，简单路径的使用也仅限于单色风格。",
-                    "check": "解锁简单路径",
-                    "unlocked": "已解锁"
-                },
                 "masterManager": {
                     "title": "管理全部大师节点",
                     "id": "唯一标识",
@@ -919,7 +940,13 @@
         "placeBottom": "置底",
         "placeDefault": "还原位置",
         "placeUp": "上移一层",
-        "placeDown": "下移一层"
+        "placeDown": "下移一层",
+        "rotateCW": "顺时针旋转45°",
+        "rotateCCW": "逆时针旋转45°",
+        "flipVertical": "垂直翻转",
+        "flipHorizontal": "水平翻转",
+        "flipDiagonal45": "沿45°线翻转",
+        "flipDiagonal135": "沿135°线翻转"
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"

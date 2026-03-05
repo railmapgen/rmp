@@ -24,7 +24,7 @@ export const LINE_HEIGHT = {
 };
 
 const ChengduRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultChengduRTIntStationAttributes.nameOffsetX,
@@ -105,7 +105,7 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
                 : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`} textAnchor="middle">
+        <g textAnchor="middle">
             <rect
                 x={-width / 2}
                 y={-height / 2}

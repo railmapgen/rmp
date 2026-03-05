@@ -6,6 +6,7 @@ interface MultilineTextVerticalProps extends React.SVGProps<SVGTextElement> {
     grow: 'left' | 'right' | 'bidirectional';
     baseOffset?: number;
     baseDY?: number;
+    textOrientation?: 'mixed' | 'upright';
 }
 
 export const MultilineTextVertical = React.forwardRef(
@@ -18,6 +19,7 @@ export const MultilineTextVertical = React.forwardRef(
             dominantBaseline = grow === 'left' ? 'hanging' : grow === 'right' ? 'auto' : 'central',
             baseOffset = 2, // default dx offset
             baseDY = 0, // default dy
+            textOrientation = 'mixed',
             ...otherSvgTextProps
         } = props;
 
@@ -34,6 +36,7 @@ export const MultilineTextVertical = React.forwardRef(
                         writingMode="vertical-rl"
                         dominantBaseline={dominantBaseline}
                         {...otherSvgTextProps}
+                        style={{ ...otherSvgTextProps.style, textOrientation }}
                     >
                         {t}
                     </text>

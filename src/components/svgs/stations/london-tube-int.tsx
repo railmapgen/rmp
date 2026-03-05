@@ -20,7 +20,7 @@ const FONT_SIZE = 2 * X_HEIGHT;
 const LINE_HEIGHT = 0.85 * FONT_SIZE;
 
 const LondonTubeIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultLondonTubeIntStationAttributes.nameOffsetX,
@@ -60,9 +60,8 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
     const dominantBaseline = nameOffsetY === 'top' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
 
     return (
-        <g id={id}>
+        <g>
             <g
-                transform={`translate(${x}, ${y})`}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
@@ -82,7 +81,7 @@ const LondonTubeIntStation = (props: StationComponentProps) => {
                     <AccessibleIcon id={id} stepFreeAccess={stepFreeAccess} transform={`scale(0.2333)`} />
                 )}
             </g>
-            <g transform={`translate(${x + textDx}, ${y + textDy})`} textAnchor={textAnchor} fill="#003888">
+            <g transform={`translate(${textDx}, ${textDy})`} textAnchor={textAnchor} fill="#003888">
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE}

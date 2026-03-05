@@ -14,7 +14,7 @@ import {
 import { ColorField } from '../../../panels/details/color-field';
 
 const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const {
         colorBackground = defaultLondonRailAttributes.colorBackground,
         colorForeground = defaultLondonRailAttributes.colorForeground,
@@ -27,7 +27,11 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
     );
 
     return !limitedService ? (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path
                 d={path}
@@ -38,7 +42,11 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
             />
         </g>
     ) : (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path
                 d={path}
@@ -122,7 +130,12 @@ const londonRail: LineStyle<LondonRailAttributes> = {
     attrsComponent: londonRailAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.londonRail.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

@@ -13,6 +13,7 @@ import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
+import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
@@ -31,6 +32,7 @@ export default function OpenActions() {
 
     const [isRmgParamAppClipOpen, setIsRmgParamAppClipOpen] = React.useState(false);
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
+    const [isOpenAarc, setIsOpenAarc] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
@@ -180,6 +182,13 @@ export default function OpenActions() {
                         </Badge>
                     </MenuItem>
 
+                    <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenAarc(true)}>
+                        {t('header.open.otherPlatform.title')}
+                        <Badge ml="1" colorScheme="green">
+                            New
+                        </Badge>
+                    </MenuItem>
+
                     <MenuItem icon={<MdSchool />} onClick={handleLoadTutorial}>
                         {t('header.open.tutorial')}
                     </MenuItem>
@@ -187,6 +196,7 @@ export default function OpenActions() {
 
                 <RmgParamAppClip isOpen={isRmgParamAppClipOpen} onClose={() => setIsRmgParamAppClipOpen(false)} />
                 <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
+                <ImportFromAarc isOpen={isOpenAarc} onClose={() => setIsOpenAarc(false)} />
             </Menu>
 
             <ConfirmOverwriteDialog

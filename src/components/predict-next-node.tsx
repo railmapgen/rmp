@@ -4,7 +4,7 @@ import React from 'react';
 import { Events, LineId, NodeAttributes, NodeId, NodeType, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
+import { ExternalStationAttributes, STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import {
@@ -36,14 +36,16 @@ const PredictNextNode = () => {
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
     };
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel },
+        preference: { autoParallel, randomStationsNames },
     } = useRootSelector(state => state.app);
     const {
         selected,
         theme: runtimeTheme,
         count: { mostFrequentStationType },
+        lastTool,
     } = useRootSelector(state => state.runtime);
 
     const makeStationName = useMakeStationName();
@@ -91,9 +93,12 @@ const PredictNextNode = () => {
         y: nextPos.y + OFFSET * (sameSign ? -1 : 1),
     };
 
-    const stationType = selectedID.startsWith('stn_')
+    const isSelectedStation = selectedID.startsWith('stn_');
+    const stationType = isSelectedStation
         ? (window.graph.getNodeAttribute(selectedID, 'type') as StationType)
-        : mostFrequentStationType;
+        : lastTool?.startsWith('station-')
+          ? (lastTool.slice(8) as StationType)
+          : mostFrequentStationType;
     const StationComponent = stations[stationType].component;
     const stationAttrs: NodeAttributes = {
         visible: true,
@@ -103,6 +108,15 @@ const PredictNextNode = () => {
         type: stationType,
         [stationType]: stations[stationType].defaultAttrs,
     };
+    if (isSelectedStation) {
+        const selectedStationAttrs = structuredClone(
+            window.graph.getNodeAttribute(selectedID, stationType)
+        ) as NonNullable<ExternalStationAttributes[typeof stationType]>;
+        Object.assign(stationAttrs, { [stationType]: selectedStationAttrs } as Pick<
+            ExternalStationAttributes,
+            typeof stationType
+        >);
+    }
 
     const allThemes = window.graph.reduceEdges(
         selectedID,
@@ -156,12 +170,20 @@ const PredictNextNode = () => {
         const isStation = STATION_TYPE_VALUES.has(nodeType as StationType);
         const nextID: NodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
 
-        // deep copy to prevent mutual reference
-        const attr = structuredClone({ ...stations, ...miscNodes }[nodeType].defaultAttrs);
+        // preserve attributes from the selected station if applicable
+        const attr = structuredClone(
+            isStation && nodeType === window.graph.getNodeAttribute(selectedID, 'type')
+                ? window.graph.getNodeAttribute(selectedID, nodeType as StationType)
+                : { ...stations, ...miscNodes }[nodeType].defaultAttrs
+        );
         // inject runtime color if registered in dynamicColorInjection
         if (dynamicColorInjection.has(nodeType)) (attr as AttributesWithColor).color = runtimeTheme;
-        // Add random names for stations
-        if (isStation) (attr as StationAttributes).names = await makeStationName(nodeType as StationType);
+        // add random names for stations only when enabled
+        // otherwise use the default names or the existing names from the selected station
+        const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
+        if (isStation && !isRandomStationNamesDisabled) {
+            (attr as StationAttributes).names = await makeStationName(nodeType as StationType);
+        }
 
         window.graph.addNode(nextID, {
             visible: true,
@@ -234,7 +256,7 @@ const PredictNextNode = () => {
                 x={nextPos2.x}
                 y={nextPos2.y}
                 handlePointerDown={(_, e) => {
-                    handlePointerDown(mostFrequentStationType, e);
+                    handlePointerDown(stationType, e);
                 }}
                 handlePointerMove={() => {}}
                 handlePointerUp={() => {}}

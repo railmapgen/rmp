@@ -7,8 +7,8 @@ import {
     LineStyleComponentProps,
 } from '../../../../constants/lines';
 
-const LondonTubeInternalIntPre = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
@@ -16,14 +16,18 @@ const LondonTubeInternalIntPre = (props: LineStyleComponentProps<LondonTubeInter
     );
 
     return (
-        <g id={`${id}.pre`} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
+            cursor="pointer"
+        >
             <path d={path} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
         </g>
     );
 };
 
-const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+const LondonTubeInternalIntPost = (props: LineStyleComponentProps<LondonTubeInternalIntAttributes>) => {
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGPathElement>) => handlePointerDown(id, e),
@@ -31,7 +35,11 @@ const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternal
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
         </g>
     );
@@ -48,12 +56,17 @@ const attrsComponent = () => undefined;
 
 const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
     component: LondonTubeInternalInt,
-    preComponent: LondonTubeInternalIntPre,
+    postComponent: LondonTubeInternalIntPost,
     defaultAttrs: defaultLondonTubeInternalIntAttributes,
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.londonTubeInternalInt.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

@@ -1,4 +1,4 @@
-import { SnapPoint } from '../constants/constants';
+import { SnapPoint } from '../constants/canvas';
 import { useRootSelector } from '../redux';
 
 interface SnapPointGuideLinesProps {

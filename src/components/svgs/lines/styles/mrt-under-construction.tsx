@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructionAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultMRTUnderConstructionAttributes.color } = styleAttrs ?? defaultMRTUnderConstructionAttributes;
 
     const onPointerDown = React.useCallback(
@@ -24,7 +24,6 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -32,7 +31,8 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
             strokeDasharray="0 10"
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
@@ -47,13 +47,12 @@ const defaultMRTUnderConstructionAttributes: MRTUnderConstructionAttributes = {
 };
 
 const attrsComponent = (props: AttrsProps<MRTUnderConstructionAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
-            label: 'color',
+            label: t('color'),
             component: (
                 <ColorField
                     type={LineStyleType.MRTUnderConstruction}
@@ -72,7 +71,12 @@ const mrtUnderConstruction: LineStyle<MRTUnderConstructionAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mrtUnderConstruction.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

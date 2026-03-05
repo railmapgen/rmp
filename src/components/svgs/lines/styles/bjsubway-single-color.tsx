@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultBjsubwaySingleColorAttributes.color } = styleAttrs ?? defaultBjsubwaySingleColorAttributes;
 
     const onPointerDown = React.useCallback(
@@ -23,7 +23,11 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH * 1.2} strokeLinecap="round" />
             <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
         </g>
@@ -65,7 +69,12 @@ const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
     attrsComponent: BJSubwaySingleColorAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.bjsubwaySingleColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

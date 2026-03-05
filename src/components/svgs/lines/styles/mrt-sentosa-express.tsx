@@ -9,7 +9,7 @@ import {
 } from '../../../../constants/lines';
 
 const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -18,7 +18,6 @@ const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttri
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="black"
@@ -26,7 +25,8 @@ const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttri
             strokeDasharray={`0 ${LINE_WIDTH * 2} ${LINE_WIDTH * 2} ${LINE_WIDTH * 2}`}
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
@@ -38,9 +38,7 @@ export interface MRTSentosaExpressAttributes extends LinePathAttributes {}
 
 const defaultMRTSentosaExpressAttributes: MRTSentosaExpressAttributes = {};
 
-const attrsComponent = (_: AttrsProps<MRTSentosaExpressAttributes>) => {
-    return null;
-};
+const attrsComponent = () => undefined;
 
 const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
     component: MRTSentosaExpress,
@@ -48,7 +46,12 @@ const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mrtSentosaExpress.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

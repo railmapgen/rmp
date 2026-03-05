@@ -9,7 +9,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         content = defaultChengduRTLineBadgeAttributes.content,
         color = defaultChengduRTLineBadgeAttributes.color,
@@ -34,7 +34,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
     const widthOffset = badgeType == 'suburban' ? ((content.toString().length - 2) * fontSize) / 2 : 0;
 
     return (
-        <g transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`translate(${-12.5}, ${-12.5})`}>
                 {badgeType == 'normal' ? (
                     <>

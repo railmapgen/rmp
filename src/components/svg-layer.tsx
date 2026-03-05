@@ -35,7 +35,9 @@ const SvgLayer = React.memo(
             ])
         );
         for (const element of elements) {
+            const isSelected = selected.has(element.id);
             if (element.type === 'line') {
+                const id = element.id as LineId;
                 const type = element.line!.attr.type;
                 const style = element.line!.attr.style;
                 const styleAttrs = element.line!.attr[style] as NonNullable<
@@ -44,119 +46,94 @@ const SvgLayer = React.memo(
 
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
-                    const isSelected = selected.has(element.id);
-                    const preComponent = (
-                        <PreStyleComponent
-                            key={`${element.id}.pre`}
-                            id={element.id as LineId}
-                            type={type}
-                            path={element.line!.path}
-                            styleAttrs={styleAttrs}
-                            newLine={false}
-                            handlePointerDown={handleEdgePointerDown}
-                        />
-                    );
                     layers[element.line!.attr.zIndex].pre.push(
-                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                            {preComponent}
+                        <g
+                            key={`${id}.pre`}
+                            id={`${id}.pre`}
+                            filter={isSelected ? 'url(#selected-glow)' : undefined}
+                        >
+                            <PreStyleComponent
+                                id={id}
+                                type={type}
+                                path={element.line!.path}
+                                styleAttrs={styleAttrs}
+                                newLine={false}
+                                handlePointerDown={handleEdgePointerDown}
+                            />
                         </g>
                     );
                 }
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
-                const isSelected = selected.has(element.id);
-                const component = (
-                    <StyleComponent
-                        key={element.id}
-                        id={element.id as LineId}
-                        type={type}
-                        path={element.line!.path}
-                        styleAttrs={styleAttrs}
-                        newLine={false}
-                        handlePointerDown={handleEdgePointerDown}
-                    />
-                );
-
                 layers[element.line!.attr.zIndex].main.push(
-                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                        {component}
-                    </g>
-                );
-
-                const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
-                if (PostStyleComponent) {
-                    const isSelected = selected.has(element.id);
-                    const postComponent = (
-                        <PostStyleComponent
-                            key={`${element.id}.post`}
-                            id={element.id as LineId}
+                    <g key={id} id={id} filter={isSelected ? 'url(#selected-glow)' : undefined}>
+                        <StyleComponent
+                            id={id}
                             type={type}
                             path={element.line!.path}
                             styleAttrs={styleAttrs}
                             newLine={false}
                             handlePointerDown={handleEdgePointerDown}
                         />
-                    );
+                    </g>
+                );
+
+                const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
+                if (PostStyleComponent) {
                     layers[element.line!.attr.zIndex].post.push(
-                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                            {postComponent}
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            filter={isSelected ? 'url(#selected-glow)' : undefined}
+                        >
+                            <PostStyleComponent
+                                id={id}
+                                type={type}
+                                path={element.line!.path}
+                                styleAttrs={styleAttrs}
+                                newLine={false}
+                                handlePointerDown={handleEdgePointerDown}
+                            />
                         </g>
                     );
                 }
             } else if (element.type === 'station') {
+                const id = element.id as StnId;
                 const attr = element.station!;
                 const type = attr.type as StationType;
 
                 const PreStationComponent = allStations[type]?.preComponent;
                 if (PreStationComponent) {
-                    const isSelected = selected.has(element.id);
-                    const preComponent = (
-                        <PreStationComponent
-                            key={`${element.id}.pre`}
-                            id={element.id as StnId}
-                            x={attr.x}
-                            y={attr.y}
-                            attrs={attr}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
-                    );
                     layers[element.station!.zIndex].pre.push(
-                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                            {preComponent}
+                        <g
+                            key={`${element.id}.pre`}
+                            id={`${element.id}.pre`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={isSelected ? 'url(#selected-glow)' : undefined}
+                        >
+                            <PreStationComponent
+                                id={id}
+                                x={attr.x}
+                                y={attr.y}
+                                attrs={attr}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
                         </g>
                     );
                 }
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
-                const isSelected = selected.has(element.id);
-                const component = (
-                    <StationComponent
-                        key={element.id}
-                        id={element.id as StnId}
-                        x={attr.x}
-                        y={attr.y}
-                        attrs={attr}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-
                 layers[element.station!.zIndex].main.push(
-                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                        {component}
-                    </g>
-                );
-
-                const PostStationComponent = allStations[type]?.postComponent;
-                if (PostStationComponent) {
-                    const isSelected = selected.has(element.id);
-                    const postComponent = (
-                        <PostStationComponent
-                            key={`${element.id}.post`}
-                            id={element.id as StnId}
+                    <g
+                        key={id}
+                        id={id}
+                        transform={`translate(${attr.x}, ${attr.y})`}
+                        filter={isSelected ? 'url(#selected-glow)' : undefined}
+                    >
+                        <StationComponent
+                            id={id}
                             x={attr.x}
                             y={attr.y}
                             attrs={attr}
@@ -164,69 +141,68 @@ const SvgLayer = React.memo(
                             handlePointerMove={handlePointerMove}
                             handlePointerUp={handlePointerUp}
                         />
-                    );
+                    </g>
+                );
+
+                const PostStationComponent = allStations[type]?.postComponent;
+                if (PostStationComponent) {
                     layers[element.station!.zIndex].post.push(
-                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                            {postComponent}
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={isSelected ? 'url(#selected-glow)' : undefined}
+                        >
+                            <PostStationComponent
+                                id={id}
+                                x={attr.x}
+                                y={attr.y}
+                                attrs={attr}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
                         </g>
                     );
                 }
             } else if (element.type === 'misc-node') {
+                const id = element.id as MiscNodeId;
                 const attr = element.miscNode!;
                 const type = attr.type as MiscNodeType;
 
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
-                    const isSelected = selected.has(element.id);
-                    const preComponent = (
-                        <PreMiscNodeComponent
-                            key={`${element.id}.pre`}
-                            id={element.id as MiscNodeId}
-                            x={attr.x}
-                            y={attr.y}
-                            // @ts-expect-error
-                            attrs={attr[type]}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
-                    );
                     layers[element.miscNode!.zIndex].pre.push(
-                        <g key={`${element.id}.pre-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                            {preComponent}
+                        <g
+                            key={`${id}.pre`}
+                            id={`${id}.pre`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={isSelected ? 'url(#selected-glow)' : undefined}
+                        >
+                            <PreMiscNodeComponent
+                                id={id}
+                                x={attr.x}
+                                y={attr.y}
+                                // @ts-expect-error
+                                attrs={attr[type]}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
                         </g>
                     );
                 }
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-                const isSelected = selected.has(element.id);
-                const component = (
-                    <MiscNodeComponent
-                        key={element.id}
-                        id={element.id as MiscNodeId}
-                        x={attr.x}
-                        y={attr.y}
-                        // @ts-expect-error
-                        attrs={attr[type]}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={`${element.id}-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                        {component}
-                    </g>
-                );
-
-                const PostMiscNodeComponent = miscNodes[type]?.postComponent;
-                if (PostMiscNodeComponent) {
-                    const isSelected = selected.has(element.id);
-                    const postComponent = (
-                        <PostMiscNodeComponent
-                            key={`${element.id}.post`}
-                            id={element.id as MiscNodeId}
+                    <g
+                        key={id}
+                        id={id}
+                        transform={`translate(${attr.x}, ${attr.y})`}
+                        filter={isSelected ? 'url(#selected-glow)' : undefined}
+                    >
+                        <MiscNodeComponent
+                            id={id}
                             x={attr.x}
                             y={attr.y}
                             // @ts-expect-error
@@ -235,10 +211,28 @@ const SvgLayer = React.memo(
                             handlePointerMove={handlePointerMove}
                             handlePointerUp={handlePointerUp}
                         />
-                    );
+                    </g>
+                );
+
+                const PostMiscNodeComponent = miscNodes[type]?.postComponent;
+                if (PostMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].post.push(
-                        <g key={`${element.id}.post-glow`} filter={isSelected ? 'url(#selected-glow)' : undefined}>
-                            {postComponent}
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={isSelected ? 'url(#selected-glow)' : undefined}
+                        >
+                            <PostMiscNodeComponent
+                                id={id}
+                                x={attr.x}
+                                y={attr.y}
+                                // @ts-expect-error
+                                attrs={attr[type]}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
                         </g>
                     );
                 }

@@ -12,7 +12,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultLRTSingleColorAttributes.color } = styleAttrs ?? defaultLRTSingleColorAttributes;
 
     const onPointerDown = React.useCallback(
@@ -22,14 +22,14 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
             strokeWidth="2.157"
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
@@ -63,7 +63,12 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
     attrsComponent: lrtSingleColorAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.lrtSingleColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

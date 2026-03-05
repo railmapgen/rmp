@@ -24,7 +24,6 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -68,7 +67,12 @@ const singleColor: LineStyle<SingleColorAttributes> = {
     attrsComponent: singleColorAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.singleColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 

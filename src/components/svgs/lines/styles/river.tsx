@@ -7,7 +7,7 @@ import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } 
 import { ColorAttribute } from '../../../panels/details/color-field';
 
 const River = (props: LineStyleComponentProps<RiverAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultRiverAttributes.color, width = defaultRiverAttributes.width } =
         styleAttrs ?? defaultRiverAttributes;
 
@@ -18,14 +18,14 @@ const River = (props: LineStyleComponentProps<RiverAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
             strokeWidth={width}
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };

@@ -13,6 +13,7 @@
             "showLess": "顯示更少",
             "section": {
                 "lineDrawing": "線段繪製",
+                "lineStyles": "線段樣式",
                 "stations": "車站",
                 "miscellaneousNodes": "雜項節點"
             },
@@ -20,7 +21,7 @@
             "learnHowToAdd": {
                 "station": "了解如何添加車站！",
                 "misc-node": "了解如何添加節點！",
-                "line": "了解如何添加線條樣式！"
+                "line-styles": "了解如何添加線段樣式！"
             }
         },
         "details": {
@@ -341,11 +342,13 @@
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",
                     "open": "開通",
-                    "construction": "施工"
+                    "construction": "施工",
+                    "scale": "站名橫向縮放"
                 },
                 "bjsubwayInt": {
                     "displayName": "北京地鐵換乘車站",
-                    "outOfStation": "出站轉車"
+                    "outOfStation": "出站轉車",
+                    "scale": "站名橫向縮放"
                 },
                 "mtr": {
                     "displayName": "香港MTR車站"
@@ -517,10 +520,13 @@
                     "displayName": "長沙軌道交通換乘車站"
                 },
                 "hzmetroBasic": {
-                    "displayName": "杭州地鐵基本車站"
+                    "displayName": "杭州地鐵基本車站",
+                    "scale": "站名橫向縮放"
                 },
                 "hzmetroInt": {
-                    "displayName": "杭州地鐵換乘車站"
+                    "displayName": "杭州地鐵換乘車站",
+                    "mirror": "圖標鏡像",
+                    "scale": "站名橫向縮放"
                 }
             },
             "lines": {
@@ -692,6 +698,28 @@
                 "body": "此操作將覆蓋當前項目。所有未保存的更改將丟失。確定要繼續嗎？",
                 "overwrite": "覆蓋",
                 "newerVersion": "警告：此存檔檔案來自更新的版本（{{saveVersion}}），高於當前版本（{{currentVersion}}）。載入它可能會導致錯誤或未定義的行為。"
+            },
+            "otherPlatform": {
+                "title": "從其他工具導入",
+                "desc": "從其他支持的工具導入您的車站和線路。",
+                "step1": "上傳",
+                "step2": "導入",
+                "mode": {
+                    "desc": "將您的車站格式化為該城市的樣式。",
+                    "beijing": "北京",
+                    "changsha": "長沙",
+                    "chengdu": "成都",
+                    "hangzhou": "杭州",
+                    "kunming": "昆明",
+                    "shanghai": "上海",
+                    "suzhou": "蘇州",
+                    "wuhan": "武漢"
+                },
+                "detected": "檢測到 AARC 存檔文件。準備導入 {{x}} 個車站和 {{y}} 條線路。",
+                "error": "您提交的存檔文件不受支持。",
+                "next": "下一步",
+                "previous": "上一步",
+                "confirm": "清除當前並覆蓋"
             }
         },
         "download": {
@@ -793,6 +821,7 @@
                 "c": "啟用或停用磁性佈局。",
                 "arrows": "稍微移動畫布。",
                 "ijkl": "稍微移動所選站點。",
+                "rotate": "順時針旋轉所選節點（按住 Alt 為 5° 步進）。",
                 "shift": "多選。",
                 "alt": "拖動時按下以臨時停用自動吸附。",
                 "delete": "刪除所選站點。",
@@ -853,14 +882,6 @@
                     "success": "成功更新所有顏色。",
                     "error": "更新所有顏色時發生錯誤：{{e}}。"
                 },
-                "unlockSimplePath": {
-                    "title": "解鎖簡單路徑",
-                    "content1": "地鐵線路圖繪製器應用致力於在遵循既定慣例的前提下，提供一個有利於創建地鐵線路圖的互動平台。在這些慣例中，一種特別著名的風格源自哈利·貝克的創新工作。他的開創性貢獻於1932年得到官方認可，並在大眾中迅速贏得了聲譽。目前，它在信息設計領域具有重要的示範意義，在全球範圍內的交通製圖中得到了廣泛的實施，儘管成功程度有所不同。",
-                    "content2": "應用程式固有地隱藏了使用簡單路徑的選項，因為其部署有可能違反既定的慣例。默認情況下，此特定功能保持隱蔽。此外，提交到地鐵線路圖繪製器畫廊的作品將經過嚴格的審查，堅決拒絕使用單色風格的簡單路徑的構圖。",
-                    "content3": "儘管如此，我們仍然保留瞭解鎖此選項的機會，當您訂閱后，方可使用簡單路徑。 需要注意的是，即使獲得后，簡單路徑的使用也僅限於單色風格。",
-                    "check": "解鎖簡單路徑",
-                    "unlocked": "已解鎖"
-                },
                 "masterManager": {
                     "title": "管理全部大師節點",
                     "id": "唯一標識",
@@ -919,7 +940,13 @@
         "placeBottom": "置底",
         "placeDefault": "還原位置",
         "placeUp": "上移一層",
-        "placeDown": "下移一層"
+        "placeDown": "下移一層",
+        "rotateCW": "順時針旋轉45°",
+        "rotateCCW": "逆時針旋轉45°",
+        "flipVertical": "垂直翻轉",
+        "flipHorizontal": "水平翻轉",
+        "flipDiagonal45": "沿45°線翻轉",
+        "flipDiagonal135": "沿135°線翻轉"
     },
 
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"

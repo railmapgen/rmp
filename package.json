@@ -28,9 +28,9 @@
         "react-i18next": "^15.7.3",
         "react-icons": "^5.4.0",
         "react-redux": "^9.2.0",
-        "react-router-dom": "^7.9.1",
+        "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
-        "rollup": "^4.54.0",
+        "rollup": "^4.59.0",
         "vite-plugin-svgr": "^4.5.0"
     },
     "devDependencies": {
@@ -72,5 +72,5 @@
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
     },
-    "version": "5.4.31"
+    "version": "5.5.6"
 }

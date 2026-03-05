@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 66;
+export const CURRENT_VERSION = 68;
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -857,5 +857,53 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
                 graph.mergeNodeAttributes(node, { [type]: attr });
             });
         return JSON.stringify({ ...p, version: 66, graph: graph.export() });
+    },
+    66: param => {
+        // Bump save version to add scale to bjsubway basic and interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes(
+                (node, attr) =>
+                    node.startsWith('stn') &&
+                    (attr.type === StationType.BjsubwayBasic || attr.type === StationType.BjsubwayInt)
+            )
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any as
+                    | BjsubwayBasicStationAttributes
+                    | BjsubwayIntStationAttributes;
+                if (typeof (attr as any).scale !== 'number') {
+                    (attr as any).scale = 1;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 67, graph: graph.export() });
+    },
+    67: param => {
+        // Bump save version to add scale to hzmetro basic and interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes(
+                (node, attr) =>
+                    node.startsWith('stn') &&
+                    (attr.type === StationType.HzmetroBasic || attr.type === StationType.HzmetroInt)
+            )
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (typeof attr.scale !== 'number') {
+                    attr.scale = 1;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+                if (type === StationType.HzmetroInt && typeof attr.mirror !== 'boolean') {
+                    attr.mirror = false;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 68, graph: graph.export() });
     },
 };

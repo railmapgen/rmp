@@ -11,7 +11,7 @@ import {
 import { ColorAttribute } from '../../../panels/details/color-field';
 
 const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongIntercityRailwayAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultGuangdongIntercityRailwayAttributes.color } =
         styleAttrs ?? defaultGuangdongIntercityRailwayAttributes;
 
@@ -21,7 +21,11 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path d={path} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH / 2} strokeDasharray="7.5" />
         </g>
@@ -45,7 +49,12 @@ const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> 
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.guangdongIntercityRailway.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
     },
 };
 
