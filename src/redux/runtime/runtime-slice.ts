@@ -128,7 +128,6 @@ const initialState: RuntimeState = {
  * Thunk middleware to sum the master nodes count.
  */
 export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
-    console.log('Refreshing nodes...');
     const state = getState() as RootState;
     dispatch(setRefreshNodes());
 
@@ -173,7 +172,6 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
  * Thunk middleware to sum the parallel lines count.
  */
 export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async (_, { getState, dispatch }) => {
-    console.log('Refreshing edges...');
     const state = getState() as RootState;
     dispatch(setRefreshEdges());
 
