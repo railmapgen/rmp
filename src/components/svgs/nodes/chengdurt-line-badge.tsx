@@ -34,7 +34,7 @@ const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttribut
     const widthOffset = badgeType == 'suburban' ? ((content.toString().length - 2) * fontSize) / 2 : 0;
 
     return (
-        <g transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`translate(${-12.5}, ${-12.5})`}>
                 {badgeType == 'normal' ? (
                     <>

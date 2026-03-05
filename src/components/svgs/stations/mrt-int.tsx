@@ -57,7 +57,7 @@ const MRTIntStation = (props: StationComponentProps) => {
     const width = (transfer[0].length - 2) * 29.625 + 57.8;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -115,7 +115,7 @@ const MRTIntStationPost = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}

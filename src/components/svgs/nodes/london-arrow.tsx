@@ -33,8 +33,7 @@ const LondonArrow = (props: NodeComponentProps<LondonArrowAttributes>) => {
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})rotate(${rotate})`}
+            transform={`rotate(${rotate})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

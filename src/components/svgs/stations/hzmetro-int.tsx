@@ -75,7 +75,7 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`rotate(${rotate}) scale(${mirror ? -1 : 1}, 1)`}>
                 {transfer[0].length <= 2 ? (
                     <g transform="translate(-16.6265 -16.6265)">

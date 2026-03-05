@@ -43,36 +43,23 @@ const SvgLayer = React.memo(
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
                     layers[element.line!.attr.zIndex].pre.push(
-                        <PreStyleComponent
-                            key={`${element.id}.pre`}
-                            id={element.id as LineId}
-                            type={type}
-                            path={element.line!.path}
-                            styleAttrs={styleAttrs}
-                            newLine={false}
-                            handlePointerDown={handleEdgePointerDown}
-                        />
+                        <g key={`${element.id}.pre`} id={`${element.id}.pre`}>
+                            <PreStyleComponent
+                                id={element.id as LineId}
+                                type={type}
+                                path={element.line!.path}
+                                styleAttrs={styleAttrs}
+                                newLine={false}
+                                handlePointerDown={handleEdgePointerDown}
+                            />
+                        </g>
                     );
                 }
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <StyleComponent
-                        key={element.id}
-                        id={element.id as LineId}
-                        type={type}
-                        path={element.line!.path}
-                        styleAttrs={styleAttrs}
-                        newLine={false}
-                        handlePointerDown={handleEdgePointerDown}
-                    />
-                );
-
-                const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
-                if (PostStyleComponent) {
-                    layers[element.line!.attr.zIndex].post.push(
-                        <PostStyleComponent
-                            key={`${element.id}.post`}
+                    <g key={element.id as string} id={element.id as string}>
+                        <StyleComponent
                             id={element.id as LineId}
                             type={type}
                             path={element.line!.path}
@@ -80,6 +67,22 @@ const SvgLayer = React.memo(
                             newLine={false}
                             handlePointerDown={handleEdgePointerDown}
                         />
+                    </g>
+                );
+
+                const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
+                if (PostStyleComponent) {
+                    layers[element.line!.attr.zIndex].post.push(
+                        <g key={`${element.id}.post`} id={`${element.id}.post`}>
+                            <PostStyleComponent
+                                id={element.id as LineId}
+                                type={type}
+                                path={element.line!.path}
+                                styleAttrs={styleAttrs}
+                                newLine={false}
+                                handlePointerDown={handleEdgePointerDown}
+                            />
+                        </g>
                     );
                 }
             } else if (element.type === 'station') {
@@ -89,38 +92,28 @@ const SvgLayer = React.memo(
                 const PreStationComponent = allStations[type]?.preComponent;
                 if (PreStationComponent) {
                     layers[element.station!.zIndex].pre.push(
-                        <PreStationComponent
+                        <g
                             key={`${element.id}.pre`}
-                            id={element.id as StnId}
-                            x={attr.x}
-                            y={attr.y}
-                            attrs={attr}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
+                            id={`${element.id}.pre`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                        >
+                            <PreStationComponent
+                                id={element.id as StnId}
+                                x={attr.x}
+                                y={attr.y}
+                                attrs={attr}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
+                        </g>
                     );
                 }
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <StationComponent
-                        key={element.id}
-                        id={element.id as StnId}
-                        x={attr.x}
-                        y={attr.y}
-                        attrs={attr}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-
-                const PostStationComponent = allStations[type]?.postComponent;
-                if (PostStationComponent) {
-                    layers[element.station!.zIndex].post.push(
-                        <PostStationComponent
-                            key={`${element.id}.post`}
+                    <g key={element.id} id={element.id as string} transform={`translate(${attr.x}, ${attr.y})`}>
+                        <StationComponent
                             id={element.id as StnId}
                             x={attr.x}
                             y={attr.y}
@@ -129,6 +122,27 @@ const SvgLayer = React.memo(
                             handlePointerMove={handlePointerMove}
                             handlePointerUp={handlePointerUp}
                         />
+                    </g>
+                );
+
+                const PostStationComponent = allStations[type]?.postComponent;
+                if (PostStationComponent) {
+                    layers[element.station!.zIndex].post.push(
+                        <g
+                            key={`${element.id}.post`}
+                            id={`${element.id}.post`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                        >
+                            <PostStationComponent
+                                id={element.id as StnId}
+                                x={attr.x}
+                                y={attr.y}
+                                attrs={attr}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
+                        </g>
                     );
                 }
             } else if (element.type === 'misc-node') {
@@ -138,40 +152,29 @@ const SvgLayer = React.memo(
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].pre.push(
-                        <PreMiscNodeComponent
+                        <g
                             key={`${element.id}.pre`}
-                            id={element.id as MiscNodeId}
-                            x={attr.x}
-                            y={attr.y}
-                            // @ts-expect-error
-                            attrs={attr[type]}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
+                            id={`${element.id}.pre`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                        >
+                            <PreMiscNodeComponent
+                                id={element.id as MiscNodeId}
+                                x={attr.x}
+                                y={attr.y}
+                                // @ts-expect-error
+                                attrs={attr[type]}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
+                        </g>
                     );
                 }
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <MiscNodeComponent
-                        key={element.id}
-                        id={element.id as MiscNodeId}
-                        x={attr.x}
-                        y={attr.y}
-                        // @ts-expect-error
-                        attrs={attr[type]}
-                        handlePointerDown={handlePointerDown}
-                        handlePointerMove={handlePointerMove}
-                        handlePointerUp={handlePointerUp}
-                    />
-                );
-
-                const PostMiscNodeComponent = miscNodes[type]?.postComponent;
-                if (PostMiscNodeComponent) {
-                    layers[element.miscNode!.zIndex].post.push(
-                        <PostMiscNodeComponent
-                            key={`${element.id}.post`}
+                    <g key={element.id} id={element.id as string} transform={`translate(${attr.x}, ${attr.y})`}>
+                        <MiscNodeComponent
                             id={element.id as MiscNodeId}
                             x={attr.x}
                             y={attr.y}
@@ -181,6 +184,28 @@ const SvgLayer = React.memo(
                             handlePointerMove={handlePointerMove}
                             handlePointerUp={handlePointerUp}
                         />
+                    </g>
+                );
+
+                const PostMiscNodeComponent = miscNodes[type]?.postComponent;
+                if (PostMiscNodeComponent) {
+                    layers[element.miscNode!.zIndex].post.push(
+                        <g
+                            key={`${element.id}.post`}
+                            id={`${element.id}.post`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                        >
+                            <PostMiscNodeComponent
+                                id={element.id as MiscNodeId}
+                                x={attr.x}
+                                y={attr.y}
+                                // @ts-expect-error
+                                attrs={attr[type]}
+                                handlePointerDown={handlePointerDown}
+                                handlePointerMove={handlePointerMove}
+                                handlePointerUp={handlePointerUp}
+                            />
+                        </g>
                     );
                 }
             }

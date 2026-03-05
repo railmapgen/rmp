@@ -19,8 +19,7 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})rotate(45)`}
+            transform={`rotate(45)`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

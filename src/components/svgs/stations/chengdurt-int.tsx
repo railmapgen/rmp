@@ -105,7 +105,7 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
                 : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`} textAnchor="middle">
+        <g textAnchor="middle">
             <rect
                 x={-width / 2}
                 y={-height / 2}

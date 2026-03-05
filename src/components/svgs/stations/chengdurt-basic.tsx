@@ -137,7 +137,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                 : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {stationType == 'normal' || stationType == 'branchTerminal' ? (
                 <circle
                     id={`stn_core_${id}`}

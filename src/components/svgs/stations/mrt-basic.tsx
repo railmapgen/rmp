@@ -57,7 +57,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
     const height = 12.935;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
+        <g transform={`${isTram ? 'scale(0.81)' : ''}`}>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -114,7 +114,7 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
+        <g transform={`${isTram ? 'scale(0.81)' : ''}`}>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}

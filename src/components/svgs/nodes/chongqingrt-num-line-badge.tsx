@@ -33,8 +33,6 @@ const ChongqingRTNumLineBadge = (props: NodeComponentProps<ChongqingRTNumLineBad
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

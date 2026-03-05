@@ -106,7 +106,7 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}>
                 <StationNumber
                     id={`stn_core_${id}`}

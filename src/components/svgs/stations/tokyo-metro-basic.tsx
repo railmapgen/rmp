@@ -119,7 +119,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <TokyoMetroBasicSvg lineCode={lineCode} stationCode={stationCode} color={color} />
             <rect
                 id={`stn_core_${id}`}

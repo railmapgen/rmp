@@ -38,8 +38,6 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

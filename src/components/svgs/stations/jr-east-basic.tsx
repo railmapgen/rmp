@@ -155,7 +155,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
         (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`rotate(${rotate})`}>
                 {lines.map((v, i) => (
                     <circle
