@@ -9,7 +9,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultGzmtrLineBadgeAttributes.names,
         color = defaultGzmtrLineBadgeAttributes.color,

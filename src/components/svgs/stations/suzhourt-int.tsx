@@ -49,7 +49,7 @@ const NAME_DY_SZ_BASIC = {
 };
 
 const SuzhouRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultSuzhouRTIntStationAttributes.nameOffsetX,

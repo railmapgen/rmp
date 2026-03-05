@@ -30,7 +30,7 @@ const NAME_DY_WUHAN_INT = {
 };
 
 const WuhanRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultWuhanRTIntStationAttributes.nameOffsetX,

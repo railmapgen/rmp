@@ -2,7 +2,7 @@ import React from 'react';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 
 const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
-    const { id, x, y, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

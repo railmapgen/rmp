@@ -30,7 +30,7 @@ export const NAME_DY_SH_BASIC = {
 };
 
 const ShmetroBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultShmetroBasicStationAttributes.nameOffsetX,

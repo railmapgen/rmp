@@ -23,7 +23,7 @@ const NAME_DY_CS_BASIC = {
 };
 
 const CsmetroBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultCsmetroBasicStationAttributes.nameOffsetX,

@@ -24,7 +24,7 @@ export const LINE_HEIGHT = {
 };
 
 const ChengduRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultChengduRTIntStationAttributes.nameOffsetX,

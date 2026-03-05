@@ -13,7 +13,7 @@ import { MasterManager } from '../../page-header/master-manager';
 import ThemeButton from '../../panels/theme-button';
 
 const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

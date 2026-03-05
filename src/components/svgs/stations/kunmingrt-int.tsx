@@ -34,7 +34,7 @@ const NAME_DY_KM_INT = {
 };
 
 const KunmingRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultKunmingRTIntStationAttributes.nameOffsetX,

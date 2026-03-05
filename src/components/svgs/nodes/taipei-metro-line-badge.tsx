@@ -8,7 +8,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 
 const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         code = defaultTaipeiMetroLineBadgeAttributes.code,
         color = defaultTaipeiMetroLineBadgeAttributes.color,

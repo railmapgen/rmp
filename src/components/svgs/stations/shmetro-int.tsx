@@ -31,7 +31,7 @@ const NAME_DY_SH_INT = {
 };
 
 const ShmetroIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultShmetroIntStationAttributes.nameOffsetX,

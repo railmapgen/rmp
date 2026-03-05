@@ -10,7 +10,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 const NUM_WIDTH = 11.84375;
 
 const ShenzhenMetroNumLineBadge = (props: NodeComponentProps<ShenzhenMetroNumLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         num = defaultShenzhenMetroNumLineBadgeAttributes.num,
         color = defaultShenzhenMetroNumLineBadgeAttributes.color,

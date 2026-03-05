@@ -9,7 +9,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChengduRTLineBadge = (props: NodeComponentProps<ChengduRTLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         content = defaultChengduRTLineBadgeAttributes.content,
         color = defaultChengduRTLineBadgeAttributes.color,

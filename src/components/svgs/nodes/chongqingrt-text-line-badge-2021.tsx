@@ -9,7 +9,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextLineBadge2021Attributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultChongqingRTTextLineBadge2021Attributes.names,
         color = defaultChongqingRTTextLineBadge2021Attributes.color,

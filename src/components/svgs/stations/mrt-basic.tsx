@@ -36,7 +36,7 @@ const NAME_DY_SG_BASIC = {
 };
 
 const MRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { isTram = defaultMRTBasicStationAttributes.isTram } =
         attrs[StationType.MRTBasic] ?? defaultMRTBasicStationAttributes;
 
@@ -81,7 +81,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
 };
 
 const MRTBasicStationPost = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTBasicStationAttributes.nameOffsetX,

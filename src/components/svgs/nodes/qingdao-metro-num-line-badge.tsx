@@ -8,7 +8,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const QingdaoMetroNumLineBadge = (props: NodeComponentProps<QingdaoMetroNumLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         num = defaultQingdaoMetroNumLineBadgeAttributes.num,
         numEn = defaultQingdaoMetroNumLineBadgeAttributes.numEn,

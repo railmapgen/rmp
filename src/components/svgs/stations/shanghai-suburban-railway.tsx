@@ -15,7 +15,7 @@ import { MultilineText } from '../common/multiline-text';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { names = defaultStationAttributes.names, rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate } =
         attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
 

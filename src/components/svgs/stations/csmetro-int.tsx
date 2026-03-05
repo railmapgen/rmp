@@ -20,7 +20,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
  * Major information taken from changsha-metro-int.svg and adapted for runtime.
  */
 const CsmetroIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultCsmetroIntStationAttributes.nameOffsetX,

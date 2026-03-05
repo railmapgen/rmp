@@ -35,7 +35,7 @@ const defaultHzmetroIntStationAttributes: HzmetroIntStationAttributes = {
 };
 
 const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultHzmetroIntStationAttributes.nameOffsetX,

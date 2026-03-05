@@ -20,7 +20,7 @@ const FONT_SIZE = 2 * X_HEIGHT;
 const LINE_HEIGHT = 0.85 * FONT_SIZE;
 
 const LondonTubeIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultLondonTubeIntStationAttributes.nameOffsetX,

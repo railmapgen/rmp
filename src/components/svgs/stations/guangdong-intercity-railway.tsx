@@ -16,7 +16,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
 const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultGuangdongIntercityRailwayStationAttributes.nameOffsetX,

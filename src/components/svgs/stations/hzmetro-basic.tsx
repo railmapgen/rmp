@@ -32,7 +32,7 @@ export const NAME_DY_HZ_BASIC = {
 };
 
 const HzmetroBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultHzmetroBasicStationAttributes.nameOffsetX,

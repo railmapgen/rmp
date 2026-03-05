@@ -36,7 +36,7 @@ const NAME_DY_SG_BASIC = {
 };
 
 const MRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { transfer = defaultMRTIntStationAttributes.transfer } =
         attrs[StationType.MRTInt] ?? defaultMRTIntStationAttributes;
 
@@ -81,7 +81,7 @@ const MRTIntStation = (props: StationComponentProps) => {
 };
 
 const MRTIntStationPost = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTIntStationAttributes.nameOffsetX,

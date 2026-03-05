@@ -27,7 +27,7 @@ const NAME_JRE_IMPORTANT = {
 const ICON_SAFE_D = 1;
 
 const JREastImportantStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultJREastImportantStationAttributes.nameOffsetX,

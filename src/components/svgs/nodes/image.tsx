@@ -10,7 +10,7 @@ import { imageStoreIndexedDB } from '../../../util/image-store-indexed-db';
 import { ImagePanelModal } from '../../page-header/image-panel-modal';
 
 const Image = (props: NodeComponentProps<ImageAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         type = defaultImageAttributes.type,
         href = defaultImageAttributes.href,

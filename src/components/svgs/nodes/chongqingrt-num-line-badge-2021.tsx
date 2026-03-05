@@ -8,7 +8,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLineBadge2021Attributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         num = defaultChongqingRTNumLineBadge2021Attributes.num,
         color = defaultChongqingRTNumLineBadge2021Attributes.color,

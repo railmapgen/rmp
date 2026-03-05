@@ -60,7 +60,7 @@ export enum FacilitiesType {
 }
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { type = defaultFacilitiesAttributes.type } = attrs ?? defaultFacilitiesAttributes;
 
     const imgEl = React.useRef<SVGImageElement | null>(null);

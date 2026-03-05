@@ -25,7 +25,7 @@ export const LINE_HEIGHT = {
 };
 
 const ChongqingRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultChongqingRTBasicStationAttributes.nameOffsetX,

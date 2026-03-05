@@ -47,7 +47,7 @@ const NAME_DY_SZ_BASIC = {
 };
 
 const SuzhouRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         color = defaultSuzhouRTBasicStationAttributes.color,

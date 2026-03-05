@@ -11,7 +11,7 @@ const X = 5;
 const D = `M0,0 L${-X * 2},${-X * 2} L${Math.SQRT2 * X - 2 * X},${2 * -X} L${Math.SQRT2 * X},0 L${Math.SQRT2 * X - 2 * X},${2 * X} L${2 * -X},${2 * X} Z`;
 
 const LondonArrow = (props: NodeComponentProps<LondonArrowAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         color = defaultLondonArrowAttributes.color,
         rotate = defaultLondonArrowAttributes.rotate,

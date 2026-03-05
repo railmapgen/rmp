@@ -31,7 +31,7 @@ const SCALE = 0.56; // scale the InterchangeStation2024 to match the global line
 const SCALE_WITH_PADDING = 0.6; // station names uses the coordinates from the icon and also need some padding
 
 const GzmtrInt2024Station = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultGzmtrInt2024StationAttributes.nameOffsetX,

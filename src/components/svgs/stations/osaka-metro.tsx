@@ -373,7 +373,7 @@ const OsakaMetroIntSvg = (props: {
 };
 
 const OsakaMetroStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
     const stationAttrs = attrs[StationType.OsakaMetro] ?? defaultOsakaMetroStationAttributes;
 
