@@ -22,9 +22,13 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({ isFavorite, onToggle, a
             }}
             variant="ghost"
             size="sm"
+            h={10}
+            minW={10}
+            w={10}
+            borderRadius={0}
+            _focus={{ boxShadow: 'none' }}
             color="pink.400"
             _hover={{ color: 'pink.500' }}
-            _focus={{ boxShadow: 'none' }}
         />
     );
 };

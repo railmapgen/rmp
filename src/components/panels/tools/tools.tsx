@@ -45,6 +45,7 @@ import FavoriteButton from './favorite-button';
 import { localizedMiscNodes, localizedStaions } from './localized-order';
 
 const buttonStyle: SystemStyleObject = {
+    borderRadius: 0,
     justifyContent: 'flex-start',
     p: 0,
     w: '100%',
@@ -140,21 +141,21 @@ const ToolsPanel = () => {
 
     // Filter logic: only show items that are favorited when showOnlyFavorites is true
     // Handle error cases: filter out any IDs that don't exist in the current data
-    // Note: Line paths are always shown regardless of favorites filter
+    // Note: All line paths are always shown regardless of favorites filter
 
-    const filteredLineStyles = React.useMemo(() => {
+    const getFilteredLineStyles = React.useCallback(() => {
         const allStyles = Object.entries(lineStyles);
         if (!showOnlyFavorites) return allStyles;
         return allStyles.filter(([styleType]) => favorites.lineStyles.includes(styleType as LineStyleType));
     }, [showOnlyFavorites, favorites.lineStyles]);
 
-    const filteredStations = React.useMemo(() => {
+    const getFilteredStations = React.useCallback(() => {
         const allStations = localizedStaions[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allStations;
         return allStations.filter(type => favorites.stations.includes(type));
     }, [showOnlyFavorites, favorites.stations, i18n.language]);
 
-    const filteredMiscNodes = React.useMemo(() => {
+    const getFilteredMiscNodes = React.useCallback(() => {
         const allMiscNodes =
             localizedMiscNodes[i18n.language as LanguageCode]?.filter(
                 type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText && type !== MiscNodeType.Master
@@ -167,9 +168,9 @@ const ToolsPanel = () => {
         type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD
     ).length;
     const lineDrawingVisibleCount = linePathCount + 2; // color + virtual
-    const lineStylesVisibleCount = filteredLineStyles.length;
-    const stationsVisibleCount = filteredStations.length;
-    const miscellaneousVisibleCount = filteredMiscNodes.length + 1; // master
+    const lineStylesVisibleCount = getFilteredLineStyles().length;
+    const stationsVisibleCount = getFilteredStations().length;
+    const miscellaneousVisibleCount = getFilteredMiscNodes().length + 1; // master
 
     const shouldHideLineDrawingAccordionButton = showOnlyFavorites;
     const shouldHideLineStylesAccordionButton = showOnlyFavorites && lineStylesVisibleCount <= 5;
@@ -188,25 +189,37 @@ const ToolsPanel = () => {
             {Object.values(LinePathType)
                 .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
                 .map(type => (
-                    <Button
-                        key={type}
-                        aria-label={type}
-                        leftIcon={linePaths[type].icon}
-                        onClick={() => handleLine(type)}
-                        variant={currentPath === type ? 'solid' : 'outline'}
-                        isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
-                        sx={buttonStyle}
-                    >
-                        {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                    </Button>
+                    <Flex key={type} w="100%" align="stretch">
+                        <Box
+                            w="4px"
+                            bg={currentPath === type ? 'blue.500' : 'transparent'}
+                            transition="background-color 0.2s"
+                        />
+                        <Button
+                            aria-label={type}
+                            leftIcon={linePaths[type].icon}
+                            onClick={() => handleLine(type)}
+                            variant="ghost"
+                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
+                            sx={buttonStyle}
+                            flex={1}
+                        >
+                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                        </Button>
+                    </Flex>
                 ))}
 
-            <HStack spacing={0} w="100%">
+            <Flex w="100%" align="stretch">
+                <Box
+                    w="4px"
+                    bg={mode === `misc-node-${MiscNodeType.Virtual}` ? 'blue.500' : 'transparent'}
+                    transition="background-color 0.2s"
+                />
                 <Button
                     aria-label={MiscNodeType.Virtual}
                     leftIcon={miscNodes[MiscNodeType.Virtual].icon}
                     onClick={() => handleMiscNode(MiscNodeType.Virtual)}
-                    variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'outline'}
+                    variant="ghost"
                     sx={buttonStyle}
                     flex={1}
                 >
@@ -219,19 +232,24 @@ const ToolsPanel = () => {
                         ariaLabel={`favorite-${MiscNodeType.Virtual}`}
                     />
                 )}
-            </HStack>
+            </Flex>
         </>
     );
 
     const lineStylesContent = (
         <>
-            {filteredLineStyles.map(([styleType, style]) => (
-                <HStack key={styleType} spacing={0} w="100%">
+            {getFilteredLineStyles().map(([styleType, style]) => (
+                <Flex key={styleType} w="100%" align="stretch">
+                    <Box
+                        w="4px"
+                        bg={currentStyle === styleType ? 'blue.500' : 'transparent'}
+                        transition="background-color 0.2s"
+                    />
                     <Button
                         aria-label={styleType}
                         leftIcon={<Box boxSize="40px" />}
                         onClick={() => handleLineStyle(styleType as LineStyleType)}
-                        variant={currentStyle === styleType ? 'solid' : 'outline'}
+                        variant="ghost"
                         isDisabled={currentPath ? !isStyleCompatible(styleType as LineStyleType, currentPath) : false}
                         sx={buttonStyle}
                         flex={1}
@@ -245,7 +263,7 @@ const ToolsPanel = () => {
                             ariaLabel={`favorite-${styleType}`}
                         />
                     )}
-                </HStack>
+                </Flex>
             ))}
 
             <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={showOnlyFavorites} />
@@ -254,13 +272,18 @@ const ToolsPanel = () => {
 
     const stationsContent = (
         <>
-            {filteredStations.map(type => (
-                <HStack key={type} spacing={0} w="100%">
+            {getFilteredStations().map(type => (
+                <Flex key={type} w="100%" align="stretch">
+                    <Box
+                        w="4px"
+                        bg={mode === `station-${type}` ? 'blue.500' : 'transparent'}
+                        transition="background-color 0.2s"
+                    />
                     <Button
                         aria-label={type}
                         leftIcon={stations[type].icon}
                         onClick={() => handleStation(type)}
-                        variant={mode === `station-${type}` ? 'solid' : 'outline'}
+                        variant="ghost"
                         sx={buttonStyle}
                         flex={1}
                     >
@@ -273,7 +296,7 @@ const ToolsPanel = () => {
                             ariaLabel={`favorite-${type}`}
                         />
                     )}
-                </HStack>
+                </Flex>
             ))}
             <LearnHowToAdd type="station" expand={isTextShown} hidden={showOnlyFavorites} />
         </>
@@ -281,12 +304,17 @@ const ToolsPanel = () => {
 
     const miscellaneousContent = (
         <>
-            <HStack spacing={0} w="100%">
+            <Flex w="100%" align="stretch">
+                <Box
+                    w="4px"
+                    bg={mode === `misc-node-${MiscNodeType.Master}` ? 'blue.500' : 'transparent'}
+                    transition="background-color 0.2s"
+                />
                 <Button
                     aria-label={MiscNodeType.Master}
                     leftIcon={miscNodes[MiscNodeType.Master].icon}
                     onClick={() => handleMiscNode(MiscNodeType.Master)}
-                    variant={mode === `misc-node-${MiscNodeType.Master}` ? 'solid' : 'outline'}
+                    variant="ghost"
                     isDisabled={isMasterDisabled}
                     sx={buttonStyle}
                     flex={1}
@@ -317,14 +345,19 @@ const ToolsPanel = () => {
                         ariaLabel={`favorite-${MiscNodeType.Master}`}
                     />
                 )}
-            </HStack>
-            {filteredMiscNodes.map(type => (
-                <HStack key={type} spacing={0} w="100%">
+            </Flex>
+            {getFilteredMiscNodes().map(type => (
+                <Flex key={type} w="100%" align="stretch">
+                    <Box
+                        w="4px"
+                        bg={mode === `misc-node-${type}` ? 'blue.500' : 'transparent'}
+                        transition="background-color 0.2s"
+                    />
                     <Button
                         aria-label={type}
                         leftIcon={miscNodes[type].icon}
                         onClick={() => handleMiscNode(type)}
-                        variant={mode === `misc-node-${type}` ? 'solid' : 'outline'}
+                        variant="ghost"
                         sx={buttonStyle}
                         flex={1}
                     >
@@ -337,7 +370,7 @@ const ToolsPanel = () => {
                             ariaLabel={`favorite-${type}`}
                         />
                     )}
-                </HStack>
+                </Flex>
             ))}
             <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={showOnlyFavorites} />
         </>
@@ -345,6 +378,7 @@ const ToolsPanel = () => {
 
     return (
         <Flex
+            position="relative"
             flexShrink="0"
             direction="column"
             width={isToolsExpanded ? 450 : 10}
@@ -382,15 +416,23 @@ const ToolsPanel = () => {
 
             <Flex className="tools" overflow="auto">
                 <Accordion width="100%" allowMultiple defaultIndex={[0, 2, 3]}>
-                    <Button
-                        aria-label="select"
-                        leftIcon={selectIcon}
-                        onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
-                        variant={mode === 'select' ? 'solid' : 'outline'}
-                        sx={buttonStyle}
-                    >
-                        {isTextShown ? t('panel.tools.select') : undefined}
-                    </Button>
+                    <Flex w="100%" align="stretch">
+                        <Box
+                            w="4px"
+                            bg={mode === 'select' ? 'blue.500' : 'transparent'}
+                            transition="background-color 0.2s"
+                        />
+                        <Button
+                            aria-label="select"
+                            leftIcon={selectIcon}
+                            onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
+                            variant="ghost"
+                            sx={buttonStyle}
+                            flex={1}
+                        >
+                            {isTextShown ? t('panel.tools.select') : undefined}
+                        </Button>
+                    </Flex>
                     {shouldHideLineDrawingAccordionButton ? (
                         <Box sx={accordionPanelStyle}>{lineDrawingContent}</Box>
                     ) : (
