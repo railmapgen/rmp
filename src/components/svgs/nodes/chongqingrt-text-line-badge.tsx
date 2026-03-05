@@ -9,7 +9,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
 const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultChongqingRTTextLineBadgeAttributes.names,
         color = defaultChongqingRTTextLineBadgeAttributes.color,
@@ -34,8 +34,6 @@ const ChongqingRTTextLineBadge = (props: NodeComponentProps<ChongqingRTTextLineB
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

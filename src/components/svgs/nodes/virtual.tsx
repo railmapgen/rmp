@@ -2,7 +2,7 @@ import React from 'react';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 
 const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
-    const { id, x, y, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -19,8 +19,7 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})rotate(45)`}
+            transform={`rotate(45)`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

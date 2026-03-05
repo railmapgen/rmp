@@ -9,7 +9,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultGzmtrLineBadgeAttributes.names,
         color = defaultGzmtrLineBadgeAttributes.color,
@@ -35,7 +35,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
     React.useEffect(() => setIconBBox(iconRef.current?.getBBox() ?? { height: 0, width: 0 }), [...names, tram]);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y - iconBBox.height / 2})scale(${tram ? 0.5 : 1})`}>
+        <g transform={`translate(0, ${-iconBBox.height / 2})scale(${tram ? 0.5 : 1})`}>
             <LineIcon
                 ref={iconRef}
                 zhName={names.at(0) ?? ''}

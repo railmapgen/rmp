@@ -490,6 +490,7 @@ const SvgCanvas = () => {
         <>
             <SvgLayer
                 elements={elements}
+                selected={selected}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}

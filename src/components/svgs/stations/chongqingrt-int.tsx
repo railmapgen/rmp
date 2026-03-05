@@ -29,7 +29,7 @@ const ORIGINAL_SIZE = 6.9233;
 const HALF_SIZE = (ORIGINAL_SIZE * SCALE) / 2;
 
 const ChongqingRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultChongqingRTIntStationAttributes.nameOffsetX,
@@ -98,7 +98,7 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
     }, [names[0], names[1], nameOffsetX]);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`translate(${-HALF_SIZE},${-HALF_SIZE})scale(${SCALE})`}>
                 <path
                     style={{

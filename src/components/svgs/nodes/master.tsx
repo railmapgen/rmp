@@ -13,7 +13,7 @@ import { MasterManager } from '../../page-header/master-manager';
 import ThemeButton from '../../panels/theme-button';
 
 const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -110,7 +110,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     return React.createElement(
         'g',
-        { id: id, transform: `translate(${x}, ${y})`, ...gPointerEvents },
+        { ...gPointerEvents },
         attrs.randomId ? (
             <g
                 transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}

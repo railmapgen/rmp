@@ -27,7 +27,6 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
 
     return (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
