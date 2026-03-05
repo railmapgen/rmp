@@ -23,6 +23,7 @@ const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSubur
 
     return (
         <g
+            id={`${id}.pre`}
             onPointerDown={newLine ? undefined : onPointerDown}
             pointerEvents={newLine ? 'none' : undefined}
             cursor="pointer"
@@ -42,6 +43,7 @@ const ShanghaiSuburbanRailway = (props: LineStyleComponentProps<ShanghaiSuburban
 
     return (
         <g
+            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}

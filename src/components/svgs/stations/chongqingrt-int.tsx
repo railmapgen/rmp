@@ -98,7 +98,7 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
     }, [names[0], names[1], nameOffsetX]);
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <g transform={`translate(${-HALF_SIZE},${-HALF_SIZE})scale(${SCALE})`}>
                 <path
                     style={{

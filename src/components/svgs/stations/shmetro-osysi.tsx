@@ -44,7 +44,7 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <circle r={5} stroke="#393332" strokeWidth="1.33" fill="white" />
             <circle r={2.3} stroke="#393332" strokeWidth="1.33" fill="white" />
 

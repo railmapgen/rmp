@@ -35,7 +35,7 @@ const ChongqingRTTextLineBadge2021 = (props: NodeComponentProps<ChongqingRTTextL
     const width = isRapid ? 42 : 21;
     const height = 21;
     return (
-        <g>
+        <g transform={`translate(${x}, ${y})`}>
             <g transform={`translate(${-width / 2}, ${-height / 2})`}>
                 <rect fill={color[2]} x="0" width={width} height={height} rx="3" ry="3" />
                 <rect

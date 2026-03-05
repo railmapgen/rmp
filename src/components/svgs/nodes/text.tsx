@@ -76,7 +76,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 
     return (
         <g
-            transform={`rotate(${rotate})`}
+            id={id}
+            transform={`translate(${x}, ${y})rotate(${rotate})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

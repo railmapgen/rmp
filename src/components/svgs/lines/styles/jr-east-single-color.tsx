@@ -22,7 +22,7 @@ const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAt
     );
 
     return (
-        <g onPointerDown={onPointerDown} cursor="pointer">
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={path} fill="none" stroke="black" strokeWidth={LINE_WIDTH + 0.1} />
         </g>
     );

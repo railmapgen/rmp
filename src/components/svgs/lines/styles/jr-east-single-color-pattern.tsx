@@ -35,7 +35,7 @@ const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingle
     }, [path]);
 
     return (
-        <g onPointerDown={onPointerDown} cursor="pointer">
+        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
             <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
             <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
         </g>

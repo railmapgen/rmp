@@ -24,6 +24,7 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
 
     return (
         <g
+            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}

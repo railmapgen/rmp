@@ -72,7 +72,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
                 r="4"

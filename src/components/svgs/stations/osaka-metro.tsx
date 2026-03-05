@@ -430,14 +430,16 @@ const OsakaMetroStation = (props: StationComponentProps) => {
         nameOffsetPosition,
     });
     const adjustX =
-        -(stationDirection === 'horizontal' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.WIDTH) / 2 : 0) -
+        x -
+        (stationDirection === 'horizontal' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.WIDTH) / 2 : 0) -
         (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
     const adjustY =
-        -(stationDirection === 'vertical' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 : 0) -
+        y -
+        (stationDirection === 'vertical' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 : 0) -
         (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
 
     return (
-        <g transform={`translate(${adjustX}, ${adjustY})`}>
+        <g id={id} transform={`translate(${adjustX}, ${adjustY})`}>
             {interchangeList.length === 1 ? (
                 isThrough ? (
                     <g>

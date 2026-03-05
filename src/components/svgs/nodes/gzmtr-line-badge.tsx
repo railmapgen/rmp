@@ -35,7 +35,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
     React.useEffect(() => setIconBBox(iconRef.current?.getBBox() ?? { height: 0, width: 0 }), [...names, tram]);
 
     return (
-        <g transform={`translate(0, ${-iconBBox.height / 2})scale(${tram ? 0.5 : 1})`}>
+        <g id={id} transform={`translate(${x}, ${y - iconBBox.height / 2})scale(${tram ? 0.5 : 1})`}>
             <LineIcon
                 ref={iconRef}
                 zhName={names.at(0) ?? ''}

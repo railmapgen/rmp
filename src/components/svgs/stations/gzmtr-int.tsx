@@ -137,7 +137,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     const underConstructionTextAnchor = nameOffsetX === 'middle' ? 'start' : textAnchor;
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             {transferAll
                 .map(info => info[2])
                 .filter((color, i, arr) => arr.indexOf(color) === i)

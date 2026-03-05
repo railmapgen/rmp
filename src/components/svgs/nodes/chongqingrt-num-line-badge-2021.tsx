@@ -33,7 +33,7 @@ const ChongqingRTNumLineBadge2021 = (props: NodeComponentProps<ChongqingRTNumLin
     const sX = Number.isInteger(num) ? (Number(num) >= 10 ? 9.5 : 10.5) : 10.5;
 
     return (
-        <g>
+        <g transform={`translate(${x}, ${y})`}>
             <g transform="translate(-10.5, -10.5)">
                 <rect fill={color[2]} x="0" width="21" height="21" rx="3" ry="3" />
                 <rect

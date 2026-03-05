@@ -45,7 +45,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <circle r={5} stroke="#2559a8" strokeWidth="1.5" fill="white" />
             {interchange && <circle r={2.5} stroke="#2559a8" strokeWidth="1" fill="white" />}
 

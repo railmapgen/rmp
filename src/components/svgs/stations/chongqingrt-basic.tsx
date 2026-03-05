@@ -91,7 +91,7 @@ const ChongqingRTBasicStation = (props: StationComponentProps) => {
     }, [names[0], names[1], nameOffsetX]);
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <circle
                 id={`stn_core_${id}`}
                 r={isLoop ? 4 : 2.5}

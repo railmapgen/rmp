@@ -24,6 +24,7 @@ const LondonSandwichPre = (props: LineStyleComponentProps<LondonSandwichAttribut
 
     return (
         <g
+            id={`${id}.pre`}
             onPointerDown={newLine ? undefined : onPointerDown}
             pointerEvents={newLine ? 'none' : undefined}
             cursor="pointer"
@@ -44,6 +45,7 @@ const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>
 
     return (
         <g
+            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}

@@ -11,6 +11,7 @@ const MTRPaidArea = (props: LineStyleComponentProps<MTRPaidAreaAttributes>) => {
 
     return (
         <path
+            id={id}
             d={path}
             fill="none"
             stroke="black"

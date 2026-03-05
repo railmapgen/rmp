@@ -23,6 +23,7 @@ const ChongqingRTLoop = (props: LineStyleComponentProps<ChongqingRTLoopAttribute
 
     return (
         <path
+            id={id}
             d={path}
             fill="none"
             stroke={color[2]}

@@ -24,6 +24,7 @@ const MRTUnderConstruction = (props: LineStyleComponentProps<MRTUnderConstructio
 
     return (
         <path
+            id={id}
             d={path}
             fill="none"
             stroke={color[2]}

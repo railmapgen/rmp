@@ -51,7 +51,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
     }, [id, href, refreshImages]);
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             {href === undefined || imgHref === undefined ? (
                 <g
                     transform="translate(-5, -5)"

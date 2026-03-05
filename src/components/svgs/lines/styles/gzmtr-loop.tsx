@@ -29,6 +29,7 @@ const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
 
     return (
         <g
+            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}

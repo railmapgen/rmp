@@ -124,7 +124,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     const underConstructionTextAnchor = nameOffsetX === 'middle' ? 'start' : textAnchor;
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <g transform={`scale(${SCALE})`}>
                 <InterchangeStation2024
                     ref={ref}

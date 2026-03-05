@@ -109,7 +109,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <g transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}>
                 <StationNumber
                     strokeColour={color[2]}

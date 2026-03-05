@@ -113,7 +113,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const pattern = { width: 60, height: 60 };
     const patternColor = getDynamicContrastColor(color[2], opacity);
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             {fillPath && (
                 <g transform={`translate(${-x}, ${-y})`}>
                     <defs>

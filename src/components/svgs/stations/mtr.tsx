@@ -86,7 +86,7 @@ const MTRStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <path
                 transform={`rotate(${rotate})`}
                 d={path}

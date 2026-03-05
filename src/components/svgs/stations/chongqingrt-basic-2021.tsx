@@ -105,7 +105,7 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
     }, [names[0], names[1], nameOffsetX]);
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <rect
                 x={-7.5}
                 y={-7.5}

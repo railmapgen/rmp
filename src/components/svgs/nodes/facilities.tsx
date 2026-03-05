@@ -82,7 +82,8 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
 
     return (
         <g
-            transform={`translate(${-bBox.width / 2}, ${-bBox.height / 2})`}
+            id={id}
+            transform={`translate(${x - bBox.width / 2}, ${y - bBox.height / 2})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

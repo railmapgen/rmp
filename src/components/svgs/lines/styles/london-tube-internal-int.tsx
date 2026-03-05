@@ -17,6 +17,7 @@ const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternal
 
     return (
         <g
+            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             pointerEvents={newLine ? 'none' : undefined}
             cursor="pointer"

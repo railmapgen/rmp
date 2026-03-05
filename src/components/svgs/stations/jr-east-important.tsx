@@ -77,7 +77,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
     const scale = mostImportant ? 1.5 : 1;
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
             <g transform={`scale(${scale})`}>
                 <rect
                     fill="black"
