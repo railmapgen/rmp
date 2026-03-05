@@ -1,5 +1,5 @@
 import React from 'react';
-import { LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
+import { Id, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -11,6 +11,7 @@ import { default as allStations } from './svgs/stations/stations';
 
 interface SvgLayerProps {
     elements: Element[];
+    selected: Set<Id>;
     handlePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
@@ -24,7 +25,8 @@ type StyleComponent = React.FC<
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
-        const { elements, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } = props;
+        const { elements, selected, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } =
+            props;
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
@@ -33,6 +35,9 @@ const SvgLayer = React.memo(
             ])
         );
         for (const element of elements) {
+            const isSelected = selected.has(element.id);
+            const selectedGlowFilter = isSelected ? 'url(#selected-glow)' : undefined;
+
             if (element.type === 'line') {
                 const id = element.id as LineId;
                 const type = element.line!.attr.type;
@@ -44,7 +49,7 @@ const SvgLayer = React.memo(
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
                     layers[element.line!.attr.zIndex].pre.push(
-                        <g key={`${id}.pre`} id={`${id}.pre`}>
+                        <g key={`${id}.pre`} id={`${id}.pre`} filter={selectedGlowFilter}>
                             <PreStyleComponent
                                 id={id}
                                 type={type}
@@ -59,7 +64,7 @@ const SvgLayer = React.memo(
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <g key={id} id={id}>
+                    <g key={id} id={id} filter={selectedGlowFilter}>
                         <StyleComponent
                             id={id}
                             type={type}
@@ -74,7 +79,7 @@ const SvgLayer = React.memo(
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
                 if (PostStyleComponent) {
                     layers[element.line!.attr.zIndex].post.push(
-                        <g key={`${id}.post`} id={`${id}.post`}>
+                        <g key={`${id}.post`} id={`${id}.post`} filter={selectedGlowFilter}>
                             <PostStyleComponent
                                 id={id}
                                 type={type}
@@ -98,6 +103,7 @@ const SvgLayer = React.memo(
                             key={`${element.id}.pre`}
                             id={`${element.id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={selectedGlowFilter}
                         >
                             <PreStationComponent
                                 id={id}
@@ -114,7 +120,7 @@ const SvgLayer = React.memo(
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={selectedGlowFilter}>
                         <StationComponent
                             id={id}
                             x={attr.x}
@@ -130,7 +136,12 @@ const SvgLayer = React.memo(
                 const PostStationComponent = allStations[type]?.postComponent;
                 if (PostStationComponent) {
                     layers[element.station!.zIndex].post.push(
-                        <g key={`${id}.post`} id={`${id}.post`} transform={`translate(${attr.x}, ${attr.y})`}>
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={selectedGlowFilter}
+                        >
                             <PostStationComponent
                                 id={id}
                                 x={attr.x}
@@ -151,7 +162,12 @@ const SvgLayer = React.memo(
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].pre.push(
-                        <g key={`${id}.pre`} id={`${id}.pre`} transform={`translate(${attr.x}, ${attr.y})`}>
+                        <g
+                            key={`${id}.pre`}
+                            id={`${id}.pre`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={selectedGlowFilter}
+                        >
                             <PreMiscNodeComponent
                                 id={id}
                                 x={attr.x}
@@ -168,7 +184,7 @@ const SvgLayer = React.memo(
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={selectedGlowFilter}>
                         <MiscNodeComponent
                             id={id}
                             x={attr.x}
@@ -185,7 +201,12 @@ const SvgLayer = React.memo(
                 const PostMiscNodeComponent = miscNodes[type]?.postComponent;
                 if (PostMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].post.push(
-                        <g key={`${id}.post`} id={`${id}.post`} transform={`translate(${attr.x}, ${attr.y})`}>
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            transform={`translate(${attr.x}, ${attr.y})`}
+                            filter={selectedGlowFilter}
+                        >
                             <PostMiscNodeComponent
                                 id={id}
                                 x={attr.x}
@@ -208,7 +229,7 @@ const SvgLayer = React.memo(
 
         return jsxElements;
     },
-    (prevProps, nextProps) => prevProps.elements === nextProps.elements
+    (prevProps, nextProps) => prevProps.elements === nextProps.elements && prevProps.selected === nextProps.selected
 );
 
 export default SvgLayer;
