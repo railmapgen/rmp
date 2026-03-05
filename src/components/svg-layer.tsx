@@ -151,11 +151,7 @@ const SvgLayer = React.memo(
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].pre.push(
-                        <g
-                            key={`${element.id}.pre`}
-                            id={`${element.id}.pre`}
-                            transform={`translate(${attr.x}, ${attr.y})`}
-                        >
+                        <g key={`${id}.pre`} id={`${id}.pre`} transform={`translate(${attr.x}, ${attr.y})`}>
                             <PreMiscNodeComponent
                                 id={id}
                                 x={attr.x}
