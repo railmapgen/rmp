@@ -43,7 +43,6 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
         </g>
     ) : (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
