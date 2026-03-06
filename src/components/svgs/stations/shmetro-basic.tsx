@@ -30,7 +30,7 @@ export const NAME_DY_SH_BASIC = {
 };
 
 const ShmetroBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultShmetroBasicStationAttributes.nameOffsetX,
@@ -58,7 +58,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle
                 id={`stn_core_${id}`}
                 r={5}
@@ -74,7 +74,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                 transform={`translate(${textX}, ${textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
-                strokeWidth="1"
+                strokeWidth="2.5"
             >
                 <MultilineText
                     text={names[0].split('\n')}

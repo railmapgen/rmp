@@ -8,7 +8,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { num = defaultMRTDestinationNumbersAttributes.num, color = defaultMRTDestinationNumbersAttributes.color } =
         attrs ?? defaultMRTDestinationNumbersAttributes;
 
@@ -30,8 +30,6 @@ const MRTDestinationNumbers = (props: NodeComponentProps<MRTDestinationNumbersAt
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

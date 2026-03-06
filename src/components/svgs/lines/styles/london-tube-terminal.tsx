@@ -24,7 +24,6 @@ const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAtt
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}

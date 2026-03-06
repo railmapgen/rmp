@@ -16,7 +16,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
 const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultGuangdongIntercityRailwayStationAttributes.nameOffsetX,
@@ -45,7 +45,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle r={5} stroke="#2559a8" strokeWidth="1.5" fill="white" />
             {interchange && <circle r={2.5} stroke="#2559a8" strokeWidth="1" fill="white" />}
 

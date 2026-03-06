@@ -92,7 +92,7 @@ export const ROTATE_CONST: {
 };
 
 const ShmetroBasic2020Station = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         color = defaultShmetroBasic2020StationAttributes.color,
@@ -119,8 +119,8 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
     );
 
     return (
-        <g id={id}>
-            <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
+        <g>
+            <g transform={`rotate(${rotate})`}>
                 <rect
                     id={`stn_core_${id}`}
                     x="-2"
@@ -136,10 +136,10 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 />
             </g>
             <g
-                transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
+                transform={`translate(${ROTATE_CONST[rotate].textDx}, ${textDy})`}
                 textAnchor={ROTATE_CONST[rotate].textAnchor}
                 className="rmp-name-outline"
-                strokeWidth="1"
+                strokeWidth="2.5"
             >
                 <MultilineText
                     text={names[0].split('\n')}

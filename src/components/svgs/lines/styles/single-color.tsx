@@ -24,7 +24,6 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}

@@ -26,7 +26,7 @@ export const LINE_HEIGHT = {
 };
 
 const ChengduRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultChengduRTBasicStationAttributes.nameOffsetX,
@@ -137,7 +137,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                 : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {stationType == 'normal' || stationType == 'branchTerminal' ? (
                 <circle
                     id={`stn_core_${id}`}

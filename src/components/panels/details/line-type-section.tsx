@@ -21,20 +21,31 @@ import { changeLinePathType, changeLineStyleType } from '../../../util/change-ty
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
 
+const legacySimplePathAvailableStyles = new Set([
+    LineStyleType.ShmetroVirtualInt,
+    LineStyleType.GzmtrVirtualInt,
+    LineStyleType.River,
+    LineStyleType.MTRPaidArea,
+    LineStyleType.MTRUnpaidArea,
+    LineStyleType.MRTTapeOut,
+]);
+
 /**
- * Returns true if the given line path type and line style type combination
- * is always compatible for legacy reasons.
+ * Determine if a line path type or style type should be disabled based
+ * on the current selection and subscription status.
  */
-const legacyCompatibleLinePathAndStyle = (pathType: LinePathType, styleType: LineStyleType) => {
-    const legacySimplePathAvailableStyles = [
-        LineStyleType.ShmetroVirtualInt,
-        LineStyleType.GzmtrVirtualInt,
-        LineStyleType.River,
-        LineStyleType.MTRPaidArea,
-        LineStyleType.MTRUnpaidArea,
-        LineStyleType.MRTTapeOut,
-    ];
-    if (pathType === LinePathType.Simple && legacySimplePathAvailableStyles.includes(styleType)) {
+const isLinePathAndStyleDisabled = (pathType: LinePathType, styleType: LineStyleType, pro: boolean) => {
+    // This must be placed first as the simple path is pro and all will be rejected in the next check.
+    if (pathType === LinePathType.Simple && legacySimplePathAvailableStyles.has(styleType)) {
+        return false;
+    }
+    if (linePaths[pathType].isPro && !pro) {
+        return true;
+    }
+    if (lineStyles[styleType].isPro && !pro) {
+        return true;
+    }
+    if (!lineStyles[styleType].metadata.supportLinePathType.includes(pathType)) {
         return true;
     }
     return false;
@@ -84,17 +95,11 @@ export default function LineTypeSection() {
         setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
     }, [selectedFirst]);
 
-    const disabledLinePathOptions = Object.values(LinePathType).filter(
-        linePathType =>
-            !legacyCompatibleLinePathAndStyle(linePathType, currentLineStyleType) &&
-            (!lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(linePathType) ||
-                (linePaths[linePathType].isPro && !activeSubscriptions.RMP_CLOUD))
+    const disabledLinePathOptions = Object.values(LinePathType).filter(linePathType =>
+        isLinePathAndStyleDisabled(linePathType, currentLineStyleType, activeSubscriptions.RMP_CLOUD)
     );
-    const disabledLineStyleOptions = Object.values(LineStyleType).filter(
-        lineStyleType =>
-            !legacyCompatibleLinePathAndStyle(currentLinePathType, lineStyleType) &&
-            (!lineStyles[lineStyleType].metadata.supportLinePathType.includes(currentLinePathType) ||
-                (lineStyles[lineStyleType].isPro && !activeSubscriptions.RMP_CLOUD))
+    const disabledLineStyleOptions = Object.values(LineStyleType).filter(lineStyleType =>
+        isLinePathAndStyleDisabled(currentLinePathType, lineStyleType, activeSubscriptions.RMP_CLOUD)
     );
 
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {

@@ -36,7 +36,7 @@ const NAME_DY_SG_BASIC = {
 };
 
 const MRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { transfer = defaultMRTIntStationAttributes.transfer } =
         attrs[StationType.MRTInt] ?? defaultMRTIntStationAttributes;
 
@@ -57,7 +57,7 @@ const MRTIntStation = (props: StationComponentProps) => {
     const width = (transfer[0].length - 2) * 29.625 + 57.8;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -81,7 +81,7 @@ const MRTIntStation = (props: StationComponentProps) => {
 };
 
 const MRTIntStationPost = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTIntStationAttributes.nameOffsetX,
@@ -115,7 +115,7 @@ const MRTIntStationPost = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
