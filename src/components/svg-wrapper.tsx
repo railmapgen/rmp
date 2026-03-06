@@ -484,12 +484,14 @@ const SvgWrapper = () => {
                     </pattern>
                     <filter
                         id="selected-glow"
-                        // Only apply the filter to the area within the current viewbox
-                        // to correctly show when a path has no width/height in certain directions.
-                        x={svgViewBoxMin.x}
-                        y={svgViewBoxMin.y}
-                        width={(width * svgViewBoxZoom) / 100}
-                        height={(height * svgViewBoxZoom) / 100}
+                        // large percentages to ensure the filter region covers the viewport
+                        // regardless of element transforms
+                        x="-100%"
+                        y="-100%"
+                        width="300%"
+                        height="300%"
+                        // userSpaceOnUse to prevent the filter from disappearing on
+                        // zero-width or zero-height lines
                         filterUnits="userSpaceOnUse"
                     >
                         <feColorMatrix
