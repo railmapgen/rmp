@@ -164,8 +164,11 @@ const ToolsPanel = () => {
         return allMiscNodes.filter(type => favorites.miscNodes.includes(type));
     }, [showOnlyFavorites, favorites.miscNodes, i18n.language]);
 
+    // hide conditions will be applied directly on the AccordionButton components below;
+
     return (
         <Flex
+            position="relative"
             flexShrink="0"
             direction="column"
             width={isToolsExpanded ? 450 : 10}
@@ -221,7 +224,7 @@ const ToolsPanel = () => {
                         </Button>
                     </Flex>
                     <AccordionItem>
-                        <AccordionButton sx={accordionButtonStyle}>
+                        <AccordionButton sx={accordionButtonStyle} hidden={showOnlyFavorites}>
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.lineDrawing')}
@@ -276,12 +279,22 @@ const ToolsPanel = () => {
                                 >
                                     {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                                 </Button>
+                                {isTextShown && (
+                                    <FavoriteButton
+                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Virtual)}
+                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Virtual))}
+                                        ariaLabel={`favorite-${MiscNodeType.Virtual}`}
+                                    />
+                                )}
                             </Flex>
                         </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
-                        <AccordionButton sx={accordionButtonStyle}>
+                        <AccordionButton
+                            sx={accordionButtonStyle}
+                            hidden={showOnlyFavorites && getFilteredLineStyles().length <= 5}
+                        >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.lineStyles')}
@@ -324,12 +337,15 @@ const ToolsPanel = () => {
                                 </Flex>
                             ))}
 
-                            <LearnHowToAdd type="line-styles" expand={isTextShown} />
+                            <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={showOnlyFavorites} />
                         </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
-                        <AccordionButton sx={accordionButtonStyle}>
+                        <AccordionButton
+                            sx={accordionButtonStyle}
+                            hidden={showOnlyFavorites && getFilteredStations().length <= 5}
+                        >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.stations')}
@@ -364,12 +380,15 @@ const ToolsPanel = () => {
                                     )}
                                 </Flex>
                             ))}
-                            <LearnHowToAdd type="station" expand={isTextShown} />
+                            <LearnHowToAdd type="station" expand={isTextShown} hidden={showOnlyFavorites} />
                         </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
-                        <AccordionButton sx={accordionButtonStyle}>
+                        <AccordionButton
+                            sx={accordionButtonStyle}
+                            hidden={showOnlyFavorites && getFilteredMiscNodes().length + 1 <= 5}
+                        >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
                                     {t('panel.tools.section.miscellaneousNodes')}
@@ -446,7 +465,7 @@ const ToolsPanel = () => {
                                     )}
                                 </Flex>
                             ))}
-                            <LearnHowToAdd type="misc-node" expand={isTextShown} />
+                            <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={showOnlyFavorites} />
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
@@ -457,14 +476,14 @@ const ToolsPanel = () => {
 
 export default ToolsPanel;
 
-const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean }) => {
-    const { type, expand } = props;
+const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean; hidden: boolean }) => {
+    const { type, expand, hidden } = props;
     const { t } = useTranslation();
 
     const doc = type === 'misc-node' ? 'nodes' : type;
 
     return (
-        <HStack>
+        <HStack hidden={hidden}>
             <IconContext.Provider value={{ style: { padding: 5 }, size: '40px' }}>
                 <MdCode />
             </IconContext.Provider>
