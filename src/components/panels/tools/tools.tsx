@@ -164,206 +164,7 @@ const ToolsPanel = () => {
         return allMiscNodes.filter(type => favorites.miscNodes.includes(type));
     }, [showOnlyFavorites, favorites.miscNodes, i18n.language]);
 
-    // hide conditions will be applied directly on the AccordionButton components below
-
-    const lineDrawingContent = (
-        <>
-            <Flex>
-                <ThemeButton theme={theme} onClick={requestThemeChange} />
-                <Text fontWeight="600" pl="1" alignSelf="center">
-                    {isTextShown ? t('color') : undefined}
-                </Text>
-            </Flex>
-
-            {Object.values(LinePathType)
-                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                .map(type => (
-                    <Flex key={type} w="100%" align="stretch">
-                        <Box
-                            w="4px"
-                            bg={currentPath === type ? 'blue.500' : 'transparent'}
-                            transition="background-color 0.2s"
-                        />
-                        <Button
-                            aria-label={type}
-                            leftIcon={linePaths[type].icon}
-                            onClick={() => handleLine(type)}
-                            variant="ghost"
-                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
-                            sx={buttonStyle}
-                            flex={1}
-                        >
-                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                        </Button>
-                    </Flex>
-                ))}
-
-            <Flex w="100%" align="stretch">
-                <Box
-                    w="4px"
-                    bg={mode === `misc-node-${MiscNodeType.Virtual}` ? 'blue.500' : 'transparent'}
-                    transition="background-color 0.2s"
-                />
-                <Button
-                    aria-label={MiscNodeType.Virtual}
-                    leftIcon={miscNodes[MiscNodeType.Virtual].icon}
-                    onClick={() => handleMiscNode(MiscNodeType.Virtual)}
-                    variant="ghost"
-                    sx={buttonStyle}
-                    flex={1}
-                >
-                    {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
-                </Button>
-                {isTextShown && (
-                    <FavoriteButton
-                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Virtual)}
-                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Virtual))}
-                        ariaLabel={`favorite-${MiscNodeType.Virtual}`}
-                    />
-                )}
-            </Flex>
-        </>
-    );
-
-    const lineStylesContent = (
-        <>
-            {getFilteredLineStyles().map(([styleType, style]) => (
-                <Flex key={styleType} w="100%" align="stretch">
-                    <Box
-                        w="4px"
-                        bg={currentStyle === styleType ? 'blue.500' : 'transparent'}
-                        transition="background-color 0.2s"
-                    />
-                    <Button
-                        aria-label={styleType}
-                        leftIcon={<Box boxSize="40px" />}
-                        onClick={() => handleLineStyle(styleType as LineStyleType)}
-                        variant="ghost"
-                        isDisabled={currentPath ? !isStyleCompatible(styleType as LineStyleType, currentPath) : false}
-                        sx={buttonStyle}
-                        flex={1}
-                    >
-                        {isTextShown ? t(style.metadata.displayName) : undefined}
-                    </Button>
-                    {isTextShown && (
-                        <FavoriteButton
-                            isFavorite={favorites.lineStyles.includes(styleType as LineStyleType)}
-                            onToggle={() => dispatch(toggleFavoriteLineStyle(styleType as LineStyleType))}
-                            ariaLabel={`favorite-${styleType}`}
-                        />
-                    )}
-                </Flex>
-            ))}
-
-            <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={showOnlyFavorites} />
-        </>
-    );
-
-    const stationsContent = (
-        <>
-            {getFilteredStations().map(type => (
-                <Flex key={type} w="100%" align="stretch">
-                    <Box
-                        w="4px"
-                        bg={mode === `station-${type}` ? 'blue.500' : 'transparent'}
-                        transition="background-color 0.2s"
-                    />
-                    <Button
-                        aria-label={type}
-                        leftIcon={stations[type].icon}
-                        onClick={() => handleStation(type)}
-                        variant="ghost"
-                        sx={buttonStyle}
-                        flex={1}
-                    >
-                        {isTextShown ? t(stations[type].metadata.displayName) : undefined}
-                    </Button>
-                    {isTextShown && (
-                        <FavoriteButton
-                            isFavorite={favorites.stations.includes(type)}
-                            onToggle={() => dispatch(toggleFavoriteStation(type))}
-                            ariaLabel={`favorite-${type}`}
-                        />
-                    )}
-                </Flex>
-            ))}
-            <LearnHowToAdd type="station" expand={isTextShown} hidden={showOnlyFavorites} />
-        </>
-    );
-
-    const miscellaneousContent = (
-        <>
-            <Flex w="100%" align="stretch">
-                <Box
-                    w="4px"
-                    bg={mode === `misc-node-${MiscNodeType.Master}` ? 'blue.500' : 'transparent'}
-                    transition="background-color 0.2s"
-                />
-                <Button
-                    aria-label={MiscNodeType.Master}
-                    leftIcon={miscNodes[MiscNodeType.Master].icon}
-                    onClick={() => handleMiscNode(MiscNodeType.Master)}
-                    variant="ghost"
-                    isDisabled={isMasterDisabled}
-                    sx={buttonStyle}
-                    flex={1}
-                >
-                    {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
-                    {isTextShown ? (
-                        <>
-                            <Badge ml="1" colorScheme="green">
-                                New
-                            </Badge>
-                            <Tooltip label={t('header.settings.proWithTrial')}>
-                                <Badge
-                                    ml="1"
-                                    color="gray.50"
-                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                    mr="auto"
-                                >
-                                    PRO
-                                </Badge>
-                            </Tooltip>
-                        </>
-                    ) : undefined}
-                </Button>
-                {isTextShown && (
-                    <FavoriteButton
-                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Master)}
-                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Master))}
-                        ariaLabel={`favorite-${MiscNodeType.Master}`}
-                    />
-                )}
-            </Flex>
-            {getFilteredMiscNodes().map(type => (
-                <Flex key={type} w="100%" align="stretch">
-                    <Box
-                        w="4px"
-                        bg={mode === `misc-node-${type}` ? 'blue.500' : 'transparent'}
-                        transition="background-color 0.2s"
-                    />
-                    <Button
-                        aria-label={type}
-                        leftIcon={miscNodes[type].icon}
-                        onClick={() => handleMiscNode(type)}
-                        variant="ghost"
-                        sx={buttonStyle}
-                        flex={1}
-                    >
-                        {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
-                    </Button>
-                    {isTextShown && (
-                        <FavoriteButton
-                            isFavorite={favorites.miscNodes.includes(type)}
-                            onToggle={() => dispatch(toggleFavoriteMiscNode(type))}
-                            ariaLabel={`favorite-${type}`}
-                        />
-                    )}
-                </Flex>
-            ))}
-            <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={showOnlyFavorites} />
-        </>
-    );
+    // hide conditions will be applied directly on the AccordionButton components below;
 
     return (
         <Flex
@@ -431,7 +232,62 @@ const ToolsPanel = () => {
                             )}
                             <AccordionIcon />
                         </AccordionButton>
-                        <AccordionPanel sx={accordionPanelStyle}>{lineDrawingContent}</AccordionPanel>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            <Flex>
+                                <ThemeButton theme={theme} onClick={requestThemeChange} />
+                                <Text fontWeight="600" pl="1" alignSelf="center">
+                                    {isTextShown ? t('color') : undefined}
+                                </Text>
+                            </Flex>
+
+                            {Object.values(LinePathType)
+                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
+                                .map(type => (
+                                    <Flex key={type} w="100%" align="stretch">
+                                        <Box
+                                            w="4px"
+                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                            transition="background-color 0.2s"
+                                        />
+                                        <Button
+                                            aria-label={type}
+                                            leftIcon={linePaths[type].icon}
+                                            onClick={() => handleLine(type)}
+                                            variant="ghost"
+                                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
+                                            sx={buttonStyle}
+                                            flex={1}
+                                        >
+                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                        </Button>
+                                    </Flex>
+                                ))}
+
+                            <Flex w="100%" align="stretch">
+                                <Box
+                                    w="4px"
+                                    bg={mode === `misc-node-${MiscNodeType.Virtual}` ? 'blue.500' : 'transparent'}
+                                    transition="background-color 0.2s"
+                                />
+                                <Button
+                                    aria-label={MiscNodeType.Virtual}
+                                    leftIcon={miscNodes[MiscNodeType.Virtual].icon}
+                                    onClick={() => handleMiscNode(MiscNodeType.Virtual)}
+                                    variant="ghost"
+                                    sx={buttonStyle}
+                                    flex={1}
+                                >
+                                    {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
+                                </Button>
+                                {isTextShown && (
+                                    <FavoriteButton
+                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Virtual)}
+                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Virtual))}
+                                        ariaLabel={`favorite-${MiscNodeType.Virtual}`}
+                                    />
+                                )}
+                            </Flex>
+                        </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
@@ -446,7 +302,43 @@ const ToolsPanel = () => {
                             )}
                             <AccordionIcon />
                         </AccordionButton>
-                        <AccordionPanel sx={accordionPanelStyle}>{lineStylesContent}</AccordionPanel>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            {getFilteredLineStyles().map(([styleType, style]) => (
+                                <Flex key={styleType} w="100%" align="stretch">
+                                    <Box
+                                        w="4px"
+                                        bg={currentStyle === styleType ? 'blue.500' : 'transparent'}
+                                        transition="background-color 0.2s"
+                                    />
+                                    <Button
+                                        aria-label={styleType}
+                                        leftIcon={<Box boxSize="40px" />}
+                                        onClick={() => handleLineStyle(styleType as LineStyleType)}
+                                        variant="ghost"
+                                        isDisabled={
+                                            currentPath
+                                                ? !isStyleCompatible(styleType as LineStyleType, currentPath)
+                                                : false
+                                        }
+                                        sx={buttonStyle}
+                                        flex={1}
+                                    >
+                                        {isTextShown ? t(style.metadata.displayName) : undefined}
+                                    </Button>
+                                    {isTextShown && (
+                                        <FavoriteButton
+                                            isFavorite={favorites.lineStyles.includes(styleType as LineStyleType)}
+                                            onToggle={() =>
+                                                dispatch(toggleFavoriteLineStyle(styleType as LineStyleType))
+                                            }
+                                            ariaLabel={`favorite-${styleType}`}
+                                        />
+                                    )}
+                                </Flex>
+                            ))}
+
+                            <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={showOnlyFavorites} />
+                        </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
@@ -461,7 +353,35 @@ const ToolsPanel = () => {
                             )}
                             <AccordionIcon />
                         </AccordionButton>
-                        <AccordionPanel sx={accordionPanelStyle}>{stationsContent}</AccordionPanel>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            {getFilteredStations().map(type => (
+                                <Flex key={type} w="100%" align="stretch">
+                                    <Box
+                                        w="4px"
+                                        bg={mode === `station-${type}` ? 'blue.500' : 'transparent'}
+                                        transition="background-color 0.2s"
+                                    />
+                                    <Button
+                                        aria-label={type}
+                                        leftIcon={stations[type].icon}
+                                        onClick={() => handleStation(type)}
+                                        variant="ghost"
+                                        sx={buttonStyle}
+                                        flex={1}
+                                    >
+                                        {isTextShown ? t(stations[type].metadata.displayName) : undefined}
+                                    </Button>
+                                    {isTextShown && (
+                                        <FavoriteButton
+                                            isFavorite={favorites.stations.includes(type)}
+                                            onToggle={() => dispatch(toggleFavoriteStation(type))}
+                                            ariaLabel={`favorite-${type}`}
+                                        />
+                                    )}
+                                </Flex>
+                            ))}
+                            <LearnHowToAdd type="station" expand={isTextShown} hidden={showOnlyFavorites} />
+                        </AccordionPanel>
                     </AccordionItem>
 
                     <AccordionItem>
@@ -476,7 +396,77 @@ const ToolsPanel = () => {
                             )}
                             <AccordionIcon />
                         </AccordionButton>
-                        <AccordionPanel sx={accordionPanelStyle}>{miscellaneousContent}</AccordionPanel>
+                        <AccordionPanel sx={accordionPanelStyle}>
+                            <Flex w="100%" align="stretch">
+                                <Box
+                                    w="4px"
+                                    bg={mode === `misc-node-${MiscNodeType.Master}` ? 'blue.500' : 'transparent'}
+                                    transition="background-color 0.2s"
+                                />
+                                <Button
+                                    aria-label={MiscNodeType.Master}
+                                    leftIcon={miscNodes[MiscNodeType.Master].icon}
+                                    onClick={() => handleMiscNode(MiscNodeType.Master)}
+                                    variant="ghost"
+                                    isDisabled={isMasterDisabled}
+                                    sx={buttonStyle}
+                                    flex={1}
+                                >
+                                    {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
+                                    {isTextShown ? (
+                                        <>
+                                            <Badge ml="1" colorScheme="green">
+                                                New
+                                            </Badge>
+                                            <Tooltip label={t('header.settings.proWithTrial')}>
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                    mr="auto"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tooltip>
+                                        </>
+                                    ) : undefined}
+                                </Button>
+                                {isTextShown && (
+                                    <FavoriteButton
+                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Master)}
+                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Master))}
+                                        ariaLabel={`favorite-${MiscNodeType.Master}`}
+                                    />
+                                )}
+                            </Flex>
+                            {getFilteredMiscNodes().map(type => (
+                                <Flex key={type} w="100%" align="stretch">
+                                    <Box
+                                        w="4px"
+                                        bg={mode === `misc-node-${type}` ? 'blue.500' : 'transparent'}
+                                        transition="background-color 0.2s"
+                                    />
+                                    <Button
+                                        aria-label={type}
+                                        leftIcon={miscNodes[type].icon}
+                                        onClick={() => handleMiscNode(type)}
+                                        variant="ghost"
+                                        sx={buttonStyle}
+                                        flex={1}
+                                    >
+                                        {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
+                                    </Button>
+                                    {isTextShown && (
+                                        <FavoriteButton
+                                            isFavorite={favorites.miscNodes.includes(type)}
+                                            onToggle={() => dispatch(toggleFavoriteMiscNode(type))}
+                                            ariaLabel={`favorite-${type}`}
+                                        />
+                                    )}
+                                </Flex>
+                            ))}
+                            <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={showOnlyFavorites} />
+                        </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
             </Flex>
@@ -492,10 +482,8 @@ const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; e
 
     const doc = type === 'misc-node' ? 'nodes' : type;
 
-    if (hidden) return null;
-
     return (
-        <HStack>
+        <HStack hidden={hidden}>
             <IconContext.Provider value={{ style: { padding: 5 }, size: '40px' }}>
                 <MdCode />
             </IconContext.Provider>
