@@ -99,13 +99,27 @@ const SvgLayer = React.memo(
                 const PreStationComponent = allStations[type]?.preComponent;
                 if (PreStationComponent) {
                     layers[element.station!.zIndex].pre.push(
-                        <g
-                            key={`${element.id}.pre`}
-                            id={`${element.id}.pre`}
-                            transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
-                        >
-                            <PreStationComponent
+                        <g key={`${element.id}.pre`} filter={selectedGlowFilter}>
+                            <g id={`${element.id}.pre`} transform={`translate(${attr.x}, ${attr.y})`}>
+                                <PreStationComponent
+                                    id={id}
+                                    x={attr.x}
+                                    y={attr.y}
+                                    attrs={attr}
+                                    handlePointerDown={handlePointerDown}
+                                    handlePointerMove={handlePointerMove}
+                                    handlePointerUp={handlePointerUp}
+                                />
+                            </g>
+                        </g>
+                    );
+                }
+
+                const StationComponent = allStations[type]?.component ?? UnknownNode;
+                layers[element.station!.zIndex].main.push(
+                    <g key={id} filter={selectedGlowFilter}>
+                        <g id={id} transform={`translate(${attr.x}, ${attr.y})`}>
+                            <StationComponent
                                 id={id}
                                 x={attr.x}
                                 y={attr.y}
@@ -115,42 +129,24 @@ const SvgLayer = React.memo(
                                 handlePointerUp={handlePointerUp}
                             />
                         </g>
-                    );
-                }
-
-                const StationComponent = allStations[type]?.component ?? UnknownNode;
-                layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={selectedGlowFilter}>
-                        <StationComponent
-                            id={id}
-                            x={attr.x}
-                            y={attr.y}
-                            attrs={attr}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
                     </g>
                 );
 
                 const PostStationComponent = allStations[type]?.postComponent;
                 if (PostStationComponent) {
                     layers[element.station!.zIndex].post.push(
-                        <g
-                            key={`${id}.post`}
-                            id={`${id}.post`}
-                            transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
-                        >
-                            <PostStationComponent
-                                id={id}
-                                x={attr.x}
-                                y={attr.y}
-                                attrs={attr}
-                                handlePointerDown={handlePointerDown}
-                                handlePointerMove={handlePointerMove}
-                                handlePointerUp={handlePointerUp}
-                            />
+                        <g key={`${id}.post`} filter={selectedGlowFilter}>
+                            <g id={`${id}.post`} transform={`translate(${attr.x}, ${attr.y})`}>
+                                <PostStationComponent
+                                    id={id}
+                                    x={attr.x}
+                                    y={attr.y}
+                                    attrs={attr}
+                                    handlePointerDown={handlePointerDown}
+                                    handlePointerMove={handlePointerMove}
+                                    handlePointerUp={handlePointerUp}
+                                />
+                            </g>
                         </g>
                     );
                 }
@@ -162,13 +158,28 @@ const SvgLayer = React.memo(
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].pre.push(
-                        <g
-                            key={`${id}.pre`}
-                            id={`${id}.pre`}
-                            transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
-                        >
-                            <PreMiscNodeComponent
+                        <g key={`${id}.pre`} filter={selectedGlowFilter}>
+                            <g id={`${id}.pre`} transform={`translate(${attr.x}, ${attr.y})`}>
+                                <PreMiscNodeComponent
+                                    id={id}
+                                    x={attr.x}
+                                    y={attr.y}
+                                    // @ts-expect-error
+                                    attrs={attr[type]}
+                                    handlePointerDown={handlePointerDown}
+                                    handlePointerMove={handlePointerMove}
+                                    handlePointerUp={handlePointerUp}
+                                />
+                            </g>
+                        </g>
+                    );
+                }
+
+                const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
+                layers[element.miscNode!.zIndex].main.push(
+                    <g key={id} filter={selectedGlowFilter}>
+                        <g id={id} transform={`translate(${attr.x}, ${attr.y})`}>
+                            <MiscNodeComponent
                                 id={id}
                                 x={attr.x}
                                 y={attr.y}
@@ -179,44 +190,25 @@ const SvgLayer = React.memo(
                                 handlePointerUp={handlePointerUp}
                             />
                         </g>
-                    );
-                }
-
-                const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
-                layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={selectedGlowFilter}>
-                        <MiscNodeComponent
-                            id={id}
-                            x={attr.x}
-                            y={attr.y}
-                            // @ts-expect-error
-                            attrs={attr[type]}
-                            handlePointerDown={handlePointerDown}
-                            handlePointerMove={handlePointerMove}
-                            handlePointerUp={handlePointerUp}
-                        />
                     </g>
                 );
 
                 const PostMiscNodeComponent = miscNodes[type]?.postComponent;
                 if (PostMiscNodeComponent) {
                     layers[element.miscNode!.zIndex].post.push(
-                        <g
-                            key={`${id}.post`}
-                            id={`${id}.post`}
-                            transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
-                        >
-                            <PostMiscNodeComponent
-                                id={id}
-                                x={attr.x}
-                                y={attr.y}
-                                // @ts-expect-error
-                                attrs={attr[type]}
-                                handlePointerDown={handlePointerDown}
-                                handlePointerMove={handlePointerMove}
-                                handlePointerUp={handlePointerUp}
-                            />
+                        <g key={`${id}.post`} filter={selectedGlowFilter}>
+                            <g id={`${id}.post`} transform={`translate(${attr.x}, ${attr.y})`}>
+                                <PostMiscNodeComponent
+                                    id={id}
+                                    x={attr.x}
+                                    y={attr.y}
+                                    // @ts-expect-error
+                                    attrs={attr[type]}
+                                    handlePointerDown={handlePointerDown}
+                                    handlePointerMove={handlePointerMove}
+                                    handlePointerUp={handlePointerUp}
+                                />
+                            </g>
                         </g>
                     );
                 }
