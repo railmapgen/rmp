@@ -161,7 +161,6 @@ const loadFacilitiesSvg = async (
                 const facilitiesNodeInThisType = elem.querySelector(`#${node}`);
                 const imageElem = facilitiesNodeInThisType?.querySelector('image');
                 if (imageElem) {
-                    facilitiesNodeInThisType!.removeChild(imageElem);
                     const useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
                     useElem.setAttribute('href', `#${t}`);
                     // Safari needs width and height to be specified on the use element,
@@ -169,7 +168,7 @@ const loadFacilitiesSvg = async (
                     // See issue #432 and https://stackoverflow.com/a/63671360
                     useElem.setAttribute('height', symbol.getAttribute('height')!);
                     useElem.setAttribute('width', symbol.getAttribute('width')!);
-                    facilitiesNodeInThisType!.appendChild(useElem);
+                    imageElem.replaceWith(useElem);
                 }
             });
 
