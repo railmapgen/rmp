@@ -164,18 +164,7 @@ const ToolsPanel = () => {
         return allMiscNodes.filter(type => favorites.miscNodes.includes(type));
     }, [showOnlyFavorites, favorites.miscNodes, i18n.language]);
 
-    const linePathCount = Object.values(LinePathType).filter(
-        type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD
-    ).length;
-    const lineDrawingVisibleCount = linePathCount + 2; // color + virtual
-    const lineStylesVisibleCount = getFilteredLineStyles().length;
-    const stationsVisibleCount = getFilteredStations().length;
-    const miscellaneousVisibleCount = getFilteredMiscNodes().length + 1; // master
-
-    const shouldHideLineDrawingAccordionButton = showOnlyFavorites;
-    const shouldHideLineStylesAccordionButton = showOnlyFavorites && lineStylesVisibleCount <= 5;
-    const shouldHideStationsAccordionButton = showOnlyFavorites && stationsVisibleCount <= 5;
-    const shouldHideMiscAccordionButton = showOnlyFavorites && miscellaneousVisibleCount <= 5;
+    // hide conditions will be applied directly on the AccordionButton components below
 
     const lineDrawingContent = (
         <>
@@ -433,69 +422,62 @@ const ToolsPanel = () => {
                             {isTextShown ? t('panel.tools.select') : undefined}
                         </Button>
                     </Flex>
-                    {shouldHideLineDrawingAccordionButton ? (
-                        <Box sx={accordionPanelStyle}>{lineDrawingContent}</Box>
-                    ) : (
-                        <AccordionItem>
-                            <AccordionButton sx={accordionButtonStyle}>
-                                {isTextShown && (
-                                    <Box as="span" flex="1" textAlign="left">
-                                        {t('panel.tools.section.lineDrawing')}
-                                    </Box>
-                                )}
-                                <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel sx={accordionPanelStyle}>{lineDrawingContent}</AccordionPanel>
-                        </AccordionItem>
-                    )}
+                    <AccordionItem>
+                        <AccordionButton sx={accordionButtonStyle} hidden={showOnlyFavorites}>
+                            {isTextShown && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.lineDrawing')}
+                                </Box>
+                            )}
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>{lineDrawingContent}</AccordionPanel>
+                    </AccordionItem>
 
-                    {shouldHideLineStylesAccordionButton ? (
-                        <Box sx={accordionPanelStyle}>{lineStylesContent}</Box>
-                    ) : (
-                        <AccordionItem>
-                            <AccordionButton sx={accordionButtonStyle}>
-                                {isTextShown && (
-                                    <Box as="span" flex="1" textAlign="left">
-                                        {t('panel.tools.section.lineStyles')}
-                                    </Box>
-                                )}
-                                <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel sx={accordionPanelStyle}>{lineStylesContent}</AccordionPanel>
-                        </AccordionItem>
-                    )}
+                    <AccordionItem>
+                        <AccordionButton
+                            sx={accordionButtonStyle}
+                            hidden={showOnlyFavorites && getFilteredLineStyles().length <= 5}
+                        >
+                            {isTextShown && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.lineStyles')}
+                                </Box>
+                            )}
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>{lineStylesContent}</AccordionPanel>
+                    </AccordionItem>
 
-                    {shouldHideStationsAccordionButton ? (
-                        <Box sx={accordionPanelStyle}>{stationsContent}</Box>
-                    ) : (
-                        <AccordionItem>
-                            <AccordionButton sx={accordionButtonStyle}>
-                                {isTextShown && (
-                                    <Box as="span" flex="1" textAlign="left">
-                                        {t('panel.tools.section.stations')}
-                                    </Box>
-                                )}
-                                <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel sx={accordionPanelStyle}>{stationsContent}</AccordionPanel>
-                        </AccordionItem>
-                    )}
+                    <AccordionItem>
+                        <AccordionButton
+                            sx={accordionButtonStyle}
+                            hidden={showOnlyFavorites && getFilteredStations().length <= 5}
+                        >
+                            {isTextShown && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.stations')}
+                                </Box>
+                            )}
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>{stationsContent}</AccordionPanel>
+                    </AccordionItem>
 
-                    {shouldHideMiscAccordionButton ? (
-                        <Box sx={accordionPanelStyle}>{miscellaneousContent}</Box>
-                    ) : (
-                        <AccordionItem>
-                            <AccordionButton sx={accordionButtonStyle}>
-                                {isTextShown && (
-                                    <Box as="span" flex="1" textAlign="left">
-                                        {t('panel.tools.section.miscellaneousNodes')}
-                                    </Box>
-                                )}
-                                <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel sx={accordionPanelStyle}>{miscellaneousContent}</AccordionPanel>
-                        </AccordionItem>
-                    )}
+                    <AccordionItem>
+                        <AccordionButton
+                            sx={accordionButtonStyle}
+                            hidden={showOnlyFavorites && getFilteredMiscNodes().length + 1 <= 5}
+                        >
+                            {isTextShown && (
+                                <Box as="span" flex="1" textAlign="left">
+                                    {t('panel.tools.section.miscellaneousNodes')}
+                                </Box>
+                            )}
+                            <AccordionIcon />
+                        </AccordionButton>
+                        <AccordionPanel sx={accordionPanelStyle}>{miscellaneousContent}</AccordionPanel>
+                    </AccordionItem>
                 </Accordion>
             </Flex>
         </Flex>
