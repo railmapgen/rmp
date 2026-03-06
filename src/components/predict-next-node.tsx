@@ -252,9 +252,9 @@ const PredictNextNode = () => {
                     handlePointerUp={() => {}}
                 />
             </g>
-            <g id="stn_virtual_prediction_1" transform={`translate(${nextPos2.x}, ${nextPos2.y})`}>
+            <g id="stn_virtual_prediction_2" transform={`translate(${nextPos2.x}, ${nextPos2.y})`}>
                 <StationComponent
-                    id="stn_virtual_prediction_1"
+                    id="stn_virtual_prediction_2"
                     attrs={stationAttrs}
                     x={nextPos2.x}
                     y={nextPos2.y}
