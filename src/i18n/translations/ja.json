@@ -13,6 +13,7 @@
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
+            "showOnlyFavorites": "お気に入りのみ表示",
             "section": {
                 "lineDrawing": "路線描画",
                 "lineStyles": "路線風格",
