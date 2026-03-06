@@ -41,7 +41,7 @@ import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes
 import { rotateSelectedNodes } from '../util/transform';
 import { useMakeStationName } from '../util/random-station-names';
 import ContextMenu from './context-menu';
-import GridLines from './grid-lines';
+import GridLines, { GridLinesRef } from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
@@ -99,9 +99,18 @@ const SvgWrapper = () => {
         position: { x: 0, y: 0 },
     });
 
-    // background dragging related
+    // background dragging and scaling related
     const dragStartRef = React.useRef({ x: 0, y: 0 });
     const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+    const wheelTimeoutRef = React.useRef<number | null>(null);
+    const zoomRef = React.useRef(svgViewBoxZoom);
+    const minRef = React.useRef(svgViewBoxMin);
+    const wheelRafRef = React.useRef<number | null>(null);
+
+    React.useEffect(() => {
+        zoomRef.current = svgViewBoxZoom;
+        minRef.current = svgViewBoxMin;
+    }, [svgViewBoxZoom, svgViewBoxMin]);
 
     // helper function to calculate the new svgViewBoxMin based on the current
     // mouse position and the initial position when dragging starts
@@ -119,25 +128,25 @@ const SvgWrapper = () => {
     };
 
     // grid line requires svgViewBoxMin and svgViewBoxZoom to calculate the position of grid lines
-    const [gridLineOffset, setGridLineOffset] = React.useState({ x: 0, y: 0, zoom: 1 });
+    const gridLinesRef = React.useRef<GridLinesRef>(null);
 
     // Instead of dispatching action to update svgViewBoxMin|Zoom on every pointer move during dragging,
     // we update the viewport transform directly for better performance.
     // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
     const viewportRef = React.useRef<SVGGElement>(null);
-    const updateViewportTransform = React.useCallback(
-        (svgViewBoxMin: { x: number; y: number }, svgViewBoxZoom: number) => {
-            if (viewportRef.current) {
-                const scale = 100 / svgViewBoxZoom;
-                const x = -svgViewBoxMin.x * scale;
-                const y = -svgViewBoxMin.y * scale;
+    const updateViewportTransform = React.useCallback((min: { x: number; y: number }, zoom: number) => {
+        if (viewportRef.current) {
+            const scale = 100 / zoom;
+            const x = -min.x * scale;
+            const y = -min.y * scale;
 
-                viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
-                if (gridLines) setGridLineOffset({ x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom });
+            viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+
+            if (gridLinesRef.current) {
+                gridLinesRef.current.updateGrid(min.x, min.y, zoom);
             }
-        },
-        [gridLines]
-    );
+        }
+    }, []);
     React.useLayoutEffect(() => {
         // Update the viewport when actions other than dragging change svgViewBoxMin|Zoom.
         // They do affect performance, but unlike dragging, they are not continuous in a second,
@@ -156,6 +165,8 @@ const SvgWrapper = () => {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
             }
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            if (wheelRafRef.current) cancelAnimationFrame(wheelRafRef.current);
         };
     }, []);
     // prevent browser zoom when ctrl + wheel or cmd + wheel
@@ -286,22 +297,37 @@ const SvgWrapper = () => {
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        let newSvgViewBoxZoom = svgViewBoxZoom;
-        const zoomStep = e.ctrlKey || e.metaKey ? 5 : 10;
-        if (e.deltaY > 0 && svgViewBoxZoom + zoomStep < 400) newSvgViewBoxZoom = svgViewBoxZoom + zoomStep;
-        else if (e.deltaY < 0 && svgViewBoxZoom - zoomStep > 0) newSvgViewBoxZoom = svgViewBoxZoom - zoomStep;
+        e.preventDefault();
+        const zoomIntensity = 0.005;
+        const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
+
+        let newZoom = zoomRef.current * scaleMultiplier;
+        newZoom = Math.max(10, Math.min(newZoom, 1000));
+        if (newZoom === zoomRef.current) return;
 
         const { x, y } = getMousePosition(e);
-        const bbox = e.currentTarget.getBoundingClientRect();
-        const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
 
         const newMin = {
-            x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-            y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+            x: minRef.current.x + (x * zoomRef.current) / 100 - (x * newZoom) / 100,
+            y: minRef.current.y + (y * zoomRef.current) / 100 - (y * newZoom) / 100,
         };
 
-        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
-        dispatch(setSvgViewBoxMin(newMin));
+        zoomRef.current = newZoom;
+        minRef.current = newMin;
+
+        if (!wheelRafRef.current) {
+            wheelRafRef.current = requestAnimationFrame(() => {
+                updateViewportTransform(minRef.current, zoomRef.current);
+                wheelRafRef.current = null;
+            });
+        }
+
+        if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+
+        wheelTimeoutRef.current = window.setTimeout(() => {
+            dispatch(setSvgViewBoxZoom(zoomRef.current));
+            dispatch(setSvgViewBoxMin(minRef.current));
+        }, 150);
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
@@ -517,9 +543,18 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    {gridLines && <GridLines gridLineOffset={gridLineOffset} svgWidth={width} svgHeight={height} />}
+                    {gridLines && (
+                        <GridLines
+                            ref={gridLinesRef}
+                            x={svgViewBoxMin.x}
+                            y={svgViewBoxMin.y}
+                            zoom={svgViewBoxZoom}
+                            svgWidth={width}
+                            svgHeight={height}
+                        />
+                    )}
                     {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                    {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
+                    {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
                     {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
                     <utils.SvgAssetsContextProvider>
                         <SvgCanvas />

@@ -88,6 +88,7 @@ export default function InfoMultipleSection() {
                     .filter(id => filter.includes('station') || !id.startsWith('stn'))
                     .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
                     .filter(id => filter.includes('line') || !id.startsWith('line'))
+                    .slice(0, 500)
                     .map(id => (
                         <HStack key={id} width="100%">
                             <Button

@@ -26,8 +26,10 @@ import {
     getCanvasSize,
     getMousePosition,
     getViewpointSize,
+    offsetNodeTransform,
     pointerPosToSVGCoord,
     roundToMultiple,
+    updatePathDRecursive,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
@@ -114,6 +116,22 @@ const SvgCanvas = () => {
 
     // the active snap points, only used when there is only one active snap line
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
+
+    const domMove = (nodes: NodeId[], dx: number, dy: number) => {
+        const edges = new Set<LineId>();
+        nodes.forEach(node => {
+            offsetNodeTransform(node, dx, dy);
+            const connectedLines = graph.current.edges(node) as LineId[];
+            connectedLines.forEach(line => {
+                if (!edges.has(line)) edges.add(line);
+            });
+        });
+        getLines(graph.current)
+            .filter(l => edges.has(l.id as LineId))
+            .forEach(l => {
+                updatePathDRecursive(l.id as LineId, l.line!.path);
+            });
+    };
 
     const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -263,35 +281,45 @@ const SvgCanvas = () => {
                 const offsetY = newY - fromY;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
                             x: roundToMultiple(attr.x + offsetX, 0.01),
                             y: roundToMultiple(attr.y + offsetY, 0.01),
-                        }));
+                        });
                     }
                 });
+                domMove(
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             } else {
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
                 setActiveSnapPoint(undefined);
+                const base = e.altKey ? 0.01 : NODES_MOVE_DISTANCE;
+                const stdAttr = graph.current.getNodeAttributes(node);
+                const offsetX =
+                    roundToMultiple(stdAttr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, base) - stdAttr.x;
+                const offsetY =
+                    roundToMultiple(stdAttr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, base) - stdAttr.y;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
-                            x: roundToMultiple(
-                                attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
-                            ),
-                            y: roundToMultiple(
-                                attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
-                            ),
-                        }));
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
+                            x: attr.x + offsetX,
+                            y: attr.y + offsetY,
+                        });
                     }
                 });
+                domMove(
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             }
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
+            // dispatch(refreshNodesThunk());
+            // dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
