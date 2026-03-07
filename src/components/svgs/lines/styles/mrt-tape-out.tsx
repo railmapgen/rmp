@@ -21,7 +21,7 @@ import { ColorField } from '../../../panels/details/color-field';
 
 const mrtTapeOutPathGenerator = (path: Path, type: LinePathType, attrs: MRTTapeOutAttributes) => {
     const [startPoint, endPoint] = path
-        .substring(2) // Remove 'M' at the start
+        .substring(2) // Remove 'M ' (command and following space) at the start
         .split('L') // Split by 'L' to get the start and end points
         .map(point => point.trim().split(' ').map(Number));
     const midPoint = [(startPoint[0] + endPoint[0]) / 2, (startPoint[1] + endPoint[1]) / 2];
