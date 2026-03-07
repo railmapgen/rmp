@@ -12,14 +12,28 @@ import {
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
+    Path,
 } from '../../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { ColorField } from '../../../panels/details/color-field';
 
+const mrtTapeOutPathGenerator = (path: Path, type: LinePathType, attrs: MRTTapeOutAttributes) => {
+    const [startPoint, endPoint] = path
+        .substring(2) // Remove 'M' at the start
+        .split('L') // Split by 'L' to get the start and end points
+        .map(point => point.trim().split(' ').map(Number));
+    const midPoint = [(startPoint[0] + endPoint[0]) / 2, (startPoint[1] + endPoint[1]) / 2];
+
+    const pathA = `M ${startPoint[0]} ${startPoint[1]} L ${midPoint[0]} ${midPoint[1]}` as Path;
+    const pathB = `M ${midPoint[0]} ${midPoint[1]} L ${endPoint[0]} ${endPoint[1]}` as Path;
+
+    return { pathA, pathB };
+};
+
 const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
-    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
+    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
     const { colorA = defaultMRTTapeOutAttributes.colorA, colorB = defaultMRTTapeOutAttributes.colorB } =
         styleAttrs ?? defaultMRTTapeOutAttributes;
 
@@ -28,14 +42,10 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
         [id, handlePointerDown]
     );
 
-    const [startPoint, endPoint] = path
-        .substring(2) // Remove 'M' at the start
-        .split('L') // Split by 'L' to get the start and end points
-        .map(point => point.trim().split(' ').map(Number));
-    const midPoint = [(startPoint[0] + endPoint[0]) / 2, (startPoint[1] + endPoint[1]) / 2];
-
-    const pathA = `M ${startPoint[0]} ${startPoint[1]} L ${midPoint[0]} ${midPoint[1]}`;
-    const pathB = `M ${midPoint[0]} ${midPoint[1]} L ${endPoint[0]} ${endPoint[1]}`;
+    const paths = React.useMemo(
+        () => mrtTapeOutPathGenerator(path, type, styleAttrs ?? defaultMRTTapeOutAttributes),
+        [path, type, styleAttrs]
+    );
 
     return (
         <g
@@ -45,7 +55,7 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
         >
             <defs>
                 <marker
-                    id={`slantSeparator45${colorB[2]}A`}
+                    id={`slantSeparator45${colorB[2]}A_${id}`}
                     markerWidth={LINE_WIDTH}
                     markerHeight={LINE_WIDTH}
                     refX={LINE_WIDTH / 2}
@@ -59,7 +69,7 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
                     />
                 </marker>
                 <marker
-                    id={`slantSeparator45${colorA[2]}B`}
+                    id={`slantSeparator45${colorA[2]}B_${id}`}
                     markerWidth={LINE_WIDTH}
                     markerHeight={LINE_WIDTH}
                     refX={LINE_WIDTH / 2}
@@ -74,18 +84,20 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
                 </marker>
             </defs>
             <path
-                d={pathA}
+                id={`mrtTapeOut_pathA_${id}`}
+                d={paths.pathA}
                 fill="none"
                 stroke={colorA[2]}
                 strokeWidth={LINE_WIDTH}
-                markerEnd={`url(#slantSeparator45${colorB[2]}A)`}
+                markerEnd={`url(#slantSeparator45${colorB[2]}A_${id})`}
             />
             <path
-                d={pathB}
+                id={`mrtTapeOut_pathB_${id}`}
+                d={paths.pathB}
                 fill="none"
                 stroke={colorB[2]}
                 strokeWidth={LINE_WIDTH}
-                markerStart={`url(#slantSeparator45${colorA[2]}B)`}
+                markerStart={`url(#slantSeparator45${colorA[2]}B_${id})`}
             />
         </g>
     );
@@ -174,6 +186,7 @@ const mrtTapeOut: LineStyle<MRTTapeOutAttributes> = {
     postComponent: MRTTapeOut,
     defaultAttrs: defaultMRTTapeOutAttributes,
     attrsComponent: mrtTapeOutAttrsComponent,
+    pathGenerator: mrtTapeOutPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.mrtTapeOut.displayName',
         supportLinePathType: [LinePathType.Simple],

@@ -270,6 +270,10 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
      */
     attrsComponent: React.FC<LineStyleAttrsProps<T>>;
     /**
+     * An optional path generator for this style to calculate offset/parallel/split paths.
+     */
+    pathGenerator?: StylePathGenerator<T>;
+    /**
      * Metadata for this line style.
      */
     metadata: {
@@ -288,3 +292,5 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
  * The generator type of a line path.
  */
 export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
+
+export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;
