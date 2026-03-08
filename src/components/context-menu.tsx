@@ -18,6 +18,7 @@ import {
     getSelectedElementsType,
     NodeSpecificAttrsClipboardData,
     EdgeSpecificAttrsClipboardData,
+    ClipboardType,
 } from '../util/clipboard';
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
@@ -43,6 +44,27 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
 
+    const [clipboardType, setClipboardType] = React.useState<ClipboardType | undefined>(undefined);
+
+    React.useEffect(() => {
+        if (isOpen) {
+            const checkClipboard = async () => {
+                try {
+                    const s = await navigator.clipboard.readText();
+                    const parsed = parseClipboardData(s);
+                    if (parsed) {
+                        setClipboardType(parsed.type);
+                    } else {
+                        setClipboardType(undefined);
+                    }
+                } catch {
+                    setClipboardType(undefined);
+                }
+            };
+            checkClipboard();
+        }
+    }, [isOpen]);
+
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled =
         !autoParallel || // Disabled if autoParallel is off
@@ -60,7 +82,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const selectionInfo = getSelectedElementsType(graph.current, selected);
     const canCopyAttrs = selected.size === 1;
     const canPasteAttrs =
-        selectionInfo.allSameType && (selectionInfo.category === 'node' || selectionInfo.category === 'edge');
+        selectionInfo.allSameType &&
+        clipboardType &&
+        (selectionInfo.category === 'node'
+            ? selectionInfo.nodeType === clipboardType
+            : selectionInfo.edgeStyleType === clipboardType);
 
     useOutsideClick({
         ref: menuRef,
@@ -179,10 +205,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
 
         if (graph.current.hasNode(id)) {
             const s = exportNodeSpecificAttrs(graph.current, id as NodeId);
-            navigator.clipboard.writeText(s);
+            navigator.clipboard.writeText(s).then(() => {
+                setClipboardType(graph.current.getNodeAttribute(id, 'type'));
+            });
         } else if (graph.current.hasEdge(id)) {
             const s = exportEdgeSpecificAttrs(graph.current, id as LineId);
-            navigator.clipboard.writeText(s);
+            navigator.clipboard.writeText(s).then(() => {
+                setClipboardType(graph.current.getEdgeAttribute(id, 'style'));
+            });
         }
     });
 
@@ -192,7 +222,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             const parsed = parseClipboardData(s);
             if (!parsed) return;
 
-            if (parsed.type === 'node-attrs' && selectionInfo.category === 'node') {
+            if (selectionInfo.category === 'node') {
                 const nodeIds = new Set<NodeId>();
                 selected.forEach(id => {
                     if (graph.current.hasNode(id)) {
@@ -202,7 +232,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 if (importNodeSpecificAttrs(graph.current, nodeIds, parsed.data as NodeSpecificAttrsClipboardData)) {
                     refreshAndSave();
                 }
-            } else if (parsed.type === 'edge-attrs' && selectionInfo.category === 'edge') {
+            } else if (selectionInfo.category === 'edge') {
                 const edgeIds = new Set<LineId>();
                 selected.forEach(id => {
                     if (graph.current.hasEdge(id)) {

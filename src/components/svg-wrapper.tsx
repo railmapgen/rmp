@@ -438,7 +438,7 @@ const SvgWrapper = () => {
                 if (!parsed) return;
 
                 const selectionInfo = getSelectedElementsType(graph.current, selected);
-                if (parsed.type === 'node-attrs' && selectionInfo.category === 'node') {
+                if (selectionInfo.category === 'node') {
                     const nodeIds = new Set<NodeId>();
                     selected.forEach(id => {
                         if (graph.current.hasNode(id)) {
@@ -450,7 +450,7 @@ const SvgWrapper = () => {
                     ) {
                         refreshAndSave();
                     }
-                } else if (parsed.type === 'edge-attrs' && selectionInfo.category === 'edge') {
+                } else if (selectionInfo.category === 'edge') {
                     const edgeIds = new Set<LineId>();
                     selected.forEach(id => {
                         if (graph.current.hasEdge(id)) {

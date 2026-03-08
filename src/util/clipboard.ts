@@ -10,13 +10,9 @@ import {
     NodeId,
     NodeType,
 } from '../constants/constants';
-import {
-    ExternalLinePathAttributes,
-    ExternalLineStyleAttributes,
-    LinePathType,
-    LineStyleType,
-} from '../constants/lines';
+import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
+import { STATION_TYPE_VALUES, StationType } from '../constants/stations';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 import { CURRENT_VERSION } from './save';
 
@@ -26,12 +22,12 @@ type EdgesWithAttrs = {
 };
 
 /**
- * Clipboard data type discriminator.
+ * Clipboard data type.
  * - 'elements': Copy of entire nodes/edges
- * - 'node-attrs': Copy of specific attributes for a node
- * - 'edge-attrs': Copy of specific attributes for an edge (line)
+ * - NodeType: Copy of specific attributes for a node
+ * - LineStyleType: Copy of specific attributes for an edge (line)
  */
-export type ClipboardType = 'elements' | 'node-attrs' | 'edge-attrs';
+export type ClipboardType = 'elements' | NodeType | LineStyleType;
 
 /**
  * Current clipboard format version. Increment this when clipboard data structure changes.
@@ -42,7 +38,7 @@ interface ClipboardData {
     app: 'rmp';
     version: number;
     saveVersion: number;
-    type: ClipboardType;
+    type: 'elements';
     nodesWithAttrs: NodesWithAttrs;
     edgesWithAttrs: EdgesWithAttrs;
     avgX: number;
@@ -56,28 +52,31 @@ export interface NodeSpecificAttrsClipboardData {
     app: 'rmp';
     version: number;
     saveVersion: number;
-    type: 'node-attrs';
-    nodeType: NodeType;
+    type: NodeType;
     specificAttrs: Record<string, unknown>;
 }
 
 /**
  * Clipboard data for specific edge attributes copy/paste.
- * For edges, only roundCornerFactor from path (if present) and all style attributes are copied.
  */
 export interface EdgeSpecificAttrsClipboardData {
     app: 'rmp';
     version: number;
     saveVersion: number;
-    type: 'edge-attrs';
+    type: LineStyleType;
     pathType: EdgeType;
-    styleType: LineStyleType;
     roundCornerFactor?: number;
     styleAttrs: Record<string, unknown>;
 }
 
 export type SpecificAttrsClipboardData = NodeSpecificAttrsClipboardData | EdgeSpecificAttrsClipboardData;
 
+/**
+ * Export selected nodes and edges to a JSON string.
+ * @param graph The graph.
+ * @param selected Set of selected element IDs.
+ * @returns JSON string of the selected elements.
+ */
 export const exportSelectedNodesAndEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selected: Set<Id>
@@ -220,8 +219,7 @@ export const exportNodeSpecificAttrs = (
         app: 'rmp',
         version: CLIPBOARD_VERSION,
         saveVersion: CURRENT_VERSION,
-        type: 'node-attrs',
-        nodeType,
+        type: nodeType,
         specificAttrs,
     };
     return JSON.stringify(data);
@@ -247,9 +245,8 @@ export const exportEdgeSpecificAttrs = (
         app: 'rmp',
         version: CLIPBOARD_VERSION,
         saveVersion: CURRENT_VERSION,
-        type: 'edge-attrs',
+        type: styleType,
         pathType,
-        styleType,
         styleAttrs,
     };
 
@@ -271,25 +268,27 @@ export const parseClipboardData = (
 ): { type: ClipboardType; data: ClipboardData | SpecificAttrsClipboardData } | null => {
     try {
         const parsed = JSON.parse(s);
-        if (parsed.app !== 'rmp') {
-            return null;
-        }
-        // Validate clipboard version
-        if (parsed.version !== CLIPBOARD_VERSION) {
-            return null;
-        }
-        // Validate save version
-        if (parsed.saveVersion !== CURRENT_VERSION) {
+        if (parsed.app !== 'rmp' || parsed.version !== CLIPBOARD_VERSION || parsed.saveVersion !== CURRENT_VERSION) {
             return null;
         }
 
-        if (parsed.type === 'node-attrs') {
-            return { type: 'node-attrs', data: parsed as NodeSpecificAttrsClipboardData };
-        } else if (parsed.type === 'edge-attrs') {
-            return { type: 'edge-attrs', data: parsed as EdgeSpecificAttrsClipboardData };
-        } else if (parsed.type === 'elements') {
+        const { type } = parsed;
+
+        if (type === 'elements') {
             return { type: 'elements', data: parsed as ClipboardData };
         }
+
+        if (
+            STATION_TYPE_VALUES.has(type as StationType) ||
+            Object.values(MiscNodeType).includes(type as MiscNodeType)
+        ) {
+            return { type: type as NodeType, data: parsed as NodeSpecificAttrsClipboardData };
+        }
+
+        if (Object.values(LineStyleType).includes(type as LineStyleType)) {
+            return { type: type as LineStyleType, data: parsed as EdgeSpecificAttrsClipboardData };
+        }
+
         return null;
     } catch {
         return null;
@@ -311,8 +310,7 @@ export const importNodeSpecificAttrs = (
     let success = false;
     targetIds.forEach(nodeId => {
         const targetNodeType = graph.getNodeAttribute(nodeId, 'type');
-        // Only paste if the node types match
-        if (targetNodeType === data.nodeType) {
+        if (targetNodeType === data.type) {
             graph.mergeNodeAttributes(nodeId, { [targetNodeType]: data.specificAttrs });
             success = true;
         }
@@ -339,8 +337,7 @@ export const importEdgeSpecificAttrs = (
         const targetPathType = graph.getEdgeAttribute(edgeId, 'type');
         const targetStyleType = graph.getEdgeAttribute(edgeId, 'style');
 
-        // Apply style attributes if style type matches (required for edge paste)
-        if (targetStyleType === data.styleType) {
+        if (targetStyleType === data.type) {
             graph.mergeEdgeAttributes(edgeId, { [targetStyleType]: data.styleAttrs });
             success = true;
 
@@ -385,6 +382,7 @@ export const getSelectedElementsType = (
     allSameType: boolean;
     category: 'node' | 'edge' | 'mixed' | null;
     nodeType?: NodeType;
+    edgePathType?: EdgeType;
     edgeStyleType?: LineStyleType;
 } => {
     if (selected.size === 0) {
@@ -394,6 +392,7 @@ export const getSelectedElementsType = (
     let hasNodes = false;
     let hasEdges = false;
     let nodeType: NodeType | undefined;
+    let edgePathType: EdgeType | undefined;
     let edgeStyleType: LineStyleType | undefined;
     let allSameNodeType = true;
     let allSameEdgeStyleType = true;
@@ -423,7 +422,7 @@ export const getSelectedElementsType = (
     } else if (hasNodes) {
         return { allSameType: allSameNodeType, category: 'node', nodeType };
     } else if (hasEdges) {
-        return { allSameType: allSameEdgeStyleType, category: 'edge', edgeStyleType };
+        return { allSameType: allSameEdgeStyleType, category: 'edge', edgePathType, edgeStyleType };
     }
 
     return { allSameType: false, category: null };

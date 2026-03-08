@@ -44,8 +44,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             expect(parsed.app).toBe('rmp');
             expect(parsed.version).toBe(1);
-            expect(parsed.type).toBe('node-attrs');
-            expect(parsed.nodeType).toBe(StationType.ShmetroBasic);
+            expect(parsed.type).toBe(StationType.ShmetroBasic);
             expect(parsed.specificAttrs).toEqual({
                 names: ['测试站', 'Test Station'],
                 nameOffsetX: 'middle',
@@ -101,9 +100,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             expect(parsed.app).toBe('rmp');
             expect(parsed.version).toBe(1);
-            expect(parsed.type).toBe('edge-attrs');
+            expect(parsed.type).toBe(LineStyleType.SingleColor);
             expect(parsed.pathType).toBe(LinePathType.Diagonal);
-            expect(parsed.styleType).toBe(LineStyleType.SingleColor);
             expect(parsed.roundCornerFactor).toBe(15);
             expect(parsed.styleAttrs).toEqual({
                 color: ['shanghai', 'sh1', '#e4002b', '#fff'],
@@ -145,15 +143,14 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
-                type: 'node-attrs',
-                nodeType: StationType.ShmetroBasic,
+                type: StationType.ShmetroBasic,
                 specificAttrs: { names: ['Test'] },
             };
 
             const result = parseClipboardData(JSON.stringify(data));
 
             expect(result).not.toBeNull();
-            expect(result?.type).toBe('node-attrs');
+            expect(result?.type).toBe(StationType.ShmetroBasic);
         });
 
         it('should parse edge-attrs clipboard data', () => {
@@ -161,9 +158,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
-                type: 'edge-attrs',
+                type: LineStyleType.SingleColor,
                 pathType: LinePathType.Diagonal,
-                styleType: LineStyleType.SingleColor,
                 roundCornerFactor: 10,
                 styleAttrs: {},
             };
@@ -171,7 +167,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             const result = parseClipboardData(JSON.stringify(data));
 
             expect(result).not.toBeNull();
-            expect(result?.type).toBe('edge-attrs');
+            expect(result?.type).toBe(LineStyleType.SingleColor);
         });
 
         it('should parse elements clipboard data', () => {
@@ -236,8 +232,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
-                type: 'node-attrs',
-                nodeType: StationType.ShmetroBasic,
+                type: StationType.ShmetroBasic,
                 specificAttrs: { names: ['新站', 'New Station'], nameOffsetX: 'left' },
             };
 
@@ -269,8 +264,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
-                type: 'node-attrs',
-                nodeType: StationType.ShmetroBasic,
+                type: StationType.ShmetroBasic,
                 specificAttrs: { names: ['新站', 'New Station'] },
             };
 
@@ -302,9 +296,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
-                type: 'edge-attrs',
+                type: LineStyleType.SingleColor,
                 pathType: LinePathType.Diagonal,
-                styleType: LineStyleType.SingleColor,
                 roundCornerFactor: 20,
                 styleAttrs: { color: ['beijing', 'bj1', '#c23a30', '#fff'] },
             };
@@ -340,9 +333,8 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
-                type: 'edge-attrs',
+                type: LineStyleType.SingleColor,
                 pathType: LinePathType.Diagonal,
-                styleType: LineStyleType.SingleColor,
                 roundCornerFactor: 20,
                 styleAttrs: { color: ['beijing', 'bj1', '#c23a30', '#fff'] },
             };
@@ -386,7 +378,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             expect(result.category).toBe('node');
         });
 
-        it('should detect all same edge style type', () => {
+        it('should detect all same edge style even with different path types', () => {
             const nodeId1 = 'stn_node1' as NodeId;
             const nodeId2 = 'stn_node2' as NodeId;
             const edgeId1 = 'line_test1' as LineId;
