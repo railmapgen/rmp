@@ -213,25 +213,15 @@ export const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
     }
 };
 
-export const updatePathDRecursive = (id: LineId, pathD: string) => {
+export const updatePathDRecursive = (id: string, pathD: string) => {
     const root = document.getElementById(id);
     if (!root) return;
 
-    function traverse(node: Element) {
-        if (node.tagName.toLowerCase() === 'path') {
-            const path = node as SVGPathElement;
-            const d = path.getAttribute('d');
-
-            if (d) {
-                const newD = pathD;
-                path.setAttribute('d', newD);
-            }
-        }
-
-        for (const child of Array.from(node.children)) {
-            traverse(child);
-        }
+    if (root.matches('path[d]')) {
+        root.setAttribute('d', pathD);
     }
 
-    traverse(root);
+    root.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
+        path.setAttribute('d', pathD);
+    });
 };

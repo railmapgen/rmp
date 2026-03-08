@@ -4,7 +4,7 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
-import { LinePathType, LineStyleType } from '../constants/lines';
+import { ExternalLineStyleAttributes, LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -129,7 +129,22 @@ const SvgCanvas = () => {
         getLines(graph.current)
             .filter(l => edges.has(l.id as LineId))
             .forEach(l => {
-                updatePathDRecursive(l.id as LineId, l.line!.path);
+                const style = l.line!.attr.style;
+                if (lineStyles[style].pathGenerator) {
+                    const path = lineStyles[style].pathGenerator!(
+                        l.line!.path,
+                        l.line!.attr.type,
+                        // @ts-expect-error
+                        l.line!.attr[style]!
+                    );
+                    for (const [key, value] of Object.entries(path)) {
+                        updatePathDRecursive(`${style}_${key}_${l.id}`, value);
+                    }
+                } else {
+                    updatePathDRecursive(`${l.id}.pre`, l.line!.path);
+                    updatePathDRecursive(l.id, l.line!.path);
+                    updatePathDRecursive(`${l.id}.post`, l.line!.path);
+                }
             });
     };
 
