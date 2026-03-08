@@ -195,7 +195,7 @@ const DetailsPanel = () => {
                 )}
             </RmgSidePanelBody>
             <RmgSidePanelFooter>
-                <VStack spacing={2} align="stretch">
+                <VStack spacing={2} align="stretch" width="100%">
                     <HStack>
                         {selected.size === 1 && graph.current.hasNode(selectedFirst) && (
                             <Button
@@ -206,25 +206,25 @@ const DetailsPanel = () => {
                                     graph.current.getNodeAttributes(selectedFirst).type === MiscNodeType.Master &&
                                     isMasterDisabled
                                 }
+                                flex={1}
                             >
                                 {t('panel.details.footer.duplicate')}
                             </Button>
                         )}
-                        <Button size="sm" variant="outline" onClick={() => handleCopy(selected)}>
+                        <Button size="sm" variant="outline" onClick={() => handleCopy(selected)} flex={1}>
                             {t('panel.details.footer.copy')}
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleRemove(selected)}>
+                        <Button size="sm" variant="outline" onClick={() => handleRemove(selected)} flex={1}>
                             {t('panel.details.footer.remove')}
                         </Button>
                     </HStack>
-                    <HStack>
-                        <Button size="sm" variant="outline" onClick={handleCopyAttrs} isDisabled={!canCopyAttrs}>
-                            {t('panel.details.footer.copyAttrs')}
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={handlePasteAttrs} isDisabled={!canPasteAttrs}>
-                            {t('panel.details.footer.pasteAttrs')}
-                        </Button>
-                    </HStack>
+
+                    <Button size="sm" variant="outline" onClick={handleCopyAttrs} isDisabled={!canCopyAttrs}>
+                        {t('panel.details.footer.copyAttrs')}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handlePasteAttrs} isDisabled={!canPasteAttrs}>
+                        {t('panel.details.footer.pasteAttrs')}
+                    </Button>
                 </VStack>
             </RmgSidePanelFooter>
         </RmgSidePanel>
