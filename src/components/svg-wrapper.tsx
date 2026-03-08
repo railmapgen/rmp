@@ -165,8 +165,10 @@ const SvgWrapper = () => {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
             }
-            if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            if (wheelRafRef.current) cancelAnimationFrame(wheelRafRef.current);
+            if (wheelRafRef.current) {
+                cancelAnimationFrame(wheelRafRef.current);
+                wheelRafRef.current = null;
+            }
         };
     }, []);
     // prevent browser zoom when ctrl + wheel or cmd + wheel
