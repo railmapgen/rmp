@@ -239,7 +239,7 @@ const PredictNextNode = () => {
                 newLine
                 handlePointerDown={() => {}}
             />
-            <g id="misc_node_virtual_prediction_1" transform={`translate(${nextPos1.x}, ${nextPos1.y})`}>
+            <g transform={`translate(${nextPos1.x}, ${nextPos1.y})`}>
                 <VirtualNodeComponent
                     id="misc_node_virtual_prediction_1"
                     attrs={{}}
@@ -252,7 +252,7 @@ const PredictNextNode = () => {
                     handlePointerUp={() => {}}
                 />
             </g>
-            <g id="stn_virtual_prediction_2" transform={`translate(${nextPos2.x}, ${nextPos2.y})`}>
+            <g transform={`translate(${nextPos2.x}, ${nextPos2.y})`}>
                 <StationComponent
                     id="stn_virtual_prediction_2"
                     attrs={stationAttrs}
