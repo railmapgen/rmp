@@ -10,6 +10,7 @@ import {
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
+    Path,
 } from '../../../../constants/lines';
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
@@ -18,26 +19,46 @@ const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
 const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
 
+const jrEastSingleColorPatternPathGenerator = (
+    path: Path,
+    type: LinePathType,
+    attrs: JREastSingleColorPatternAttributes
+) => {
+    const p = makeShortPathOutline(path, type, -2.5, 2.5);
+    if (!p) return { outline: path, pA: path, pB: path };
+    return p;
+};
+
 const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, newLine, handlePointerDown } = props;
+    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
         [id, handlePointerDown]
     );
 
-    const [paths, setPaths] = React.useState({ outline: path, pA: path, pB: path });
-    React.useEffect(() => {
-        // TODO: the calculation of outline paths is done twice (pre and main component).
-        const p = makeShortPathOutline(path, type, -2.5, 2.5);
-        if (!p) return;
-        setPaths(p);
-    }, [path]);
+    const paths = React.useMemo(
+        () =>
+            jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
+        [path, type, styleAttrs]
+    );
 
     return (
         <g onPointerDown={onPointerDown} cursor="pointer">
-            <path d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
-            <path d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
+            <path
+                id={`${LineStyleType.JREastSingleColorPattern}_pA_${id}`}
+                d={paths.pA}
+                fill="none"
+                stroke="black"
+                strokeWidth="0.1"
+            />
+            <path
+                id={`${LineStyleType.JREastSingleColorPattern}_pB_${id}`}
+                d={paths.pB}
+                fill="none"
+                stroke="black"
+                strokeWidth="0.1"
+            />
         </g>
     );
 };
@@ -52,13 +73,11 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
         [id, handlePointerDown]
     );
 
-    const [paths, setPaths] = React.useState({ outline: path, pA: path, pB: path });
-    React.useEffect(() => {
-        // TODO: the calculation of outline paths is done twice (pre and main component).
-        const p = makeShortPathOutline(path, type, -2.5, 2.5);
-        if (!p) return;
-        setPaths(p);
-    }, [path]);
+    const paths = React.useMemo(
+        () =>
+            jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
+        [path, type, styleAttrs]
+    );
 
     return (
         <g onPointerDown={onPointerDown} cursor="pointer">
@@ -99,7 +118,11 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                     />
                 </pattern>
             </defs>
-            <path d={paths.outline} fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`} />
+            <path
+                id={`${LineStyleType.JREastSingleColorPattern}_outline_${id}`}
+                d={paths.outline}
+                fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`}
+            />
         </g>
     );
 };
@@ -138,6 +161,7 @@ const jrEastSingleColorPattern: LineStyle<JREastSingleColorPatternAttributes> = 
     component: JREastSingleColorPattern,
     defaultAttrs: defaultJREastSingleColorPatternAttributes,
     attrsComponent: jrEastSingleColorPatternAttrsComponent,
+    pathGenerator: jrEastSingleColorPatternPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.jrEastSingleColorPattern.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
