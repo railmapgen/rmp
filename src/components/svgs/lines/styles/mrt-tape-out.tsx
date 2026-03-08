@@ -84,7 +84,7 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
                 </marker>
             </defs>
             <path
-                id={`mrtTapeOut_pathA_${id}`}
+                id={`${LineStyleType.MRTTapeOut}_pathA_${id}`}
                 d={paths.pathA}
                 fill="none"
                 stroke={colorA[2]}
@@ -92,7 +92,7 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
                 markerEnd={`url(#slantSeparator45${colorB[2]}A_${id})`}
             />
             <path
-                id={`mrtTapeOut_pathB_${id}`}
+                id={`${LineStyleType.MRTTapeOut}_pathB_${id}`}
                 d={paths.pathB}
                 fill="none"
                 stroke={colorB[2]}

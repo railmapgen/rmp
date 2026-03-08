@@ -45,8 +45,20 @@ const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingle
 
     return (
         <g onPointerDown={onPointerDown} cursor="pointer">
-            <path id={`jrEastSingleColorPattern_pA_${id}`} d={paths.pA} fill="none" stroke="black" strokeWidth="0.1" />
-            <path id={`jrEastSingleColorPattern_pB_${id}`} d={paths.pB} fill="none" stroke="black" strokeWidth="0.1" />
+            <path
+                id={`${LineStyleType.JREastSingleColorPattern}_pA_${id}`}
+                d={paths.pA}
+                fill="none"
+                stroke="black"
+                strokeWidth="0.1"
+            />
+            <path
+                id={`${LineStyleType.JREastSingleColorPattern}_pB_${id}`}
+                d={paths.pB}
+                fill="none"
+                stroke="black"
+                strokeWidth="0.1"
+            />
         </g>
     );
 };
@@ -107,7 +119,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                 </pattern>
             </defs>
             <path
-                id={`jrEastSingleColorPattern_outline_${id}`}
+                id={`${LineStyleType.JREastSingleColorPattern}_outline_${id}`}
                 d={paths.outline}
                 fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`}
             />

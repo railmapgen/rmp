@@ -48,7 +48,7 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
             pointerEvents={newLine ? 'none' : undefined}
         >
             <path
-                id={`dualColor_pathA_${id}`}
+                id={`${LineStyleType.DualColor}_pathA_${id}`}
                 d={paths.pathA}
                 fill="none"
                 stroke={colorA[2]}
@@ -56,7 +56,7 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
                 strokeLinecap="round"
             />
             <path
-                id={`dualColor_pathB_${id}`}
+                id={`${LineStyleType.DualColor}_pathB_${id}`}
                 d={paths.pathB}
                 fill="none"
                 stroke={colorB[2]}
