@@ -164,11 +164,8 @@ const ToolsPanel = () => {
         return allMiscNodes.filter(type => favorites.miscNodes.includes(type));
     }, [showOnlyFavorites, favorites.miscNodes, i18n.language]);
 
-    // hide conditions will be applied directly on the AccordionButton components below;
-
     return (
         <Flex
-            position="relative"
             flexShrink="0"
             direction="column"
             width={isToolsExpanded ? 450 : 10}
@@ -337,7 +334,7 @@ const ToolsPanel = () => {
                                 </Flex>
                             ))}
 
-                            <LearnHowToAdd type="line-styles" expand={isTextShown} hidden={showOnlyFavorites} />
+                            {!showOnlyFavorites ? <LearnHowToAdd type="line-styles" expand={isTextShown} /> : null}
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -380,7 +377,7 @@ const ToolsPanel = () => {
                                     )}
                                 </Flex>
                             ))}
-                            <LearnHowToAdd type="station" expand={isTextShown} hidden={showOnlyFavorites} />
+                            {!showOnlyFavorites ? <LearnHowToAdd type="station" expand={isTextShown} /> : null}
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -465,7 +462,7 @@ const ToolsPanel = () => {
                                     )}
                                 </Flex>
                             ))}
-                            <LearnHowToAdd type="misc-node" expand={isTextShown} hidden={showOnlyFavorites} />
+                            {!showOnlyFavorites ? <LearnHowToAdd type="misc-node" expand={isTextShown} /> : null}
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
@@ -476,14 +473,14 @@ const ToolsPanel = () => {
 
 export default ToolsPanel;
 
-const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean; hidden: boolean }) => {
-    const { type, expand, hidden } = props;
+const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean }) => {
+    const { type, expand } = props;
     const { t } = useTranslation();
 
     const doc = type === 'misc-node' ? 'nodes' : type;
 
     return (
-        <HStack hidden={hidden}>
+        <HStack>
             <IconContext.Provider value={{ style: { padding: 5 }, size: '40px' }}>
                 <MdCode />
             </IconContext.Provider>
