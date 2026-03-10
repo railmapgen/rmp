@@ -300,12 +300,11 @@ const SvgWrapper = () => {
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        e.preventDefault();
-        const zoomIntensity = 0.005;
+        const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
         const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
 
         let newZoom = zoomRef.current * scaleMultiplier;
-        newZoom = Math.max(10, Math.min(newZoom, 1000));
+        newZoom = Math.max(1, Math.min(newZoom, 400));
         if (newZoom === zoomRef.current) return;
 
         const { x, y } = getMousePosition(e);
