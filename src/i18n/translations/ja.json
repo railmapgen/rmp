@@ -46,8 +46,9 @@
                 "show": "見せる",
                 "station": "駅",
                 "miscNode": "その他のノード",
-                "edge": "ライン"
-            },
+                "edge": "路線",
+                "showingFirst500": "最初の 500 項目のみ表示しています。"
+                },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
             "changeType": "種類を変更",
