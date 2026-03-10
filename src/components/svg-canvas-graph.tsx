@@ -4,7 +4,7 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
-import { ExternalLineStyleAttributes, LinePathType, LineStyleType } from '../constants/lines';
+import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
@@ -26,10 +26,9 @@ import {
     getCanvasSize,
     getMousePosition,
     getViewpointSize,
-    offsetNodeTransform,
+    moveNodesAndRedrawLines,
     pointerPosToSVGCoord,
     roundToMultiple,
-    updatePathDRecursive,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { makeParallelIndex } from '../util/parallel';
@@ -116,37 +115,6 @@ const SvgCanvas = () => {
 
     // the active snap points, only used when there is only one active snap line
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
-
-    const domMove = (nodes: NodeId[], dx: number, dy: number) => {
-        const edges = new Set<LineId>();
-        nodes.forEach(node => {
-            offsetNodeTransform(node, dx, dy);
-            const connectedLines = graph.current.edges(node) as LineId[];
-            connectedLines.forEach(line => {
-                if (!edges.has(line)) edges.add(line);
-            });
-        });
-        getLines(graph.current)
-            .filter(l => edges.has(l.id as LineId))
-            .forEach(l => {
-                const style = l.line!.attr.style;
-                if (lineStyles[style].pathGenerator) {
-                    const path = lineStyles[style].pathGenerator!(
-                        l.line!.path,
-                        l.line!.attr.type,
-                        // @ts-expect-error
-                        l.line!.attr[style]!
-                    );
-                    for (const [key, value] of Object.entries(path)) {
-                        updatePathDRecursive(`${style}_${key}_${l.id}`, value);
-                    }
-                } else {
-                    updatePathDRecursive(`${l.id}.pre`, l.line!.path);
-                    updatePathDRecursive(l.id, l.line!.path);
-                    updatePathDRecursive(`${l.id}.post`, l.line!.path);
-                }
-            });
-    };
 
     const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -303,7 +271,8 @@ const SvgCanvas = () => {
                         });
                     }
                 });
-                domMove(
+                moveNodesAndRedrawLines(
+                    graph.current,
                     [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
                     offsetX,
                     offsetY
@@ -327,7 +296,8 @@ const SvgCanvas = () => {
                         });
                     }
                 });
-                domMove(
+                moveNodesAndRedrawLines(
+                    graph.current,
                     [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
                     offsetX,
                     offsetY

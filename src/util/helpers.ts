@@ -1,6 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { lineStyles } from '../components/svgs/lines/lines';
 import { Size } from './hooks';
+import { getLines } from './process-elements';
 
 export const getMousePosition = (e: React.MouseEvent) => {
     const bbox = e.currentTarget.getBoundingClientRect();
@@ -185,7 +187,7 @@ export const toCamelCase = (str: string): string => {
     });
 };
 
-export const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
+const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
     const el = document.getElementById(id);
     if (!el) return;
 
@@ -213,7 +215,7 @@ export const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
     }
 };
 
-export const updatePathDRecursive = (id: string, pathD: string) => {
+const updatePathDRecursive = (id: string, pathD: string) => {
     const root = document.getElementById(id);
     if (!root) return;
 
@@ -224,4 +226,40 @@ export const updatePathDRecursive = (id: string, pathD: string) => {
     root.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
         path.setAttribute('d', pathD);
     });
+};
+
+export const moveNodesAndRedrawLines = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    nodes: NodeId[],
+    dx: number,
+    dy: number
+) => {
+    const edges = new Set<LineId>();
+    nodes.forEach(node => {
+        offsetNodeTransform(node, dx, dy);
+        const connectedLines = graph.edges(node) as LineId[];
+        connectedLines.forEach(line => {
+            if (!edges.has(line)) edges.add(line);
+        });
+    });
+    getLines(graph)
+        .filter(l => edges.has(l.id as LineId))
+        .forEach(l => {
+            const style = l.line!.attr.style;
+            if (lineStyles[style].pathGenerator) {
+                const path = lineStyles[style].pathGenerator!(
+                    l.line!.path,
+                    l.line!.attr.type,
+                    // @ts-expect-error
+                    l.line!.attr[style]!
+                );
+                for (const [key, value] of Object.entries(path)) {
+                    updatePathDRecursive(`${style}_${key}_${l.id}`, value);
+                }
+            } else {
+                updatePathDRecursive(`${l.id}.pre`, l.line!.path);
+                updatePathDRecursive(l.id, l.line!.path);
+                updatePathDRecursive(`${l.id}.post`, l.line!.path);
+            }
+        });
 };
