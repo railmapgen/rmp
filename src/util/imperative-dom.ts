@@ -13,7 +13,8 @@ const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
     if (!el) return;
 
     const transform = el.getAttribute('transform') || '';
-    const match = transform.match(/translate\(([-\d.]+)[ ,]([-\d.]+)\)/);
+    const regex = /translate\(([-\d.]+)[,\s]+([-\d.]+)\)/;
+    const match = transform.match(regex);
 
     let x = 0;
     let y = 0;
@@ -25,7 +26,7 @@ const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
 
     const newX = x + dx;
     const newY = y + dy;
-    const newTransform = transform.replace(/translate\(([-\d.]+)[ ,]([-\d.]+)\)/, `translate(${newX},${newY})`);
+    const newTransform = transform.replace(regex, `translate(${newX},${newY})`);
 
     if (match) {
         el.setAttribute('transform', newTransform);
