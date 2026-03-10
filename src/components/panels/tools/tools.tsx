@@ -334,7 +334,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton
                             sx={accordionButtonStyle}
-                            hidden={showOnlyFavorites && getFilteredStations().length <= 5}
+                            hidden={showOnlyFavorites && getFilteredStations().length <= MAX_VISIBLE_LINE_STYLES}
                         >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
@@ -377,7 +377,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton
                             sx={accordionButtonStyle}
-                            hidden={showOnlyFavorites && getFilteredMiscNodes().length + 1 <= 5}
+                            hidden={showOnlyFavorites && getFilteredMiscNodes().length + 1 <= MAX_VISIBLE_LINE_STYLES}
                         >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
