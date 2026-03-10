@@ -271,6 +271,8 @@ const SvgCanvas = () => {
                         });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
                 moveNodesAndRedrawLines(
                     graph.current,
                     [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
@@ -296,6 +298,8 @@ const SvgCanvas = () => {
                         });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
                 moveNodesAndRedrawLines(
                     graph.current,
                     [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
@@ -303,8 +307,6 @@ const SvgCanvas = () => {
                     offsetY
                 );
             }
-            // dispatch(refreshNodesThunk());
-            // dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
