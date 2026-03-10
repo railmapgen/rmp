@@ -11,6 +11,7 @@
     "panel": {
         "tools": {
             "showLess": "显示更少",
+            "showOnlyFavorites": "仅显示收藏",
             "section": {
                 "lineDrawing": "线段绘制",
                 "lineStyles": "线段样式",
