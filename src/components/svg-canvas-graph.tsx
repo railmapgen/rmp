@@ -30,6 +30,7 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
+import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import {
@@ -263,35 +264,49 @@ const SvgCanvas = () => {
                 const offsetY = newY - fromY;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
                             x: roundToMultiple(attr.x + offsetX, 0.01),
                             y: roundToMultiple(attr.y + offsetY, 0.01),
-                        }));
+                        });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             } else {
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
                 setActiveSnapPoint(undefined);
+                const base = e.altKey ? 0.01 : NODES_MOVE_DISTANCE;
+                const stdAttr = graph.current.getNodeAttributes(node);
+                const offsetX =
+                    roundToMultiple(stdAttr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, base) - stdAttr.x;
+                const offsetY =
+                    roundToMultiple(stdAttr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, base) - stdAttr.y;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
-                            x: roundToMultiple(
-                                attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
-                            ),
-                            y: roundToMultiple(
-                                attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
-                            ),
-                        }));
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
+                            x: attr.x + offsetX,
+                            y: attr.y + offsetY,
+                        });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             }
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,

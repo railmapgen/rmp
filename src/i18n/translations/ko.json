@@ -45,8 +45,9 @@
                 "show": "보여주다",
                 "station": "역",
                 "miscNode": "기타 노드",
-                "edge": "윤곽"
-            },
+                "edge": "노선",
+                "showingFirst500": "처음 500개 항목만 표시됩니다."
+                },
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",

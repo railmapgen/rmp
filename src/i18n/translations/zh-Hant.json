@@ -45,8 +45,9 @@
                 "show": "顯示",
                 "station": "車站",
                 "miscNode": "雜項節點",
-                "edge": "線段"
-            },
+                "edge": "線路",
+                "showingFirst500": "僅顯示前 500 個項目。"
+                },
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",

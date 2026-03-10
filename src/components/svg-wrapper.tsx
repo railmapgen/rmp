@@ -99,9 +99,13 @@ const SvgWrapper = () => {
         position: { x: 0, y: 0 },
     });
 
-    // background dragging related
+    // background dragging and scaling related
     const dragStartRef = React.useRef({ x: 0, y: 0 });
     const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+    const wheelTimeoutRef = React.useRef<number | null>(null);
+    const svgViewBoxZoomRef = React.useRef(svgViewBoxZoom);
+    const svgViewBoxMinRef = React.useRef(svgViewBoxMin);
+    const wheelRafRef = React.useRef<number | null>(null);
 
     // helper function to calculate the new svgViewBoxMin based on the current
     // mouse position and the initial position when dragging starts
@@ -126,22 +130,25 @@ const SvgWrapper = () => {
     // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
     const viewportRef = React.useRef<SVGGElement>(null);
     const updateViewportTransform = React.useCallback(
-        (svgViewBoxMin: { x: number; y: number }, svgViewBoxZoom: number) => {
+        (min: { x: number; y: number }, zoom: number) => {
             if (viewportRef.current) {
-                const scale = 100 / svgViewBoxZoom;
-                const x = -svgViewBoxMin.x * scale;
-                const y = -svgViewBoxMin.y * scale;
+                const scale = 100 / zoom;
+                const x = -min.x * scale;
+                const y = -min.y * scale;
 
                 viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
-                if (gridLines) setGridLineOffset({ x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom });
+
+                if (gridLines) setGridLineOffset({ x: min.x, y: min.y, zoom });
             }
         },
         [gridLines]
     );
     React.useLayoutEffect(() => {
         // Update the viewport when actions other than dragging change svgViewBoxMin|Zoom.
-        // They do affect performance, but unlike dragging, they are not continuous in a second,
-        // so it's acceptable to update viewport in a useLayoutEffect instead of RAF.
+        svgViewBoxZoomRef.current = svgViewBoxZoom;
+        svgViewBoxMinRef.current = svgViewBoxMin;
+        // The following do affect performance, but unlike dragging, they are not continuously
+        // fired, so it's acceptable to update viewport in a useLayoutEffect instead of RAF.
         updateViewportTransform(svgViewBoxMin, svgViewBoxZoom);
     }, [svgViewBoxMin, svgViewBoxZoom, updateViewportTransform]);
 
@@ -155,6 +162,10 @@ const SvgWrapper = () => {
             if (rafRef.current) {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
+            }
+            if (wheelRafRef.current) {
+                cancelAnimationFrame(wheelRafRef.current);
+                wheelRafRef.current = null;
             }
         };
     }, []);
@@ -286,22 +297,36 @@ const SvgWrapper = () => {
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        let newSvgViewBoxZoom = svgViewBoxZoom;
-        const zoomStep = e.ctrlKey || e.metaKey ? 5 : 10;
-        if (e.deltaY > 0 && svgViewBoxZoom + zoomStep < 400) newSvgViewBoxZoom = svgViewBoxZoom + zoomStep;
-        else if (e.deltaY < 0 && svgViewBoxZoom - zoomStep > 0) newSvgViewBoxZoom = svgViewBoxZoom - zoomStep;
+        const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
+        const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
+
+        let newZoom = svgViewBoxZoomRef.current * scaleMultiplier;
+        newZoom = Math.max(1, Math.min(newZoom, 400));
+        if (newZoom === svgViewBoxZoomRef.current) return;
 
         const { x, y } = getMousePosition(e);
-        const bbox = e.currentTarget.getBoundingClientRect();
-        const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
-
         const newMin = {
-            x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-            y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+            x: svgViewBoxMinRef.current.x + (x * svgViewBoxZoomRef.current) / 100 - (x * newZoom) / 100,
+            y: svgViewBoxMinRef.current.y + (y * svgViewBoxZoomRef.current) / 100 - (y * newZoom) / 100,
         };
 
-        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
-        dispatch(setSvgViewBoxMin(newMin));
+        svgViewBoxZoomRef.current = newZoom;
+        svgViewBoxMinRef.current = newMin;
+
+        // improve performance by throttling viewport updates to animation frames during wheel events
+        if (!wheelRafRef.current) {
+            wheelRafRef.current = requestAnimationFrame(() => {
+                updateViewportTransform(svgViewBoxMinRef.current, svgViewBoxZoomRef.current);
+                wheelRafRef.current = null;
+            });
+        }
+
+        // remember to update the final svgViewBoxMin and svgViewBoxZoom to Redux store
+        if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = window.setTimeout(() => {
+            dispatch(setSvgViewBoxZoom(svgViewBoxZoomRef.current));
+            dispatch(setSvgViewBoxMin(svgViewBoxMinRef.current));
+        }, 150);
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
@@ -519,7 +544,7 @@ const SvgWrapper = () => {
                 >
                     {gridLines && <GridLines gridLineOffset={gridLineOffset} svgWidth={width} svgHeight={height} />}
                     {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                    {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
+                    {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
                     {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
                     <utils.SvgAssetsContextProvider>
                         <SvgCanvas />
