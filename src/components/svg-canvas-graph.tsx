@@ -32,6 +32,7 @@ import {
     updatePathDRecursive,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
+import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import {
@@ -303,7 +304,10 @@ const SvgCanvas = () => {
                         });
                     }
                 });
-                domMove(
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
                     [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
                     offsetX,
                     offsetY
@@ -327,14 +331,15 @@ const SvgCanvas = () => {
                         });
                     }
                 });
-                domMove(
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
                     [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
                     offsetX,
                     offsetY
                 );
             }
-            // dispatch(refreshNodesThunk());
-            // dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,

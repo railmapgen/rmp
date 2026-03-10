@@ -41,6 +41,13 @@ export default function InfoMultipleSection() {
 
     const [isOpenChangeModal, setIsOpenChangeModal] = React.useState(false);
 
+    const filteredSelected = React.useMemo(() => {
+        return [...selected]
+            .filter(id => filter.includes('station') || !id.startsWith('stn'))
+            .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
+            .filter(id => filter.includes('line') || !id.startsWith('line'));
+    }, [selected, filter]);
+
     return (
         <Box>
             <Heading as="h5" size="sm">
@@ -84,30 +91,30 @@ export default function InfoMultipleSection() {
                         <Divider />
                     </>
                 )}
-                {[...selected]
-                    .filter(id => filter.includes('station') || !id.startsWith('stn'))
-                    .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
-                    .filter(id => filter.includes('line') || !id.startsWith('line'))
-                    .slice(0, 500)
-                    .map(id => (
-                        <HStack key={id} width="100%">
-                            <Button
-                                width="100%"
-                                size="sm"
-                                variant="solid"
-                                onClick={() => dispatch(setSelected(new Set([id])))}
-                                overflow="hidden"
-                                textOverflow="ellipsis"
-                                whiteSpace="nowrap"
-                                display="ruby"
-                            >
-                                {getName(id)?.replaceAll('\n', '⏎')}
-                            </Button>
-                            <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
-                                <MdDeselect />
-                            </Button>
-                        </HStack>
-                    ))}
+                {filteredSelected.length > 500 && (
+                    <Box textAlign="center" fontSize="xs" color="gray.500" fontStyle="italic">
+                        {t('panel.details.multipleSelection.showingFirst500')}
+                    </Box>
+                )}
+                {filteredSelected.slice(0, 500).map(id => (
+                    <HStack key={id} width="100%">
+                        <Button
+                            width="100%"
+                            size="sm"
+                            variant="solid"
+                            onClick={() => dispatch(setSelected(new Set([id])))}
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            whiteSpace="nowrap"
+                            display="ruby"
+                        >
+                            {getName(id)?.replaceAll('\n', '⏎')}
+                        </Button>
+                        <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
+                            <MdDeselect />
+                        </Button>
+                    </HStack>
+                ))}
             </VStack>
             <ChangeTypeModal
                 isOpen={isOpenChangeModal}
