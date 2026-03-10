@@ -13,10 +13,14 @@ import {
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
+    setShowOnlyFavorites,
     setSnapLines,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
+    toggleFavoriteLineStyle,
+    toggleFavoriteMiscNode,
+    toggleFavoriteStation,
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
@@ -34,8 +38,12 @@ export const initStore = async (store: RootStore) => {
         if ('project' in appState.telemetry) store.dispatch(setTelemetryProject(appState.telemetry.project));
     }
     if ('preference' in appState) {
-        if ('toolsPanel' in appState.preference && 'expand' in appState.preference.toolsPanel)
-            store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
+        if ('toolsPanel' in appState.preference) {
+            if ('expand' in appState.preference.toolsPanel)
+                store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
+            if ('showOnlyFavorites' in appState.preference.toolsPanel)
+                store.dispatch(setShowOnlyFavorites(appState.preference.toolsPanel.showOnlyFavorites));
+        }
         if ('autoParallel' in appState.preference) store.dispatch(setAutoParallel(appState.preference.autoParallel));
         if ('randomStationsNames' in appState.preference)
             store.dispatch(setRandomStationsNames(appState.preference.randomStationsNames));
@@ -48,6 +56,30 @@ export const initStore = async (store: RootStore) => {
         if ('disableWarning' in appState.preference) {
             if ('changeType' in appState.preference.disableWarning)
                 store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
+        }
+        if ('favorites' in appState.preference) {
+            // load favorites with error handling for invalid/missing IDs
+            if (
+                'lineStyles' in appState.preference.favorites &&
+                Array.isArray(appState.preference.favorites.lineStyles)
+            ) {
+                appState.preference.favorites.lineStyles.forEach((type: string) => {
+                    store.dispatch(toggleFavoriteLineStyle(type as any));
+                });
+            }
+            if ('stations' in appState.preference.favorites && Array.isArray(appState.preference.favorites.stations)) {
+                appState.preference.favorites.stations.forEach((type: string) => {
+                    store.dispatch(toggleFavoriteStation(type as any));
+                });
+            }
+            if (
+                'miscNodes' in appState.preference.favorites &&
+                Array.isArray(appState.preference.favorites.miscNodes)
+            ) {
+                appState.preference.favorites.miscNodes.forEach((type: string) => {
+                    store.dispatch(toggleFavoriteMiscNode(type as any));
+                });
+            }
         }
     }
     if ('state' in loginState) {

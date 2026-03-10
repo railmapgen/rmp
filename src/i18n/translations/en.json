@@ -11,6 +11,7 @@
     "panel": {
         "tools": {
             "showLess": "Show less",
+            "showOnlyFavorites": "Show only favorites",
             "section": {
                 "lineDrawing": "Line Drawing",
                 "lineStyles": "Line Styles",

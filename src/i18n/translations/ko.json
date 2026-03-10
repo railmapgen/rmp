@@ -11,6 +11,7 @@
     "panel": {
         "tools": {
             "showLess": "적게 표시",
+            "showOnlyFavorites": "즐겨찾기만 표시",
             "section": {
                 "lineDrawing": "선 그리기",
                 "lineStyles": "선 스타일",
