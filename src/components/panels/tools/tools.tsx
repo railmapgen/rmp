@@ -71,7 +71,8 @@ const selectIcon = (
 );
 
 const EXPAND_ANIMATION_DURATION = 0.3; // in second
-const MAX_VISIBLE_LINE_STYLES = 5;
+const MAX_VISIBLE_COUNT = 5;
+
 const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -283,7 +284,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton
                             sx={accordionButtonStyle}
-                            hidden={showOnlyFavorites && getFilteredLineStyles().length <= MAX_VISIBLE_LINE_STYLES}
+                            hidden={showOnlyFavorites && getFilteredLineStyles().length <= MAX_VISIBLE_COUNT}
                         >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
@@ -334,7 +335,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton
                             sx={accordionButtonStyle}
-                            hidden={showOnlyFavorites && getFilteredStations().length <= MAX_VISIBLE_LINE_STYLES}
+                            hidden={showOnlyFavorites && getFilteredStations().length <= MAX_VISIBLE_COUNT}
                         >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
@@ -377,7 +378,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton
                             sx={accordionButtonStyle}
-                            hidden={showOnlyFavorites && getFilteredMiscNodes().length + 1 <= MAX_VISIBLE_LINE_STYLES}
+                            hidden={showOnlyFavorites && getFilteredMiscNodes().length + 1 <= MAX_VISIBLE_COUNT}
                         >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
