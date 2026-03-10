@@ -303,13 +303,14 @@ const SvgWrapper = () => {
         let newZoom = svgViewBoxZoomRef.current * scaleMultiplier;
         newZoom = Math.max(1, Math.min(newZoom, 400));
         if (newZoom === svgViewBoxZoomRef.current) return;
-        svgViewBoxZoomRef.current = newZoom;
 
         const { x, y } = getMousePosition(e);
         const newMin = {
             x: svgViewBoxMinRef.current.x + (x * svgViewBoxZoomRef.current) / 100 - (x * newZoom) / 100,
             y: svgViewBoxMinRef.current.y + (y * svgViewBoxZoomRef.current) / 100 - (y * newZoom) / 100,
         };
+
+        svgViewBoxZoomRef.current = newZoom;
         svgViewBoxMinRef.current = newMin;
 
         // improve performance by throttling viewport updates to animation frames during wheel events
@@ -319,6 +320,7 @@ const SvgWrapper = () => {
                 wheelRafRef.current = null;
             });
         }
+
         // remember to update the final svgViewBoxMin and svgViewBoxZoom to Redux store
         if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
         wheelTimeoutRef.current = window.setTimeout(() => {
