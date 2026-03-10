@@ -41,13 +41,7 @@ const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
  */
 const updatePathDRecursive = (id: string, pathD: string) => {
     const root = document.getElementById(id);
-    if (!root) return;
-
-    if (root.matches('path[d]')) {
-        root.setAttribute('d', pathD);
-    }
-
-    root.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
+    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
         path.setAttribute('d', pathD);
     });
 };
