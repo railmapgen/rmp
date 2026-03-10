@@ -26,11 +26,11 @@ import {
     getCanvasSize,
     getMousePosition,
     getViewpointSize,
-    moveNodesAndRedrawLines,
     pointerPosToSVGCoord,
     roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
+import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { makeParallelIndex } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import {
