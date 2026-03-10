@@ -1,68 +1,44 @@
 import { useColorMode } from '@chakra-ui/react';
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React from 'react';
 import { useRootSelector } from '../redux';
 import { getViewpointSize, roundToMultiple } from '../util/helpers';
 
 export interface GridLinesProps {
-    x: number;
-    y: number;
-    zoom: number;
+    gridLineOffset: {
+        x: number;
+        y: number;
+        zoom: number;
+    };
     svgWidth: number;
     svgHeight: number;
 }
 
-export interface GridLinesRef {
-    updateGrid: (x: number, y: number, zoom: number) => void;
-}
-
 const GridLines = React.memo(
-    forwardRef<GridLinesRef, GridLinesProps>((props, ref) => {
-        // eslint-disable-next-line react/prop-types
-        const { svgWidth, svgHeight, x: propsX, y: propsY, zoom: propsZoom } = props;
-
-        const [viewState, setViewState] = useState({
-            x: propsX,
-            y: propsY,
-            zoom: propsZoom,
-        });
-
-        useEffect(() => {
-            setViewState({ x: propsX, y: propsY, zoom: propsZoom });
-        }, [propsX, propsY, propsZoom]);
-
-        useImperativeHandle(ref, () => ({
-            updateGrid: (newX, newY, newZoom) => {
-                setViewState({ x: newX, y: newY, zoom: newZoom });
-            },
-        }));
-
-        const { x, y, zoom: svgViewBoxZoom } = viewState;
+    (props: GridLinesProps) => {
+        const {
+            gridLineOffset: { x, y, zoom: svgViewBoxZoom },
+            svgWidth,
+            svgHeight,
+        } = props;
         const svgViewBoxMin = { x, y };
-
         const {
             preference: {
                 toolsPanel: { expand: isToolsExpanded },
             },
         } = useRootSelector(state => state.app);
-
         const colorMode = useColorMode();
         const color = colorMode.colorMode === 'light' ? '#666464' : '#D3D3D4';
-
-        if (svgViewBoxZoom <= 0 || svgWidth <= 0 || svgHeight <= 0) return null;
-
         const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, svgWidth, svgHeight);
         const offset = isToolsExpanded ? (410 * svgViewBoxZoom) / 100 : 0;
-        const step = svgViewBoxZoom > 30 ? (svgViewBoxZoom > 120 ? (svgViewBoxZoom > 200 ? 225 : 75) : 25) : 5;
+        const step = svgViewBoxZoom > 30 ? (svgViewBoxZoom > 120 ? 50 : 25) : 5;
         const standardWidth = svgViewBoxZoom / 200;
-
         const r = {
             startX: roundToMultiple(svgViewRange.xMin + offset - step, step),
             endX: roundToMultiple(svgViewRange.xMax + offset + step, step),
             startY: roundToMultiple(svgViewRange.yMin - step, step),
             endY: roundToMultiple(svgViewRange.yMax + step, step),
         };
-
-        const verticalLines = Array.from({ length: Math.max(0, (r.endX - r.startX) / step + 1) }, (_, i) => {
+        const verticalLines = Array.from({ length: (r.endX - r.startX) / step + 1 }, (_, i) => {
             const pos = r.startX + i * step;
             const width = pos % (step * 5) === 0 ? 2 * standardWidth : standardWidth;
             return (
@@ -78,8 +54,7 @@ const GridLines = React.memo(
                 />
             );
         });
-
-        const horizontalLines = Array.from({ length: Math.max(0, (r.endY - r.startY) / step + 1) }, (_, i) => {
+        const horizontalLines = Array.from({ length: (r.endY - r.startY) / step + 1 }, (_, i) => {
             const pos = r.startY + i * step;
             const width = pos % (step * 5) === 0 ? 2 * standardWidth : standardWidth;
             return (
@@ -95,8 +70,7 @@ const GridLines = React.memo(
                 />
             );
         });
-
-        const verticalCoords = Array.from({ length: Math.max(0, (r.endX - r.startX) / step / 5 + 1) }, (_, i) => {
+        const verticalCoords = Array.from({ length: (r.endX - r.startX) / step / 5 + 1 }, (_, i) => {
             const pos = roundToMultiple(r.startX, 5 * step) + i * 5 * step;
             return (
                 <text
@@ -112,8 +86,7 @@ const GridLines = React.memo(
                 </text>
             );
         });
-
-        const horizontalCoords = Array.from({ length: Math.max(0, (r.endY - r.startY) / step / 5 + 1) }, (_, i) => {
+        const horizontalCoords = Array.from({ length: (r.endY - r.startY) / step / 5 + 1 }, (_, i) => {
             const pos = roundToMultiple(r.startY, 5 * step) + i * 5 * step;
             return (
                 <text
@@ -129,7 +102,6 @@ const GridLines = React.memo(
                 </text>
             );
         });
-
         return (
             <g id="grid-lines" className="removeMe">
                 {verticalLines}
@@ -138,7 +110,16 @@ const GridLines = React.memo(
                 {horizontalCoords}
             </g>
         );
-    })
+    },
+    (prev, next) => {
+        return (
+            prev.gridLineOffset.x === next.gridLineOffset.x &&
+            prev.gridLineOffset.y === next.gridLineOffset.y &&
+            prev.gridLineOffset.zoom === next.gridLineOffset.zoom &&
+            prev.svgWidth === next.svgWidth &&
+            prev.svgHeight === next.svgHeight
+        );
+    }
 );
 
 export default GridLines;

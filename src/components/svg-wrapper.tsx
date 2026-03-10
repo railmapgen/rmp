@@ -41,7 +41,7 @@ import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes
 import { rotateSelectedNodes } from '../util/transform';
 import { useMakeStationName } from '../util/random-station-names';
 import ContextMenu from './context-menu';
-import GridLines, { GridLinesRef } from './grid-lines';
+import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
@@ -128,25 +128,26 @@ const SvgWrapper = () => {
     };
 
     // grid line requires svgViewBoxMin and svgViewBoxZoom to calculate the position of grid lines
-    const gridLinesRef = React.useRef<GridLinesRef>(null);
+    const [gridLineOffset, setGridLineOffset] = React.useState({ x: 0, y: 0, zoom: 1 });
 
     // Instead of dispatching action to update svgViewBoxMin|Zoom on every pointer move during dragging,
     // we update the viewport transform directly for better performance.
     // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
     const viewportRef = React.useRef<SVGGElement>(null);
-    const updateViewportTransform = React.useCallback((min: { x: number; y: number }, zoom: number) => {
-        if (viewportRef.current) {
-            const scale = 100 / zoom;
-            const x = -min.x * scale;
-            const y = -min.y * scale;
+    const updateViewportTransform = React.useCallback(
+        (min: { x: number; y: number }, zoom: number) => {
+            if (viewportRef.current) {
+                const scale = 100 / zoom;
+                const x = -min.x * scale;
+                const y = -min.y * scale;
 
-            viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+                viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
 
-            if (gridLinesRef.current) {
-                gridLinesRef.current.updateGrid(min.x, min.y, zoom);
+                if (gridLines) setGridLineOffset({ x: min.x, y: min.y, zoom });
             }
-        }
-    }, []);
+        },
+        [gridLines]
+    );
     React.useLayoutEffect(() => {
         // Update the viewport when actions other than dragging change svgViewBoxMin|Zoom.
         // They do affect performance, but unlike dragging, they are not continuous in a second,
@@ -545,16 +546,7 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    {gridLines && (
-                        <GridLines
-                            ref={gridLinesRef}
-                            x={svgViewBoxMin.x}
-                            y={svgViewBoxMin.y}
-                            zoom={svgViewBoxZoom}
-                            svgWidth={width}
-                            svgHeight={height}
-                        />
-                    )}
+                    {gridLines && <GridLines gridLineOffset={gridLineOffset} svgWidth={width} svgHeight={height} />}
                     {isTouchClient() && mode === 'free' && <TouchOverlay />}
                     {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
                     {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
