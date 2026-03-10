@@ -71,7 +71,7 @@ const selectIcon = (
 );
 
 const EXPAND_ANIMATION_DURATION = 0.3; // in second
-
+const MAX_VISIBLE_LINE_STYLES = 5;
 const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
@@ -276,13 +276,6 @@ const ToolsPanel = () => {
                                 >
                                     {isTextShown ? t(miscNodes[MiscNodeType.Virtual].metadata.displayName) : undefined}
                                 </Button>
-                                {isTextShown && (
-                                    <FavoriteButton
-                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Virtual)}
-                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Virtual))}
-                                        ariaLabel={`favorite-${MiscNodeType.Virtual}`}
-                                    />
-                                )}
                             </Flex>
                         </AccordionPanel>
                     </AccordionItem>
@@ -290,7 +283,7 @@ const ToolsPanel = () => {
                     <AccordionItem>
                         <AccordionButton
                             sx={accordionButtonStyle}
-                            hidden={showOnlyFavorites && getFilteredLineStyles().length <= 5}
+                            hidden={showOnlyFavorites && getFilteredLineStyles().length <= MAX_VISIBLE_LINE_STYLES}
                         >
                             {isTextShown && (
                                 <Box as="span" flex="1" textAlign="left">
@@ -334,7 +327,7 @@ const ToolsPanel = () => {
                                 </Flex>
                             ))}
 
-                            {!showOnlyFavorites ? <LearnHowToAdd type="line-styles" expand={isTextShown} /> : null}
+                            {!showOnlyFavorites && <LearnHowToAdd type="line-styles" expand={isTextShown} />}
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -377,7 +370,7 @@ const ToolsPanel = () => {
                                     )}
                                 </Flex>
                             ))}
-                            {!showOnlyFavorites ? <LearnHowToAdd type="station" expand={isTextShown} /> : null}
+                            {!showOnlyFavorites && <LearnHowToAdd type="station" expand={isTextShown} />}
                         </AccordionPanel>
                     </AccordionItem>
 
@@ -428,13 +421,6 @@ const ToolsPanel = () => {
                                         </>
                                     ) : undefined}
                                 </Button>
-                                {isTextShown && (
-                                    <FavoriteButton
-                                        isFavorite={favorites.miscNodes.includes(MiscNodeType.Master)}
-                                        onToggle={() => dispatch(toggleFavoriteMiscNode(MiscNodeType.Master))}
-                                        ariaLabel={`favorite-${MiscNodeType.Master}`}
-                                    />
-                                )}
                             </Flex>
                             {getFilteredMiscNodes().map(type => (
                                 <Flex key={type} w="100%" align="stretch">
@@ -462,7 +448,7 @@ const ToolsPanel = () => {
                                     )}
                                 </Flex>
                             ))}
-                            {!showOnlyFavorites ? <LearnHowToAdd type="misc-node" expand={isTextShown} /> : null}
+                            {!showOnlyFavorites && <LearnHowToAdd type="misc-node" expand={isTextShown} />}
                         </AccordionPanel>
                     </AccordionItem>
                 </Accordion>
