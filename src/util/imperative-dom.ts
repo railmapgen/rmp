@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { lineStyles } from '../components/svgs/lines/lines';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { Path } from '../constants/lines';
 import { getLines } from './process-elements';
 
 /**
@@ -40,11 +41,15 @@ const offsetNodeTransform = (id: NodeId, dx: number, dy: number) => {
  * Necessary for complex line styles where a single logical line may consist of multiple
  * visual path elements that need to stay in sync during real-time interaction.
  */
-const updatePathDRecursive = (id: string, pathD: string) => {
+const updatePathDRecursive = (id: string, pathD: Path) => {
     const root = document.getElementById(id);
     root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
-        path.setAttribute('d', pathD);
+        updatePathD(path, pathD);
     });
+};
+
+const updatePathD = (elem: SVGPathElement, pathD: Path) => {
+    elem.setAttribute('d', pathD);
 };
 
 /**
@@ -79,7 +84,8 @@ export const moveNodesAndRedrawLines = (
                     l.line!.attr[style]!
                 );
                 for (const [key, value] of Object.entries(path)) {
-                    updatePathDRecursive(`${style}_${key}_${l.id}`, value);
+                    const elem = document.getElementById(`${style}_${key}_${l.id}`);
+                    if (elem instanceof SVGPathElement) updatePathD(elem, value);
                 }
             } else {
                 updatePathDRecursive(`${l.id}.pre`, l.line!.path);
