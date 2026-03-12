@@ -420,6 +420,7 @@ const SvgWrapper = () => {
             dispatch(setSelected(allElements));
         } else if (e.key === 'C' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
             // Copy specific attributes (Ctrl+Shift+C or Cmd+Shift+C)
+            e.preventDefault(); // prevent browsers from opening DevTools
             if (selected.size === 1) {
                 const [id] = selected;
                 if (graph.current.hasNode(id)) {
