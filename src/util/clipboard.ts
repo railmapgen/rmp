@@ -10,9 +10,9 @@ import {
     NodeId,
     NodeType,
 } from '../constants/constants';
-import { LinePathType, LineStyleType } from '../constants/lines';
-import { MiscNodeType } from '../constants/nodes';
-import { STATION_TYPE_VALUES, StationType } from '../constants/stations';
+import { ExternalLineStyleAttributes, LinePathType, LineStyleType } from '../constants/lines';
+import { MiscNodeAttributes, MiscNodeType } from '../constants/nodes';
+import { ExternalStationAttributes, STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 import { CURRENT_VERSION } from './save';
 
@@ -20,6 +20,19 @@ type NodesWithAttrs = { [key in NodeId]: NodeAttributes };
 type EdgesWithAttrs = {
     [key in LineId]: { attr: EdgeAttributes; source: NodeId; target: NodeId };
 };
+
+/**
+ * Union type for all specific node attributes (stations and misc nodes).
+ * For stations, the 'names' field is omitted.
+ */
+export type NodeSpecificAttributes =
+    | Omit<NonNullable<ExternalStationAttributes[StationType]>, 'names'>
+    | NonNullable<MiscNodeAttributes[MiscNodeType]>;
+
+/**
+ * Union type for all specific line style attributes.
+ */
+export type LineStyleSpecificAttributes = NonNullable<ExternalLineStyleAttributes[LineStyleType]>;
 
 /**
  * Clipboard data type.
@@ -53,7 +66,7 @@ export interface NodeSpecificAttrsClipboardData {
     version: number;
     saveVersion: number;
     type: NodeType;
-    specificAttrs: Record<string, unknown>;
+    specificAttrs: NodeSpecificAttributes;
 }
 
 /**
@@ -66,7 +79,7 @@ export interface EdgeSpecificAttrsClipboardData {
     type: LineStyleType;
     pathType: EdgeType;
     roundCornerFactor?: number;
-    styleAttrs: Record<string, unknown>;
+    styleAttrs: LineStyleSpecificAttributes;
 }
 
 export type SpecificAttrsClipboardData = NodeSpecificAttrsClipboardData | EdgeSpecificAttrsClipboardData;
@@ -213,7 +226,15 @@ export const exportNodeSpecificAttrs = (
     nodeId: NodeId
 ): string => {
     const nodeType = graph.getNodeAttribute(nodeId, 'type');
-    const specificAttrs = (graph.getNodeAttribute(nodeId, nodeType) ?? {}) as Record<string, unknown>;
+    const nodeAttrs = graph.getNodeAttribute(nodeId, nodeType)!;
+
+    let specificAttrs: NodeSpecificAttributes;
+    if (STATION_TYPE_VALUES.has(nodeType as StationType)) {
+        const { names, ...rest } = nodeAttrs as NonNullable<ExternalStationAttributes[StationType]>;
+        specificAttrs = rest as NodeSpecificAttributes;
+    } else {
+        specificAttrs = structuredClone(nodeAttrs) as NodeSpecificAttributes;
+    }
 
     const data: NodeSpecificAttrsClipboardData = {
         app: 'rmp',
@@ -311,7 +332,22 @@ export const importNodeSpecificAttrs = (
     targetIds.forEach(nodeId => {
         const targetNodeType = graph.getNodeAttribute(nodeId, 'type');
         if (targetNodeType === data.type) {
-            graph.mergeNodeAttributes(nodeId, { [targetNodeType]: data.specificAttrs });
+            if (STATION_TYPE_VALUES.has(targetNodeType as StationType)) {
+                const currentAttrs = graph.getNodeAttribute(nodeId, targetNodeType)! as NonNullable<
+                    ExternalStationAttributes[StationType]
+                >;
+                graph.setNodeAttribute(nodeId, targetNodeType, {
+                    ...currentAttrs,
+                    ...data.specificAttrs,
+                    names: currentAttrs.names, // explicitly preserve names
+                });
+            } else {
+                const currentAttrs = graph.getNodeAttribute(nodeId, targetNodeType)!;
+                graph.setNodeAttribute(nodeId, targetNodeType, {
+                    ...currentAttrs,
+                    ...data.specificAttrs,
+                });
+            }
             success = true;
         }
     });
@@ -342,11 +378,8 @@ export const importEdgeSpecificAttrs = (
             success = true;
 
             // Apply roundCornerFactor if clipboard has it AND target path supports this attribute
-            if (data.roundCornerFactor !== undefined && hasRoundCornerFactor(targetPathType)) {
-                const currentPathAttrs = (graph.getEdgeAttribute(edgeId, targetPathType) ?? {}) as Record<
-                    string,
-                    unknown
-                >;
+            const currentPathAttrs = graph.getEdgeAttribute(edgeId, targetPathType)!;
+            if (data.roundCornerFactor !== undefined && 'roundCornerFactor' in currentPathAttrs) {
                 graph.mergeEdgeAttributes(edgeId, {
                     [targetPathType]: { ...currentPathAttrs, roundCornerFactor: data.roundCornerFactor },
                 });
@@ -354,19 +387,6 @@ export const importEdgeSpecificAttrs = (
         }
     });
     return success;
-};
-
-/**
- * Check if a path type supports roundCornerFactor attribute.
- */
-const hasRoundCornerFactor = (pathType: EdgeType): boolean => {
-    // diagonal, perpendicular, and rotate-perpendicular paths have roundCornerFactor
-    // simple path does NOT have roundCornerFactor
-    return (
-        pathType === LinePathType.Diagonal ||
-        pathType === LinePathType.Perpendicular ||
-        pathType === LinePathType.RotatePerpendicular
-    );
 };
 
 /**
