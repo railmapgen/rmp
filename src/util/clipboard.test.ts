@@ -43,16 +43,16 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             const parsed = JSON.parse(result) as NodeSpecificAttrsClipboardData;
 
             expect(parsed.app).toBe('rmp');
-            expect(parsed.version).toBe(1);
+            expect(parsed.version).toBe(CLIPBOARD_VERSION);
+            expect(parsed.saveVersion).toBe(CURRENT_VERSION);
             expect(parsed.type).toBe(StationType.ShmetroBasic);
             expect(parsed.specificAttrs).toEqual({
-                names: ['测试站', 'Test Station'],
                 nameOffsetX: 'middle',
                 nameOffsetY: 'bottom',
             });
         });
 
-        it('should handle node without specific attributes', () => {
+        it('should omit names while preserving other station attributes', () => {
             const nodeId = 'stn_test2' as NodeId;
             graph.addNode(nodeId, {
                 x: 100,
@@ -60,12 +60,20 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 type: StationType.ShmetroBasic,
                 visible: true,
                 zIndex: 0,
+                [StationType.ShmetroBasic]: {
+                    names: ['测试站', 'Test Station'],
+                    nameOffsetX: 'right',
+                    nameOffsetY: 'top',
+                },
             } as NodeAttributes);
 
             const result = exportNodeSpecificAttrs(graph, nodeId);
             const parsed = JSON.parse(result) as NodeSpecificAttrsClipboardData;
 
-            expect(parsed.specificAttrs).toEqual({});
+            expect(parsed.specificAttrs).toEqual({
+                nameOffsetX: 'right',
+                nameOffsetY: 'top',
+            });
         });
     });
 
@@ -144,7 +152,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
                 type: StationType.ShmetroBasic,
-                specificAttrs: { names: ['Test'] },
+                specificAttrs: { nameOffsetX: 'middle', nameOffsetY: 'bottom' },
             };
 
             const result = parseClipboardData(JSON.stringify(data));
@@ -219,33 +227,45 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 type: StationType.ShmetroBasic,
                 visible: true,
                 zIndex: 0,
-            });
+                [StationType.ShmetroBasic]: {
+                    names: ['旧站一', 'Old Station 1'],
+                    nameOffsetX: 'right',
+                    nameOffsetY: 'top',
+                },
+            } as NodeAttributes);
             graph.addNode(nodeId2, {
                 x: 300,
                 y: 400,
                 type: StationType.ShmetroBasic,
                 visible: true,
                 zIndex: 0,
-            });
+                [StationType.ShmetroBasic]: {
+                    names: ['旧站二', 'Old Station 2'],
+                    nameOffsetX: 'middle',
+                    nameOffsetY: 'top',
+                },
+            } as NodeAttributes);
 
             const data: NodeSpecificAttrsClipboardData = {
                 app: 'rmp',
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
                 type: StationType.ShmetroBasic,
-                specificAttrs: { names: ['新站', 'New Station'], nameOffsetX: 'left' },
+                specificAttrs: { nameOffsetX: 'left', nameOffsetY: 'bottom' },
             };
 
             const result = importNodeSpecificAttrs(graph, new Set([nodeId1, nodeId2]), data);
 
             expect(result).toBe(true);
             expect(graph.getNodeAttribute(nodeId1, StationType.ShmetroBasic)).toEqual({
-                names: ['新站', 'New Station'],
+                names: ['旧站一', 'Old Station 1'],
                 nameOffsetX: 'left',
+                nameOffsetY: 'bottom',
             });
             expect(graph.getNodeAttribute(nodeId2, StationType.ShmetroBasic)).toEqual({
-                names: ['新站', 'New Station'],
+                names: ['旧站二', 'Old Station 2'],
                 nameOffsetX: 'left',
+                nameOffsetY: 'bottom',
             });
         });
 
@@ -265,7 +285,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 version: CLIPBOARD_VERSION,
                 saveVersion: CURRENT_VERSION,
                 type: StationType.ShmetroBasic,
-                specificAttrs: { names: ['新站', 'New Station'] },
+                specificAttrs: { nameOffsetX: 'left', nameOffsetY: 'bottom' },
             };
 
             const result = importNodeSpecificAttrs(graph, new Set([nodeId]), data);
@@ -290,6 +310,15 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 zIndex: 0,
                 reconcileId: 'test',
                 parallelIndex: -1,
+                [LinePathType.Diagonal]: {
+                    startFrom: 'from',
+                    offsetFrom: 1,
+                    offsetTo: 2,
+                    roundCornerFactor: 15,
+                },
+                [LineStyleType.SingleColor]: {
+                    color: ['shanghai', 'sh1', '#e4002b', '#fff'],
+                },
             } as EdgeAttributes);
 
             const data: EdgeSpecificAttrsClipboardData = {
@@ -309,11 +338,14 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 color: ['beijing', 'bj1', '#c23a30', '#fff'],
             });
             expect(graph.getEdgeAttribute(edgeId, LinePathType.Diagonal)).toEqual({
+                startFrom: 'from',
+                offsetFrom: 1,
+                offsetTo: 2,
                 roundCornerFactor: 20,
             });
         });
 
-        it('should not apply roundCornerFactor if path type differs', () => {
+        it('should not apply roundCornerFactor if target path does not support it', () => {
             const nodeId1 = 'stn_node1' as NodeId;
             const nodeId2 = 'stn_node2' as NodeId;
             const edgeId = 'line_test1' as LineId;
@@ -327,6 +359,12 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 zIndex: 0,
                 reconcileId: 'test',
                 parallelIndex: -1,
+                [LinePathType.Simple]: {
+                    offset: 3,
+                },
+                [LineStyleType.SingleColor]: {
+                    color: ['shanghai', 'sh1', '#e4002b', '#fff'],
+                },
             } as EdgeAttributes);
 
             const data: EdgeSpecificAttrsClipboardData = {
@@ -345,8 +383,9 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             expect(graph.getEdgeAttribute(edgeId, LineStyleType.SingleColor)).toEqual({
                 color: ['beijing', 'bj1', '#c23a30', '#fff'],
             });
-            // roundCornerFactor should not be applied to Simple path
-            expect(graph.getEdgeAttribute(edgeId, LinePathType.Simple)).toBeUndefined();
+            expect(graph.getEdgeAttribute(edgeId, LinePathType.Simple)).toEqual({
+                offset: 3,
+            });
         });
     });
 
