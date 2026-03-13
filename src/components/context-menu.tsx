@@ -366,6 +366,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                     >
                         {t('contextMenu.placeBottom')}
                     </MenuItem>
+                </Box>
+                <Box width="0.5px" bg="gray.200" alignSelf="stretch" _dark={{ bg: 'gray.600' }} />
+                <Box minW="150px">
                     <MenuItem
                         onClick={() => {
                             handleZIndex(0);
@@ -375,9 +378,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                     >
                         {t('contextMenu.placeDefault')}
                     </MenuItem>
-                </Box>
-                <Box width="0.5px" bg="gray.200" alignSelf="stretch" _dark={{ bg: 'gray.600' }} />
-                <Box minW="150px">
                     <MenuItem
                         onClick={() => {
                             handlePlaceUp();
