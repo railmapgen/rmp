@@ -956,5 +956,13 @@
         "flipDiagonal135": "Flip across 135° line"
     },
 
+    "clipboard": {
+        "errors": {
+            "readText": "Failed to read the clipboard. Check browser permissions and try again.",
+            "invalidOrIncompatible": "The clipboard data is invalid or incompatible with the current version.",
+            "cannotPasteSpecificAttrs": "Unable to paste specific attributes. Make sure compatible targets are selected and the clipboard contains valid specific-attribute data."
+        }
+    },
+
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
 }

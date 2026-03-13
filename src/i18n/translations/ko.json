@@ -955,5 +955,13 @@
         "flipDiagonal135": "135° 선을 기준으로 뒤집기"
     },
 
+    "clipboard": {
+        "errors": {
+            "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
+            "invalidOrIncompatible": "클립보드 데이터가 잘못되었거나 현재 버전과 호환되지 않습니다.",
+            "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
+        }
+    },
+
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
 }

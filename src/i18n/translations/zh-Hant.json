@@ -955,5 +955,13 @@
         "flipDiagonal135": "沿135°線翻轉"
     },
 
+    "clipboard": {
+        "errors": {
+            "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
+            "invalidOrIncompatible": "剪貼簿內容無效，或與目前版本不相容。",
+            "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
+        }
+    },
+
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
 }

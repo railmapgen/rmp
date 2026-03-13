@@ -955,5 +955,13 @@
         "flipDiagonal135": "沿135°线翻转"
     },
 
+    "clipboard": {
+        "errors": {
+            "readText": "无法读取剪贴板。请检查浏览器权限后重试。",
+            "invalidOrIncompatible": "剪贴板内容无效，或与当前版本不兼容。",
+            "cannotPasteSpecificAttrs": "无法粘贴独特属性。请确认已选中兼容的对象，且剪贴板中包含有效的独特属性数据。"
+        }
+    },
+
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
 }

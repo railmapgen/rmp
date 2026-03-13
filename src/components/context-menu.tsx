@@ -6,7 +6,13 @@ import { Id, LineId, NodeId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
+import {
+    clearSelected,
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    setGlobalAlert,
+    setSelected,
+} from '../redux/runtime/runtime-slice';
 import {
     exportSelectedNodesAndEdges,
     importSelectedNodesAndEdges,
@@ -18,7 +24,6 @@ import {
     getSelectedElementsType,
     NodeSpecificAttrsClipboardData,
     EdgeSpecificAttrsClipboardData,
-    ClipboardType,
 } from '../util/clipboard';
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
@@ -44,27 +49,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
 
-    const [clipboardType, setClipboardType] = React.useState<ClipboardType | undefined>(undefined);
-
-    React.useEffect(() => {
-        if (isOpen) {
-            const checkClipboard = async () => {
-                try {
-                    const s = await navigator.clipboard.readText();
-                    const parsed = parseClipboardData(s);
-                    if (parsed) {
-                        setClipboardType(parsed.type);
-                    } else {
-                        setClipboardType(undefined);
-                    }
-                } catch {
-                    setClipboardType(undefined);
-                }
-            };
-            checkClipboard();
-        }
-    }, [isOpen]);
-
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled =
         !autoParallel || // Disabled if autoParallel is off
@@ -78,15 +62,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     );
     const menuRef = React.useRef<HTMLDivElement>(null);
 
-    // Check selection type for copy/paste attributes
-    const selectionInfo = getSelectedElementsType(graph.current, selected);
     const canCopyAttrs = selected.size === 1;
-    const canPasteAttrs =
-        selectionInfo.allSameType &&
-        clipboardType &&
-        (selectionInfo.category === 'node'
-            ? selectionInfo.nodeType === clipboardType
-            : selectionInfo.edgeStyleType === clipboardType);
 
     useOutsideClick({
         ref: menuRef,
@@ -121,8 +97,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     });
 
     const handlePaste = useEvent(async () => {
+        let s = '';
         try {
-            const s = await navigator.clipboard.readText();
+            s = await navigator.clipboard.readText();
+        } catch (error) {
+            console.warn('Failed to read clipboard:', error);
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+            return;
+        }
+
+        const parsed = parseClipboardData(s);
+        if (!parsed || parsed.type !== 'elements') {
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
+            return;
+        }
+
+        try {
             const { x, y } = pointerPosToSVGCoord(position.x, position.y, svgViewBoxZoom, svgViewBoxMin);
             const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
@@ -138,8 +128,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             edges.forEach(s => allElements.add(s));
             dispatch(setSelected(allElements));
         } catch (error) {
-            // Handle clipboard read error
             console.warn('Failed to read clipboard:', error);
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
         }
     });
 
@@ -205,48 +195,56 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
 
         if (graph.current.hasNode(id)) {
             const s = exportNodeSpecificAttrs(graph.current, id as NodeId);
-            navigator.clipboard.writeText(s).then(() => {
-                setClipboardType(graph.current.getNodeAttribute(id, 'type'));
-            });
+            navigator.clipboard.writeText(s);
         } else if (graph.current.hasEdge(id)) {
             const s = exportEdgeSpecificAttrs(graph.current, id as LineId);
-            navigator.clipboard.writeText(s).then(() => {
-                setClipboardType(graph.current.getEdgeAttribute(id, 'style'));
-            });
+            navigator.clipboard.writeText(s);
         }
     });
 
     const handlePasteAttrs = useEvent(async () => {
+        let s = '';
         try {
-            const s = await navigator.clipboard.readText();
-            const parsed = parseClipboardData(s);
-            if (!parsed) return;
-
-            if (selectionInfo.category === 'node') {
-                const nodeIds = new Set<NodeId>();
-                selected.forEach(id => {
-                    if (graph.current.hasNode(id)) {
-                        nodeIds.add(id as NodeId);
-                    }
-                });
-                if (importNodeSpecificAttrs(graph.current, nodeIds, parsed.data as NodeSpecificAttrsClipboardData)) {
-                    refreshAndSave();
-                }
-            } else if (selectionInfo.category === 'edge') {
-                const edgeIds = new Set<LineId>();
-                selected.forEach(id => {
-                    if (graph.current.hasEdge(id)) {
-                        edgeIds.add(id as LineId);
-                    }
-                });
-                if (importEdgeSpecificAttrs(graph.current, edgeIds, parsed.data as EdgeSpecificAttrsClipboardData)) {
-                    refreshAndSave();
-                }
-            }
+            s = await navigator.clipboard.readText();
         } catch (error) {
-            // Handle clipboard read error
             console.warn('Failed to read clipboard:', error);
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+            return;
         }
+
+        const parsed = parseClipboardData(s);
+        const selectionInfo = getSelectedElementsType(graph.current, selected);
+        if (!parsed || parsed.type === 'elements' || !selectionInfo.allSameType || !selectionInfo.category) {
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            return;
+        }
+
+        if (selectionInfo.category === 'node') {
+            if (selectionInfo.nodeType !== parsed.type) {
+                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                return;
+            }
+
+            if (!importNodeSpecificAttrs(graph.current, selected, parsed.data as NodeSpecificAttrsClipboardData)) {
+                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                return;
+            }
+
+            refreshAndSave();
+            return;
+        }
+
+        if (selectionInfo.category !== 'edge' || selectionInfo.edgeStyleType !== parsed.type) {
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            return;
+        }
+
+        if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
+            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            return;
+        }
+
+        refreshAndSave();
     });
 
     const handleRotate = useEvent((angle: number) => {
@@ -343,7 +341,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                             handlePasteAttrs();
                             onClose();
                         }}
-                        isDisabled={!canPasteAttrs}
                     >
                         {t('contextMenu.pasteAttrs')}
                     </MenuItem>

@@ -45,7 +45,7 @@ export type ClipboardType = 'elements' | NodeType | LineStyleType;
 /**
  * Current clipboard format version. Increment this when clipboard data structure changes.
  */
-export const CLIPBOARD_VERSION = 1;
+export const CLIPBOARD_VERSION = 2;
 
 interface ClipboardData {
     app: 'rmp';
@@ -148,9 +148,12 @@ export const importSelectedNodesAndEdges = (
     x: number,
     y: number
 ) => {
-    const { nodesWithAttrs: nodes, edgesWithAttrs: edges, version, saveVersion } = JSON.parse(s) as ClipboardData;
-    if (version !== CLIPBOARD_VERSION) throw Error(`Unrecognized clipboard version: ${version}`);
-    if (saveVersion !== CURRENT_VERSION) throw Error(`Save version mismatch: ${saveVersion} vs ${CURRENT_VERSION}`);
+    const parsed = parseClipboardData(s);
+    if (!parsed || parsed.type !== 'elements') {
+        throw Error('Clipboard does not contain element data');
+    }
+
+    const { nodesWithAttrs: nodes, edgesWithAttrs: edges } = parsed.data as ClipboardData;
 
     // rename id to be not existed in the current graph
     const renamedMap: { [key in string]: string } = {};
@@ -170,7 +173,11 @@ export const importSelectedNodesAndEdges = (
     // Filter master nodes if requested.
     // Note users might exceed the current limit (3) if copy and paste 2 master nodes.
     // This will result in a 4 node situation. A finer solution may be implemented.
-    const { nodesWithAttrs, edgesWithAttrs, avgX, avgY } = JSON.parse(renamedS) as ClipboardData;
+    const renamedParsed = parseClipboardData(renamedS);
+    if (!renamedParsed || renamedParsed.type !== 'elements') {
+        throw Error('Clipboard does not contain element data');
+    }
+    const { nodesWithAttrs, edgesWithAttrs, avgX, avgY } = renamedParsed.data as ClipboardData;
     const filteredNodes = isMasterDisabled
         ? Object.fromEntries(Object.entries(nodesWithAttrs).filter(([_, attrs]) => attrs.type !== MiscNodeType.Master))
         : nodesWithAttrs;
@@ -319,17 +326,22 @@ export const parseClipboardData = (
 /**
  * Import specific attributes to nodes.
  * @param graph The graph.
- * @param targetIds Set of node IDs to apply the attributes to.
+ * @param selected Selected element IDs. Non-node IDs will be ignored.
  * @param data The clipboard data containing node-specific attributes.
  * @returns True if attributes were successfully applied.
  */
 export const importNodeSpecificAttrs = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    targetIds: Set<NodeId>,
+    selected: Iterable<Id>,
     data: NodeSpecificAttrsClipboardData
 ): boolean => {
     let success = false;
-    targetIds.forEach(nodeId => {
+    for (const id of selected) {
+        if (!graph.hasNode(id)) {
+            continue;
+        }
+
+        const nodeId = id as NodeId;
         const targetNodeType = graph.getNodeAttribute(nodeId, 'type');
         if (targetNodeType === data.type) {
             if (STATION_TYPE_VALUES.has(targetNodeType as StationType)) {
@@ -350,7 +362,7 @@ export const importNodeSpecificAttrs = (
             }
             success = true;
         }
-    });
+    }
     return success;
 };
 
@@ -359,17 +371,22 @@ export const importNodeSpecificAttrs = (
  * For edges, roundCornerFactor is applied if the target path has this attribute.
  * Style attrs are only applied if the edge has the same style type.
  * @param graph The graph.
- * @param targetIds Set of edge IDs to apply the attributes to.
+ * @param selected Selected element IDs. Non-edge IDs will be ignored.
  * @param data The clipboard data containing edge-specific attributes.
  * @returns True if attributes were successfully applied.
  */
 export const importEdgeSpecificAttrs = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    targetIds: Set<LineId>,
+    selected: Iterable<Id>,
     data: EdgeSpecificAttrsClipboardData
 ): boolean => {
     let success = false;
-    targetIds.forEach(edgeId => {
+    for (const id of selected) {
+        if (!graph.hasEdge(id)) {
+            continue;
+        }
+
+        const edgeId = id as LineId;
         const targetPathType = graph.getEdgeAttribute(edgeId, 'type');
         const targetStyleType = graph.getEdgeAttribute(edgeId, 'style');
 
@@ -385,7 +402,7 @@ export const importEdgeSpecificAttrs = (
                 });
             }
         }
-    });
+    }
     return success;
 };
 
