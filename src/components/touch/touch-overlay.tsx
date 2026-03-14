@@ -4,7 +4,7 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, closeRadialTouchMenu, setActive, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
 import { MenuCategory, findNearbyElements } from '../../util/graph-nearby-elements';
-import { TOUCH_RADIAL_DEFER_MS, ZOOM_MAX, ZOOM_MIN } from '../../constants/canvas';
+import { TOUCH_RADIAL_DEFER_MS, ZOOM_DAMPING_RANGE, ZOOM_MAX, ZOOM_MIN } from '../../constants/canvas';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 
@@ -89,6 +89,11 @@ export const TouchOverlay: React.FC = () => {
     });
 
     const handleTouchMove = useEvent((e: React.TouchEvent<SVGRectElement>) => {
+        // safety: cancel single-touch timer if somehow still pending during multi-touch
+        if (e.touches.length >= 2 && singleTouchTimerRef.current) {
+            clearTimeout(singleTouchTimerRef.current);
+            singleTouchTimerRef.current = null;
+        }
         if (e.touches.length === 2 && touchDistRef.current > 0) {
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             const d = dx * dx + dy * dy;
@@ -97,7 +102,16 @@ export const TouchOverlay: React.FC = () => {
             const currentMin = liveMinRef.current;
 
             // continuous multiplicative zoom based on pinch distance ratio
-            const ratio = Math.sqrt(d / touchDistRef.current);
+            let ratio = Math.sqrt(d / touchDistRef.current);
+            // dampen near ZOOM_MIN / ZOOM_MAX so the user feels deceleration
+            const rawPinch = currentZoom / ratio;
+            if (rawPinch < ZOOM_MIN + ZOOM_DAMPING_RANGE && ratio > 1) {
+                const t = Math.max(0, (currentZoom - ZOOM_MIN) / ZOOM_DAMPING_RANGE);
+                ratio = 1 + (ratio - 1) * t;
+            } else if (rawPinch > ZOOM_MAX - ZOOM_DAMPING_RANGE && ratio < 1) {
+                const t = Math.max(0, (ZOOM_MAX - currentZoom) / ZOOM_DAMPING_RANGE);
+                ratio = 1 + (ratio - 1) * t;
+            }
             const newSvgViewBoxZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, currentZoom / ratio));
 
             // the mid-position the fingers touch will still be in the same place after zooming
@@ -129,7 +143,7 @@ export const TouchOverlay: React.FC = () => {
             clearTimeout(singleTouchTimerRef.current);
             singleTouchTimerRef.current = null;
         }
-        // reset pinch state
+        // reset pinch state so one remaining finger doesn't continue zooming
         touchDistRef.current = 0;
     });
 

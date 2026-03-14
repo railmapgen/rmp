@@ -17,6 +17,10 @@ export const TOUCHPAD_SENSITIVITY = 20;
 export const DELTA_LINE_MULTIPLIER = 40;
 export const DELTA_PAGE_MULTIPLIER = 100;
 
+// soft-clamp margin: within this range of ZOOM_MIN / ZOOM_MAX the zoom factor
+// is progressively damped so the user feels deceleration instead of an abrupt stop.
+export const ZOOM_DAMPING_RANGE = 30;
+
 // touch defer timings (ms)
 // node placement: delay so a second finger for pinch can cancel a destructive
 //   action (adding a node). shorter delays risk accidental placement.

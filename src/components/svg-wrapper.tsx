@@ -13,6 +13,7 @@ import {
     TOUCHPAD_SENSITIVITY,
     WHEEL_SENSITIVITY,
     ZOOM_BASE,
+    ZOOM_DAMPING_RANGE,
     ZOOM_MAX,
     ZOOM_MIN,
 } from '../constants/canvas';
@@ -313,6 +314,19 @@ const SvgWrapper = () => {
                     rafRef.current = null;
                 });
             }
+        } else if (
+            e.pointerType === 'touch' &&
+            pointerCountRef.current === 1 &&
+            active === undefined &&
+            (mode === 'free' || mode.startsWith('line'))
+        ) {
+            // re-initiate drag after multi-touch (pinch) ends with one finger remaining.
+            // setActive dispatches are batched by React so multiple pointermove events may
+            // arrive before the next render — the active === undefined guard prevents duplicates.
+            const { x, y } = getMousePosition(e);
+            dragStartRef.current = { x, y };
+            initialViewBoxMinRef.current = svgViewBoxMin;
+            dispatch(setActive('background'));
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
@@ -362,7 +376,17 @@ const SvgWrapper = () => {
         const currentZoom = liveZoomRef.current;
         const currentMin = liveMinRef.current;
 
-        const factor = Math.pow(ZOOM_BASE, delta / sensitivity);
+        let factor = Math.pow(ZOOM_BASE, delta / sensitivity);
+        // dampen the factor near ZOOM_MIN / ZOOM_MAX so the user feels deceleration
+        // instead of an abrupt stop at the boundary
+        const raw = currentZoom * factor;
+        if (raw < ZOOM_MIN + ZOOM_DAMPING_RANGE && factor < 1) {
+            const t = Math.max(0, (currentZoom - ZOOM_MIN) / ZOOM_DAMPING_RANGE);
+            factor = 1 + (factor - 1) * t;
+        } else if (raw > ZOOM_MAX - ZOOM_DAMPING_RANGE && factor > 1) {
+            const t = Math.max(0, (ZOOM_MAX - currentZoom) / ZOOM_DAMPING_RANGE);
+            factor = 1 + (factor - 1) * t;
+        }
         const newSvgViewBoxZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, currentZoom * factor));
 
         const { x, y } = getMousePosition(e);
