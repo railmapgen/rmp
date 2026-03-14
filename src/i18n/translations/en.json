@@ -811,6 +811,7 @@
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
                 "autoChangeStationType": "Automatically switch between basic and interchange station",
+                "editMode": "Edit mode: never open the details panel automatically",
                 "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {

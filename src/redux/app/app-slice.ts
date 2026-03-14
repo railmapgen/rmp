@@ -39,6 +39,11 @@ export interface AppState {
         predictNextNode: boolean;
         autoChangeStationType: boolean;
         /**
+         * When true, the details panel never opens automatically.
+         * The user can still inspect elements by turning this off.
+         */
+        editMode: boolean;
+        /**
          * Whether to disable warnings.
          */
         disableWarning: {
@@ -65,6 +70,7 @@ export const initialState: AppState = {
         snapLines: true,
         predictNextNode: true,
         autoChangeStationType: true,
+        editMode: false,
         disableWarning: {
             changeType: false,
         },
@@ -102,6 +108,9 @@ const appSlice = createSlice({
         setAutoChangeStationType: (state, action: PayloadAction<boolean>) => {
             state.preference.autoChangeStationType = action.payload;
         },
+        setEditMode: (state, action: PayloadAction<boolean>) => {
+            state.preference.editMode = action.payload;
+        },
         setDisableWarningChangeType: (state, action: PayloadAction<boolean>) => {
             state.preference.disableWarning.changeType = action.payload;
         },
@@ -118,6 +127,7 @@ export const {
     setSnapLines,
     setPredictNextNode,
     setAutoChangeStationType,
+    setEditMode,
     setDisableWarningChangeType,
 } = appSlice.actions;
 export default appSlice.reducer;

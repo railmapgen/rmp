@@ -37,13 +37,14 @@ import {
     setAutoChangeStationType,
     setAutoParallel,
     setDisableWarningChangeType,
+    setEditMode,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
     setTelemetryProject,
 } from '../../redux/app/app-slice';
-import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
+import { closeDetailsPanel, setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { MasterManager } from './master-manager';
@@ -75,6 +76,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
             snapLines,
             predictNextNode,
             autoChangeStationType,
+            editMode,
             disableWarning: { changeType: disableWarningChangeType },
         },
     } = useRootSelector(state => state.app);
@@ -209,6 +211,16 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         onChange={({ target: { checked } }) =>
                                             dispatch(setAutoChangeStationType(checked))
                                         }
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.editMode')}</Text>
+                                    <Switch
+                                        isChecked={editMode}
+                                        onChange={({ target: { checked } }) => {
+                                            dispatch(setEditMode(checked));
+                                            if (checked) dispatch(closeDetailsPanel());
+                                        }}
                                     />
                                 </HStack>
                                 <HStack mb="1">

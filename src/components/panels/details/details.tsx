@@ -34,6 +34,9 @@ const DetailsPanel = () => {
     }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
+        preference: { editMode },
+    } = useRootSelector(state => state.app);
+    const {
         selected,
         isDetailsOpen,
         count: { masters: masterNodesCount },
@@ -85,7 +88,7 @@ const DetailsPanel = () => {
     };
 
     return (
-        <RmgSidePanel isOpen={isDetailsOpen === 'show'} width={300} header="Dummy header" alwaysOverlay>
+        <RmgSidePanel isOpen={isDetailsOpen === 'show' && !editMode} width={300} header="Dummy header" alwaysOverlay>
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
             <RmgSidePanelBody>
                 <InfoSection />

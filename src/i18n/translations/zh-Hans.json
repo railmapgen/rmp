@@ -810,6 +810,7 @@
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
+                "editMode": "编辑模式：始终不自动打开侧面板",
                 "disableWarningChangeType": "更改车站或线段类型时禁用警告"
             },
             "shortcuts": {

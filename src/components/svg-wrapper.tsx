@@ -63,7 +63,7 @@ const SvgWrapper = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
+        preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType, editMode },
     } = useRootSelector(state => state.app);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
@@ -498,7 +498,7 @@ const SvgWrapper = () => {
                 </g>
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
-            {isPortraitClient() && isDetailsOpen === 'hide' && (
+            {isPortraitClient() && isDetailsOpen === 'hide' && !editMode && (
                 <IconButton
                     aria-label="open details panel"
                     icon={<MdDoubleArrow style={{ transform: 'rotate(180deg)' }} />}
