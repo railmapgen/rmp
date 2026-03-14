@@ -17,6 +17,14 @@ export const TOUCHPAD_SENSITIVITY = 20;
 export const DELTA_LINE_MULTIPLIER = 40;
 export const DELTA_PAGE_MULTIPLIER = 100;
 
+// touch defer timings (ms)
+// node placement: delay so a second finger for pinch can cancel a destructive
+//   action (adding a node). shorter delays risk accidental placement.
+// radial menu detection: shorter delay because nearby-element lookup is
+//   non-destructive and the menu can be easily dismissed.
+export const TOUCH_PLACE_DEFER_MS = 150;
+export const TOUCH_RADIAL_DEFER_MS = 80;
+
 /**
  * Structure for guide lines when dragging / moving the nodes.
  */

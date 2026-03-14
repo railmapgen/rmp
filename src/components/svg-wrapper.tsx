@@ -9,6 +9,7 @@ import {
     DELTA_LINE_MULTIPLIER,
     DELTA_PAGE_MULTIPLIER,
     NODES_MOVE_DISTANCE,
+    TOUCH_PLACE_DEFER_MS,
     TOUCHPAD_SENSITIVITY,
     WHEEL_SENSITIVITY,
     ZOOM_BASE,
@@ -118,6 +119,12 @@ const SvgWrapper = () => {
     const liveMinRef = React.useRef(svgViewBoxMin);
     liveZoomRef.current = svgViewBoxZoom;
     liveMinRef.current = svgViewBoxMin;
+    // defer touch node placement so a second finger (pinch) can cancel it
+    const touchDeferTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pointerCountRef = React.useRef(0);
+    // tracks the latest drag-computed viewBoxMin so that multi-touch cancellation
+    // can commit the current visual position instead of reverting to Redux state.
+    const lastDragViewBoxMinRef = React.useRef(svgViewBoxMin);
 
     // helper function to calculate the new svgViewBoxMin based on the current
     // mouse position and the initial position when dragging starts
@@ -165,12 +172,16 @@ const SvgWrapper = () => {
     // instead of dispatching Redux action which will cause re-render on every pointer move.
     const rafRef = React.useRef<number | null>(null);
 
-    // cleanup RAF on unmount to prevent calling updateViewportTransform after unmount
+    // cleanup RAF and touch defer timer on unmount
     React.useEffect(() => {
         return () => {
             if (rafRef.current) {
                 cancelAnimationFrame(rafRef.current);
                 rafRef.current = null;
+            }
+            if (touchDeferTimerRef.current) {
+                clearTimeout(touchDeferTimerRef.current);
+                touchDeferTimerRef.current = null;
             }
         };
     }, []);
@@ -194,6 +205,28 @@ const SvgWrapper = () => {
     }, []);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
+        const isTouch = e.pointerType === 'touch';
+        pointerCountRef.current++;
+
+        // multi-touch: cancel pending deferred actions and stop background drag
+        // pinch-to-zoom is handled by touch-overlay
+        if (isTouch && pointerCountRef.current >= 2) {
+            if (touchDeferTimerRef.current) {
+                clearTimeout(touchDeferTimerRef.current);
+                touchDeferTimerRef.current = null;
+            }
+            if (active === 'background') {
+                if (rafRef.current) {
+                    cancelAnimationFrame(rafRef.current);
+                    rafRef.current = null;
+                }
+                // commit the position the user dragged to, not the pre-drag Redux value
+                dispatch(setSvgViewBoxMin(lastDragViewBoxMinRef.current));
+                dispatch(setActive(undefined));
+            }
+            return;
+        }
+
         if (contextMenu.isOpen) {
             // close context menu if it's open
             setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
@@ -201,33 +234,43 @@ const SvgWrapper = () => {
 
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
-            dispatch(setMode('free'));
-            const rand = nanoid(10);
-            const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
+            const doPlaceNode = async () => {
+                dispatch(setMode('free'));
+                const rand = nanoid(10);
+                const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
 
-            const isStation = mode.startsWith('station');
-            const id: NodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
-            const type = (isStation ? mode.slice(8) : mode.slice(10)) as StationType | MiscNodeType;
+                const isStation = mode.startsWith('station');
+                const id: NodeId = isStation ? `stn_${rand}` : `misc_node_${rand}`;
+                const type = (isStation ? mode.slice(8) : mode.slice(10)) as StationType | MiscNodeType;
 
-            // deep copy to prevent mutual reference
-            const attr = structuredClone({ ...stations, ...miscNodes }[type].defaultAttrs);
-            // inject runtime color if registered in dynamicColorInjection
-            if (dynamicColorInjection.has(type)) (attr as AttributesWithColor).color = theme;
-            // Add random names for stations
-            if (isStation) (attr as StationAttributes).names = await makeStationName(type as StationType);
+                // deep copy to prevent mutual reference
+                const attr = structuredClone({ ...stations, ...miscNodes }[type].defaultAttrs);
+                // inject runtime color if registered in dynamicColorInjection
+                if (dynamicColorInjection.has(type)) (attr as AttributesWithColor).color = theme;
+                // Add random names for stations
+                if (isStation) (attr as StationAttributes).names = await makeStationName(type as StationType);
 
-            graph.current.addNode(id, {
-                visible: true,
-                zIndex: 0,
-                x: roundToMultiple(svgX, 5),
-                y: roundToMultiple(svgY, 5),
-                type,
-                [type]: attr,
-            });
-            // console.log('down', active, offset);
-            if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
-            refreshAndSave();
-            dispatch(setSelected(new Set([id])));
+                graph.current.addNode(id, {
+                    visible: true,
+                    zIndex: 0,
+                    x: roundToMultiple(svgX, 5),
+                    y: roundToMultiple(svgY, 5),
+                    type,
+                    [type]: attr,
+                });
+                if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
+                refreshAndSave();
+                dispatch(setSelected(new Set([id])));
+            };
+
+            if (isTouch) {
+                touchDeferTimerRef.current = setTimeout(() => {
+                    touchDeferTimerRef.current = null;
+                    doPlaceNode();
+                }, TOUCH_PLACE_DEFER_MS);
+            } else {
+                await doPlaceNode();
+            }
         } else if (mode === 'free' || mode.startsWith('line')) {
             // deselect line tool if user clicks on the background
             if (mode.startsWith('line')) {
@@ -257,12 +300,15 @@ const SvgWrapper = () => {
                 setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
             }
         } else if (active === 'background') {
+            // skip drag when multi-touch is active (pinch handled by touch-overlay)
+            if (pointerCountRef.current >= 2) return;
             const { x, y } = getMousePosition(e);
             if (!rafRef.current) {
                 // Use requestAnimationFrame to throttle the updates to at most
                 // once per frame for better performance during dragging.
                 rafRef.current = requestAnimationFrame(() => {
                     const tempSVGViewBoxMin = makeSVGViewBoxMin(x, y);
+                    lastDragViewBoxMinRef.current = tempSVGViewBoxMin;
                     updateViewportTransform(tempSVGViewBoxMin, svgViewBoxZoom);
                     rafRef.current = null;
                 });
@@ -270,6 +316,7 @@ const SvgWrapper = () => {
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+        pointerCountRef.current = Math.max(0, pointerCountRef.current - 1);
         const { x, y } = getMousePosition(e);
         if (mode === 'select') {
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);

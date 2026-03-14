@@ -4,7 +4,7 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, closeRadialTouchMenu, setActive, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
 import { MenuCategory, findNearbyElements } from '../../util/graph-nearby-elements';
-import { ZOOM_MAX, ZOOM_MIN } from '../../constants/canvas';
+import { TOUCH_RADIAL_DEFER_MS, ZOOM_MAX, ZOOM_MIN } from '../../constants/canvas';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 
@@ -29,11 +29,19 @@ export const TouchOverlay: React.FC = () => {
     liveZoomRef.current = svgViewBoxZoom;
     liveMinRef.current = svgViewBoxMin;
 
+    // delay single-finger logic so a quick second finger (pinch) can cancel it
+    const singleTouchTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
     const handleTouchStart = useEvent((e: React.TouchEvent<SVGRectElement>) => {
         if (e.touches.length >= 2) {
+            // cancel any pending single-touch work
+            if (singleTouchTimerRef.current) {
+                clearTimeout(singleTouchTimerRef.current);
+                singleTouchTimerRef.current = null;
+            }
             // multi-touch for zoom
             dispatch(setActive(undefined));
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
@@ -46,31 +54,37 @@ export const TouchOverlay: React.FC = () => {
                 return;
             }
 
+            // defer expensive single-finger logic so pinch gestures skip it entirely
             const touch = e.touches[0];
-            const bbox = document.getElementById('canvas')?.getBoundingClientRect();
-            if (!bbox) return;
-            const relativeX = touch.clientX - bbox.left;
-            const relativeY = touch.clientY - bbox.top;
-            const svgCoord = pointerPosToSVGCoord(relativeX, relativeY, svgViewBoxZoom, svgViewBoxMin);
-            const nearbyElements = findNearbyElements(graph.current, svgCoord, dispatch);
-            if (
-                [
-                    ...nearbyElements[MenuCategory.STATION],
-                    ...nearbyElements[MenuCategory.MISC_NODE],
-                    ...nearbyElements[MenuCategory.LINE],
-                ].length > 0
-            ) {
-                dispatch(
-                    setRadialTouchMenu({
-                        visible: true,
-                        position: svgCoord,
-                        data: nearbyElements,
-                    })
-                );
-            } else {
-                dispatch(clearSelected());
-                dispatch(closeRadialTouchMenu());
-            }
+            const clientX = touch.clientX;
+            const clientY = touch.clientY;
+            singleTouchTimerRef.current = setTimeout(() => {
+                singleTouchTimerRef.current = null;
+                const bbox = document.getElementById('canvas')?.getBoundingClientRect();
+                if (!bbox) return;
+                const relativeX = clientX - bbox.left;
+                const relativeY = clientY - bbox.top;
+                const svgCoord = pointerPosToSVGCoord(relativeX, relativeY, svgViewBoxZoom, svgViewBoxMin);
+                const nearbyElements = findNearbyElements(graph.current, svgCoord, dispatch);
+                if (
+                    [
+                        ...nearbyElements[MenuCategory.STATION],
+                        ...nearbyElements[MenuCategory.MISC_NODE],
+                        ...nearbyElements[MenuCategory.LINE],
+                    ].length > 0
+                ) {
+                    dispatch(
+                        setRadialTouchMenu({
+                            visible: true,
+                            position: svgCoord,
+                            data: nearbyElements,
+                        })
+                    );
+                } else {
+                    dispatch(clearSelected());
+                    dispatch(closeRadialTouchMenu());
+                }
+            }, TOUCH_RADIAL_DEFER_MS);
         }
     });
 
@@ -108,9 +122,25 @@ export const TouchOverlay: React.FC = () => {
     });
 
     const handleTouchEnd = useEvent((e: React.TouchEvent<SVGRectElement>) => {
+        // cancel single-touch timer only when all fingers are lifted.
+        // during a pinch the timer is already cleared in handleTouchStart,
+        // so this guard is a belt-and-suspenders safety net.
+        if (e.touches.length === 0 && singleTouchTimerRef.current) {
+            clearTimeout(singleTouchTimerRef.current);
+            singleTouchTimerRef.current = null;
+        }
         // reset pinch state
         touchDistRef.current = 0;
     });
+
+    // cleanup timer on unmount
+    React.useEffect(() => {
+        return () => {
+            if (singleTouchTimerRef.current) {
+                clearTimeout(singleTouchTimerRef.current);
+            }
+        };
+    }, []);
 
     return (
         <rect
