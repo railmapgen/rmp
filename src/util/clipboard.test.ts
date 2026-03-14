@@ -1,20 +1,19 @@
 import { MultiDirectedGraph } from 'graphology';
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { StationType } from '../constants/stations';
 import {
-    exportSelectedNodesAndEdges,
-    exportNodeSpecificAttrs,
-    exportEdgeSpecificAttrs,
-    importSelectedNodesAndEdges,
-    parseClipboardData,
-    importNodeSpecificAttrs,
-    importEdgeSpecificAttrs,
-    getSelectedElementsType,
-    NodeSpecificAttrsClipboardData,
-    EdgeSpecificAttrsClipboardData,
     CLIPBOARD_VERSION,
+    EdgeSpecificAttrsClipboardData,
+    exportEdgeSpecificAttrs,
+    exportNodeSpecificAttrs,
+    getSelectedElementsType,
+    importEdgeSpecificAttrs,
+    importNodeSpecificAttrs,
+    importSelectedNodesAndEdges,
+    NodeSpecificAttrsClipboardData,
+    parseClipboardData,
 } from './clipboard';
 import { CURRENT_VERSION } from './save';
 

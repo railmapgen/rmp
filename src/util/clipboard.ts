@@ -10,9 +10,9 @@ import {
     NodeId,
     NodeType,
 } from '../constants/constants';
-import { ExternalLineStyleAttributes, LinePathType, LineStyleType } from '../constants/lines';
+import { ExternalLineStyleAttributes, LineStyleType } from '../constants/lines';
 import { MiscNodeAttributes, MiscNodeType } from '../constants/nodes';
-import { ExternalStationAttributes, STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
+import { ExternalStationAttributes, STATION_TYPE_VALUES, StationType } from '../constants/stations';
 import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
 import { CURRENT_VERSION } from './save';
 
@@ -419,7 +419,6 @@ export const getSelectedElementsType = (
     allSameType: boolean;
     category: 'node' | 'edge' | 'mixed' | null;
     nodeType?: NodeType;
-    edgePathType?: EdgeType;
     edgeStyleType?: LineStyleType;
 } => {
     if (selected.size === 0) {
@@ -429,7 +428,6 @@ export const getSelectedElementsType = (
     let hasNodes = false;
     let hasEdges = false;
     let nodeType: NodeType | undefined;
-    let edgePathType: EdgeType | undefined;
     let edgeStyleType: LineStyleType | undefined;
     let allSameNodeType = true;
     let allSameEdgeStyleType = true;
@@ -459,7 +457,7 @@ export const getSelectedElementsType = (
     } else if (hasNodes) {
         return { allSameType: allSameNodeType, category: 'node', nodeType };
     } else if (hasEdges) {
-        return { allSameType: allSameEdgeStyleType, category: 'edge', edgePathType, edgeStyleType };
+        return { allSameType: allSameEdgeStyleType, category: 'edge', edgeStyleType };
     }
 
     return { allSameType: false, category: null };

@@ -15,19 +15,19 @@ import {
     refreshNodesThunk,
     setGlobalAlert,
 } from '../../../redux/runtime/runtime-slice';
+import { checkAndChangeStationIntType } from '../../../util/change-types';
 import {
-    exportSelectedNodesAndEdges,
-    exportNodeSpecificAttrs,
-    exportEdgeSpecificAttrs,
-    parseClipboardData,
-    importNodeSpecificAttrs,
-    importEdgeSpecificAttrs,
-    getSelectedElementsType,
-    NodeSpecificAttrsClipboardData,
     EdgeSpecificAttrsClipboardData,
+    exportEdgeSpecificAttrs,
+    exportNodeSpecificAttrs,
+    exportSelectedNodesAndEdges,
+    getSelectedElementsType,
+    importEdgeSpecificAttrs,
+    importNodeSpecificAttrs,
+    NodeSpecificAttrsClipboardData,
+    parseClipboardData,
 } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
-import { checkAndChangeStationIntType } from '../../../util/change-types';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';

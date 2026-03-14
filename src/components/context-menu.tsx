@@ -14,16 +14,16 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import {
-    exportSelectedNodesAndEdges,
-    importSelectedNodesAndEdges,
-    exportNodeSpecificAttrs,
-    exportEdgeSpecificAttrs,
-    parseClipboardData,
-    importNodeSpecificAttrs,
-    importEdgeSpecificAttrs,
-    getSelectedElementsType,
-    NodeSpecificAttrsClipboardData,
     EdgeSpecificAttrsClipboardData,
+    exportEdgeSpecificAttrs,
+    exportNodeSpecificAttrs,
+    exportSelectedNodesAndEdges,
+    getSelectedElementsType,
+    importEdgeSpecificAttrs,
+    importNodeSpecificAttrs,
+    importSelectedNodesAndEdges,
+    NodeSpecificAttrsClipboardData,
+    parseClipboardData,
 } from '../util/clipboard';
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
@@ -128,7 +128,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             edges.forEach(s => allElements.add(s));
             dispatch(setSelected(allElements));
         } catch (error) {
-            console.warn('Failed to read clipboard:', error);
+            console.warn('Failed to paste from clipboard:', error);
             dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
         }
     });

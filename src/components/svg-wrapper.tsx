@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
-import { Events, Id, NodeId, RuntimeMode, StnId, LineId } from '../constants/constants';
+import { Events, Id, LineId, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
@@ -28,16 +28,16 @@ import {
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
 import {
-    exportSelectedNodesAndEdges,
-    importSelectedNodesAndEdges,
-    exportNodeSpecificAttrs,
-    exportEdgeSpecificAttrs,
-    parseClipboardData,
-    importNodeSpecificAttrs,
-    importEdgeSpecificAttrs,
-    getSelectedElementsType,
-    NodeSpecificAttrsClipboardData,
     EdgeSpecificAttrsClipboardData,
+    exportEdgeSpecificAttrs,
+    exportNodeSpecificAttrs,
+    exportSelectedNodesAndEdges,
+    getSelectedElementsType,
+    importEdgeSpecificAttrs,
+    importNodeSpecificAttrs,
+    importSelectedNodesAndEdges,
+    NodeSpecificAttrsClipboardData,
+    parseClipboardData,
 } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import {
@@ -51,8 +51,8 @@ import {
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
-import { rotateSelectedNodes } from '../util/transform';
 import { useMakeStationName } from '../util/random-station-names';
+import { rotateSelectedNodes } from '../util/transform';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -441,7 +441,7 @@ const SvgWrapper = () => {
                 console.warn('Failed to paste from clipboard:', error);
                 dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
             }
-        } else if (e.key === 'C' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
+        } else if (e.key === 'c' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
             // Copy specific attributes (Ctrl+Shift+C or Cmd+Shift+C)
             e.preventDefault(); // prevent browsers from opening DevTools
             if (selected.size === 1) {
@@ -454,7 +454,8 @@ const SvgWrapper = () => {
                     navigator.clipboard.writeText(s);
                 }
             }
-        } else if (e.key === 'V' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
+        } else if (e.key === 'v' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
+            e.preventDefault(); // prevent browsers from pasting without formatting
             // Paste specific attributes (Ctrl+Shift+V or Cmd+Shift+V)
             let s = '';
             try {
