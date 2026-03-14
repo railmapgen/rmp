@@ -13,7 +13,6 @@ import {
     hideDetailsPanel,
     refreshEdgesThunk,
     refreshNodesThunk,
-    setGlobalAlert,
 } from '../../../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../../../util/change-types';
 import {
@@ -28,6 +27,7 @@ import {
     parseClipboardData,
 } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
+import { sendErrorNotification } from '../../../util/notifications';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -114,25 +114,25 @@ const DetailsPanel = () => {
             s = await navigator.clipboard.readText();
         } catch (error) {
             console.warn('Failed to read clipboard:', error);
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.readText'));
             return;
         }
 
         const parsed = parseClipboardData(s);
         const selectionInfo = getSelectedElementsType(graph.current, selected);
         if (!parsed || parsed.type === 'elements' || !selectionInfo.allSameType || !selectionInfo.category) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 
         if (selectionInfo.category === 'node') {
             if (selectionInfo.nodeType !== parsed.type) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
             if (!importNodeSpecificAttrs(graph.current, selected, parsed.data as NodeSpecificAttrsClipboardData)) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
@@ -141,12 +141,12 @@ const DetailsPanel = () => {
         }
 
         if (selectionInfo.category !== 'edge' || selectionInfo.edgeStyleType !== parsed.type) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 
         if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 

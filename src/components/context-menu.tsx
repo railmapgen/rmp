@@ -6,13 +6,7 @@ import { Id, LineId, NodeId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
-import {
-    clearSelected,
-    refreshEdgesThunk,
-    refreshNodesThunk,
-    setGlobalAlert,
-    setSelected,
-} from '../redux/runtime/runtime-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
 import {
     EdgeSpecificAttrsClipboardData,
     exportEdgeSpecificAttrs,
@@ -26,6 +20,7 @@ import {
     parseClipboardData,
 } from '../util/clipboard';
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
+import { sendErrorNotification } from '../util/notifications';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
 
@@ -102,13 +97,13 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             s = await navigator.clipboard.readText();
         } catch (error) {
             console.warn('Failed to read clipboard:', error);
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.readText'));
             return;
         }
 
         const parsed = parseClipboardData(s);
         if (!parsed || parsed.type !== 'elements') {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
             return;
         }
 
@@ -129,7 +124,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             dispatch(setSelected(allElements));
         } catch (error) {
             console.warn('Failed to paste from clipboard:', error);
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
         }
     });
 
@@ -208,25 +203,25 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             s = await navigator.clipboard.readText();
         } catch (error) {
             console.warn('Failed to read clipboard:', error);
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.readText'));
             return;
         }
 
         const parsed = parseClipboardData(s);
         const selectionInfo = getSelectedElementsType(graph.current, selected);
         if (!parsed || parsed.type === 'elements' || !selectionInfo.allSameType || !selectionInfo.category) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 
         if (selectionInfo.category === 'node') {
             if (selectionInfo.nodeType !== parsed.type) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
             if (!importNodeSpecificAttrs(graph.current, selected, parsed.data as NodeSpecificAttrsClipboardData)) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
@@ -235,12 +230,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         }
 
         if (selectionInfo.category !== 'edge' || selectionInfo.edgeStyleType !== parsed.type) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 
         if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 

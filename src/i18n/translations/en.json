@@ -1,6 +1,7 @@
 {
     "color": "Color",
     "warning": "Warning",
+    "error": "Error",
     "cancel": "Cancel",
     "apply": "Apply",
     "remove": "Remove",

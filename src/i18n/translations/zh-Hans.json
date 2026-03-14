@@ -1,6 +1,7 @@
 {
     "color": "颜色",
     "warning": "警告",
+    "error": "错误",
     "cancel": "取消",
     "apply": "应用",
     "remove": "移除",

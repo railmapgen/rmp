@@ -1,6 +1,7 @@
 {
     "color": "색깔",
     "warning": "경고",
+    "error": "오류",
     "cancel": "취소",
     "apply": "사용",
     "remove": "삭제",

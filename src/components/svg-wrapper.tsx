@@ -20,7 +20,6 @@ import {
     refreshEdgesThunk,
     refreshNodesThunk,
     setActive,
-    setGlobalAlert,
     setKeepLastPath,
     setMode,
     setSelected,
@@ -50,6 +49,7 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
+import { sendErrorNotification } from '../util/notifications';
 import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
 import { rotateSelectedNodes } from '../util/transform';
@@ -407,13 +407,13 @@ const SvgWrapper = () => {
                 s = await navigator.clipboard.readText();
             } catch (error) {
                 console.warn('Failed to read clipboard:', error);
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.readText'));
                 return;
             }
 
             const parsed = parseClipboardData(s);
             if (!parsed || parsed.type !== 'elements') {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
                 return;
             }
 
@@ -439,7 +439,7 @@ const SvgWrapper = () => {
                 dispatch(setSelected(allElements));
             } catch (error) {
                 console.warn('Failed to paste from clipboard:', error);
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.invalidOrIncompatible') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
             }
         } else if (e.key === 'c' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
             // Copy specific attributes (Ctrl+Shift+C or Cmd+Shift+C)
@@ -462,29 +462,25 @@ const SvgWrapper = () => {
                 s = await navigator.clipboard.readText();
             } catch (error) {
                 console.warn('Failed to read clipboard:', error);
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.readText') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.readText'));
                 return;
             }
 
             const parsed = parseClipboardData(s);
             const selectionInfo = getSelectedElementsType(graph.current, selected);
             if (!parsed || parsed.type === 'elements' || !selectionInfo.allSameType || !selectionInfo.category) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
             if (selectionInfo.category === 'node') {
                 if (selectionInfo.nodeType !== parsed.type) {
-                    dispatch(
-                        setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') })
-                    );
+                    sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                     return;
                 }
 
                 if (!importNodeSpecificAttrs(graph.current, selected, parsed.data as NodeSpecificAttrsClipboardData)) {
-                    dispatch(
-                        setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') })
-                    );
+                    sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                     return;
                 }
 
@@ -493,12 +489,12 @@ const SvgWrapper = () => {
             }
 
             if (selectionInfo.category !== 'edge' || selectionInfo.edgeStyleType !== parsed.type) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
             if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('clipboard.errors.cannotPasteSpecificAttrs') }));
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
                 return;
             }
 
