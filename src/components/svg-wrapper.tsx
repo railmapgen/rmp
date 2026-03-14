@@ -228,6 +228,13 @@ const SvgWrapper = () => {
             return;
         }
 
+        // when a node is already being interacted with (e.g. dragging a station),
+        // ignore additional touch on the background to prevent overwriting active
+        // and causing canvas drift. the user must lift all fingers first.
+        if (isTouch && active && active !== 'background') {
+            return;
+        }
+
         if (contextMenu.isOpen) {
             // close context menu if it's open
             setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
