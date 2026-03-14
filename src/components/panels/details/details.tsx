@@ -10,6 +10,7 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import {
     clearSelected,
+    closeDetailsPanel,
     hideDetailsPanel,
     refreshEdgesThunk,
     refreshNodesThunk,
@@ -47,6 +48,7 @@ const DetailsPanel = () => {
     const handleClose = () => {
         if (!isPortraitClient()) {
             dispatch(clearSelected());
+            dispatch(closeDetailsPanel());
         } else {
             dispatch(hideDetailsPanel());
         }

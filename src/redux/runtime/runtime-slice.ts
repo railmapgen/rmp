@@ -34,11 +34,13 @@ interface RuntimeState {
     active: NodeId | 'background' | undefined;
     /**
      * The state of the details panel.
-     * On desktop, it is either 'show' or 'close'.
-     * On mobile, it is either 'show', 'hide' or 'close'.
-     * 'show' means the panel is open.
-     * 'hide' means the panel is closed but can be opened by clicking the arrow button.
-     * 'close' means the panel is closed and cannot be opened by clicking the arrow button.
+     * - 'show': the panel is open and visible.
+     * - 'hide': the panel is closed but can be reopened via the arrow button (mobile only).
+     * - 'close': the panel is closed and cannot be reopened via the arrow button.
+     *
+     * Once opened, the panel stays visible (sticky) until the user explicitly
+     * clicks the close (X) button, which dispatches `closeDetailsPanel`.
+     * Actions like `clearSelected`, `setMode`, or `setActive` will NOT close it.
      */
     isDetailsOpen: 'show' | 'hide' | 'close';
     /**
@@ -196,14 +198,14 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
 });
 
 /**
- * Determine the isDetailsOpen state based on current selected and mode.
+ * Determine the isDetailsOpen state based on current selected, mode, and active.
  *
- * `detailsOpen = state.selected.size > 0 && !state.mode.startsWith('line') && !state.active`
+ * When `selected.size > 0 && !mode.startsWith('line') && !active`:
+ *   - Portrait mobile with multi-select → 'hide'
+ *   - Otherwise → 'show'
  *
- * |                      --                      | detailsOpen === true | detailsOpen === false |
- * |----------------------------------------------|----------------------|----------------------|
- * | isMobileClient === true && selected.size > 1 | 'show' or 'hide'     | 'close'              |
- * | isMobileClient === false                     | 'show'               | 'close'              |
+ * When the condition is false the current value is kept (sticky).
+ * Only `closeDetailsPanel` can set the state back to 'close'.
  */
 const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
     if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
@@ -212,7 +214,8 @@ const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOp
         }
         return 'show';
     }
-    return 'close';
+    // Keep the current visibility — only closeDetailsPanel can set 'close'.
+    return state.isDetailsOpen;
 };
 
 const runtimeSlice = createSlice({
@@ -247,6 +250,9 @@ const runtimeSlice = createSlice({
         },
         hideDetailsPanel: state => {
             state.isDetailsOpen = 'hide';
+        },
+        closeDetailsPanel: state => {
+            state.isDetailsOpen = 'close';
         },
         setRefreshNodes: state => {
             state.refresh.nodes = Date.now();
@@ -354,6 +360,7 @@ export const {
     setActive,
     showDetailsPanel,
     hideDetailsPanel,
+    closeDetailsPanel,
     setRefreshNodes,
     setRefreshEdges,
     setRefreshImages,
