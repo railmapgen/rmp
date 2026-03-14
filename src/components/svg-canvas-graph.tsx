@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
+import { LINE_SNAP_RADIUS, NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
@@ -86,6 +86,8 @@ const SvgCanvas = () => {
 
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
+    // the node that the line tool is currently snapping to (null when not snapping)
+    const [snapTarget, setSnapTarget] = React.useState<NodeId | null>(null);
 
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
@@ -308,10 +310,25 @@ const SvgCanvas = () => {
                 );
             }
         } else if (mode.startsWith('line') && active) {
-            setPointerOffset({
-                dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                dy: ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
+            const dx = ((pointerPosition!.x - x) * svgViewBoxZoom) / 100;
+            const dy = ((pointerPosition!.y - y) * svgViewBoxZoom) / 100;
+            setPointerOffset({ dx, dy });
+
+            // snap detection: find the closest connectable node within LINE_SNAP_RADIUS
+            const cursorX = graph.current.getNodeAttribute(active, 'x') - dx;
+            const cursorY = graph.current.getNodeAttribute(active, 'y') - dy;
+            let bestNode: NodeId | null = null;
+            let bestDist = LINE_SNAP_RADIUS;
+            graph.current.forEachNode((nodeId, attrs) => {
+                if (nodeId === active) return;
+                if (!connectableNodesType.includes(attrs.type)) return;
+                const dist = Math.sqrt((attrs.x - cursorX) ** 2 + (attrs.y - cursorY) ** 2);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestNode = nodeId as NodeId;
+                }
             });
+            setSnapTarget(bestNode);
         }
     });
     const handlePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
@@ -319,23 +336,34 @@ const SvgCanvas = () => {
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
+            setSnapTarget(null);
 
             const couldSourceBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
-            const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
-            const elems = document.elementsFromPoint(e.clientX, e.clientY);
-            const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
-            // all connectable nodes have prefixes in their mask/event elements' ids
-            // also known as couldTargetBeConnected
-            const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
+            // determine the target node: prefer snapTarget (from visual snap preview)
+            // so that a visually snapped line always connects successfully.
+            // fall back to elementsFromPoint hit-testing for cases within stn_core_ geometry
+            // but outside LINE_SNAP_RADIUS.
+            let target: NodeId | undefined;
+            if (snapTarget) {
+                target = snapTarget;
+            } else {
+                const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
+                const elems = document.elementsFromPoint(e.clientX, e.clientY);
+                const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
+                const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
+                if (matchedPrefix) {
+                    target = id!.slice(matchedPrefix.length) as NodeId;
+                }
+            }
 
-            if (couldSourceBeConnected && matchedPrefix) {
+            if (couldSourceBeConnected && target) {
                 const { path, style: style_ } = getLinePathAndStyle(mode);
                 const [type, style] = [path!, style_!]; // assured by startsWith('line') check
                 const newLineId: LineId = `line_${nanoid(10)}`;
-                const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
+                const source = active! as NodeId;
                 if (source !== target) {
                     const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
                     // TODO: there should be some way for a style to disable auto theme injection
@@ -387,6 +415,7 @@ const SvgCanvas = () => {
         }
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
+        setSnapTarget(null);
         setPointerPosition(undefined);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
@@ -474,6 +503,21 @@ const SvgCanvas = () => {
     // TODO: there should be some way for a style to disable auto theme injection
     if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
 
+    // pre-calculate temporary line endpoints for the line being created.
+    const isCreatingLine = mode.startsWith('line') && active && active !== 'background';
+    const srcX = isCreatingLine ? graph.current.getNodeAttribute(active, 'x') : 0;
+    const srcY = isCreatingLine ? graph.current.getNodeAttribute(active, 'y') : 0;
+    const tgtX = isCreatingLine
+        ? snapTarget
+            ? graph.current.getNodeAttribute(snapTarget, 'x')
+            : srcX - pointerOffset.dx
+        : 0;
+    const tgtY = isCreatingLine
+        ? snapTarget
+            ? graph.current.getNodeAttribute(snapTarget, 'y')
+            : srcY - pointerOffset.dy
+        : 0;
+
     return (
         <>
             <SvgLayer
@@ -484,23 +528,36 @@ const SvgCanvas = () => {
                 handlePointerUp={handlePointerUp}
                 handleEdgePointerDown={handleEdgePointerDown}
             />
-            {mode.startsWith('line') && active && active !== 'background' && (
-                <LineStyleComponent
-                    id="line_create_in_progress___no_use"
-                    type={linePath}
-                    path={linePaths[linePath].generatePath(
-                        graph.current.getNodeAttribute(active, 'x'),
-                        graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
-                        graph.current.getNodeAttribute(active, 'y'),
-                        graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
+            {isCreatingLine && (
+                <>
+                    <LineStyleComponent
+                        id="line_create_in_progress___no_use"
+                        type={linePath}
+                        path={linePaths[linePath].generatePath(
+                            srcX,
+                            tgtX,
+                            srcY,
+                            tgtY,
+                            // @ts-expect-error
+                            linePaths[linePath].defaultAttrs
+                        )}
                         // @ts-expect-error
-                        linePaths[linePath].defaultAttrs
+                        styleAttrs={lineStyleAttrs}
+                        newLine
+                        handlePointerDown={() => {}} // no use
+                    />
+                    {snapTarget && (
+                        <circle
+                            cx={tgtX}
+                            cy={tgtY}
+                            r={5}
+                            fill="none"
+                            stroke="cyan"
+                            strokeWidth={2}
+                            pointerEvents="none"
+                        />
                     )}
-                    // @ts-expect-error
-                    styleAttrs={lineStyleAttrs}
-                    newLine
-                    handlePointerDown={() => {}} // no use
-                />
+                </>
             )}
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (

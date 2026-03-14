@@ -3,6 +3,9 @@ import { NodeId } from './constants';
 // Number of distance to move when moving nodes.
 export const NODES_MOVE_DISTANCE = 5;
 
+// SVG-unit radius within which the line tool snaps to a connectable node.
+export const LINE_SNAP_RADIUS = 20;
+
 /**
  * Structure for guide lines when dragging / moving the nodes.
  */
