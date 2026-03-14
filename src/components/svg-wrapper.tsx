@@ -283,6 +283,7 @@ const SvgWrapper = () => {
             // set initial position of the pointer, this is used in handleBackgroundMove
             dragStartRef.current = { x, y };
             initialViewBoxMinRef.current = svgViewBoxMin;
+            lastDragViewBoxMinRef.current = svgViewBoxMin;
             if (!e.shiftKey) {
                 // when user holding the shift key and mis-click the background
                 // preserve the current selection
@@ -326,6 +327,7 @@ const SvgWrapper = () => {
             const { x, y } = getMousePosition(e);
             dragStartRef.current = { x, y };
             initialViewBoxMinRef.current = svgViewBoxMin;
+            lastDragViewBoxMinRef.current = svgViewBoxMin;
             dispatch(setActive('background'));
         }
     });
