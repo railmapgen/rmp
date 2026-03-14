@@ -17,7 +17,7 @@ import { useWindowSize } from '../../util/hooks';
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
-    const { radialTouchMenu } = useRootSelector(state => state.runtime);
+    const { radialTouchMenu, active } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
     // live refs keep zoom/min in sync with the latest dispatch so that consecutive
@@ -42,8 +42,11 @@ export const TouchOverlay: React.FC = () => {
                 clearTimeout(singleTouchTimerRef.current);
                 singleTouchTimerRef.current = null;
             }
-            // multi-touch for zoom
-            dispatch(setActive(undefined));
+            // multi-touch for zoom — only clear active for background drags,
+            // not when a node is being interacted with (pointer captured by node)
+            if (!active || active === 'background') {
+                dispatch(setActive(undefined));
+            }
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             touchDistRef.current = dx * dx + dy * dy;
         } else if (e.touches.length === 1) {
