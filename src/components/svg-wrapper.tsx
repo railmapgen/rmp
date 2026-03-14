@@ -5,7 +5,16 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
-import { NODES_MOVE_DISTANCE } from '../constants/canvas';
+import {
+    DELTA_LINE_MULTIPLIER,
+    DELTA_PAGE_MULTIPLIER,
+    NODES_MOVE_DISTANCE,
+    TOUCHPAD_SENSITIVITY,
+    WHEEL_SENSITIVITY,
+    ZOOM_BASE,
+    ZOOM_MAX,
+    ZOOM_MIN,
+} from '../constants/canvas';
 import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
@@ -102,6 +111,13 @@ const SvgWrapper = () => {
     // background dragging related
     const dragStartRef = React.useRef({ x: 0, y: 0 });
     const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+    // live refs keep zoom/min in sync with the latest dispatch so that consecutive
+    // wheel/pinch events within the same React batch read up-to-date values instead
+    // of the stale Redux snapshot captured at the start of the render.
+    const liveZoomRef = React.useRef(svgViewBoxZoom);
+    const liveMinRef = React.useRef(svgViewBoxMin);
+    liveZoomRef.current = svgViewBoxZoom;
+    liveMinRef.current = svgViewBoxMin;
 
     // helper function to calculate the new svgViewBoxMin based on the current
     // mouse position and the initial position when dragging starts
@@ -286,19 +302,33 @@ const SvgWrapper = () => {
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        let newSvgViewBoxZoom = svgViewBoxZoom;
-        const zoomStep = e.ctrlKey || e.metaKey ? 5 : 10;
-        if (e.deltaY > 0 && svgViewBoxZoom + zoomStep < 400) newSvgViewBoxZoom = svgViewBoxZoom + zoomStep;
-        else if (e.deltaY < 0 && svgViewBoxZoom - zoomStep > 0) newSvgViewBoxZoom = svgViewBoxZoom - zoomStep;
+        // normalize deltaY: DOM_DELTA_PIXEL (0) needs no conversion,
+        // DOM_DELTA_LINE (1, Firefox mouse) and DOM_DELTA_PAGE (2, rare) are scaled
+        // to approximate pixel equivalents.
+        let delta = e.deltaY;
+        if (e.deltaMode === 1) delta *= DELTA_LINE_MULTIPLIER;
+        else if (e.deltaMode === 2) delta *= DELTA_PAGE_MULTIPLIER;
+
+        // touchpad pinch fires as ctrlKey + wheel with small deltaY, use lower divisor
+        const sensitivity = e.ctrlKey || e.metaKey ? TOUCHPAD_SENSITIVITY : WHEEL_SENSITIVITY;
+
+        const currentZoom = liveZoomRef.current;
+        const currentMin = liveMinRef.current;
+
+        const factor = Math.pow(ZOOM_BASE, delta / sensitivity);
+        const newSvgViewBoxZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, currentZoom * factor));
 
         const { x, y } = getMousePosition(e);
         const bbox = e.currentTarget.getBoundingClientRect();
         const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
 
         const newMin = {
-            x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-            y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+            x: currentMin.x + (x * currentZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+            y: currentMin.y + (y * currentZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
         };
+
+        liveZoomRef.current = newSvgViewBoxZoom;
+        liveMinRef.current = newMin;
 
         dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
         dispatch(setSvgViewBoxMin(newMin));

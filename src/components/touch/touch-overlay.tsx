@@ -4,6 +4,7 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, closeRadialTouchMenu, setActive, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
 import { MenuCategory, findNearbyElements } from '../../util/graph-nearby-elements';
+import { ZOOM_MAX, ZOOM_MIN } from '../../constants/canvas';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 
@@ -19,19 +20,28 @@ export const TouchOverlay: React.FC = () => {
     const { radialTouchMenu } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
-    // Touch state variables for handling mobile gestures:
-    // touchDist: tracks the distance between two fingers for pinch-to-zoom (0 when not zooming)
-    const [touchDist, setTouchDist] = React.useState(0);
+    // live refs keep zoom/min in sync with the latest dispatch so that consecutive
+    // pinch events within the same React batch read up-to-date values instead of
+    // the stale Redux snapshot captured at the start of the render.
+    const touchDistRef = React.useRef(0);
+    const liveZoomRef = React.useRef(svgViewBoxZoom);
+    const liveMinRef = React.useRef(svgViewBoxMin);
+    liveZoomRef.current = svgViewBoxZoom;
+    liveMinRef.current = svgViewBoxMin;
 
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
     const handleTouchStart = useEvent((e: React.TouchEvent<SVGRectElement>) => {
-        if (e.touches.length == 1) {
-            setTouchDist(0);
+        if (e.touches.length >= 2) {
+            // multi-touch for zoom
+            dispatch(setActive(undefined));
+            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
+            touchDistRef.current = dx * dx + dy * dy;
+        } else if (e.touches.length === 1) {
+            touchDistRef.current = 0;
 
             if (radialTouchMenu.visible) {
-                // If menu is already open, close it on this touch
                 dispatch(closeRadialTouchMenu());
                 return;
             }
@@ -61,24 +71,20 @@ export const TouchOverlay: React.FC = () => {
                 dispatch(clearSelected());
                 dispatch(closeRadialTouchMenu());
             }
-        } else if (e.touches.length == 2) {
-            // Multi-touch for zoom
-            dispatch(setActive(undefined));
-            const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
-            setTouchDist(dx * dx + dy * dy);
         }
     });
 
     const handleTouchMove = useEvent((e: React.TouchEvent<SVGRectElement>) => {
-        if (e.touches.length == 2 && touchDist > 0) {
+        if (e.touches.length === 2 && touchDistRef.current > 0) {
             const [dx, dy] = [e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY];
             const d = dx * dx + dy * dy;
 
-            let newSvgViewBoxZoom = svgViewBoxZoom;
-            if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
-            else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
-            dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
-            setTouchDist(d);
+            const currentZoom = liveZoomRef.current;
+            const currentMin = liveMinRef.current;
+
+            // continuous multiplicative zoom based on pinch distance ratio
+            const ratio = Math.sqrt(d / touchDistRef.current);
+            const newSvgViewBoxZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, currentZoom / ratio));
 
             // the mid-position the fingers touch will still be in the same place after zooming
             const bbox = e.currentTarget.getBoundingClientRect();
@@ -87,18 +93,23 @@ export const TouchOverlay: React.FC = () => {
                 (e.touches[0].clientY + e.touches[1].clientY) / 2 - bbox.top,
             ];
             const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
-            dispatch(
-                setSvgViewBoxMin({
-                    x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-                    y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
-                })
-            );
+            const newMin = {
+                x: currentMin.x + (x * currentZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
+                y: currentMin.y + (y * currentZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
+            };
+
+            liveZoomRef.current = newSvgViewBoxZoom;
+            liveMinRef.current = newMin;
+            touchDistRef.current = d;
+
+            dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+            dispatch(setSvgViewBoxMin(newMin));
         }
     });
 
     const handleTouchEnd = useEvent((e: React.TouchEvent<SVGRectElement>) => {
-        // Reset panning state
-        setTouchDist(0);
+        // reset pinch state
+        touchDistRef.current = 0;
     });
 
     return (

@@ -3,6 +3,20 @@ import { NodeId } from './constants';
 // Number of distance to move when moving nodes.
 export const NODES_MOVE_DISTANCE = 5;
 
+// zoom constants for wheel and pinch
+export const ZOOM_BASE = 1.2;
+export const ZOOM_MIN = 10;
+export const ZOOM_MAX = 400;
+export const WHEEL_SENSITIVITY = 150;
+export const TOUCHPAD_SENSITIVITY = 20;
+
+// deltaMode multipliers (WheelEvent.DOM_DELTA_LINE / DOM_DELTA_PAGE)
+// line mode: Firefox reports ~3 lines per tick; CSS spec suggests 1 line ≈ 40px,
+//   so 3 × 40 = 120 which is comparable to Chrome's pixel-mode ~100.
+// page mode: rare, approximate a page as ~100px for a reasonable zoom step.
+export const DELTA_LINE_MULTIPLIER = 40;
+export const DELTA_PAGE_MULTIPLIER = 100;
+
 /**
  * Structure for guide lines when dragging / moving the nodes.
  */
