@@ -1,9 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { LinePathType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
+import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 
 type NodesWithAttrs = { [key in NodeId]: NodeAttributes };
 type EdgesWithAttrs = {
@@ -122,10 +121,12 @@ export const importSelectedNodesAndEdges = (
             attr.parallelIndex = -1;
         } else {
             const { type } = attr;
-            if (!(source in renamedMap || target in renamedMap)) {
+            if (!supportsParallelLinePath(type)) {
+                attr.parallelIndex = -1;
+            } else if (!(source in renamedMap || target in renamedMap)) {
                 // When the user only copy the lines, not the nodes, from the current graph and paste back,
                 // we should recalculate the parallel index to avoid overlap.
-                const { startFrom } = attr[type] as NonSimpleLinePathAttributes;
+                const { startFrom } = attr[type] as ParallelLinePathAttributes;
                 attr.parallelIndex = makeParallelIndex(graph, type, source, target, startFrom);
             }
         }

@@ -54,6 +54,7 @@ const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> 
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

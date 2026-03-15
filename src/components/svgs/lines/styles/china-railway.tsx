@@ -68,6 +68,7 @@ const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

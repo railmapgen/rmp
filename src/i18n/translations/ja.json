@@ -540,6 +540,8 @@
                     "offsetFrom": "補正値（From）",
                     "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
+                    "startAngle": "開始点角度",
+                    "endAngle": "終了点角度",
                     "roundCornerFactor": "角の丸め係数",
                     "from": "から",
                     "to": "まで",
@@ -558,6 +560,9 @@
                 },
                 "rotatePerpendicular": {
                     "displayName": "90°回転する垂直経路"
+                },
+                "rayGuided": {
+                    "displayName": "任意角度経路"
                 },
                 "singleColor": {
                     "displayName": "単色風格"

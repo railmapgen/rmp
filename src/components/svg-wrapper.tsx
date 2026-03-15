@@ -7,7 +7,6 @@ import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
 import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
-import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
@@ -37,9 +36,14 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
-import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
-import { rotateSelectedNodes } from '../util/transform';
+import {
+    makeParallelIndex,
+    MAX_PARALLEL_LINES_FREE,
+    ParallelLinePathAttributes,
+    supportsParallelLinePath,
+} from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import { rotateSelectedNodes } from '../util/transform';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -451,9 +455,9 @@ const SvgWrapper = () => {
                 const attr = graph.current.getEdgeAttributes(selectedFirst);
                 const { type } = attr;
 
-                // only work for non-simple line types that have startFrom
-                if (type !== LinePathType.Simple && attr[type]) {
-                    const lineAttrs = attr[type] as NonSimpleLinePathAttributes;
+                // only work for line path types that have startFrom
+                if (supportsParallelLinePath(type) && attr[type]) {
+                    const lineAttrs = attr[type] as ParallelLinePathAttributes;
                     const currentStartFrom = lineAttrs.startFrom || 'from';
                     const newStartFrom = currentStartFrom === 'from' ? 'to' : 'from';
 

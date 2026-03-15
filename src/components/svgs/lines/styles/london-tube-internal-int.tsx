@@ -66,6 +66,7 @@ const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

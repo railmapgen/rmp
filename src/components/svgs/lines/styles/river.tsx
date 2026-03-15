@@ -73,6 +73,7 @@ const river: LineStyle<RiverAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

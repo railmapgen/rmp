@@ -10,8 +10,9 @@ import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/run
 import {
     MAX_PARALLEL_LINES_FREE,
     MAX_PARALLEL_LINES_PRO,
-    NonSimpleLinePathAttributes,
+    ParallelLinePathAttributes,
     makeParallelIndex,
+    supportsParallelLinePath,
 } from '../../../util/parallel';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
@@ -88,18 +89,18 @@ export default function InfoSection() {
                 ? MAX_PARALLEL_LINES_PRO
                 : MAX_PARALLEL_LINES_FREE;
             const isParallelSwitchDisabled =
-                (parallelLinesCount > maximumParallelLines && parallelIndex < 0) || type === LinePathType.Simple;
+                (parallelLinesCount > maximumParallelLines && parallelIndex < 0) || !supportsParallelLinePath(type);
             const isParallelInputDisabled = parallelLinesCount > maximumParallelLines && parallelIndex >= 0;
             fields.push({
                 type: 'switch',
                 label: t('panel.details.info.parallel'),
                 isDisabled: isParallelSwitchDisabled,
                 isChecked: parallelIndex >= 0,
-                onChange: val => handleParallelSwitch(val, (attr[attr.type] as NonSimpleLinePathAttributes).startFrom),
+                onChange: val => handleParallelSwitch(val, (attr[attr.type] as ParallelLinePathAttributes).startFrom),
                 oneLine: true,
                 minW: 276,
             });
-            if (parallelIndex >= 0) {
+            if (!isParallelSwitchDisabled && parallelIndex >= 0) {
                 fields.push({
                     type: 'input',
                     label: t('panel.details.info.parallelIndex'),

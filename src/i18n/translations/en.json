@@ -538,6 +538,8 @@
                     "offsetFrom": "Offset From",
                     "offsetTo": "Offset To",
                     "startFrom": "Start From",
+                    "startAngle": "Start Angle",
+                    "endAngle": "End Angle",
                     "from": "From",
                     "to": "To",
                     "roundCornerFactor": "Round Corner Factor",
@@ -556,6 +558,9 @@
                 },
                 "rotatePerpendicular": {
                     "displayName": "90° rotate perpendicular path"
+                },
+                "rayGuided": {
+                    "displayName": "Arbitrary angle path"
                 },
                 "singleColor": {
                     "displayName": "Single color style"
