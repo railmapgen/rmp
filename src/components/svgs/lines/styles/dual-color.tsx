@@ -152,12 +152,7 @@ const dualColor: LineStyle<DualColorAttributes> = {
     pathGenerator: dualColorPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
-        supportLinePathType: [
-            LinePathType.Diagonal,
-            LinePathType.Perpendicular,
-            LinePathType.RotatePerpendicular,
-            LinePathType.RayGuided,
-        ],
+        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
     },
 };
 
