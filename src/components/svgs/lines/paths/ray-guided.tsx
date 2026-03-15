@@ -236,6 +236,7 @@ const rayGuidedPath: LinePath<RayGuidedPathAttributes> = {
     defaultAttrs: defaultRayGuidedPathAttributes,
     attrsComponent,
     metadata: { displayName: 'panel.details.lines.rayGuided.displayName' },
+    isPro: true,
 };
 
 export default rayGuidedPath;
