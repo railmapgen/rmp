@@ -24,6 +24,7 @@ import {
     setSelected,
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
+import { clearGridViewport, setGridViewport } from '../redux/viewport/viewport-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
@@ -41,7 +42,7 @@ import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes
 import { rotateSelectedNodes } from '../util/transform';
 import { useMakeStationName } from '../util/random-station-names';
 import ContextMenu from './context-menu';
-import GridLines, { GridLinesRef } from './grid-lines';
+import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
@@ -106,6 +107,7 @@ const SvgWrapper = () => {
     const svgViewBoxZoomRef = React.useRef(svgViewBoxZoom);
     const svgViewBoxMinRef = React.useRef(svgViewBoxMin);
     const wheelRafRef = React.useRef<number | null>(null);
+    const gridViewportRef = React.useRef<{ x: number; y: number; zoom: number } | undefined>(undefined);
 
     // helper function to calculate the new svgViewBoxMin based on the current
     // mouse position and the initial position when dragging starts
@@ -122,9 +124,6 @@ const SvgWrapper = () => {
         };
     };
 
-    // grid line requires svgViewBoxMin and svgViewBoxZoom to calculate the position of grid lines
-    const gridLinesRef = React.useRef<GridLinesRef>(null);
-
     // Instead of dispatching action to update svgViewBoxMin|Zoom on every pointer move during dragging,
     // we update the viewport transform directly for better performance.
     // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
@@ -137,14 +136,33 @@ const SvgWrapper = () => {
                 const y = -min.y * scale;
 
                 viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+            }
 
-                if (gridLinesRef.current) {
-                    gridLinesRef.current.updateGrid(min.x, min.y, zoom);
+            if (gridLines) {
+                const nextGridViewport = { x: min.x, y: min.y, zoom };
+                const currentGridViewport = gridViewportRef.current;
+
+                if (
+                    !currentGridViewport ||
+                    currentGridViewport.x !== nextGridViewport.x ||
+                    currentGridViewport.y !== nextGridViewport.y ||
+                    currentGridViewport.zoom !== nextGridViewport.zoom
+                ) {
+                    gridViewportRef.current = nextGridViewport;
+                    dispatch(setGridViewport(nextGridViewport));
                 }
             }
         },
-        [gridLines]
+        [dispatch, gridLines]
     );
+
+    React.useEffect(() => {
+        if (!gridLines) {
+            gridViewportRef.current = undefined;
+            dispatch(clearGridViewport());
+        }
+    }, [dispatch, gridLines]);
+
     React.useLayoutEffect(() => {
         // Update the viewport when actions other than dragging change svgViewBoxMin|Zoom.
         svgViewBoxZoomRef.current = svgViewBoxZoom;
@@ -154,8 +172,8 @@ const SvgWrapper = () => {
         updateViewportTransform(svgViewBoxMin, svgViewBoxZoom);
     }, [svgViewBoxMin, svgViewBoxZoom, updateViewportTransform]);
 
-    // Rely on RAF to update viewBoxMin during background dragging for better performance,
-    // instead of dispatching Redux action which will cause re-render on every pointer move.
+    // Rely on RAF to update the viewport transform during background dragging for better performance,
+    // while keeping the persisted svgViewBoxMin/svgViewBoxZoom updates deferred until pointer up.
     const rafRef = React.useRef<number | null>(null);
 
     // cleanup RAF on unmount to prevent calling updateViewportTransform after unmount
@@ -544,16 +562,7 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    {gridLines && (
-                        <GridLines
-                            ref={gridLinesRef}
-                            x={svgViewBoxMin.x}
-                            y={svgViewBoxMin.y}
-                            zoom={svgViewBoxZoom}
-                            svgWidth={width}
-                            svgHeight={height}
-                        />
-                    )}
+                    {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
                     {isTouchClient() && mode === 'free' && <TouchOverlay />}
                     {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
                     {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
