@@ -353,6 +353,8 @@ const SvgCanvas = () => {
                     dispatch(refreshEdgesThunk());
                 }
             }
+            // Clear selection after attempting to create a line to prevent the details panel from opening
+            dispatch(clearSelected());
         } else if (mode === 'free') {
             if (active) {
                 // the node is pointed down before
