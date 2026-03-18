@@ -194,6 +194,8 @@ const SvgWrapper = () => {
             setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
         }
 
+        e.currentTarget.setPointerCapture(e.pointerId);
+
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
@@ -266,6 +268,7 @@ const SvgWrapper = () => {
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
+        e.currentTarget.releasePointerCapture(e.pointerId);
         if (mode === 'select') {
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
