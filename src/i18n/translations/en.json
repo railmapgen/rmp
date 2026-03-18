@@ -4,6 +4,9 @@
     "error": "Error",
     "cancel": "Cancel",
     "apply": "Apply",
+    "copy": "Copy",
+    "copyAttrs": "Copy Specific Attributes",
+    "pasteAttrs": "Paste Specific Attributes",
     "remove": "Remove",
     "close": "Close",
     "noShowAgain": "Don't show me again",
@@ -670,13 +673,9 @@
                 "add": "Upload image",
                 "error": "Failed to upload this image!",
                 "loading": "Loading images..."
-           },
+            },
             "footer": {
-                "duplicate": "Duplicate",
-                "copy": "Copy",
-                "remove": "Remove",
-                "copyAttrs": "Copy Specific Attributes",
-                "pasteAttrs": "Paste Specific Attributes"
+                "duplicate": "Duplicate"
             }
         }
     },
@@ -832,8 +831,6 @@
                 "cut": "Cut.",
                 "copy": "Copy.",
                 "paste": "Paste.",
-                "copyAttrs": "Copy specific attributes.",
-                "pasteAttrs": "Paste specific attributes.",
                 "undo": "Undo.",
                 "redo": "Redo."
             },
@@ -938,12 +935,9 @@
 
     "contextMenu": {
         "refresh": "Refresh",
-        "copy": "Copy",
         "cut": "Cut", 
         "paste": "Paste",
         "delete": "Delete",
-        "copyAttrs": "Copy Specific Attributes",
-        "pasteAttrs": "Paste Specific Attributes",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",

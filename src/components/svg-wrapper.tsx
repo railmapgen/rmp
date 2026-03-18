@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
-import { Events, Id, LineId, NodeId, RuntimeMode, StnId } from '../constants/constants';
+import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
@@ -26,18 +26,7 @@ import {
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
-import {
-    EdgeSpecificAttrsClipboardData,
-    exportEdgeSpecificAttrs,
-    exportNodeSpecificAttrs,
-    exportSelectedNodesAndEdges,
-    getSelectedElementsType,
-    importEdgeSpecificAttrs,
-    importNodeSpecificAttrs,
-    importSelectedNodesAndEdges,
-    NodeSpecificAttrsClipboardData,
-    parseClipboardData,
-} from '../util/clipboard';
+import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges, parseClipboardData } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
@@ -441,64 +430,6 @@ const SvgWrapper = () => {
                 console.warn('Failed to paste from clipboard:', error);
                 sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
             }
-        } else if (e.key === 'c' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
-            // Copy specific attributes (Ctrl+Shift+C or Cmd+Shift+C)
-            e.preventDefault(); // prevent browsers from opening DevTools
-            if (selected.size === 1) {
-                const [id] = selected;
-                if (graph.current.hasNode(id)) {
-                    const s = exportNodeSpecificAttrs(graph.current, id as NodeId);
-                    navigator.clipboard.writeText(s);
-                } else if (graph.current.hasEdge(id)) {
-                    const s = exportEdgeSpecificAttrs(graph.current, id as LineId);
-                    navigator.clipboard.writeText(s);
-                }
-            }
-        } else if (e.key === 'v' && (isMacClient ? e.metaKey && e.shiftKey : e.ctrlKey && e.shiftKey)) {
-            e.preventDefault(); // prevent browsers from pasting without formatting
-            // Paste specific attributes (Ctrl+Shift+V or Cmd+Shift+V)
-            let s = '';
-            try {
-                s = await navigator.clipboard.readText();
-            } catch (error) {
-                console.warn('Failed to read clipboard:', error);
-                sendErrorNotification(t('error'), t('clipboard.errors.readText'));
-                return;
-            }
-
-            const parsed = parseClipboardData(s);
-            const selectionInfo = getSelectedElementsType(graph.current, selected);
-            if (!parsed || parsed.type === 'elements' || !selectionInfo.allSameType || !selectionInfo.category) {
-                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
-                return;
-            }
-
-            if (selectionInfo.category === 'node') {
-                if (selectionInfo.nodeType !== parsed.type) {
-                    sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
-                    return;
-                }
-
-                if (!importNodeSpecificAttrs(graph.current, selected, parsed.data as NodeSpecificAttrsClipboardData)) {
-                    sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
-                    return;
-                }
-
-                refreshAndSave();
-                return;
-            }
-
-            if (selectionInfo.category !== 'edge' || selectionInfo.edgeStyleType !== parsed.type) {
-                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
-                return;
-            }
-
-            if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
-                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
-                return;
-            }
-
-            refreshAndSave();
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)

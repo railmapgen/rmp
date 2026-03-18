@@ -293,7 +293,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         }}
                         isDisabled={!hasSelection}
                     >
-                        {t('contextMenu.copy')}
+                        {t('copy')}
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
@@ -329,7 +329,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         }}
                         isDisabled={!canCopyAttrs}
                     >
-                        {t('contextMenu.copyAttrs')}
+                        {t('copyAttrs')}
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
@@ -337,7 +337,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                             onClose();
                         }}
                     >
-                        {t('contextMenu.pasteAttrs')}
+                        {t('pasteAttrs')}
                     </MenuItem>
                     <Divider />
                     <MenuItem

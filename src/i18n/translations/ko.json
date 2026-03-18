@@ -4,6 +4,9 @@
     "error": "오류",
     "cancel": "취소",
     "apply": "사용",
+    "copy": "복사",
+    "copyAttrs": "고유 속성 복사",
+    "pasteAttrs": "고유 속성 붙여넣기",
     "remove": "삭제",
     "close": "다시",
     "noShowAgain": "표시하지 않기",
@@ -671,11 +674,7 @@
                 "loading": "이미지를 불러오는 중..."
             },
             "footer": {
-                "duplicate": "복사",
-                "copy": "복사",
-                "remove": "삭제",
-                "copyAttrs": "고유 속성 복사",
-                "pasteAttrs": "고유 속성 붙여넣기"
+                "duplicate": "복사"
             }
         }
     },
@@ -831,8 +830,6 @@
                 "cut": "잘라내기.",
                 "copy": "복사하다.",
                 "paste": "붙여넣다.",
-                "copyAttrs": "고유 속성 복사.",
-                "pasteAttrs": "고유 속성 붙여넣기.",
                 "undo": "취소하다.",
                 "redo": "다시 하다."
             },
@@ -937,12 +934,9 @@
 
     "contextMenu": {
         "refresh": "새로 고침",
-        "copy": "복사",
         "cut": "잘라내기", 
         "paste": "붙여넣기",
         "delete": "삭제",
-        "copyAttrs": "고유 속성 복사",
-        "pasteAttrs": "고유 속성 붙여넣기",
         "placeTop": "맨 앞으로",
         "placeBottom": "맨 뒤로",
         "placeDefault": "기본 위치로",

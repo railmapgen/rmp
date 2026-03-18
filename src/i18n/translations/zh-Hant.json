@@ -4,6 +4,9 @@
     "error": "錯誤",
     "cancel": "取消",
     "apply": "應用",
+    "copy": "複製",
+    "copyAttrs": "複製獨特屬性",
+    "pasteAttrs": "貼上獨特屬性",
     "remove": "移除",
     "close": "關閉",
     "noShowAgain": "不要再顯示",
@@ -671,11 +674,7 @@
                 "loading": "正在載入影像..."
             },
             "footer": {
-                "duplicate": "重複",
-                "copy": "複製",
-                "remove": "移除",
-                "copyAttrs": "複製獨特屬性",
-                "pasteAttrs": "貼上獨特屬性"
+                "duplicate": "重複"
             }
         }
     },
@@ -831,8 +830,6 @@
                 "cut": "剪切。",
                 "copy": "複製。",
                 "paste": "貼上。",
-                "copyAttrs": "複製獨特屬性。",
-                "pasteAttrs": "貼上獨特屬性。",
                 "undo": "撤銷。",
                 "redo": "重做。"
             },
@@ -937,12 +934,9 @@
 
     "contextMenu": {
         "refresh": "重新整理",
-        "copy": "複製",
         "cut": "剪下", 
         "paste": "貼上",
         "delete": "刪除",
-        "copyAttrs": "複製獨特屬性",
-        "pasteAttrs": "貼上獨特屬性",
         "placeTop": "置頂",
         "placeBottom": "置底",
         "placeDefault": "還原位置",

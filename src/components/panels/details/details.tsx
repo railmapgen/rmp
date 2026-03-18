@@ -191,18 +191,18 @@ const DetailsPanel = () => {
                             </Button>
                         )}
                         <Button size="sm" variant="outline" onClick={() => handleCopy(selected)} flex={1}>
-                            {t('panel.details.footer.copy')}
+                            {t('copy')}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => handleRemove(selected)} flex={1}>
-                            {t('panel.details.footer.remove')}
+                            {t('remove')}
                         </Button>
                     </HStack>
 
                     <Button size="sm" variant="outline" onClick={handleCopyAttrs} isDisabled={!canCopyAttrs}>
-                        {t('panel.details.footer.copyAttrs')}
+                        {t('copyAttrs')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={handlePasteAttrs}>
-                        {t('panel.details.footer.pasteAttrs')}
+                        {t('pasteAttrs')}
                     </Button>
                 </VStack>
             </RmgSidePanelFooter>
