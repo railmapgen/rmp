@@ -1,8 +1,12 @@
 {
     "color": "颜色",
     "warning": "警告",
+    "error": "错误",
     "cancel": "取消",
     "apply": "应用",
+    "copy": "复制",
+    "copyAttrs": "复制独特属性",
+    "pasteAttrs": "粘贴独特属性",
     "remove": "移除",
     "close": "关闭",
     "noShowAgain": "不再显示",
@@ -672,9 +676,7 @@
                 "loading": "正在加载图像..."
             },
             "footer": {
-                "duplicate": "重复",
-                "copy": "复制",
-                "remove": "移除"
+                "duplicate": "重复"
             }
         }
     },
@@ -933,11 +935,10 @@
     },
 
     "contextMenu": {
-        "copy": "复制",
+        "refresh": "刷新",
         "cut": "剪切", 
         "paste": "粘贴",
         "delete": "删除",
-        "refresh": "刷新",
         "placeTop": "置顶",
         "placeBottom": "置底",
         "placeDefault": "还原位置",
@@ -949,6 +950,14 @@
         "flipHorizontal": "水平翻转",
         "flipDiagonal45": "沿45°线翻转",
         "flipDiagonal135": "沿135°线翻转"
+    },
+
+    "clipboard": {
+        "errors": {
+            "readText": "无法读取剪贴板。请检查浏览器权限后重试。",
+            "invalidOrIncompatible": "剪贴板内容无效，或与当前版本不兼容。",
+            "cannotPasteSpecificAttrs": "无法粘贴独特属性。请确认已选中兼容的对象，且剪贴板中包含有效的独特属性数据。"
+        }
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"

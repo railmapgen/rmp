@@ -1,8 +1,12 @@
 {
     "color": "Color",
     "warning": "Warning",
+    "error": "Error",
     "cancel": "Cancel",
     "apply": "Apply",
+    "copy": "Copy",
+    "copyAttrs": "Copy Specific Attributes",
+    "pasteAttrs": "Paste Specific Attributes",
     "remove": "Remove",
     "close": "Close",
     "noShowAgain": "Don't show me again",
@@ -671,11 +675,9 @@
                 "add": "Upload image",
                 "error": "Failed to upload this image!",
                 "loading": "Loading images..."
-           },
+            },
             "footer": {
-                "duplicate": "Duplicate",
-                "copy": "Copy",
-                "remove": "Remove"
+                "duplicate": "Duplicate"
             }
         }
     },
@@ -934,11 +936,10 @@
     },
 
     "contextMenu": {
-        "copy": "Copy",
+        "refresh": "Refresh",
         "cut": "Cut", 
         "paste": "Paste",
         "delete": "Delete",
-        "refresh": "Refresh",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",
@@ -950,6 +951,14 @@
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
         "flipDiagonal135": "Flip across 135° line"
+    },
+
+    "clipboard": {
+        "errors": {
+            "readText": "Failed to read the clipboard. Check browser permissions and try again.",
+            "invalidOrIncompatible": "The clipboard data is invalid or incompatible with the current version.",
+            "cannotPasteSpecificAttrs": "Unable to paste specific attributes. Make sure compatible targets are selected and the clipboard contains valid specific-attribute data."
+        }
     },
 
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
