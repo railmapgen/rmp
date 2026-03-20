@@ -2,13 +2,25 @@ import { Box, Divider, Portal, useOutsideClick } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
-import { Id } from '../constants/constants';
+import { Id, LineId, NodeId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
-import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
+import {
+    EdgeSpecificAttrsClipboardData,
+    exportEdgeSpecificAttrs,
+    exportNodeSpecificAttrs,
+    exportSelectedNodesAndEdges,
+    getSelectedElementsType,
+    importEdgeSpecificAttrs,
+    importNodeSpecificAttrs,
+    importSelectedNodesAndEdges,
+    NodeSpecificAttrsClipboardData,
+    parseClipboardData,
+} from '../util/clipboard';
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
+import { sendErrorNotification } from '../util/notifications';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
 
@@ -45,6 +57,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     );
     const menuRef = React.useRef<HTMLDivElement>(null);
 
+    const canCopyAttrs = selected.size === 1;
+
     useOutsideClick({
         ref: menuRef,
         handler: onClose,
@@ -78,8 +92,22 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     });
 
     const handlePaste = useEvent(async () => {
+        let s = '';
         try {
-            const s = await navigator.clipboard.readText();
+            s = await navigator.clipboard.readText();
+        } catch (error) {
+            console.warn('Failed to read clipboard:', error);
+            sendErrorNotification(t('error'), t('clipboard.errors.readText'));
+            return;
+        }
+
+        const parsed = parseClipboardData(s);
+        if (!parsed || parsed.type !== 'elements') {
+            sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
+            return;
+        }
+
+        try {
             const { x, y } = pointerPosToSVGCoord(position.x, position.y, svgViewBoxZoom, svgViewBoxMin);
             const { nodes, edges } = importSelectedNodesAndEdges(
                 s,
@@ -95,8 +123,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             edges.forEach(s => allElements.add(s));
             dispatch(setSelected(allElements));
         } catch (error) {
-            // Handle clipboard read error
-            console.warn('Failed to read clipboard:', error);
+            console.warn('Failed to paste from clipboard:', error);
+            sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
         }
     });
 
@@ -156,6 +184,64 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         }
     });
 
+    const handleCopyAttrs = useEvent(() => {
+        if (selected.size !== 1) return;
+        const [id] = selected;
+
+        if (graph.current.hasNode(id)) {
+            const s = exportNodeSpecificAttrs(graph.current, id as NodeId);
+            navigator.clipboard.writeText(s);
+        } else if (graph.current.hasEdge(id)) {
+            const s = exportEdgeSpecificAttrs(graph.current, id as LineId);
+            navigator.clipboard.writeText(s);
+        }
+    });
+
+    const handlePasteAttrs = useEvent(async () => {
+        let s = '';
+        try {
+            s = await navigator.clipboard.readText();
+        } catch (error) {
+            console.warn('Failed to read clipboard:', error);
+            sendErrorNotification(t('error'), t('clipboard.errors.readText'));
+            return;
+        }
+
+        const parsed = parseClipboardData(s);
+        const selectionInfo = getSelectedElementsType(graph.current, selected);
+        if (!parsed || parsed.type === 'elements' || !selectionInfo.allSameType || !selectionInfo.category) {
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
+            return;
+        }
+
+        if (selectionInfo.category === 'node') {
+            if (selectionInfo.nodeType !== parsed.type) {
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
+                return;
+            }
+
+            if (!importNodeSpecificAttrs(graph.current, selected, parsed.data as NodeSpecificAttrsClipboardData)) {
+                sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
+                return;
+            }
+
+            refreshAndSave();
+            return;
+        }
+
+        if (selectionInfo.category !== 'edge' || selectionInfo.edgeStyleType !== parsed.type) {
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
+            return;
+        }
+
+        if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
+            sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
+            return;
+        }
+
+        refreshAndSave();
+    });
+
     const handleRotate = useEvent((angle: number) => {
         if (rotateSelectedNodes(graph.current, selected, angle)) {
             refreshAndSave();
@@ -184,157 +270,180 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 borderRadius="md"
                 boxShadow="lg"
                 py={1}
-                minW="150px"
+                display="flex"
                 _dark={{
                     bg: 'gray.700',
                     borderColor: 'gray.600',
                 }}
             >
-                <MenuItem
-                    onClick={() => {
-                        handleRefresh();
-                        onClose();
-                    }}
-                >
-                    {t('contextMenu.refresh')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleCopy();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.copy')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleCut();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.cut')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePaste();
-                        onClose();
-                    }}
-                >
-                    {t('contextMenu.paste')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleDelete();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.delete')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(10);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeTop')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(-10);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeBottom')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleZIndex(0);
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeDefault')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePlaceUp();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeUp')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handlePlaceDown();
-                        onClose();
-                    }}
-                    isDisabled={!hasSelection}
-                >
-                    {t('contextMenu.placeDown')}
-                </MenuItem>
-                <Divider />
-                <MenuItem
-                    onClick={() => {
-                        handleRotate(45);
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.rotateCW')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleRotate(-45);
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.rotateCCW')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('vertical');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipVertical')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('horizontal');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipHorizontal')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('diagonal45');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipDiagonal45')}
-                </MenuItem>
-                <MenuItem
-                    onClick={() => {
-                        handleFlip('diagonal135');
-                        onClose();
-                    }}
-                    isDisabled={!hasMoreThanOneNodeSelection}
-                >
-                    {t('contextMenu.flipDiagonal135')}
-                </MenuItem>
+                <Box minW="150px">
+                    <MenuItem
+                        onClick={() => {
+                            handleRefresh();
+                            onClose();
+                        }}
+                    >
+                        {t('contextMenu.refresh')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleCopy();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('copy')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleCut();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.cut')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handlePaste();
+                            onClose();
+                        }}
+                    >
+                        {t('contextMenu.paste')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleDelete();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.delete')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleCopyAttrs();
+                            onClose();
+                        }}
+                        isDisabled={!canCopyAttrs}
+                    >
+                        {t('copyAttrs')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handlePasteAttrs();
+                            onClose();
+                        }}
+                    >
+                        {t('pasteAttrs')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleZIndex(10);
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeTop')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleZIndex(-10);
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeBottom')}
+                    </MenuItem>
+                </Box>
+                <Box width="0.5px" bg="gray.200" alignSelf="stretch" _dark={{ bg: 'gray.600' }} />
+                <Box minW="150px">
+                    <MenuItem
+                        onClick={() => {
+                            handleZIndex(0);
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeDefault')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handlePlaceUp();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeUp')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handlePlaceDown();
+                            onClose();
+                        }}
+                        isDisabled={!hasSelection}
+                    >
+                        {t('contextMenu.placeDown')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleRotate(45);
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.rotateCW')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleRotate(-45);
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.rotateCCW')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('vertical');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipVertical')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('horizontal');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipHorizontal')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('diagonal45');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipDiagonal45')}
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            handleFlip('diagonal135');
+                            onClose();
+                        }}
+                        isDisabled={!hasMoreThanOneNodeSelection}
+                    >
+                        {t('contextMenu.flipDiagonal135')}
+                    </MenuItem>
+                </Box>
             </Box>
         </Portal>
     );

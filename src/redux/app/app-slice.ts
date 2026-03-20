@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { StationCity } from '../../constants/constants';
+import { LinePathType, LineStyleType } from '../../constants/lines';
+import { MiscNodeType } from '../../constants/nodes';
+import { StationType } from '../../constants/stations';
+
+export type RandomStationsNamesValue = 'default' | 'empty' | StationCity;
 
 /**
  * AppState contains all the settings users want to preserve after restart.
@@ -28,12 +33,16 @@ export interface AppState {
              * Whether to expand the tools panel. Remembered for next run.
              */
             expand: boolean;
+            /**
+             * Whether to show only favorited tools.
+             */
+            showOnlyFavorites: boolean;
         };
         /**
          * Whether to enable parallel for new lines.
          */
         autoParallel: boolean;
-        randomStationsNames: 'none' | StationCity;
+        randomStationsNames: RandomStationsNamesValue;
         gridLines: boolean;
         snapLines: boolean;
         predictNextNode: boolean;
@@ -47,6 +56,15 @@ export interface AppState {
              */
             changeType: boolean;
         };
+        /**
+         * User's favorite tools.
+         */
+        favorites: {
+            linePaths: LinePathType[];
+            lineStyles: LineStyleType[];
+            stations: StationType[];
+            miscNodes: MiscNodeType[];
+        };
     };
 }
 
@@ -58,15 +76,22 @@ export const initialState: AppState = {
     preference: {
         toolsPanel: {
             expand: true,
+            showOnlyFavorites: false,
         },
         autoParallel: true,
-        randomStationsNames: 'none',
+        randomStationsNames: 'default',
         gridLines: false,
         snapLines: true,
         predictNextNode: true,
         autoChangeStationType: true,
         disableWarning: {
             changeType: false,
+        },
+        favorites: {
+            linePaths: [],
+            lineStyles: [],
+            stations: [],
+            miscNodes: [],
         },
     },
 };
@@ -87,7 +112,7 @@ const appSlice = createSlice({
         setAutoParallel: (state, action: PayloadAction<boolean>) => {
             state.preference.autoParallel = action.payload;
         },
-        setRandomStationsNames: (state, action: PayloadAction<'none' | StationCity>) => {
+        setRandomStationsNames: (state, action: PayloadAction<RandomStationsNamesValue>) => {
             state.preference.randomStationsNames = action.payload;
         },
         setGridLines: (state, action: PayloadAction<boolean>) => {
@@ -105,6 +130,41 @@ const appSlice = createSlice({
         setDisableWarningChangeType: (state, action: PayloadAction<boolean>) => {
             state.preference.disableWarning.changeType = action.payload;
         },
+        setShowOnlyFavorites: (state, action: PayloadAction<boolean>) => {
+            state.preference.toolsPanel.showOnlyFavorites = action.payload;
+        },
+        toggleFavoriteLinePath: (state, action: PayloadAction<LinePathType>) => {
+            const index = state.preference.favorites.linePaths.indexOf(action.payload);
+            if (index === -1) {
+                state.preference.favorites.linePaths.push(action.payload);
+            } else {
+                state.preference.favorites.linePaths.splice(index, 1);
+            }
+        },
+        toggleFavoriteLineStyle: (state, action: PayloadAction<LineStyleType>) => {
+            const index = state.preference.favorites.lineStyles.indexOf(action.payload);
+            if (index === -1) {
+                state.preference.favorites.lineStyles.push(action.payload);
+            } else {
+                state.preference.favorites.lineStyles.splice(index, 1);
+            }
+        },
+        toggleFavoriteStation: (state, action: PayloadAction<StationType>) => {
+            const index = state.preference.favorites.stations.indexOf(action.payload);
+            if (index === -1) {
+                state.preference.favorites.stations.push(action.payload);
+            } else {
+                state.preference.favorites.stations.splice(index, 1);
+            }
+        },
+        toggleFavoriteMiscNode: (state, action: PayloadAction<MiscNodeType>) => {
+            const index = state.preference.favorites.miscNodes.indexOf(action.payload);
+            if (index === -1) {
+                state.preference.favorites.miscNodes.push(action.payload);
+            } else {
+                state.preference.favorites.miscNodes.splice(index, 1);
+            }
+        },
     },
 });
 
@@ -119,5 +179,10 @@ export const {
     setPredictNextNode,
     setAutoChangeStationType,
     setDisableWarningChangeType,
+    setShowOnlyFavorites,
+    toggleFavoriteLinePath,
+    toggleFavoriteLineStyle,
+    toggleFavoriteStation,
+    toggleFavoriteMiscNode,
 } = appSlice.actions;
 export default appSlice.reducer;

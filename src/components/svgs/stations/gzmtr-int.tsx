@@ -39,7 +39,7 @@ const CODE_POS = [
 ];
 
 const GzmtrIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultGzmtrIntStationAttributes.nameOffsetX,
@@ -137,7 +137,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     const underConstructionTextAnchor = nameOffsetX === 'middle' ? 'start' : textAnchor;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {transferAll
                 .map(info => info[2])
                 .filter((color, i, arr) => arr.indexOf(color) === i)

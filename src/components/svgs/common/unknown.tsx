@@ -4,7 +4,7 @@ import { NodeComponentProps } from '../../../constants/nodes';
 import { StationComponentProps } from '../../../constants/stations';
 
 export const UnknownNode = (props: StationComponentProps | NodeComponentProps<object>) => {
-    const { id, x, y, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id as any, e),
@@ -21,8 +21,7 @@ export const UnknownNode = (props: StationComponentProps | NodeComponentProps<ob
 
     return (
         <g
-            id={id}
-            transform={`translate(${x - 6.4} ${y - 6.4})scale(0.025)`}
+            transform={`translate(-6.4, -6.4)scale(0.025)`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -48,7 +47,6 @@ export const UnknownLineStyle = (props: LineStyleComponentProps<object>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="grey"

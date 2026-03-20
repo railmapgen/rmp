@@ -23,7 +23,7 @@ export const LINE_HEIGHT = {
 };
 
 const BjsubwayBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultBjsubwayBasicStationAttributes.nameOffsetX,
@@ -72,7 +72,7 @@ const BjsubwayBasicStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle
                 id={`stn_core_${id}`}
                 r="4"

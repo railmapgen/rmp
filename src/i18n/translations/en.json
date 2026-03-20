@@ -1,8 +1,12 @@
 {
     "color": "Color",
     "warning": "Warning",
+    "error": "Error",
     "cancel": "Cancel",
     "apply": "Apply",
+    "copy": "Copy",
+    "copyAttrs": "Copy Specific Attributes",
+    "pasteAttrs": "Paste Specific Attributes",
     "remove": "Remove",
     "close": "Close",
     "noShowAgain": "Don't show me again",
@@ -11,6 +15,7 @@
     "panel": {
         "tools": {
             "showLess": "Show less",
+            "showOnlyFavorites": "Show only favorites",
             "section": {
                 "lineDrawing": "Line Drawing",
                 "lineStyles": "Line Styles",
@@ -44,7 +49,8 @@
                 "show": "Show",
                 "station": "Stations",
                 "miscNode": "MiscNodes",
-                "edge": "Lines"
+                "edge": "Lines",
+                "showingFirst500": "Showing first 500 items."
             },
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
             "changeLineTypeContent": "Changing line's type will remove all attributes from the line.",
@@ -669,11 +675,9 @@
                 "add": "Upload image",
                 "error": "Failed to upload this image!",
                 "loading": "Loading images..."
-           },
+            },
             "footer": {
-                "duplicate": "Duplicate",
-                "copy": "Copy",
-                "remove": "Remove"
+                "duplicate": "Duplicate"
             }
         }
     },
@@ -802,8 +806,9 @@
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
-                    "title": "Set station names to random on creation",
-                    "none": "None",
+                    "title": "Station names on creation",
+                    "default": "Default",
+                    "empty": "Empty",
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
                 },
@@ -932,11 +937,10 @@
     },
 
     "contextMenu": {
-        "copy": "Copy",
+        "refresh": "Refresh",
         "cut": "Cut", 
         "paste": "Paste",
         "delete": "Delete",
-        "refresh": "Refresh",
         "placeTop": "Place top",
         "placeBottom": "Place bottom",
         "placeDefault": "Place to default",
@@ -948,6 +952,14 @@
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
         "flipDiagonal135": "Flip across 135° line"
+    },
+
+    "clipboard": {
+        "errors": {
+            "readText": "Failed to read the clipboard. Check browser permissions and try again.",
+            "invalidOrIncompatible": "The clipboard data is invalid or incompatible with the current version.",
+            "cannotPasteSpecificAttrs": "Unable to paste specific attributes. Make sure compatible targets are selected and the clipboard contains valid specific-attribute data."
+        }
     },
 
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."

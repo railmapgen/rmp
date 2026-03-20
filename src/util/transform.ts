@@ -36,7 +36,7 @@ export const rotateSelectedNodes = (
     if (nodes.length === 0) return false;
 
     const { cx, cy } = getSelectionCenter(graph, nodes);
-    const rad = (-angleDegClockwise * Math.PI) / 180;
+    const rad = (angleDegClockwise * Math.PI) / 180;
     const sin = Math.sin(rad);
     const cos = Math.cos(rad);
 

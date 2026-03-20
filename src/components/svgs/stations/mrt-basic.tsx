@@ -36,7 +36,7 @@ const NAME_DY_SG_BASIC = {
 };
 
 const MRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { isTram = defaultMRTBasicStationAttributes.isTram } =
         attrs[StationType.MRTBasic] ?? defaultMRTBasicStationAttributes;
 
@@ -57,7 +57,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
     const height = 12.935;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
+        <g transform={`${isTram ? 'scale(0.81)' : ''}`}>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -81,7 +81,7 @@ const MRTBasicStation = (props: StationComponentProps) => {
 };
 
 const MRTBasicStationPost = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTBasicStationAttributes.nameOffsetX,
@@ -114,7 +114,7 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y}) ${isTram ? 'scale(0.81)' : ''}`}>
+        <g transform={`${isTram ? 'scale(0.81)' : ''}`}>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}

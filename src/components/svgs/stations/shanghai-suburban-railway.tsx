@@ -15,7 +15,7 @@ import { MultilineText } from '../common/multiline-text';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { names = defaultStationAttributes.names, rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate } =
         attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
 
@@ -39,8 +39,8 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
     );
 
     return (
-        <g id={id}>
-            <g transform={`translate(${x}, ${y})rotate(${rotate})`}>
+        <g>
+            <g transform={`rotate(${rotate})`}>
                 <rect x="-2" y="-7.83" width="4" height="7.83" stroke="none" fill="#898989" />
                 {/* A mask for the end of shanghai suburban railway style. */}
                 <rect x="-3.5" y="-1" width="7" height="2" stroke="none" fill="white" />
@@ -71,7 +71,7 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                 />
             </g>
             <g
-                transform={`translate(${x + ROTATE_CONST[rotate].textDx}, ${y + textDy})`}
+                transform={`translate(${ROTATE_CONST[rotate].textDx}, ${textDy})`}
                 textAnchor={ROTATE_CONST[rotate].textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"

@@ -10,7 +10,7 @@ import { imageStoreIndexedDB } from '../../../util/image-store-indexed-db';
 import { ImagePanelModal } from '../../page-header/image-panel-modal';
 
 const Image = (props: NodeComponentProps<ImageAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         type = defaultImageAttributes.type,
         href = defaultImageAttributes.href,
@@ -51,7 +51,7 @@ const Image = (props: NodeComponentProps<ImageAttributes>) => {
     }, [id, href, refreshImages]);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {href === undefined || imgHref === undefined ? (
                 <g
                     transform="translate(-5, -5)"

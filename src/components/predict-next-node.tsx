@@ -178,10 +178,10 @@ const PredictNextNode = () => {
         );
         // inject runtime color if registered in dynamicColorInjection
         if (dynamicColorInjection.has(nodeType)) (attr as AttributesWithColor).color = runtimeTheme;
-        // add random names for stations only when enabled
-        // otherwise use the default names or the existing names from the selected station
-        const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
-        if (isStation && !isRandomStationNamesDisabled) {
+        // Override station names for non-default creation modes while keeping cloned names in default mode.
+        const shouldOverrideStationNames =
+            randomStationsNames !== 'default' && (randomStationsNames === 'empty' || activeSubscriptions.RMP_CLOUD);
+        if (isStation && shouldOverrideStationNames) {
             (attr as StationAttributes).names = await makeStationName(nodeType as StationType);
         }
 
@@ -239,28 +239,32 @@ const PredictNextNode = () => {
                 newLine
                 handlePointerDown={() => {}}
             />
-            <VirtualNodeComponent
-                id="misc_node_virtual_prediction_1"
-                attrs={{}}
-                x={nextPos1.x}
-                y={nextPos1.y}
-                handlePointerDown={(_, e) => {
-                    handlePointerDown(MiscNodeType.Virtual, e);
-                }}
-                handlePointerMove={() => {}}
-                handlePointerUp={() => {}}
-            />
-            <StationComponent
-                id="stn_virtual_prediction_2"
-                attrs={stationAttrs}
-                x={nextPos2.x}
-                y={nextPos2.y}
-                handlePointerDown={(_, e) => {
-                    handlePointerDown(stationType, e);
-                }}
-                handlePointerMove={() => {}}
-                handlePointerUp={() => {}}
-            />
+            <g transform={`translate(${nextPos1.x}, ${nextPos1.y})`}>
+                <VirtualNodeComponent
+                    id="misc_node_virtual_prediction_1"
+                    attrs={{}}
+                    x={nextPos1.x}
+                    y={nextPos1.y}
+                    handlePointerDown={(_, e) => {
+                        handlePointerDown(MiscNodeType.Virtual, e);
+                    }}
+                    handlePointerMove={() => {}}
+                    handlePointerUp={() => {}}
+                />
+            </g>
+            <g transform={`translate(${nextPos2.x}, ${nextPos2.y})`}>
+                <StationComponent
+                    id="stn_virtual_prediction_2"
+                    attrs={stationAttrs}
+                    x={nextPos2.x}
+                    y={nextPos2.y}
+                    handlePointerDown={(_, e) => {
+                        handlePointerDown(stationType, e);
+                    }}
+                    handlePointerMove={() => {}}
+                    handlePointerUp={() => {}}
+                />
+            </g>
         </g>
     );
 };

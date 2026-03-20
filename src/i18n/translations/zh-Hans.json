@@ -1,8 +1,12 @@
 {
     "color": "颜色",
     "warning": "警告",
+    "error": "错误",
     "cancel": "取消",
     "apply": "应用",
+    "copy": "复制",
+    "copyAttrs": "复制独特属性",
+    "pasteAttrs": "粘贴独特属性",
     "remove": "移除",
     "close": "关闭",
     "noShowAgain": "不再显示",
@@ -11,6 +15,7 @@
     "panel": {
         "tools": {
             "showLess": "显示更少",
+            "showOnlyFavorites": "仅显示收藏",
             "section": {
                 "lineDrawing": "线段绘制",
                 "lineStyles": "线段样式",
@@ -44,7 +49,8 @@
                 "show": "显示",
                 "station": "车站",
                 "miscNode": "杂项节点",
-                "edge": "线段"
+                "edge": "线段",
+                "showingFirst500": "仅显示前 500 个项目。"
             },
             "changeStationTypeContent": "修改车站类型会移除所有独特属性除了名称。",
             "changeLineTypeContent": "修改线段类型会移除所有独特属性。",
@@ -670,9 +676,7 @@
                 "loading": "正在加载图像..."
             },
             "footer": {
-                "duplicate": "重复",
-                "copy": "复制",
-                "remove": "移除"
+                "duplicate": "重复"
             }
         }
     },
@@ -801,8 +805,9 @@
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
                 "autoParallel": "自动将新线段设置为与现有线段平行",
                 "randomStationNames": {
-                    "title": "创建时将站名随机化",
-                    "none": "无",
+                    "title": "创建时的站名",
+                    "default": "默认",
+                    "empty": "空白",
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
@@ -931,11 +936,10 @@
     },
 
     "contextMenu": {
-        "copy": "复制",
+        "refresh": "刷新",
         "cut": "剪切", 
         "paste": "粘贴",
         "delete": "删除",
-        "refresh": "刷新",
         "placeTop": "置顶",
         "placeBottom": "置底",
         "placeDefault": "还原位置",
@@ -947,6 +951,14 @@
         "flipHorizontal": "水平翻转",
         "flipDiagonal45": "沿45°线翻转",
         "flipDiagonal135": "沿135°线翻转"
+    },
+
+    "clipboard": {
+        "errors": {
+            "readText": "无法读取剪贴板。请检查浏览器权限后重试。",
+            "invalidOrIncompatible": "剪贴板内容无效，或与当前版本不兼容。",
+            "cannotPasteSpecificAttrs": "无法粘贴独特属性。请确认已选中兼容的对象，且剪贴板中包含有效的独特属性数据。"
+        }
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"

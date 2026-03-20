@@ -1,8 +1,12 @@
 {
     "color": "색깔",
     "warning": "경고",
+    "error": "오류",
     "cancel": "취소",
     "apply": "사용",
+    "copy": "복사",
+    "copyAttrs": "고유 속성 복사",
+    "pasteAttrs": "고유 속성 붙여넣기",
     "remove": "삭제",
     "close": "다시",
     "noShowAgain": "표시하지 않기",
@@ -11,6 +15,7 @@
     "panel": {
         "tools": {
             "showLess": "적게 표시",
+            "showOnlyFavorites": "즐겨찾기만 표시",
             "section": {
                 "lineDrawing": "선 그리기",
                 "lineStyles": "선 스타일",
@@ -44,8 +49,9 @@
                 "show": "보여주다",
                 "station": "역",
                 "miscNode": "기타 노드",
-                "edge": "윤곽"
-            },
+                "edge": "노선",
+                "showingFirst500": "처음 500개 항목만 표시됩니다."
+                },
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",
@@ -670,9 +676,7 @@
                 "loading": "이미지를 불러오는 중..."
             },
             "footer": {
-                "duplicate": "복사",
-                "copy": "복사",
-                "remove": "삭제"
+                "duplicate": "복사"
             }
         }
     },
@@ -801,8 +805,9 @@
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
                 "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
                 "randomStationNames": {
-                    "title": "생성 시 역 이름을 랜덤으로 설정",
-                    "none": "없음",
+                    "title": "생성 시 역 이름",
+                    "default": "기본값",
+                    "empty": "빈 문자열",
                     "shmetro": "상하이",
                     "bjsubway": "베이징"
                 },
@@ -931,11 +936,10 @@
     },
 
     "contextMenu": {
-        "copy": "복사",
+        "refresh": "새로 고침",
         "cut": "잘라내기", 
         "paste": "붙여넣기",
         "delete": "삭제",
-        "refresh": "새로 고침",
         "placeTop": "맨 앞으로",
         "placeBottom": "맨 뒤로",
         "placeDefault": "기본 위치로",
@@ -947,6 +951,14 @@
         "flipHorizontal": "수평 뒤집기",
         "flipDiagonal45": "45° 선을 기준으로 뒤집기",
         "flipDiagonal135": "135° 선을 기준으로 뒤집기"
+    },
+
+    "clipboard": {
+        "errors": {
+            "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
+            "invalidOrIncompatible": "클립보드 데이터가 잘못되었거나 현재 버전과 호환되지 않습니다.",
+            "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
+        }
     },
 
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."

@@ -53,6 +53,11 @@ export const makeRenderReadySVGElement = async (
     // Chrome will stretch the image if the following width and height are not set
     elem.setAttribute('width', width.toString());
     elem.setAttribute('height', height.toString());
+    // Safari 26 on mobile needs the following namespaces todisplay the image correctly
+    elem.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    elem.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    elem.removeAttribute('style');
+    elem.removeAttribute('tabindex');
     // copy attributes from css to each elem in the newly cloned svg
     // this is necessary as styles stated in css will be missing in the cloned svg dom
     // only styles other than fonts need to be stated here, fonts are handled below
@@ -81,9 +86,13 @@ export const makeRenderReadySVGElement = async (
             if (el.classList.length === 0) el.removeAttribute('class');
         });
     });
-    // Remove masks that only help users find and click the elements, but should not be shown on final export.
+    // remove masks that only help users find and click the elements, but should not be shown on final export
     elem.querySelectorAll('[fill="url(#opaque)"]').forEach(el => {
         el.remove();
+    });
+    // remove selection glow effect on final export
+    elem.querySelectorAll('[filter="url(#selected-glow)"]').forEach(el => {
+        el.removeAttribute('filter');
     });
     // remove virtual nodes and text hinting rect
     // remove the overlay elements that are used for event handling or id info
@@ -157,7 +166,6 @@ const loadFacilitiesSvg = async (
                 const facilitiesNodeInThisType = elem.querySelector(`#${node}`);
                 const imageElem = facilitiesNodeInThisType?.querySelector('image');
                 if (imageElem) {
-                    facilitiesNodeInThisType!.removeChild(imageElem);
                     const useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
                     useElem.setAttribute('href', `#${t}`);
                     // Safari needs width and height to be specified on the use element,
@@ -165,7 +173,7 @@ const loadFacilitiesSvg = async (
                     // See issue #432 and https://stackoverflow.com/a/63671360
                     useElem.setAttribute('height', symbol.getAttribute('height')!);
                     useElem.setAttribute('width', symbol.getAttribute('width')!);
-                    facilitiesNodeInThisType!.appendChild(useElem);
+                    imageElem.replaceWith(useElem);
                 }
             });
 
