@@ -53,7 +53,7 @@
                 "miscNode": "その他のノード",
                 "edge": "路線",
                 "showingFirst500": "最初の 500 項目のみ表示しています。"
-                },
+            },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
             "changeType": "種類を変更",
@@ -157,6 +157,15 @@
                     "continuation": "継続",
                     "sandwich": "サンドイッチ",
                     "tube": "地下鉄"
+                },
+                "londonTubeLineBadge": {
+                    "displayName": "ロンドン地下鉄路線バッジ",
+                    "lineName": "路線名",
+                    "walking": "徒歩",
+                    "walkingTarget": "徒歩先",
+                    "distance": "距離",
+                    "addItem": "バッジを追加",
+                    "noItems": "バッジはありません"
                 },
                 "chengduRTLineBadge": {
                     "displayName": "成都鉄道交通路線記号",
@@ -939,7 +948,7 @@
 
     "contextMenu": {
         "refresh": "更新",
-        "cut": "切り取り", 
+        "cut": "切り取り",
         "paste": "貼り付け",
         "delete": "削除",
         "placeTop": "最前面へ",

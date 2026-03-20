@@ -156,9 +156,18 @@
                     "sandwich": "三明治",
                     "tube": "地铁"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "伦敦地铁线路标牌",
+                    "lineName": "线路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目标",
+                    "distance": "距离",
+                    "addItem": "添加标牌",
+                    "noItems": "暂无标牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都轨道交通线路标识",
-                    "badgeType":{
+                    "badgeType": {
                         "displayName": "类型",
                         "normal": "普通",
                         "suburban": "市域铁路",
@@ -466,7 +475,7 @@
                         "y": "纵向文字距离",
                         "near": "近",
                         "far": "远"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重庆轨道交通基本车站（2021）",
@@ -476,7 +485,7 @@
                     "displayName": "重庆轨道交通换乘车站（2021）",
                     "isRapid": "快速/直快车停靠站",
                     "isWide": "宽形站",
-                    "wideDirection":{
+                    "wideDirection": {
                         "displayName": "方向",
                         "vertical": "纵向",
                         "horizontal": "横向"
@@ -937,7 +946,7 @@
 
     "contextMenu": {
         "refresh": "刷新",
-        "cut": "剪切", 
+        "cut": "剪切",
         "paste": "粘贴",
         "delete": "删除",
         "placeTop": "置顶",
