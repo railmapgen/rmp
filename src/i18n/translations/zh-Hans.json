@@ -805,8 +805,9 @@
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
                 "autoParallel": "自动将新线段设置为与现有线段平行",
                 "randomStationNames": {
-                    "title": "创建时将站名随机化",
-                    "none": "无",
+                    "title": "创建时的站名",
+                    "default": "默认",
+                    "empty": "空白",
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },

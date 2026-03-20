@@ -806,8 +806,9 @@
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
-                    "title": "Set station names to random on creation",
-                    "none": "None",
+                    "title": "Station names on creation",
+                    "default": "Default",
+                    "empty": "Empty",
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
                 },

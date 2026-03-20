@@ -178,10 +178,10 @@ const PredictNextNode = () => {
         );
         // inject runtime color if registered in dynamicColorInjection
         if (dynamicColorInjection.has(nodeType)) (attr as AttributesWithColor).color = runtimeTheme;
-        // add random names for stations only when enabled
-        // otherwise use the default names or the existing names from the selected station
-        const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
-        if (isStation && !isRandomStationNamesDisabled) {
+        // Override station names for non-default creation modes while keeping cloned names in default mode.
+        const shouldOverrideStationNames =
+            randomStationsNames !== 'default' && (randomStationsNames === 'empty' || activeSubscriptions.RMP_CLOUD);
+        if (isStation && shouldOverrideStationNames) {
             (attr as StationAttributes).names = await makeStationName(nodeType as StationType);
         }
 
