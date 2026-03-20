@@ -88,6 +88,8 @@ const SvgCanvas = () => {
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
     // the node that the line tool is currently snapping to (null when not snapping)
     const [snapTarget, setSnapTarget] = React.useState<NodeId | null>(null);
+    // the node detected by DOM hit-testing (takes priority over snapTarget)
+    const [domHitTarget, setDomHitTarget] = React.useState<NodeId | null>(null);
 
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
@@ -329,6 +331,23 @@ const SvgCanvas = () => {
                 }
             });
             setSnapTarget(bestNode);
+
+            // DOM hit-testing: check if cursor is over a connectable element
+            const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
+            const elems = document.elementsFromPoint(e.clientX, e.clientY);
+            const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
+            const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
+            if (matchedPrefix) {
+                const hitTarget = id!.slice(matchedPrefix.length) as NodeId;
+                // Only set if it's a different node than the active one
+                if (hitTarget !== active) {
+                    setDomHitTarget(hitTarget);
+                } else {
+                    setDomHitTarget(null);
+                }
+            } else {
+                setDomHitTarget(null);
+            }
         }
     });
     const handlePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
@@ -337,26 +356,19 @@ const SvgCanvas = () => {
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
             setSnapTarget(null);
+            setDomHitTarget(null);
 
             const couldSourceBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
-            // determine the target node: prefer snapTarget (from visual snap preview)
-            // so that a visually snapped line always connects successfully.
-            // fall back to elementsFromPoint hit-testing for cases within stn_core_ geometry
-            // but outside LINE_SNAP_RADIUS.
+            // determine the target node: prefer domHitTarget (from DOM hit-testing)
+            // over snapTarget (from distance-based snap preview)
             let target: NodeId | undefined;
-            if (snapTarget) {
+            if (domHitTarget) {
+                target = domHitTarget;
+            } else if (snapTarget) {
                 target = snapTarget;
-            } else {
-                const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
-                const elems = document.elementsFromPoint(e.clientX, e.clientY);
-                const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
-                const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
-                if (matchedPrefix) {
-                    target = id!.slice(matchedPrefix.length) as NodeId;
-                }
             }
 
             if (couldSourceBeConnected && target) {
@@ -416,6 +428,7 @@ const SvgCanvas = () => {
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
         setSnapTarget(null);
+        setDomHitTarget(null);
         setPointerPosition(undefined);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
@@ -507,14 +520,15 @@ const SvgCanvas = () => {
     const isCreatingLine = mode.startsWith('line') && active && active !== 'background';
     const srcX = isCreatingLine ? graph.current.getNodeAttribute(active, 'x') : 0;
     const srcY = isCreatingLine ? graph.current.getNodeAttribute(active, 'y') : 0;
+    const displayTarget = domHitTarget || snapTarget; // prefer DOM hit-testing result
     const tgtX = isCreatingLine
-        ? snapTarget
-            ? graph.current.getNodeAttribute(snapTarget, 'x')
+        ? displayTarget
+            ? graph.current.getNodeAttribute(displayTarget, 'x')
             : srcX - pointerOffset.dx
         : 0;
     const tgtY = isCreatingLine
-        ? snapTarget
-            ? graph.current.getNodeAttribute(snapTarget, 'y')
+        ? displayTarget
+            ? graph.current.getNodeAttribute(displayTarget, 'y')
             : srcY - pointerOffset.dy
         : 0;
 
@@ -546,7 +560,7 @@ const SvgCanvas = () => {
                         newLine
                         handlePointerDown={() => {}} // no use
                     />
-                    {snapTarget && (
+                    {displayTarget && (
                         <circle
                             cx={tgtX}
                             cy={tgtY}
