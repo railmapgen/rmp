@@ -1,6 +1,6 @@
-# Station Guide: Creating a station for Rail Map Painter
+# Station Guide: Creating a Station for Rail Map Painter
 
-This guide will walk you through the process of creating a station for the Rail Map Painter. The core of a station is to write a React component and returns SVG elements based on its attributes. To write a station, you need to follow some conventions as described below.
+This guide walks through the process of creating a station for Rail Map Painter. At its core, a station is a React component that renders SVG elements from its attributes.
 
 ## Station Structure
 
@@ -9,9 +9,17 @@ A station consists of:
 * A React component that generates the SVG
 * A TypeScript interface for the attributes of the component
 * Default attributes
-* A React component that modify station attributes
+* A React component that edits station attributes
 * A 50x50 icon
 * An object containing all the things mentioned before and metadata
+
+## Before You Start
+
+Read [Development Conventions](./conventions.md) first, especially:
+
+* [Theme-aware color](./conventions.md#theme-aware-color)
+* [Connectable hit targets](./conventions.md#connectable-hit-targets)
+* [Helper overlays and export](./conventions.md#helper-overlays-and-export)
 
 ## Steps to create a station
 
@@ -71,6 +79,8 @@ const MyStationComponent = (props: StationComponentProps) => {
 };
 ```
 
+The `stn_core_${id}` naming is not optional. Rail Map Painter uses that element as the station's canonical hit target for connecting lines and dragging stations, not just as a naming convention. See [Connectable hit targets](./conventions.md#connectable-hit-targets) for the full explanation, including invisible overlays and export-safe helper layers.
+
 ### 3. Define the attributes interface for the station
 
 Define a TypeScript interface that describes the attributes of the station. This interface should extend the StationAttributes interface, which is exported in `src/constants/stations.ts`.
@@ -98,9 +108,9 @@ const defaultMyStationAttributes: MyStationAttributes = {
 };
 ```
 
-### 5. Create the React component to modify station attributes
+### 5. Create the React component to edit station attributes
 
-In this section, we will guide you on creating a React component that enables users to modify the attributes of a station. This component will be integrated into the details panel and can be customized using various input elements like `<input />`, `<textarea />`, or `<select />` to offer a user-friendly interface for attribute modification.
+Create a React component that lets users edit the station attributes in the details panel. You can use common form controls such as `<input />`, `<textarea />`, or `<select />`.
 
 ```tsx
 import { Input, Select } from '@chakra-ui/react'
@@ -194,7 +204,9 @@ const myStationAttrs = (props: AttrsProps<MyStationAttributes>) => {
 
 We also provide common input components including color and interchange. Feel free to checkout them in `shmetro-basic-2020.tsx` and `mtr.tsx` for more reference.
 
-### 6. Create a icon
+If your station has a theme-controlled color, follow [Theme-aware color](./conventions.md#theme-aware-color).
+
+### 6. Create an icon
 
 Create an SVG icon that will represent your station in the tools panel. This should be a simple, recognizable design that conveys the unique appearance of your station. The icon must be a React component that returns an SVG element.
 
@@ -213,7 +225,7 @@ Now you have completed the steps for creating a station. Don't forget to export 
 * The React component
 * The icon
 * The default attributes
-* The React component to modify station attributes
+* The React component that edits station attributes
 * Metadata, including:
   * Display name
   * Supported cities
@@ -245,7 +257,7 @@ export default myStation;
 
 ### 8. Add station type in constants and stations
 
-Finally, you need to tell Rain Map Painter to load your station so that users can select in the tools panel.
+Finally, you need to tell Rail Map Painter to load your station so that users can select it from the tools panel.
 
 ```tsx
 // src/constants/stations.ts
@@ -302,7 +314,7 @@ For more information, check out [Upgrade Save Version](./upgrade-save-version.md
 
 ## Final Notes
 
-By following this guide, you should be able to create a new station for Rail Map Painter. Make sure to adhere to the conventions outlined in [this guide](../CONTRIBUTING.md) and refer to [shmetro-basic](../src/components/svgs/stations/shmetro-basic.tsx) for clarity.
+By following this guide, you should be able to create a new station for Rail Map Painter. Make sure to adhere to the conventions outlined in [this guide](../CONTRIBUTING.md), and refer to [shmetro-basic](../src/components/svgs/stations/shmetro-basic.tsx) for a concrete example.
 
 Feel free to submit your station as a pull request to the project repository, and the maintainers will review it. If your station meets the project's standards, it will be merged and become part of the project.
 
