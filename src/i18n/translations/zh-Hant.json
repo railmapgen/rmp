@@ -541,6 +541,8 @@
                     "offsetFrom": "起始點偏移",
                     "offsetTo": "結束點偏移",
                     "startFrom": "從這裏開始",
+                    "startAngle": "起始點角度",
+                    "endAngle": "結束點角度",
                     "roundCornerFactor": "轉折圓角因子",
                     "from": "從",
                     "to": "到",
@@ -559,6 +561,9 @@
                 },
                 "rotatePerpendicular": {
                     "displayName": "90°旋轉垂直線段"
+                },
+                "rayGuided": {
+                    "displayName": "任意角度線段"
                 },
                 "singleColor": {
                     "displayName": "純色樣式"

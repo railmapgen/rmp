@@ -135,6 +135,7 @@ const londonRail: LineStyle<LondonRailAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

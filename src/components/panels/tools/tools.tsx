@@ -240,26 +240,45 @@ const ToolsPanel = () => {
 
                             {Object.values(LinePathType)
                                 .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                                .map(type => (
-                                    <Flex key={type} w="100%" align="stretch">
-                                        <Box
-                                            w="4px"
-                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
-                                            transition="background-color 0.2s"
-                                        />
-                                        <Button
-                                            aria-label={type}
-                                            leftIcon={linePaths[type].icon}
-                                            onClick={() => handleLine(type)}
-                                            variant="ghost"
-                                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
-                                            sx={buttonStyle}
-                                            flex={1}
-                                        >
-                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                        </Button>
-                                    </Flex>
-                                ))}
+                                .map(type => {
+                                    const isProLinePath = !!linePaths[type].isPro;
+                                    const isLinePathDisabled =
+                                        (!activeSubscriptions.RMP_CLOUD && isProLinePath) ||
+                                        (currentStyle ? !isPathCompatible(type, currentStyle) : false);
+
+                                    return (
+                                        <Flex key={type} w="100%" align="stretch">
+                                            <Box
+                                                w="4px"
+                                                bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                                transition="background-color 0.2s"
+                                            />
+                                            <Button
+                                                aria-label={type}
+                                                leftIcon={linePaths[type].icon}
+                                                onClick={() => handleLine(type)}
+                                                variant="ghost"
+                                                isDisabled={isLinePathDisabled}
+                                                sx={buttonStyle}
+                                                flex={1}
+                                            >
+                                                {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                                {isTextShown && isProLinePath ? (
+                                                    <Tooltip label={t('header.settings.proWithTrial')}>
+                                                        <Badge
+                                                            ml="1"
+                                                            color="gray.50"
+                                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                            mr="auto"
+                                                        >
+                                                            PRO
+                                                        </Badge>
+                                                    </Tooltip>
+                                                ) : undefined}
+                                            </Button>
+                                        </Flex>
+                                    );
+                                })}
 
                             <Flex w="100%" align="stretch">
                                 <Box

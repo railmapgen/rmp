@@ -74,6 +74,7 @@ const chongqingRTLoop: LineStyle<ChongqingRTLoopAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

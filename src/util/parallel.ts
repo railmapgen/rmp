@@ -1,21 +1,22 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
-import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
 import { makeShortPathParallel } from './bezier-parallel';
 
-export type NonSimpleLinePathAttributes = NonNullable<
-    Exclude<ExternalLinePathAttributes[keyof ExternalLinePathAttributes], SimplePathAttributes>
->;
+type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided>;
+export type ParallelLinePathAttributes = NonNullable<ExternalLinePathAttributes[ParallelLinePathType]>;
 
 const MIN_ROUND_CORNER_FACTOR = 1;
+
+export const supportsParallelLinePath = (type: LinePathType): type is ParallelLinePathType =>
+    type !== LinePathType.Simple && type !== LinePathType.RayGuided;
 
 /**
  * Classify all the lines between source and target of the provided line
  * into lines that should be parallel to the provided line and lines that should not.
- * Based on parallelIndex, type, and startFrom of the provided line.
+ * Based on parallelIndex, type, and path grouping attributes of the provided line.
  * @param graph The graph.
  * @param baseLineEntry The base line entry.
  * @returns An object containing normal and parallel lines.
@@ -26,18 +27,18 @@ export const classifyParallelLines = (
 ) => {
     const { type: baseType, parallelIndex: baseParallelIndex } = baseLineEntry.attributes;
     // safe guard for invalid cases
-    if (baseType === LinePathType.Simple || baseParallelIndex < 0) {
+    if (!supportsParallelLinePath(baseType) || baseParallelIndex < 0) {
         return { normal: [baseLineEntry], parallel: [] };
     }
 
     const { source, target, attributes } = baseLineEntry;
-    const { startFrom: baseStartFrom } = attributes[baseType] as NonSimpleLinePathAttributes;
+    const { startFrom: baseStartFrom } = attributes[baseType] as ParallelLinePathAttributes;
     const normal: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
     for (const lineEntry of graph.edgeEntries(source, target)) {
         const { type, parallelIndex } = lineEntry.attributes;
 
-        if (type === LinePathType.Simple || parallelIndex < 0) {
+        if (!supportsParallelLinePath(type) || parallelIndex < 0) {
             normal.push(lineEntry);
             continue;
         }
@@ -90,7 +91,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
         }
     }
     const type = baseLineEntry.attributes.type;
-    const attr = baseLineEntry.attributes[type] as NonSimpleLinePathAttributes;
+    const attr = baseLineEntry.attributes[type] as ParallelLinePathAttributes;
     const baseRoundCornerFactor = Math.max(MIN_ROUND_CORNER_FACTOR, attr.roundCornerFactor);
 
     const [x1, y1, x2, y2] = [
@@ -132,7 +133,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
 
 /**
  * Check if the given lineEntry is in the same parallel group as the baseLineEntry.
- * Which are either (source, target, from) or (target, source, to).
+ * Which are either (source, target, from) or (target, source, to) for startFrom-based paths.
  * Base line entry is determined by type, source, and startFrom.
  * @param type The base line type.
  * @param source The base line source.
@@ -141,23 +142,23 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
  * @returns Whether the lineEntry is in the same parallel group as the baseLineEntry.
  */
 const checkParallels = (
-    type: LinePathType,
+    type: ParallelLinePathType,
     source: NodeId,
     startFrom: 'from' | 'to',
     lineEntry: EdgeEntry<NodeAttributes, EdgeAttributes>
 ) => {
     const lineEntryType = lineEntry.attributes.type;
-    if (
-        type === lineEntry.attributes.type &&
-        source === lineEntry.source &&
-        startFrom === (lineEntry.attributes[lineEntryType] as NonSimpleLinePathAttributes).startFrom
-    ) {
+    if (!supportsParallelLinePath(lineEntryType)) return false;
+
+    if (type !== lineEntryType) return false;
+
+    const { startFrom: lineEntryStartFrom } = lineEntry.attributes[lineEntryType] as ParallelLinePathAttributes;
+    if (source === lineEntry.source && startFrom === lineEntryStartFrom) {
         return true;
     } else if (
         // edgeEntries will also return edges from target to source
-        type === lineEntry.attributes.type &&
         source === lineEntry.target &&
-        startFrom !== (lineEntry.attributes[lineEntryType] as NonSimpleLinePathAttributes).startFrom
+        startFrom !== lineEntryStartFrom
     ) {
         return true;
     }
@@ -171,7 +172,7 @@ export const makeParallelIndex = (
     target: NodeId,
     startFrom: 'from' | 'to'
 ) => {
-    if (type === LinePathType.Simple) return -1;
+    if (!supportsParallelLinePath(type)) return -1;
 
     // find all parallel lines that are either (source, target, from) or (target, source, to)
     const existingParallelIndex: number[] = [];
@@ -205,12 +206,12 @@ export const getBaseParallelLineID = (
     type: LinePathType,
     lineID: LineId
 ): LineId => {
-    if (type === LinePathType.Simple) return lineID;
+    if (!supportsParallelLinePath(type)) return lineID;
 
     const parallelIndex = graph.getEdgeAttribute(lineID, 'parallelIndex');
     if (parallelIndex < 0) return lineID;
 
-    const { startFrom } = graph.getEdgeAttribute(lineID, type)!;
+    const { startFrom } = graph.getEdgeAttribute(lineID, type)! as ParallelLinePathAttributes;
     const [source, target] = graph.extremities(lineID);
 
     let minParallelIndex = parallelIndex;
@@ -218,20 +219,7 @@ export const getBaseParallelLineID = (
     for (const lineEntry of graph.edgeEntries(source, target)) {
         const attr = lineEntry.attributes;
         if (
-            type === attr.type &&
-            // edgeEntries will also return edges from target to source
-            source === lineEntry.source &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom === startFrom &&
-            attr.parallelIndex >= 0 &&
-            attr.parallelIndex < minParallelIndex
-        ) {
-            minParallelIndex = attr.parallelIndex;
-            minLineID = lineEntry.edge as LineId;
-        } else if (
-            type === attr.type &&
-            // edgeEntries will also return edges from target to source
-            source === lineEntry.target &&
-            (attr[type] as NonSimpleLinePathAttributes).startFrom !== startFrom &&
+            checkParallels(type, source as NodeId, startFrom, lineEntry) &&
             attr.parallelIndex >= 0 &&
             attr.parallelIndex < minParallelIndex
         ) {
@@ -248,7 +236,7 @@ export const MAX_PARALLEL_LINES_PRO = Infinity;
 export const countParallelLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
     let parallelLinesCount = 0;
     for (const lineEntry of graph.edgeEntries()) {
-        if (lineEntry.attributes.parallelIndex >= 0) {
+        if (supportsParallelLinePath(lineEntry.attributes.type) && lineEntry.attributes.parallelIndex >= 0) {
             parallelLinesCount += 1;
         }
     }

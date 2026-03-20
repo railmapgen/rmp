@@ -90,6 +90,7 @@ const londonSandwich: LineStyle<LondonSandwichAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

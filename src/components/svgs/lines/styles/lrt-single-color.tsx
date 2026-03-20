@@ -68,6 +68,7 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };
