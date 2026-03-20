@@ -331,6 +331,7 @@ const SvgCanvas = () => {
             // also known as couldTargetBeConnected
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
+            let lineCreated = false;
             if (couldSourceBeConnected && matchedPrefix) {
                 const { path, style: style_ } = getLinePathAndStyle(mode);
                 const [type, style] = [path!, style_!]; // assured by startsWith('line') check
@@ -366,7 +367,12 @@ const SvgCanvas = () => {
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                     dispatch(saveGraph(graph.current.export()));
                     dispatch(refreshEdgesThunk());
+                    lineCreated = true;
                 }
+            }
+            // Clear selection when line creation fails to prevent the details panel from opening
+            if (!lineCreated) {
+                dispatch(clearSelected());
             }
         } else if (mode === 'free') {
             if (active) {
