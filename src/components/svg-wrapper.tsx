@@ -3,6 +3,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
@@ -24,7 +25,7 @@ import {
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
-import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
+import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges, parseClipboardData } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
@@ -36,6 +37,7 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
+import { sendErrorNotification } from '../util/notifications';
 import {
     makeParallelIndex,
     MAX_PARALLEL_LINES_FREE,
@@ -56,6 +58,7 @@ import TouchOverlay from './touch/touch-overlay';
 import VirtualJoystick from './touch/virtual-joystick';
 
 const SvgWrapper = () => {
+    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = React.useCallback(() => {
@@ -198,6 +201,8 @@ const SvgWrapper = () => {
             setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
         }
 
+        e.currentTarget.setPointerCapture(e.pointerId);
+
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
@@ -270,6 +275,7 @@ const SvgWrapper = () => {
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
+        e.currentTarget.releasePointerCapture(e.pointerId);
         if (mode === 'select') {
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
@@ -412,30 +418,50 @@ const SvgWrapper = () => {
                 refreshAndSave();
             }
         } else if (e.key === 'v' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+            e.preventDefault();
             // Firefox does not allow JavaScript to read the clipboard for privacy reasons.
             // Set dom.events.testing.asyncClipboard and dom.events.asyncClipboard.readText
             // to true in about:config will remove such restrictions.
             // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
-            const s = await navigator.clipboard.readText();
-            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
-                width / 2,
-                height / 2,
-                svgViewBoxZoom,
-                svgViewBoxMin
-            );
-            const { nodes, edges } = importSelectedNodesAndEdges(
-                s,
-                graph.current,
-                isMasterDisabled,
-                isParallelDisabled,
-                roundToMultiple(svgMidX, 5),
-                roundToMultiple(svgMidY, 5)
-            );
-            refreshAndSave();
-            // select copied nodes automatically
-            const allElements = structuredClone(nodes) as Set<Id>;
-            edges.forEach(s => allElements.add(s));
-            dispatch(setSelected(allElements));
+            let s = '';
+            try {
+                s = await navigator.clipboard.readText();
+            } catch (error) {
+                console.warn('Failed to read clipboard:', error);
+                sendErrorNotification(t('error'), t('clipboard.errors.readText'));
+                return;
+            }
+
+            const parsed = parseClipboardData(s);
+            if (!parsed || parsed.type !== 'elements') {
+                sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
+                return;
+            }
+
+            try {
+                const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
+                    width / 2,
+                    height / 2,
+                    svgViewBoxZoom,
+                    svgViewBoxMin
+                );
+                const { nodes, edges } = importSelectedNodesAndEdges(
+                    s,
+                    graph.current,
+                    isMasterDisabled,
+                    isParallelDisabled,
+                    roundToMultiple(svgMidX, 5),
+                    roundToMultiple(svgMidY, 5)
+                );
+                refreshAndSave();
+                // select copied nodes automatically
+                const allElements = structuredClone(nodes) as Set<Id>;
+                edges.forEach(s => allElements.add(s));
+                dispatch(setSelected(allElements));
+            } catch (error) {
+                console.warn('Failed to paste from clipboard:', error);
+                sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
+            }
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)

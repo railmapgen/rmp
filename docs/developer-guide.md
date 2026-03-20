@@ -34,6 +34,17 @@ To set up a development environment for Rail Map Painter, follow these steps:
 
     This will open the application in your default web browser, and it will automatically reload whenever you make changes to the source code.
 
+## Advanced Component Development
+
+Some advanced features involves conventions, see [Development Conventions](./conventions.md) for more information.
+
+In particular:
+
+* [Theme-aware color](./conventions.md#theme-aware-color)
+* [Connectable hit targets](./conventions.md#connectable-hit-targets)
+* [Helper overlays and export](./conventions.md#helper-overlays-and-export)
+* [Master station core](./conventions.md#master-station-core)
+
 ## Rename your local branches
 
 Branches are renamed in v5 release. The previous `main` has been renamed to `v3`, and `v5` is now `main`. If you have a local copy, you can update it using the instructions below.
