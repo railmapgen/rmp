@@ -90,6 +90,8 @@ const SvgCanvas = () => {
     const [snapTarget, setSnapTarget] = React.useState<NodeId | null>(null);
     // the node detected by DOM hit-testing (takes priority over snapTarget)
     const [domHitTarget, setDomHitTarget] = React.useState<NodeId | null>(null);
+    // cache the svg canvas element to avoid repeated getElementById calls
+    const svgCanvasRef = React.useRef<SVGSVGElement | null>(null);
 
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
@@ -321,18 +323,90 @@ const SvgCanvas = () => {
             const cursorY = graph.current.getNodeAttribute(active, 'y') - dy;
             let bestNode: NodeId | null = null;
             let bestDist = LINE_SNAP_RADIUS;
+
+            // pass 1: center-point distance snap, covers all connectable node types which don't have stn_core_* elements (e.g. virtual nodes)
             graph.current.forEachNode((nodeId, attrs) => {
                 if (nodeId === active) return;
                 if (!connectableNodesType.includes(attrs.type)) return;
-                const dist = Math.sqrt((attrs.x - cursorX) ** 2 + (attrs.y - cursorY) ** 2);
+                const dist = Math.hypot(attrs.x - cursorX, attrs.y - cursorY);
                 if (dist < bestDist) {
                     bestDist = dist;
                     bestNode = nodeId as NodeId;
                 }
             });
+
+            // pass 2: outline-based snap for stn_core_* elements (more accurate for non-circular shapes)
+            svgCanvasRef.current ??= document.getElementById('canvas') as SVGSVGElement | null;
+            if (svgCanvasRef.current) {
+                const svgRect = svgCanvasRef.current.getBoundingClientRect();
+                const stnCoreElems = document.querySelectorAll<SVGGraphicsElement>('[id^="stn_core_"]');
+                stnCoreElems.forEach(stnCoreEl => {
+                    const nodeId = stnCoreEl.id.slice('stn_core_'.length) as NodeId;
+                    if (nodeId === active) return;
+                    if (!graph.current.hasNode(nodeId)) return;
+                    if (!connectableNodesType.includes(graph.current.getNodeAttribute(nodeId, 'type'))) return;
+
+                    const ctm = stnCoreEl.getScreenCTM();
+                    if (!ctm) return;
+
+                    // helper: transform a point in element-local coordinates to graph world coordinates
+                    const toGraph = (lx: number, ly: number) => {
+                        const screenX = ctm.a * lx + ctm.c * ly + ctm.e;
+                        const screenY = ctm.b * lx + ctm.d * ly + ctm.f;
+                        return pointerPosToSVGCoord(
+                            screenX - svgRect.left,
+                            screenY - svgRect.top,
+                            svgViewBoxZoom,
+                            svgViewBoxMin
+                        );
+                    };
+
+                    if (stnCoreEl instanceof SVGPathElement) {
+                        // sample 20 points uniformly along the path
+                        const totalLength = stnCoreEl.getTotalLength();
+                        if (totalLength > 0) {
+                            for (let i = 0; i < 20; i++) {
+                                const pt = stnCoreEl.getPointAtLength((i / 20) * totalLength);
+                                const gp = toGraph(pt.x, pt.y);
+                                const dist = Math.hypot(gp.x - cursorX, gp.y - cursorY);
+                                if (dist < bestDist) {
+                                    bestDist = dist;
+                                    bestNode = nodeId;
+                                }
+                            }
+                        }
+                    } else {
+                        // transform the bbox corners to graph world coordinates and compute exact point-to-segment distance
+                        const { x: bx, y: by, width: bw, height: bh } = stnCoreEl.getBBox();
+                        const corners = [
+                            toGraph(bx, by),
+                            toGraph(bx + bw, by),
+                            toGraph(bx + bw, by + bh),
+                            toGraph(bx, by + bh),
+                        ];
+                        // min distance from (cursorX, cursorY) to each of the 4 edges
+                        for (let i = 0; i < 4; i++) {
+                            const a = corners[i],
+                                b = corners[(i + 1) % 4];
+                            const dx = b.x - a.x,
+                                dy = b.y - a.y;
+                            const lenSq = dx * dx + dy * dy;
+                            const t =
+                                lenSq === 0
+                                    ? 0
+                                    : Math.max(0, Math.min(1, ((cursorX - a.x) * dx + (cursorY - a.y) * dy) / lenSq));
+                            const dist = Math.hypot(cursorX - (a.x + t * dx), cursorY - (a.y + t * dy));
+                            if (dist < bestDist) {
+                                bestDist = dist;
+                                bestNode = nodeId;
+                            }
+                        }
+                    }
+                });
+            }
             setSnapTarget(bestNode);
 
-            // DOM hit-testing: check if cursor is over a connectable element
+            // DOM hit-testing: check if cursor is directly over a connectable element
             const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
             const elems = document.elementsFromPoint(e.clientX, e.clientY);
             const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
@@ -340,11 +414,7 @@ const SvgCanvas = () => {
             if (matchedPrefix) {
                 const hitTarget = id!.slice(matchedPrefix.length) as NodeId;
                 // Only set if it's a different node than the active one
-                if (hitTarget !== active) {
-                    setDomHitTarget(hitTarget);
-                } else {
-                    setDomHitTarget(null);
-                }
+                setDomHitTarget(hitTarget !== active ? hitTarget : null);
             } else {
                 setDomHitTarget(null);
             }
@@ -364,12 +434,7 @@ const SvgCanvas = () => {
 
             // determine the target node: prefer domHitTarget (from DOM hit-testing)
             // over snapTarget (from distance-based snap preview)
-            let target: NodeId | undefined;
-            if (domHitTarget) {
-                target = domHitTarget;
-            } else if (snapTarget) {
-                target = snapTarget;
-            }
+            const target = domHitTarget ?? snapTarget;
 
             if (couldSourceBeConnected && target) {
                 const { path, style: style_ } = getLinePathAndStyle(mode);
@@ -440,8 +505,10 @@ const SvgCanvas = () => {
         else dispatch(addSelected(edge));
 
         if (mode.startsWith('station') || mode.startsWith('misc-node-virtual') || mode.startsWith('misc-node-master')) {
-            const x = e.clientX - document.getElementById('canvas')!.getBoundingClientRect().left;
-            const y = e.clientY - document.getElementById('canvas')!.getBoundingClientRect().top;
+            svgCanvasRef.current ??= document.getElementById('canvas') as SVGSVGElement | null;
+            const canvasRect = svgCanvasRef.current!.getBoundingClientRect();
+            const x = e.clientX - canvasRect.left;
+            const y = e.clientY - canvasRect.top;
             // Add station in the current line
             const isStation = mode.startsWith('station');
             const rand = nanoid(10);
@@ -520,7 +587,7 @@ const SvgCanvas = () => {
     const isCreatingLine = mode.startsWith('line') && active && active !== 'background';
     const srcX = isCreatingLine ? graph.current.getNodeAttribute(active, 'x') : 0;
     const srcY = isCreatingLine ? graph.current.getNodeAttribute(active, 'y') : 0;
-    const displayTarget = domHitTarget || snapTarget; // prefer DOM hit-testing result
+    const displayTarget = domHitTarget ?? snapTarget; // prefer DOM hit-testing result
     const tgtX = isCreatingLine
         ? displayTarget
             ? graph.current.getNodeAttribute(displayTarget, 'x')
