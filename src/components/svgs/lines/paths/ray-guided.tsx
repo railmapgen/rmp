@@ -38,11 +38,17 @@ const makeDirectionVector = (angle: number): Point => {
     return { x: Math.sin(rad), y: -Math.cos(rad) };
 };
 
-const makeOffsetPoint = (x: number, y: number, angle: number, offset: number): Point => {
-    const rad = degToRad(normalizeRayGuidedAngle(angle));
+const makeClockwiseNormalVector = (angle: number): Point => {
+    const direction = makeDirectionVector(angle);
+    return { x: -direction.y, y: direction.x };
+};
+
+const makeNormalOffsetPoint = (x: number, y: number, angle: number, offset: number): Point => {
+    // Positive offsets follow the guide ray's clockwise normal in SVG coordinates.
+    const normal = makeClockwiseNormalVector(angle);
     return {
-        x: sanitizeCoordinate(x + Math.cos(rad) * offset),
-        y: sanitizeCoordinate(y + Math.sin(rad) * offset),
+        x: sanitizeCoordinate(x + normal.x * offset),
+        y: sanitizeCoordinate(y + normal.y * offset),
     };
 };
 
@@ -74,8 +80,8 @@ export const generateRayGuidedPath: PathGenerator<RayGuidedPathAttributes> = (
     const offsetTo = attrs.offsetTo ?? defaultRayGuidedPathAttributes.offsetTo;
     const roundCornerFactor = attrs.roundCornerFactor ?? defaultRayGuidedPathAttributes.roundCornerFactor;
 
-    const start = makeOffsetPoint(x1, y1, startAngle, offsetFrom);
-    const end = makeOffsetPoint(x2, y2, endAngle, offsetTo);
+    const start = makeNormalOffsetPoint(x1, y1, startAngle, offsetFrom);
+    const end = makeNormalOffsetPoint(x2, y2, endAngle, offsetTo);
     const middle = getIntersection(start, makeDirectionVector(startAngle), end, makeDirectionVector(endAngle));
 
     if (!middle) {

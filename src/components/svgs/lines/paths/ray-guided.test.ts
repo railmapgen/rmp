@@ -31,6 +31,18 @@ describe('ray-guided path', () => {
         expect(path).toBe('M 0 0 L 100 100');
     });
 
+    it('should apply offsets along each guide ray clockwise normal', () => {
+        const path = generateRayGuidedPath(0, 100, 0, 100, {
+            startAngle: 0,
+            endAngle: 90,
+            offsetFrom: 10,
+            offsetTo: 20,
+            roundCornerFactor: 0,
+        });
+
+        expect(path).toBe('M 10 0 L 10 120 L 100 120');
+    });
+
     it('should use fixed orthogonal default attributes', () => {
         const attrs = makeRayGuidedPathAttributes();
 
