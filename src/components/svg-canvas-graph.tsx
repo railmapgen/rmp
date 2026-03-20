@@ -376,30 +376,20 @@ const SvgCanvas = () => {
                             }
                         }
                     } else {
-                        // transform the bbox corners to graph world coordinates and compute exact point-to-segment distance
+                        // distance from cursor to BBox (filled rect) → rounded-rect snap zone with radius LINE_SNAP_RADIUS
                         const { x: bx, y: by, width: bw, height: bh } = stnCoreEl.getBBox();
-                        const corners = [
-                            toGraph(bx, by),
-                            toGraph(bx + bw, by),
-                            toGraph(bx + bw, by + bh),
-                            toGraph(bx, by + bh),
-                        ];
-                        // min distance from (cursorX, cursorY) to each of the 4 edges
-                        for (let i = 0; i < 4; i++) {
-                            const a = corners[i],
-                                b = corners[(i + 1) % 4];
-                            const dx = b.x - a.x,
-                                dy = b.y - a.y;
-                            const lenSq = dx * dx + dy * dy;
-                            const t =
-                                lenSq === 0
-                                    ? 0
-                                    : Math.max(0, Math.min(1, ((cursorX - a.x) * dx + (cursorY - a.y) * dy) / lenSq));
-                            const dist = Math.hypot(cursorX - (a.x + t * dx), cursorY - (a.y + t * dy));
-                            if (dist < bestDist) {
-                                bestDist = dist;
-                                bestNode = nodeId;
-                            }
+                        const p0 = toGraph(bx, by),
+                            p1 = toGraph(bx + bw, by + bh);
+                        const wx1 = Math.min(p0.x, p1.x),
+                            wx2 = Math.max(p0.x, p1.x);
+                        const wy1 = Math.min(p0.y, p1.y),
+                            wy2 = Math.max(p0.y, p1.y);
+                        const ddx = Math.max(wx1 - cursorX, 0, cursorX - wx2);
+                        const ddy = Math.max(wy1 - cursorY, 0, cursorY - wy2);
+                        const dist = Math.hypot(ddx, ddy);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestNode = nodeId;
                         }
                     }
                 });
