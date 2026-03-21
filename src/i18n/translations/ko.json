@@ -51,7 +51,7 @@
                 "miscNode": "기타 노드",
                 "edge": "노선",
                 "showingFirst500": "처음 500개 항목만 표시됩니다."
-                },
+            },
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",
@@ -155,6 +155,15 @@
                     "continuation": "계속",
                     "sandwich": "샌드위치",
                     "tube": "튜브"
+                },
+                "londonTubeLineBadge": {
+                    "displayName": "런던 지하철 노선 배지",
+                    "lineName": "노선명",
+                    "walking": "도보",
+                    "walkingTarget": "도보 목적지",
+                    "distance": "거리",
+                    "addItem": "배지 추가",
+                    "noItems": "배지가 없습니다"
                 },
                 "chengduRTLineBadge": {
                     "displayName": "청두 도시철도 노선 표식",
@@ -942,7 +951,7 @@
 
     "contextMenu": {
         "refresh": "새로 고침",
-        "cut": "잘라내기", 
+        "cut": "잘라내기",
         "paste": "붙여넣기",
         "delete": "삭제",
         "placeTop": "맨 앞으로",

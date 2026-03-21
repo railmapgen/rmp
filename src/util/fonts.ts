@@ -40,6 +40,7 @@ export const Node2Font: {
     [MiscNodeType.MRTDestinationNumbers]: [TextLanguage.mrt],
     [MiscNodeType.MRTLineBadge]: [TextLanguage.mrt],
     [MiscNodeType.TaiPeiMetroLineBadege]: [TextLanguage.taipei],
+    [MiscNodeType.LondonTubeLineBadge]: [TextLanguage.tube],
 };
 
 /**
