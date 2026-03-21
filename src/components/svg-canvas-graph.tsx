@@ -404,8 +404,7 @@ const SvgCanvas = () => {
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
             if (matchedPrefix) {
                 const hitTarget = id!.slice(matchedPrefix.length) as NodeId;
-                // Only set if it's a different node than the active one
-                setDomHitTarget(hitTarget !== active ? hitTarget : null);
+                setDomHitTarget(hitTarget);
             } else {
                 setDomHitTarget(null);
             }
