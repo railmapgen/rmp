@@ -362,10 +362,10 @@ const SvgCanvas = () => {
                     };
 
                     if (stnCoreEl instanceof SVGGeometryElement) {
-                        // sample at least once every 20px, with a minimum of 20 samples
+                        // sample at least once every 10px, with a minimum of 20 samples
                         const totalLength = stnCoreEl.getTotalLength();
                         if (totalLength > 0) {
-                            const sampleCount = Math.max(20, Math.ceil(totalLength / 20));
+                            const sampleCount = Math.max(20, Math.ceil(totalLength / 10));
                             for (let i = 0; i < sampleCount; i++) {
                                 const pt = stnCoreEl.getPointAtLength((i / sampleCount) * totalLength);
                                 const gp = toGraph(pt.x, pt.y);
