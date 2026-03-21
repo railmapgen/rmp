@@ -90,8 +90,8 @@ export const makeRenderReadySVGElement = async (
     elem.querySelectorAll('[fill="url(#opaque)"]').forEach(el => {
         el.remove();
     });
-    // remove selection glow effect on final export
-    elem.querySelectorAll('[filter="url(#selected-glow)"]').forEach(el => {
+    // remove selection glow and line target glow effect on final export
+    elem.querySelectorAll('[filter$="-glow)"]').forEach(el => {
         el.removeAttribute('filter');
     });
     // remove virtual nodes and text hinting rect

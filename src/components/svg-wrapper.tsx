@@ -565,6 +565,31 @@ const SvgWrapper = () => {
                             <feMergeNode in="SourceGraphic" />
                         </feMerge>
                     </filter>
+                    {/* copy from selected-glow but change to aqua(#00FFFF) color */}
+                    <filter
+                        id="line-target-glow"
+                        x="-100%"
+                        y="-100%"
+                        width="300%"
+                        height="300%"
+                        filterUnits="userSpaceOnUse"
+                    >
+                        <feColorMatrix
+                            in="SourceAlpha"
+                            type="matrix"
+                            values="0 0 0 0 0 
+                                    0 0 0 1 0 
+                                    0 0 0 1 0 
+                                    0 0 0 1 0"
+                            result="aquaBase"
+                        />
+                        <feMorphology operator="dilate" radius="1.5" in="aquaBase" result="thickAqua" />
+                        <feGaussianBlur in="thickAqua" stdDeviation="3" result="blur1" />
+                        <feMerge>
+                            <feMergeNode in="blur1" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
                 </defs>
 
                 <g
