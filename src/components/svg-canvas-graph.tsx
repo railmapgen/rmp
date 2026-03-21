@@ -594,6 +594,7 @@ const SvgCanvas = () => {
             <SvgLayer
                 elements={elements}
                 selected={selected}
+                lineTarget={isCreatingLine ? displayTarget : null}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
@@ -617,17 +618,6 @@ const SvgCanvas = () => {
                         newLine
                         handlePointerDown={() => {}} // no use
                     />
-                    {displayTarget && (
-                        <circle
-                            cx={tgtX}
-                            cy={tgtY}
-                            r={5}
-                            fill="none"
-                            stroke="cyan"
-                            strokeWidth={2}
-                            pointerEvents="none"
-                        />
-                    )}
                 </>
             )}
             {activeSnapLines.length !== 0 &&
