@@ -575,26 +575,14 @@ const SvgCanvas = () => {
 
     // pre-calculate temporary line endpoints for the line being created.
     const isCreatingLine = mode.startsWith('line') && active && active !== 'background';
-    const srcX = isCreatingLine ? graph.current.getNodeAttribute(active, 'x') : 0;
-    const srcY = isCreatingLine ? graph.current.getNodeAttribute(active, 'y') : 0;
-    const displayTarget = domHitTarget ?? snapTarget; // prefer DOM hit-testing result
-    const tgtX = isCreatingLine
-        ? displayTarget
-            ? graph.current.getNodeAttribute(displayTarget, 'x')
-            : srcX - pointerOffset.dx
-        : 0;
-    const tgtY = isCreatingLine
-        ? displayTarget
-            ? graph.current.getNodeAttribute(displayTarget, 'y')
-            : srcY - pointerOffset.dy
-        : 0;
+    const target = domHitTarget ?? snapTarget; // prefer DOM hit-testing result
 
     return (
         <>
             <SvgLayer
                 elements={elements}
                 selected={selected}
-                lineTarget={isCreatingLine ? displayTarget : null}
+                lineTarget={isCreatingLine ? target : null}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
@@ -606,10 +594,14 @@ const SvgCanvas = () => {
                         id="line_create_in_progress___no_use"
                         type={linePath}
                         path={linePaths[linePath].generatePath(
-                            srcX,
-                            tgtX,
-                            srcY,
-                            tgtY,
+                            graph.current.getNodeAttribute(active, 'x'),
+                            graph.current.getNodeAttribute(active, 'y'),
+                            target
+                                ? graph.current.getNodeAttribute(target, 'x')
+                                : graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
+                            target
+                                ? graph.current.getNodeAttribute(target, 'y')
+                                : graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                             // @ts-expect-error
                             linePaths[linePath].defaultAttrs
                         )}
