@@ -539,15 +539,11 @@ const SvgWrapper = () => {
                     </pattern>
                     <filter
                         id="selected-glow"
-                        // large percentages to ensure the filter region covers the viewport
-                        // regardless of element transforms
+                        // large percentages to ensure the filter region covers the glow
                         x="-100%"
                         y="-100%"
-                        width="300%"
-                        height="300%"
-                        // userSpaceOnUse to prevent the filter from disappearing on
-                        // zero-width or zero-height lines
-                        filterUnits="userSpaceOnUse"
+                        width="200%"
+                        height="200%"
                     >
                         <feColorMatrix
                             in="SourceAlpha"
@@ -566,14 +562,7 @@ const SvgWrapper = () => {
                         </feMerge>
                     </filter>
                     {/* copy from selected-glow but change to aqua(#00FFFF) color */}
-                    <filter
-                        id="line-target-glow"
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                        filterUnits="userSpaceOnUse"
-                    >
+                    <filter id="line-target-glow" x="-100%" y="-100%" width="200%" height="200%">
                         <feColorMatrix
                             in="SourceAlpha"
                             type="matrix"

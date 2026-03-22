@@ -55,6 +55,10 @@ const SvgLayer = React.memo(
                 const styleAttrs = element.line!.attr[style] as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
+                const linePath = element.line!.path;
+                // get the first M command
+                const mSubstr = linePath.split(' ').slice(0, 3).join(' ');
+                const additionalPathCommands = ' m 50 50 l 0 0';
 
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
@@ -63,11 +67,13 @@ const SvgLayer = React.memo(
                             <PreStyleComponent
                                 id={id}
                                 type={type}
-                                path={element.line!.path}
+                                path={linePath}
                                 styleAttrs={styleAttrs}
                                 newLine={false}
                                 handlePointerDown={handleEdgePointerDown}
                             />
+                            {/* invisible path to prevent filter cutoff on zero-width or zero-height lines */}
+                            <path d={`${mSubstr} ${additionalPathCommands}`} />
                         </g>
                     );
                 }
@@ -78,11 +84,13 @@ const SvgLayer = React.memo(
                         <StyleComponent
                             id={id}
                             type={type}
-                            path={element.line!.path}
+                            path={linePath}
                             styleAttrs={styleAttrs}
                             newLine={false}
                             handlePointerDown={handleEdgePointerDown}
                         />
+                        {/* invisible path to prevent filter cutoff on zero-width or zero-height lines*/}
+                        <path d={`${mSubstr} ${additionalPathCommands}`} />
                     </g>
                 );
 
@@ -93,11 +101,13 @@ const SvgLayer = React.memo(
                             <PostStyleComponent
                                 id={id}
                                 type={type}
-                                path={element.line!.path}
+                                path={linePath}
                                 styleAttrs={styleAttrs}
                                 newLine={false}
                                 handlePointerDown={handleEdgePointerDown}
                             />
+                            {/* invisible path to prevent filter cutoff on zero-width or zero-height lines */}
+                            <path d={`${mSubstr} ${additionalPathCommands}`} />
                         </g>
                     );
                 }
