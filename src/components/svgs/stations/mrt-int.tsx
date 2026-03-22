@@ -81,7 +81,7 @@ const MRTIntStation = (props: StationComponentProps) => {
 };
 
 const MRTIntStationPost = (props: StationComponentProps) => {
-    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultMRTIntStationAttributes.nameOffsetX,
@@ -115,7 +115,25 @@ const MRTIntStationPost = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g>
+        <g id={id} transform={`translate(${x}, ${y})`}>
+            <defs>
+                {transfer.map((info, i) => (
+                    <linearGradient key={`${id}_grad_${i}`} id={`${id}_grad_${i}`} y1="0%" y2="0%" x1="0%" x2="100%">
+                        {info.map((int, j) => (
+                            <React.Fragment key={int[2]}>
+                                <stop // from
+                                    offset={`${(100 / info.length) * j}%`}
+                                    stopColor={int[2]}
+                                />
+                                <stop // to
+                                    offset={`${(100 / info.length) * (j + 1)}%`}
+                                    stopColor={int[2]}
+                                />
+                            </React.Fragment>
+                        ))}
+                    </linearGradient>
+                ))}
+            </defs>
             <g
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -133,20 +151,6 @@ const MRTIntStationPost = (props: StationComponentProps) => {
                             height={height}
                             fill={`url(#${id}_grad_${i})`}
                         />
-                        <linearGradient id={`${id}_grad_${i}`} y1="0%" y2="0%" x1="0%" x2="100%">
-                            {info.map((int, j) => (
-                                <React.Fragment key={int[2]}>
-                                    <stop // from
-                                        offset={`${(100 / info.length) * j}%`}
-                                        stopColor={int[2]}
-                                    />
-                                    <stop // to
-                                        offset={`${(100 / info.length) * (j + 1)}%`}
-                                        stopColor={int[2]}
-                                    />
-                                </React.Fragment>
-                            ))}
-                        </linearGradient>
                         {dividingIndex.map(j => (
                             <line
                                 key={j}
