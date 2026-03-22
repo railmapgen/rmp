@@ -95,6 +95,7 @@ const shanghaiSuburbanRailway: LineStyle<ShanghaiSuburbanRailwayAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

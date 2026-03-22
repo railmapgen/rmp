@@ -72,6 +72,7 @@ const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

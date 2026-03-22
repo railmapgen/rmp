@@ -5,6 +5,7 @@ import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
+import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
@@ -42,6 +43,7 @@ export enum LinePathType {
     Diagonal = 'diagonal',
     Perpendicular = 'perpendicular',
     RotatePerpendicular = 'ro-perp',
+    RayGuided = 'ray-guided',
     Simple = 'simple',
 }
 
@@ -50,6 +52,7 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Diagonal]?: DiagonalPathAttributes;
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
+    [LinePathType.RayGuided]?: RayGuidedPathAttributes;
 }
 
 export enum LineStyleType {
@@ -191,7 +194,8 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
     parallelIndex: number;
     /**
      * Changing the `startFrom` attr should result in new parallel recalculation.
-     * Passing it to each line path implementation and only call it in `startFrom`'s field onChange.
+     *
+     * ONLY LINE PATHS THAT EXPOSE `startFrom` NEED TO CALL THIS HELPER.
      *
      * Note: Call this function before updating the `startFrom` attr as parallelIndex
      * is calculated based on it and changing it before calculation will result in
@@ -293,4 +297,9 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
  */
 export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
 
+/**
+ * The generator type of a line style.
+ * This is used when a line style needs to generate complex paths based on the original path.
+ * It takes the original path and return a record of paths with different keys.
+ */
 export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;

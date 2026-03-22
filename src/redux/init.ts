@@ -24,6 +24,7 @@ import {
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
+import { normalizeRandomStationsNames } from './state-migration';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -46,7 +47,9 @@ export const initStore = async (store: RootStore) => {
         }
         if ('autoParallel' in appState.preference) store.dispatch(setAutoParallel(appState.preference.autoParallel));
         if ('randomStationsNames' in appState.preference)
-            store.dispatch(setRandomStationsNames(appState.preference.randomStationsNames));
+            store.dispatch(
+                setRandomStationsNames(normalizeRandomStationsNames(appState.preference.randomStationsNames))
+            );
         if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
         if ('predictNextNode' in appState.preference)

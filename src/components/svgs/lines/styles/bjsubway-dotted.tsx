@@ -74,6 +74,7 @@ const bjsubwayDotted: LineStyle<BjsubwayDottedAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

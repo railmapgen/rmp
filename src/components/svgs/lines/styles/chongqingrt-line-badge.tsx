@@ -74,6 +74,7 @@ const chongqingRTLineBadge: LineStyle<ChongqingRTLineBadgeAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

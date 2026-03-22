@@ -31,7 +31,7 @@ import {
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { moveNodesAndRedrawLines } from '../util/imperative-dom';
-import { makeParallelIndex } from '../util/parallel';
+import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import {
     getNearestSnapLine,
@@ -340,9 +340,10 @@ const SvgCanvas = () => {
                     const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
                     // TODO: there should be some way for a style to disable auto theme injection
                     if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
-                    const parallelIndex = autoParallel
-                        ? makeParallelIndex(graph.current, type, source, target, 'from')
-                        : -1;
+                    const parallelIndex =
+                        autoParallel && supportsParallelLinePath(type)
+                            ? makeParallelIndex(graph.current, type, source, target, 'from')
+                            : -1;
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
@@ -425,7 +426,7 @@ const SvgCanvas = () => {
             const styleAttr = edgeAttrs[lineStyleType];
             const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
-            const parallelIndex = autoParallel ? 0 : -1;
+            const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
             graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
                 visible: true,
                 zIndex,

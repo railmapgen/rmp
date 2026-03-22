@@ -1,8 +1,12 @@
 {
     "color": "顏色",
     "warning": "警告",
+    "error": "錯誤",
     "cancel": "取消",
     "apply": "應用",
+    "copy": "複製",
+    "copyAttrs": "複製獨特屬性",
+    "pasteAttrs": "貼上獨特屬性",
     "remove": "移除",
     "close": "關閉",
     "noShowAgain": "不要再顯示",
@@ -537,6 +541,8 @@
                     "offsetFrom": "起始點偏移",
                     "offsetTo": "結束點偏移",
                     "startFrom": "從這裏開始",
+                    "startAngle": "起始點角度",
+                    "endAngle": "結束點角度",
                     "roundCornerFactor": "轉折圓角因子",
                     "from": "從",
                     "to": "到",
@@ -555,6 +561,9 @@
                 },
                 "rotatePerpendicular": {
                     "displayName": "90°旋轉垂直線段"
+                },
+                "rayGuided": {
+                    "displayName": "任意角度線段"
                 },
                 "singleColor": {
                     "displayName": "純色樣式"
@@ -672,9 +681,7 @@
                 "loading": "正在載入影像..."
             },
             "footer": {
-                "duplicate": "重複",
-                "copy": "複製",
-                "remove": "移除"
+                "duplicate": "重複"
             }
         }
     },
@@ -803,8 +810,9 @@
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
                 "autoParallel": "自動將新段線設置為與現有線段平行",
                 "randomStationNames": {
-                    "title": "創建時將站名隨機化",
-                    "none": "無",
+                    "title": "創建時的站名",
+                    "default": "預設",
+                    "empty": "空白",
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
@@ -933,11 +941,10 @@
     },
 
     "contextMenu": {
-        "copy": "複製",
+        "refresh": "重新整理",
         "cut": "剪下", 
         "paste": "貼上",
         "delete": "刪除",
-        "refresh": "重新整理",
         "placeTop": "置頂",
         "placeBottom": "置底",
         "placeDefault": "還原位置",
@@ -949,6 +956,14 @@
         "flipHorizontal": "水平翻轉",
         "flipDiagonal45": "沿45°線翻轉",
         "flipDiagonal135": "沿135°線翻轉"
+    },
+
+    "clipboard": {
+        "errors": {
+            "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
+            "invalidOrIncompatible": "剪貼簿內容無效，或與目前版本不相容。",
+            "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
+        }
     },
 
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"

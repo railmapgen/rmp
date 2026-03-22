@@ -4,6 +4,8 @@ import { LinePathType, LineStyleType } from '../../constants/lines';
 import { MiscNodeType } from '../../constants/nodes';
 import { StationType } from '../../constants/stations';
 
+export type RandomStationsNamesValue = 'default' | 'empty' | StationCity;
+
 /**
  * AppState contains all the settings users want to preserve after restart.
  * However non of them should be included in the save.
@@ -40,7 +42,7 @@ export interface AppState {
          * Whether to enable parallel for new lines.
          */
         autoParallel: boolean;
-        randomStationsNames: 'none' | StationCity;
+        randomStationsNames: RandomStationsNamesValue;
         gridLines: boolean;
         snapLines: boolean;
         predictNextNode: boolean;
@@ -77,7 +79,7 @@ export const initialState: AppState = {
             showOnlyFavorites: false,
         },
         autoParallel: true,
-        randomStationsNames: 'none',
+        randomStationsNames: 'default',
         gridLines: false,
         snapLines: true,
         predictNextNode: true,
@@ -110,7 +112,7 @@ const appSlice = createSlice({
         setAutoParallel: (state, action: PayloadAction<boolean>) => {
             state.preference.autoParallel = action.payload;
         },
-        setRandomStationsNames: (state, action: PayloadAction<'none' | StationCity>) => {
+        setRandomStationsNames: (state, action: PayloadAction<RandomStationsNamesValue>) => {
             state.preference.randomStationsNames = action.payload;
         },
         setGridLines: (state, action: PayloadAction<boolean>) => {

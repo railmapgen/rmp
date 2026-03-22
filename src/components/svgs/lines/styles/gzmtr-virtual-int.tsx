@@ -42,6 +42,7 @@ const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

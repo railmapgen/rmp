@@ -40,6 +40,7 @@ const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

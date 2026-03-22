@@ -42,6 +42,7 @@ const mtrUnpaidArea: LineStyle<MTRUnpaidAreaAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

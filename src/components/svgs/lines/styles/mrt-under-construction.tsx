@@ -76,6 +76,7 @@ const mrtUnderConstruction: LineStyle<MRTUnderConstructionAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

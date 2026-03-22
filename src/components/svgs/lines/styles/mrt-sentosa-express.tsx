@@ -51,6 +51,7 @@ const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };
