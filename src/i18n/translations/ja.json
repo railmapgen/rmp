@@ -53,7 +53,7 @@
                 "miscNode": "その他のノード",
                 "edge": "路線",
                 "showingFirst500": "最初の 500 項目のみ表示しています。"
-                },
+            },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
             "changeType": "種類を変更",
@@ -631,7 +631,23 @@
                     "displayName": "JR東日本単色風格"
                 },
                 "jrEastSingleColorPattern": {
-                    "displayName": "JR東日本単色網目模様風格"
+                    "displayName": "JR東日本単色網目模様風格",
+                    "decoration": {
+                        "displayName": "端部装飾",
+                        "none": "なし",
+                        "thinTail": "細いテール",
+                        "blackBlock": "黒矩形"
+                    },
+                    "decorationAt": {
+                        "displayName": "装飾位置",
+                        "from": "始点",
+                        "to": "終点"
+                    },
+                    "decorationSide": {
+                        "displayName": "矩形の向き",
+                        "positive": "正法線側",
+                        "negative": "負法線側"
+                    }
                 },
                 "lrtSingleColor": {
                     "displayName": "シンガポールLRT単色風格"
@@ -944,7 +960,7 @@
 
     "contextMenu": {
         "refresh": "更新",
-        "cut": "切り取り", 
+        "cut": "切り取り",
         "paste": "貼り付け",
         "delete": "削除",
         "placeTop": "最前面へ",

@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { RmgCircularSlider, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
@@ -125,71 +124,40 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
     const { t } = useTranslation();
     const startAngle = normalizeRayGuidedAngle(attrs.startAngle, DEFAULT_START_ANGLE);
     const endAngle = normalizeRayGuidedAngle(attrs.endAngle, DEFAULT_END_ANGLE);
-    const [startSliderValue, setStartSliderValue] = useState(startAngle);
-    const [endSliderValue, setEndSliderValue] = useState(endAngle);
-
-    useEffect(() => {
-        setStartSliderValue(startAngle);
-        setEndSliderValue(endAngle);
-    }, [id]);
-
-    useEffect(() => {
-        if (normalizeRayGuidedAngle(startSliderValue, DEFAULT_START_ANGLE) !== startAngle) {
-            setStartSliderValue(startAngle);
-        }
-    }, [startAngle, startSliderValue]);
-
-    useEffect(() => {
-        if (normalizeRayGuidedAngle(endSliderValue, DEFAULT_END_ANGLE) !== endAngle) {
-            setEndSliderValue(endAngle);
-        }
-    }, [endAngle, endSliderValue]);
 
     const fields: RmgFieldsField[] = [
         {
-            type: 'custom',
+            type: 'slider',
             label: t('panel.details.lines.common.startAngle'),
-            component: (
-                <RmgCircularSlider
-                    defaultValue={startSliderValue}
-                    min={0}
-                    max={359}
-                    step={1}
-                    snapStep={45}
-                    disabledValues={makeDisabledRayGuidedSliderValues(endAngle)}
-                    onChange={value => {
-                        setStartSliderValue(value);
-                        handleAttrsUpdate(id, {
-                            ...attrs,
-                            startAngle: normalizeRayGuidedAngle(value, DEFAULT_START_ANGLE),
-                        });
-                    }}
-                    size={120}
-                />
-            ),
+            value: startAngle,
+            min: 0,
+            max: MAX_RAY_GUIDED_ANGLE,
+            step: 1,
+            onChange: (value: number) => {
+                const normalizedValue = normalizeRayGuidedAngle(value, DEFAULT_START_ANGLE);
+                if (getRayGuidedAngleDistance(normalizedValue, endAngle) <= MIN_RAY_GUIDED_ANGLE_GAP) return;
+                handleAttrsUpdate(id, {
+                    ...attrs,
+                    startAngle: normalizedValue,
+                });
+            },
             minW: 'full',
         },
         {
-            type: 'custom',
+            type: 'slider',
             label: t('panel.details.lines.common.endAngle'),
-            component: (
-                <RmgCircularSlider
-                    defaultValue={endSliderValue}
-                    min={0}
-                    max={359}
-                    step={1}
-                    snapStep={45}
-                    disabledValues={makeDisabledRayGuidedSliderValues(startAngle)}
-                    onChange={value => {
-                        setEndSliderValue(value);
-                        handleAttrsUpdate(id, {
-                            ...attrs,
-                            endAngle: normalizeRayGuidedAngle(value, DEFAULT_END_ANGLE),
-                        });
-                    }}
-                    size={120}
-                />
-            ),
+            value: endAngle,
+            min: 0,
+            max: MAX_RAY_GUIDED_ANGLE,
+            step: 1,
+            onChange: (value: number) => {
+                const normalizedValue = normalizeRayGuidedAngle(value, DEFAULT_END_ANGLE);
+                if (getRayGuidedAngleDistance(normalizedValue, startAngle) <= MIN_RAY_GUIDED_ANGLE_GAP) return;
+                handleAttrsUpdate(id, {
+                    ...attrs,
+                    endAngle: normalizedValue,
+                });
+            },
             minW: 'full',
         },
         {
