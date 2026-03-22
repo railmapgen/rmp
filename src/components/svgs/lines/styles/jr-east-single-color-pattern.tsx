@@ -15,20 +15,22 @@ import {
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
+// codex resume 019d0fe4-370b-77d1-ae8f-f201fbd3676d
+
 const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
 const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
-const THIN_TAIL_LENGTH = 8;
-const THIN_TAIL_WIDTH = 1.6;
-const THIN_TAIL_MARKER_BOX = 20;
+export const THIN_TAIL_LENGTH = 8;
+export const THIN_TAIL_WIDTH = 1.6;
+export const THIN_TAIL_MARKER_BOX = 20;
 const BLACK_BLOCK_FILL_LENGTH = 1;
 const SIDE_STROKE_WIDTH = 0.1;
 const DECORATED_BORDER_STROKE_WIDTH = 0.1;
 const EMPTY_PATH = 'M 0 0 Z' as Path;
 const EPSILON = 1e-6;
 
-type DecorationType = 'none' | 'thin-tail' | 'black-block';
-type DecorationAt = 'from' | 'to';
+export type DecorationType = 'none' | 'thin-tail' | 'black-block';
+export type DecorationAt = 'from' | 'to';
 
 type Point = { x: number; y: number };
 type LineSegment = { type: 'L'; start: Point; end: Point };
@@ -143,10 +145,10 @@ const getTerminalFrame = (sideA: ParsedSidePath, sideB: ParsedSidePath, decorati
     return { terminalA, terminalB, outward };
 };
 
-const getThinTailMarkerId = (id: string, decorationAt: DecorationAt) =>
+export const getThinTailMarkerId = (id: string, decorationAt: DecorationAt) =>
     `jr_east_pattern_thin_tail_${decorationAt}_${id}`;
 
-const getThinTailMarkerProps = (markerId: string, decorationAt: DecorationAt) =>
+export const getThinTailMarkerProps = (markerId: string, decorationAt: DecorationAt) =>
     decorationAt === 'from' ? { markerStart: `url(#${markerId})` } : { markerEnd: `url(#${markerId})` };
 
 const makeDecorationPaths = (
@@ -224,7 +226,7 @@ const makeDecorationPaths = (
     };
 };
 
-const jrEastSingleColorPatternPathGenerator = (
+export const jrEastSingleColorPatternPathGenerator = (
     path: Path,
     type: LinePathType,
     attrs: JREastSingleColorPatternAttributes
@@ -435,26 +437,25 @@ export interface JREastSingleColorPatternAttributes extends LinePathAttributes, 
     decorationAt: DecorationAt;
 }
 
-const defaultJREastSingleColorPatternAttributes: JREastSingleColorPatternAttributes = {
+export const defaultJREastSingleColorPatternAttributes: JREastSingleColorPatternAttributes = {
     color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
     decoration: 'none',
     decorationAt: 'to',
 };
 
-const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleColorPatternAttributes>) => {
+export const makeJREastDecorationFields = (
+    props: AttrsProps<JREastSingleColorPatternAttributes>,
+    styleType: LineStyleType,
+    defaultTheme: JREastSingleColorPatternAttributes['color']
+): RmgFieldsField[] => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
-    const fields: RmgFieldsField[] = [
+    return [
         {
             type: 'custom',
             label: t('color'),
-            component: (
-                <ColorField
-                    type={LineStyleType.JREastSingleColorPattern}
-                    defaultTheme={defaultJREastSingleColorPatternAttributes.color}
-                />
-            ),
+            component: <ColorField type={styleType} defaultTheme={defaultTheme} />,
         },
         {
             type: 'select',
@@ -487,6 +488,14 @@ const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleCo
             minW: 'full',
         },
     ];
+};
+
+const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleColorPatternAttributes>) => {
+    const fields = makeJREastDecorationFields(
+        props,
+        LineStyleType.JREastSingleColorPattern,
+        defaultJREastSingleColorPatternAttributes.color
+    );
 
     return <RmgFields fields={fields} />;
 };

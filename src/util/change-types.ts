@@ -194,6 +194,7 @@ export const changeLineStyleType = (
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
+    const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
     if (lineStyles[newLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
         const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
         const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
@@ -202,6 +203,13 @@ export const changeLineStyleType = (
         if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
             (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
         else if (dynamicColorInjection.has(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
+        if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
+            (newAttrs as { decoration: string; decorationAt: string }).decoration =
+                (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
+            (newAttrs as { decoration: string; decorationAt: string }).decorationAt =
+                (oldAttrs as { decorationAt?: string }).decorationAt ??
+                (newAttrs as { decorationAt: string }).decorationAt;
+        }
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
