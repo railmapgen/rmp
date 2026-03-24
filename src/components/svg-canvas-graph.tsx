@@ -86,10 +86,8 @@ const SvgCanvas = () => {
 
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
-    // the node that the line tool is currently snapping to (null when not snapping)
-    const [snapTarget, setSnapTarget] = React.useState<NodeId | null>(null);
-    // the node detected by DOM hit-testing (takes priority over snapTarget)
-    const [domHitTarget, setDomHitTarget] = React.useState<NodeId | null>(null);
+    // the node that show snap preview to, and which would be connected to in pointer up
+    const [lineTarget, setLineTarget] = React.useState<NodeId | null>(null);
     // cache the svg canvas element to avoid repeated getElementById calls
     const svgCanvasRef = React.useRef<SVGSVGElement | null>(null);
 
@@ -324,29 +322,26 @@ const SvgCanvas = () => {
             let bestNode: NodeId | null = null;
             let bestDist = LINE_SNAP_RADIUS;
 
-            // pass 1: center-point distance snap, covers all connectable node types which don't have stn_core_* elements (e.g. virtual nodes)
-            graph.current.forEachNode((nodeId, attrs) => {
-                if (nodeId === active) return;
-                if (!connectableNodesType.includes(attrs.type)) return;
-                const dist = Math.hypot(attrs.x - cursorX, attrs.y - cursorY);
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    bestNode = nodeId as NodeId;
-                }
-            });
+            const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
 
-            // pass 2: outline-based snap for stn_core_* elements (more accurate for non-circular shapes)
+            // outline-based snap for connectable elements with dedicated DOM markers
+            // see docs/conventions.md
             svgCanvasRef.current ??= document.getElementById('canvas') as SVGSVGElement | null;
             if (svgCanvasRef.current) {
                 const svgRect = svgCanvasRef.current.getBoundingClientRect();
-                const stnCoreElems = document.querySelectorAll<SVGGraphicsElement>('[id^="stn_core_"]');
-                stnCoreElems.forEach(stnCoreEl => {
-                    const nodeId = stnCoreEl.id.slice('stn_core_'.length) as NodeId;
+                const connectableElems = document.querySelectorAll<SVGGraphicsElement>(
+                    prefixes.map(prefix => `[id^="${prefix}"]`).join(', ')
+                );
+                connectableElems.forEach(connectableEl => {
+                    const prefix = prefixes.find(prefix => connectableEl.id.startsWith(prefix));
+                    if (!prefix) return;
+
+                    const nodeId = connectableEl.id.slice(prefix.length) as NodeId;
                     if (nodeId === active) return;
                     if (!graph.current.hasNode(nodeId)) return;
                     if (!connectableNodesType.includes(graph.current.getNodeAttribute(nodeId, 'type'))) return;
 
-                    const ctm = stnCoreEl.getScreenCTM();
+                    const ctm = connectableEl.getScreenCTM();
                     if (!ctm) return;
 
                     // helper: transform a point in element-local coordinates to graph world coordinates
@@ -361,13 +356,13 @@ const SvgCanvas = () => {
                         );
                     };
 
-                    if (stnCoreEl instanceof SVGGeometryElement) {
+                    if (connectableEl instanceof SVGGeometryElement) {
                         // sample at least once every 10px, with a minimum of 20 samples
-                        const totalLength = stnCoreEl.getTotalLength();
+                        const totalLength = connectableEl.getTotalLength();
                         if (totalLength > 0) {
                             const sampleCount = Math.max(20, Math.ceil(totalLength / 10));
                             for (let i = 0; i < sampleCount; i++) {
-                                const pt = stnCoreEl.getPointAtLength((i / sampleCount) * totalLength);
+                                const pt = connectableEl.getPointAtLength((i / sampleCount) * totalLength);
                                 const gp = toGraph(pt.x, pt.y);
                                 const dist = Math.hypot(gp.x - cursorX, gp.y - cursorY);
                                 if (dist < bestDist) {
@@ -378,7 +373,7 @@ const SvgCanvas = () => {
                         }
                     } else {
                         // distance from cursor to BBox (filled rect) → rounded-rect snap zone with radius LINE_SNAP_RADIUS
-                        const { x: bx, y: by, width: bw, height: bh } = stnCoreEl.getBBox();
+                        const { x: bx, y: by, width: bw, height: bh } = connectableEl.getBBox();
                         const p0 = toGraph(bx, by),
                             p1 = toGraph(bx + bw, by + bh);
                         const wx1 = Math.min(p0.x, p1.x),
@@ -395,19 +390,17 @@ const SvgCanvas = () => {
                     }
                 });
             }
-            setSnapTarget(bestNode);
 
             // DOM hit-testing: check if cursor is directly over a connectable element
-            const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
             const elems = document.elementsFromPoint(e.clientX, e.clientY);
             const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
             if (matchedPrefix) {
                 const hitTarget = id!.slice(matchedPrefix.length) as NodeId;
-                setDomHitTarget(hitTarget);
-            } else {
-                setDomHitTarget(null);
+                bestNode = hitTarget; // always prefer DOM hit than outline snap
             }
+
+            setLineTarget(bestNode);
         }
     });
     const handlePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
@@ -415,31 +408,26 @@ const SvgCanvas = () => {
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
-            setSnapTarget(null);
-            setDomHitTarget(null);
+            setLineTarget(null);
 
             const couldSourceBeConnected =
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
-            // determine the target node: prefer domHitTarget (from DOM hit-testing)
-            // over snapTarget (from distance-based snap preview)
-            const target = domHitTarget ?? snapTarget;
-
-            if (couldSourceBeConnected && target) {
+            if (couldSourceBeConnected && lineTarget) {
                 const { path, style: style_ } = getLinePathAndStyle(mode);
                 const [type, style] = [path!, style_!]; // assured by startsWith('line') check
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const source = active! as NodeId;
-                if (source !== target) {
+                if (source !== lineTarget) {
                     const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
                     // TODO: there should be some way for a style to disable auto theme injection
                     if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
                     const parallelIndex =
                         autoParallel && supportsParallelLinePath(type)
-                            ? makeParallelIndex(graph.current, type, source, target, 'from')
+                            ? makeParallelIndex(graph.current, type, source, lineTarget, 'from')
                             : -1;
-                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
+                    graph.current.addDirectedEdgeWithKey(newLineId, source, lineTarget, {
                         visible: true,
                         zIndex: 0,
                         type,
@@ -454,8 +442,8 @@ const SvgCanvas = () => {
                     if (autoChangeStationType && source.startsWith('stn')) {
                         checkAndChangeStationIntType(graph.current, source as StnId);
                     }
-                    if (autoChangeStationType && target.startsWith('stn')) {
-                        checkAndChangeStationIntType(graph.current, target as StnId);
+                    if (autoChangeStationType && lineTarget.startsWith('stn')) {
+                        checkAndChangeStationIntType(graph.current, lineTarget as StnId);
                     }
 
                     dispatch(setSelected(new Set([newLineId])));
@@ -482,8 +470,7 @@ const SvgCanvas = () => {
         }
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
-        setSnapTarget(null);
-        setDomHitTarget(null);
+        setLineTarget(null);
         setPointerPosition(undefined);
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
@@ -573,16 +560,14 @@ const SvgCanvas = () => {
     // TODO: there should be some way for a style to disable auto theme injection
     if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
 
-    // pre-calculate temporary line endpoints for the line being created.
     const isCreatingLine = mode.startsWith('line') && active && active !== 'background';
-    const target = domHitTarget ?? snapTarget; // prefer DOM hit-testing result
 
     return (
         <>
             <SvgLayer
                 elements={elements}
                 selected={selected}
-                lineTarget={isCreatingLine ? target : null}
+                lineTarget={isCreatingLine ? lineTarget : null}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
@@ -596,11 +581,11 @@ const SvgCanvas = () => {
                         path={linePaths[linePath].generatePath(
                             graph.current.getNodeAttribute(active, 'x'),
                             graph.current.getNodeAttribute(active, 'y'),
-                            target
-                                ? graph.current.getNodeAttribute(target, 'x')
+                            lineTarget
+                                ? graph.current.getNodeAttribute(lineTarget, 'x')
                                 : graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
-                            target
-                                ? graph.current.getNodeAttribute(target, 'y')
+                            lineTarget
+                                ? graph.current.getNodeAttribute(lineTarget, 'y')
                                 : graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                             // @ts-expect-error
                             linePaths[linePath].defaultAttrs
