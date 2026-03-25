@@ -24,7 +24,6 @@ import {
     setSelected,
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
-import { commitLiveViewport } from '../redux/viewport/viewport-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges, parseClipboardData } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
@@ -95,10 +94,19 @@ const SvgWrapper = () => {
         // Or disabled only if autoParallel is on and user has no cloud subscription and exceeds free limit
         (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
 
-    const { viewportRef, svgRef, getLatestViewport, beginDrag, dragTo, finishDrag, handleWheel } =
-        useViewportController({
-            viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
-        });
+    const {
+        viewportRef,
+        svgRef,
+        getLatestViewport,
+        previewViewport,
+        scheduleViewportCommit,
+        commitViewportNow,
+        beginDrag,
+        dragTo,
+        finishDrag,
+    } = useViewportController({
+        viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
+    });
 
     const makeStationName = useMakeStationName();
     useFonts();
@@ -215,6 +223,26 @@ const SvgWrapper = () => {
         }
     });
 
+    const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
+        const currentViewport = getLatestViewport();
+        const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
+        const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
+
+        let newZoom = currentViewport.zoom * scaleMultiplier;
+        newZoom = Math.max(1, Math.min(newZoom, 400));
+        if (newZoom === currentViewport.zoom) return;
+
+        const { x, y } = getMousePosition(e);
+        const nextViewport = {
+            x: currentViewport.x + (x * currentViewport.zoom) / 100 - (x * newZoom) / 100,
+            y: currentViewport.y + (y * currentViewport.zoom) / 100 - (y * newZoom) / 100,
+            zoom: newZoom,
+        };
+
+        previewViewport(nextViewport, { publishLiveViewport: true });
+        scheduleViewportCommit(150);
+    });
+
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
         e.preventDefault();
         const { x, y } = getMousePosition(e);
@@ -265,7 +293,7 @@ const SvgWrapper = () => {
                 x: currentViewport.x,
                 y: currentViewport.y,
             });
-            dispatch(commitLiveViewport({ x: nextMin.x, y: nextMin.y, zoom: currentViewport.zoom }));
+            commitViewportNow({ x: nextMin.x, y: nextMin.y, zoom: currentViewport.zoom });
         } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
             const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * NODES_MOVE_DISTANCE;
             const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * NODES_MOVE_DISTANCE;
@@ -407,7 +435,7 @@ const SvgWrapper = () => {
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
-                onWheel={handleWheel}
+                onWheel={handleBackgroundWheel}
                 onContextMenu={handleContextMenu}
                 tabIndex={0}
                 onKeyDown={handleKeyDown}

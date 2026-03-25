@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRootDispatch, useRootStore } from '../redux';
 import { commitLiveViewport, LiveViewport, setLiveViewport } from '../redux/viewport/viewport-slice';
-import { getMousePosition } from './helpers';
+import { usePreventBrowserZoom } from './hooks';
 
 /**
  * A simple point in screen-space pixels, usually derived from the pointer position
@@ -50,16 +50,20 @@ interface DragState {
 }
 
 /**
- * Mutable wheel scheduling state.
+ * Mutable preview scheduling state.
  *
- * Wheel and touchpad zoom events tend to arrive in bursts. Instead of committing
- * every intermediate value to Redux, we:
- * - use RAF to limit DOM transform work to at most once per frame
- * - use a timeout to commit the final viewport only after the burst settles
+ * Many interactions produce a stream of transient viewport previews before a final
+ * settled viewport should be persisted. Instead of scattering that information
+ * across multiple refs, this bucket keeps the freshest preview together with the
+ * async handles that operate on it.
  *
- * Keeping both handles in a ref allows us to cancel stale work synchronously.
+ * The fields represent:
+ * - viewport: the latest preview requested so far
+ * - rafId: the queued DOM update for preview rendering
+ * - timeoutId: the queued delayed commit of the previewed viewport
  */
-interface WheelState {
+interface ViewportPreviewState {
+    viewport: LiveViewport;
     rafId: number | null;
     timeoutId: number | null;
 }
@@ -68,20 +72,21 @@ interface WheelState {
  * Centralizes the imperative pan/zoom hot path for the main SVG viewport.
  *
  * Why this hook exists:
- * - Background pan and wheel zoom are performance-sensitive interactions.
- * - Updating Redux on every pointer move / wheel event would cause unnecessary
- *   rerenders across the app.
+ * - Background pan and viewport preview rendering are performance-sensitive interactions.
+ * - Updating Redux on every pointer move or transient viewport preview would cause
+ *   unnecessary rerenders across the app.
  * - Directly updating the `<g>` transform keeps the interaction smooth, while
  *   Redux still receives the final settled viewport through `commitLiveViewport`.
  *
  * What this hook owns:
  * - DOM refs required by the imperative transform path
- * - mutable drag and wheel session state
+ * - mutable drag state
+ * - mutable preview scheduling state
  * - RAF / timeout scheduling for high-frequency input
  * - publishing transient viewport updates when live consumers need them
  *
  * What this hook does not own:
- * - higher-level application decisions such as when a drag should start
+ * - higher-level application decisions such as how wheel zoom should be calculated
  * - tool mode changes, selection logic, or business-specific branching
  */
 export const useViewportController = ({ viewport }: UseViewportControllerOptions) => {
@@ -100,10 +105,24 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     /**
      * Ref to the root `<svg>` element.
      *
-     * This is currently used to attach a native `wheel` listener that prevents the
-     * browser's own zoom gesture from competing with the application's canvas zoom.
+     * The controller itself does not need the DOM node for viewport math, but a
+     * separate hook uses it to suppress the browser's own page zoom gesture.
      */
     const svgRef = React.useRef<SVGSVGElement>(null);
+
+    /**
+     * Stores the latest viewport preview together with its pending async work.
+     *
+     * Multiple preview requests may arrive before the queued RAF callback runs, so
+     * the callback must always apply the freshest preview instead of the first one
+     * that happened to schedule the frame. Keeping the RAF and timeout handles in
+     * the same ref also makes cleanup and interaction handoff logic easier to reason about.
+     */
+    const viewportPreviewRef = React.useRef<ViewportPreviewState>({
+        viewport,
+        rafId: null,
+        timeoutId: null,
+    });
 
     /**
      * Drag session cache used by `beginDrag`, `dragTo`, and `finishDrag`.
@@ -130,18 +149,6 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * DOM transform per frame.
      */
     const panRafRef = React.useRef<number | null>(null);
-
-    /**
-     * Wheel scheduling handles.
-     *
-     * The RAF part throttles DOM work to frame rate. The timeout part delays the
-     * Redux commit so only the final settled viewport is persisted after a wheel
-     * burst instead of every intermediate step.
-     */
-    const wheelRef = React.useRef<WheelState>({
-        rafId: null,
-        timeoutId: null,
-    });
 
     /**
      * Returns the freshest viewport available at this exact moment.
@@ -177,6 +184,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     const updateViewportTransform = React.useCallback((nextViewport: LiveViewport) => {
         if (!viewportRef.current) return;
 
+        viewportPreviewRef.current.viewport = nextViewport;
         const scale = 100 / nextViewport.zoom;
         const x = -nextViewport.x * scale;
         const y = -nextViewport.y * scale;
@@ -188,8 +196,8 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * Keeps the imperative DOM transform synchronized with the persisted viewport.
      *
      * This effect runs for low-frequency viewport changes that originate outside the
-     * drag/wheel hot path, such as file load, search jump, slider zoom, or any other
-     * state update that directly changes the persisted viewport in Redux.
+     * drag/preview hot path, such as file load, search jump, slider zoom, or any
+     * other state update that directly changes the persisted viewport in Redux.
      *
      * We use `useLayoutEffect` so the DOM transform is updated before the browser
      * paints, minimizing visible mismatch between React output and the transform.
@@ -199,16 +207,16 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     }, [updateViewportTransform, viewport.x, viewport.y, viewport.zoom]);
 
     /**
-     * Clears the deferred wheel commit if one is pending.
+     * Clears the deferred preview commit if one is pending.
      *
-     * This is needed whenever a new interaction supersedes the previous wheel burst.
+     * This is needed whenever a new interaction supersedes the previous preview burst.
      * Without canceling the old timeout, an outdated viewport could be committed
      * after the user has already started a different interaction.
      */
-    const clearWheelTimeout = React.useCallback(() => {
-        if (wheelRef.current.timeoutId) {
-            clearTimeout(wheelRef.current.timeoutId);
-            wheelRef.current.timeoutId = null;
+    const clearPreviewTimeout = React.useCallback(() => {
+        if (viewportPreviewRef.current.timeoutId) {
+            clearTimeout(viewportPreviewRef.current.timeoutId);
+            viewportPreviewRef.current.timeoutId = null;
         }
     }, []);
 
@@ -227,16 +235,16 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     }, []);
 
     /**
-     * Cancels a scheduled wheel RAF update.
+     * Cancels a scheduled preview RAF update.
      *
-     * Similar to `clearPanRaf`, but for zoom rendering. This keeps unmount and
-     * interaction handoff logic safe by ensuring no delayed DOM write survives
-     * beyond the intended lifecycle.
+     * Similar to `clearPanRaf`, but for transient viewport previews. This keeps
+     * unmount and interaction handoff logic safe by ensuring no delayed DOM write
+     * survives beyond the intended lifecycle.
      */
-    const clearWheelRaf = React.useCallback(() => {
-        if (wheelRef.current.rafId) {
-            cancelAnimationFrame(wheelRef.current.rafId);
-            wheelRef.current.rafId = null;
+    const clearPreviewRaf = React.useCallback(() => {
+        if (viewportPreviewRef.current.rafId) {
+            cancelAnimationFrame(viewportPreviewRef.current.rafId);
+            viewportPreviewRef.current.rafId = null;
         }
     }, []);
 
@@ -245,17 +253,17 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      *
      * This is the single cleanup path for:
      * - a queued pan frame
-     * - a queued wheel frame
-     * - a queued wheel commit timeout
+     * - a queued preview frame
+     * - a queued preview commit timeout
      *
      * Grouping them in one helper keeps teardown and session handoff code small
      * and ensures we do not forget one branch when the interaction model evolves.
      */
     const clearPendingWork = React.useCallback(() => {
         clearPanRaf();
-        clearWheelRaf();
-        clearWheelTimeout();
-    }, [clearPanRaf, clearWheelRaf, clearWheelTimeout]);
+        clearPreviewRaf();
+        clearPreviewTimeout();
+    }, [clearPanRaf, clearPreviewRaf, clearPreviewTimeout]);
 
     /**
      * On unmount, cancel any delayed work that could still attempt to touch the DOM
@@ -263,29 +271,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      */
     React.useEffect(() => clearPendingWork, [clearPendingWork]);
 
-    /**
-     * Installs a native wheel listener to suppress browser zoom gestures.
-     *
-     * This is needed because Ctrl/Cmd + wheel can trigger the browser's default
-     * page zoom, which would conflict with the application's own canvas zoom model.
-     * A native listener with `passive: false` is required so `preventDefault()`
-     * actually takes effect.
-     */
-    React.useEffect(() => {
-        const svg = svgRef.current;
-        if (!svg) return;
-
-        const preventBrowserZoom = (e: WheelEvent) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-            }
-        };
-
-        svg.addEventListener('wheel', preventBrowserZoom, { passive: false });
-        return () => {
-            svg.removeEventListener('wheel', preventBrowserZoom);
-        };
-    }, []);
+    usePreventBrowserZoom(svgRef);
 
     /**
      * Converts the current drag session into a viewport.
@@ -313,7 +299,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      *
      * What it does:
      * - snapshots the freshest available viewport so the drag always starts from
-     *   the correct position, even if a wheel interaction has not been committed yet
+     *   the correct position, even if a previous preview has not been committed yet
      * - freezes the zoom level for the duration of this drag session
      * - decides whether intermediate drag frames should publish `liveViewport`
      *
@@ -333,9 +319,9 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
                 publishLiveViewport: !!options?.publishLiveViewport || !!store.getState().viewport.liveViewport,
             };
 
-            clearWheelTimeout();
+            clearPreviewTimeout();
         },
-        [clearWheelTimeout, getLatestViewport, store]
+        [clearPreviewTimeout, getLatestViewport, store]
     );
 
     /**
@@ -375,6 +361,70 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     );
 
     /**
+     * Imperatively previews a viewport without making it persisted state yet.
+     *
+     * Use this when the caller has already computed the next viewport according to
+     * product rules and only needs the hook to execute it efficiently.
+     *
+     * The function solves three problems:
+     * - DOM transform updates are throttled to animation frames
+     * - multiple rapid previews collapse into one visual update
+     * - transient viewport publication remains optional for external live consumers
+     */
+    const previewViewport = React.useCallback(
+        (nextViewport: LiveViewport, options?: { publishLiveViewport?: boolean }) => {
+            viewportPreviewRef.current.viewport = nextViewport;
+
+            if (options?.publishLiveViewport) {
+                dispatch(setLiveViewport(nextViewport));
+            }
+
+            if (!viewportPreviewRef.current.rafId) {
+                viewportPreviewRef.current.rafId = requestAnimationFrame(() => {
+                    updateViewportTransform(viewportPreviewRef.current.viewport);
+                    viewportPreviewRef.current.rafId = null;
+                });
+            }
+        },
+        [dispatch, updateViewportTransform]
+    );
+
+    /**
+     * Persists a viewport immediately.
+     *
+     * This is used when an interaction is already complete, or when the caller
+     * wants the latest viewport to become authoritative right away. Before
+     * committing, we cancel pending preview work so a stale delayed commit cannot
+     * race with the immediate one.
+     */
+    const commitViewportNow = React.useCallback(
+        (nextViewport?: LiveViewport) => {
+            clearPreviewRaf();
+            clearPreviewTimeout();
+            dispatch(commitLiveViewport(nextViewport));
+        },
+        [clearPreviewRaf, clearPreviewTimeout, dispatch]
+    );
+
+    /**
+     * Schedules a deferred commit of the current live viewport.
+     *
+     * This is the debounce layer used after repeated transient previews. Repeated
+     * calls keep pushing the commit into the future, so only the final settled
+     * viewport is persisted after the burst of previews has stopped.
+     */
+    const scheduleViewportCommit = React.useCallback(
+        (delayMs = 150) => {
+            clearPreviewTimeout();
+            viewportPreviewRef.current.timeoutId = window.setTimeout(() => {
+                viewportPreviewRef.current.timeoutId = null;
+                dispatch(commitLiveViewport());
+            }, delayMs);
+        },
+        [clearPreviewTimeout, dispatch]
+    );
+
+    /**
      * Ends the current drag session and commits the final viewport.
      *
      * Call this on pointer up after a background drag. We first cancel any pending
@@ -393,79 +443,31 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
             dragRef.current.latestPointer = pointer;
             dragRef.current.isDragging = false;
 
-            dispatch(commitLiveViewport(calculateDraggedViewport()));
+            commitViewportNow(calculateDraggedViewport());
         },
-        [calculateDraggedViewport, clearPanRaf, dispatch]
-    );
-
-    /**
-     * Handles wheel / touchpad zoom interaction.
-     *
-     * Call this from the SVG `onWheel` handler.
-     *
-     * The sequence is:
-     * 1. Read the freshest viewport, including any uncommitted live viewport
-     * 2. Compute the next zoom and min so the pointer stays anchored visually
-     * 3. Publish the transient viewport immediately to Redux for live consumers
-     * 4. Schedule one RAF to apply the DOM transform
-     * 5. Reset the debounce timer that will commit the final viewport later
-     *
-     * This solves two problems at once:
-     * - performance: the DOM updates at frame rate, not per wheel event
-     * - correctness: repeated wheel events build on the latest live viewport rather
-     *   than on a possibly stale persisted viewport
-     */
-    const handleWheel = React.useCallback(
-        (e: React.WheelEvent<SVGSVGElement>) => {
-            const currentViewport = getLatestViewport();
-            const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
-            const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
-
-            let newZoom = currentViewport.zoom * scaleMultiplier;
-            newZoom = Math.max(1, Math.min(newZoom, 400));
-            if (newZoom === currentViewport.zoom) return;
-
-            const { x, y } = getMousePosition(e);
-            const nextViewport = {
-                x: currentViewport.x + (x * currentViewport.zoom) / 100 - (x * newZoom) / 100,
-                y: currentViewport.y + (y * currentViewport.zoom) / 100 - (y * newZoom) / 100,
-                zoom: newZoom,
-            };
-
-            dispatch(setLiveViewport(nextViewport));
-
-            if (!wheelRef.current.rafId) {
-                wheelRef.current.rafId = requestAnimationFrame(() => {
-                    updateViewportTransform(getLatestViewport());
-                    wheelRef.current.rafId = null;
-                });
-            }
-
-            clearWheelTimeout();
-            wheelRef.current.timeoutId = window.setTimeout(() => {
-                wheelRef.current.timeoutId = null;
-                dispatch(commitLiveViewport());
-            }, 150);
-        },
-        [clearWheelTimeout, dispatch, getLatestViewport, updateViewportTransform]
+        [calculateDraggedViewport, clearPanRaf, commitViewportNow]
     );
 
     /**
      * Public API returned to the caller.
      *
      * - viewportRef: attach to the world-space `<g>` that should be transformed
-     * - svgRef: attach to the root `<svg>` so native wheel prevention can be wired
+     * - svgRef: attach to the root `<svg>` so browser zoom suppression can be wired
      * - getLatestViewport: use when business logic needs the freshest viewport value
+     * - previewViewport: preview a viewport efficiently without persisting it yet
+     * - scheduleViewportCommit: debounce a future commit after transient previews
+     * - commitViewportNow: persist a viewport immediately
      * - beginDrag / dragTo / finishDrag: wire these to background drag interaction
-     * - handleWheel: wire this to the SVG wheel event
      */
     return {
         viewportRef,
         svgRef,
         getLatestViewport,
+        previewViewport,
+        scheduleViewportCommit,
+        commitViewportNow,
         beginDrag,
         dragTo,
         finishDrag,
-        handleWheel,
     };
 };
