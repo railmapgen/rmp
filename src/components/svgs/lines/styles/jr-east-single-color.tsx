@@ -87,6 +87,7 @@ const jrEastSingleColor: LineStyle<JREastSingleColorAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

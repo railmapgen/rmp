@@ -122,6 +122,8 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         if (mode === 'select') dispatch(setMode('free'));
+        // Exit reconcile assign mode when clicking a node
+        if (mode.startsWith('reconcile-')) dispatch(setMode('free'));
 
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
@@ -393,6 +395,19 @@ const SvgCanvas = () => {
     });
     const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
+
+        // Reconcile assign mode: clicking a line sets its reconcileId
+        if (mode.startsWith('reconcile-')) {
+            const reconcileId = mode.slice('reconcile-'.length);
+            const style = graph.current.getEdgeAttribute(edge, 'style');
+            if (lineStyles[style].metadata.supportsReconcile) {
+                graph.current.setEdgeAttribute(edge, 'reconcileId', reconcileId);
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
+            }
+            return; // don't change selection
+        }
+
         if (!e.shiftKey) dispatch(clearSelected());
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));

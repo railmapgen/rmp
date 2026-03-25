@@ -70,6 +70,7 @@ const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

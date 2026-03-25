@@ -42,7 +42,10 @@
                 "lineStyleType": "路線風格の種類",
                 "type": "種類",
                 "parallel": "並列路線",
-                "parallelIndex": "並列路線索引"
+                "parallelIndex": "並列路線索引",
+                "reconcile": "統合",
+                "reconcileId": "統合ID",
+                "reconcileAssign": "割当"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -957,7 +960,8 @@
         "flipVertical": "垂直に反転",
         "flipHorizontal": "水平に反転",
         "flipDiagonal45": "45° 線で反転",
-        "flipDiagonal135": "135° 線で反転"
+        "flipDiagonal135": "135° 線で反転",
+        "reconcile": "統合"
     },
 
     "clipboard": {

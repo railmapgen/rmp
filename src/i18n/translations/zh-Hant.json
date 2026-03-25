@@ -40,7 +40,10 @@
                 "lineStyleType": "線段樣式類型",
                 "type": "類型",
                 "parallel": "平行線段",
-                "parallelIndex": "平行線段索引"
+                "parallelIndex": "平行線段索引",
+                "reconcile": "合併線段",
+                "reconcileId": "合併線段ID",
+                "reconcileAssign": "指派"
             },
             "multipleSelection": {
                 "title": "多重選取",
@@ -955,7 +958,8 @@
         "flipVertical": "垂直翻轉",
         "flipHorizontal": "水平翻轉",
         "flipDiagonal45": "沿45°線翻轉",
-        "flipDiagonal135": "沿135°線翻轉"
+        "flipDiagonal135": "沿135°線翻轉",
+        "reconcile": "合併線段"
     },
 
     "clipboard": {

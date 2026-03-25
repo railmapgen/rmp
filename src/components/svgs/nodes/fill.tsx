@@ -22,9 +22,9 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
+import { generateEdgePathSegment, mergePathSegments } from '../../../util/graph-path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
-import { RayGuidedPathAttributes } from '../lines/paths/ray-guided';
 
 /**
  * Generate the combined SVG path string for the closed loop.
@@ -36,53 +36,14 @@ const generateClosedPath = (
 ): Path | undefined => {
     if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
 
-    let pathString = '';
-
+    const segments: string[] = [];
     for (let i = 0; i < edges.length; i++) {
-        const sourceNodeId = nodes[i];
-        const targetNodeId = nodes[i + 1];
-        const edgeId = edges[i];
-
-        const sourceAttrs = graph.getNodeAttributes(sourceNodeId);
-        const targetAttrs = graph.getNodeAttributes(targetNodeId);
-        const edgeAttrs = graph.getEdgeAttributes(edgeId);
-        const pathType = edgeAttrs.type;
-        const initialPathAttr = edgeAttrs[pathType]!;
-
-        const x1 = sourceAttrs.x,
-            y1 = sourceAttrs.y,
-            x2 = targetAttrs.x,
-            y2 = targetAttrs.y;
-        const finalPathAttr = structuredClone(initialPathAttr);
-
-        const isReversed = graph.source(edgeId) !== sourceNodeId;
-
-        if (isReversed) {
-            if ('startFrom' in finalPathAttr) {
-                finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
-            }
-            if (pathType === LinePathType.RayGuided) {
-                const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
-                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
-                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
-            }
-            // no need to handle simple path as it is symmetrical
-        }
-
-        let segment: string =
-            linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`;
-
-        if (i > 0) {
-            const parts = segment.split(' ');
-            // we slice from the 4th element (index 3) to remove the initial move command and its coordinates.
-            segment = parts.slice(3).join(' ');
-        }
-
-        pathString += (i > 0 ? ' ' : '') + segment;
+        segments.push(generateEdgePathSegment(graph, edges[i], nodes[i], nodes[i + 1]));
     }
 
-    const finalFullPath = pathString + ' Z';
-    return finalFullPath as Path;
+    const merged = mergePathSegments(segments);
+    if (!merged) return undefined;
+    return (merged + ' Z') as Path;
 };
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {

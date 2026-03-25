@@ -1,12 +1,14 @@
-import { Box, Heading } from '@chakra-ui/react';
+import { Box, Heading, IconButton } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdLink } from 'react-icons/md';
 import { NodeId } from '../../../constants/constants';
 import { LinePathType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setMode } from '../../../redux/runtime/runtime-slice';
 import {
     MAX_PARALLEL_LINES_FREE,
     MAX_PARALLEL_LINES_PRO,
@@ -32,6 +34,7 @@ export default function InfoSection() {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         selected,
+        mode,
         count: { parallel: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
@@ -56,6 +59,40 @@ export default function InfoSection() {
         graph.current.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
         dispatch(saveGraph(graph.current.export()));
         dispatch(refreshEdgesThunk());
+    };
+
+    const handleReconcileSwitch = (val: boolean) => {
+        if (val) {
+            // Enable: inherit existing or generate new reconcileId
+            const existing = graph.current.getEdgeAttribute(selectedFirst, 'reconcileId');
+            const reconcileId = existing || nanoid(10);
+            graph.current.setEdgeAttribute(selectedFirst, 'reconcileId', reconcileId);
+        } else {
+            // Disable: clear reconcileId and exit reconcile mode if active
+            graph.current.setEdgeAttribute(selectedFirst, 'reconcileId', '');
+            if (mode.startsWith('reconcile-')) {
+                dispatch(setMode('free'));
+            }
+        }
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+    };
+
+    const handleReconcileIdChange = (val: string) => {
+        graph.current.setEdgeAttribute(selectedFirst, 'reconcileId', val);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+    };
+
+    const handleReconcileAssign = () => {
+        const reconcileId = graph.current.getEdgeAttribute(selectedFirst, 'reconcileId');
+        if (!reconcileId) return;
+        if (mode.startsWith('reconcile-')) {
+            // Already in reconcile mode, toggle off
+            dispatch(setMode('free'));
+        } else {
+            dispatch(setMode(`reconcile-${reconcileId}`));
+        }
     };
 
     const fields: RmgFieldsField[] = [];
@@ -84,7 +121,7 @@ export default function InfoSection() {
         });
         if (graph.current.hasEdge(selectedFirst)) {
             const attr = graph.current.getEdgeAttributes(selectedFirst);
-            const { parallelIndex, type } = attr;
+            const { parallelIndex, type, style, reconcileId } = attr;
             const maximumParallelLines = activeSubscriptions.RMP_CLOUD
                 ? MAX_PARALLEL_LINES_PRO
                 : MAX_PARALLEL_LINES_FREE;
@@ -108,6 +145,51 @@ export default function InfoSection() {
                     isDisabled: isParallelInputDisabled,
                     value: attr.parallelIndex.toString(),
                     onChange: val => handleParallelIndexChange(Number(val)),
+                    minW: 276,
+                });
+            }
+
+            // Reconcile fields
+            const supportsReconcile = lineStyles[style].metadata.supportsReconcile;
+            const isReconcileEnabled = reconcileId !== '';
+            const isInReconcileMode = mode.startsWith('reconcile-');
+            fields.push({
+                type: 'switch',
+                label: t('panel.details.info.reconcile'),
+                isDisabled: !supportsReconcile,
+                isChecked: isReconcileEnabled,
+                onChange: handleReconcileSwitch,
+                oneLine: true,
+                minW: 276,
+            });
+            if (supportsReconcile && isReconcileEnabled) {
+                fields.push({
+                    type: 'custom',
+                    label: t('panel.details.info.reconcileId'),
+                    component: (
+                        <Box display="flex" alignItems="center" gap={1}>
+                            <input
+                                value={reconcileId}
+                                onChange={e => handleReconcileIdChange(e.target.value)}
+                                style={{
+                                    flex: 1,
+                                    padding: '4px 8px',
+                                    fontSize: '14px',
+                                    border: '1px solid var(--chakra-colors-gray-200)',
+                                    borderRadius: '4px',
+                                    minWidth: 0,
+                                }}
+                            />
+                            <IconButton
+                                aria-label={t('panel.details.info.reconcileAssign')}
+                                icon={<MdLink />}
+                                size="sm"
+                                variant={isInReconcileMode ? 'solid' : 'outline'}
+                                colorScheme={isInReconcileMode ? 'blue' : 'gray'}
+                                onClick={handleReconcileAssign}
+                            />
+                        </Box>
+                    ),
                     minW: 276,
                 });
             }

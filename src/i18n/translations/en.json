@@ -40,7 +40,10 @@
                 "lineStyleType": "Line Style Type",
                 "type": "Type",
                 "parallel": "Parallel line",
-                "parallelIndex": "Parallel index"
+                "parallelIndex": "Parallel index",
+                "reconcile": "Reconcile",
+                "reconcileId": "Reconcile ID",
+                "reconcileAssign": "Assign"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -956,7 +959,8 @@
         "flipVertical": "Flip vertically",
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
-        "flipDiagonal135": "Flip across 135° line"
+        "flipDiagonal135": "Flip across 135° line",
+        "reconcile": "Reconcile"
     },
 
     "clipboard": {

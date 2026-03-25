@@ -289,6 +289,10 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
          * Indicate which LinePathType will this style support.
          */
         supportLinePathType: LinePathType[];
+        /**
+         * Indicate whether this style supports the reconcile feature.
+         */
+        supportsReconcile: boolean;
     };
 }
 

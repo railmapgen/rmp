@@ -123,7 +123,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     for (const reconciledLine of allReconciledLines) {
         const path = makeReconciledPath(graph, reconciledLine);
         if (!path) continue;
-        const lineID = reconciledLine[0];
+        const lineID = reconciledLine[0].edge;
         resolvedLines[lineID] = { attr: graph.getEdgeAttributes(lineID), path };
     }
     for (const danglingLine of danglingLines) {

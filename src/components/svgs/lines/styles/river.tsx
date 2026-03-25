@@ -76,6 +76,7 @@ const river: LineStyle<RiverAttributes> = {
             LinePathType.RayGuided,
             LinePathType.Simple,
         ],
+        supportsReconcile: true,
     },
 };
 

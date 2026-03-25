@@ -40,7 +40,10 @@
                 "lineStyleType": "선분 스타일 유형",
                 "type": "유형",
                 "parallel": "평행선",
-                "parallelIndex": "평행 인덱스"
+                "parallelIndex": "평행 인덱스",
+                "reconcile": "통합",
+                "reconcileId": "통합 ID",
+                "reconcileAssign": "할당"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -955,7 +958,8 @@
         "flipVertical": "수직 뒤집기",
         "flipHorizontal": "수평 뒤집기",
         "flipDiagonal45": "45° 선을 기준으로 뒤집기",
-        "flipDiagonal135": "135° 선을 기준으로 뒤집기"
+        "flipDiagonal135": "135° 선을 기준으로 뒤집기",
+        "reconcile": "통합"
     },
 
     "clipboard": {

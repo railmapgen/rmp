@@ -232,12 +232,16 @@ const SvgWrapper = () => {
             if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type });
             refreshAndSave();
             dispatch(setSelected(new Set([id])));
-        } else if (mode === 'free' || mode.startsWith('line')) {
+        } else if (mode === 'free' || mode.startsWith('line') || mode.startsWith('reconcile-')) {
             // deselect line tool if user clicks on the background
             if (mode.startsWith('line')) {
                 dispatch(setMode('free'));
                 // also turn keepLastPath off to exit keeping drawing lines
                 if (keepLastPath) dispatch(setKeepLastPath(false));
+            }
+            // exit reconcile assign mode if user clicks on the background
+            if (mode.startsWith('reconcile-')) {
+                dispatch(setMode('free'));
             }
 
             // set initial position of the pointer, this is used in handleBackgroundMove

@@ -75,6 +75,7 @@ const gzmtrLoop: LineStyle<GZMTRLoopAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

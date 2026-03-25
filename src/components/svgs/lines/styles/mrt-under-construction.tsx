@@ -78,6 +78,7 @@ const mrtUnderConstruction: LineStyle<MRTUnderConstructionAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

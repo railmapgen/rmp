@@ -76,6 +76,7 @@ const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

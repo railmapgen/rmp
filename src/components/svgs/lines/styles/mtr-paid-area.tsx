@@ -45,6 +45,7 @@ const mtrPaidArea: LineStyle<MTRPaidAreaAttributes> = {
             LinePathType.RayGuided,
             LinePathType.Simple,
         ],
+        supportsReconcile: true,
     },
 };
 
