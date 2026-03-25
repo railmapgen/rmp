@@ -10,13 +10,13 @@ export interface GridLinesProps {
 
 const GridLines = React.memo((props: GridLinesProps) => {
     const { svgWidth, svgHeight } = props;
-    const gridViewport = useRootSelector(state => state.viewport.gridViewport);
+    const liveViewport = useRootSelector(state => state.viewport.liveViewport);
     const svgViewBoxMin = useRootSelector(state => state.param.svgViewBoxMin);
     const svgViewBoxZoom = useRootSelector(state => state.param.svgViewBoxZoom);
     const isToolsExpanded = useRootSelector(state => state.app.preference.toolsPanel.expand);
 
-    const currentMin = gridViewport ? { x: gridViewport.x, y: gridViewport.y } : svgViewBoxMin;
-    const currentZoom = gridViewport?.zoom ?? svgViewBoxZoom;
+    const currentMin = liveViewport ? { x: liveViewport.x, y: liveViewport.y } : svgViewBoxMin;
+    const currentZoom = liveViewport?.zoom ?? svgViewBoxZoom;
 
     const colorMode = useColorMode();
     const color = colorMode.colorMode === 'light' ? '#666464' : '#D3D3D4';
