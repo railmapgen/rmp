@@ -65,22 +65,13 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
 
     return (
         <g>
-            <g transform={`translate(-6, -6)`}>
-                <circle cx="6" cy="6" r="6" stroke="black" strokeWidth="1" fill="white" />
-                <path
-                    d={PATH_ARROW}
-                    fill={outOfStation ? '#898989' : 'black'}
-                    stroke={outOfStation ? '#898989' : 'black'}
-                    strokeWidth="0.533618"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
+            <g>
+                <circle r="6" stroke="black" strokeWidth="1" fill="white" />
+                <path d={PATH_ARROW} fill={outOfStation ? '#898989' : 'black'} fillRule="evenodd" stroke="none" />
 
                 {/* Below is an overlay element that has all event hooks but can not be seen. */}
                 <circle
                     id={`stn_core_${id}`}
-                    cx="6"
-                    cy="6"
                     r="6"
                     stroke="black"
                     strokeWidth="1"
@@ -258,9 +249,9 @@ const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttribute
 
 const bjsubwayIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <g transform="translate(6, 6)">
-            <circle cx="6" cy="6" r="6" stroke="black" strokeWidth="1" fill="white" />
-            <path d={PATH_ARROW} stroke="black" strokeWidth="0.533618" strokeLinecap="round" strokeLinejoin="round" />
+        <g transform="translate(12, 12)">
+            <circle r="6" stroke="black" strokeWidth="1" fill="white" />
+            <path d={PATH_ARROW} fill="black" fillRule="evenodd" stroke="none" />
         </g>
     </svg>
 );
