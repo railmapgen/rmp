@@ -539,15 +539,11 @@ const SvgWrapper = () => {
                     </pattern>
                     <filter
                         id="selected-glow"
-                        // large percentages to ensure the filter region covers the viewport
-                        // regardless of element transforms
+                        // large percentages to ensure the filter region covers the glow
                         x="-100%"
                         y="-100%"
-                        width="300%"
-                        height="300%"
-                        // userSpaceOnUse to prevent the filter from disappearing on
-                        // zero-width or zero-height lines
-                        filterUnits="userSpaceOnUse"
+                        width="200%"
+                        height="200%"
                     >
                         <feColorMatrix
                             in="SourceAlpha"
@@ -560,6 +556,24 @@ const SvgWrapper = () => {
                         />
                         <feMorphology operator="dilate" radius="1.5" in="yellowBase" result="thickYellow" />
                         <feGaussianBlur in="thickYellow" stdDeviation="3" result="blur1" />
+                        <feMerge>
+                            <feMergeNode in="blur1" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                    {/* copy from selected-glow but change to aqua(#00FFFF) color */}
+                    <filter id="line-target-glow" x="-100%" y="-100%" width="200%" height="200%">
+                        <feColorMatrix
+                            in="SourceAlpha"
+                            type="matrix"
+                            values="0 0 0 0 0 
+                                    0 0 0 1 0 
+                                    0 0 0 1 0 
+                                    0 0 0 1 0"
+                            result="aquaBase"
+                        />
+                        <feMorphology operator="dilate" radius="1.5" in="aquaBase" result="thickAqua" />
+                        <feGaussianBlur in="thickAqua" stdDeviation="3" result="blur1" />
                         <feMerge>
                             <feMergeNode in="blur1" />
                             <feMergeNode in="SourceGraphic" />
