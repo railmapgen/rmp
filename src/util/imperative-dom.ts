@@ -14,7 +14,7 @@ type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
  * @param dx The horizontal offset to apply in SVG coordinates.
  * @param dy The vertical offset to apply in SVG coordinates.
  */
-const offsetNodeTransform = (id: NodeTransformElementId, dx: number, dy: number) => {
+export const offsetNodeTransform = (id: NodeTransformElementId, dx: number, dy: number) => {
     const el = document.getElementById(id);
     if (!el) return;
 

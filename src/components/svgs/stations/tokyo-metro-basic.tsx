@@ -16,6 +16,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 
 export interface TokyoMetroBasicSvgAttributes {
     lineCode: string;
@@ -80,9 +81,19 @@ export const TokyoMetroBasicSvg = (props: TokyoMetroBasicSvgProps) => {
 };
 
 const TokyoMetroBasicStation = (props: StationComponentProps) => {
-    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const {
+        id,
+        attrs,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
+        handleNamePointerDown,
+        handleNamePointerMove,
+        handleNamePointerUp,
+    } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultTokyoMetroBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultTokyoMetroBasicStationAttributes.nameOffsetY,
         textVertical = defaultTokyoMetroBasicStationAttributes.textVertical,
@@ -104,6 +115,19 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    const onNamePointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handleNamePointerDown(id, e),
+        [id, handleNamePointerDown]
+    );
+    const onNamePointerMove = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handleNamePointerMove(id, e),
+        [id, handleNamePointerMove]
+    );
+    const onNamePointerUp = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handleNamePointerUp(id, e),
+        [id, handleNamePointerUp]
+    );
+
     const [textLength, setTextLength] = React.useState(0);
     React.useEffect(() => {
         let len = 0;
@@ -116,7 +140,19 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
     const textXVer = nameOffsetX === 'left' ? -12 : nameOffsetX === 'right' ? 12 : 0;
     const textY = nameOffsetY === 'bottom' ? 7 : nameOffsetY === 'top' ? -9 : 5.5;
     const textYVer = nameOffsetY === 'bottom' ? 9 + textLength * 5 : nameOffsetY === 'top' ? -9 - textLength * 5 : -5;
-    const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+    const textAnchor = preciseNameOffsets
+        ? preciseNameOffsets.anchor
+        : nameOffsetX === 'left'
+          ? 'end'
+          : nameOffsetX === 'right'
+            ? 'start'
+            : 'middle';
+    const nameTranslate = preciseNameOffsets
+        ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}`
+        : `${textX}, ${textY}`;
+    const nameVerTranslate = preciseNameOffsets
+        ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}`
+        : `${textXVer}, ${textYVer}`;
 
     return (
         <g>
@@ -134,9 +170,16 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g textAnchor={textAnchor} className="rmp-name-outline" strokeWidth="1">
+            <g
+                textAnchor={textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="1"
+                onPointerDown={onNamePointerDown}
+                onPointerMove={onNamePointerMove}
+                onPointerUp={onNamePointerUp}
+            >
                 {!textVertical ? (
-                    <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                    <g id={`stn_name_${id}`} transform={`translate(${nameTranslate})`}>
                         <MultilineText
                             text={names[0].split('\n')}
                             fontSize={10}
@@ -147,7 +190,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                         />
                     </g>
                 ) : (
-                    <g transform={`translate(${textXVer}, ${textYVer})`} textAnchor={textAnchor}>
+                    <g id={`stn_name_${id}`} transform={`translate(${nameVerTranslate})`}>
                         <MultilineTextVertical
                             text={names[0].split('\n')}
                             fontSize={10}
@@ -199,29 +242,32 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
-            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                right: t('panel.details.stations.common.right'),
-                top: t('panel.details.stations.common.top'),
-                bottom: t('panel.details.stations.common.bottom'),
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetCustom: {
+                offset: attrs.nameOffsetX === 'middle' ? attrs.nameOffsetY : attrs.nameOffsetX,
+                options: {
+                    left: t('panel.details.stations.common.left'),
+                    right: t('panel.details.stations.common.right'),
+                    top: t('panel.details.stations.common.top'),
+                    bottom: t('panel.details.stations.common.bottom'),
+                },
+                onChange: (attrs, val) => {
+                    if (val === 'left' || val === 'right') {
+                        attrs.nameOffsetX = val as NameOffsetX;
+                        attrs.nameOffsetY = 'middle';
+                        attrs.textVertical = false;
+                    } else {
+                        attrs.nameOffsetX = 'middle';
+                        attrs.nameOffsetY = val as NameOffsetY;
+                    }
+                    return attrs;
+                },
             },
-            onChange: val => {
-                if (val === 'left' || val === 'right') {
-                    attrs.nameOffsetX = val as NameOffsetX;
-                    attrs.nameOffsetY = 'middle';
-                    attrs.textVertical = false;
-                } else {
-                    attrs.nameOffsetX = 'middle';
-                    attrs.nameOffsetY = val as NameOffsetY;
-                }
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'switch',
             label: t('panel.details.stations.tokyoMetroBasic.textVertical'),

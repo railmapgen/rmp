@@ -13,6 +13,7 @@ import {
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 
 export const NAME_DY_SH_BASIC = {
     top: {
@@ -30,9 +31,19 @@ export const NAME_DY_SH_BASIC = {
 };
 
 const ShmetroBasicStation = (props: StationComponentProps) => {
-    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const {
+        id,
+        attrs,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
+        handleNamePointerDown,
+        handleNamePointerMove,
+        handleNamePointerUp,
+    } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultShmetroBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultShmetroBasicStationAttributes.nameOffsetY,
     } = attrs[StationType.ShmetroBasic] ?? defaultShmetroBasicStationAttributes;
@@ -50,12 +61,34 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    const onNamePointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handleNamePointerDown(id, e),
+        [id, handleNamePointerDown]
+    );
+    const onNamePointerMove = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handleNamePointerMove(id, e),
+        [id, handleNamePointerMove]
+    );
+    const onNamePointerUp = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handleNamePointerUp(id, e),
+        [id, handleNamePointerUp]
+    );
+
     const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_SH_BASIC[nameOffsetY].lineHeight +
             NAME_DY_SH_BASIC[nameOffsetY].offset) *
         NAME_DY[nameOffsetY].polarity;
-    const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+    const textAnchor = preciseNameOffsets
+        ? preciseNameOffsets.anchor
+        : nameOffsetX === 'left'
+          ? 'end'
+          : nameOffsetX === 'right'
+            ? 'start'
+            : 'middle';
+    const nameTranslate = preciseNameOffsets
+        ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}`
+        : `${textX}, ${textY}`;
 
     return (
         <g>
@@ -71,10 +104,14 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             <g
-                transform={`translate(${textX}, ${textY})`}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameTranslate})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
+                onPointerDown={onNamePointerDown}
+                onPointerMove={onNamePointerMove}
+                onPointerUp={onNamePointerUp}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -137,38 +174,14 @@ const shmetroBasicAttrsComponent = (props: AttrsProps<ShmetroBasicStationAttribu
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
     ];
 
     return <RmgFields fields={fields} />;

@@ -140,6 +140,9 @@ export interface StationComponentProps {
     handlePointerDown: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
+    handleNamePointerDown: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
+    handleNamePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
+    handleNamePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
 }
 
 export interface StationAttributes {
@@ -148,6 +151,11 @@ export interface StationAttributes {
      * If you need to break the line, use `\n` and display it with component MultilineText.
      */
     names: [string, ...string[]];
+    preciseNameOffsets?: {
+        x: number;
+        y: number;
+        anchor: 'start' | 'middle' | 'end';
+    };
 }
 // handy types for nameOffset
 export type NameOffsetX = 'left' | 'middle' | 'right';

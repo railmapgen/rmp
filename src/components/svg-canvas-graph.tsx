@@ -30,7 +30,7 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
-import { moveNodesAndRedrawLines } from '../util/imperative-dom';
+import { moveNodesAndRedrawLines, offsetNodeTransform } from '../util/imperative-dom';
 import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import {
@@ -391,6 +391,62 @@ const SvgCanvas = () => {
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
+
+    const handleNamePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
+        if (selected.has(node)) {
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            const { x, y } = getMousePosition(e);
+
+            dispatch(setMode('free'));
+            dispatch(setPointerPosition({ x, y }));
+            dispatch(setActive(node));
+        }
+    });
+    const handleNamePointerMove = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
+        const { x, y } = getMousePosition(e);
+        e.currentTarget.setPointerCapture(e.pointerId);
+
+        if (mode === 'free' && active === node) {
+            const type = graph.current.getNodeAttribute(node, 'type');
+            const attr = graph.current.getNodeAttributes(node)[type];
+            if (attr && 'preciseNameOffsets' in attr && attr.preciseNameOffsets) {
+                const offsetX = -((pointerPosition!.x - x) * svgViewBoxZoom) / 100;
+                const offsetY = -((pointerPosition!.y - y) * svgViewBoxZoom) / 100;
+                graph.current.mergeNodeAttributes(node, {
+                    [type]: {
+                        ...attr,
+                        preciseNameOffsets: {
+                            ...attr.preciseNameOffsets,
+                            x: attr.preciseNameOffsets.x + offsetX,
+                            y: attr.preciseNameOffsets.y + offsetY,
+                        },
+                    },
+                });
+                // imperative dom operations are in favor of refreshNodesThunk
+                offsetNodeTransform(`stn_name_${node}`, offsetX, offsetY);
+            }
+        }
+    });
+    const handleNamePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+
+        if (mode === 'free' && active) {
+            // the node is pointed down before
+            // check the offset and if it's not 0, it must be a click not move
+            const { x, y } = getMousePosition(e);
+            if (pointerPosition!.x - x === 0 && pointerPosition!.y - y === 0) {
+                // no-op for click as the node is already added in pointer down
+            } else {
+                // its a moving node operation, save the final coordinate
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshNodesThunk());
+            }
+        }
+        setPointerPosition(undefined);
+        dispatch(setActive(undefined));
+    });
+
     const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
         if (!e.shiftKey) dispatch(clearSelected());
@@ -482,6 +538,9 @@ const SvgCanvas = () => {
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
+                handleNamePointerDown={handleNamePointerDown}
+                handleNamePointerMove={handleNamePointerMove}
+                handleNamePointerUp={handleNamePointerUp}
                 handleEdgePointerDown={handleEdgePointerDown}
             />
             {mode.startsWith('line') && active && active !== 'background' && (
