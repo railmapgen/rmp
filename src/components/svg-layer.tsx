@@ -15,6 +15,9 @@ interface SvgLayerProps {
     handlePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
+    handleNamePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
+    handleNamePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
+    handleNamePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handleEdgePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
 }
 
@@ -25,8 +28,17 @@ type StyleComponent = React.FC<
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
-        const { elements, selected, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } =
-            props;
+        const {
+            elements,
+            selected,
+            handlePointerDown,
+            handlePointerMove,
+            handlePointerUp,
+            handleNamePointerDown,
+            handleNamePointerMove,
+            handleNamePointerUp,
+            handleEdgePointerDown,
+        } = props;
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
@@ -113,6 +125,9 @@ const SvgLayer = React.memo(
                                 handlePointerDown={handlePointerDown}
                                 handlePointerMove={handlePointerMove}
                                 handlePointerUp={handlePointerUp}
+                                handleNamePointerDown={handleNamePointerDown}
+                                handleNamePointerMove={handleNamePointerMove}
+                                handleNamePointerUp={handleNamePointerUp}
                             />
                         </g>
                     );
@@ -129,6 +144,9 @@ const SvgLayer = React.memo(
                             handlePointerDown={handlePointerDown}
                             handlePointerMove={handlePointerMove}
                             handlePointerUp={handlePointerUp}
+                            handleNamePointerDown={handleNamePointerDown}
+                            handleNamePointerMove={handleNamePointerMove}
+                            handleNamePointerUp={handleNamePointerUp}
                         />
                     </g>
                 );
@@ -150,6 +168,9 @@ const SvgLayer = React.memo(
                                 handlePointerDown={handlePointerDown}
                                 handlePointerMove={handlePointerMove}
                                 handlePointerUp={handlePointerUp}
+                                handleNamePointerDown={handleNamePointerDown}
+                                handleNamePointerMove={handleNamePointerMove}
+                                handleNamePointerUp={handleNamePointerUp}
                             />
                         </g>
                     );
