@@ -278,6 +278,7 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.Simple,
         ],
     },
+    isPro: true,
 };
 
 export default generic;
