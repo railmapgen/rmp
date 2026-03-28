@@ -1,4 +1,5 @@
 import { RmgFields } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
@@ -9,17 +10,15 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import {
-    DecorationAt,
-    defaultJREastSingleColorPatternAttributes,
+    defaultJREastSingleColorDecorationAttributes,
     getThinTailMarkerId,
     getThinTailMarkerProps,
-    JREastSingleColorPatternAttributes,
+    JREastSingleColorSharedAttributes,
+    JREastThinTailMarker,
     jrEastSingleColorPatternPathGenerator,
     makeJREastDecorationFields,
-    THIN_TAIL_LENGTH,
-    THIN_TAIL_MARKER_BOX,
     THIN_TAIL_WIDTH,
-} from './jr-east-single-color-pattern';
+} from './jr-east-single-color-utils';
 
 const TAIL_BORDER_EXTRA = 0.2;
 
@@ -50,7 +49,7 @@ const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAt
     );
     const thinTailMarkerId = React.useMemo(() => `${getThinTailMarkerId(id, decorationAt)}_border`, [id, decorationAt]);
     const thinTailMarkerProps = React.useMemo(
-        () => getThinTailMarkerProps(thinTailMarkerId, decorationAt as DecorationAt),
+        () => getThinTailMarkerProps(thinTailMarkerId, decorationAt),
         [thinTailMarkerId, decorationAt]
     );
 
@@ -66,26 +65,11 @@ const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAt
             {decoration === 'thin-tail' && (
                 <>
                     <defs>
-                        <marker
+                        <JREastThinTailMarker
                             id={thinTailMarkerId}
-                            viewBox={`${-THIN_TAIL_MARKER_BOX} ${-THIN_TAIL_MARKER_BOX} ${
-                                THIN_TAIL_MARKER_BOX * 2
-                            } ${THIN_TAIL_MARKER_BOX * 2}`}
-                            markerWidth={THIN_TAIL_MARKER_BOX * 2}
-                            markerHeight={THIN_TAIL_MARKER_BOX * 2}
-                            refX={0}
-                            refY={0}
-                            orient="auto-start-reverse"
-                            markerUnits="userSpaceOnUse"
-                        >
-                            <rect
-                                x={0}
-                                y={-(THIN_TAIL_WIDTH + TAIL_BORDER_EXTRA * 2) / 2}
-                                width={THIN_TAIL_LENGTH}
-                                height={THIN_TAIL_WIDTH + TAIL_BORDER_EXTRA * 2}
-                                fill="black"
-                            />
-                        </marker>
+                            fill="black"
+                            thickness={THIN_TAIL_WIDTH + TAIL_BORDER_EXTRA * 2}
+                        />
                     </defs>
                     <path
                         id={`${LineStyleType.JREastSingleColor}_tailBorder_${id}`}
@@ -120,7 +104,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
     );
     const thinTailMarkerId = React.useMemo(() => getThinTailMarkerId(id, decorationAt), [id, decorationAt]);
     const thinTailMarkerProps = React.useMemo(
-        () => getThinTailMarkerProps(thinTailMarkerId, decorationAt as DecorationAt),
+        () => getThinTailMarkerProps(thinTailMarkerId, decorationAt),
         [thinTailMarkerId, decorationAt]
     );
 
@@ -129,26 +113,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
             {decoration === 'thin-tail' ? (
                 <>
                     <defs>
-                        <marker
-                            id={thinTailMarkerId}
-                            viewBox={`${-THIN_TAIL_MARKER_BOX} ${-THIN_TAIL_MARKER_BOX} ${
-                                THIN_TAIL_MARKER_BOX * 2
-                            } ${THIN_TAIL_MARKER_BOX * 2}`}
-                            markerWidth={THIN_TAIL_MARKER_BOX * 2}
-                            markerHeight={THIN_TAIL_MARKER_BOX * 2}
-                            refX={0}
-                            refY={0}
-                            orient="auto-start-reverse"
-                            markerUnits="userSpaceOnUse"
-                        >
-                            <rect
-                                x={0}
-                                y={-THIN_TAIL_WIDTH / 2}
-                                width={THIN_TAIL_LENGTH}
-                                height={THIN_TAIL_WIDTH}
-                                fill={color[2]}
-                            />
-                        </marker>
+                        <JREastThinTailMarker id={thinTailMarkerId} fill={color[2]} />
                     </defs>
                     <path
                         id={`${LineStyleType.JREastSingleColor}_colorBody_${id}`}
@@ -189,11 +154,11 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
 /**
  * JREastSingleColor specific props.
  */
-export interface JREastSingleColorAttributes extends JREastSingleColorPatternAttributes {}
+export interface JREastSingleColorAttributes extends JREastSingleColorSharedAttributes {}
 
 const defaultJREastSingleColorAttributes: JREastSingleColorAttributes = {
-    ...defaultJREastSingleColorPatternAttributes,
-    color: [CityCode.Tokyo, 'jy', '#9ACD32', defaultJREastSingleColorPatternAttributes.color[3]],
+    color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
+    ...defaultJREastSingleColorDecorationAttributes,
 };
 
 const jrEastSingleColorAttrsComponent = (props: AttrsProps<JREastSingleColorAttributes>) => {
