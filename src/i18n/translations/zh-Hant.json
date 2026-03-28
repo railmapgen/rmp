@@ -51,7 +51,7 @@
                 "miscNode": "雜項節點",
                 "edge": "線路",
                 "showingFirst500": "僅顯示前 500 個項目。"
-                },
+            },
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
@@ -628,7 +628,23 @@
                     "displayName": "JR東日本單色樣式"
                 },
                 "jrEastSingleColorPattern": {
-                    "displayName": "JR東日本單色網狀圖案樣式"
+                    "displayName": "JR東日本單色網狀圖案樣式",
+                    "decoration": {
+                        "displayName": "端頭裝飾",
+                        "none": "無",
+                        "thinTail": "細尾巴",
+                        "blackBlock": "黑色矩形"
+                    },
+                    "decorationAt": {
+                        "displayName": "裝飾位置",
+                        "from": "起點",
+                        "to": "終點"
+                    },
+                    "decorationSide": {
+                        "displayName": "矩形側向",
+                        "positive": "正法線側",
+                        "negative": "負法線側"
+                    }
                 },
                 "lrtSingleColor": {
                     "displayName": "新加坡LRT純色樣式"
@@ -942,7 +958,7 @@
 
     "contextMenu": {
         "refresh": "重新整理",
-        "cut": "剪下", 
+        "cut": "剪下",
         "paste": "貼上",
         "delete": "刪除",
         "placeTop": "置頂",

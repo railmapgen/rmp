@@ -158,7 +158,7 @@
                 },
                 "chengduRTLineBadge": {
                     "displayName": "成都轨道交通线路标识",
-                    "badgeType":{
+                    "badgeType": {
                         "displayName": "类型",
                         "normal": "普通",
                         "suburban": "市域铁路",
@@ -466,7 +466,7 @@
                         "y": "纵向文字距离",
                         "near": "近",
                         "far": "远"
-                    } 
+                    }
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重庆轨道交通基本车站（2021）",
@@ -476,7 +476,7 @@
                     "displayName": "重庆轨道交通换乘车站（2021）",
                     "isRapid": "快速/直快车停靠站",
                     "isWide": "宽形站",
-                    "wideDirection":{
+                    "wideDirection": {
                         "displayName": "方向",
                         "vertical": "纵向",
                         "horizontal": "横向"
@@ -628,7 +628,23 @@
                     "displayName": "JR东日本单色样式"
                 },
                 "jrEastSingleColorPattern": {
-                    "displayName": "JR东日本单色网状图案样式"
+                    "displayName": "JR东日本单色网状图案样式",
+                    "decoration": {
+                        "displayName": "端头装饰",
+                        "none": "无",
+                        "thinTail": "细尾巴",
+                        "blackBlock": "黑色矩形"
+                    },
+                    "decorationAt": {
+                        "displayName": "装饰位置",
+                        "from": "起点",
+                        "to": "终点"
+                    },
+                    "decorationSide": {
+                        "displayName": "矩形侧向",
+                        "positive": "正法线侧",
+                        "negative": "负法线侧"
+                    }
                 },
                 "lrtSingleColor": {
                     "displayName": "新加坡LRT纯色样式"
@@ -942,7 +958,7 @@
 
     "contextMenu": {
         "refresh": "刷新",
-        "cut": "剪切", 
+        "cut": "剪切",
         "paste": "粘贴",
         "delete": "删除",
         "placeTop": "置顶",

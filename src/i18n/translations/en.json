@@ -629,7 +629,23 @@
                     "displayName": "JR East single color style"
                 },
                 "jrEastSingleColorPattern": {
-                    "displayName": "JR East single color filled with crosshatch pattern style"
+                    "displayName": "JR East single color filled with crosshatch pattern style",
+                    "decoration": {
+                        "displayName": "End decoration",
+                        "none": "None",
+                        "thinTail": "Thin tail",
+                        "blackBlock": "Black block"
+                    },
+                    "decorationAt": {
+                        "displayName": "Decoration end",
+                        "from": "From",
+                        "to": "To"
+                    },
+                    "decorationSide": {
+                        "displayName": "Block side",
+                        "positive": "Positive normal side",
+                        "negative": "Negative normal side"
+                    }
                 },
                 "lrtSingleColor": {
                     "displayName": "Singapore LRT single color style"
@@ -943,7 +959,7 @@
 
     "contextMenu": {
         "refresh": "Refresh",
-        "cut": "Cut", 
+        "cut": "Cut",
         "paste": "Paste",
         "delete": "Delete",
         "placeTop": "Place top",

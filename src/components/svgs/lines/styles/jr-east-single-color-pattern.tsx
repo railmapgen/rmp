@@ -1,36 +1,45 @@
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgFields } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
-    LinePathAttributes,
     LinePathType,
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
-    Path,
 } from '../../../../constants/lines';
-import { makeShortPathOutline } from '../../../../util/bezier-parallel';
-import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
+import {
+    defaultJREastSingleColorDecorationAttributes,
+    getThinTailMarkerId,
+    getThinTailMarkerProps,
+    JREastSingleColorSharedAttributes,
+    JREastThinTailMarker,
+    jrEastSingleColorPatternPathGenerator,
+    makeJREastDecorationFields,
+} from './jr-east-single-color-utils';
+
+// codex resume 019d0fe4-370b-77d1-ae8f-f201fbd3676d
 
 const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
 const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
+const SIDE_STROKE_WIDTH = 0.1;
+const DECORATED_BORDER_STROKE_WIDTH = 0.1;
 
-const jrEastSingleColorPatternPathGenerator = (
-    path: Path,
-    type: LinePathType,
-    attrs: JREastSingleColorPatternAttributes
-) => {
-    const p = makeShortPathOutline(path, type, -2.5, 2.5);
-    if (!p) return { outline: path, pA: path, pB: path };
-    return p;
+/**
+ * JREastSingleColorPattern specific props.
+ */
+export interface JREastSingleColorPatternAttributes extends JREastSingleColorSharedAttributes {}
+
+export const defaultJREastSingleColorPatternAttributes: JREastSingleColorPatternAttributes = {
+    color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
+    ...defaultJREastSingleColorDecorationAttributes,
 };
 
 const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
+    const { id, type, path, styleAttrs, handlePointerDown } = props;
+    const decoration = styleAttrs?.decoration ?? defaultJREastSingleColorPatternAttributes.decoration;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -45,28 +54,31 @@ const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingle
 
     return (
         <g onPointerDown={onPointerDown} cursor="pointer">
-            <path
-                id={`${LineStyleType.JREastSingleColorPattern}_pA_${id}`}
-                d={paths.pA}
-                fill="none"
-                stroke="black"
-                strokeWidth="0.1"
-            />
-            <path
-                id={`${LineStyleType.JREastSingleColorPattern}_pB_${id}`}
-                d={paths.pB}
-                fill="none"
-                stroke="black"
-                strokeWidth="0.1"
-            />
+            {decoration !== 'black-block' ? (
+                <>
+                    <path
+                        id={`${LineStyleType.JREastSingleColorPattern}_pA_${id}`}
+                        d={paths.pA}
+                        fill="none"
+                        stroke="black"
+                        strokeWidth={SIDE_STROKE_WIDTH}
+                    />
+                    <path
+                        id={`${LineStyleType.JREastSingleColorPattern}_pB_${id}`}
+                        d={paths.pB}
+                        fill="none"
+                        stroke="black"
+                        strokeWidth={SIDE_STROKE_WIDTH}
+                    />
+                </>
+            ) : null}
         </g>
     );
 };
 
-const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
-    const { color = defaultJREastSingleColorPatternAttributes.color } =
-        styleAttrs ?? defaultJREastSingleColorPatternAttributes;
+const JREastSingleColorPatternPost = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
+    const { id, type, path, styleAttrs, handlePointerDown } = props;
+    const decoration = styleAttrs?.decoration ?? defaultJREastSingleColorPatternAttributes.decoration;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -77,6 +89,45 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
         () =>
             jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
         [path, type, styleAttrs]
+    );
+
+    if (decoration !== 'black-block') return null;
+
+    return (
+        <path
+            id={`${LineStyleType.JREastSingleColorPattern}_border_${id}`}
+            d={paths.border}
+            fill="none"
+            stroke="black"
+            strokeWidth={DECORATED_BORDER_STROKE_WIDTH}
+            onPointerDown={onPointerDown}
+            cursor="pointer"
+        />
+    );
+};
+
+const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
+    const { id, type, path, styleAttrs, handlePointerDown } = props;
+    const {
+        color = defaultJREastSingleColorPatternAttributes.color,
+        decoration = defaultJREastSingleColorPatternAttributes.decoration,
+        decorationAt = defaultJREastSingleColorPatternAttributes.decorationAt,
+    } = styleAttrs ?? defaultJREastSingleColorPatternAttributes;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+
+    const paths = React.useMemo(
+        () =>
+            jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
+        [path, type, styleAttrs]
+    );
+    const thinTailMarkerId = React.useMemo(() => getThinTailMarkerId(id, decorationAt), [id, decorationAt]);
+    const thinTailMarkerProps = React.useMemo(
+        () => getThinTailMarkerProps(thinTailMarkerId, decorationAt),
+        [thinTailMarkerId, decorationAt]
     );
 
     return (
@@ -117,41 +168,40 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                         strokeOpacity="50%"
                     />
                 </pattern>
+                {decoration === 'thin-tail' && <JREastThinTailMarker id={thinTailMarkerId} fill={color[2]} />}
             </defs>
             <path
                 id={`${LineStyleType.JREastSingleColorPattern}_outline_${id}`}
                 d={paths.outline}
                 fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`}
             />
+            {decoration === 'thin-tail' && (
+                <path
+                    id={`${LineStyleType.JREastSingleColorPattern}_center_${id}`}
+                    d={paths.center}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth="0.01"
+                    {...thinTailMarkerProps}
+                />
+            )}
+            {decoration === 'black-block' && (
+                <path
+                    id={`${LineStyleType.JREastSingleColorPattern}_blackBlockFill_${id}`}
+                    d={paths.blackBlockFill}
+                    fill="black"
+                />
+            )}
         </g>
     );
 };
 
-/**
- * JREastSingleColorPattern specific props.
- */
-export interface JREastSingleColorPatternAttributes extends LinePathAttributes, ColorAttribute {}
-
-const defaultJREastSingleColorPatternAttributes: JREastSingleColorPatternAttributes = {
-    color: [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black],
-};
-
 const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleColorPatternAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
-    const { t } = useTranslation();
-
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'custom',
-            label: t('color'),
-            component: (
-                <ColorField
-                    type={LineStyleType.JREastSingleColorPattern}
-                    defaultTheme={defaultJREastSingleColorPatternAttributes.color}
-                />
-            ),
-        },
-    ];
+    const fields = makeJREastDecorationFields(
+        props,
+        LineStyleType.JREastSingleColorPattern,
+        defaultJREastSingleColorPatternAttributes.color
+    );
 
     return <RmgFields fields={fields} />;
 };
@@ -159,12 +209,14 @@ const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleCo
 const jrEastSingleColorPattern: LineStyle<JREastSingleColorPatternAttributes> = {
     preComponent: JREastSingleColorPatternPre,
     component: JREastSingleColorPattern,
+    postComponent: JREastSingleColorPatternPost,
     defaultAttrs: defaultJREastSingleColorPatternAttributes,
     attrsComponent: jrEastSingleColorPatternAttrsComponent,
     pathGenerator: jrEastSingleColorPatternPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.jrEastSingleColorPattern.displayName',
         supportLinePathType: [
+            LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
