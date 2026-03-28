@@ -24,7 +24,6 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -75,6 +74,7 @@ const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

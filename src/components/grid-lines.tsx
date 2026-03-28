@@ -4,18 +4,23 @@ import { useRootSelector } from '../redux';
 import { getViewpointSize, roundToMultiple } from '../util/helpers';
 
 export interface GridLinesProps {
-    svgViewBoxMin: {
+    gridLineOffset: {
         x: number;
         y: number;
+        zoom: number;
     };
-    svgViewBoxZoom: number;
     svgWidth: number;
     svgHeight: number;
 }
 
 const GridLines = React.memo(
     (props: GridLinesProps) => {
-        const { svgViewBoxMin, svgViewBoxZoom, svgWidth, svgHeight } = props;
+        const {
+            gridLineOffset: { x, y, zoom: svgViewBoxZoom },
+            svgWidth,
+            svgHeight,
+        } = props;
+        const svgViewBoxMin = { x, y };
         const {
             preference: {
                 toolsPanel: { expand: isToolsExpanded },
@@ -108,9 +113,9 @@ const GridLines = React.memo(
     },
     (prev, next) => {
         return (
-            prev.svgViewBoxMin.x === next.svgViewBoxMin.x &&
-            prev.svgViewBoxMin.y === next.svgViewBoxMin.y &&
-            prev.svgViewBoxZoom === next.svgViewBoxZoom &&
+            prev.gridLineOffset.x === next.gridLineOffset.x &&
+            prev.gridLineOffset.y === next.gridLineOffset.y &&
+            prev.gridLineOffset.zoom === next.gridLineOffset.zoom &&
             prev.svgWidth === next.svgWidth &&
             prev.svgHeight === next.svgHeight
         );

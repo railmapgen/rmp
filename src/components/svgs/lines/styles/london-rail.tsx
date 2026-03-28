@@ -28,7 +28,6 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
 
     return !limitedService ? (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
@@ -44,7 +43,6 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
         </g>
     ) : (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
@@ -137,6 +135,7 @@ const londonRail: LineStyle<LondonRailAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

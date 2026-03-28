@@ -11,7 +11,6 @@ const MTRPaidArea = (props: LineStyleComponentProps<MTRPaidAreaAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="black"
@@ -43,6 +42,7 @@ const mtrPaidArea: LineStyle<MTRPaidAreaAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

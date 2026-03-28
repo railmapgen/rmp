@@ -20,7 +20,6 @@ const ChengduRTOutsideFareGates = (props: LineStyleComponentProps<ChengduRTOutsi
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="#b4b4b5"
@@ -51,6 +50,7 @@ const chengduRTOutsideFareGates: LineStyle<ChengduRTOutsideFareGatesAttributes> 
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

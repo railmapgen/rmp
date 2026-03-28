@@ -885,4 +885,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"hzmetro-basic","hzmetro-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","color":["hangzhou","1","#dd4231","#fff"],"scale":1}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"hzmetro-int","hzmetro-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[]],"scale":1,"mirror":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":68}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('68 -> 69', () => {
+        // Bump save version to support the ray-guided line path.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":68}';
+        const newParam = UPGRADE_COLLECTION[68](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

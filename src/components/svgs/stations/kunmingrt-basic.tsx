@@ -32,7 +32,7 @@ export const NAME_DY_KM_BASIC = {
 };
 
 const KunmingRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultKunmingRTBasicStationAttributes.nameOffsetX,
@@ -62,8 +62,6 @@ const KunmingRTBasicStation = (props: StationComponentProps) => {
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

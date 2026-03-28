@@ -11,7 +11,6 @@ const MTRUnpaidArea = (props: LineStyleComponentProps<MTRUnpaidAreaAttributes>) 
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="black"
@@ -43,6 +42,7 @@ const mtrUnpaidArea: LineStyle<MTRUnpaidAreaAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

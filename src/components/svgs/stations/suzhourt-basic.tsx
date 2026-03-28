@@ -47,7 +47,7 @@ const NAME_DY_SZ_BASIC = {
 };
 
 const SuzhouRTBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         color = defaultSuzhouRTBasicStationAttributes.color,
@@ -81,7 +81,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
     const textVerticalEnX = (names[0].split('\n').length * NAME_SZ_BASIC.zh.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle
                 id={`stn_core_${id}`}
                 r={3}

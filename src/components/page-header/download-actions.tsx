@@ -425,7 +425,7 @@ export default function DownloadActions() {
                                                         color="teal.500"
                                                         textDecoration="underline"
                                                         cursor="pointer"
-                                                        href="https://afdian.com/item/9c8b220c614311efab2d52540025c377"
+                                                        href="https://ifdian.net/item/9c8b220c614311efab2d52540025c377"
                                                         target="_blank"
                                                     />
                                                 ),

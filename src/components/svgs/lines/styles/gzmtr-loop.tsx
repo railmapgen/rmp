@@ -29,7 +29,6 @@ const GZMTRLoop = (props: LineStyleComponentProps<GZMTRLoopAttributes>) => {
 
     return (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
@@ -74,6 +73,7 @@ const gzmtrLoop: LineStyle<GZMTRLoopAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

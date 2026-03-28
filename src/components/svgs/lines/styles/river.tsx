@@ -18,7 +18,6 @@ const River = (props: LineStyleComponentProps<RiverAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -74,6 +73,7 @@ const river: LineStyle<RiverAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

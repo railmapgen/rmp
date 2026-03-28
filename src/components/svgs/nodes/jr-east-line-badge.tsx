@@ -19,7 +19,7 @@ const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
 
 const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultJREastLineBadgeAttributes.names,
         num = defaultJREastLineBadgeAttributes.num,
@@ -46,8 +46,6 @@ const JREastLineBadge = (props: NodeComponentProps<JREastLineBadgeAttributes>) =
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

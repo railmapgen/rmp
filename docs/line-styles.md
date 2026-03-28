@@ -1,6 +1,6 @@
-# Line Style Guide: Creating a line style for Rail Map Painter
+# Line Style Guide: Creating a Line Style for Rail Map Painter
 
-This guide will walk you through the process of creating a line style for the Rail Map Painter. The core of a line style is to write a React component and returns SVG elements based on its attributes. To write a line style, you need to follow some conventions as described below.
+This guide walks through the process of creating a line style for Rail Map Painter. At its core, a line style is a React component that renders SVG elements from its attributes.
 
 ## Line Style Structure
 
@@ -9,8 +9,10 @@ A line style consists of:
 * A React component that generates the SVG
 * A TypeScript interface for the attributes of the component
 * Default attributes
-* A React component that modify station attributes
+* A React component that edits line style attributes
 * An object containing all the things mentioned before and metadata
+
+Unlike stations, line styles are selected from the line details panel, so they do not need a toolbar icon.
 
 ## Steps to create a line style
 
@@ -18,7 +20,7 @@ A line style consists of:
 
 First, create a new TypeScript file (`.tsx`) under the `src/components/svgs/lines/styles` directory. This file will contain the implementation of your line style.
 
-### 2. Create the React component to generate the SVG of your station
+### 2. Create the React component to generate the SVG of your line style
 
 Create a React component that generates the SVG using the provided attributes. The component should accept a `LineStyleComponentProps` prop which includes the id, type, path, mouse event handler, and your line style specific attributes.
 
@@ -35,7 +37,7 @@ const MyLineStyleComponent = (props: LineStyleComponentProps<MyLineStyleAttribut
     const {
         someAttribute = defaultMyLineStyleAttributes.someAttribute,
         anotherAttribute = defaultMyLineStyleAttributes.anotherAttribute,
-    } = styleAttrs ?? defaultRiverAttributes;
+    } = styleAttrs ?? defaultMyLineStyleAttributes;
 
     // some boilerplate to cache a function between re-renders
     const onPointerDown = React.useCallback(
@@ -59,7 +61,7 @@ const MyLineStyleComponent = (props: LineStyleComponentProps<MyLineStyleAttribut
 };
 ```
 
-### 3. Define the attributes interface for the line stye
+### 3. Define the attributes interface for the line style
 
 Define a TypeScript interface that describes the attributes of the line style.
 
@@ -81,9 +83,9 @@ const defaultMyLineStyleAttributes: MyLineStyleAttributes = {
 };
 ```
 
-### 5. Create the React component to modify station attributes
+### 5. Create the React component to edit line style attributes
 
-In this section, we will guide you on creating a React component that enables users to modify the attributes of a station. This component will be integrated into the details panel and can be customized using various input elements like `<input />`, `<textarea />`, or `<select />` to offer a user-friendly interface for attribute modification.
+Create a React component that lets users edit the line style attributes in the details panel. You can use common form controls such as `<input />`, `<textarea />`, or `<select />`.
 
 ```tsx
 import { Input, Select } from '@chakra-ui/react'
@@ -148,7 +150,7 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
-            label: t('panel.details.stations.myLineStyle.someAttribute'),
+            label: t('panel.details.lines.myLineStyle.someAttribute'),
             value: attrs.someAttribute ?? defaultMyLineStyleAttributes.someAttribute,
             onChange: val => {
                 attrs.someAttribute = val;
@@ -158,7 +160,7 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
         },
         {
             type: 'select',
-            label: t('panel.details.stations.myLineStyle.anotherAttribute'),
+            label: t('panel.details.lines.myLineStyle.anotherAttribute'),
             value: attrs.anotherAttribute ?? defaultMyLineStyleAttributes.anotherAttribute,
             options: { 0: 'Option 1', 1: 'Option 2', 2: 'Option 3' },
             onChange: val => {
@@ -177,13 +179,15 @@ const myLineStyleAttrs = (props: AttrsProps<MyLineStyleAttributes>) => {
 
 We also provide common input components like color. Feel free to checkout them in `single-color.tsx` for more reference.
 
+If your line style is theme-driven, follow [Theme-aware color](./conventions.md#theme-aware-color).
+
 ### 6. Create the line style object and export
 
 Now you have completed the steps for creating a line style. Don't forget to export your line style component, default attributes, attributes component, and metadata in the final object.
 
 * The React component
 * The default attributes
-* The React component to modify station attributes
+* The React component that edits line style attributes
 * Metadata, including:
   * Display name
   * Tags
@@ -205,9 +209,9 @@ const myLineStyle: LineStyle<MyLineStyleAttributes> = {
 export default myLineStyle;
 ```
 
-### 8. Add line style type in constants and lines
+### 7. Add the line style type in constants and lines
 
-Finally, you need to tell Rain Map Painter to load your line style so that users can select in the details panel of any line.
+Finally, you need to tell Rail Map Painter to load your line style so that users can select it from the details panel of any line.
 
 ```tsx
 // src/constants/lines.ts
@@ -248,13 +252,13 @@ export const lineStyles = {
 };
 ```
 
-### 9. Implementing internationalization translation
+### 8. Implement internationalization translations
 
-In this section, we'll guide you on how to provide translations for your application, ensuring that it can be presented in different languages. Internationalization is a critical aspect of creating a global-ready application. You may have encountered lengthy strings like `panel.details.stations.myLineStyle.displayName`. These strings are internationalization keys that inform `react-i18next` which translation to fetch and display. To make your application multilingual, it's important to ensure that all defined keys have at least an English translation. This ensures that, when a translation is missing, the English version of the text will be displayed as a fallback.
+In this section, we'll guide you on how to provide translations for your application, ensuring that it can be presented in different languages. Internationalization is a critical aspect of creating a global-ready application. You may have encountered lengthy strings like `panel.details.lines.myLineStyle.displayName`. These strings are internationalization keys that inform `react-i18next` which translation to fetch and display. To make your application multilingual, it's important to ensure that all defined keys have at least an English translation. This ensures that, when a translation is missing, the English version of the text will be displayed as a fallback.
 
 For a comprehensive guide on creating or updating translations, please refer to our [Translation Guide](./i18n-translation.md).
 
-### 10. Upgrade save version
+### 9. Upgrade the save version
 
 There is one more crucial step to undertake before opening your pull request. This step should be carried out once you have completed the design, coding, and testing phases of your line style.
 
@@ -264,7 +268,7 @@ For more information, check out [Upgrade Save Version](./upgrade-save-version.md
 
 ## Final Notes
 
-By following this guide, you should be able to create a new line style for Rail Map Painter. Make sure to adhere to the conventions outlined in [this guide](../CONTRIBUTING.md) and refer to [single-color](../src/components/svgs/lines/styles/single-color.tsx) and [river](../src/components/svgs/lines/styles/river.tsx) for clarity.
+By following this guide, you should be able to create a new line style for Rail Map Painter. Make sure to adhere to the conventions outlined in [this guide](../CONTRIBUTING.md), and refer to [single-color](../src/components/svgs/lines/styles/single-color.tsx) and [river](../src/components/svgs/lines/styles/river.tsx) for concrete examples.
 
 Feel free to submit your line style as a pull request to the project repository, and the maintainers will review it. If your line style meets the project's standards, it will be merged and become part of the project.
 

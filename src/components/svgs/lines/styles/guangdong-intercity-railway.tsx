@@ -22,7 +22,6 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
 
     return (
         <g
-            id={id}
             onPointerDown={newLine ? undefined : onPointerDown}
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
@@ -55,6 +54,7 @@ const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> 
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

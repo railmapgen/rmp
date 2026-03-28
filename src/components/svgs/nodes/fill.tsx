@@ -22,12 +22,12 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
-import { NonSimpleLinePathAttributes } from '../../../util/parallel';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
+import { RayGuidedPathAttributes } from '../lines/paths/ray-guided';
 
 /**
- * Generate the combined SVG path string for the closed loop with detailed logging.
+ * Generate the combined SVG path string for the closed loop.
  */
 const generateClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -47,7 +47,7 @@ const generateClosedPath = (
         const targetAttrs = graph.getNodeAttributes(targetNodeId);
         const edgeAttrs = graph.getEdgeAttributes(edgeId);
         const pathType = edgeAttrs.type;
-        const initialPathAttr = edgeAttrs[pathType];
+        const initialPathAttr = edgeAttrs[pathType]!;
 
         const x1 = sourceAttrs.x,
             y1 = sourceAttrs.y,
@@ -58,10 +58,15 @@ const generateClosedPath = (
         const isReversed = graph.source(edgeId) !== sourceNodeId;
 
         if (isReversed) {
-            if ((finalPathAttr as any)?.startFrom) {
-                (finalPathAttr as NonSimpleLinePathAttributes).startFrom =
-                    (finalPathAttr as NonSimpleLinePathAttributes).startFrom === 'from' ? 'to' : 'from';
+            if ('startFrom' in finalPathAttr) {
+                finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
             }
+            if (pathType === LinePathType.RayGuided) {
+                const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
+                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
+                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
+            }
+            // no need to handle simple path as it is symmetrical
         }
 
         let segment: string =
@@ -113,7 +118,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const pattern = { width: 60, height: 60 };
     const patternColor = getDynamicContrastColor(color[2], opacity);
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {fillPath && (
                 <g transform={`translate(${-x}, ${-y})`}>
                     <defs>

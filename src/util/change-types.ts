@@ -19,10 +19,10 @@ import {
     Theme,
 } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { MiscNodeType } from '../constants/nodes';
 import { MasterParam } from '../constants/master';
-import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
+import { MiscNodeType } from '../constants/nodes';
+import { ExternalStationAttributes, StationType } from '../constants/stations';
+import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 
 const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
@@ -146,9 +146,9 @@ export const changeLinePathType = (
         // calculate parallel index before changing the type
         // so that makeParallelIndex won't consider this line as an existing line
         let parallelIndex = -1;
-        if (autoParallel && newLinePathType !== LinePathType.Simple) {
+        if (autoParallel && supportsParallelLinePath(newLinePathType)) {
             const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
-            const startFrom = (newAttrs as NonSimpleLinePathAttributes).startFrom;
+            const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
             parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
         }
         graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);

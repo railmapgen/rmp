@@ -49,7 +49,7 @@ const NAME_DY_SZ_BASIC = {
 };
 
 const SuzhouRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultSuzhouRTIntStationAttributes.nameOffsetX,
@@ -85,7 +85,7 @@ const SuzhouRTIntStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g
                 transform={`rotate(${rotate})`}
                 onPointerDown={onPointerDown}

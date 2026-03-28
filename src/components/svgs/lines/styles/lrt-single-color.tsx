@@ -22,7 +22,6 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -69,6 +68,7 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

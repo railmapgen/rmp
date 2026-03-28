@@ -43,6 +43,8 @@ import {
     setSnapLines,
     setTelemetryProject,
 } from '../../redux/app/app-slice';
+import type { RandomStationsNamesValue } from '../../redux/app/app-slice';
+import { normalizeRandomStationsNames } from '../../redux/state-migration';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
@@ -100,10 +102,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
     const maximumParallelLines = activeSubscriptions.RMP_CLOUD ? MAX_PARALLEL_LINES_PRO : MAX_PARALLEL_LINES_FREE;
     const isParallelLineDisabled = parallelLinesCount >= maximumParallelLines;
-    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD;
+    const isCloudRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD;
 
     const handleRandomStationNamesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        dispatch(setRandomStationsNames(event.target.value as 'none' | StationCity));
+        dispatch(setRandomStationsNames(normalizeRandomStationsNames(event.target.value as RandomStationsNamesValue)));
     };
 
     return (
@@ -170,13 +172,22 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         value={randomStationsNames}
                                         onChange={handleRandomStationNamesChange}
                                     >
-                                        <option value="none">
-                                            {t('header.settings.preference.randomStationNames.none')}
+                                        <option value="default">
+                                            {t('header.settings.preference.randomStationNames.default')}
                                         </option>
-                                        <option value={StationCity.Shmetro} disabled={isRandomStationNamesDisabled}>
+                                        <option value="empty">
+                                            {t('header.settings.preference.randomStationNames.empty')}
+                                        </option>
+                                        <option
+                                            value={StationCity.Shmetro}
+                                            disabled={isCloudRandomStationNamesDisabled}
+                                        >
                                             {t(`header.settings.preference.randomStationNames.${StationCity.Shmetro}`)}
                                         </option>
-                                        <option value={StationCity.Bjsubway} disabled={isRandomStationNamesDisabled}>
+                                        <option
+                                            value={StationCity.Bjsubway}
+                                            disabled={isCloudRandomStationNamesDisabled}
+                                        >
                                             {t(`header.settings.preference.randomStationNames.${StationCity.Bjsubway}`)}
                                         </option>
                                     </Select>
@@ -359,6 +370,12 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                                 </Box>
                                             </Td>
                                             <Td>{t('header.settings.shortcuts.ijkl')}</Td>
+                                        </Tr>
+                                        <Tr>
+                                            <Td>
+                                                <Kbd>r</Kbd>
+                                            </Td>
+                                            <Td>{t('header.settings.shortcuts.rotate')}</Td>
                                         </Tr>
                                         <Tr>
                                             <Td>

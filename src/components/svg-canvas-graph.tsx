@@ -30,7 +30,8 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
-import { makeParallelIndex } from '../util/parallel';
+import { moveNodesAndRedrawLines } from '../util/imperative-dom';
+import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
 import {
     getNearestSnapLine,
@@ -263,35 +264,49 @@ const SvgCanvas = () => {
                 const offsetY = newY - fromY;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
                             x: roundToMultiple(attr.x + offsetX, 0.01),
                             y: roundToMultiple(attr.y + offsetY, 0.01),
-                        }));
+                        });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             } else {
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
                 setActiveSnapPoint(undefined);
+                const base = e.altKey ? 0.01 : NODES_MOVE_DISTANCE;
+                const stdAttr = graph.current.getNodeAttributes(node);
+                const offsetX =
+                    roundToMultiple(stdAttr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, base) - stdAttr.x;
+                const offsetY =
+                    roundToMultiple(stdAttr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, base) - stdAttr.y;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
-                            x: roundToMultiple(
-                                attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
-                            ),
-                            y: roundToMultiple(
-                                attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : NODES_MOVE_DISTANCE
-                            ),
-                        }));
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
+                            x: attr.x + offsetX,
+                            y: attr.y + offsetY,
+                        });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             }
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
@@ -325,9 +340,10 @@ const SvgCanvas = () => {
                     const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
                     // TODO: there should be some way for a style to disable auto theme injection
                     if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
-                    const parallelIndex = autoParallel
-                        ? makeParallelIndex(graph.current, type, source, target, 'from')
-                        : -1;
+                    const parallelIndex =
+                        autoParallel && supportsParallelLinePath(type)
+                            ? makeParallelIndex(graph.current, type, source, target, 'from')
+                            : -1;
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
@@ -410,7 +426,7 @@ const SvgCanvas = () => {
             const styleAttr = edgeAttrs[lineStyleType];
             const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
-            const parallelIndex = autoParallel ? 0 : -1;
+            const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
             graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
                 visible: true,
                 zIndex,
@@ -462,6 +478,7 @@ const SvgCanvas = () => {
         <>
             <SvgLayer
                 elements={elements}
+                selected={selected}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}

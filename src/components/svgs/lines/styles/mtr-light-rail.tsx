@@ -24,7 +24,6 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -73,6 +72,7 @@ const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

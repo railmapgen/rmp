@@ -7,6 +7,7 @@ import { StationCity } from '../constants/constants';
 import { random_station_names_endpoint } from '../constants/server';
 import { StationAttributes, StationType } from '../constants/stations';
 import { RootState, useRootDispatch, useRootSelector } from '../redux';
+import type { RandomStationsNamesValue } from '../redux/app/app-slice';
 import { setStationNames } from '../redux/runtime/runtime-slice';
 
 const FALLBACK_STATION_NAMES: { [key in StationCity]: { [key in keyof Translation]: string }[] } = {
@@ -129,6 +130,11 @@ const fallBackRandomStationNames = (city: StationCity) => {
     return randomStationNames.at(Math.floor(Math.random() * randomStationNames.length))!;
 };
 
+const makeEmptyStationNames = (attrNames: StationAttributes['names']): StationAttributes['names'] => [
+    '',
+    ...Array(attrNames.length - 1).fill(''),
+];
+
 const getStationNames = createAsyncThunk<undefined, { cityName: StationCity }>(
     'runtime/getStationNames',
     async ({ cityName }, { getState, dispatch, rejectWithValue }) => {
@@ -181,26 +187,35 @@ export const useMakeStationName = () => {
     const {
         preference: { randomStationsNames },
     } = useRootSelector(state => state.app);
-    const isRandomStationNamesDisabled = !activeSubscriptions.RMP_CLOUD || randomStationsNames === 'none';
 
     return React.useCallback(
         async (type: StationType) => {
             const attrNames = stations[type].defaultAttrs.names;
-            if (!isRandomStationNamesDisabled) {
-                const result = await dispatch(getOneStationName(randomStationsNames));
-                if (getOneStationName.fulfilled.match(result)) {
-                    const names = result.payload as [string, ...string[]];
-                    // fill or truncate
-                    if (attrNames.length > names.length) {
-                        names.push(...Array(attrNames.length - names.length).fill(names.at(-1)));
-                    } else if (attrNames.length < names.length) {
-                        names.splice(attrNames.length);
-                    }
-                    return names;
+            if (randomStationsNames === 'default') {
+                return structuredClone(attrNames);
+            }
+            if (randomStationsNames === 'empty') {
+                return makeEmptyStationNames(attrNames);
+            }
+            if (!activeSubscriptions.RMP_CLOUD) {
+                return structuredClone(attrNames);
+            }
+
+            const result = await dispatch(
+                getOneStationName(randomStationsNames as Extract<RandomStationsNamesValue, StationCity>)
+            );
+            if (getOneStationName.fulfilled.match(result)) {
+                const names = result.payload as [string, ...string[]];
+                // fill or truncate
+                if (attrNames.length > names.length) {
+                    names.push(...Array(attrNames.length - names.length).fill(names.at(-1)));
+                } else if (attrNames.length < names.length) {
+                    names.splice(attrNames.length);
                 }
+                return names;
             }
             return structuredClone(attrNames);
         },
-        [dispatch, isRandomStationNamesDisabled, randomStationsNames]
+        [activeSubscriptions.RMP_CLOUD, dispatch, randomStationsNames]
     );
 };

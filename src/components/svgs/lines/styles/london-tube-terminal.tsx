@@ -24,7 +24,6 @@ const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAtt
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -75,6 +74,7 @@ const londonTubeTerminal: LineStyle<LondonTubeTerminalAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

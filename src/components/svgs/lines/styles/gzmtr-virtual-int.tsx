@@ -11,7 +11,6 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="#565656"
@@ -43,6 +42,7 @@ const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

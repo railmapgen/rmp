@@ -3,11 +3,11 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
 import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
-import { LinePathType } from '../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
@@ -25,7 +25,7 @@ import {
     showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
-import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges } from '../util/clipboard';
+import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges, parseClipboardData } from '../util/clipboard';
 import { findEdgesConnectedByNodes, findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
@@ -37,8 +37,15 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
-import { makeParallelIndex, MAX_PARALLEL_LINES_FREE, NonSimpleLinePathAttributes } from '../util/parallel';
+import { sendErrorNotification } from '../util/notifications';
+import {
+    makeParallelIndex,
+    MAX_PARALLEL_LINES_FREE,
+    ParallelLinePathAttributes,
+    supportsParallelLinePath,
+} from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
+import { rotateSelectedNodes } from '../util/transform';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -51,6 +58,7 @@ import TouchOverlay from './touch/touch-overlay';
 import VirtualJoystick from './touch/virtual-joystick';
 
 const SvgWrapper = () => {
+    const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = React.useCallback(() => {
@@ -98,15 +106,102 @@ const SvgWrapper = () => {
         position: { x: 0, y: 0 },
     });
 
-    // background moving related
-    const [offset, setOffset] = React.useState({ x: 0, y: 0 }); // pos relative to the viewport
-    const [svgViewBoxMinTmp, setSvgViewBoxMinTmp] = React.useState({ x: 0, y: 0 }); // temp copy of svgViewBoxMin
+    // background dragging and scaling related
+    const dragStartRef = React.useRef({ x: 0, y: 0 });
+    const initialViewBoxMinRef = React.useRef({ x: 0, y: 0 });
+    const wheelTimeoutRef = React.useRef<number | null>(null);
+    const svgViewBoxZoomRef = React.useRef(svgViewBoxZoom);
+    const svgViewBoxMinRef = React.useRef(svgViewBoxMin);
+    const wheelRafRef = React.useRef<number | null>(null);
+
+    // helper function to calculate the new svgViewBoxMin based on the current
+    // mouse position and the initial position when dragging starts
+    const makeSVGViewBoxMin = (x: number, y: number) => {
+        const dx = x - dragStartRef.current.x;
+        const dy = y - dragStartRef.current.y;
+
+        const deltaSvgX = (dx * svgViewBoxZoom) / 100;
+        const deltaSvgY = (dy * svgViewBoxZoom) / 100;
+
+        return {
+            x: initialViewBoxMinRef.current.x - deltaSvgX,
+            y: initialViewBoxMinRef.current.y - deltaSvgY,
+        };
+    };
+
+    // grid line requires svgViewBoxMin and svgViewBoxZoom to calculate the position of grid lines
+    const [gridLineOffset, setGridLineOffset] = React.useState({ x: 0, y: 0, zoom: 1 });
+
+    // Instead of dispatching action to update svgViewBoxMin|Zoom on every pointer move during dragging,
+    // we update the viewport transform directly for better performance.
+    // Only dispatch the final svgViewBoxMin|Zoom to Redux store when user releases the pointer (in handleBackgroundUp).
+    const viewportRef = React.useRef<SVGGElement>(null);
+    const updateViewportTransform = React.useCallback(
+        (min: { x: number; y: number }, zoom: number) => {
+            if (viewportRef.current) {
+                const scale = 100 / zoom;
+                const x = -min.x * scale;
+                const y = -min.y * scale;
+
+                viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+
+                if (gridLines) setGridLineOffset({ x: min.x, y: min.y, zoom });
+            }
+        },
+        [gridLines]
+    );
+    React.useLayoutEffect(() => {
+        // Update the viewport when actions other than dragging change svgViewBoxMin|Zoom.
+        svgViewBoxZoomRef.current = svgViewBoxZoom;
+        svgViewBoxMinRef.current = svgViewBoxMin;
+        // The following do affect performance, but unlike dragging, they are not continuously
+        // fired, so it's acceptable to update viewport in a useLayoutEffect instead of RAF.
+        updateViewportTransform(svgViewBoxMin, svgViewBoxZoom);
+    }, [svgViewBoxMin, svgViewBoxZoom, updateViewportTransform]);
+
+    // Rely on RAF to update viewBoxMin during background dragging for better performance,
+    // instead of dispatching Redux action which will cause re-render on every pointer move.
+    const rafRef = React.useRef<number | null>(null);
+
+    // cleanup RAF on unmount to prevent calling updateViewportTransform after unmount
+    React.useEffect(() => {
+        return () => {
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+            if (wheelRafRef.current) {
+                cancelAnimationFrame(wheelRafRef.current);
+                wheelRafRef.current = null;
+            }
+        };
+    }, []);
+    // prevent browser zoom when ctrl + wheel or cmd + wheel
+    const svgRef = React.useRef<SVGSVGElement>(null);
+
+    React.useEffect(() => {
+        const svgInfo = svgRef.current;
+        if (!svgInfo) return;
+
+        const preventBrowserZoom = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+            }
+        };
+
+        svgInfo.addEventListener('wheel', preventBrowserZoom, { passive: false });
+        return () => {
+            svgInfo.removeEventListener('wheel', preventBrowserZoom);
+        };
+    }, []);
 
     const handleBackgroundDown = useEvent(async (e: React.PointerEvent<SVGSVGElement>) => {
         if (contextMenu.isOpen) {
             // close context menu if it's open
             setContextMenu({ isOpen: false, position: { x: 0, y: 0 } });
         }
+
+        e.currentTarget.setPointerCapture(e.pointerId);
 
         const { x, y } = getMousePosition(e);
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
@@ -146,15 +241,14 @@ const SvgWrapper = () => {
             }
 
             // set initial position of the pointer, this is used in handleBackgroundMove
-            setOffset({ x, y });
-            setSvgViewBoxMinTmp(svgViewBoxMin);
+            dragStartRef.current = { x, y };
+            initialViewBoxMinRef.current = svgViewBoxMin;
             if (!e.shiftKey) {
                 // when user holding the shift key and mis-click the background
                 // preserve the current selection
                 dispatch(setActive('background'));
                 dispatch(clearSelected());
             }
-            // console.log(x, y, svgViewBoxMin);
         } else if (mode === 'select') {
             setSelectStart(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
             setSelectMoving(pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin));
@@ -168,18 +262,21 @@ const SvgWrapper = () => {
             }
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
-            dispatch(
-                setSvgViewBoxMin({
-                    x: svgViewBoxMinTmp.x + ((offset.x - x) * svgViewBoxZoom) / 100,
-                    y: svgViewBoxMinTmp.y + ((offset.y - y) * svgViewBoxZoom) / 100,
-                })
-            );
-            // console.log('move', active, { x: offset.x - x, y: offset.y - y }, svgViewBoxMin);
+            if (!rafRef.current) {
+                // Use requestAnimationFrame to throttle the updates to at most
+                // once per frame for better performance during dragging.
+                rafRef.current = requestAnimationFrame(() => {
+                    const tempSVGViewBoxMin = makeSVGViewBoxMin(x, y);
+                    updateViewportTransform(tempSVGViewBoxMin, svgViewBoxZoom);
+                    rafRef.current = null;
+                });
+            }
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
+        const { x, y } = getMousePosition(e);
+        e.currentTarget.releasePointerCapture(e.pointerId);
         if (mode === 'select') {
-            const { x, y } = getMousePosition(e);
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, svgViewBoxZoom, svgViewBoxMin);
             const nodesInRectangle = findNodesInRectangle(graph.current, selectStart.x, selectStart.y, svgX, svgY);
             const edgesInRectangle = findEdgesConnectedByNodes(graph.current, new Set(nodesInRectangle));
@@ -193,30 +290,53 @@ const SvgWrapper = () => {
         // when user holding the shift key and mis-click the background
         // preserve the current selection
         if (active === 'background' && !e.shiftKey) {
-            dispatch(setActive(undefined)); // svg mouse event only
-            // console.log('up', active);
+            if (rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+
+            // never rely on viewportRef to get the final svgViewBoxMin as it may still in progress
+            const finalSVGViewBoxMin = makeSVGViewBoxMin(x, y);
+            // Only update svgViewBoxMin at the end of dragging for better performance and
+            // compatibility with existing code that relies on it.
+            // Update Redux -> Component Rerender -> useLayoutEffect -> updateViewportTransform
+            dispatch(setSvgViewBoxMin(finalSVGViewBoxMin));
+
+            dispatch(setActive(undefined));
         }
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        let newSvgViewBoxZoom = svgViewBoxZoom;
-        if (e.deltaY > 0 && svgViewBoxZoom + 10 < 400) newSvgViewBoxZoom = svgViewBoxZoom + 10;
-        else if (e.deltaY < 0 && svgViewBoxZoom - 10 > 0) newSvgViewBoxZoom = svgViewBoxZoom - 10;
-        dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
+        const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
+        const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
 
-        // the position the pointer points will still be in the same place after zooming
+        let newZoom = svgViewBoxZoomRef.current * scaleMultiplier;
+        newZoom = Math.max(1, Math.min(newZoom, 400));
+        if (newZoom === svgViewBoxZoomRef.current) return;
+
         const { x, y } = getMousePosition(e);
-        const bbox = e.currentTarget.getBoundingClientRect();
-        // calculate the proportion of the pointer in the canvas
-        const [x_factor, y_factor] = [x / bbox.width, y / bbox.height];
-        // the final svgViewBoxMin will be the position the pointer points minus
-        // the left/top part of the new canvas (new width/height times the proportion)
-        dispatch(
-            setSvgViewBoxMin({
-                x: svgViewBoxMin.x + (x * svgViewBoxZoom) / 100 - ((width * newSvgViewBoxZoom) / 100) * x_factor,
-                y: svgViewBoxMin.y + (y * svgViewBoxZoom) / 100 - ((height * newSvgViewBoxZoom) / 100) * y_factor,
-            })
-        );
+        const newMin = {
+            x: svgViewBoxMinRef.current.x + (x * svgViewBoxZoomRef.current) / 100 - (x * newZoom) / 100,
+            y: svgViewBoxMinRef.current.y + (y * svgViewBoxZoomRef.current) / 100 - (y * newZoom) / 100,
+        };
+
+        svgViewBoxZoomRef.current = newZoom;
+        svgViewBoxMinRef.current = newMin;
+
+        // improve performance by throttling viewport updates to animation frames during wheel events
+        if (!wheelRafRef.current) {
+            wheelRafRef.current = requestAnimationFrame(() => {
+                updateViewportTransform(svgViewBoxMinRef.current, svgViewBoxZoomRef.current);
+                wheelRafRef.current = null;
+            });
+        }
+
+        // remember to update the final svgViewBoxMin and svgViewBoxZoom to Redux store
+        if (wheelTimeoutRef.current) clearTimeout(wheelTimeoutRef.current);
+        wheelTimeoutRef.current = window.setTimeout(() => {
+            dispatch(setSvgViewBoxZoom(svgViewBoxZoomRef.current));
+            dispatch(setSvgViewBoxMin(svgViewBoxMinRef.current));
+        }, 150);
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {
@@ -298,30 +418,50 @@ const SvgWrapper = () => {
                 refreshAndSave();
             }
         } else if (e.key === 'v' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
+            e.preventDefault();
             // Firefox does not allow JavaScript to read the clipboard for privacy reasons.
             // Set dom.events.testing.asyncClipboard and dom.events.asyncClipboard.readText
             // to true in about:config will remove such restrictions.
             // https://www.reddit.com/r/firefox/comments/xlmktf/comment/ipl8y5a/
-            const s = await navigator.clipboard.readText();
-            const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
-                width / 2,
-                height / 2,
-                svgViewBoxZoom,
-                svgViewBoxMin
-            );
-            const { nodes, edges } = importSelectedNodesAndEdges(
-                s,
-                graph.current,
-                isMasterDisabled,
-                isParallelDisabled,
-                roundToMultiple(svgMidX, 5),
-                roundToMultiple(svgMidY, 5)
-            );
-            refreshAndSave();
-            // select copied nodes automatically
-            const allElements = structuredClone(nodes) as Set<Id>;
-            edges.forEach(s => allElements.add(s));
-            dispatch(setSelected(allElements));
+            let s = '';
+            try {
+                s = await navigator.clipboard.readText();
+            } catch (error) {
+                console.warn('Failed to read clipboard:', error);
+                sendErrorNotification(t('error'), t('clipboard.errors.readText'));
+                return;
+            }
+
+            const parsed = parseClipboardData(s);
+            if (!parsed || parsed.type !== 'elements') {
+                sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
+                return;
+            }
+
+            try {
+                const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(
+                    width / 2,
+                    height / 2,
+                    svgViewBoxZoom,
+                    svgViewBoxMin
+                );
+                const { nodes, edges } = importSelectedNodesAndEdges(
+                    s,
+                    graph.current,
+                    isMasterDisabled,
+                    isParallelDisabled,
+                    roundToMultiple(svgMidX, 5),
+                    roundToMultiple(svgMidY, 5)
+                );
+                refreshAndSave();
+                // select copied nodes automatically
+                const allElements = structuredClone(nodes) as Set<Id>;
+                edges.forEach(s => allElements.add(s));
+                dispatch(setSelected(allElements));
+            } catch (error) {
+                console.warn('Failed to paste from clipboard:', error);
+                sendErrorNotification(t('error'), t('clipboard.errors.invalidOrIncompatible'));
+            }
         } else if (
             (isMacClient && e.key === 'z' && e.metaKey && e.shiftKey) ||
             (!isMacClient && e.key === 'y' && e.ctrlKey)
@@ -329,6 +469,11 @@ const SvgWrapper = () => {
             dispatch(redoAction());
         } else if (e.key === 'c') {
             dispatch(setSnapLines(!snapLines));
+        } else if (e.key === 'r') {
+            const angle = e.altKey ? 5 : 45;
+            if (rotateSelectedNodes(graph.current, selected, angle)) {
+                refreshAndSave();
+            }
         } else if (e.key === 'e') {
             // switch startFrom between 'from' and 'to' when an edge is selected
             const [selectedFirst] = selected;
@@ -336,9 +481,9 @@ const SvgWrapper = () => {
                 const attr = graph.current.getEdgeAttributes(selectedFirst);
                 const { type } = attr;
 
-                // only work for non-simple line types that have startFrom
-                if (type !== LinePathType.Simple && attr[type]) {
-                    const lineAttrs = attr[type] as NonSimpleLinePathAttributes;
+                // only work for line path types that have startFrom
+                if (supportsParallelLinePath(type) && attr[type]) {
+                    const lineAttrs = attr[type] as ParallelLinePathAttributes;
                     const currentStartFrom = lineAttrs.startFrom || 'from';
                     const newStartFrom = currentStartFrom === 'from' ? 'to' : 'from';
 
@@ -377,9 +522,8 @@ const SvgWrapper = () => {
                 style={{ position: 'fixed', top: 40, left: 40, userSelect: 'none', touchAction: 'none' }}
                 height={height}
                 width={width}
-                viewBox={`${svgViewBoxMin.x} ${svgViewBoxMin.y} ${(width * svgViewBoxZoom) / 100} ${
-                    (height * svgViewBoxZoom) / 100
-                }`}
+                viewBox={`0 0 ${width} ${height}`}
+                ref={svgRef}
                 onPointerDown={handleBackgroundDown}
                 onPointerMove={handleBackgroundMove}
                 onPointerUp={handleBackgroundUp}
@@ -394,38 +538,39 @@ const SvgWrapper = () => {
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
                 </defs>
-                {gridLines && (
-                    <GridLines
-                        svgViewBoxMin={svgViewBoxMin}
-                        svgViewBoxZoom={svgViewBoxZoom}
-                        svgWidth={width}
-                        svgHeight={height}
-                    />
-                )}
-                {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                {predictNextNode && selected.size === 1 && mode === 'free' && <PredictNextNode />}
-                {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-                <utils.SvgAssetsContextProvider>
-                    <SvgCanvas />
-                </utils.SvgAssetsContextProvider>
-                {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                    <rect
-                        x={selectCoord.sx}
-                        y={selectCoord.sy}
-                        width={selectCoord.ex - selectCoord.sx}
-                        height={selectCoord.ey - selectCoord.sy}
-                        rx="2"
-                        stroke="#b5b5b6"
-                        strokeWidth="2"
-                        strokeOpacity="0.4"
-                        fill="#b5b5b6"
-                        opacity="0.75"
-                    />
-                )}
-                {isTouchClient() && [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
-                    <VirtualJoystick />
-                )}
-                <RadialTouchMenu />
+
+                <g
+                    // Additional 'transform' such as `translate(${x}, ${y}) scale(${scale})` will be applied to
+                    // this group in updateViewportTransform, so all its children will be transformed accordingly.
+                    ref={viewportRef}
+                >
+                    {gridLines && <GridLines gridLineOffset={gridLineOffset} svgWidth={width} svgHeight={height} />}
+                    {isTouchClient() && mode === 'free' && <TouchOverlay />}
+                    {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
+                    {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                    <utils.SvgAssetsContextProvider>
+                        <SvgCanvas />
+                    </utils.SvgAssetsContextProvider>
+                    {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                        <rect
+                            x={selectCoord.sx}
+                            y={selectCoord.sy}
+                            width={selectCoord.ex - selectCoord.sx}
+                            height={selectCoord.ey - selectCoord.sy}
+                            rx="2"
+                            stroke="#b5b5b6"
+                            strokeWidth="2"
+                            strokeOpacity="0.4"
+                            fill="#b5b5b6"
+                            opacity="0.75"
+                        />
+                    )}
+                    {isTouchClient() &&
+                        [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
+                            <VirtualJoystick />
+                        )}
+                    <RadialTouchMenu />
+                </g>
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (

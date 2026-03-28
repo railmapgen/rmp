@@ -18,7 +18,6 @@ const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttri
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="black"
@@ -52,6 +51,7 @@ const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };
