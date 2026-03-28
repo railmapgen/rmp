@@ -735,6 +735,7 @@
         "download": {
             "config": "Export project",
             "image": "Export image",
+            "video": "Export video",
             "2rmg": {
                 "title": "Export to RMG project",
                 "type": {
@@ -771,7 +772,19 @@
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
             "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
-            "confirm": "Download"
+            "confirm": "Download",
+            "videoExport": {
+                "title": "Export Video",
+                "fps": "Frames per second (FPS)",
+                "duration": "Duration (seconds)",
+                "quality": "Video quality",
+                "generating": "Generating video...",
+                "progress": "Progress: {{progress}}%",
+                "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
+                "format": "WebM format",
+                "error": "Video export failed. Please try again.",
+                "noNodes": "Cannot export video: No nodes in the graph."
+            }
         },
         "donation": {
             "title": "Donation",

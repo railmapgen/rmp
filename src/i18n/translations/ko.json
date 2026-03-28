@@ -734,6 +734,7 @@
         "download": {
             "config": "프로젝트 내보내기",
             "image": "사진 내보내기",
+            "video": "비디오 내보내기",
             "2rmg": {
                 "title": "RMG 프로젝트로 내보내기",
                 "type": {
@@ -770,7 +771,17 @@
             "termsAndConditionsInfo": "동의",
             "period": ".",
             "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
-            "confirm": "다운로드"
+            "confirm": "다운로드",
+            "videoExport": {
+                "title": "비디오 내보내기",
+                "fps": "프레임 속도 (FPS)",
+                "duration": "길이 (초)",
+                "quality": "비디오 품질",
+                "generating": "비디오 생성 중...",
+                "progress": "진행률: {{progress}}%",
+                "description": "이 기능은 노드와 라인이 점진적으로 그려지는 애니메이션 비디오를 내보냅니다.",
+                "format": "WebM 형식"
+            }
         },
         "donation": {
             "title": "기부",
