@@ -734,6 +734,7 @@
         "download": {
             "config": "導出項目",
             "image": "導出圖片",
+            "video": "導出視頻",
             "2rmg": {
                 "title": "導出RMG項目",
                 "type": {
@@ -770,7 +771,19 @@
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
-            "confirm": "下載"
+            "confirm": "下載",
+            "videoExport": {
+                "title": "導出視頻",
+                "fps": "幀率（FPS）",
+                "duration": "時長（秒）",
+                "quality": "視頻質量",
+                "generating": "正在生成視頻...",
+                "progress": "進度：{{progress}}%",
+                "description": "此功能會導出一個動畫視頻，展示節點和線段逐步繪製的過程。",
+                "format": "WebM格式",
+                "error": "視頻導出失敗，請重試。",
+                "noNodes": "無法導出視頻：圖中沒有節點。"
+            }
         },
         "donation": {
             "title": "捐款",
