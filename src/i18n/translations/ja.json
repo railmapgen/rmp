@@ -53,7 +53,7 @@
                 "miscNode": "その他のノード",
                 "edge": "路線",
                 "showingFirst500": "最初の 500 項目のみ表示しています。"
-                },
+            },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
             "changeType": "種類を変更",
@@ -674,15 +674,20 @@
                 },
                 "generic": {
                     "displayName": "汎用スタイル",
+                    "layers": "線レイヤー",
+                    "layer": "レイヤー {{index}}",
                     "width": "幅",
+                    "opacity": "不透明度",
                     "linecap": "ラインキャップ",
                     "linecapButt": "バット",
                     "linecapRound": "ラウンド",
                     "linecapSquare": "スクエア",
                     "dasharray": "破線配列",
-                    "outline": "アウトライン",
-                    "outlineColor": "アウトライン色",
-                    "outlineWidth": "アウトライン幅"
+                    "addLayer": "レイヤーを追加",
+                    "copyLayer": "レイヤーを複製",
+                    "moveLayerUp": "レイヤーを上へ移動",
+                    "moveLayerDown": "レイヤーを下へ移動",
+                    "removeLayer": "レイヤーを削除"
                 }
             },
             "edges": {},

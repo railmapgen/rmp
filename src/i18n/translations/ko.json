@@ -51,7 +51,7 @@
                 "miscNode": "기타 노드",
                 "edge": "노선",
                 "showingFirst500": "처음 500개 항목만 표시됩니다."
-                },
+            },
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",
@@ -671,15 +671,20 @@
                 },
                 "generic": {
                     "displayName": "일반 스타일",
+                    "layers": "선 레이어",
+                    "layer": "레이어 {{index}}",
                     "width": "너비",
+                    "opacity": "불투명도",
                     "linecap": "라인 캡",
                     "linecapButt": "버트",
                     "linecapRound": "라운드",
                     "linecapSquare": "스퀘어",
                     "dasharray": "대시 배열",
-                    "outline": "외곽선",
-                    "outlineColor": "외곽선 색상",
-                    "outlineWidth": "외곽선 너비"
+                    "addLayer": "레이어 추가",
+                    "copyLayer": "레이어 복제",
+                    "moveLayerUp": "레이어 위로 이동",
+                    "moveLayerDown": "레이어 아래로 이동",
+                    "removeLayer": "레이어 삭제"
                 }
             },
             "edges": {},

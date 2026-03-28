@@ -51,7 +51,7 @@
                 "miscNode": "雜項節點",
                 "edge": "線路",
                 "showingFirst500": "僅顯示前 500 個項目。"
-                },
+            },
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
@@ -671,15 +671,20 @@
                 },
                 "generic": {
                     "displayName": "通用樣式",
+                    "layers": "線層",
+                    "layer": "第{{index}}層",
                     "width": "寬度",
+                    "opacity": "透明度",
                     "linecap": "線帽",
                     "linecapButt": "平頭",
                     "linecapRound": "圓頭",
                     "linecapSquare": "方頭",
                     "dasharray": "虛線陣列",
-                    "outline": "描邊",
-                    "outlineColor": "描邊顏色",
-                    "outlineWidth": "描邊寬度"
+                    "addLayer": "添加線層",
+                    "copyLayer": "複製線層",
+                    "moveLayerUp": "上移線層",
+                    "moveLayerDown": "下移線層",
+                    "removeLayer": "刪除線層"
                 }
             },
             "edges": {},

@@ -672,15 +672,20 @@
                 },
                 "generic": {
                     "displayName": "Generic style",
+                    "layers": "Line layers",
+                    "layer": "Layer {{index}}",
                     "width": "Width",
+                    "opacity": "Opacity",
                     "linecap": "Line cap",
                     "linecapButt": "Butt",
                     "linecapRound": "Round",
                     "linecapSquare": "Square",
                     "dasharray": "Dash array",
-                    "outline": "Outline",
-                    "outlineColor": "Outline color",
-                    "outlineWidth": "Outline width"
+                    "addLayer": "Add layer",
+                    "copyLayer": "Copy layer",
+                    "moveLayerUp": "Move layer up",
+                    "moveLayerDown": "Move layer down",
+                    "removeLayer": "Remove layer"
                 }
             },
             "edge": {},

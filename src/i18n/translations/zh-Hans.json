@@ -158,7 +158,7 @@
                 },
                 "chengduRTLineBadge": {
                     "displayName": "成都轨道交通线路标识",
-                    "badgeType":{
+                    "badgeType": {
                         "displayName": "类型",
                         "normal": "普通",
                         "suburban": "市域铁路",
@@ -476,7 +476,7 @@
                     "displayName": "重庆轨道交通换乘车站（2021）",
                     "isRapid": "快速/直快车停靠站",
                     "isWide": "宽形站",
-                    "wideDirection":{
+                    "wideDirection": {
                         "displayName": "方向",
                         "vertical": "纵向",
                         "horizontal": "横向"
@@ -671,15 +671,20 @@
                 },
                 "generic": {
                     "displayName": "通用样式",
+                    "layers": "线层",
+                    "layer": "第{{index}}层",
                     "width": "宽度",
+                    "opacity": "透明度",
                     "linecap": "线帽",
                     "linecapButt": "平头",
                     "linecapRound": "圆头",
                     "linecapSquare": "方头",
                     "dasharray": "虚线数组",
-                    "outline": "描边",
-                    "outlineColor": "描边颜色",
-                    "outlineWidth": "描边宽度"
+                    "addLayer": "添加线层",
+                    "copyLayer": "复制线层",
+                    "moveLayerUp": "上移线层",
+                    "moveLayerDown": "下移线层",
+                    "removeLayer": "删除线层"
                 }
             },
             "edges": {},
