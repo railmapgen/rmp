@@ -1,6 +1,7 @@
 import { Button, Divider, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdArrowDownward, MdArrowUpward, MdContentCopy, MdDelete } from 'react-icons/md';
@@ -16,9 +17,42 @@ import { useRootSelector } from '../../../../redux';
 import { usePaletteTheme } from '../../../../util/hooks';
 import ThemeButton from '../../../panels/theme-button';
 
+const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
+    const { layers } = styleAttrs;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+
+    return (
+        <g
+            id={id}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
+            {layers.map(({ id, color, width, opacity, linecap, dasharray }) => (
+                <path
+                    key={id}
+                    d={path}
+                    fill="none"
+                    stroke={color[2]}
+                    strokeWidth={width}
+                    strokeOpacity={opacity}
+                    strokeLinecap={linecap}
+                    strokeDasharray={dasharray || undefined}
+                />
+            ))}
+        </g>
+    );
+};
+
 type GenericLineCap = 'butt' | 'round' | 'square';
 
 export interface GenericLayer {
+    id: string;
     color: Theme;
     width: number;
     opacity: number;
@@ -33,7 +67,7 @@ export interface GenericAttributes extends LinePathAttributes {
     layers: GenericLayer[];
 }
 
-const defaultGenericLayer: GenericLayer = {
+const defaultGenericLayer: Omit<GenericLayer, 'id'> = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
     width: LINE_WIDTH,
     opacity: 1,
@@ -41,56 +75,16 @@ const defaultGenericLayer: GenericLayer = {
     dasharray: '',
 };
 
-const cloneTheme = (theme: Theme): Theme => [...theme] as Theme;
-
-const cloneGenericLayer = (layer: GenericLayer): GenericLayer => ({
-    ...layer,
-    color: cloneTheme(layer.color),
-});
+const makeGenericLayerId = () => nanoid(10);
 
 const makeDefaultGenericLayer = (theme: Theme = defaultGenericLayer.color): GenericLayer => ({
-    ...defaultGenericLayer,
-    color: cloneTheme(theme),
-});
-
-const normalizeGenericAttributes = (attrs?: Partial<GenericAttributes>): GenericAttributes => ({
-    layers: attrs?.layers?.length ? attrs.layers.map(cloneGenericLayer) : [makeDefaultGenericLayer()],
+    id: makeGenericLayerId(),
+    ...structuredClone(defaultGenericLayer),
+    color: structuredClone(theme),
 });
 
 const defaultGenericAttributes: GenericAttributes = {
     layers: [makeDefaultGenericLayer()],
-};
-
-const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
-    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
-    const { layers } = normalizeGenericAttributes(styleAttrs);
-
-    const onPointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
-        [id, handlePointerDown]
-    );
-
-    return (
-        <g
-            id={id}
-            onPointerDown={newLine ? undefined : onPointerDown}
-            cursor="pointer"
-            pointerEvents={newLine ? 'none' : undefined}
-        >
-            {layers.map((layer, index) => (
-                <path
-                    key={`${layer.color.toString()}-${layer.width}-${layer.opacity}-${layer.linecap}-${layer.dasharray}-${index}`}
-                    d={path}
-                    fill="none"
-                    stroke={layer.color[2]}
-                    strokeWidth={layer.width}
-                    strokeOpacity={layer.opacity}
-                    strokeLinecap={layer.linecap}
-                    strokeDasharray={layer.dasharray || undefined}
-                />
-            ))}
-        </g>
-    );
 };
 
 interface GenericLayerItemProps {
@@ -212,48 +206,33 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
-    const safeAttrs = normalizeGenericAttributes(attrs);
-
-    const updateLayers = (layers: GenericLayer[]) => {
-        handleAttrsUpdate(id, { layers });
-    };
+    const { layers } = attrs;
 
     const handleAdd = () => {
-        updateLayers([...safeAttrs.layers, makeDefaultGenericLayer(runtimeTheme)]);
+        handleAttrsUpdate(id, { layers: [...layers, makeDefaultGenericLayer(runtimeTheme)] });
     };
 
     const handleUpdate = (index: number, layer: GenericLayer) => {
-        updateLayers(
-            safeAttrs.layers.map((item, itemIndex) => (itemIndex === index ? cloneGenericLayer(layer) : item))
-        );
+        const nextLayers = structuredClone(layers);
+        nextLayers[index] = structuredClone(layer);
+        handleAttrsUpdate(id, { layers: nextLayers });
     };
 
     const handleCopy = (index: number) => {
-        const layer = safeAttrs.layers[index];
-        updateLayers([
-            ...safeAttrs.layers.slice(0, index + 1),
-            cloneGenericLayer(layer),
-            ...safeAttrs.layers.slice(index + 1),
-        ]);
+        const nextLayers = structuredClone(layers);
+        nextLayers.splice(index + 1, 0, { ...structuredClone(nextLayers[index]), id: makeGenericLayerId() });
+        handleAttrsUpdate(id, { layers: nextLayers });
     };
 
     const handleDelete = (index: number) => {
-        if (safeAttrs.layers.length <= 1) {
-            return;
-        }
-
-        updateLayers(safeAttrs.layers.filter((_, itemIndex) => itemIndex !== index));
+        handleAttrsUpdate(id, { layers: layers.filter((_, itemIndex) => itemIndex !== index) });
     };
 
     const handleMove = (fromIndex: number, toIndex: number) => {
-        if (toIndex < 0 || toIndex >= safeAttrs.layers.length) {
-            return;
-        }
-
-        const layers = safeAttrs.layers.map(cloneGenericLayer);
-        const [movedLayer] = layers.splice(fromIndex, 1);
-        layers.splice(toIndex, 0, movedLayer);
-        updateLayers(layers);
+        const nextLayers = structuredClone(layers);
+        const [movedLayer] = nextLayers.splice(fromIndex, 1);
+        nextLayers.splice(toIndex, 0, movedLayer);
+        handleAttrsUpdate(id, { layers: nextLayers });
     };
 
     return (
@@ -263,11 +242,11 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
             </Text>
 
             <RmgCard direction="column">
-                {safeAttrs.layers.map((layer, index) => (
+                {layers.map((layer, index) => (
                     <GenericLayerItem
-                        key={`${layer.color.toString()}-${layer.width}-${layer.opacity}-${layer.linecap}-${layer.dasharray}-${index}`}
+                        key={layer.id}
                         index={index}
-                        total={safeAttrs.layers.length}
+                        total={layers.length}
                         layer={layer}
                         onUpdate={handleUpdate}
                         onCopy={handleCopy}
@@ -295,6 +274,7 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },
