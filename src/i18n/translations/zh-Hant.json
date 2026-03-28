@@ -51,7 +51,7 @@
                 "miscNode": "雜項節點",
                 "edge": "線路",
                 "showingFirst500": "僅顯示前 500 個項目。"
-                },
+            },
             "changeStationTypeContent": "修改車站類型會移除所有獨特屬性除了名稱。",
             "changeLineTypeContent": "修改線段類型會移除所有獨特屬性。",
             "changeType": "更改類型",
@@ -155,6 +155,15 @@
                     "continuation": "延續",
                     "sandwich": "三明治",
                     "tube": "地鐵"
+                },
+                "londonTubeLineBadge": {
+                    "displayName": "倫敦地鐵線路標牌",
+                    "lineName": "線路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目標",
+                    "distance": "距離",
+                    "addItem": "新增標牌",
+                    "noItems": "暫無標牌"
                 },
                 "chengduRTLineBadge": {
                     "displayName": "成都軌道交通線路標識",
@@ -942,7 +951,7 @@
 
     "contextMenu": {
         "refresh": "重新整理",
-        "cut": "剪下", 
+        "cut": "剪下",
         "paste": "貼上",
         "delete": "刪除",
         "placeTop": "置頂",

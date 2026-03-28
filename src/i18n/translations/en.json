@@ -156,6 +156,15 @@
                     "sandwich": "Sandwich",
                     "tube": "Tube"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "London Tube line badge",
+                    "lineName": "Line name",
+                    "walking": "Walking",
+                    "walkingTarget": "Walking target",
+                    "distance": "Distance",
+                    "addItem": "Add badge",
+                    "noItems": "No badges"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "Chengdu Rail Transit Line Badge",
                     "badgeType": {
@@ -943,7 +952,7 @@
 
     "contextMenu": {
         "refresh": "Refresh",
-        "cut": "Cut", 
+        "cut": "Cut",
         "paste": "Paste",
         "delete": "Delete",
         "placeTop": "Place top",
