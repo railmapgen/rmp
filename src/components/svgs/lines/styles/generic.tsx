@@ -33,7 +33,7 @@ const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            {layers.map(({ id, color, width, opacity, linecap, dasharray }) => (
+            {layers.map(({ id, color, width, opacity, linecap, dash, gap }) => (
                 <path
                     key={id}
                     d={path}
@@ -42,7 +42,7 @@ const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
                     strokeWidth={width}
                     strokeOpacity={opacity}
                     strokeLinecap={linecap}
-                    strokeDasharray={dasharray || undefined}
+                    strokeDasharray={dash > 0 || gap > 0 ? `${dash} ${gap}` : undefined}
                 />
             ))}
         </g>
@@ -57,7 +57,8 @@ export interface GenericLayer {
     width: number;
     opacity: number;
     linecap: GenericLineCap;
-    dasharray: string;
+    dash: number;
+    gap: number;
 }
 
 /**
@@ -71,8 +72,9 @@ const defaultGenericLayer: Omit<GenericLayer, 'id'> = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
     width: LINE_WIDTH,
     opacity: 1,
-    linecap: 'round',
-    dasharray: '',
+    linecap: 'butt',
+    dash: 0,
+    gap: 0,
 };
 
 const makeGenericLayerId = () => nanoid(10);
@@ -107,6 +109,22 @@ const GenericLayerItem = (props: GenericLayerItemProps) => {
         onThemeApplied: color => onUpdate(index, { ...layer, color }),
     });
 
+    const handleDashChange = (value: number) => {
+        onUpdate(index, {
+            ...layer,
+            dash: value,
+            gap: layer.gap === 0 ? value : layer.gap,
+        });
+    };
+
+    const handleGapChange = (value: number) => {
+        onUpdate(index, {
+            ...layer,
+            dash: layer.dash === 0 ? value : layer.dash,
+            gap: value,
+        });
+    };
+
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
@@ -122,14 +140,6 @@ const GenericLayerItem = (props: GenericLayerItemProps) => {
             onChange: val => onUpdate(index, { ...layer, width: Number(val) }),
         },
         {
-            type: 'input',
-            label: t('panel.details.lines.generic.opacity'),
-            variant: 'number',
-            value: layer.opacity.toString(),
-            validator: (val: string) => !Number.isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 1,
-            onChange: val => onUpdate(index, { ...layer, opacity: Number(val) }),
-        },
-        {
             type: 'select',
             label: t('panel.details.lines.generic.linecap'),
             value: layer.linecap,
@@ -141,10 +151,30 @@ const GenericLayerItem = (props: GenericLayerItemProps) => {
             onChange: val => onUpdate(index, { ...layer, linecap: val as GenericLineCap }),
         },
         {
+            type: 'slider',
+            label: t('panel.details.lines.generic.opacity'),
+            value: layer.opacity,
+            min: 0,
+            max: 1,
+            step: 0.01,
+            onChange: val => onUpdate(index, { ...layer, opacity: Number(val) }),
+            minW: 'full',
+        },
+        {
             type: 'input',
-            label: t('panel.details.lines.generic.dasharray'),
-            value: layer.dasharray,
-            onChange: val => onUpdate(index, { ...layer, dasharray: val }),
+            label: t('panel.details.lines.generic.dash'),
+            variant: 'number',
+            value: layer.dash.toString(),
+            validator: (val: string) => !Number.isNaN(Number(val)) && Number(val) >= 0,
+            onChange: val => handleDashChange(Number(val)),
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.generic.gap'),
+            variant: 'number',
+            value: layer.gap.toString(),
+            validator: (val: string) => !Number.isNaN(Number(val)) && Number(val) >= 0,
+            onChange: val => handleGapChange(Number(val)),
         },
     ];
 
@@ -278,7 +308,7 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.Simple,
         ],
     },
-    isPro: true,
+    // isPro: true,
 };
 
 export default generic;
