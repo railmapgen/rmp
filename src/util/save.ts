@@ -882,7 +882,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         return JSON.stringify({ ...p, version: 67, graph: graph.export() });
     },
     67: param => {
-        // Bump save version to make version 67 saves compatible across both the generic-style branch and mainline.
+        // Bump save version to add scale to hzmetro basic and interchange stations.
         const p = JSON.parse(param);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         graph.import(p?.graph);
@@ -890,10 +890,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             .filterNodes(
                 (node, attr) =>
                     node.startsWith('stn') &&
-                    (attr.type === StationType.BjsubwayBasic ||
-                        attr.type === StationType.BjsubwayInt ||
-                        attr.type === StationType.HzmetroBasic ||
-                        attr.type === StationType.HzmetroInt)
+                    (attr.type === StationType.HzmetroBasic || attr.type === StationType.HzmetroInt)
             )
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
