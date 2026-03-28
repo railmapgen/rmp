@@ -99,7 +99,8 @@ const SvgWrapper = () => {
         svgRef,
         getLatestViewport,
         previewViewport,
-        scheduleViewportCommit,
+        scheduleLiveViewportCommit,
+        schedulePreviewCommit,
         commitViewportNow,
         beginDrag,
         dragTo,
@@ -168,12 +169,13 @@ const SvgWrapper = () => {
                 if (keepLastPath) dispatch(setKeepLastPath(false));
             }
 
-            beginDrag({ x, y }, { publishLiveViewport: gridLines });
             if (!e.shiftKey) {
-                // when user holding the shift key and mis-click the background
-                // preserve the current selection
+                // start background dragging and clear the current selection
                 dispatch(setActive('background'));
                 dispatch(clearSelected());
+                beginDrag({ x, y }, { publishLiveViewport: gridLines });
+            } else {
+                // when user holds shift and mis-clicks the background, preserve the current selection
             }
         } else if (mode === 'select') {
             setSelectStart(pointerPosToSVGCoord(x, y, currentViewport.zoom, currentViewBoxMin));
@@ -239,8 +241,13 @@ const SvgWrapper = () => {
             zoom: newZoom,
         };
 
-        previewViewport(nextViewport, { publishLiveViewport: true });
-        scheduleViewportCommit(150);
+        if (gridLines) {
+            previewViewport(nextViewport, { publishLiveViewport: true });
+            scheduleLiveViewportCommit(150);
+        } else {
+            previewViewport(nextViewport);
+            schedulePreviewCommit(150);
+        }
     });
 
     const handleContextMenu = useEvent((e: React.MouseEvent<SVGSVGElement>) => {

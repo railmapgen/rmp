@@ -64,6 +64,7 @@ interface DragState {
  */
 interface ViewportPreviewState {
     viewport: LiveViewport;
+    publishLiveViewport: boolean;
     rafId: number | null;
     timeoutId: number | null;
 }
@@ -120,6 +121,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      */
     const viewportPreviewRef = React.useRef<ViewportPreviewState>({
         viewport,
+        publishLiveViewport: false,
         rafId: null,
         timeoutId: null,
     });
@@ -319,9 +321,10 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
                 publishLiveViewport: !!options?.publishLiveViewport || !!store.getState().viewport.liveViewport,
             };
 
+            clearPreviewRaf();
             clearPreviewTimeout();
         },
-        [clearPreviewTimeout, getLatestViewport, store]
+        [clearPreviewRaf, clearPreviewTimeout, getLatestViewport, store]
     );
 
     /**
@@ -374,14 +377,15 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     const previewViewport = React.useCallback(
         (nextViewport: LiveViewport, options?: { publishLiveViewport?: boolean }) => {
             viewportPreviewRef.current.viewport = nextViewport;
-
-            if (options?.publishLiveViewport) {
-                dispatch(setLiveViewport(nextViewport));
-            }
+            viewportPreviewRef.current.publishLiveViewport = !!options?.publishLiveViewport;
 
             if (!viewportPreviewRef.current.rafId) {
                 viewportPreviewRef.current.rafId = requestAnimationFrame(() => {
-                    updateViewportTransform(viewportPreviewRef.current.viewport);
+                    const { viewport: latestViewport, publishLiveViewport } = viewportPreviewRef.current;
+                    updateViewportTransform(latestViewport);
+                    if (publishLiveViewport) {
+                        dispatch(setLiveViewport(latestViewport));
+                    }
                     viewportPreviewRef.current.rafId = null;
                 });
             }
@@ -401,6 +405,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
         (nextViewport?: LiveViewport) => {
             clearPreviewRaf();
             clearPreviewTimeout();
+            viewportPreviewRef.current.publishLiveViewport = false;
             dispatch(commitLiveViewport(nextViewport));
         },
         [clearPreviewRaf, clearPreviewTimeout, dispatch]
@@ -409,16 +414,38 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     /**
      * Schedules a deferred commit of the current live viewport.
      *
-     * This is the debounce layer used after repeated transient previews. Repeated
-     * calls keep pushing the commit into the future, so only the final settled
-     * viewport is persisted after the burst of previews has stopped.
+     * This API is intentionally only for preview flows that also publish
+     * `liveViewport`. Repeated calls keep pushing the commit into the future, so
+     * only the final settled live viewport is persisted after the burst of previews
+     * has stopped.
      */
-    const scheduleViewportCommit = React.useCallback(
+    const scheduleLiveViewportCommit = React.useCallback(
+        (delayMs = 150) => {
+            if (!viewportPreviewRef.current.publishLiveViewport) return;
+
+            clearPreviewTimeout();
+            viewportPreviewRef.current.timeoutId = window.setTimeout(() => {
+                viewportPreviewRef.current.timeoutId = null;
+                viewportPreviewRef.current.publishLiveViewport = false;
+                dispatch(commitLiveViewport());
+            }, delayMs);
+        },
+        [clearPreviewTimeout, dispatch]
+    );
+
+    /**
+     * Schedules a deferred commit of the latest previewed viewport.
+     *
+     * Use this for preview flows that intentionally avoid publishing
+     * `liveViewport`, but still need the final settled viewport to be persisted
+     * after the interaction burst ends.
+     */
+    const schedulePreviewCommit = React.useCallback(
         (delayMs = 150) => {
             clearPreviewTimeout();
             viewportPreviewRef.current.timeoutId = window.setTimeout(() => {
                 viewportPreviewRef.current.timeoutId = null;
-                dispatch(commitLiveViewport());
+                dispatch(commitLiveViewport(viewportPreviewRef.current.viewport));
             }, delayMs);
         },
         [clearPreviewTimeout, dispatch]
@@ -455,7 +482,8 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * - svgRef: attach to the root `<svg>` so browser zoom suppression can be wired
      * - getLatestViewport: use when business logic needs the freshest viewport value
      * - previewViewport: preview a viewport efficiently without persisting it yet
-     * - scheduleViewportCommit: debounce a future commit after transient previews
+     * - scheduleLiveViewportCommit: debounce a future commit for live-published previews
+     * - schedulePreviewCommit: debounce a future commit for preview-only flows
      * - commitViewportNow: persist a viewport immediately
      * - beginDrag / dragTo / finishDrag: wire these to background drag interaction
      */
@@ -464,7 +492,8 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
         svgRef,
         getLatestViewport,
         previewViewport,
-        scheduleViewportCommit,
+        scheduleLiveViewportCommit,
+        schedulePreviewCommit,
         commitViewportNow,
         beginDrag,
         dragTo,

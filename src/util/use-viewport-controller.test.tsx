@@ -73,11 +73,12 @@ describe('useViewportController', () => {
         });
 
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
-        expect(store.getState().viewport.liveViewport).toEqual({ x: 30, y: 40, zoom: 50 });
+        expect(store.getState().viewport.liveViewport).toBeUndefined();
 
         flushRaf();
 
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(-60, -80) scale(2)');
+        expect(store.getState().viewport.liveViewport).toEqual({ x: 30, y: 40, zoom: 50 });
     });
 
     it('debounces viewport commit and persists only the latest previewed viewport', () => {
@@ -88,8 +89,10 @@ describe('useViewportController', () => {
 
         act(() => {
             ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
-            ref.current?.scheduleViewportCommit(150);
+            ref.current?.scheduleLiveViewportCommit(150);
         });
+
+        flushRaf();
 
         act(() => {
             vi.advanceTimersByTime(100);
@@ -97,8 +100,10 @@ describe('useViewportController', () => {
 
         act(() => {
             ref.current?.previewViewport({ x: 40, y: 50, zoom: 60 }, { publishLiveViewport: true });
-            ref.current?.scheduleViewportCommit(150);
+            ref.current?.scheduleLiveViewportCommit(150);
         });
+
+        flushRaf();
 
         act(() => {
             vi.advanceTimersByTime(149);
@@ -125,7 +130,7 @@ describe('useViewportController', () => {
 
         act(() => {
             ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
-            ref.current?.scheduleViewportCommit(150);
+            ref.current?.scheduleLiveViewportCommit(150);
             ref.current?.commitViewportNow({ x: 5, y: 15, zoom: 90 });
         });
 
@@ -160,6 +165,60 @@ describe('useViewportController', () => {
 
         expect(store.getState().param.svgViewBoxZoom).toBe(100);
         expect(store.getState().param.svgViewBoxMin).toEqual({ x: -100, y: -40 });
+        expect(store.getState().viewport.liveViewport).toBeUndefined();
+    });
+
+    it('debounces preview-only commits without relying on live viewport publication', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+
+        act(() => {
+            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 });
+            ref.current?.schedulePreviewCommit(150);
+        });
+
+        act(() => {
+            vi.advanceTimersByTime(100);
+        });
+
+        act(() => {
+            ref.current?.previewViewport({ x: 40, y: 50, zoom: 60 });
+            ref.current?.schedulePreviewCommit(150);
+        });
+
+        act(() => {
+            vi.advanceTimersByTime(149);
+        });
+
+        expect(store.getState().param.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 0, y: 0 });
+        expect(store.getState().viewport.liveViewport).toBeUndefined();
+
+        act(() => {
+            vi.advanceTimersByTime(1);
+        });
+
+        expect(store.getState().param.svgViewBoxZoom).toBe(60);
+        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 40, y: 50 });
+        expect(store.getState().viewport.liveViewport).toBeUndefined();
+    });
+
+    it('cancels pending preview RAF when a drag session begins', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+
+        act(() => {
+            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 });
+            ref.current?.beginDrag({ x: 0, y: 0 }, { publishLiveViewport: true });
+        });
+
+        flushRaf();
+
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 });
