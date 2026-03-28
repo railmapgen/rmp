@@ -38,6 +38,7 @@ import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop'
 import { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
+import { GenericAttributes } from '../components/svgs/lines/styles/generic';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -88,6 +89,7 @@ export enum LineStyleType {
     ChongqingRTLoop = 'chongqingrt-loop',
     ChongqingRTLineBadge = 'chongqingrt-line-badge',
     ChengduRTOutsideFareGates = 'chengdurt-outside-fare-gates',
+    Generic = 'generic',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -123,6 +125,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChongqingRTLoop]?: ChongqingRTLoopAttributes;
     [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
+    [LineStyleType.Generic]?: GenericAttributes;
 }
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
