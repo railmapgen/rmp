@@ -32,12 +32,13 @@ export const NAME_DY_HZ_BASIC = {
 };
 
 const HzmetroBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultHzmetroBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultHzmetroBasicStationAttributes.nameOffsetY,
         color = defaultHzmetroBasicStationAttributes.color,
+        scale = defaultHzmetroBasicStationAttributes.scale,
     } = attrs[StationType.HzmetroBasic] ?? defaultHzmetroBasicStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -61,7 +62,7 @@ const HzmetroBasicStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle
                 id={`stn_core_${id}`}
                 r={3.25}
@@ -73,7 +74,7 @@ const HzmetroBasicStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g transform={`translate(${textX}, ${textY}) scale(${scale} 1)`} textAnchor={textAnchor}>
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={18}
@@ -104,12 +105,14 @@ const HzmetroBasicStation = (props: StationComponentProps) => {
 export interface HzmetroBasicStationAttributes extends StationAttributes, ColorAttribute {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    scale: number;
 }
 
 const defaultHzmetroBasicStationAttributes: HzmetroBasicStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    scale: 1,
     color: [CityCode.Hangzhou, 'hz1', '#e8384a', MonoColour.white],
 };
 
@@ -168,6 +171,19 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
                 attrs.nameOffsetY = val as NameOffsetY;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'slider',
+            label: t('panel.details.stations.hzmetroBasic.scale'),
+            value: attrs.scale ?? defaultHzmetroBasicStationAttributes.scale,
+            onChange: val => {
+                attrs.scale = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            step: 0.025,
+            min: 0.5,
+            max: 1,
             minW: 'full',
         },
         {

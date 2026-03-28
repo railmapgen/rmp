@@ -22,12 +22,12 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
-import { NonSimpleLinePathAttributes } from '../../../util/parallel';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
+import { RayGuidedPathAttributes } from '../lines/paths/ray-guided';
 
 /**
- * Generate the combined SVG path string for the closed loop with detailed logging.
+ * Generate the combined SVG path string for the closed loop.
  */
 const generateClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -47,7 +47,7 @@ const generateClosedPath = (
         const targetAttrs = graph.getNodeAttributes(targetNodeId);
         const edgeAttrs = graph.getEdgeAttributes(edgeId);
         const pathType = edgeAttrs.type;
-        const initialPathAttr = edgeAttrs[pathType];
+        const initialPathAttr = edgeAttrs[pathType]!;
 
         const x1 = sourceAttrs.x,
             y1 = sourceAttrs.y,
@@ -58,10 +58,15 @@ const generateClosedPath = (
         const isReversed = graph.source(edgeId) !== sourceNodeId;
 
         if (isReversed) {
-            if ((finalPathAttr as any)?.startFrom) {
-                (finalPathAttr as NonSimpleLinePathAttributes).startFrom =
-                    (finalPathAttr as NonSimpleLinePathAttributes).startFrom === 'from' ? 'to' : 'from';
+            if ('startFrom' in finalPathAttr) {
+                finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
             }
+            if (pathType === LinePathType.RayGuided) {
+                const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
+                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
+                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
+            }
+            // no need to handle simple path as it is symmetrical
         }
 
         let segment: string =
@@ -113,7 +118,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const pattern = { width: 60, height: 60 };
     const patternColor = getDynamicContrastColor(color[2], opacity);
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {fillPath && (
                 <g transform={`translate(${-x}, ${-y})`}>
                     <defs>
@@ -122,7 +127,6 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             patternUnits="userSpaceOnUse"
                             width={pattern.width}
                             height={pattern.height}
-                            fill="none"
                             stroke={patternColor}
                             strokeWidth="0.6"
                             strokeLinecap="round"
@@ -131,6 +135,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             <path
                                 transform="translate(0,0)"
                                 d="M10 20 L10 14 L4 16 L10 8 L4 10 L10 2 L16 10 L10 8 L16 16 L10 14"
+                                fill="none"
                             />
                         </pattern>
                         <pattern
@@ -138,14 +143,13 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             patternUnits="userSpaceOnUse"
                             width={pattern.width}
                             height={pattern.height}
-                            fill="none"
                             stroke={patternColor}
                             strokeWidth="0.8"
                             strokeLinecap="round"
                         >
-                            <path transform="translate(20,0)" d="M2 4 Q7 -2 12 4 T18 4" />
-                            <path transform="translate(20,0)" d="M2 10 Q7 4 12 10 T18 10" />
-                            <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" />
+                            <path transform="translate(20,0)" d="M2 4 Q7 -2 12 4 T18 4" fill="none" />
+                            <path transform="translate(20,0)" d="M2 10 Q7 4 12 10 T18 10" fill="none" />
+                            <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" fill="none" />
                         </pattern>
                     </defs>
                     <path d={fillPath} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />

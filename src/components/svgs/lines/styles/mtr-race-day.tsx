@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultMTRRaceDaysAttributes.color } = styleAttrs ?? defaultMTRRaceDaysAttributes;
 
     const onPointerDown = React.useCallback(
@@ -24,7 +24,6 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
@@ -32,7 +31,8 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
             strokeLinecap="butt"
             strokeDasharray={`${LINE_WIDTH} ${LINE_WIDTH / 2}`}
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
@@ -69,7 +69,13 @@ const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
     attrsComponent: MTRRaceDaysAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mtrRaceDays.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
+        ],
     },
 };
 

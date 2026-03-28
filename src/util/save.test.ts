@@ -863,14 +863,50 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('66 -> 67', () => {
-        // Bump save version to support generic line style.
+        // Bump save version to add scale to bjsubway basic and interchange stations.
         const oldParam =
-            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":66}';
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"bjsubway-basic","bjsubway-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","open":true,"construction":false}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"bjsubway-int","bjsubway-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","outOfStation":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":66}';
         const newParam = UPGRADE_COLLECTION[66](oldParam);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
-            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":67}';
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"bjsubway-basic","bjsubway-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","open":true,"construction":false,"scale":1}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"bjsubway-int","bjsubway-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","outOfStation":false,"scale":1}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":67}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('67 -> 68', () => {
+        // Bump save version to make version 67 saves compatible across both the generic-style branch and mainline.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_bj_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"bjsubway-basic","bjsubway-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","open":true,"construction":false}}},{"key":"stn_bj_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"bjsubway-int","bjsubway-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","outOfStation":false}}},{"key":"stn_hz_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":300,"type":"hzmetro-basic","hzmetro-basic":{"names":["杭州站"],"nameOffsetX":"right","nameOffsetY":"top","color":["hangzhou","1","#dd4231","#fff"]}}},{"key":"stn_hz_int","attributes":{"visible":true,"zIndex":0,"x":400,"y":400,"type":"hzmetro-int","hzmetro-int":{"names":["杭州换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[]]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":67}';
+        const newParam = UPGRADE_COLLECTION[67](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_bj_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"bjsubway-basic","bjsubway-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","open":true,"construction":false,"scale":1}}},{"key":"stn_bj_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"bjsubway-int","bjsubway-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","outOfStation":false,"scale":1}}},{"key":"stn_hz_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":300,"type":"hzmetro-basic","hzmetro-basic":{"names":["杭州站"],"nameOffsetX":"right","nameOffsetY":"top","color":["hangzhou","1","#dd4231","#fff"],"scale":1}}},{"key":"stn_hz_int","attributes":{"visible":true,"zIndex":0,"x":400,"y":400,"type":"hzmetro-int","hzmetro-int":{"names":["杭州换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[]],"scale":1,"mirror":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":68}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('68 -> 69', () => {
+        // Bump save version to support the ray-guided line path.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":68}';
+        const newParam = UPGRADE_COLLECTION[68](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('69 -> 70', () => {
+        // Bump save version to support generic line style.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
+        const newParam = UPGRADE_COLLECTION[69](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":70}';
         expect(newParam).toEqual(expectParam);
     });
 });

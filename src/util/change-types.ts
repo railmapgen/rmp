@@ -19,8 +19,10 @@ import {
     Theme,
 } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
+import { MasterParam } from '../constants/master';
+import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
+import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 
 const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
@@ -144,9 +146,9 @@ export const changeLinePathType = (
         // calculate parallel index before changing the type
         // so that makeParallelIndex won't consider this line as an existing line
         let parallelIndex = -1;
-        if (autoParallel && newLinePathType !== LinePathType.Simple) {
+        if (autoParallel && supportsParallelLinePath(newLinePathType)) {
             const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
-            const startFrom = (newAttrs as NonSimpleLinePathAttributes).startFrom;
+            const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
             parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
         }
         graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
@@ -279,16 +281,31 @@ export const changeNodesColorInBatch = (
     [...stations, ...miscNodes].forEach(node => {
         const thisType = graph.getNodeAttributes(node).type;
         const attrs = graph.getNodeAttribute(node, thisType);
-        if ((attrs as AttributesWithColor)['color'] !== undefined) {
-            const color = (attrs as AttributesWithColor)['color'];
-            if (
-                currentColor === 'any' ||
-                (color[0] == currentColor[0] &&
-                    color[1] == currentColor[1] &&
-                    color[2] == currentColor[2] &&
-                    color[3] == currentColor[3])
-            )
-                (attrs as AttributesWithColor)['color'] = newColor;
+        if ((attrs as AttributesWithColor | MasterParam)['color'] !== undefined) {
+            if (thisType !== MiscNodeType.Master) {
+                const color = (attrs as AttributesWithColor).color;
+                if (
+                    currentColor === 'any' ||
+                    (color[0] == currentColor[0] &&
+                        color[1] == currentColor[1] &&
+                        color[2] == currentColor[2] &&
+                        color[3] == currentColor[3])
+                ) {
+                    (attrs as AttributesWithColor).color = newColor;
+                }
+            } else {
+                const color = (attrs as MasterParam).color!.value as Theme | undefined;
+                if (
+                    currentColor === 'any' ||
+                    color === undefined ||
+                    (color[0] == currentColor[0] &&
+                        color[1] == currentColor[1] &&
+                        color[2] == currentColor[2] &&
+                        color[3] == currentColor[3])
+                ) {
+                    (attrs as MasterParam).color!.value = newColor;
+                }
+            }
         }
         graph.mergeNodeAttributes(node, { [thisType]: attrs });
     });

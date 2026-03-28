@@ -16,7 +16,7 @@ import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
 const ShmetroOsysiStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultShmetroOsysiStationAttributes.nameOffsetX,
@@ -44,7 +44,7 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <circle r={5} stroke="#393332" strokeWidth="1.33" fill="white" />
             <circle r={2.3} stroke="#393332" strokeWidth="1.33" fill="white" />
 
@@ -64,7 +64,7 @@ const ShmetroOsysiStation = (props: StationComponentProps) => {
                 transform={`translate(${textX}, ${textY})`}
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
-                strokeWidth="1"
+                strokeWidth="2.5"
             >
                 <MultilineText
                     text={names[0].split('\n')}

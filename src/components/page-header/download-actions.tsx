@@ -199,7 +199,8 @@ export default function DownloadActions() {
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
         // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
-        const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ');
+        // ASCII control characters will also break the rendering, reported in #1224
+        const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
 
         if (format === 'svg') {
             downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
@@ -353,7 +354,7 @@ export default function DownloadActions() {
                                                         color="teal.500"
                                                         textDecoration="underline"
                                                         cursor="pointer"
-                                                        href="https://afdian.com/item/9c8b220c614311efab2d52540025c377"
+                                                        href="https://ifdian.net/item/9c8b220c614311efab2d52540025c377"
                                                         target="_blank"
                                                     />
                                                 ),

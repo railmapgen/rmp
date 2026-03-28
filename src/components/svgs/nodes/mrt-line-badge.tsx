@@ -8,7 +8,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         lineCode = defaultMRTLineBadgeAttributes.lineCode,
         color = defaultMRTLineBadgeAttributes.color,
@@ -38,8 +38,6 @@ const MRTLineBadge = (props: NodeComponentProps<MRTLineBadgeAttributes>) => {
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

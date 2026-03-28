@@ -13,7 +13,7 @@ import { toRmg } from './to-rmg';
 const color: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
 
 describe('Unit tests for to rmg function', () => {
-    it('will return one line for only two stations', async () => {
+    it('will return one line for only two stations', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
@@ -216,7 +216,7 @@ describe('Unit tests for to rmg function', () => {
         ]);
     });
 
-    it('will return loop line on loop', async () => {
+    it('will return loop line on loop', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
@@ -713,7 +713,7 @@ describe('Unit tests for to rmg function', () => {
         ]);
     });
 
-    it('will return branch line on branch line', async () => {
+    it('will return branch line on branch line', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
@@ -1107,7 +1107,7 @@ describe('Unit tests for to rmg function', () => {
         ]);
     });
 
-    it('will return lamp line on lamp line', async () => {
+    it('will return lamp line on lamp line', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
@@ -1304,7 +1304,7 @@ describe('Unit tests for to rmg function', () => {
         ]);
     });
 
-    it('will not throw error if only one edge connect a station and a virtual node', async () => {
+    it('will not throw error if only one edge connect a station and a virtual node', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
@@ -1338,7 +1338,7 @@ describe('Unit tests for to rmg function', () => {
         expect(toRmgRes).toEqual([]);
     });
 
-    it('will not throw error if only one station connects more than 3 stations', async () => {
+    it('will not throw error if only one station connects more than 3 stations', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,
@@ -1426,7 +1426,7 @@ describe('Unit tests for to rmg function', () => {
         expect(toRmgRes).toEqual([]);
     });
 
-    it('will return two part in one theme', async () => {
+    it('will return two part in one theme', () => {
         const graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> = new MultiDirectedGraph();
         graph.addNode('stn_1', {
             visible: true,

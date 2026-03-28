@@ -18,7 +18,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const FoshanMetroBasicStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultFoshanMetroBasicStationAttributes.nameOffsetX,
@@ -106,7 +106,7 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}>
                 <StationNumber
                     id={`stn_core_${id}`}

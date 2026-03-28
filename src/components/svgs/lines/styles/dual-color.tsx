@@ -12,6 +12,7 @@ import {
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
+    Path,
 } from '../../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
@@ -19,8 +20,14 @@ import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeShortPathParallel } from '../../../../util/bezier-parallel';
 import { ColorField } from '../../../panels/details/color-field';
 
+const dualColorPathGenerator = (path: Path, type: LinePathType, attrs: DualColorAttributes) => {
+    const _ = makeShortPathParallel(path, type, -1.25, 1.25);
+    if (!_) return { pathA: path, pathB: path };
+    return { pathA: _[0], pathB: _[1] };
+};
+
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
-    const { id, type, path, styleAttrs, handlePointerDown } = props;
+    const { id, type, path, styleAttrs, newLine, handlePointerDown } = props;
     const { colorA = defaultDualColorAttributes.colorA, colorB = defaultDualColorAttributes.colorB } =
         styleAttrs ?? defaultDualColorAttributes;
 
@@ -29,20 +36,33 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
         [id, handlePointerDown]
     );
 
-    const [pathA, setPathA] = React.useState(path);
-    const [pathB, setPathB] = React.useState(path);
-    React.useEffect(() => {
-        const _ = makeShortPathParallel(path, type, -1.25, 1.25);
-        if (!_) return;
-
-        setPathA(_[0]);
-        setPathB(_[1]);
-    }, [path]);
+    const paths = React.useMemo(
+        () => dualColorPathGenerator(path, type, styleAttrs ?? defaultDualColorAttributes),
+        [path, type, styleAttrs]
+    );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
-            <path d={pathA} fill="none" stroke={colorA[2]} strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
-            <path d={pathB} fill="none" stroke={colorB[2]} strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
+            <path
+                id={`${LineStyleType.DualColor}_pathA_${id}`}
+                d={paths.pathA}
+                fill="none"
+                stroke={colorA[2]}
+                strokeWidth={LINE_WIDTH / 2}
+                strokeLinecap="round"
+            />
+            <path
+                id={`${LineStyleType.DualColor}_pathB_${id}`}
+                d={paths.pathB}
+                fill="none"
+                stroke={colorB[2]}
+                strokeWidth={LINE_WIDTH / 2}
+                strokeLinecap="round"
+            />
         </g>
     );
 };
@@ -129,6 +149,7 @@ const dualColor: LineStyle<DualColorAttributes> = {
     component: DualColor,
     defaultAttrs: defaultDualColorAttributes,
     attrsComponent: dualColorAttrsComponent,
+    pathGenerator: dualColorPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
         supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],

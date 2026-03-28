@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultMTRLightRailAttributes.color } = styleAttrs ?? defaultMTRLightRailAttributes;
 
     const onPointerDown = React.useCallback(
@@ -24,14 +24,14 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke={color[2]}
             strokeWidth={LINE_WIDTH / 2}
             strokeLinecap="round"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
@@ -46,7 +46,6 @@ const defaultMTRLightRailAttributes: MTRLightRailAttributes = {
 };
 
 const MTRLightRailAttrsComponent = (props: AttrsProps<MTRLightRailAttributes>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
     const fields: RmgFieldsField[] = [
@@ -68,7 +67,13 @@ const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
     attrsComponent: MTRLightRailAttrsComponent,
     metadata: {
         displayName: 'panel.details.lines.mtrLightRail.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
+        ],
     },
 };
 

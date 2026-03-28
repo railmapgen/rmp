@@ -11,7 +11,7 @@ import {
 } from '../../../../constants/lines';
 
 const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSuburbanRailwayAttributes>) => {
-    const { id, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { isEnd = defaultShanghaiSuburbanRailwayAttributes.isEnd } = styleAttrs;
 
     const onPointerDown = React.useCallback(
@@ -22,14 +22,18 @@ const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSubur
     const outStrokeLinecap = isEnd ? 'round' : undefined;
 
     return (
-        <g id={`${id}.pre`} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
+            cursor="pointer"
+        >
             <path d={path} fill="none" stroke="#898989" strokeWidth={LINE_WIDTH} strokeLinecap={outStrokeLinecap} />
         </g>
     );
 };
 
 const ShanghaiSuburbanRailway = (props: LineStyleComponentProps<ShanghaiSuburbanRailwayAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -37,7 +41,11 @@ const ShanghaiSuburbanRailway = (props: LineStyleComponentProps<ShanghaiSuburban
     );
 
     return (
-        <g id={id} onPointerDown={onPointerDown} cursor="pointer">
+        <g
+            onPointerDown={newLine ? undefined : onPointerDown}
+            cursor="pointer"
+            pointerEvents={newLine ? 'none' : undefined}
+        >
             <path d={path} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
         </g>
     );
@@ -82,7 +90,13 @@ const shanghaiSuburbanRailway: LineStyle<ShanghaiSuburbanRailwayAttributes> = {
     attrsComponent,
     metadata: {
         displayName: 'panel.details.lines.shanghaiSuburbanRailway.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Simple,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
+        ],
     },
 };
 

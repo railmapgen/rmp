@@ -2,7 +2,8 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { Events, LineId, MiscNodeId, NodeId, SnapLine, SnapPoint, StnId } from '../constants/constants';
+import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
+import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -19,30 +20,30 @@ import {
     setPointerPosition,
     setSelected,
 } from '../redux/runtime/runtime-slice';
+import { checkAndChangeStationIntType } from '../util/change-types';
 import { findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
     getMousePosition,
     getViewpointSize,
-    makeSnapLinesPath,
     pointerPosToSVGCoord,
     roundToMultiple,
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
-import { makeParallelIndex } from '../util/parallel';
+import { moveNodesAndRedrawLines } from '../util/imperative-dom';
+import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { getLines, getNodes } from '../util/process-elements';
-import { checkAndChangeStationIntType } from '../util/change-types';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
     getSnapLineDistance,
     getSnapLines,
     isNodeSupportSnapLine,
+    makeSnapLinesPath,
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { linePaths } from './svgs/lines/lines';
-import singleColor from './svgs/lines/styles/single-color';
+import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -263,35 +264,49 @@ const SvgCanvas = () => {
                 const offsetY = newY - fromY;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
                             x: roundToMultiple(attr.x + offsetX, 0.01),
                             y: roundToMultiple(attr.y + offsetY, 0.01),
-                        }));
+                        });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             } else {
                 // legacy round position to nearest 5 mode
                 setActiveSnapLines([]);
                 setActiveSnapPoint(undefined);
+                const base = e.altKey ? 0.01 : NODES_MOVE_DISTANCE;
+                const stdAttr = graph.current.getNodeAttributes(node);
+                const offsetX =
+                    roundToMultiple(stdAttr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100, base) - stdAttr.x;
+                const offsetY =
+                    roundToMultiple(stdAttr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100, base) - stdAttr.y;
                 selected.forEach(s => {
                     if (graph.current.hasNode(s)) {
-                        graph.current.updateNodeAttributes(s, attr => ({
-                            ...attr,
-                            x: roundToMultiple(
-                                attr.x - ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : 5
-                            ),
-                            y: roundToMultiple(
-                                attr.y - ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
-                                e.altKey ? 0.01 : 5
-                            ),
-                        }));
+                        const attr = graph.current.getNodeAttributes(s as NodeId);
+                        graph.current.mergeNodeAttributes(s, {
+                            x: attr.x + offsetX,
+                            y: attr.y + offsetY,
+                        });
                     }
                 });
+                // imperative dom operations are in favor of refreshNodesThunk
+                // and refreshEdgesThunk for performance reasons
+                moveNodesAndRedrawLines(
+                    graph.current,
+                    [...selected].filter(s => s.startsWith('stn') || s.startsWith('misc_node')) as NodeId[],
+                    offsetX,
+                    offsetY
+                );
             }
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
         } else if (mode.startsWith('line') && active) {
             setPointerOffset({
                 dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
@@ -317,21 +332,26 @@ const SvgCanvas = () => {
             const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
 
             if (couldSourceBeConnected && matchedPrefix) {
-                const type = mode.slice(5) as LinePathType;
+                const { path, style: style_ } = getLinePathAndStyle(mode);
+                const [type, style] = [path!, style_!]; // assured by startsWith('line') check
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
                 if (source !== target) {
-                    const parallelIndex = autoParallel
-                        ? makeParallelIndex(graph.current, type, source, target, 'from')
-                        : -1;
+                    const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
+                    // TODO: there should be some way for a style to disable auto theme injection
+                    if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
+                    const parallelIndex =
+                        autoParallel && supportsParallelLinePath(type)
+                            ? makeParallelIndex(graph.current, type, source, target, 'from')
+                            : -1;
                     graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
                         type,
                         // deep copy to prevent mutual reference
                         [type]: structuredClone(linePaths[type].defaultAttrs),
-                        style: LineStyleType.SingleColor,
-                        [LineStyleType.SingleColor]: { color: theme },
+                        style,
+                        [style]: styleAttr,
                         reconcileId: '',
                         parallelIndex,
                     });
@@ -406,7 +426,7 @@ const SvgCanvas = () => {
             const styleAttr = edgeAttrs[lineStyleType];
             const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
-            const parallelIndex = autoParallel ? 0 : -1;
+            const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
             graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
                 visible: true,
                 zIndex,
@@ -445,30 +465,39 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    const SingleColor = singleColor.component;
+    // Prepare line style component and attributes for the line being created.
+    const { path, style } = getLinePathAndStyle(mode);
+    const linePath = path || LinePathType.Diagonal;
+    const lineStyle = style || LineStyleType.SingleColor;
+    const LineStyleComponent = lineStyles[lineStyle].component;
+    const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
+    // TODO: there should be some way for a style to disable auto theme injection
+    if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
 
     return (
         <>
             <SvgLayer
                 elements={elements}
+                selected={selected}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
                 handleEdgePointerDown={handleEdgePointerDown}
             />
             {mode.startsWith('line') && active && active !== 'background' && (
-                <SingleColor
+                <LineStyleComponent
                     id="line_create_in_progress___no_use"
-                    type={mode.slice(5) as LinePathType}
-                    path={linePaths[mode.slice(5) as LinePathType].generatePath(
+                    type={linePath}
+                    path={linePaths[linePath].generatePath(
                         graph.current.getNodeAttribute(active, 'x'),
                         graph.current.getNodeAttribute(active, 'x') - pointerOffset.dx,
                         graph.current.getNodeAttribute(active, 'y'),
                         graph.current.getNodeAttribute(active, 'y') - pointerOffset.dy,
                         // @ts-expect-error
-                        linePaths[mode.slice(5) as LinePathType].defaultAttrs
+                        linePaths[linePath].defaultAttrs
                     )}
-                    styleAttrs={{ color: theme }}
+                    // @ts-expect-error
+                    styleAttrs={lineStyleAttrs}
                     newLine
                     handlePointerDown={() => {}} // no use
                 />

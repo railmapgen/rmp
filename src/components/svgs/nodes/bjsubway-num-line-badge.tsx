@@ -10,7 +10,7 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 const NUM_WIDTH = 11.84375;
 
 const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { num = defaultBjsubwayNumLineBadgeAttributes.num, color = defaultBjsubwayNumLineBadgeAttributes.color } =
         attrs ?? defaultBjsubwayNumLineBadgeAttributes;
 
@@ -31,8 +31,6 @@ const BjsubwayNumLineBadge = (props: NodeComponentProps<BjsubwayNumLineBadgeAttr
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

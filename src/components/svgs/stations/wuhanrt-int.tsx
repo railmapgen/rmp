@@ -30,7 +30,7 @@ const NAME_DY_WUHAN_INT = {
 };
 
 const WuhanRTIntStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultWuhanRTIntStationAttributes.nameOffsetX,
@@ -59,7 +59,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             {/* White circle background */}
             <circle
                 id={`stn_core_${id}`}
@@ -73,7 +73,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             {/* Transfer icon - scaled to fill the circle */}
-            <g transform="scale(0.32)" transform-origin="0 0">
+            <g transform="scale(0.32)">
                 <path
                     fill="#0067a1"
                     fillRule="evenodd"

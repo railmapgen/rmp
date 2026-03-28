@@ -317,7 +317,13 @@ export const ChangeTypeModal = (props: {
                 );
         }
         if (isZIndexSwitch) {
-            changeZIndexInBatch(graph.current, stations, miscNodes, lines, zIndex);
+            changeZIndexInBatch(
+                graph.current,
+                !filter || filter.includes('station') ? stations : [],
+                !filter || filter.includes('misc-node') ? miscNodes : [],
+                !filter || filter.includes('line') ? lines : [],
+                zIndex
+            );
         }
         hardRefresh();
         onClose();

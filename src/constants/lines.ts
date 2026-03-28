@@ -5,6 +5,7 @@ import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
+import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
@@ -43,6 +44,7 @@ export enum LinePathType {
     Diagonal = 'diagonal',
     Perpendicular = 'perpendicular',
     RotatePerpendicular = 'ro-perp',
+    RayGuided = 'ray-guided',
     Simple = 'simple',
 }
 
@@ -51,6 +53,7 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Diagonal]?: DiagonalPathAttributes;
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
+    [LinePathType.RayGuided]?: RayGuidedPathAttributes;
 }
 
 export enum LineStyleType {
@@ -177,13 +180,14 @@ export interface LineStyleComponentProps<
  */
 interface LineBase<T extends LinePathAttributes> {
     /**
-     * The icon displayed in the tools panel.
-     */
-    icon: React.JSX.Element;
-    /**
      * Default attributes for this component.
      */
     defaultAttrs: T;
+    /**
+     * Indicate whether or not this line path/style is a pro-only feature.
+     * Default to false.
+     */
+    isPro?: boolean;
 }
 
 export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsProps<T> {
@@ -193,10 +197,11 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
     parallelIndex: number;
     /**
      * Changing the `startFrom` attr should result in new parallel recalculation.
-     * Passing it to each line path implementation and only call it in `startFrom`'s field onChange.
      *
-     * Note: Call this fuction before updating the `startFrom` attr as parallelIndex
-     * is calculated based on it and changing it before calcuation will result in
+     * ONLY LINE PATHS THAT EXPOSE `startFrom` NEED TO CALL THIS HELPER.
+     *
+     * Note: Call this function before updating the `startFrom` attr as parallelIndex
+     * is calculated based on it and changing it before calculation will result in
      * considering this line (e.g. from -> to) as an existing line (e.g. to).
      * ```ts
      * onChange: val => {
@@ -208,6 +213,7 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
      */
     recalculateParallelIndex: (id: string, startFrom: 'from' | 'to') => void;
 }
+
 export interface LinePathAttributes {}
 /**
  * The type a line path should export.
@@ -217,6 +223,10 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * The line path component.
      */
     generatePath: PathGenerator<T>;
+    /**
+     * The icon displayed in the tools panel.
+     */
+    icon: React.JSX.Element;
     /**
      * A React component that allows user to change the attributes.
      * Will be displayed in the details panel.
@@ -240,7 +250,7 @@ export interface LineStyleAttributes {}
 /**
  * The type a line style should export.
  */
-export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<T>, 'icon'> {
+export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
     /**
      * The line style component.
      */
@@ -267,6 +277,10 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
      */
     attrsComponent: React.FC<LineStyleAttrsProps<T>>;
     /**
+     * An optional path generator for this style to calculate offset/parallel/split paths.
+     */
+    pathGenerator?: StylePathGenerator<T>;
+    /**
      * Metadata for this line style.
      */
     metadata: {
@@ -285,3 +299,10 @@ export interface LineStyle<T extends LineStyleAttributes> extends Omit<LineBase<
  * The generator type of a line path.
  */
 export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
+
+/**
+ * The generator type of a line style.
+ * This is used when a line style needs to generate complex paths based on the original path.
+ * It takes the original path and return a record of paths with different keys.
+ */
+export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;

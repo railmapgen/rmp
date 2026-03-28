@@ -4,6 +4,7 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
+import { RootStore, startRootListening } from '.';
 import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoChangeStationType,
@@ -12,15 +13,18 @@ import {
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
+    setShowOnlyFavorites,
     setSnapLines,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
-    setUnlockSimplePath,
+    toggleFavoriteLineStyle,
+    toggleFavoriteMiscNode,
+    toggleFavoriteStation,
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
-import { RootStore, startRootListening } from '.';
+import { normalizeRandomStationsNames } from './state-migration';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -35,13 +39,17 @@ export const initStore = async (store: RootStore) => {
         if ('project' in appState.telemetry) store.dispatch(setTelemetryProject(appState.telemetry.project));
     }
     if ('preference' in appState) {
-        if ('unlockSimplePathAttempts' in appState.preference)
-            store.dispatch(setUnlockSimplePath(appState.preference.unlockSimplePathAttempts));
-        if ('toolsPanel' in appState.preference && 'expand' in appState.preference.toolsPanel)
-            store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
+        if ('toolsPanel' in appState.preference) {
+            if ('expand' in appState.preference.toolsPanel)
+                store.dispatch(setToolsPanelExpansion(appState.preference.toolsPanel.expand));
+            if ('showOnlyFavorites' in appState.preference.toolsPanel)
+                store.dispatch(setShowOnlyFavorites(appState.preference.toolsPanel.showOnlyFavorites));
+        }
         if ('autoParallel' in appState.preference) store.dispatch(setAutoParallel(appState.preference.autoParallel));
         if ('randomStationsNames' in appState.preference)
-            store.dispatch(setRandomStationsNames(appState.preference.randomStationsNames));
+            store.dispatch(
+                setRandomStationsNames(normalizeRandomStationsNames(appState.preference.randomStationsNames))
+            );
         if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
         if ('predictNextNode' in appState.preference)
@@ -51,6 +59,30 @@ export const initStore = async (store: RootStore) => {
         if ('disableWarning' in appState.preference) {
             if ('changeType' in appState.preference.disableWarning)
                 store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
+        }
+        if ('favorites' in appState.preference) {
+            // load favorites with error handling for invalid/missing IDs
+            if (
+                'lineStyles' in appState.preference.favorites &&
+                Array.isArray(appState.preference.favorites.lineStyles)
+            ) {
+                appState.preference.favorites.lineStyles.forEach((type: string) => {
+                    store.dispatch(toggleFavoriteLineStyle(type as any));
+                });
+            }
+            if ('stations' in appState.preference.favorites && Array.isArray(appState.preference.favorites.stations)) {
+                appState.preference.favorites.stations.forEach((type: string) => {
+                    store.dispatch(toggleFavoriteStation(type as any));
+                });
+            }
+            if (
+                'miscNodes' in appState.preference.favorites &&
+                Array.isArray(appState.preference.favorites.miscNodes)
+            ) {
+                appState.preference.favorites.miscNodes.forEach((type: string) => {
+                    store.dispatch(toggleFavoriteMiscNode(type as any));
+                });
+            }
         }
     }
     if ('state' in loginState) {

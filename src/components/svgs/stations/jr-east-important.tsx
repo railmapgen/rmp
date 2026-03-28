@@ -27,7 +27,7 @@ const NAME_JRE_IMPORTANT = {
 const ICON_SAFE_D = 1;
 
 const JREastImportantStation = (props: StationComponentProps) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         nameOffsetX = defaultJREastImportantStationAttributes.nameOffsetX,
@@ -77,7 +77,7 @@ const JREastImportantStation = (props: StationComponentProps) => {
     const scale = mostImportant ? 1.5 : 1;
 
     return (
-        <g id={id} transform={`translate(${x}, ${y})`}>
+        <g>
             <g transform={`scale(${scale})`}>
                 <rect
                     fill="black"

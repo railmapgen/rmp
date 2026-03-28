@@ -11,7 +11,7 @@
         "@chakra-ui/react": "^2.10.9",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@railmapgen/rmg-components": "^10.1.11",
+        "@railmapgen/rmg-components": "^10.1.13",
         "@railmapgen/rmg-palette-resources": "^3.0.0",
         "@railmapgen/rmg-runtime": "^12.0.3",
         "@railmapgen/rmg-translate": "^3.4.3",
@@ -28,9 +28,9 @@
         "react-i18next": "^15.7.3",
         "react-icons": "^5.4.0",
         "react-redux": "^9.2.0",
-        "react-router-dom": "^7.9.1",
+        "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
-        "rollup": "^4.53.3",
+        "rollup": "^4.60.0",
         "vite-plugin-svgr": "^4.5.0"
     },
     "devDependencies": {
@@ -49,11 +49,11 @@
         "@vitejs/plugin-legacy": "^7.2.1",
         "@vitejs/plugin-react": "^5.0.3",
         "eslint": "^9.35.0",
+        "eslint-config-prettier": "^10.1.8",
         "eslint-import-resolver-typescript": "^4.4.4",
         "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-prettier": "^5.5.4",
         "eslint-plugin-react": "^7.37.4",
-        "eslint-plugin-react-hooks": "^5.1.0",
         "fake-indexeddb": "^6.2.2",
         "graphology-types": "^0.24.8",
         "jsdom": "^27.0.0",
@@ -72,5 +72,5 @@
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
     },
-    "version": "5.4.25"
+    "version": "5.5.22"
 }

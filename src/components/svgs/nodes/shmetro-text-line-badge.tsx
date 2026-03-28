@@ -8,7 +8,7 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttributes>) => {
-    const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { names = defaultShmetroTextLineBadgeAttributes.names, color = defaultShmetroTextLineBadgeAttributes.color } =
         attrs ?? defaultShmetroTextLineBadgeAttributes;
 
@@ -31,8 +31,6 @@ const ShmetroTextLineBadge = (props: NodeComponentProps<ShmetroTextLineBadgeAttr
 
     return (
         <g
-            id={id}
-            transform={`translate(${x}, ${y})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

@@ -2,7 +2,7 @@ import React from 'react';
 import { LinePathAttributes, LinePathType, LineStyle, LineStyleComponentProps } from '../../../../constants/lines';
 
 const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttributes>) => {
-    const { id, path, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -11,14 +11,14 @@ const GzmtrVirtualInt = (props: LineStyleComponentProps<GzmtrVirtualIntAttribute
 
     return (
         <path
-            id={id}
             d={path}
             fill="none"
             stroke="#565656"
             strokeWidth="3"
             strokeDasharray="3"
             cursor="pointer"
-            onPointerDown={onPointerDown}
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
         />
     );
 };
@@ -30,7 +30,7 @@ export interface GzmtrVirtualIntAttributes extends LinePathAttributes {}
 
 const defaultGzmtrVirtualIntAttributes: GzmtrVirtualIntAttributes = {};
 
-const attrsComponent = () => null;
+const attrsComponent = () => undefined;
 
 const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
     component: GzmtrVirtualInt,
@@ -42,6 +42,7 @@ const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
             LinePathType.Simple,
         ],
     },

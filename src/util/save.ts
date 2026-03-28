@@ -57,7 +57,23 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 67;
+export const CURRENT_VERSION = 70;
+
+/**
+ * Parse the version from a save string without fully validating the save.
+ *
+ * @param saveStr The save string.
+ * @returns The version number.
+ * @throws Error if the version cannot be parsed.
+ */
+export const parseVersionFromSave = (saveStr: string): number => {
+    const save = JSON.parse(saveStr);
+    if ('version' in save && Number.isInteger(save.version)) {
+        return save.version;
+    }
+    // Invalid JSON or missing version field
+    throw new Error('Cannot parse version from the uploaded file');
+};
 
 /**
  * Load the tutorial.
@@ -842,7 +858,61 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 66, graph: graph.export() });
     },
-    66: param =>
+    66: param => {
+        // Bump save version to add scale to bjsubway basic and interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes(
+                (node, attr) =>
+                    node.startsWith('stn') &&
+                    (attr.type === StationType.BjsubwayBasic || attr.type === StationType.BjsubwayInt)
+            )
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any as
+                    | BjsubwayBasicStationAttributes
+                    | BjsubwayIntStationAttributes;
+                if (typeof (attr as any).scale !== 'number') {
+                    (attr as any).scale = 1;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 67, graph: graph.export() });
+    },
+    67: param => {
+        // Bump save version to make version 67 saves compatible across both the generic-style branch and mainline.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes(
+                (node, attr) =>
+                    node.startsWith('stn') &&
+                    (attr.type === StationType.BjsubwayBasic ||
+                        attr.type === StationType.BjsubwayInt ||
+                        attr.type === StationType.HzmetroBasic ||
+                        attr.type === StationType.HzmetroInt)
+            )
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (typeof attr.scale !== 'number') {
+                    attr.scale = 1;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+                if (type === StationType.HzmetroInt && typeof attr.mirror !== 'boolean') {
+                    attr.mirror = false;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 68, graph: graph.export() });
+    },
+    68: param =>
+        // Bump save version to support the ray-guided line path.
+        JSON.stringify({ ...JSON.parse(param), version: 69 }),
+    69: param =>
         // Bump save version to support generic line style.
-        JSON.stringify({ ...JSON.parse(param), version: 67 }),
+        JSON.stringify({ ...JSON.parse(param), version: 70 }),
 };

@@ -11,8 +11,9 @@ import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
-import { getInitialParam, RMPSave, upgrade } from '../../util/save';
+import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
+import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
@@ -21,6 +22,7 @@ export default function OpenActions() {
     const { t } = useTranslation();
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
+    const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
 
     const size = useWindowSize();
     const { height } = getCanvasSize(size);
@@ -30,6 +32,7 @@ export default function OpenActions() {
 
     const [isRmgParamAppClipOpen, setIsRmgParamAppClipOpen] = React.useState(false);
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
+    const [isOpenAarc, setIsOpenAarc] = React.useState(false);
 
     const refreshAndSave = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
@@ -103,6 +106,8 @@ export default function OpenActions() {
             try {
                 const paramStr = await readFileAsText(file);
                 setParamToLoad(paramStr);
+                const version = parseVersionFromSave(paramStr);
+                setVersionToLoad(version);
                 onConfirmOpen();
             } catch (err) {
                 dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
@@ -120,6 +125,7 @@ export default function OpenActions() {
     const handleLoadTutorial = async () => {
         const initialParam = await getInitialParam();
         setParamToLoad(initialParam);
+        setVersionToLoad(parseVersionFromSave(initialParam));
         onConfirmOpen();
     };
 
@@ -176,6 +182,13 @@ export default function OpenActions() {
                         </Badge>
                     </MenuItem>
 
+                    <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenAarc(true)}>
+                        {t('header.open.otherPlatform.title')}
+                        <Badge ml="1" colorScheme="green">
+                            New
+                        </Badge>
+                    </MenuItem>
+
                     <MenuItem icon={<MdSchool />} onClick={handleLoadTutorial}>
                         {t('header.open.tutorial')}
                     </MenuItem>
@@ -183,9 +196,15 @@ export default function OpenActions() {
 
                 <RmgParamAppClip isOpen={isRmgParamAppClipOpen} onClose={() => setIsRmgParamAppClipOpen(false)} />
                 <RmpGalleryAppClip isOpen={isOpenGallery} onClose={() => setIsOpenGallery(false)} />
+                <ImportFromAarc isOpen={isOpenAarc} onClose={() => setIsOpenAarc(false)} />
             </Menu>
 
-            <ConfirmOverwriteDialog isOpen={isConfirmOpen} onClose={onConfirmClose} onConfirm={handleConfirmLoad} />
+            <ConfirmOverwriteDialog
+                isOpen={isConfirmOpen}
+                onClose={onConfirmClose}
+                onConfirm={handleConfirmLoad}
+                saveVersion={versionToLoad}
+            />
         </>
     );
 }

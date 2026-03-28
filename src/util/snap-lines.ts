@@ -1,15 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
-import {
-    EdgeAttributes,
-    GraphAttributes,
-    MiscNodeId,
-    NodeAttributes,
-    NodeId,
-    SnapLine,
-    SnapPoint,
-    StnId,
-} from '../constants/constants';
+import { SnapLine, SnapPoint } from '../constants/canvas';
+import { EdgeAttributes, GraphAttributes, MiscNodeId, NodeAttributes, NodeId, StnId } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
+import { getViewpointSize } from './helpers';
 
 /**
  * Supported: station, virtual node, master node (station only)
@@ -139,4 +132,20 @@ export const getNearestSnapPoints = (
         }
     }
     return { snapPoint: minPoint, distance: minDistance };
+};
+
+export const makeSnapLinesPath = (
+    p: SnapLine,
+    viewpointSize: ReturnType<typeof getViewpointSize>
+): [number, number, number, number] => {
+    const { xMin, yMin, xMax, yMax } = viewpointSize;
+    if (p.a === 0) {
+        return [xMin, xMax, -p.c / p.b, -p.c / p.b];
+    } else if (p.b === 0) {
+        return [-p.c / p.a, -p.c / p.a, yMin, yMax];
+    } else {
+        const k = -p.a / p.b;
+        const b = -p.c / p.b;
+        return [xMin, xMax, k * xMin + b, k * xMax + b];
+    }
 };

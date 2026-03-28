@@ -1,28 +1,51 @@
 // @ts-check
 
 import eslint from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
-import reactlint from 'eslint-plugin-react';
-import prettier from 'eslint-plugin-prettier';
+import reactPlugin from 'eslint-plugin-react';
+import prettierPlugin from 'eslint-plugin-prettier';
+import eslintConfigPrettier from 'eslint-config-prettier';
 import * as importPlugin from 'eslint-plugin-import';
+import globals from 'globals';
 
-export default [
-    ...tseslint.config(
-        eslint.configs.recommended,
-        ...tseslint.configs.recommended,
-        importPlugin.flatConfigs?.recommended
-    ),
+export default defineConfig([
     {
-        plugins: { react: reactlint, prettier: prettier },
+        ignores: ['**/*.json', 'setupProxy.js'],
+    },
+
+    eslint.configs.recommended,
+
+    ...tseslint.configs.recommended.map(config => ({
+        ...config,
+        files: ['**/*.ts', '**/*.tsx'],
+    })),
+
+    importPlugin.flatConfigs.recommended,
+
+    {
+        plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': [
-                'warn',
+                'error',
                 {
                     endOfLine: 'auto',
                 },
             ],
+        },
+    },
+
+    {
+        files: ['**/*.ts', '**/*.tsx'],
+        plugins: { react: reactPlugin },
+        rules: {
             'no-constant-condition': ['error', { checkLoops: false }],
-            // This is a temporary hack and should be removed after I fixed the type error in rmg-components.
+
+            ...reactPlugin.configs.recommended.rules,
+            ...reactPlugin.configs['jsx-runtime'].rules,
+            'react/display-name': 'off',
+
+            // This is a temporary hack and should be removed after fixing the type error in rmg-components.
             '@typescript-eslint/ban-ts-comment': [
                 'error',
                 { 'ts-ignore': false, 'ts-expect-error': false, 'ts-nocheck': false },
@@ -37,9 +60,10 @@ export default [
             '@typescript-eslint/no-unused-vars': 'off',
             // Allow empty object type for base interfaces.
             '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'always' }],
+
             // Imports need to be sorted.
-            'import/order': 'error',
-            'import/no-unassigned-import': 'error',
+            'import/order': ['warn', { groups: ['builtin', 'external', 'parent', 'index', 'sibling'] }],
+            'import/no-unassigned-import': 'warn',
         },
         settings: {
             react: {
@@ -56,11 +80,22 @@ export default [
             ecmaVersion: 'latest',
             sourceType: 'module',
             globals: {
-                browser: true,
-                es6: true,
-                node: true,
+                ...globals.browser,
             },
         },
-        ignores: ['**/*.json', 'setupProxy.js'],
     },
-];
+
+    {
+        files: ['**/*.test.ts'],
+        languageOptions: {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            globals: {
+                ...globals.browser,
+                ...globals.jest,
+            },
+        },
+    },
+
+    eslintConfigPrettier,
+]);
