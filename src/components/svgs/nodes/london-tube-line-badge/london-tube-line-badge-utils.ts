@@ -87,7 +87,7 @@ export const getLondonTubeLineBadgeSubtitle = (item: Extract<LondonTubeLineBadge
 
 export const getLondonTubeLineBadgeHeight = (item: LondonTubeLineBadgeItem, lineWidth: number) => {
     if (item.kind === 'filled-walking') {
-        return (1.455 + Math.max(0, getLondonTubeLineBadgeDisplayLines(item).length - 1) * 0.75) * lineWidth;
+        return (1.5 + Math.max(0, getLondonTubeLineBadgeDisplayLines(item).length - 1) * 0.75) * lineWidth;
     }
 
     return getLondonTubeLineBadgeDisplayLines(item).length > 1 ? 1.75 * lineWidth : lineWidth;
