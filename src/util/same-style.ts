@@ -43,8 +43,9 @@ export function findConnectedSameStyleEdges(
     visitedNodes.add(source);
     visitedNodes.add(target);
 
-    while (queue.length > 0) {
-        const node = queue.shift()!;
+    let qi = 0;
+    while (qi < queue.length) {
+        const node = queue[qi++];
         for (const edge of graph.edges(node)) {
             if (visitedEdges.has(edge)) continue;
             const edgeAttrs = graph.getEdgeAttributes(edge);

@@ -10,7 +10,7 @@ import {
     Text,
     useToast,
 } from '@chakra-ui/react';
-import { MonoColour, updateTheme } from '@railmapgen/rmg-palette-resources';
+import { updateTheme } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { SerializedGraph } from 'graphology-types';
 import React from 'react';
