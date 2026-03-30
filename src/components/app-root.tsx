@@ -28,65 +28,73 @@ export default function AppRoot() {
         }
     }, []);
 
+    const loadingFallback = (
+        <p
+            style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+            }}
+        >
+            Rail Map Painter protocol... checked
+        </p>
+    );
+
     return (
         <RmgThemeProvider>
             <RmgWindow>
-                <React.Suspense
-                    fallback={
-                        <p
-                            style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                            }}
-                        >
-                            Rail Map Painter protocol... checked
-                        </p>
-                    }
-                >
+                <React.Suspense fallback={loadingFallback}>
                     <PageHeader />
+                </React.Suspense>
 
-                    {isShowRMTMessage && (
-                        <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
-                            <AlertIcon />
-                            <Text>
-                                <Link href="/?app=rmp" isExternal fontWeight="bold">
-                                    {t('rmtPromotion')}
-                                </Link>{' '}
-                                <Link
-                                    as="button"
-                                    ml="auto"
-                                    textDecoration="underline"
-                                    onClick={() => setIsShowRMTMessage(false)}
-                                >
-                                    {t('close')}
-                                </Link>
-                                {' | '}
-                                <Link
-                                    as="button"
-                                    textDecoration="underline"
-                                    onClick={() => {
-                                        setIsShowRMTMessage(false);
-                                        window.localStorage.setItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG, 'true');
-                                    }}
-                                >
-                                    {t('noShowAgain')}
-                                </Link>
-                            </Text>
-                        </Alert>
-                    )}
+                {isShowRMTMessage && (
+                    <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
+                        <AlertIcon />
+                        <Text>
+                            <Link href="/?app=rmp" isExternal fontWeight="bold">
+                                {t('rmtPromotion')}
+                            </Link>{' '}
+                            <Link
+                                as="button"
+                                ml="auto"
+                                textDecoration="underline"
+                                onClick={() => setIsShowRMTMessage(false)}
+                            >
+                                {t('close')}
+                            </Link>
+                            {' | '}
+                            <Link
+                                as="button"
+                                textDecoration="underline"
+                                onClick={() => {
+                                    setIsShowRMTMessage(false);
+                                    window.localStorage.setItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG, 'true');
+                                }}
+                            >
+                                {t('noShowAgain')}
+                            </Link>
+                        </Text>
+                    </Alert>
+                )}
 
-                    <RmgErrorBoundary allowReset>
-                        <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
-                            {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
-                            have the right parent container for its `position: 'absolute'` calculation. */}
+                <RmgErrorBoundary allowReset>
+                    <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
+                        {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
+                        have the right parent container for its `position: 'absolute'` calculation. */}
+                        <React.Suspense fallback={null}>
                             <ToolsPanel />
+                        </React.Suspense>
+                        <React.Suspense fallback={loadingFallback}>
                             <SvgWrapper />
+                        </React.Suspense>
+                        <React.Suspense fallback={null}>
                             <DetailsPanel />
-                        </Flex>
-                    </RmgErrorBoundary>
+                        </React.Suspense>
+                    </Flex>
+                </RmgErrorBoundary>
 
+                <React.Suspense fallback={null}>
                     <RmgPaletteAppClip
                         isOpen={!!input}
                         onClose={() => dispatch(closePaletteAppClip())}

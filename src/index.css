@@ -1,10 +1,10 @@
 :root {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        background-color: #1A202C;
+        background-color: #1a202c;
         color: white;
     }
 }
@@ -19,7 +19,8 @@ body {
     height: 100%;
     width: 100%;
     width: -webkit-fill-available;
-    padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px) env(safe-area-inset-left, 20px);
+    padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 20px)
+        env(safe-area-inset-left, 20px);
 }
 
 div#root {
@@ -37,14 +38,22 @@ div#root {
 }
 /* Hide scrollbar for IE, Edge and Firefox */
 .tools {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
 
 /* text outline: https://stackoverflow.com/a/26498819 */
 .rmp-name-outline {
     paint-order: stroke;
-    stroke: #FFFFFF;
+    stroke: #ffffff;
     /* Do not forget to define stroke-width when using this class! */
     stroke-linejoin: round;
+}
+
+.rmp-selected-glow {
+    filter: drop-shadow(0 0 2px rgba(255, 255, 0, 1)) drop-shadow(0 0 4px rgba(255, 255, 0, 0.7));
+}
+
+.rmp-line-target-glow {
+    filter: drop-shadow(0 0 2px rgba(0, 255, 255, 1)) drop-shadow(0 0 4px rgba(0, 255, 255, 0.7));
 }

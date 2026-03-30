@@ -44,9 +44,9 @@ const SvgLayer = React.memo(
         );
         for (const element of elements) {
             const isSelected = selected.has(element.id);
-            const selectedGlowFilter = isSelected ? 'url(#selected-glow)' : undefined;
-            const lineTargetGlowFilter = element.id === lineTarget ? 'url(#line-target-glow)' : undefined;
-            const combinedFilter = lineTargetGlowFilter ?? selectedGlowFilter;
+            const selectedGlowClassName = isSelected ? 'rmp-selected-glow' : undefined;
+            const lineTargetGlowClassName = element.id === lineTarget ? 'rmp-line-target-glow' : undefined;
+            const combinedGlowClassName = lineTargetGlowClassName ?? selectedGlowClassName;
 
             if (element.type === 'line') {
                 const id = element.id as LineId;
@@ -59,7 +59,7 @@ const SvgLayer = React.memo(
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
                     layers[element.line!.attr.zIndex].pre.push(
-                        <g key={`${id}.pre`} id={`${id}.pre`} filter={combinedFilter}>
+                        <g key={`${id}.pre`} id={`${id}.pre`} className={combinedGlowClassName}>
                             <PreStyleComponent
                                 id={id}
                                 type={type}
@@ -74,7 +74,7 @@ const SvgLayer = React.memo(
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <g key={id} id={id} filter={combinedFilter}>
+                    <g key={id} id={id} className={combinedGlowClassName}>
                         <StyleComponent
                             id={id}
                             type={type}
@@ -89,7 +89,7 @@ const SvgLayer = React.memo(
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
                 if (PostStyleComponent) {
                     layers[element.line!.attr.zIndex].post.push(
-                        <g key={`${id}.post`} id={`${id}.post`} filter={combinedFilter}>
+                        <g key={`${id}.post`} id={`${id}.post`} className={combinedGlowClassName}>
                             <PostStyleComponent
                                 id={id}
                                 type={type}
@@ -113,7 +113,7 @@ const SvgLayer = React.memo(
                             key={`${element.id}.pre`}
                             id={`${element.id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={combinedFilter}
+                            className={combinedGlowClassName}
                         >
                             <PreStationComponent
                                 id={id}
@@ -130,7 +130,7 @@ const SvgLayer = React.memo(
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={combinedFilter}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={combinedGlowClassName}>
                         <StationComponent
                             id={id}
                             x={attr.x}
@@ -150,7 +150,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={combinedFilter}
+                            className={combinedGlowClassName}
                         >
                             <PostStationComponent
                                 id={id}
@@ -176,7 +176,7 @@ const SvgLayer = React.memo(
                             key={`${id}.pre`}
                             id={`${id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={combinedFilter}
+                            className={combinedGlowClassName}
                         >
                             <PreMiscNodeComponent
                                 id={id}
@@ -194,7 +194,7 @@ const SvgLayer = React.memo(
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={combinedFilter}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={combinedGlowClassName}>
                         <MiscNodeComponent
                             id={id}
                             x={attr.x}
@@ -215,7 +215,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={combinedFilter}
+                            className={combinedGlowClassName}
                         >
                             <PostMiscNodeComponent
                                 id={id}
