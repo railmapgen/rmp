@@ -3,6 +3,19 @@ import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, Theme } from '../constants/constants';
 
+/**
+ * Check if a value is a Theme tuple: [CityCode, string, ColourHex, MonoColour].
+ * Also matches InterchangeInfo which appends extra strings after Theme.
+ */
+export const isTheme = (value: unknown): boolean => {
+    if (!Array.isArray(value) || value.length < 4) return false;
+    return (
+        value.every(elem => typeof elem === 'string') &&
+        !!value[2].match(/^#[0-9a-fA-F]{6}$/) &&
+        Object.values(MonoColour).includes(value[3] as any)
+    );
+};
+
 export const getRandomHexColor = (): `#${string}` => {
     const color = Math.floor(Math.random() * 0xffffff);
     return `#${color.toString(16).padStart(6, '0')}`;

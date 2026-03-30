@@ -278,6 +278,12 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
      */
     pathGenerator?: StylePathGenerator<T>;
     /**
+     * Optional custom equality check for "select all same style" feature.
+     * When not provided, the default compares all Theme-typed properties
+     * by their hex color value (index [2] of the Theme tuple).
+     */
+    isSameStyle?: (a: T, b: T) => boolean;
+    /**
      * Metadata for this line style.
      */
     metadata: {
