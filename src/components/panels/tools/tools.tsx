@@ -42,7 +42,7 @@ import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
 import FavoriteButton from './favorite-button';
-import { localizedMiscNodes, localizedStaions } from './localized-order';
+import { localizedLineStyles, localizedMiscNodes, localizedStations } from './localized-order';
 
 const buttonStyle: SystemStyleObject = {
     borderRadius: 0,
@@ -145,13 +145,13 @@ const ToolsPanel = () => {
     // Note: All line paths are always shown regardless of favorites filter
 
     const getFilteredLineStyles = React.useCallback(() => {
-        const allStyles = Object.entries(lineStyles);
+        const allStyles = localizedLineStyles[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allStyles;
-        return allStyles.filter(([styleType]) => favorites.lineStyles.includes(styleType as LineStyleType));
-    }, [showOnlyFavorites, favorites.lineStyles]);
+        return allStyles.filter(styleType => favorites.lineStyles.includes(styleType));
+    }, [showOnlyFavorites, favorites.lineStyles, i18n.language]);
 
     const getFilteredStations = React.useCallback(() => {
-        const allStations = localizedStaions[i18n.language as LanguageCode] || [];
+        const allStations = localizedStations[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allStations;
         return allStations.filter(type => favorites.stations.includes(type));
     }, [showOnlyFavorites, favorites.stations, i18n.language]);
@@ -313,7 +313,7 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            {getFilteredLineStyles().map(([styleType, style]) => (
+                            {getFilteredLineStyles().map(styleType => (
                                 <Flex key={styleType} w="100%" align="stretch">
                                     <Box
                                         w="4px"
@@ -323,24 +323,30 @@ const ToolsPanel = () => {
                                     <Button
                                         aria-label={styleType}
                                         leftIcon={<Box boxSize="40px" />}
-                                        onClick={() => handleLineStyle(styleType as LineStyleType)}
+                                        onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
-                                        isDisabled={
-                                            currentPath
-                                                ? !isStyleCompatible(styleType as LineStyleType, currentPath)
-                                                : false
-                                        }
+                                        isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
                                         sx={buttonStyle}
                                         flex={1}
                                     >
-                                        {isTextShown ? t(style.metadata.displayName) : undefined}
+                                        {isTextShown ? t(lineStyles[styleType].metadata.displayName) : undefined}
+                                        {isTextShown && !!lineStyles[styleType].isPro ? (
+                                            <Tooltip label={t('header.settings.proWithTrial')}>
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                    mr="auto"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tooltip>
+                                        ) : undefined}
                                     </Button>
                                     {isTextShown && (
                                         <FavoriteButton
-                                            isFavorite={favorites.lineStyles.includes(styleType as LineStyleType)}
-                                            onToggle={() =>
-                                                dispatch(toggleFavoriteLineStyle(styleType as LineStyleType))
-                                            }
+                                            isFavorite={favorites.lineStyles.includes(styleType)}
+                                            onToggle={() => dispatch(toggleFavoriteLineStyle(styleType))}
                                             ariaLabel={`favorite-${styleType}`}
                                         />
                                     )}
