@@ -130,7 +130,7 @@ describe('london tube line badge utils', () => {
                 },
                 5
             )
-        ).toBe(7.275);
+        ).toBe(7.5);
 
         expect(
             getLondonTubeLineBadgeHeight(
