@@ -195,7 +195,6 @@ export const changeLineStyleType = (
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
     if (lineStyles[newLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
         const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
         const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
@@ -204,6 +203,9 @@ export const changeLineStyleType = (
         if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
             (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
         else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
+
+        // do we really need each hack for each style here?
+        const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
         if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
             (newAttrs as { decoration: string; decorationAt: string }).decoration =
                 (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
@@ -211,6 +213,7 @@ export const changeLineStyleType = (
                 (oldAttrs as { decorationAt?: string }).decorationAt ??
                 (newAttrs as { decorationAt: string }).decorationAt;
         }
+
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
@@ -332,23 +335,6 @@ export const changeZIndexInBatch = (
     });
     lines.forEach(s => {
         graph.setEdgeAttribute(s, 'zIndex', value);
-    });
-};
-
-export const increaseZIndexInBatch = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    stations: StnId[],
-    miscNodes: MiscNodeId[],
-    lines: LineId[],
-    value: number
-) => {
-    [...stations, ...miscNodes].forEach(s => {
-        const z = graph.getNodeAttribute(s, 'zIndex');
-        graph.setNodeAttribute(s, 'zIndex', z + value);
-    });
-    lines.forEach(s => {
-        const z = graph.getEdgeAttribute(s, 'zIndex');
-        graph.setEdgeAttribute(s, 'zIndex', z + value);
     });
 };
 
