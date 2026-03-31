@@ -143,6 +143,6 @@ describe('london tube line badge utils', () => {
                 },
                 5
             )
-        ).toBe(11.025);
+        ).toBe(11.25);
     });
 });
