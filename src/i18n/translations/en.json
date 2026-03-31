@@ -685,6 +685,24 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
+                },
+                "generic": {
+                    "displayName": "Generic style",
+                    "layers": "Line layers",
+                    "layer": "Layer {{index}}",
+                    "width": "Width",
+                    "opacity": "Opacity",
+                    "linecap": "Line cap",
+                    "linecapButt": "Butt",
+                    "linecapRound": "Round",
+                    "linecapSquare": "Square",
+                    "dash": "Dash",
+                    "gap": "Gap",
+                    "addLayer": "Add layer",
+                    "copyLayer": "Copy layer",
+                    "moveLayerUp": "Move layer up",
+                    "moveLayerDown": "Move layer down",
+                    "removeLayer": "Remove layer"
                 }
             },
             "edge": {},

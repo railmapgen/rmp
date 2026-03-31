@@ -684,6 +684,24 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都軌道交通出閘換乘樣式"
+                },
+                "generic": {
+                    "displayName": "通用樣式",
+                    "layers": "線層",
+                    "layer": "第{{index}}層",
+                    "width": "寬度",
+                    "opacity": "透明度",
+                    "linecap": "線帽",
+                    "linecapButt": "平頭",
+                    "linecapRound": "圓頭",
+                    "linecapSquare": "方頭",
+                    "dash": "虛線長度",
+                    "gap": "間隔長度",
+                    "addLayer": "添加線層",
+                    "copyLayer": "複製線層",
+                    "moveLayerUp": "上移線層",
+                    "moveLayerDown": "下移線層",
+                    "removeLayer": "刪除線層"
                 }
             },
             "edges": {},

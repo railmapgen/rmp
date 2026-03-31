@@ -28,7 +28,7 @@ const jaStationType = [
     StationType.OsakaMetro,
 ];
 
-export const localizedStaions: { [k in LanguageCode]?: StationType[] } = {
+export const localizedStations: { [k in LanguageCode]?: StationType[] } = {
     'zh-Hans': defaultStationType,
     'zh-Hant': defaultStationType,
     en: [...enStationType, ...defaultStationType.filter(station => !enStationType.includes(station))],
@@ -68,7 +68,7 @@ export const localizedMiscNodes: { [k in LanguageCode]?: MiscNodeType[] } = {
 /* ------- Line styles ------ */
 
 const defaultLineStyle = Object.values(LineStyleType);
-const alwaysFrontLineStyle = [LineStyleType.SingleColor];
+const alwaysFrontLineStyle = [LineStyleType.SingleColor, LineStyleType.Generic];
 const enLineStyle = [
     LineStyleType.LondonTubeTerminal,
     LineStyleType.LondonTubeInternalInt,

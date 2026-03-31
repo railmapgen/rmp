@@ -687,6 +687,24 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都鉄道交通改札乗換風格"
+                },
+                "generic": {
+                    "displayName": "汎用スタイル",
+                    "layers": "線レイヤー",
+                    "layer": "レイヤー {{index}}",
+                    "width": "幅",
+                    "opacity": "不透明度",
+                    "linecap": "ラインキャップ",
+                    "linecapButt": "バット",
+                    "linecapRound": "ラウンド",
+                    "linecapSquare": "スクエア",
+                    "dash": "ダッシュ長",
+                    "gap": "間隔長",
+                    "addLayer": "レイヤーを追加",
+                    "copyLayer": "レイヤーを複製",
+                    "moveLayerUp": "レイヤーを上へ移動",
+                    "moveLayerDown": "レイヤーを下へ移動",
+                    "removeLayer": "レイヤーを削除"
                 }
             },
             "edges": {},

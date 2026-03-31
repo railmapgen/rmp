@@ -684,6 +684,24 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "청두 도시철도 개찰구 환승 방식"
+                },
+                "generic": {
+                    "displayName": "일반 스타일",
+                    "layers": "선 레이어",
+                    "layer": "레이어 {{index}}",
+                    "width": "너비",
+                    "opacity": "불투명도",
+                    "linecap": "라인 캡",
+                    "linecapButt": "버트",
+                    "linecapRound": "라운드",
+                    "linecapSquare": "스퀘어",
+                    "dash": "대시 길이",
+                    "gap": "간격 길이",
+                    "addLayer": "레이어 추가",
+                    "copyLayer": "레이어 복제",
+                    "moveLayerUp": "레이어 위로 이동",
+                    "moveLayerDown": "레이어 아래로 이동",
+                    "removeLayer": "레이어 삭제"
                 }
             },
             "edges": {},

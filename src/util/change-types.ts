@@ -30,6 +30,7 @@ const stationsWithoutNameOffset = [
     StationType.ShanghaiSuburbanRailway,
     StationType.OsakaMetro,
 ];
+
 type StationsWithoutNameOffset =
     | StationType.ShmetroBasic2020
     | StationType.LondonTubeBasic
@@ -202,7 +203,7 @@ export const changeLineStyleType = (
         const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
         if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
             (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-        else if (dynamicColorInjection.has(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
+        else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
         if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
             (newAttrs as { decoration: string; decorationAt: string }).decoration =
                 (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
