@@ -5,6 +5,7 @@ import perpendicularPath from './paths/perpendicular';
 import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import rayGuidedPath from './paths/ray-guided';
 import singleColor from './styles/single-color';
+import generic from './styles/generic';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
@@ -36,7 +37,6 @@ import guangdongIntercityRailway from './styles/guangdong-intercity-railway';
 import chongqingRTLoop from './styles/chongqingrt-loop';
 import chongqingRTLineBadge from './styles/chongqingrt-line-badge';
 import chengduRTOutsideFareGates from './styles/chengdurt-outside-fare-gates';
-import generic from './styles/generic';
 
 export const linePaths = {
     [LinePathType.Diagonal]: diagonalPath,
@@ -48,6 +48,7 @@ export const linePaths = {
 
 export const lineStyles = {
     [LineStyleType.SingleColor]: singleColor,
+    [LineStyleType.Generic]: generic,
     [LineStyleType.ShmetroVirtualInt]: shmetroVirtualInt,
     [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,
@@ -79,5 +80,4 @@ export const lineStyles = {
     [LineStyleType.ChongqingRTLoop]: chongqingRTLoop,
     [LineStyleType.ChongqingRTLineBadge]: chongqingRTLineBadge,
     [LineStyleType.ChengduRTOutsideFareGates]: chengduRTOutsideFareGates,
-    [LineStyleType.Generic]: generic,
 };

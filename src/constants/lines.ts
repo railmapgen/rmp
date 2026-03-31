@@ -7,6 +7,7 @@ import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
+import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import type { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
 import type { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
@@ -38,7 +39,6 @@ import type { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-
 import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
-import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -58,6 +58,7 @@ export interface ExternalLinePathAttributes {
 
 export enum LineStyleType {
     SingleColor = 'single-color',
+    Generic = 'generic',
     ShanghaiSuburbanRailway = 'sh-sub-rwy',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
@@ -89,11 +90,11 @@ export enum LineStyleType {
     ChongqingRTLoop = 'chongqingrt-loop',
     ChongqingRTLineBadge = 'chongqingrt-line-badge',
     ChengduRTOutsideFareGates = 'chengdurt-outside-fare-gates',
-    Generic = 'generic',
 }
 
 export interface ExternalLineStyleAttributes {
     [LineStyleType.SingleColor]?: SingleColorAttributes;
+    [LineStyleType.Generic]?: GenericAttributes;
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
@@ -125,7 +126,6 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChongqingRTLoop]?: ChongqingRTLoopAttributes;
     [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
-    [LineStyleType.Generic]?: GenericAttributes;
 }
 
 /* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
