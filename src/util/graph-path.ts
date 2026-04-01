@@ -48,9 +48,7 @@ export const generateEdgePathSegment = (
         // no need to handle simple path as it is symmetrical
     }
 
-    return (
-        linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`
-    );
+    return linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`;
 };
 
 /**
