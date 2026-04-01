@@ -95,6 +95,11 @@ export const makeRenderReadySVGElement = async (
         el.classList.remove('rmp-selected-glow');
         if (el.classList.length === 0) el.removeAttribute('class');
     });
+    // remove line target glow effect on final export
+    elem.querySelectorAll<SVGElement>('.rmp-line-target-glow').forEach(el => {
+        el.classList.remove('rmp-line-target-glow');
+        if (el.classList.length === 0) el.removeAttribute('class');
+    });
     // remove virtual nodes and text hinting rect
     // remove the overlay elements that are used for event handling or id info
     elem.querySelectorAll('.removeMe').forEach(el => {

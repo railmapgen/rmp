@@ -53,3 +53,7 @@ div#root {
 .rmp-selected-glow {
     filter: drop-shadow(0 0 2px rgba(255, 255, 0, 1)) drop-shadow(0 0 4px rgba(255, 255, 0, 0.7));
 }
+
+.rmp-line-target-glow {
+    filter: drop-shadow(0 0 2px rgba(0, 255, 255, 1)) drop-shadow(0 0 4px rgba(0, 255, 255, 0.7));
+}
