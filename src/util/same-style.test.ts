@@ -41,8 +41,8 @@ const addLine = (
 };
 
 describe('defaultIsSameStyle', () => {
-    it('should return true for empty attrs', () => {
-        expect(defaultIsSameStyle({}, {})).toBe(true);
+    it('should return false for empty attrs (no color)', () => {
+        expect(defaultIsSameStyle({}, {})).toBe(false);
     });
 
     it('should return true when single color matches', () => {
@@ -57,19 +57,15 @@ describe('defaultIsSameStyle', () => {
         expect(defaultIsSameStyle(a, b)).toBe(false);
     });
 
-    it('should ignore non-Theme properties', () => {
+    it('should ignore non-color properties', () => {
         const a = { color: [...RED], width: 20 };
         const b = { color: [...RED], width: 10 };
         expect(defaultIsSameStyle(a, b)).toBe(true);
     });
 
-    it('should compare multiple Theme properties independently', () => {
-        const a = { colorA: [...RED], colorB: [...BLUE] };
-        const b = { colorA: [...RED], colorB: [...BLUE] };
-        expect(defaultIsSameStyle(a, b)).toBe(true);
-
-        const c = { colorA: [...RED], colorB: [...GREEN] };
-        expect(defaultIsSameStyle(a, c)).toBe(false);
+    it('should return false when only one side has color', () => {
+        expect(defaultIsSameStyle({ color: [...RED] }, {})).toBe(false);
+        expect(defaultIsSameStyle({}, { color: [...RED] })).toBe(false);
     });
 });
 
