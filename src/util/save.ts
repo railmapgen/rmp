@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 69;
+export const CURRENT_VERSION = 70;
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -909,4 +909,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     68: param =>
         // Bump save version to support the ray-guided line path.
         JSON.stringify({ ...JSON.parse(param), version: 69 }),
+    69: param =>
+        // Bump save version to support generic line style.
+        JSON.stringify({ ...JSON.parse(param), version: 70 }),
 };

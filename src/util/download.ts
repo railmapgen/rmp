@@ -91,8 +91,9 @@ export const makeRenderReadySVGElement = async (
         el.remove();
     });
     // remove selection glow effect on final export
-    elem.querySelectorAll('[filter="url(#selected-glow)"]').forEach(el => {
-        el.removeAttribute('filter');
+    elem.querySelectorAll<SVGElement>('.rmp-selected-glow').forEach(el => {
+        el.classList.remove('rmp-selected-glow');
+        if (el.classList.length === 0) el.removeAttribute('class');
     });
     // remove virtual nodes and text hinting rect
     // remove the overlay elements that are used for event handling or id info
