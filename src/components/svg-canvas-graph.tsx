@@ -32,6 +32,7 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
+import { findConnectedSameStyleEdges } from '../util/same-style';
 import { getLines, getNodes } from '../util/process-elements';
 import {
     getNearestSnapLine,
@@ -458,6 +459,11 @@ const SvgCanvas = () => {
             dispatch(setSelected(new Set([id])));
         }
     });
+    const handleEdgeDoubleClick = useEvent((edge: LineId, e: React.MouseEvent<SVGElement>) => {
+        e.stopPropagation();
+        const matchingEdges = findConnectedSameStyleEdges(graph.current, edge);
+        dispatch(setSelected(new Set(matchingEdges)));
+    });
 
     // These are elements that the svg draws from.
     // They are updated by the refresh triggers in the runtime state.
@@ -484,6 +490,7 @@ const SvgCanvas = () => {
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
                 handleEdgePointerDown={handleEdgePointerDown}
+                handleEdgeDoubleClick={handleEdgeDoubleClick}
             />
             {mode.startsWith('line') && active && active !== 'background' && (
                 <LineStyleComponent
