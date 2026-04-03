@@ -452,34 +452,6 @@ const SvgWrapper = () => {
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
-                    <filter
-                        id="selected-glow"
-                        // large percentages to ensure the filter region covers the viewport
-                        // regardless of element transforms
-                        x="-100%"
-                        y="-100%"
-                        width="300%"
-                        height="300%"
-                        // userSpaceOnUse to prevent the filter from disappearing on
-                        // zero-width or zero-height lines
-                        filterUnits="userSpaceOnUse"
-                    >
-                        <feColorMatrix
-                            in="SourceAlpha"
-                            type="matrix"
-                            values="0 0 0 1 0 
-                                    0 0 0 1 0 
-                                    0 0 0 0 0 
-                                    0 0 0 1 0"
-                            result="yellowBase"
-                        />
-                        <feMorphology operator="dilate" radius="1.5" in="yellowBase" result="thickYellow" />
-                        <feGaussianBlur in="thickYellow" stdDeviation="3" result="blur1" />
-                        <feMerge>
-                            <feMergeNode in="blur1" />
-                            <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                    </filter>
                 </defs>
 
                 <g

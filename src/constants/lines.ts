@@ -1,43 +1,44 @@
 /* eslint-disable import/order */
 import React from 'react';
 import { AttrsProps, LineId } from './constants';
-import { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
-import { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
-import { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
-import { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
-import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
-import { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
-import { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
-import { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
-import { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
-import { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
-import { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
-import { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
-import { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
-import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
-import { RiverAttributes } from '../components/svgs/lines/styles/river';
-import { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
-import { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
-import { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
-import { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
-import { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
-import { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
-import { MRTTapeOutAttributes } from '../components/svgs/lines/styles/mrt-tape-out';
-import { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
-import { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
-import { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-single-color';
-import { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
-import { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
-import { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
-import { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
-import { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
-import { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
-import { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-cloud-cable-car';
-import { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
-import { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
-import { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
-import { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
-import { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
+import type { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
+import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
+import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
+import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
+import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
+import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
+import type { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
+import type { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
+import type { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
+import type { ChinaRailwayAttributes } from '../components/svgs/lines/styles/china-railway';
+import type { BjsubwaySingleColorAttributes } from '../components/svgs/lines/styles/bjsubway-single-color';
+import type { BjsubwayTramAttributes } from '../components/svgs/lines/styles/bjsubway-tram';
+import type { BjsubwayDottedAttributes } from '../components/svgs/lines/styles/bjsubway-dotted';
+import type { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
+import type { RiverAttributes } from '../components/svgs/lines/styles/river';
+import type { MTRRaceDaysAttributes } from '../components/svgs/lines/styles/mtr-race-day';
+import type { MTRLightRailAttributes } from '../components/svgs/lines/styles/mtr-light-rail';
+import type { MTRUnpaidAreaAttributes } from '../components/svgs/lines/styles/mtr-unpaid-area';
+import type { MTRPaidAreaAttributes } from '../components/svgs/lines/styles/mtr-paid-area';
+import type { MRTUnderConstructionAttributes } from '../components/svgs/lines/styles/mrt-under-construction';
+import type { MRTSentosaExpressAttributes } from '../components/svgs/lines/styles/mrt-sentosa-express';
+import type { MRTTapeOutAttributes } from '../components/svgs/lines/styles/mrt-tape-out';
+import type { JREastSingleColorAttributes } from '../components/svgs/lines/styles/jr-east-single-color';
+import type { JREastSingleColorPatternAttributes } from '../components/svgs/lines/styles/jr-east-single-color-pattern';
+import type { LRTSingleColorAttributes } from '../components/svgs/lines/styles/lrt-single-color';
+import type { LondonTubeTerminalAttributes } from '../components/svgs/lines/styles/london-tube-terminal';
+import type { LondonTubeInternalIntAttributes } from '../components/svgs/lines/styles/london-tube-internal-int';
+import type { LondonTube10MinWalkAttributes } from '../components/svgs/lines/styles/london-tube-10-min-walk';
+import type { LondonRailAttributes } from '../components/svgs/lines/styles/london-rail';
+import type { LondonSandwichAttributes } from '../components/svgs/lines/styles/london-sandwich';
+import type { LondonLutonAirportDARTAttributes } from '../components/svgs/lines/styles/london-DART';
+import type { LondonIFSCloudCableCarAttributes } from '../components/svgs/lines/styles/london-ifs-cloud-cable-car';
+import type { GuangdongIntercityRailwayAttributes } from '../components/svgs/lines/styles/guangdong-intercity-railway';
+import type { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-loop';
+import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
+import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
+import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -57,6 +58,7 @@ export interface ExternalLinePathAttributes {
 
 export enum LineStyleType {
     SingleColor = 'single-color',
+    Generic = 'generic',
     ShanghaiSuburbanRailway = 'sh-sub-rwy',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
@@ -92,6 +94,7 @@ export enum LineStyleType {
 
 export interface ExternalLineStyleAttributes {
     [LineStyleType.SingleColor]?: SingleColorAttributes;
+    [LineStyleType.Generic]?: GenericAttributes;
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
@@ -277,6 +280,12 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
      * An optional path generator for this style to calculate offset/parallel/split paths.
      */
     pathGenerator?: StylePathGenerator<T>;
+    /**
+     * Optional custom equality check for "select all same style" feature.
+     * When not provided, the default compares all Theme-typed properties
+     * by their hex color value (index [2] of the Theme tuple).
+     */
+    isSameStyle?: (a: T, b: T) => boolean;
     /**
      * Metadata for this line style.
      */

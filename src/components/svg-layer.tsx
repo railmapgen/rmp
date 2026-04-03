@@ -16,6 +16,7 @@ interface SvgLayerProps {
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handleEdgePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
+    handleEdgeDoubleClick: (edge: LineId, e: React.MouseEvent<SVGElement>) => void;
 }
 
 // HELP NEEDED: Why component is not this type?
@@ -25,8 +26,15 @@ type StyleComponent = React.FC<
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
-        const { elements, selected, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } =
-            props;
+        const {
+            elements,
+            selected,
+            handlePointerDown,
+            handlePointerMove,
+            handlePointerUp,
+            handleEdgePointerDown,
+            handleEdgeDoubleClick,
+        } = props;
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
@@ -36,7 +44,7 @@ const SvgLayer = React.memo(
         );
         for (const element of elements) {
             const isSelected = selected.has(element.id);
-            const selectedGlowFilter = isSelected ? 'url(#selected-glow)' : undefined;
+            const selectedGlowClassName = isSelected ? 'rmp-selected-glow' : undefined;
 
             if (element.type === 'line') {
                 const id = element.id as LineId;
@@ -49,7 +57,12 @@ const SvgLayer = React.memo(
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
                     layers[element.line!.attr.zIndex].pre.push(
-                        <g key={`${id}.pre`} id={`${id}.pre`} filter={selectedGlowFilter}>
+                        <g
+                            key={`${id}.pre`}
+                            id={`${id}.pre`}
+                            className={selectedGlowClassName}
+                            onDoubleClick={e => handleEdgeDoubleClick(id, e)}
+                        >
                             <PreStyleComponent
                                 id={id}
                                 type={type}
@@ -64,7 +77,12 @@ const SvgLayer = React.memo(
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <g key={id} id={id} filter={selectedGlowFilter}>
+                    <g
+                        key={id}
+                        id={id}
+                        className={selectedGlowClassName}
+                        onDoubleClick={e => handleEdgeDoubleClick(id, e)}
+                    >
                         <StyleComponent
                             id={id}
                             type={type}
@@ -79,7 +97,12 @@ const SvgLayer = React.memo(
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
                 if (PostStyleComponent) {
                     layers[element.line!.attr.zIndex].post.push(
-                        <g key={`${id}.post`} id={`${id}.post`} filter={selectedGlowFilter}>
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            className={selectedGlowClassName}
+                            onDoubleClick={e => handleEdgeDoubleClick(id, e)}
+                        >
                             <PostStyleComponent
                                 id={id}
                                 type={type}
@@ -103,7 +126,7 @@ const SvgLayer = React.memo(
                             key={`${element.id}.pre`}
                             id={`${element.id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
+                            className={selectedGlowClassName}
                         >
                             <PreStationComponent
                                 id={id}
@@ -120,7 +143,7 @@ const SvgLayer = React.memo(
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={selectedGlowFilter}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={selectedGlowClassName}>
                         <StationComponent
                             id={id}
                             x={attr.x}
@@ -140,7 +163,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
+                            className={selectedGlowClassName}
                         >
                             <PostStationComponent
                                 id={id}
@@ -166,7 +189,7 @@ const SvgLayer = React.memo(
                             key={`${id}.pre`}
                             id={`${id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
+                            className={selectedGlowClassName}
                         >
                             <PreMiscNodeComponent
                                 id={id}
@@ -184,7 +207,7 @@ const SvgLayer = React.memo(
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} filter={selectedGlowFilter}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={selectedGlowClassName}>
                         <MiscNodeComponent
                             id={id}
                             x={attr.x}
@@ -205,7 +228,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            filter={selectedGlowFilter}
+                            className={selectedGlowClassName}
                         >
                             <PostMiscNodeComponent
                                 id={id}
