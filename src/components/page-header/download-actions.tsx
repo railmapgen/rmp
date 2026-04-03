@@ -36,13 +36,13 @@ import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, rmpInfoSpecificNodeExists } from '../../util/download';
-import { exportVideo, VideoExportOptions } from '../../util/video-export';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { stringifyParam } from '../../util/save';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
+import VideoExportModal from './video-export-modal';
 
 const getTauriUrl = () => {
     const baseUrl = 'https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download';
@@ -131,35 +131,6 @@ export default function DownloadActions() {
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
-
-    // Video export states
-    const [videoFps, setVideoFps] = React.useState(30);
-    const [videoDuration, setVideoDuration] = React.useState(10);
-    const [videoQuality, setVideoQuality] = React.useState(95);
-    const [videoProgress, setVideoProgress] = React.useState(0);
-    const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
-
-    // Validation for video export inputs
-    const validateAndSetFps = (value: string) => {
-        const num = Number(value);
-        if (!isNaN(num) && num >= 1 && num <= 60) {
-            setVideoFps(num);
-        }
-    };
-
-    const validateAndSetDuration = (value: string) => {
-        const num = Number(value);
-        if (!isNaN(num) && num >= 1 && num <= 300) {
-            setVideoDuration(num);
-        }
-    };
-
-    const validateAndSetQuality = (value: string) => {
-        const num = Number(value);
-        if (!isNaN(num) && num >= 1 && num <= 100) {
-            setVideoQuality(num);
-        }
-    };
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
@@ -290,40 +261,6 @@ export default function DownloadActions() {
             );
         };
         img.src = src; // draw src on canvas
-    };
-
-    const handleVideoExport = async () => {
-        setIsVideoGenerating(true);
-        setVideoProgress(0);
-
-        if (isAllowAppTelemetry)
-            rmgRuntime.event(
-                Events.DOWNLOAD_IMAGES,
-                isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
-            );
-
-        try {
-            const options: VideoExportOptions = {
-                fps: videoFps,
-                duration: videoDuration,
-                isTransparent,
-                scale,
-                isSystemFontsOnly,
-                quality: videoQuality,
-            };
-
-            const blob = await exportVideo(graph.current, languages, existsNodeTypes, options, bgColor, progress =>
-                setVideoProgress(Math.floor(progress * 100))
-            );
-
-            downloadBlobAs(`RMP_${new Date().valueOf()}.webm`, blob);
-        } catch (error) {
-            console.error('Video export failed:', error);
-            dispatch(setGlobalAlert({ status: 'error', message: 'Video export failed. Please try again.' }));
-        } finally {
-            setIsVideoGenerating(false);
-            setVideoProgress(0);
-        }
     };
 
     return (
@@ -483,105 +420,7 @@ export default function DownloadActions() {
                 </ModalContent>
             </Modal>
 
-            <Modal size="2xl" isOpen={isVideoExportModalOpen} onClose={() => setIsVideoExportModalOpen(false)}>
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>{t('header.download.videoExport.title')}</ModalHeader>
-                    <ModalCloseButton />
-
-                    <ModalBody>
-                        <Text mb={4}>{t('header.download.videoExport.description')}</Text>
-                        <RmgFields
-                            fields={[
-                                {
-                                    type: 'input',
-                                    label: t('header.download.videoExport.fps'),
-                                    value: videoFps.toString(),
-                                    onChange: validateAndSetFps,
-                                    minW: 'full',
-                                },
-                                {
-                                    type: 'input',
-                                    label: t('header.download.videoExport.duration'),
-                                    value: videoDuration.toString(),
-                                    onChange: validateAndSetDuration,
-                                    minW: 'full',
-                                },
-                                {
-                                    type: 'input',
-                                    label: t('header.download.videoExport.quality'),
-                                    value: videoQuality.toString(),
-                                    onChange: validateAndSetQuality,
-                                    minW: 'full',
-                                },
-                                {
-                                    type: 'select',
-                                    label: t('header.download.scale'),
-                                    value: scale,
-                                    options: scaleOptions,
-                                    onChange: value => setScale(value as number),
-                                },
-                                {
-                                    type: 'switch',
-                                    label: t('header.download.transparent'),
-                                    isChecked: isTransparent,
-                                    onChange: setIsTransparent,
-                                },
-                            ]}
-                        />
-                        <br />
-                        <Checkbox isChecked={isSystemFontsOnly} onChange={e => setIsSystemFontsOnly(e.target.checked)}>
-                            <Text>{t('header.download.isSystemFontsOnly')}</Text>
-                        </Checkbox>
-                        <Checkbox
-                            id="agree_terms_video"
-                            isChecked={isTermsAndConditionsSelected}
-                            onChange={e => setIsTermsAndConditionsSelected(e.target.checked)}
-                        >
-                            <Text>
-                                {t('header.download.termsAndConditionsInfo')}
-                                <Link color="teal.500" onClick={() => setIsTermsAndConditionsModalOpen(true)}>
-                                    {t('header.download.termsAndConditions')} <Icon as={MdOpenInNew} />
-                                </Link>
-                                {t('header.download.period')}
-                            </Text>
-                        </Checkbox>
-
-                        {isVideoGenerating && (
-                            <Alert status="info" mt="4">
-                                <AlertIcon />
-                                <Box>
-                                    <AlertTitle>{t('header.download.videoExport.generating')}</AlertTitle>
-                                    <AlertDescription>
-                                        {t('header.download.videoExport.progress', { progress: videoProgress })}
-                                    </AlertDescription>
-                                </Box>
-                            </Alert>
-                        )}
-                    </ModalBody>
-
-                    <ModalFooter>
-                        <HStack>
-                            <Button
-                                id="video_export_button"
-                                colorScheme="teal"
-                                variant="outline"
-                                size="sm"
-                                isDisabled={!isTermsAndConditionsSelected}
-                                isLoading={isVideoGenerating}
-                                onClick={handleVideoExport}
-                            >
-                                {t('header.download.confirm')}
-                            </Button>
-                        </HStack>
-                    </ModalFooter>
-
-                    <TermsAndConditionsModal
-                        isOpen={isTermsAndConditionsModalOpen}
-                        onClose={() => setIsTermsAndConditionsModalOpen(false)}
-                    />
-                </ModalContent>
-            </Modal>
+            <VideoExportModal isOpen={isVideoExportModalOpen} onClose={() => setIsVideoExportModalOpen(false)} />
 
             <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
         </Menu>
