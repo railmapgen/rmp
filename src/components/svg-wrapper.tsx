@@ -97,14 +97,14 @@ const SvgWrapper = () => {
     const {
         viewportRef,
         svgRef,
-        getLatestViewport,
-        previewViewport,
-        scheduleLiveViewportCommit,
-        schedulePreviewCommit,
-        commitViewportNow,
-        beginDrag,
-        dragTo,
-        finishDrag,
+        viewportGetLatest,
+        viewportPreview,
+        viewportScheduleLiveCommit,
+        viewportSchedulePreviewCommit,
+        viewportCommitNow,
+        panStart,
+        panMove,
+        panEnd,
     } = useViewportController({
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
     });
@@ -131,7 +131,7 @@ const SvgWrapper = () => {
         e.currentTarget.setPointerCapture(e.pointerId);
 
         const { x, y } = getMousePosition(e);
-        const currentViewport = getLatestViewport();
+        const currentViewport = viewportGetLatest();
         const currentViewBoxMin = { x: currentViewport.x, y: currentViewport.y };
         if (mode.startsWith('station') || mode.startsWith('misc-node')) {
             dispatch(setMode('free'));
@@ -173,7 +173,7 @@ const SvgWrapper = () => {
                 // start background dragging and clear the current selection
                 dispatch(setActive('background'));
                 dispatch(clearSelected());
-                beginDrag({ x, y }, { publishLiveViewport: gridLines });
+                panStart({ x, y }, { publishLiveViewport: gridLines });
             } else {
                 // when user holds shift and mis-clicks the background, preserve the current selection
             }
@@ -186,7 +186,7 @@ const SvgWrapper = () => {
         if (mode === 'select') {
             if (selectStart.x != 0 && selectStart.y != 0) {
                 const { x, y } = getMousePosition(e);
-                const currentViewport = getLatestViewport();
+                const currentViewport = viewportGetLatest();
                 setSelectMoving(
                     pointerPosToSVGCoord(x, y, currentViewport.zoom, {
                         x: currentViewport.x,
@@ -196,14 +196,14 @@ const SvgWrapper = () => {
             }
         } else if (active === 'background') {
             const { x, y } = getMousePosition(e);
-            dragTo({ x, y });
+            panMove({ x, y });
         }
     });
     const handleBackgroundUp = useEvent((e: React.PointerEvent<SVGSVGElement>) => {
         const { x, y } = getMousePosition(e);
         e.currentTarget.releasePointerCapture(e.pointerId);
         if (mode === 'select') {
-            const currentViewport = getLatestViewport();
+            const currentViewport = viewportGetLatest();
             const { x: svgX, y: svgY } = pointerPosToSVGCoord(x, y, currentViewport.zoom, {
                 x: currentViewport.x,
                 y: currentViewport.y,
@@ -220,13 +220,13 @@ const SvgWrapper = () => {
         // when user holding the shift key and mis-click the background
         // preserve the current selection
         if (active === 'background' && !e.shiftKey) {
-            finishDrag({ x, y });
+            panEnd({ x, y });
             dispatch(setActive(undefined));
         }
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        const currentViewport = getLatestViewport();
+        const currentViewport = viewportGetLatest();
         const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
         const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
 
@@ -242,11 +242,11 @@ const SvgWrapper = () => {
         };
 
         if (gridLines) {
-            previewViewport(nextViewport, { publishLiveViewport: true });
-            scheduleLiveViewportCommit(150);
+            viewportPreview(nextViewport, { publishLiveViewport: true });
+            viewportScheduleLiveCommit(150);
         } else {
-            previewViewport(nextViewport);
-            schedulePreviewCommit(150);
+            viewportPreview(nextViewport);
+            viewportSchedulePreviewCommit(150);
         }
     });
 
@@ -295,12 +295,12 @@ const SvgWrapper = () => {
             const d = 100;
             const x_factor = e.key.endsWith('Left') ? -1 : e.key.endsWith('Right') ? 1 : 0;
             const y_factor = e.key.endsWith('Up') ? -1 : e.key.endsWith('Down') ? 1 : 0;
-            const currentViewport = getLatestViewport();
+            const currentViewport = viewportGetLatest();
             const nextMin = pointerPosToSVGCoord(d * x_factor, d * y_factor, currentViewport.zoom, {
                 x: currentViewport.x,
                 y: currentViewport.y,
             });
-            commitViewportNow({ x: nextMin.x, y: nextMin.y, zoom: currentViewport.zoom });
+            viewportCommitNow({ x: nextMin.x, y: nextMin.y, zoom: currentViewport.zoom });
         } else if (e.key === 'i' || e.key === 'j' || e.key === 'k' || e.key === 'l') {
             const x_factor = (e.key === 'j' ? -1 : e.key === 'l' ? 1 : 0) * NODES_MOVE_DISTANCE;
             const y_factor = (e.key === 'i' ? -1 : e.key === 'k' ? 1 : 0) * NODES_MOVE_DISTANCE;
@@ -355,7 +355,7 @@ const SvgWrapper = () => {
             }
 
             try {
-                const currentViewport = getLatestViewport();
+                const currentViewport = viewportGetLatest();
                 const { x: svgMidX, y: svgMidY } = pointerPosToSVGCoord(width / 2, height / 2, currentViewport.zoom, {
                     x: currentViewport.x,
                     y: currentViewport.y,

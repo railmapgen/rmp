@@ -130,7 +130,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     });
 
     /**
-     * Drag session cache used by `beginDrag`, `dragTo`, and `finishDrag`.
+     * Drag session cache used by `panStart`, `panMove`, and `panEnd`.
      *
      * It stores the drag baseline and the latest pointer position so each RAF tick
      * can derive the viewport from a stable origin. This avoids repeated Redux
@@ -154,7 +154,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * a chance to rerender. This lets later events in the same frame derive their
      * math from the latest intended viewport rather than a stale persisted one.
      */
-    const getLatestViewport = React.useCallback((): LiveViewport => {
+    const viewportGetLatest = React.useCallback((): LiveViewport => {
         return viewportFrameRef.current.viewport;
     }, []);
 
@@ -320,9 +320,9 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * The last point matters for performance: not every drag needs Redux updates.
      * If no live consumer exists, we can keep the whole drag purely imperative.
      */
-    const beginDrag = React.useCallback(
+    const panStart = React.useCallback(
         (pointer: Point, options?: { publishLiveViewport?: boolean }) => {
-            const currentViewport = getLatestViewport();
+            const currentViewport = viewportGetLatest();
 
             dragRef.current = {
                 isDragging: true,
@@ -336,7 +336,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
             clearViewportRaf();
             clearPreviewTimeout();
         },
-        [clearPreviewTimeout, clearViewportRaf, getLatestViewport, store]
+        [clearPreviewTimeout, clearViewportRaf, store, viewportGetLatest]
     );
 
     /**
@@ -349,7 +349,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * eagerly here; the unified RAF callback will only consume the most recent
      * derived viewport written into the frame state.
      */
-    const dragTo = React.useCallback(
+    const panMove = React.useCallback(
         (pointer: Point) => {
             if (!dragRef.current.isDragging) return;
 
@@ -372,7 +372,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * - multiple rapid previews collapse into one visual update
      * - transient viewport publication remains optional for external live consumers
      */
-    const previewViewport = React.useCallback(
+    const viewportPreview = React.useCallback(
         (nextViewport: LiveViewport, options?: { publishLiveViewport?: boolean }) => {
             rebaseDragSession(nextViewport);
             scheduleViewportFrame(nextViewport, options);
@@ -388,7 +388,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * committing, we cancel pending frame work so a stale delayed commit cannot
      * race with the immediate one.
      */
-    const commitViewportNow = React.useCallback(
+    const viewportCommitNow = React.useCallback(
         (nextViewport?: LiveViewport) => {
             clearViewportRaf();
             clearPreviewTimeout();
@@ -406,7 +406,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * only the final settled live viewport is persisted after the burst of previews
      * has stopped.
      */
-    const scheduleLiveViewportCommit = React.useCallback(
+    const viewportScheduleLiveCommit = React.useCallback(
         (delayMs = 150) => {
             if (!viewportFrameRef.current.publishLiveViewport) return;
 
@@ -427,7 +427,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * `liveViewport`, but still need the final settled viewport to be persisted
      * after the interaction burst ends.
      */
-    const schedulePreviewCommit = React.useCallback(
+    const viewportSchedulePreviewCommit = React.useCallback(
         (delayMs = 150) => {
             clearPreviewTimeout();
             viewportFrameRef.current.timeoutId = window.setTimeout(() => {
@@ -449,7 +449,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * - smooth intermediate frames via imperative DOM updates
      * - a single persisted viewport update at interaction end
      */
-    const finishDrag = React.useCallback(
+    const panEnd = React.useCallback(
         (pointer: Point) => {
             if (!dragRef.current.isDragging) return;
 
@@ -458,9 +458,9 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
 
             const nextViewport = calculateDraggedViewport();
             dragRef.current.isDragging = false;
-            commitViewportNow(nextViewport);
+            viewportCommitNow(nextViewport);
         },
-        [calculateDraggedViewport, clearViewportRaf, commitViewportNow]
+        [calculateDraggedViewport, clearViewportRaf, viewportCommitNow]
     );
 
     /**
@@ -468,23 +468,23 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      *
      * - viewportRef: attach to the world-space `<g>` that should be transformed
      * - svgRef: attach to the root `<svg>` so browser zoom suppression can be wired
-     * - getLatestViewport: use when business logic needs the freshest viewport value
-     * - previewViewport: preview a viewport efficiently without persisting it yet
-     * - scheduleLiveViewportCommit: debounce a future commit for live-published previews
-     * - schedulePreviewCommit: debounce a future commit for preview-only flows
-     * - commitViewportNow: persist a viewport immediately
-     * - beginDrag / dragTo / finishDrag: wire these to background drag interaction
+     * - viewportGetLatest: use when business logic needs the freshest viewport value
+     * - viewportPreview: preview a viewport efficiently without persisting it yet
+     * - viewportScheduleLiveCommit: debounce a future commit for live-published previews
+     * - viewportSchedulePreviewCommit: debounce a future commit for preview-only flows
+     * - viewportCommitNow: persist a viewport immediately
+     * - panStart / panMove / panEnd: wire these to background drag interaction
      */
     return {
         viewportRef,
         svgRef,
-        getLatestViewport,
-        previewViewport,
-        scheduleLiveViewportCommit,
-        schedulePreviewCommit,
-        commitViewportNow,
-        beginDrag,
-        dragTo,
-        finishDrag,
+        viewportGetLatest,
+        viewportPreview,
+        viewportScheduleLiveCommit,
+        viewportSchedulePreviewCommit,
+        viewportCommitNow,
+        panStart,
+        panMove,
+        panEnd,
     };
 };

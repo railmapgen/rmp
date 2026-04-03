@@ -68,8 +68,8 @@ describe('useViewportController', () => {
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
 
         act(() => {
-            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
-            ref.current?.previewViewport({ x: 30, y: 40, zoom: 50 }, { publishLiveViewport: true });
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
+            ref.current?.viewportPreview({ x: 30, y: 40, zoom: 50 }, { publishLiveViewport: true });
         });
 
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
@@ -88,10 +88,10 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 });
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 });
         });
 
-        expect(ref.current?.getLatestViewport()).toEqual({ x: 10, y: 20, zoom: 80 });
+        expect(ref.current?.viewportGetLatest()).toEqual({ x: 10, y: 20, zoom: 80 });
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
 
         flushRaf();
@@ -106,8 +106,8 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
-            ref.current?.scheduleLiveViewportCommit(150);
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
+            ref.current?.viewportScheduleLiveCommit(150);
         });
 
         flushRaf();
@@ -117,8 +117,8 @@ describe('useViewportController', () => {
         });
 
         act(() => {
-            ref.current?.previewViewport({ x: 40, y: 50, zoom: 60 }, { publishLiveViewport: true });
-            ref.current?.scheduleLiveViewportCommit(150);
+            ref.current?.viewportPreview({ x: 40, y: 50, zoom: 60 }, { publishLiveViewport: true });
+            ref.current?.viewportScheduleLiveCommit(150);
         });
 
         flushRaf();
@@ -147,9 +147,9 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
-            ref.current?.scheduleLiveViewportCommit(150);
-            ref.current?.commitViewportNow({ x: 5, y: 15, zoom: 90 });
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
+            ref.current?.viewportScheduleLiveCommit(150);
+            ref.current?.viewportCommitNow({ x: 5, y: 15, zoom: 90 });
         });
 
         act(() => {
@@ -168,8 +168,8 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.beginDrag({ x: 0, y: 0 }, { publishLiveViewport: true });
-            ref.current?.dragTo({ x: 50, y: 20 });
+            ref.current?.panStart({ x: 0, y: 0 }, { publishLiveViewport: true });
+            ref.current?.panMove({ x: 50, y: 20 });
         });
 
         flushRaf();
@@ -178,7 +178,7 @@ describe('useViewportController', () => {
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(50, 20) scale(1)');
 
         act(() => {
-            ref.current?.finishDrag({ x: 100, y: 40 });
+            ref.current?.panEnd({ x: 100, y: 40 });
         });
 
         expect(store.getState().param.svgViewBoxZoom).toBe(100);
@@ -193,8 +193,8 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.beginDrag({ x: 0, y: 0 }, { publishLiveViewport: true });
-            ref.current?.dragTo({ x: 50, y: 20 });
+            ref.current?.panStart({ x: 0, y: 0 }, { publishLiveViewport: true });
+            ref.current?.panMove({ x: 50, y: 20 });
         });
 
         flushRaf();
@@ -202,11 +202,11 @@ describe('useViewportController', () => {
         expect(store.getState().viewport.liveViewport).toEqual({ x: -50, y: -20, zoom: 100 });
 
         act(() => {
-            ref.current?.previewViewport({ x: -40, y: -10, zoom: 50 }, { publishLiveViewport: true });
-            ref.current?.dragTo({ x: 70, y: 40 });
+            ref.current?.viewportPreview({ x: -40, y: -10, zoom: 50 }, { publishLiveViewport: true });
+            ref.current?.panMove({ x: 70, y: 40 });
         });
 
-        expect(ref.current?.getLatestViewport()).toEqual({ x: -50, y: -20, zoom: 50 });
+        expect(ref.current?.viewportGetLatest()).toEqual({ x: -50, y: -20, zoom: 50 });
 
         flushRaf();
 
@@ -221,8 +221,8 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 });
-            ref.current?.schedulePreviewCommit(150);
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 });
+            ref.current?.viewportSchedulePreviewCommit(150);
         });
 
         act(() => {
@@ -230,8 +230,8 @@ describe('useViewportController', () => {
         });
 
         act(() => {
-            ref.current?.previewViewport({ x: 40, y: 50, zoom: 60 });
-            ref.current?.schedulePreviewCommit(150);
+            ref.current?.viewportPreview({ x: 40, y: 50, zoom: 60 });
+            ref.current?.viewportSchedulePreviewCommit(150);
         });
 
         act(() => {
@@ -258,8 +258,8 @@ describe('useViewportController', () => {
         render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
 
         act(() => {
-            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 });
-            ref.current?.beginDrag({ x: 0, y: 0 }, { publishLiveViewport: true });
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 });
+            ref.current?.panStart({ x: 0, y: 0 }, { publishLiveViewport: true });
         });
 
         flushRaf();
