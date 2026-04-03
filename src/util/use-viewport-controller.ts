@@ -50,19 +50,21 @@ interface DragState {
 }
 
 /**
- * Mutable preview scheduling state.
+ * Mutable frame scheduling state.
  *
- * Many interactions produce a stream of transient viewport previews before a final
- * settled viewport should be persisted. Instead of scattering that information
- * across multiple refs, this bucket keeps the freshest preview together with the
- * async handles that operate on it.
+ * Both drag and preview interactions eventually want to update the same DOM
+ * transform. Instead of letting each interaction maintain its own RAF handle,
+ * this bucket keeps the freshest viewport together with the single frame and
+ * timeout handles that operate on it.
  *
  * The fields represent:
- * - viewport: the latest preview requested so far
- * - rafId: the queued DOM update for preview rendering
- * - timeoutId: the queued delayed commit of the previewed viewport
+ * - viewport: the latest viewport requested or applied so far
+ * - publishLiveViewport: whether the next frame should also publish the
+ *   transient viewport to Redux
+ * - rafId: the queued DOM update for the next frame
+ * - timeoutId: the queued delayed commit of the latest viewport
  */
-interface ViewportPreviewState {
+interface ViewportFrameState {
     viewport: LiveViewport;
     publishLiveViewport: boolean;
     rafId: number | null;
@@ -82,7 +84,7 @@ interface ViewportPreviewState {
  * What this hook owns:
  * - DOM refs required by the imperative transform path
  * - mutable drag state
- * - mutable preview scheduling state
+ * - mutable frame scheduling state
  * - RAF / timeout scheduling for high-frequency input
  * - publishing transient viewport updates when live consumers need them
  *
@@ -112,14 +114,15 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     const svgRef = React.useRef<SVGSVGElement>(null);
 
     /**
-     * Stores the latest viewport preview together with its pending async work.
+     * Stores the latest viewport together with the pending frame/commit work.
      *
-     * Multiple preview requests may arrive before the queued RAF callback runs, so
-     * the callback must always apply the freshest preview instead of the first one
-     * that happened to schedule the frame. Keeping the RAF and timeout handles in
-     * the same ref also makes cleanup and interaction handoff logic easier to reason about.
+     * Multiple drag and preview requests may arrive before the queued RAF callback
+     * runs, so the callback must always apply the freshest viewport instead of the
+     * first one that happened to schedule the frame. Keeping the RAF and timeout
+     * handles in the same ref also makes cleanup and interaction handoff logic
+     * easier to reason about.
      */
-    const viewportPreviewRef = React.useRef<ViewportPreviewState>({
+    const viewportFrameRef = React.useRef<ViewportFrameState>({
         viewport,
         publishLiveViewport: false,
         rafId: null,
@@ -144,36 +147,16 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     });
 
     /**
-     * RAF handle for panning.
-     *
-     * Pointer move events may outpace the display refresh rate. By funneling pan
-     * updates through a single RAF handle, we coalesce many move events into one
-     * DOM transform per frame.
-     */
-    const panRafRef = React.useRef<number | null>(null);
-
-    /**
      * Returns the freshest viewport available at this exact moment.
      *
-     * When a live viewport exists, it is more up to date than the persisted param
-     * viewport because it may contain interaction state that has not been committed
-     * yet. Falling back to `param` keeps low-frequency callers working even when no
-     * transient interaction is active.
-     *
-     * This function exists mainly for correctness. Event handlers and timeouts can
-     * run before React commits a rerender, so reading from the store directly avoids
-     * stale render-time snapshots.
+     * The imperative viewport ref is now the freshest source of truth because it
+     * is updated immediately when a drag/preview frame is queued, before Redux has
+     * a chance to rerender. This lets later events in the same frame derive their
+     * math from the latest intended viewport rather than a stale persisted one.
      */
     const getLatestViewport = React.useCallback((): LiveViewport => {
-        const state = store.getState();
-        return (
-            state.viewport.liveViewport ?? {
-                x: state.param.svgViewBoxMin.x,
-                y: state.param.svgViewBoxMin.y,
-                zoom: state.param.svgViewBoxZoom,
-            }
-        );
-    }, [store]);
+        return viewportFrameRef.current.viewport;
+    }, []);
 
     /**
      * Applies a viewport directly to the DOM transform.
@@ -186,7 +169,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     const updateViewportTransform = React.useCallback((nextViewport: LiveViewport) => {
         if (!viewportRef.current) return;
 
-        viewportPreviewRef.current.viewport = nextViewport;
+        viewportFrameRef.current.viewport = nextViewport;
         const scale = 100 / nextViewport.zoom;
         const x = -nextViewport.x * scale;
         const y = -nextViewport.y * scale;
@@ -216,56 +199,70 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * after the user has already started a different interaction.
      */
     const clearPreviewTimeout = React.useCallback(() => {
-        if (viewportPreviewRef.current.timeoutId) {
-            clearTimeout(viewportPreviewRef.current.timeoutId);
-            viewportPreviewRef.current.timeoutId = null;
+        if (viewportFrameRef.current.timeoutId) {
+            clearTimeout(viewportFrameRef.current.timeoutId);
+            viewportFrameRef.current.timeoutId = null;
         }
     }, []);
 
     /**
-     * Cancels a scheduled pan RAF update.
+     * Cancels the queued viewport RAF update.
      *
-     * This is mostly used on cleanup or when a drag finishes before the queued RAF
-     * has executed. Canceling it prevents stale transform writes after the session
-     * has already ended.
+     * Drag and preview now share a single frame scheduler. Canceling that one
+     * handle prevents stale transform writes after an interaction has already ended
+     * or been superseded by an immediate commit.
      */
-    const clearPanRaf = React.useCallback(() => {
-        if (panRafRef.current) {
-            cancelAnimationFrame(panRafRef.current);
-            panRafRef.current = null;
+    const clearViewportRaf = React.useCallback(() => {
+        if (viewportFrameRef.current.rafId) {
+            cancelAnimationFrame(viewportFrameRef.current.rafId);
+            viewportFrameRef.current.rafId = null;
         }
     }, []);
 
     /**
-     * Cancels a scheduled preview RAF update.
+     * Queues a viewport write for the next animation frame.
      *
-     * Similar to `clearPanRaf`, but for transient viewport previews. This keeps
-     * unmount and interaction handoff logic safe by ensuring no delayed DOM write
-     * survives beyond the intended lifecycle.
+     * Both drag and preview interactions feed this single path so the DOM transform
+     * is updated at most once per frame. The queued callback always applies the
+     * freshest viewport seen so far, not the first event that happened to request
+     * a frame.
      */
-    const clearPreviewRaf = React.useCallback(() => {
-        if (viewportPreviewRef.current.rafId) {
-            cancelAnimationFrame(viewportPreviewRef.current.rafId);
-            viewportPreviewRef.current.rafId = null;
-        }
-    }, []);
+    const scheduleViewportFrame = React.useCallback(
+        (nextViewport: LiveViewport, options?: { publishLiveViewport?: boolean }) => {
+            viewportFrameRef.current.viewport = nextViewport;
+            viewportFrameRef.current.publishLiveViewport ||= !!options?.publishLiveViewport;
+
+            if (viewportFrameRef.current.rafId) return;
+
+            viewportFrameRef.current.rafId = requestAnimationFrame(() => {
+                const { viewport: latestViewport, publishLiveViewport } = viewportFrameRef.current;
+
+                updateViewportTransform(latestViewport);
+                if (publishLiveViewport) {
+                    dispatch(setLiveViewport(latestViewport));
+                }
+
+                viewportFrameRef.current.publishLiveViewport = false;
+                viewportFrameRef.current.rafId = null;
+            });
+        },
+        [dispatch, updateViewportTransform]
+    );
 
     /**
      * Cancels all pending asynchronous work owned by this hook.
      *
      * This is the single cleanup path for:
-     * - a queued pan frame
-     * - a queued preview frame
-     * - a queued preview commit timeout
+     * - a queued viewport frame
+     * - a queued viewport commit timeout
      *
      * Grouping them in one helper keeps teardown and session handoff code small
      * and ensures we do not forget one branch when the interaction model evolves.
      */
     const clearPendingWork = React.useCallback(() => {
-        clearPanRaf();
-        clearPreviewRaf();
+        clearViewportRaf();
         clearPreviewTimeout();
-    }, [clearPanRaf, clearPreviewRaf, clearPreviewTimeout]);
+    }, [clearPreviewTimeout, clearViewportRaf]);
 
     /**
      * On unmount, cancel any delayed work that could still attempt to touch the DOM
@@ -295,6 +292,21 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     }, []);
 
     /**
+     * Re-bases the active drag session around an externally previewed viewport.
+     *
+     * This keeps drag and wheel zoom composable: if a zoom preview lands during an
+     * active drag, the next pointer move should continue from the zoomed viewport
+     * instead of snapping back to the drag session's original min/zoom baseline.
+     */
+    const rebaseDragSession = React.useCallback((nextViewport: LiveViewport) => {
+        if (!dragRef.current.isDragging) return;
+
+        dragRef.current.start = dragRef.current.latestPointer;
+        dragRef.current.initialMin = { x: nextViewport.x, y: nextViewport.y };
+        dragRef.current.zoom = nextViewport.zoom;
+    }, []);
+
+    /**
      * Starts a new pan session.
      *
      * Call this on pointer down when the background drag mode becomes active.
@@ -321,10 +333,10 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
                 publishLiveViewport: !!options?.publishLiveViewport || !!store.getState().viewport.liveViewport,
             };
 
-            clearPreviewRaf();
+            clearViewportRaf();
             clearPreviewTimeout();
         },
-        [clearPreviewRaf, clearPreviewTimeout, getLatestViewport, store]
+        [clearPreviewTimeout, clearViewportRaf, getLatestViewport, store]
     );
 
     /**
@@ -332,40 +344,21 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      *
      * Call this on pointer move while dragging the background.
      *
-     * Instead of recalculating and writing the DOM transform synchronously on every
-     * move event, this function:
-     * - stores only the latest pointer position
-     * - schedules one RAF callback if none is pending
-     * - updates the DOM once per frame with the derived viewport
-     *
-     * This coalescing is what keeps panning smooth under very high pointer event
-     * rates. Optional live viewport publication is also performed inside the RAF so
-     * Redux traffic stays frame-bounded rather than event-bounded.
-     *
-     * TODO: `panRafRef` (drag) and `viewportPreviewRef.rafId` (wheel preview) are
-     * independent RAF handles. If a user scrolls while dragging, both callbacks can
-     * fire in the same frame and write competing DOM transforms. Consider unifying
-     * them into a single RAF scheduling path.
+     * Pointer move events may outpace the display refresh rate, so we still render
+     * at most once per frame. The viewport math itself is cheap enough to perform
+     * eagerly here; the unified RAF callback will only consume the most recent
+     * derived viewport written into the frame state.
      */
     const dragTo = React.useCallback(
         (pointer: Point) => {
             if (!dragRef.current.isDragging) return;
 
             dragRef.current.latestPointer = pointer;
-            if (panRafRef.current) return;
-
-            panRafRef.current = requestAnimationFrame(() => {
-                const nextViewport = calculateDraggedViewport();
-                updateViewportTransform(nextViewport);
-
-                if (dragRef.current.publishLiveViewport) {
-                    dispatch(setLiveViewport(nextViewport));
-                }
-
-                panRafRef.current = null;
+            scheduleViewportFrame(calculateDraggedViewport(), {
+                publishLiveViewport: dragRef.current.publishLiveViewport,
             });
         },
-        [calculateDraggedViewport, dispatch, updateViewportTransform]
+        [calculateDraggedViewport, scheduleViewportFrame]
     );
 
     /**
@@ -381,22 +374,10 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      */
     const previewViewport = React.useCallback(
         (nextViewport: LiveViewport, options?: { publishLiveViewport?: boolean }) => {
-            viewportPreviewRef.current.viewport = nextViewport;
-            viewportPreviewRef.current.publishLiveViewport ||= !!options?.publishLiveViewport;
-
-            if (!viewportPreviewRef.current.rafId) {
-                viewportPreviewRef.current.rafId = requestAnimationFrame(() => {
-                    const { viewport: latestViewport, publishLiveViewport } = viewportPreviewRef.current;
-                    updateViewportTransform(latestViewport);
-                    if (publishLiveViewport) {
-                        dispatch(setLiveViewport(latestViewport));
-                    }
-                    viewportPreviewRef.current.publishLiveViewport = false;
-                    viewportPreviewRef.current.rafId = null;
-                });
-            }
+            rebaseDragSession(nextViewport);
+            scheduleViewportFrame(nextViewport, options);
         },
-        [dispatch, updateViewportTransform]
+        [rebaseDragSession, scheduleViewportFrame]
     );
 
     /**
@@ -404,17 +385,17 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      *
      * This is used when an interaction is already complete, or when the caller
      * wants the latest viewport to become authoritative right away. Before
-     * committing, we cancel pending preview work so a stale delayed commit cannot
+     * committing, we cancel pending frame work so a stale delayed commit cannot
      * race with the immediate one.
      */
     const commitViewportNow = React.useCallback(
         (nextViewport?: LiveViewport) => {
-            clearPreviewRaf();
+            clearViewportRaf();
             clearPreviewTimeout();
-            viewportPreviewRef.current.publishLiveViewport = false;
+            viewportFrameRef.current.publishLiveViewport = false;
             dispatch(commitLiveViewport(nextViewport));
         },
-        [clearPreviewRaf, clearPreviewTimeout, dispatch]
+        [clearPreviewTimeout, clearViewportRaf, dispatch]
     );
 
     /**
@@ -427,12 +408,12 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      */
     const scheduleLiveViewportCommit = React.useCallback(
         (delayMs = 150) => {
-            if (!viewportPreviewRef.current.publishLiveViewport) return;
+            if (!viewportFrameRef.current.publishLiveViewport) return;
 
             clearPreviewTimeout();
-            viewportPreviewRef.current.timeoutId = window.setTimeout(() => {
-                viewportPreviewRef.current.timeoutId = null;
-                viewportPreviewRef.current.publishLiveViewport = false;
+            viewportFrameRef.current.timeoutId = window.setTimeout(() => {
+                viewportFrameRef.current.timeoutId = null;
+                viewportFrameRef.current.publishLiveViewport = false;
                 dispatch(commitLiveViewport());
             }, delayMs);
         },
@@ -449,9 +430,9 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     const schedulePreviewCommit = React.useCallback(
         (delayMs = 150) => {
             clearPreviewTimeout();
-            viewportPreviewRef.current.timeoutId = window.setTimeout(() => {
-                viewportPreviewRef.current.timeoutId = null;
-                dispatch(commitLiveViewport(viewportPreviewRef.current.viewport));
+            viewportFrameRef.current.timeoutId = window.setTimeout(() => {
+                viewportFrameRef.current.timeoutId = null;
+                dispatch(commitLiveViewport(viewportFrameRef.current.viewport));
             }, delayMs);
         },
         [clearPreviewTimeout, dispatch]
@@ -461,7 +442,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * Ends the current drag session and commits the final viewport.
      *
      * Call this on pointer up after a background drag. We first cancel any pending
-     * pan RAF, then compute the final viewport from the last pointer position, and
+     * viewport RAF, then compute the final viewport from the last pointer position, and
      * finally ask Redux to persist the settled result through `commitLiveViewport`.
      *
      * This gives us the best of both worlds:
@@ -472,13 +453,14 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
         (pointer: Point) => {
             if (!dragRef.current.isDragging) return;
 
-            clearPanRaf();
             dragRef.current.latestPointer = pointer;
-            dragRef.current.isDragging = false;
+            clearViewportRaf();
 
-            commitViewportNow(calculateDraggedViewport());
+            const nextViewport = calculateDraggedViewport();
+            dragRef.current.isDragging = false;
+            commitViewportNow(nextViewport);
         },
-        [calculateDraggedViewport, clearPanRaf, commitViewportNow]
+        [calculateDraggedViewport, clearViewportRaf, commitViewportNow]
     );
 
     /**

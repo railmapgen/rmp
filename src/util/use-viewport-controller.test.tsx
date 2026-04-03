@@ -81,6 +81,24 @@ describe('useViewportController', () => {
         expect(store.getState().viewport.liveViewport).toEqual({ x: 30, y: 40, zoom: 50 });
     });
 
+    it('returns the latest queued viewport before the RAF flushes', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+
+        act(() => {
+            ref.current?.previewViewport({ x: 10, y: 20, zoom: 80 });
+        });
+
+        expect(ref.current?.getLatestViewport()).toEqual({ x: 10, y: 20, zoom: 80 });
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
+
+        flushRaf();
+
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(-12.5, -25) scale(1.25)');
+    });
+
     it('debounces viewport commit and persists only the latest previewed viewport', () => {
         const store = createStore();
         const ref = React.createRef<ViewportControllerApi>();
@@ -166,6 +184,34 @@ describe('useViewportController', () => {
         expect(store.getState().param.svgViewBoxZoom).toBe(100);
         expect(store.getState().param.svgViewBoxMin).toEqual({ x: -100, y: -40 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
+    });
+
+    it('rebases drag math around previewed viewport changes during an active drag', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+
+        act(() => {
+            ref.current?.beginDrag({ x: 0, y: 0 }, { publishLiveViewport: true });
+            ref.current?.dragTo({ x: 50, y: 20 });
+        });
+
+        flushRaf();
+
+        expect(store.getState().viewport.liveViewport).toEqual({ x: -50, y: -20, zoom: 100 });
+
+        act(() => {
+            ref.current?.previewViewport({ x: -40, y: -10, zoom: 50 }, { publishLiveViewport: true });
+            ref.current?.dragTo({ x: 70, y: 40 });
+        });
+
+        expect(ref.current?.getLatestViewport()).toEqual({ x: -50, y: -20, zoom: 50 });
+
+        flushRaf();
+
+        expect(store.getState().viewport.liveViewport).toEqual({ x: -50, y: -20, zoom: 50 });
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(100, 40) scale(2)');
     });
 
     it('debounces preview-only commits without relying on live viewport publication', () => {
