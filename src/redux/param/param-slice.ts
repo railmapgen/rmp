@@ -70,6 +70,10 @@ const paramSlice = createSlice({
             if (state.past.length > MAX_UNDO_SIZE) state.past.shift();
             state.present = structuredClone(action.payload);
         },
+        setSvgViewport: (state, action: PayloadAction<{ zoom: number; min: { x: number; y: number } }>) => {
+            state.svgViewBoxZoom = action.payload.zoom;
+            state.svgViewBoxMin = action.payload.min;
+        },
         setSvgViewBoxZoom: (state, action: PayloadAction<number>) => {
             state.svgViewBoxZoom = action.payload;
         },
@@ -102,5 +106,5 @@ const paramSlice = createSlice({
     },
 });
 
-export const { setFullState, saveGraph, setSvgViewBoxZoom, setSvgViewBoxMin } = paramSlice.actions;
+export const { setFullState, saveGraph, setSvgViewport, setSvgViewBoxZoom, setSvgViewBoxMin } = paramSlice.actions;
 export default paramSlice.reducer;
