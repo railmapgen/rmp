@@ -51,11 +51,21 @@ const makeGraph = () => {
     return graph;
 };
 
-const addStation = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, id: string, x = 0, y = 0) => {
+const addStation = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    id: string,
+    x = 0,
+    y = 0
+) => {
     graph.addNode(id, { visible: true, zIndex: 0, x, y, type: StationType.ShmetroBasic } as NodeAttributes);
 };
 
-const addMiscNode = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, id: string, x = 0, y = 0) => {
+const addMiscNode = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    id: string,
+    x = 0,
+    y = 0
+) => {
     graph.addNode(id, { visible: true, zIndex: 0, x, y, type: MiscNodeType.Virtual } as NodeAttributes);
 };
 
@@ -111,7 +121,15 @@ const addGenericEdge = (
         reconcileId: '',
         parallelIndex: -1,
         [LineStyleType.Generic]: {
-            layers: themes.map((color, i) => ({ id: `layer_${i}`, color, width: 5, opacity: 1, linecap: 'butt' as const, dash: 0, gap: 0 })),
+            layers: themes.map((color, i) => ({
+                id: `layer_${i}`,
+                color,
+                width: 5,
+                opacity: 1,
+                linecap: 'butt' as const,
+                dash: 0,
+                gap: 0,
+            })),
         },
     } as EdgeAttributes);
 };
