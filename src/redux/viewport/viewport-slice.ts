@@ -1,5 +1,6 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ParamState, setSvgViewport, setSvgViewBoxMin, setSvgViewBoxZoom } from '../param/param-slice';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import type { RootDispatch, RootState } from '..';
+import { setSvgViewport, setSvgViewBoxMin, setSvgViewBoxZoom } from '../param/param-slice';
 
 export interface LiveViewport {
     x: number;
@@ -11,41 +12,33 @@ export interface ViewportState {
     liveViewport?: LiveViewport;
 }
 
-type ViewportRootState = {
-    param: ParamState;
-    viewport: ViewportState;
-};
-
 const initialState: ViewportState = {
     liveViewport: undefined,
 };
 
-export const commitLiveViewport = createAsyncThunk(
-    'viewport/commitLiveViewport',
-    async (viewport: LiveViewport | undefined, { getState, dispatch }) => {
-        const state = getState() as ViewportRootState;
-        const nextViewport = viewport ?? state.viewport.liveViewport;
+export const commitLiveViewport = (viewport?: LiveViewport) => (dispatch: RootDispatch, getState: () => RootState) => {
+    const state = getState();
+    const nextViewport = viewport ?? state.viewport.liveViewport;
 
-        if (!nextViewport) return;
+    if (!nextViewport) return;
 
-        const persistedMin = state.param.svgViewBoxMin;
-        const persistedZoom = state.param.svgViewBoxZoom;
-        const shouldUpdateZoom = persistedZoom !== nextViewport.zoom;
-        const shouldUpdateMin = persistedMin.x !== nextViewport.x || persistedMin.y !== nextViewport.y;
+    const persistedMin = state.param.svgViewBoxMin;
+    const persistedZoom = state.param.svgViewBoxZoom;
+    const shouldUpdateZoom = persistedZoom !== nextViewport.zoom;
+    const shouldUpdateMin = persistedMin.x !== nextViewport.x || persistedMin.y !== nextViewport.y;
 
-        if (!shouldUpdateZoom && !shouldUpdateMin) {
-            dispatch(clearLiveViewport());
-            return;
-        }
-
-        dispatch(
-            setSvgViewport({
-                zoom: nextViewport.zoom,
-                min: { x: nextViewport.x, y: nextViewport.y },
-            })
-        );
+    if (!shouldUpdateZoom && !shouldUpdateMin) {
+        dispatch(clearLiveViewport());
+        return;
     }
-);
+
+    dispatch(
+        setSvgViewport({
+            zoom: nextViewport.zoom,
+            min: { x: nextViewport.x, y: nextViewport.y },
+        })
+    );
+};
 
 const viewportSlice = createSlice({
     name: 'viewport',

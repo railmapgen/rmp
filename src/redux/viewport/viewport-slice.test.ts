@@ -31,11 +31,11 @@ describe('ViewportSlice', () => {
         expect(nextState.liveViewport).toBeUndefined();
     });
 
-    it('Can commit live viewport into param and clear the transient copy', async () => {
+    it('Can commit live viewport into param and clear the transient copy', () => {
         const store = createStore();
         store.dispatch(setLiveViewport({ x: 10, y: 20, zoom: 150 }));
 
-        await store.dispatch(commitLiveViewport());
+        store.dispatch(commitLiveViewport());
 
         const nextState = store.getState();
         expect(nextState.param.svgViewBoxMin).toEqual({ x: 10, y: 20 });

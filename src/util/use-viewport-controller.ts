@@ -341,6 +341,11 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * This coalescing is what keeps panning smooth under very high pointer event
      * rates. Optional live viewport publication is also performed inside the RAF so
      * Redux traffic stays frame-bounded rather than event-bounded.
+     *
+     * TODO: `panRafRef` (drag) and `viewportPreviewRef.rafId` (wheel preview) are
+     * independent RAF handles. If a user scrolls while dragging, both callbacks can
+     * fire in the same frame and write competing DOM transforms. Consider unifying
+     * them into a single RAF scheduling path.
      */
     const dragTo = React.useCallback(
         (pointer: Point) => {
@@ -377,7 +382,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
     const previewViewport = React.useCallback(
         (nextViewport: LiveViewport, options?: { publishLiveViewport?: boolean }) => {
             viewportPreviewRef.current.viewport = nextViewport;
-            viewportPreviewRef.current.publishLiveViewport = !!options?.publishLiveViewport;
+            viewportPreviewRef.current.publishLiveViewport ||= !!options?.publishLiveViewport;
 
             if (!viewportPreviewRef.current.rafId) {
                 viewportPreviewRef.current.rafId = requestAnimationFrame(() => {
@@ -386,6 +391,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
                     if (publishLiveViewport) {
                         dispatch(setLiveViewport(latestViewport));
                     }
+                    viewportPreviewRef.current.publishLiveViewport = false;
                     viewportPreviewRef.current.rafId = null;
                 });
             }
