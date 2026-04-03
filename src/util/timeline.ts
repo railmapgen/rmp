@@ -146,29 +146,27 @@ export const findPathByTheme = (
 };
 
 /**
- * Merge newPath into existing timeline with node-level deduplication.
- * If a NodeId already exists in the timeline, it and its adjacent edge are skipped.
+ * Merge newPath into existing timeline with deduplication.
+ * Skips nodes and edges that already exist in the timeline.
+ * When a node is skipped, its adjacent edge in newPath is also skipped.
  */
 export const deduplicateTimeline = (existing: Id[], newPath: Id[]): Id[] => {
-    const existingNodes = new Set<string>(existing.filter(id => !id.startsWith('line_')));
+    const existingIds = new Set<string>(existing);
     const result = [...existing];
 
     for (let i = 0; i < newPath.length; i++) {
         const id = newPath[i];
-        const isNode = !id.startsWith('line_');
+        const isEdge = id.startsWith('line_');
 
-        if (isNode && existingNodes.has(id)) {
-            // Skip this node and also skip the edge before it (if we just added one)
-            // and the edge after it
-            if (i + 1 < newPath.length && newPath[i + 1].startsWith('line_')) {
-                i++; // skip the next edge too
+        if (existingIds.has(id)) {
+            // For a duplicate node, also skip the next edge if present
+            if (!isEdge && i + 1 < newPath.length && newPath[i + 1].startsWith('line_')) {
+                i++;
             }
             continue;
         }
 
-        if (isNode) {
-            existingNodes.add(id);
-        }
+        existingIds.add(id);
         result.push(id);
     }
 

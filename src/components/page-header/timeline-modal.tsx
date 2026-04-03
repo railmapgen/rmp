@@ -1,3 +1,4 @@
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import {
     Badge,
     Box,
@@ -96,7 +97,12 @@ export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
                     const newTimeline = deduplicateTimeline(timeline, path);
                     updateTimeline(newTimeline);
                 } else {
-                    // TODO: show no-path alert
+                    rmgRuntime.sendNotification({
+                        title: t('header.timeline.noPath'),
+                        message: '',
+                        type: 'warning',
+                        duration: 5000,
+                    });
                 }
                 setPickState({ step: 'idle' });
                 dispatch(clearSelected());
@@ -150,25 +156,28 @@ export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
     };
 
     // Drag-and-drop handlers
+    const dragTimelineRef = React.useRef(timeline);
+
     const handleDragStart = (index: number) => {
         setDragIndex(index);
+        dragTimelineRef.current = timeline;
     };
 
     const handleDragOver = (e: React.DragEvent, index: number) => {
         e.preventDefault();
         if (dragIndex === null || dragIndex === index) return;
 
-        const newTimeline = [...timeline];
+        const newTimeline = [...dragTimelineRef.current];
         const [removed] = newTimeline.splice(dragIndex, 1);
         newTimeline.splice(index, 0, removed);
+        dragTimelineRef.current = newTimeline;
         setTimelineState(newTimeline);
         setDragIndex(index);
     };
 
     const handleDragEnd = () => {
         setDragIndex(null);
-        // Save the reordered timeline
-        updateTimeline(timeline);
+        updateTimeline(dragTimelineRef.current);
     };
 
     // Collapsed picking mode: render a floating bar instead of full modal
