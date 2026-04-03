@@ -791,6 +791,18 @@
             "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
             "confirm": "Download"
         },
+        "timeline": {
+            "title": "Animation Timeline",
+            "empty": "No timeline entries. Click \"Add Node\" to start.",
+            "addSegment": "Add Node",
+            "clearAll": "Clear All",
+            "pickStart": "Click a node on the canvas as start...",
+            "pickEnd": "Click a node on the canvas as end...",
+            "selectTheme": "Select a line color:",
+            "noPath": "No path found between the selected nodes.",
+            "unadded": "{{count}} node(s) not in timeline",
+            "addStationOnly": "Add this node only"
+        },
         "donation": {
             "title": "Donation",
             "openCollective": "Open Collective",

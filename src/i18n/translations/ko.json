@@ -790,6 +790,18 @@
             "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
             "confirm": "다운로드"
         },
+        "timeline": {
+            "title": "애니메이션 타임라인",
+            "empty": "타임라인이 없습니다. \"노드 추가\"를 클릭하여 시작하세요.",
+            "addSegment": "노드 추가",
+            "clearAll": "모두 지우기",
+            "pickStart": "캔버스에서 노드를 클릭하여 시작점 선택...",
+            "pickEnd": "캔버스에서 노드를 클릭하여 종점 선택...",
+            "selectTheme": "노선 색상 선택:",
+            "noPath": "선택한 노드 사이의 경로를 찾을 수 없습니다.",
+            "unadded": "{{count}}개 노드가 타임라인에 미추가",
+            "addStationOnly": "이 노드만 추가"
+        },
         "donation": {
             "title": "기부",
             "openCollective": "Open Collective",

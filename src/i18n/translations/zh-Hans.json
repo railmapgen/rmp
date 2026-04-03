@@ -790,6 +790,18 @@
             "rmpInfoSpecificNodeExists": "某些节点需要显示此信息。",
             "confirm": "下载"
         },
+        "timeline": {
+            "title": "动画时间线",
+            "empty": "暂无时间线，点击「添加节点」开始构建。",
+            "addSegment": "添加节点",
+            "clearAll": "清空",
+            "pickStart": "在画布上点击一个节点作为起点……",
+            "pickEnd": "在画布上点击一个节点作为终点……",
+            "selectTheme": "选择线路颜色：",
+            "noPath": "未找到所选节点之间的路径。",
+            "unadded": "有 {{count}} 个节点未加入时间线",
+            "addStationOnly": "仅添加此节点"
+        },
         "donation": {
             "title": "捐赠",
             "openCollective": "Open Collective",

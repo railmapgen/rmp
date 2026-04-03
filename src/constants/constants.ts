@@ -36,6 +36,7 @@ export type EdgeAttributes = BaseAttributes & {
 
 export type GraphAttributes = {
     name?: string;
+    timeline?: Id[];
 };
 
 /**

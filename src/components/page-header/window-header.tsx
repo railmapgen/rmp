@@ -4,7 +4,7 @@ import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
+import { MdHelp, MdRedo, MdSettings, MdTimeline, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
@@ -14,6 +14,7 @@ import DownloadActions from './download-actions';
 import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
+import TimelineModal from './timeline-modal';
 import { ZoomPopover } from './zoom-popover';
 
 export default function WindowHeader() {
@@ -24,6 +25,7 @@ export default function WindowHeader() {
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
+    const [isTimelineModalOpen, setIsTimelineModalOpen] = React.useState(false);
 
     const environment = useReadyConfig(rmgRuntime.getEnv);
     const appVersion = useReadyConfig(rmgRuntime.getAppVersion);
@@ -99,6 +101,14 @@ export default function WindowHeader() {
 
                     <DownloadActions />
 
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Timeline"
+                        icon={<MdTimeline />}
+                        onClick={() => setIsTimelineModalOpen(true)}
+                    />
+
                     {rmgRuntime.isStandaloneWindow() && (
                         <Menu>
                             <MenuButton as={IconButton} icon={<MdTranslate />} variant="ghost" size="sm" />
@@ -132,6 +142,7 @@ export default function WindowHeader() {
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
+            <TimelineModal isOpen={isTimelineModalOpen} onClose={() => setIsTimelineModalOpen(false)} />
         </RmgWindowHeader>
     );
 }
