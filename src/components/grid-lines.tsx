@@ -25,7 +25,7 @@ const GridLines = React.memo((props: GridLinesProps) => {
 
     const svgViewRange = getViewpointSize(currentMin, currentZoom, svgWidth, svgHeight);
     const offset = isToolsExpanded ? (410 * currentZoom) / 100 : 0;
-    const step = currentZoom > 30 ? (currentZoom > 120 ? (currentZoom > 200 ? 225 : 75) : 25) : 5;
+    const step = currentZoom > 30 ? (currentZoom > 120 ? 50 : 25) : 5;
     const standardWidth = currentZoom / 200;
 
     const r = {
