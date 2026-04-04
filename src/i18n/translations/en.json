@@ -669,6 +669,24 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
+                },
+                "generic": {
+                    "displayName": "Generic style",
+                    "layers": "Line layers",
+                    "layer": "Layer {{index}}",
+                    "width": "Width",
+                    "opacity": "Opacity",
+                    "linecap": "Line cap",
+                    "linecapButt": "Butt",
+                    "linecapRound": "Round",
+                    "linecapSquare": "Square",
+                    "dash": "Dash",
+                    "gap": "Gap",
+                    "addLayer": "Add layer",
+                    "copyLayer": "Copy layer",
+                    "moveLayerUp": "Move layer up",
+                    "moveLayerDown": "Move layer down",
+                    "removeLayer": "Remove layer"
                 }
             },
             "edge": {},
@@ -785,6 +803,18 @@
                 "error": "Video export failed. Please try again.",
                 "noNodes": "Cannot export video: No nodes in the graph."
             }
+        },
+        "timeline": {
+            "title": "Animation Timeline",
+            "empty": "No timeline entries. Click \"Add Node\" to start.",
+            "addSegment": "Add Node",
+            "clearAll": "Clear All",
+            "pickStart": "Click a node on the canvas as start...",
+            "pickEnd": "Click a node on the canvas as end...",
+            "selectTheme": "Select a line color:",
+            "noPath": "No path found between the selected nodes.",
+            "unadded": "{{count}} node(s) not in timeline",
+            "addStationOnly": "Add this node only"
         },
         "donation": {
             "title": "Donation",
@@ -956,7 +986,7 @@
 
     "contextMenu": {
         "refresh": "Refresh",
-        "cut": "Cut", 
+        "cut": "Cut",
         "paste": "Paste",
         "delete": "Delete",
         "placeTop": "Place top",

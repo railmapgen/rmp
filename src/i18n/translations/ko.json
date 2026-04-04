@@ -51,7 +51,7 @@
                 "miscNode": "기타 노드",
                 "edge": "노선",
                 "showingFirst500": "처음 500개 항목만 표시됩니다."
-                },
+            },
             "changeStationTypeContent": "역 유형을 변경하면 이름을 제외한 모든 독특한 속성이 제거됩니다.",
             "changeLineTypeContent": "선분 유형을 변경하면 모든 독특한 속성이 제거됩니다.",
             "changeType": "종류 변경",
@@ -668,6 +668,24 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "청두 도시철도 개찰구 환승 방식"
+                },
+                "generic": {
+                    "displayName": "일반 스타일",
+                    "layers": "선 레이어",
+                    "layer": "레이어 {{index}}",
+                    "width": "너비",
+                    "opacity": "불투명도",
+                    "linecap": "라인 캡",
+                    "linecapButt": "버트",
+                    "linecapRound": "라운드",
+                    "linecapSquare": "스퀘어",
+                    "dash": "대시 길이",
+                    "gap": "간격 길이",
+                    "addLayer": "레이어 추가",
+                    "copyLayer": "레이어 복제",
+                    "moveLayerUp": "레이어 위로 이동",
+                    "moveLayerDown": "레이어 아래로 이동",
+                    "removeLayer": "레이어 삭제"
                 }
             },
             "edges": {},
@@ -782,6 +800,18 @@
                 "description": "이 기능은 노드와 라인이 점진적으로 그려지는 애니메이션 비디오를 내보냅니다.",
                 "format": "WebM 형식"
             }
+        },
+        "timeline": {
+            "title": "애니메이션 타임라인",
+            "empty": "타임라인이 없습니다. \"노드 추가\"를 클릭하여 시작하세요.",
+            "addSegment": "노드 추가",
+            "clearAll": "모두 지우기",
+            "pickStart": "캔버스에서 노드를 클릭하여 시작점 선택...",
+            "pickEnd": "캔버스에서 노드를 클릭하여 종점 선택...",
+            "selectTheme": "노선 색상 선택:",
+            "noPath": "선택한 노드 사이의 경로를 찾을 수 없습니다.",
+            "unadded": "{{count}}개 노드가 타임라인에 미추가",
+            "addStationOnly": "이 노드만 추가"
         },
         "donation": {
             "title": "기부",
@@ -953,7 +983,7 @@
 
     "contextMenu": {
         "refresh": "새로 고침",
-        "cut": "잘라내기", 
+        "cut": "잘라내기",
         "paste": "붙여넣기",
         "delete": "삭제",
         "placeTop": "맨 앞으로",
