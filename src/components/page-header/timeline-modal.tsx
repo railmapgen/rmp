@@ -47,6 +47,13 @@ type PickState =
     | { step: 'pickingEnd'; startNode: NodeId; theme: Theme };
 
 export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
+    const handleClose = (shouldSave: boolean) => {
+        if (shouldSave) {
+            updateTimeline(timeline);
+            rmgRuntime.event('timeline_updated', { timeline: getTimeline(window.graph) });
+        }
+        onClose(); // 调用父组件传来的 onClose
+    };
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
@@ -212,7 +219,7 @@ export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
             )}
 
             {/* Modal — always mounted, hidden during picking to avoid remount animation delay */}
-            <Modal size="2xl" isOpen={isOpen && !isPicking} onClose={onClose} scrollBehavior="inside">
+            <Modal size="2xl" isOpen={isOpen && !isPicking} onClose={() => handleClose(false)} scrollBehavior="inside">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>{t('header.timeline.title')}</ModalHeader>
@@ -325,11 +332,11 @@ export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
                                 >
                                     {t('header.timeline.clearAll')}
                                 </Button>
-                                <Button size="sm" colorScheme="teal" onClick={handleAddSegment}>
+                                <Button size="sm" onClick={handleAddSegment}>
                                     {t('header.timeline.addSegment')}
                                 </Button>
-                                <Button size="sm" onClick={onClose}>
-                                    {t('close')}
+                                <Button size="sm" onClick={() => handleClose(true)} colorScheme="teal">
+                                    {t('apply')}
                                 </Button>
                             </HStack>
                         </ModalFooter>

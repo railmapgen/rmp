@@ -119,7 +119,7 @@ const createFrameSVG = async (
             edgeElem.remove();
         } else {
             // Edge is visible, apply progress animation
-            const progress = edgeProgress.get(edgeId) || 1;
+            const progress = edgeProgress.get(edgeId) || 0;
             if (progress < 1) {
                 const pathElem = edgeElem.querySelector('path');
                 if (pathElem) {
