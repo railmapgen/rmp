@@ -63,7 +63,7 @@ export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
 
     // Sync timeline from graph on open
     React.useEffect(() => {
-        if (isOpen) {
+        if (isOpen && pickState.step !== 'pickingTheme') {
             const tl = getTimeline(graph.current);
             setTimelineState(tl);
             setUnaddedNodes(getUnaddedNodes(graph.current, tl));
@@ -180,159 +180,163 @@ export default function TimelineModal({ isOpen, onClose }: TimelineModalProps) {
         updateTimeline(dragTimelineRef.current);
     };
 
-    // Collapsed picking mode: render a floating bar instead of full modal
-    if (pickState.step === 'pickingStart' || pickState.step === 'pickingEnd') {
-        return (
-            <Box
-                position="fixed"
-                top="40px"
-                left="50%"
-                transform="translateX(-50%)"
-                bg={bgColor}
-                px={4}
-                py={2}
-                borderRadius="md"
-                boxShadow="lg"
-                zIndex="modal"
-            >
-                <HStack>
-                    <Text fontWeight="bold">
-                        {pickState.step === 'pickingStart'
-                            ? t('header.timeline.pickStart')
-                            : t('header.timeline.pickEnd')}
-                    </Text>
-                    <Button size="sm" variant="outline" onClick={() => setPickState({ step: 'idle' })}>
-                        {t('cancel')}
-                    </Button>
-                </HStack>
-            </Box>
-        );
-    }
+    const isPicking = pickState.step === 'pickingStart' || pickState.step === 'pickingEnd';
 
-    // Full modal mode
     return (
-        <Modal size="2xl" isOpen={isOpen} onClose={onClose} scrollBehavior="inside">
-            <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>{t('header.timeline.title')}</ModalHeader>
-                <ModalCloseButton />
+        <>
+            {/* Floating bar during picking — rendered on top, canvas stays interactive */}
+            {isPicking && (
+                <Box
+                    position="fixed"
+                    top="40px"
+                    left="50%"
+                    transform="translateX(-50%)"
+                    bg={bgColor}
+                    px={4}
+                    py={2}
+                    borderRadius="md"
+                    boxShadow="lg"
+                    zIndex="modal"
+                >
+                    <HStack>
+                        <Text fontWeight="bold">
+                            {pickState.step === 'pickingStart'
+                                ? t('header.timeline.pickStart')
+                                : t('header.timeline.pickEnd')}
+                        </Text>
+                        <Button size="sm" variant="outline" onClick={() => setPickState({ step: 'idle' })}>
+                            {t('cancel')}
+                        </Button>
+                    </HStack>
+                </Box>
+            )}
 
-                <ModalBody>
-                    {pickState.step === 'pickingTheme' ? (
-                        /* Theme selection only — no timeline list */
-                        <Box p={3} borderWidth="1px" borderRadius="md">
-                            <HStack mb={2} justifyContent="space-between">
-                                <Text fontWeight="bold">{t('header.timeline.selectTheme')}</Text>
-                                <Button size="xs" variant="outline" onClick={() => setPickState({ step: 'idle' })}>
-                                    {t('cancel')}
-                                </Button>
-                            </HStack>
-                            <HStack flexWrap="wrap" spacing={2}>
-                                {availableThemes.map((theme, i) => (
-                                    <ThemeButton
-                                        key={i}
-                                        theme={theme}
-                                        onClick={() =>
-                                            setPickState({
-                                                step: 'pickingEnd',
-                                                startNode: pickState.startNode,
-                                                theme,
-                                            })
-                                        }
-                                    />
-                                ))}
-                            </HStack>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                mt={3}
-                                onClick={() => {
-                                    const newTimeline = deduplicateTimeline(timeline, [pickState.startNode]);
-                                    updateTimeline(newTimeline);
-                                    setPickState({ step: 'idle' });
-                                }}
-                            >
-                                {t('header.timeline.addStationOnly')}
-                            </Button>
-                        </Box>
-                    ) : (
-                        <>
-                            {/* Timeline list */}
-                            {timeline.length > 0 ? (
-                                <VStack align="stretch" spacing={1}>
-                                    {timeline.map((id, index) => (
-                                        <TimelineItem
-                                            key={`${id}-${index}`}
-                                            id={id}
-                                            index={index}
-                                            graph={graph.current}
-                                            isDragging={dragIndex === index}
-                                            onRemove={() => handleRemoveItem(index)}
-                                            onDragStart={() => handleDragStart(index)}
-                                            onDragOver={e => handleDragOver(e, index)}
-                                            onDragEnd={handleDragEnd}
+            {/* Modal — always mounted, hidden during picking to avoid remount animation delay */}
+            <Modal size="2xl" isOpen={isOpen && !isPicking} onClose={onClose} scrollBehavior="inside">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.timeline.title')}</ModalHeader>
+                    <ModalCloseButton />
+
+                    <ModalBody>
+                        {pickState.step === 'pickingTheme' ? (
+                            /* Theme selection only — no timeline list */
+                            <Box p={3} borderWidth="1px" borderRadius="md">
+                                <HStack mb={2} justifyContent="space-between">
+                                    <Text fontWeight="bold">{t('header.timeline.selectTheme')}</Text>
+                                    <Button size="xs" variant="outline" onClick={() => setPickState({ step: 'idle' })}>
+                                        {t('cancel')}
+                                    </Button>
+                                </HStack>
+                                <HStack flexWrap="wrap" spacing={2}>
+                                    {availableThemes.map((theme, i) => (
+                                        <ThemeButton
+                                            key={i}
+                                            theme={theme}
+                                            onClick={() =>
+                                                setPickState({
+                                                    step: 'pickingEnd',
+                                                    startNode: pickState.startNode,
+                                                    theme,
+                                                })
+                                            }
                                         />
                                     ))}
-                                </VStack>
-                            ) : (
-                                <Text color="gray.500" mb={4}>
-                                    {t('header.timeline.empty')}
-                                </Text>
-                            )}
-
-                            {/* Unadded nodes */}
-                            {unaddedNodes.length > 0 && (
-                                <Box mt={4}>
-                                    <Text fontSize="sm" color="gray.500" mb={1}>
-                                        {t('header.timeline.unadded', { count: unaddedNodes.length })}
-                                    </Text>
-                                    <HStack flexWrap="wrap" spacing={1}>
-                                        {unaddedNodes.slice(0, 30).map(nodeId => (
-                                            <Button
-                                                key={nodeId}
-                                                size="xs"
-                                                variant="outline"
-                                                colorScheme={(nodeId as string).startsWith('stn_') ? 'teal' : 'purple'}
-                                                onClick={() => panToNode(nodeId)}
-                                            >
-                                                {getNodeDisplayName(graph.current, nodeId)}
-                                            </Button>
+                                </HStack>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    mt={3}
+                                    onClick={() => {
+                                        const newTimeline = deduplicateTimeline(timeline, [pickState.startNode]);
+                                        updateTimeline(newTimeline);
+                                        setPickState({ step: 'idle' });
+                                    }}
+                                >
+                                    {t('header.timeline.addStationOnly')}
+                                </Button>
+                            </Box>
+                        ) : (
+                            <>
+                                {/* Timeline list */}
+                                {timeline.length > 0 ? (
+                                    <VStack align="stretch" spacing={1}>
+                                        {timeline.map((id, index) => (
+                                            <TimelineItem
+                                                key={`${id}-${index}`}
+                                                id={id}
+                                                index={index}
+                                                graph={graph.current}
+                                                isDragging={dragIndex === index}
+                                                onRemove={() => handleRemoveItem(index)}
+                                                onDragStart={() => handleDragStart(index)}
+                                                onDragOver={e => handleDragOver(e, index)}
+                                                onDragEnd={handleDragEnd}
+                                            />
                                         ))}
-                                        {unaddedNodes.length > 30 && (
-                                            <Badge fontSize="xs" variant="outline">
-                                                ...+{unaddedNodes.length - 30}
-                                            </Badge>
-                                        )}
-                                    </HStack>
-                                </Box>
-                            )}
-                        </>
-                    )}
-                </ModalBody>
+                                    </VStack>
+                                ) : (
+                                    <Text color="gray.500" mb={4}>
+                                        {t('header.timeline.empty')}
+                                    </Text>
+                                )}
 
-                {pickState.step !== 'pickingTheme' && (
-                    <ModalFooter>
-                        <HStack>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                colorScheme="red"
-                                onClick={handleClearTimeline}
-                                isDisabled={timeline.length === 0}
-                            >
-                                {t('header.timeline.clearAll')}
-                            </Button>
-                            <Button size="sm" colorScheme="teal" onClick={handleAddSegment}>
-                                {t('header.timeline.addSegment')}
-                            </Button>
-                            <Button size="sm" onClick={onClose}>
-                                {t('close')}
-                            </Button>
-                        </HStack>
-                    </ModalFooter>
-                )}
-            </ModalContent>
-        </Modal>
+                                {/* Unadded nodes */}
+                                {unaddedNodes.length > 0 && (
+                                    <Box mt={4}>
+                                        <Text fontSize="sm" color="gray.500" mb={1}>
+                                            {t('header.timeline.unadded', { count: unaddedNodes.length })}
+                                        </Text>
+                                        <HStack flexWrap="wrap" spacing={1}>
+                                            {unaddedNodes.slice(0, 30).map(nodeId => (
+                                                <Button
+                                                    key={nodeId}
+                                                    size="xs"
+                                                    variant="outline"
+                                                    colorScheme={
+                                                        (nodeId as string).startsWith('stn_') ? 'teal' : 'purple'
+                                                    }
+                                                    onClick={() => panToNode(nodeId)}
+                                                >
+                                                    {getNodeDisplayName(graph.current, nodeId)}
+                                                </Button>
+                                            ))}
+                                            {unaddedNodes.length > 30 && (
+                                                <Badge fontSize="xs" variant="outline">
+                                                    ...+{unaddedNodes.length - 30}
+                                                </Badge>
+                                            )}
+                                        </HStack>
+                                    </Box>
+                                )}
+                            </>
+                        )}
+                    </ModalBody>
+
+                    {pickState.step !== 'pickingTheme' && (
+                        <ModalFooter>
+                            <HStack>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    colorScheme="red"
+                                    onClick={handleClearTimeline}
+                                    isDisabled={timeline.length === 0}
+                                >
+                                    {t('header.timeline.clearAll')}
+                                </Button>
+                                <Button size="sm" colorScheme="teal" onClick={handleAddSegment}>
+                                    {t('header.timeline.addSegment')}
+                                </Button>
+                                <Button size="sm" onClick={onClose}>
+                                    {t('close')}
+                                </Button>
+                            </HStack>
+                        </ModalFooter>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
     );
 }
 
