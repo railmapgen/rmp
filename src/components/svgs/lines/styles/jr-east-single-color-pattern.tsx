@@ -4,28 +4,37 @@ import React from 'react';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
+    Path,
     LinePathType,
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
+import { makeShortPathOutline } from '../../../../util/bezier-parallel';
 import {
     defaultJREastSingleColorDecorationAttributes,
+    getBlackBlockMarkerId,
+    getJREastDecorationMarkerProps,
     getThinTailMarkerId,
-    getThinTailMarkerProps,
+    JREastBlackBlockMarker,
     JREastSingleColorSharedAttributes,
     JREastThinTailMarker,
-    jrEastSingleColorPatternPathGenerator,
     makeJREastDecorationFields,
 } from './jr-east-single-color-utils';
-
-// codex resume 019d0fe4-370b-77d1-ae8f-f201fbd3676d
 
 const PATTERN_LEN = LINE_WIDTH * Math.SQRT1_2;
 const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
-const SIDE_STROKE_WIDTH = 0.1;
-const DECORATED_BORDER_STROKE_WIDTH = 0.1;
+const OUTLINE_D = LINE_WIDTH * (1 - 0.05);
+
+const jrEastSingleColorPatternPathGenerator = (path: Path, type: LinePathType) => {
+    const paths = makeShortPathOutline(path, type, -OUTLINE_D / 2, OUTLINE_D / 2);
+    return {
+        outline: paths?.outline || path,
+        border: path,
+        decorationMarker: path,
+    };
+};
 
 /**
  * JREastSingleColorPattern specific props.
@@ -38,71 +47,25 @@ export const defaultJREastSingleColorPatternAttributes: JREastSingleColorPattern
 };
 
 const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, handlePointerDown } = props;
-    const decoration = styleAttrs?.decoration ?? defaultJREastSingleColorPatternAttributes.decoration;
+    const { id, type, path, newLine, handlePointerDown } = props;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
         [id, handlePointerDown]
     );
 
-    const paths = React.useMemo(
-        () =>
-            jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
-        [path, type, styleAttrs]
-    );
+    const paths = React.useMemo(() => jrEastSingleColorPatternPathGenerator(path, type), [path, type]);
 
     return (
-        <g onPointerDown={onPointerDown} cursor="pointer">
-            {decoration !== 'black-block' ? (
-                <>
-                    <path
-                        id={`${LineStyleType.JREastSingleColorPattern}_pA_${id}`}
-                        d={paths.pA}
-                        fill="none"
-                        stroke="black"
-                        strokeWidth={SIDE_STROKE_WIDTH}
-                    />
-                    <path
-                        id={`${LineStyleType.JREastSingleColorPattern}_pB_${id}`}
-                        d={paths.pB}
-                        fill="none"
-                        stroke="black"
-                        strokeWidth={SIDE_STROKE_WIDTH}
-                    />
-                </>
-            ) : null}
+        <g onPointerDown={newLine ? undefined : onPointerDown} pointerEvents={newLine ? 'none' : 'cursor'}>
+            <path
+                id={`${LineStyleType.JREastSingleColorPattern}_border_${id}`}
+                d={paths.border}
+                fill="none"
+                stroke="black"
+                strokeWidth={LINE_WIDTH}
+            />
         </g>
-    );
-};
-
-const JREastSingleColorPatternPost = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, handlePointerDown } = props;
-    const decoration = styleAttrs?.decoration ?? defaultJREastSingleColorPatternAttributes.decoration;
-
-    const onPointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
-        [id, handlePointerDown]
-    );
-
-    const paths = React.useMemo(
-        () =>
-            jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
-        [path, type, styleAttrs]
-    );
-
-    if (decoration !== 'black-block') return null;
-
-    return (
-        <path
-            id={`${LineStyleType.JREastSingleColorPattern}_border_${id}`}
-            d={paths.border}
-            fill="none"
-            stroke="black"
-            strokeWidth={DECORATED_BORDER_STROKE_WIDTH}
-            onPointerDown={onPointerDown}
-            cursor="pointer"
-        />
     );
 };
 
@@ -119,16 +82,18 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
         [id, handlePointerDown]
     );
 
-    const paths = React.useMemo(
-        () =>
-            jrEastSingleColorPatternPathGenerator(path, type, styleAttrs ?? defaultJREastSingleColorPatternAttributes),
-        [path, type, styleAttrs]
-    );
+    const paths = React.useMemo(() => jrEastSingleColorPatternPathGenerator(path, type), [path, type]);
     const thinTailMarkerId = React.useMemo(() => getThinTailMarkerId(id, decorationAt), [id, decorationAt]);
+    const blackBlockMarkerId = React.useMemo(() => getBlackBlockMarkerId(id, decorationAt), [id, decorationAt]);
     const thinTailMarkerProps = React.useMemo(
-        () => getThinTailMarkerProps(thinTailMarkerId, decorationAt),
+        () => getJREastDecorationMarkerProps(thinTailMarkerId, decorationAt),
         [thinTailMarkerId, decorationAt]
     );
+    const blackBlockMarkerProps = React.useMemo(
+        () => getJREastDecorationMarkerProps(blackBlockMarkerId, decorationAt),
+        [blackBlockMarkerId, decorationAt]
+    );
+    const decorationMarkerProps = decoration === 'thin-tail' ? thinTailMarkerProps : blackBlockMarkerProps;
 
     return (
         <g onPointerDown={onPointerDown} cursor="pointer">
@@ -168,28 +133,26 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                         strokeOpacity="50%"
                     />
                 </pattern>
-                {decoration === 'thin-tail' && <JREastThinTailMarker id={thinTailMarkerId} fill={color[2]} />}
+                {decoration === 'thin-tail' && (
+                    <JREastThinTailMarker id={thinTailMarkerId} fill={color[2]} includeBlackBlock />
+                )}
+                {decoration === 'black-block' && <JREastBlackBlockMarker id={blackBlockMarkerId} />}
             </defs>
             <path
                 id={`${LineStyleType.JREastSingleColorPattern}_outline_${id}`}
                 d={paths.outline}
+                stroke="none"
                 fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`}
             />
-            {decoration === 'thin-tail' && (
+            {decoration !== 'none' && (
                 <path
-                    id={`${LineStyleType.JREastSingleColorPattern}_center_${id}`}
-                    d={paths.center}
+                    key={`${id}_${decoration}_${decorationAt}`}
+                    id={`${LineStyleType.JREastSingleColorPattern}_decorationMarker_${id}`}
+                    d={paths.decorationMarker}
                     fill="none"
                     stroke="transparent"
                     strokeWidth="0.01"
-                    {...thinTailMarkerProps}
-                />
-            )}
-            {decoration === 'black-block' && (
-                <path
-                    id={`${LineStyleType.JREastSingleColorPattern}_blackBlockFill_${id}`}
-                    d={paths.blackBlockFill}
-                    fill="black"
+                    {...decorationMarkerProps}
                 />
             )}
         </g>
@@ -209,7 +172,6 @@ const jrEastSingleColorPatternAttrsComponent = (props: AttrsProps<JREastSingleCo
 const jrEastSingleColorPattern: LineStyle<JREastSingleColorPatternAttributes> = {
     preComponent: JREastSingleColorPatternPre,
     component: JREastSingleColorPattern,
-    postComponent: JREastSingleColorPatternPost,
     defaultAttrs: defaultJREastSingleColorPatternAttributes,
     attrsComponent: jrEastSingleColorPatternAttrsComponent,
     pathGenerator: jrEastSingleColorPatternPathGenerator,
