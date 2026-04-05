@@ -1,5 +1,7 @@
+import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import { roundToMultiple } from './helpers';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { calculateCanvasSize, roundToMultiple } from './helpers';
 
 describe('unit tests for round to multiple function', () => {
     // Test rounding to the nearest integer when base=1
@@ -56,5 +58,18 @@ describe('unit tests for round to multiple function', () => {
         // base=0.001 → 3 decimal places
         expect(roundToMultiple(12.3456, 0.001)).toBe(12.346);
         expect(roundToMultiple(12.3454, 0.001)).toBe(12.345);
+    });
+});
+
+describe('calculateCanvasSize', () => {
+    it('should fall back to 100x100 when the graph is empty', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+
+        expect(calculateCanvasSize(graph)).toEqual({
+            xMin: 0,
+            yMin: 0,
+            xMax: 100,
+            yMax: 100,
+        });
     });
 });

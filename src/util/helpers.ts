@@ -58,9 +58,20 @@ export const calculateCanvasSize = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     padding = 50
 ) => {
-    let [xMin, yMin, xMax, yMax] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
+    let [xMin, yMin, xMax, yMax] = [
+        Number.POSITIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+    ];
 
-    [...graph.nodes(), ...graph.edges()].forEach(id => {
+    const elements = [...graph.nodes(), ...graph.edges()];
+    if (!elements.length) {
+        // export 100x100 on empty graph
+        return { xMin: 0, yMin: 0, xMax: 100, yMax: 100 };
+    }
+
+    elements.forEach(id => {
         const elem = document.getElementById(id) as SVGSVGElement | null;
         if (elem) {
             const rect = transformedBoundingBox(elem);
