@@ -12,12 +12,10 @@ import {
 } from '../../../../constants/lines';
 import {
     defaultJREastSingleColorDecorationAttributes,
-    getBlackBlockMarkerId,
     getJREastDecorationMarkerProps,
-    getThinTailMarkerId,
-    JREastBlackBlockMarker,
+    getJREastMarkerId,
+    JREastMarker,
     JREastSingleColorSharedAttributes,
-    JREastThinTailMarker,
     makeJREastDecorationFields,
 } from './jr-east-single-color-utils';
 
@@ -30,13 +28,11 @@ const jrEastSingleColorPathGenerator = (path: Path) => ({
 const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
     const { id, path, newLine, handlePointerDown } = props;
 
-    const onPointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
-        [id, handlePointerDown]
-    );
-
     return (
-        <g onPointerDown={newLine ? undefined : onPointerDown} pointerEvents={newLine ? 'none' : 'cursor'}>
+        <g
+            onPointerDown={newLine ? undefined : e => handlePointerDown(id, e)}
+            pointerEvents={newLine ? 'none' : 'cursor'}
+        >
             <path
                 id={`${LineStyleType.JREastSingleColor}_border_${id}`}
                 d={path}
@@ -56,26 +52,15 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
         decorationAt = defaultJREastSingleColorAttributes.decorationAt,
     } = styleAttrs ?? defaultJREastSingleColorAttributes;
 
-    const onPointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
-        [id, handlePointerDown]
-    );
-
     const paths = React.useMemo(() => jrEastSingleColorPathGenerator(path), [path]);
-    const thinTailMarkerId = React.useMemo(() => getThinTailMarkerId(id, decorationAt), [id, decorationAt]);
-    const blackBlockMarkerId = React.useMemo(() => getBlackBlockMarkerId(id, decorationAt), [id, decorationAt]);
-    const thinTailMarkerProps = React.useMemo(
-        () => getJREastDecorationMarkerProps(thinTailMarkerId, decorationAt),
-        [thinTailMarkerId, decorationAt]
-    );
-    const blackBlockMarkerProps = React.useMemo(
-        () => getJREastDecorationMarkerProps(blackBlockMarkerId, decorationAt),
-        [blackBlockMarkerId, decorationAt]
-    );
-    const decorationMarkerProps = decoration === 'thin-tail' ? thinTailMarkerProps : blackBlockMarkerProps;
+    const markerId = getJREastMarkerId(id, decoration, decorationAt);
+    const decorationMarkerProps = decoration === 'none' ? {} : getJREastDecorationMarkerProps(markerId, decorationAt);
 
     return (
-        <g onPointerDown={newLine ? undefined : onPointerDown} pointerEvents={newLine ? 'none' : 'cursor'}>
+        <g
+            onPointerDown={newLine ? undefined : e => handlePointerDown(id, e)}
+            pointerEvents={newLine ? 'none' : 'cursor'}
+        >
             <path
                 id={`${LineStyleType.JREastSingleColor}_main_${id}`}
                 d={paths.main}
@@ -84,10 +69,9 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
                 strokeWidth={LINE_WIDTH * (1 - 0.05)}
             />
             <defs>
-                {decoration === 'thin-tail' && (
-                    <JREastThinTailMarker id={thinTailMarkerId} fill={color[2]} includeBlackBlock />
+                {decoration !== 'none' && (
+                    <JREastMarker id={markerId} fill={color[2]} thinTail={decoration === 'thin-tail'} blackBlock />
                 )}
-                {decoration === 'black-block' && <JREastBlackBlockMarker id={blackBlockMarkerId} />}
             </defs>
             {decoration !== 'none' && (
                 <path

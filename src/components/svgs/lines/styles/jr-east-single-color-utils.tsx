@@ -30,11 +30,8 @@ export const defaultJREastSingleColorDecorationAttributes: JREastSingleColorDeco
     decorationAt: 'to',
 };
 
-export const getThinTailMarkerId = (id: string, decorationAt: DecorationAt) =>
-    `jr_east_pattern_thin_tail_${decorationAt}_${id}`;
-
-export const getBlackBlockMarkerId = (id: string, decorationAt: DecorationAt) =>
-    `jr_east_pattern_black_block_${decorationAt}_${id}`;
+export const getJREastMarkerId = (id: string, decoration: DecorationType, decorationAt: DecorationAt) =>
+    `jr_east_pattern_${decoration}_${decorationAt}_${id}`;
 
 export const getJREastDecorationMarkerProps = (markerId: string, decorationAt: DecorationAt) =>
     decorationAt === 'from' ? { markerStart: `url(#${markerId})` } : { markerEnd: `url(#${markerId})` };
@@ -52,80 +49,57 @@ const JREastRectMarker = ({ fill, length, thickness, x }: JREastRectMarkerProps)
 
 interface JREastMarkerProps {
     id: string;
-    rects: JREastRectMarkerProps[];
-}
-
-const JREastMarker = ({ id, rects }: JREastMarkerProps) => (
-    <marker
-        id={id}
-        viewBox={`${-THIN_TAIL_MARKER_BOX} ${-THIN_TAIL_MARKER_BOX} ${THIN_TAIL_MARKER_BOX * 2} ${
-            THIN_TAIL_MARKER_BOX * 2
-        }`}
-        markerWidth={THIN_TAIL_MARKER_BOX * 2}
-        markerHeight={THIN_TAIL_MARKER_BOX * 2}
-        refX={0}
-        refY={0}
-        orient="auto-start-reverse"
-        markerUnits="userSpaceOnUse"
-    >
-        {rects.map((rect, index) => (
-            <JREastRectMarker key={`${id}_${index}`} {...rect} />
-        ))}
-    </marker>
-);
-
-interface JREastThinTailMarkerProps {
-    id: string;
     fill: string;
-    length?: number;
-    thickness?: number;
-    includeBlackBlock?: boolean;
-    blackBlockLength?: number;
-    blackBlockThickness?: number;
-    blackBlockFill?: string;
+    thinTail: boolean;
+    blackBlock: boolean;
 }
 
-export const JREastThinTailMarker = ({
-    id,
-    fill,
-    length = THIN_TAIL_LENGTH,
-    thickness = THIN_TAIL_WIDTH,
-    includeBlackBlock = false,
-    blackBlockLength = THIN_TAIL_BLACK_BLOCK_LENGTH,
-    blackBlockThickness = BLACK_BLOCK_THICKNESS,
-    blackBlockFill = 'black',
-}: JREastThinTailMarkerProps) => (
-    <JREastMarker
-        id={id}
-        rects={[
-            { fill, length, thickness, x: 0 },
-            ...(includeBlackBlock
-                ? [
-                      {
-                          fill: blackBlockFill,
-                          length: blackBlockLength,
-                          thickness: blackBlockThickness,
-                          x: -blackBlockLength,
-                      },
-                  ]
-                : []),
-        ]}
-    />
-);
+export const JREastMarker = ({ id, fill, thinTail, blackBlock }: JREastMarkerProps) => {
+    const blackBlockLength = thinTail ? THIN_TAIL_BLACK_BLOCK_LENGTH : BLACK_BLOCK_LENGTH;
+    const rects: JREastRectMarkerProps[] = [
+        ...(thinTail
+            ? [
+                  {
+                      fill,
+                      length: THIN_TAIL_LENGTH,
+                      thickness: THIN_TAIL_WIDTH,
+                      x: 0,
+                  },
+              ]
+            : []),
+        ...(blackBlock
+            ? [
+                  {
+                      fill: 'black',
+                      length: blackBlockLength,
+                      thickness: BLACK_BLOCK_THICKNESS,
+                      x: -blackBlockLength,
+                  },
+              ]
+            : []),
+    ];
 
-interface JREastBlackBlockMarkerProps {
-    id: string;
-    fill?: string;
-    length?: number;
-    thickness?: number;
-}
+    if (!rects.length) return null;
 
-export const JREastBlackBlockMarker = ({
-    id,
-    fill = 'black',
-    length = BLACK_BLOCK_LENGTH,
-    thickness = BLACK_BLOCK_THICKNESS,
-}: JREastBlackBlockMarkerProps) => <JREastMarker id={id} rects={[{ fill, length, thickness, x: -length }]} />;
+    return (
+        <marker
+            id={id}
+            viewBox={`${-THIN_TAIL_MARKER_BOX} ${-THIN_TAIL_MARKER_BOX} ${THIN_TAIL_MARKER_BOX * 2} ${
+                THIN_TAIL_MARKER_BOX * 2
+            }`}
+            markerWidth={THIN_TAIL_MARKER_BOX * 2}
+            markerHeight={THIN_TAIL_MARKER_BOX * 2}
+            refX={0}
+            refY={0}
+            orient="auto-start-reverse"
+            markerUnits="userSpaceOnUse"
+        >
+            {rects.map((rect, index) => (
+                <JREastRectMarker key={`${id}_${index}`} {...rect} />
+            ))}
+        </marker>
+    );
+};
 
 export const makeJREastDecorationFields = <T extends JREastSingleColorSharedAttributes>(
     props: AttrsProps<T>,
