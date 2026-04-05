@@ -15,13 +15,21 @@ import {
     NodeAttributes,
     NodeId,
 } from '../../../constants/constants';
-import { LinePathType, LineStyleType, Path } from '../../../constants/lines';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
+import {
+    ClosedAreaPath,
+    OpenPath,
+    dropInitialMoveTo,
+    makeClosedAreaPathFromOpenCommands,
+    makeLinearPath,
+    makePoint,
+} from '../../../util/path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
 import { RayGuidedPathAttributes } from '../lines/paths/ray-guided';
@@ -33,10 +41,12 @@ const generateClosedPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     nodes: NodeId[],
     edges: LineId[]
-): Path | undefined => {
+): ClosedAreaPath | undefined => {
     if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
 
-    let pathString = '';
+    type OpenMove = OpenPath['commands'][0];
+    type OpenDraw = ReturnType<typeof dropInitialMoveTo>[number];
+    let commands: [OpenMove, ...OpenDraw[]] | undefined;
 
     for (let i = 0; i < edges.length; i++) {
         const sourceNodeId = nodes[i];
@@ -69,20 +79,20 @@ const generateClosedPath = (
             // no need to handle simple path as it is symmetrical
         }
 
-        let segment: string =
-            linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`;
+        const segment =
+            linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) ||
+            makeLinearPath(makePoint(x1, y1), makePoint(x2, y2));
 
-        if (i > 0) {
-            const parts = segment.split(' ');
-            // we slice from the 4th element (index 3) to remove the initial move command and its coordinates.
-            segment = parts.slice(3).join(' ');
+        if (i === 0) {
+            commands = [segment.commands[0], ...dropInitialMoveTo(segment)];
+        } else {
+            commands!.push(...dropInitialMoveTo(segment));
         }
-
-        pathString += (i > 0 ? ' ' : '') + segment;
     }
 
-    const finalFullPath = pathString + ' Z';
-    return finalFullPath as Path;
+    if (!commands || commands.length < 3) return undefined;
+
+    return makeClosedAreaPathFromOpenCommands(commands as [OpenMove, OpenDraw, OpenDraw, ...OpenDraw[]]);
 };
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
@@ -152,11 +162,11 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" fill="none" />
                         </pattern>
                     </defs>
-                    <path d={fillPath} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />
+                    <path d={fillPath.d} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />
                     {selectedPatterns.map(patternId => (
                         <path
                             key={patternId}
-                            d={fillPath}
+                            d={fillPath.d}
                             fill={`url(#${patternId}_${id})`}
                             fillOpacity={opacity}
                             stroke="none"

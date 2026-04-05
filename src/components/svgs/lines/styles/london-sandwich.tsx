@@ -28,7 +28,7 @@ const LondonSandwichPre = (props: LineStyleComponentProps<LondonSandwichAttribut
             pointerEvents={newLine ? 'none' : undefined}
             cursor="pointer"
         >
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
         </g>
     );
 };
@@ -48,7 +48,7 @@ const LondonSandwich = (props: LineStyleComponentProps<LondonSandwichAttributes>
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={color[3]} strokeWidth="1.67" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={color[3]} strokeWidth="1.67" strokeLinecap="round" />
         </g>
     );
 };

@@ -12,16 +12,18 @@ import {
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
-    Path,
 } from '../../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeShortPathParallel } from '../../../../util/bezier-parallel';
+import { OpenPath, isShortOpenPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
-const dualColorPathGenerator = (path: Path, type: LinePathType, attrs: DualColorAttributes) => {
-    const _ = makeShortPathParallel(path, type, -1.25, 1.25);
+const dualColorPathGenerator = (path: OpenPath, type: LinePathType, attrs: DualColorAttributes) => {
+    if (!isShortOpenPath(path)) return { pathA: path, pathB: path };
+
+    const _ = makeShortPathParallel(path, -1.25, 1.25);
     if (!_) return { pathA: path, pathB: path };
     return { pathA: _[0], pathB: _[1] };
 };
@@ -49,7 +51,7 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
         >
             <path
                 id={`${LineStyleType.DualColor}_pathA_${id}`}
-                d={paths.pathA}
+                d={paths.pathA.d}
                 fill="none"
                 stroke={colorA[2]}
                 strokeWidth={LINE_WIDTH / 2}
@@ -57,7 +59,7 @@ const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {
             />
             <path
                 id={`${LineStyleType.DualColor}_pathB_${id}`}
-                d={paths.pathB}
+                d={paths.pathB.d}
                 fill="none"
                 stroke={colorB[2]}
                 strokeWidth={LINE_WIDTH / 2}

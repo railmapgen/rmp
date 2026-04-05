@@ -3,6 +3,7 @@ import { RmgCircularSlider, RmgFields, RmgFieldsField } from '@railmapgen/rmg-co
 import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import { makeLinearPath, makePoint, makeSharpTurnPath, parseRoundedTurnPath } from '../../../../util/path';
 
 type Point = { x: number; y: number };
 
@@ -85,21 +86,19 @@ export const generateRayGuidedPath: PathGenerator<RayGuidedPathAttributes> = (
     const middle = getIntersection(start, makeDirectionVector(startAngle), end, makeDirectionVector(endAngle));
 
     if (!middle) {
-        return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
+        return makeLinearPath(makePoint(start.x, start.y), makePoint(end.x, end.y));
     }
 
     const isDegenerateCorner =
         Math.hypot(start.x - middle.x, start.y - middle.y) < EPSILON ||
         Math.hypot(end.x - middle.x, end.y - middle.y) < EPSILON;
     if (isDegenerateCorner) {
-        return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
+        return makeLinearPath(makePoint(start.x, start.y), makePoint(end.x, end.y));
     }
 
-    return roundPathCorners(
-        `M ${start.x} ${start.y} L ${middle.x} ${middle.y} L ${end.x} ${end.y}`,
-        roundCornerFactor,
-        false
-    ) as `M ${string}`;
+    const path = makeSharpTurnPath(makePoint(start.x, start.y), makePoint(middle.x, middle.y), makePoint(end.x, end.y));
+
+    return roundCornerFactor === 0 ? path : parseRoundedTurnPath(roundPathCorners(path.d, roundCornerFactor, false));
 };
 
 export interface RayGuidedPathAttributes extends LinePathAttributes {

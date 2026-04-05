@@ -47,7 +47,7 @@ export const UnknownLineStyle = (props: LineStyleComponentProps<object>) => {
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke="grey"
             strokeWidth="5"

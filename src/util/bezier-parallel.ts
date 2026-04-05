@@ -1,5 +1,24 @@
 import { Bezier } from 'bezier-js';
-import { LinePathType, Path } from '../constants/lines';
+import {
+    ClosedAreaPath,
+    LinearPath,
+    OpenPath,
+    PathPoint,
+    RoundedTurnPath,
+    SharpTurnPath,
+    ShortOpenPath,
+    closePath,
+    cubicTo,
+    getEndPoint,
+    getStartPoint,
+    lineTo,
+    makeClosedAreaPath,
+    makeLinearPath,
+    makePoint,
+    makeRoundedTurnPath,
+    makeSharpTurnPath,
+    moveTo,
+} from './path';
 
 type X = number;
 type Y = number;
@@ -8,199 +27,205 @@ type Point = [X, Y];
 /**
  * Make a parallel path at the distance(d) of the given path.
  *
- * Note this is not reconcile ready meaning it only handles short path.
- * Short path is a path that starts with M, goes to some L and then curves C to some place and ends with L.
- * @param path The given path.
- * @param type Check if the path is a linear line (without any curve).
- * @param d1 The distance between the given path and the paralleled path.
- * @param d2 The other distance. Will be -d1 if not given.
- * @returns Two paths that are parallel to the give path at the distance of d1 and d2.
+ * This helper only handles short open paths:
+ * - `M L`
+ * - `M L L`
+ * - `M L C L`
  */
 export const makeShortPathParallel = (
-    path: Path,
-    type: LinePathType,
+    path: ShortOpenPath,
     d1: number,
     d2?: number
-): [Path, Path] | undefined => {
+): [OpenPath, OpenPath] | undefined => {
     d2 = d2 ?? -d1;
 
-    const [m, end] = findStartAndEnd(path);
-    if (!m || !end) return;
-
-    // Check whether it is a linear line and process it specifically.
-    if (
-        m[0] === end[0] ||
-        m[1] === end[1] ||
-        (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
-    ) {
-        const d = Math.abs(d1);
-        return makeStraightParallel(m, end, d);
+    if (path.kind === 'ml') {
+        return [makeOffsetLinearPath(path, d1), makeOffsetLinearPath(path, d2)];
     }
 
-    // TODO: Check if it is a perpendicular or rotate-perpendicular line and process it specifically.
+    if (path.kind === 'mll') {
+        const pA = makeOffsetSharpTurnPath(path, d1);
+        const pB = makeOffsetSharpTurnPath(path, d2);
+        if (!pA || !pB) return;
+        return [pA, pB];
+    }
 
-    const [l, c] = findBezierCurve(path);
-    if (!l || !c) return;
-    // Construct the Bezier curve in bezier-js.
-    const b = new Bezier([...l, ...c]);
-    // Make the parallel Bezier curves.
-    const [bA, bB] = [b.scale(d1), b.scale(d2)];
-
-    const _ = makeStartingAndEndingPointsOfParallelShortPaths(m, l, end, b, bA, bB);
-    if (!_) return;
-    const {
-        mA: [mxA, myA],
-        mB: [mxB, myB],
-        endA: [endXA, endYA],
-        endB: [endXB, endYB],
-    } = _;
-
-    return [
-        `M ${mxA} ${myA} ${bA.toSVG().replace('M', 'L')} L ${endXA} ${endYA}`,
-        `M ${mxB} ${myB} ${bB.toSVG().replace('M', 'L')} L ${endXB} ${endYB}`,
-    ];
+    return makeRoundedTurnParallel(path, d1, d2);
 };
 
 /**
- * Make two parallel paths at the distance(d) of the given path.
- * Also make the closing path that fill cloud be used on it.
- *
- * Note this is not reconcile ready meaning it only handles short path.
- * Short path is a path that starts with M, go to some L and then curve C to some place and end with L.
- * @param path The given path.
- * @param type Check if the path is a linear line (without any curve).
- * @param d1 The distance between the given path and the paralleled path.
- * @param d2 The other distance. Will be -d1 if not given.
- * @returns Two paths that are parallel to the give path at the distance of d1 and d2. The closing path that fill cloud be used on it.
+ * Make two parallel paths at the distance(d) of the given path and
+ * also return the closed outline between them.
  */
 export const makeShortPathOutline = (
-    path: Path,
-    type: LinePathType,
+    path: ShortOpenPath,
     d1: number,
     d2?: number
-): { outline: Path; pA: Path; pB: Path } | undefined => {
+): { outline: ClosedAreaPath; pA: OpenPath; pB: OpenPath } | undefined => {
     d2 = d2 ?? -d1;
 
-    const [m, end] = findStartAndEnd(path);
-    if (!m || !end) return;
-
-    // Check whether it is a linear line and process it specifically.
-    if (m[0] === end[0] || m[1] === end[1] || Math.abs(Math.abs(m[1] - end[1]) - Math.abs(m[0] - end[0])) < 0.001) {
-        const d = Math.abs(d1);
-        const [pA, pB] = makeStraightParallel(m, end, d);
-        return { outline: makeStraightOutline(m, end, d), pA, pB };
+    if (path.kind === 'ml') {
+        const pA = makeOffsetLinearPath(path, d1);
+        const pB = makeOffsetLinearPath(path, d2);
+        return { outline: makePolylineOutline(pA, pB), pA, pB };
     }
 
-    // TODO: Check if it is a perpendicular or rotate-perpendicular line and process it specifically.
+    if (path.kind === 'mll') {
+        const pA = makeOffsetSharpTurnPath(path, d1);
+        const pB = makeOffsetSharpTurnPath(path, d2);
+        if (!pA || !pB) return;
+        return { outline: makePolylineOutline(pA, pB), pA, pB };
+    }
 
-    const [l, c] = findBezierCurve(path);
-    if (!l || !c) return;
-    // Construct the Bezier curve in bezier-js.
-    const b = new Bezier([...l, ...c]);
-    // Make the parallel Bezier curves.
+    return makeRoundedTurnOutline(path, d1, d2);
+};
+
+const toPointTuple = (point: PathPoint): Point => [point.x, point.y];
+
+const makeOffsetLinearPath = (path: LinearPath, d: number): LinearPath => {
+    const start = getStartPoint(path);
+    const end = getEndPoint(path);
+    const offset = makeOffsetSegment(start, end, d);
+    return makeLinearPath(offset.start, offset.end);
+};
+
+const makeOffsetSharpTurnPath = (path: SharpTurnPath, d: number): SharpTurnPath | undefined => {
+    const [start, corner, end] = [path.commands[0].to, path.commands[1].to, path.commands[2].to];
+    const segmentA = makeOffsetSegment(start, corner, d);
+    const segmentB = makeOffsetSegment(corner, end, d);
+    const offsetCorner = getLineIntersection(segmentA.start, segmentA.end, segmentB.start, segmentB.end);
+    if (!offsetCorner) return;
+
+    return makeSharpTurnPath(segmentA.start, offsetCorner, segmentB.end);
+};
+
+const makeRoundedTurnParallel = (
+    path: RoundedTurnPath,
+    d1: number,
+    d2: number
+): [RoundedTurnPath, RoundedTurnPath] | undefined => {
+    const [m, l, c, end] = [path.commands[0].to, path.commands[1].to, path.commands[2], path.commands[3].to];
+    const b = new Bezier([l.x, l.y, c.c1.x, c.c1.y, c.c2.x, c.c2.y, c.to.x, c.to.y]);
     const [bA, bB] = [b.scale(d1), b.scale(d2)];
 
-    const _ = makeStartingAndEndingPointsOfParallelShortPaths(m, l, end, b, bA, bB);
-    if (!_) return;
+    const endpoints = makeStartingAndEndingPointsOfParallelShortPaths(
+        toPointTuple(m),
+        toPointTuple(l),
+        toPointTuple(end),
+        b,
+        bA,
+        bB
+    );
+    if (!endpoints) return;
+
     const {
         mA: [mxA, myA],
         mB: [mxB, myB],
         endA: [endXA, endYA],
         endB: [endXB, endYB],
-    } = _;
+    } = endpoints;
 
-    const [lB, cB] = findBezierCurve(bB.toSVG().replace('M', 'L') as Path);
-    const [rlB, rcB] = reverseBezierCurve(lB, cB);
-    const outline = `M ${mxA} ${myA} ${bA
-        .toSVG()
-        .replace('M', 'L')} L ${endXA} ${endYA} L ${endXB} ${endYB} L ${rlB.join(' ')} C ${rcB.join(
-        ' '
-    )} L ${mxB} ${myB} Z` as Path;
+    const pathA = makeRoundedTurnPath(
+        makePoint(mxA, myA),
+        makePoint(bA.points[0].x, bA.points[0].y),
+        makePoint(bA.points[1].x, bA.points[1].y),
+        makePoint(bA.points[2].x, bA.points[2].y),
+        makePoint(bA.points[3].x, bA.points[3].y),
+        makePoint(endXA, endYA)
+    );
+    const pathB = makeRoundedTurnPath(
+        makePoint(mxB, myB),
+        makePoint(bB.points[0].x, bB.points[0].y),
+        makePoint(bB.points[1].x, bB.points[1].y),
+        makePoint(bB.points[2].x, bB.points[2].y),
+        makePoint(bB.points[3].x, bB.points[3].y),
+        makePoint(endXB, endYB)
+    );
 
+    return [pathA, pathB];
+};
+
+const makeRoundedTurnOutline = (
+    path: RoundedTurnPath,
+    d1: number,
+    d2: number
+): { outline: ClosedAreaPath; pA: RoundedTurnPath; pB: RoundedTurnPath } | undefined => {
+    const parallels = makeRoundedTurnParallel(path, d1, d2);
+    if (!parallels) return;
+    const [pA, pB] = parallels;
+
+    const curveA = pA.commands[2];
+    const curveB = pB.commands[2];
+    const outline = makeClosedAreaPath([
+        moveTo(pA.commands[0].to),
+        lineTo(pA.commands[1].to),
+        cubicTo(curveA.c1, curveA.c2, curveA.to),
+        lineTo(pA.commands[3].to),
+        lineTo(pB.commands[3].to),
+        lineTo(curveB.to),
+        cubicTo(curveB.c2, curveB.c1, pB.commands[1].to),
+        lineTo(pB.commands[0].to),
+        closePath(),
+    ]);
+
+    return { outline, pA, pB };
+};
+
+const makePolylineOutline = (pA: LinearPath | SharpTurnPath, pB: LinearPath | SharpTurnPath) => {
+    const pointsA = getPolylinePoints(pA);
+    const pointsB = getPolylinePoints(pB).reverse();
+    const outlinePoints = [...pointsA, ...pointsB];
+
+    const commands = [
+        moveTo(outlinePoints[0]),
+        ...outlinePoints.slice(1).map(point => lineTo(point)),
+        closePath(),
+    ] as const;
+
+    return makeClosedAreaPath(
+        commands as unknown as [
+            ReturnType<typeof moveTo>,
+            ReturnType<typeof lineTo>,
+            ReturnType<typeof lineTo>,
+            ...ReturnType<typeof lineTo>[],
+            ReturnType<typeof closePath>,
+        ]
+    );
+};
+
+const getPolylinePoints = (path: LinearPath | SharpTurnPath): PathPoint[] => {
+    if (path.kind === 'ml') {
+        return [path.commands[0].to, path.commands[1].to];
+    }
+    return [path.commands[0].to, path.commands[1].to, path.commands[2].to];
+};
+
+const makeOffsetSegment = (start: PathPoint, end: PathPoint, d: number) => {
+    const [dx, dy] = [end.x - start.x, end.y - start.y];
+    const length = Math.hypot(dx, dy);
+    if (length === 0) {
+        return { start, end };
+    }
+
+    const [nx, ny] = [dy / length, -dx / length];
     return {
-        outline,
-        pA: `M ${mxA} ${myA} ${bA.toSVG().replace('M', 'L')} L ${endXA} ${endYA}`,
-        pB: `M ${mxB} ${myB} ${bB.toSVG().replace('M', 'L')} L ${endXB} ${endYB}`,
+        start: makePoint(start.x + nx * d, start.y + ny * d),
+        end: makePoint(end.x + nx * d, end.y + ny * d),
     };
 };
 
-const findStartAndEnd = (path: Path) => {
-    // Find the start point of the original path.
-    const m = path
-        .match(/M\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-        ?.at(0)
-        ?.replace(/M\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    // Find the end point of the original path.
-    const end = path
-        .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*$/)
-        ?.at(0)
-        ?.replace(/L\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    return [m as Point, end as Point];
-};
+const getLineIntersection = (a1: PathPoint, a2: PathPoint, b1: PathPoint, b2: PathPoint): PathPoint | undefined => {
+    const denominator = (a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x);
+    if (Math.abs(denominator) < 1e-9) return;
 
-const makeStraightParallel = (m: Point, end: Point, d: number): [Path, Path] => {
-    const [x1, y1, x2, y2] = [m[0], m[1], end[0], end[1]];
-    const k = Math.abs((y2 - y1) / (x2 - x1));
-    if (k === Infinity) {
-        // Vertical line
-        return [`M ${x1 + d} ${y1} L ${x2 + d} ${y2}`, `M ${x1 - d} ${y1} L ${x2 - d} ${y2}`];
-    } else if (k === 0) {
-        // Horizontal line
-        return [`M ${x1} ${y1 + d} L ${x2} ${y2 + d}`, `M ${x1} ${y1 - d} L ${x2} ${y2 - d}`];
-    } else {
-        const kk = 1 / k;
-        const dx = d / Math.sqrt(kk * kk + 1);
-        const dy = dx * kk * -Math.sign((x2 - x1) * (y2 - y1));
-        return [`M ${x1 + dx} ${y1 + dy} L ${x2 + dx} ${y2 + dy}`, `M ${x1 - dx} ${y1 - dy} L ${x2 - dx} ${y2 - dy}`];
-    }
-};
+    const determinantA = a1.x * a2.y - a1.y * a2.x;
+    const determinantB = b1.x * b2.y - b1.y * b2.x;
 
-const makeStraightOutline = (m: Point, end: Point, d: number): Path => {
-    const [x1, y1, x2, y2] = [m[0], m[1], end[0], end[1]];
-    const k = Math.abs((y2 - y1) / (x2 - x1));
-    if (k === Infinity) {
-        // Vertical line
-        return `M ${x1 + d} ${y1} L ${x2 + d} ${y2} L ${x2 - d} ${y2} L ${x1 - d} ${y1} Z`;
-    } else if (k === 0) {
-        // Horizontal line
-        return `M ${x1} ${y1 + d} L ${x2} ${y2 + d} L ${x2} ${y2 - d} L ${x1} ${y1 - d} Z`;
-    } else {
-        const kk = 1 / k;
-        const dx = d / Math.sqrt(kk * kk + 1);
-        const dy = dx * kk * -Math.sign((x2 - x1) * (y2 - y1));
-        return `M ${x1 + dx} ${y1 + dy} L ${x2 + dx} ${y2 + dy} L ${x2 - dx} ${y2 - dy} L ${x1 - dx} ${y1 - dy} Z`;
-    }
+    return makePoint(
+        (determinantA * (b1.x - b2.x) - (a1.x - a2.x) * determinantB) / denominator,
+        (determinantA * (b1.y - b2.y) - (a1.y - a2.y) * determinantB) / denominator
+    );
 };
-
-const findBezierCurve = (path: Path): [Point, [...Point, ...Point, ...Point]] => {
-    // Deal with complex Bezier curve.
-    // Find the start point of the Bezier curve.
-    const l = path
-        .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-        ?.at(0)
-        ?.replace(/L\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    // Find the end point and control points of the Bezier curve.
-    const c = path
-        .match(
-            /C\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/g
-        )
-        ?.at(0)
-        ?.replace(/C\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    return [l as Point, c as [...Point, ...Point, ...Point]];
-};
-
-const reverseBezierCurve = (l: Point, c: [...Point, ...Point, ...Point]) => [
-    [c[4], c[5]],
-    [c[2], c[3], c[0], c[1], l[0], l[1]],
-];
 
 const makeStartingAndEndingPointsOfParallelShortPaths = (
     m: Point,
@@ -210,25 +235,16 @@ const makeStartingAndEndingPointsOfParallelShortPaths = (
     bA: Bezier,
     bB: Bezier
 ): { mA: Point; mB: Point; endA: Point; endB: Point } | undefined => {
-    // Connect the curve with the first half of the linear line.
-    // Find the start point of the new curve path.
     const cStartingA = [bA.points.at(0)!.x, bA.points.at(0)!.y];
-    // Find the start point of the new curve path.
     const cStartingB = [bB.points.at(0)!.x, bB.points.at(0)!.y];
-    if (!m) return;
-    // Get the start point of the new path.
+
     const [mxA, myA] = find4thVertexOfAParallelogram(m[0], l[0], cStartingA[0], m[1], l[1], cStartingA[1]);
     const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
 
-    // Connect the curve with the second half of the linear line.
-    // Find the end point of the new curve path.
     const bEndingA = [bA.points.at(-1)!.x, bA.points.at(-1)!.y];
-    // Find the end point of the new curve path.
     const bEndingB = [bB.points.at(-1)!.x, bB.points.at(-1)!.y];
-    // Find the end point of the original curve path.
     const bEnding = [b.points.at(-1)!.x, b.points.at(-1)!.y];
-    if (!end) return;
-    // Get the end point of the new path.
+
     const [endXA, endYA] = find4thVertexOfAParallelogram(
         bEndingA[0],
         bEnding[0],

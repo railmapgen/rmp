@@ -2,9 +2,10 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
-import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
+import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
 import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths, supportsParallelLinePath } from './parallel';
+import { OpenPath, makeLinearPath, makePoint } from './path';
 import { makeReconciledPath, reconcileLines } from './reconcile';
 
 /**
@@ -30,7 +31,7 @@ export const getNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
 
 interface LinePathElement {
     attr: EdgeAttributes;
-    path: Path;
+    path: OpenPath;
 }
 type NonNullableExternalLinePathAttribute = NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>;
 
@@ -156,7 +157,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         ];
         if (!(type in linePaths)) {
             // unknown line path type
-            resolvedLines[lineID] = { attr, path: `M ${x1} ${y1} L ${x2} ${y2}` };
+            resolvedLines[lineID] = { attr, path: makeLinearPath(makePoint(x1, y1), makePoint(x2, y2)) };
             continue;
         }
 

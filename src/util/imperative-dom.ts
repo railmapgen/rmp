@@ -1,8 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { Path } from '../constants/lines';
 import { getLines } from './process-elements';
+import { Path } from './path';
 
 type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
 
@@ -65,7 +65,7 @@ const updatePathDRecursive = (id: string, pathD: Path) => {
 };
 
 const updatePathD = (elem: SVGPathElement, pathD: Path) => {
-    elem.setAttribute('d', pathD);
+    elem.setAttribute('d', pathD.d);
 };
 
 /**

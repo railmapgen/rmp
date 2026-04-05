@@ -4,13 +4,13 @@ import React from 'react';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
-    Path,
     LinePathType,
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
+import { OpenPath, isShortOpenPath } from '../../../../util/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,
@@ -25,8 +25,8 @@ const PATTERN_WIDTH = 0.25;
 const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * Math.SQRT2;
 const OUTLINE_D = LINE_WIDTH * (1 - 0.05);
 
-const jrEastSingleColorPatternPathGenerator = (path: Path, type: LinePathType) => {
-    const paths = makeShortPathOutline(path, type, -OUTLINE_D / 2, OUTLINE_D / 2);
+const jrEastSingleColorPatternPathGenerator = (path: OpenPath) => {
+    const paths = isShortOpenPath(path) ? makeShortPathOutline(path, -OUTLINE_D / 2, OUTLINE_D / 2) : undefined;
     return {
         outline: paths?.outline || path,
         border: path,
@@ -45,9 +45,9 @@ export const defaultJREastSingleColorPatternAttributes: JREastSingleColorPattern
 };
 
 const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, newLine, handlePointerDown } = props;
+    const { id, path, newLine, handlePointerDown } = props;
 
-    const paths = React.useMemo(() => jrEastSingleColorPatternPathGenerator(path, type), [path, type]);
+    const paths = React.useMemo(() => jrEastSingleColorPatternPathGenerator(path), [path]);
 
     return (
         <g
@@ -56,7 +56,7 @@ const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingle
         >
             <path
                 id={`${LineStyleType.JREastSingleColorPattern}_border_${id}`}
-                d={paths.border}
+                d={paths.border.d}
                 fill="none"
                 stroke="black"
                 strokeWidth={LINE_WIDTH}
@@ -66,14 +66,14 @@ const JREastSingleColorPatternPre = (props: LineStyleComponentProps<JREastSingle
 };
 
 const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleColorPatternAttributes>) => {
-    const { id, type, path, styleAttrs, handlePointerDown } = props;
+    const { id, path, styleAttrs, handlePointerDown } = props;
     const {
         color = defaultJREastSingleColorPatternAttributes.color,
         decoration = defaultJREastSingleColorPatternAttributes.decoration,
         decorationAt = defaultJREastSingleColorPatternAttributes.decorationAt,
     } = styleAttrs ?? defaultJREastSingleColorPatternAttributes;
 
-    const paths = React.useMemo(() => jrEastSingleColorPatternPathGenerator(path, type), [path, type]);
+    const paths = React.useMemo(() => jrEastSingleColorPatternPathGenerator(path), [path]);
     const markerId = getJREastMarkerId(id, decoration, decorationAt);
     const decorationMarkerProps = decoration === 'none' ? {} : getJREastDecorationMarkerProps(markerId, decorationAt);
 
@@ -121,7 +121,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
             </defs>
             <path
                 id={`${LineStyleType.JREastSingleColorPattern}_outline_${id}`}
-                d={paths.outline}
+                d={paths.outline.d}
                 stroke="none"
                 fill={`url(#jr_east_${id}_fill_pattern_${color[2]})`}
             />
@@ -129,7 +129,7 @@ const JREastSingleColorPattern = (props: LineStyleComponentProps<JREastSingleCol
                 <path
                     key={`${id}_${decoration}_${decorationAt}`}
                     id={`${LineStyleType.JREastSingleColorPattern}_decorationMarker_${id}`}
-                    d={paths.decorationMarker}
+                    d={paths.decorationMarker.d}
                     fill="none"
                     stroke="transparent"
                     strokeWidth="0.01"
