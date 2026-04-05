@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 70;
+export const CURRENT_VERSION = 71;
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -912,4 +912,28 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     69: param =>
         // Bump save version to support generic line style.
         JSON.stringify({ ...JSON.parse(param), version: 70 }),
+    70: param => {
+        // Add decoration and decorationAt defaults to JR East line styles.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterEdges(
+                (edge, attrs) =>
+                    attrs.style === LineStyleType.JREastSingleColor ||
+                    attrs.style === LineStyleType.JREastSingleColorPattern
+            )
+            .forEach(edge => {
+                const style = graph.getEdgeAttribute(edge, 'style');
+                const attrs = graph.getEdgeAttribute(edge, style) as any;
+                if (typeof attrs.decoration !== 'string') {
+                    attrs.decoration = 'none';
+                }
+                if (typeof attrs.decorationAt !== 'string') {
+                    attrs.decorationAt = 'to';
+                }
+                graph.mergeEdgeAttributes(edge, { [style]: attrs });
+            });
+        return JSON.stringify({ ...p, version: 71, graph: graph.export() });
+    },
 };

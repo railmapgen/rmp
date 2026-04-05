@@ -626,7 +626,18 @@
                     "displayName": "新加坡MRT出站换乘样式"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR东日本单色样式"
+                    "displayName": "JR东日本单色样式",
+                    "decoration": {
+                        "displayName": "终端显示",
+                        "none": "无",
+                        "thinTail": "其他线区",
+                        "blackBlock": "终点"
+                    },
+                    "decorationAt": {
+                        "displayName": "显示位置",
+                        "from": "起点",
+                        "to": "终点"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR东日本单色网状图案样式"

@@ -627,7 +627,18 @@
                     "displayName": "Singapore MRT Tap Out to Transfer style"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR East single color style"
+                    "displayName": "JR East single color style",
+                    "decoration": {
+                        "displayName": "Terminal display",
+                        "none": "None",
+                        "thinTail": "Other line section",
+                        "blackBlock": "Terminal"
+                    },
+                    "decorationAt": {
+                        "displayName": "Display position",
+                        "from": "From",
+                        "to": "To"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR East single color filled with crosshatch pattern style"
