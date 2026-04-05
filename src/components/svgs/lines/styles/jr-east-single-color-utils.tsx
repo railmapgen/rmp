@@ -117,12 +117,12 @@ export const makeJREastDecorationFields = <T extends JREastSingleColorSharedAttr
         },
         {
             type: 'select',
-            label: t('panel.details.lines.jrEastSingleColorPattern.decoration.displayName'),
+            label: t('panel.details.lines.jrEastSingleColor.decoration.displayName'),
             value: attrs.decoration ?? defaultJREastSingleColorDecorationAttributes.decoration,
             options: {
-                none: t('panel.details.lines.jrEastSingleColorPattern.decoration.none'),
-                'thin-tail': t('panel.details.lines.jrEastSingleColorPattern.decoration.thinTail'),
-                'black-block': t('panel.details.lines.jrEastSingleColorPattern.decoration.blackBlock'),
+                none: t('panel.details.lines.jrEastSingleColor.decoration.none'),
+                'thin-tail': t('panel.details.lines.jrEastSingleColor.decoration.thinTail'),
+                'black-block': t('panel.details.lines.jrEastSingleColor.decoration.blackBlock'),
             },
             onChange: val => {
                 attrs.decoration = val as DecorationType;
@@ -133,11 +133,11 @@ export const makeJREastDecorationFields = <T extends JREastSingleColorSharedAttr
         {
             type: 'select',
             hidden: (attrs.decoration ?? defaultJREastSingleColorDecorationAttributes.decoration) === 'none',
-            label: t('panel.details.lines.jrEastSingleColorPattern.decorationAt.displayName'),
+            label: t('panel.details.lines.jrEastSingleColor.decorationAt.displayName'),
             value: attrs.decorationAt ?? defaultJREastSingleColorDecorationAttributes.decorationAt,
             options: {
-                from: t('panel.details.lines.jrEastSingleColorPattern.decorationAt.from'),
-                to: t('panel.details.lines.jrEastSingleColorPattern.decorationAt.to'),
+                from: t('panel.details.lines.jrEastSingleColor.decorationAt.from'),
+                to: t('panel.details.lines.jrEastSingleColor.decorationAt.to'),
             },
             onChange: val => {
                 attrs.decorationAt = val as DecorationAt;
