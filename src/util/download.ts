@@ -40,7 +40,8 @@ export const makeRenderReadySVGElement = async (
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
     existsNodeTypes: Set<NodeType>,
-    svgVersion: 1.1 | 2
+    svgVersion: 1.1 | 2,
+    suppressRMPInfo = false
 ) => {
     // get the minimum and maximum of the graph
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
@@ -116,7 +117,7 @@ export const makeRenderReadySVGElement = async (
     await loadFacilitiesSvg(elem, graph);
 
     // append rmp info if some nodes exist
-    if (!generateRMPInfo || rmpInfoSpecificNodeExists(existsNodeTypes)) {
+    if (!suppressRMPInfo && (!generateRMPInfo || rmpInfoSpecificNodeExists(existsNodeTypes))) {
         // intelligent placement to avoid overlapping existing elements.
         const [infoX, infoY] = findRmpInfoPosition(graph, { xMin, yMin, xMax, yMax }, { width: 350, height: 50 });
         elem.appendChild(await generateRmpInfo(infoX, infoY));

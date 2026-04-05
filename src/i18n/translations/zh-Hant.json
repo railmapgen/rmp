@@ -9,9 +9,9 @@
     "pasteAttrs": "貼上獨特屬性",
     "remove": "移除",
     "close": "關閉",
+    "confirm": "確認",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -703,7 +703,6 @@
             }
         }
     },
-
     "header": {
         "popoverHeader": "你正在瀏覽<1>{{environment}}</1>環境！",
         "popoverBody": "我們正在測試最新的RMP。如果妳有任何建議，歡迎在 https://github.com/railmapgen/rmp/issues 上提出。",
@@ -752,7 +751,6 @@
         "download": {
             "config": "導出項目",
             "image": "導出圖片",
-            "video": "導出視頻",
             "2rmg": {
                 "title": "導出RMG項目",
                 "type": {
@@ -791,16 +789,18 @@
             "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
             "confirm": "下載",
             "videoExport": {
-                "title": "導出視頻",
-                "fps": "幀率（FPS）",
+                "title": "匯出影片",
+                "fps": "每秒影格數 (FPS)",
                 "duration": "時長（秒）",
-                "quality": "視頻質量",
-                "generating": "正在生成視頻...",
+                "quality": "影片品質",
+                "generating": "正在產生影片...",
                 "progress": "進度：{{progress}}%",
-                "description": "此功能會導出一個動畫視頻，展示節點和線段逐步繪製的過程。",
-                "format": "WebM格式",
-                "error": "視頻導出失敗，請重試。",
-                "noNodes": "無法導出視頻：圖中沒有節點。"
+                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
+                "shareInfo1": "當我分享此影片時我會附上",
+                "shareInfo2": "和它的連結。",
+                "format": "WebM 格式",
+                "error": "影片匯出失敗，請重試。",
+                "noNodes": "無法匯出影片：圖中沒有節點。"
             }
         },
         "timeline": {
@@ -813,7 +813,10 @@
             "selectTheme": "選擇線路顏色：",
             "noPath": "未找到所選節點之間的路徑。",
             "unadded": "有 {{count}} 個節點未加入時間線",
-            "addStationOnly": "僅添加此節點"
+            "addStationOnly": "僅添加此節點",
+            "reverse": "反向",
+            "reverseSelected": "反向選中線路",
+            "reversed": "已反向"
         },
         "donation": {
             "title": "捐款",
@@ -982,7 +985,6 @@
             "slackContent": "在這些Slack頻道中討論!"
         }
     },
-
     "contextMenu": {
         "refresh": "重新整理",
         "cut": "剪下",
@@ -1000,7 +1002,6 @@
         "flipDiagonal45": "沿45°線翻轉",
         "flipDiagonal135": "沿135°線翻轉"
     },
-
     "clipboard": {
         "errors": {
             "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
@@ -1008,6 +1009,5 @@
             "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
         }
     },
-
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
 }

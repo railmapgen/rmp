@@ -9,9 +9,9 @@
     "pasteAttrs": "粘贴独特属性",
     "remove": "移除",
     "close": "关闭",
+    "confirm": "确认",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
-
     "panel": {
         "tools": {
             "showLess": "显示更少",
@@ -703,7 +703,6 @@
             }
         }
     },
-
     "header": {
         "popoverHeader": "你正在浏览<1>{{environment}}</1>环境！",
         "popoverBody": "我们正在测试最新的RMP。如果你有任何建议，欢迎在 https://github.com/railmapgen/rmp/issues 上提出。",
@@ -752,7 +751,6 @@
         "download": {
             "config": "导出项目",
             "image": "导出图片",
-            "video": "导出视频",
             "2rmg": {
                 "title": "导出RMG项目",
                 "type": {
@@ -792,13 +790,15 @@
             "confirm": "下载",
             "videoExport": {
                 "title": "导出视频",
-                "fps": "帧率（FPS）",
+                "fps": "每秒帧数 (FPS)",
                 "duration": "时长（秒）",
                 "quality": "视频质量",
                 "generating": "正在生成视频...",
                 "progress": "进度：{{progress}}%",
-                "description": "此功能会导出一个动画视频，展示节点和线段逐步绘制的过程。",
-                "format": "WebM格式",
+                "description": "此功能会导出一个动画视频，展示节点和线路逐步绘制的过程。",
+                "shareInfo1": "当我分享此视频时我会附上",
+                "shareInfo2": "和它的链接。",
+                "format": "WebM 格式",
                 "error": "视频导出失败，请重试。",
                 "noNodes": "无法导出视频：图中没有节点。"
             }
@@ -813,7 +813,10 @@
             "selectTheme": "选择线路颜色：",
             "noPath": "未找到所选节点之间的路径。",
             "unadded": "有 {{count}} 个节点未加入时间线",
-            "addStationOnly": "仅添加此节点"
+            "addStationOnly": "仅添加此节点",
+            "reverse": "反向",
+            "reverseSelected": "反向选中线路",
+            "reversed": "已反向"
         },
         "donation": {
             "title": "捐赠",
@@ -982,7 +985,6 @@
             "slackContent": "在这些Slack频道中讨论!"
         }
     },
-
     "contextMenu": {
         "refresh": "刷新",
         "cut": "剪切",
@@ -1000,7 +1002,6 @@
         "flipDiagonal45": "沿45°线翻转",
         "flipDiagonal135": "沿135°线翻转"
     },
-
     "clipboard": {
         "errors": {
             "readText": "无法读取剪贴板。请检查浏览器权限后重试。",
@@ -1008,6 +1009,5 @@
             "cannotPasteSpecificAttrs": "无法粘贴独特属性。请确认已选中兼容的对象，且剪贴板中包含有效的独特属性数据。"
         }
     },
-
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
 }

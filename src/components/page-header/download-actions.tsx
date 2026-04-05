@@ -113,7 +113,7 @@ export default function DownloadActions() {
             label: t('header.download.scale'),
             value: scale,
             options: scaleOptions,
-            onChange: value => setScale(value as number),
+            onChange: value => setScale(Number(value)),
         },
         {
             type: 'switch',

@@ -2,14 +2,31 @@ import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
 import { GenericAttributes } from '../components/svgs/lines/styles/generic';
-import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId, Theme } from '../constants/constants';
+import {
+    EdgeAttributes,
+    GraphAttributes,
+    Id,
+    LineId,
+    NodeAttributes,
+    NodeId,
+    Theme,
+    TimelineEntry,
+} from '../constants/constants';
 import { LineStyleType } from '../constants/lines';
 
 /**
  * Get the current timeline from graph attributes, or empty array if none.
  */
-export const getTimeline = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Id[] => {
-    return graph.getAttribute('timeline') ?? [];
+export const normalizeTimeline = (timeline: Array<Id | TimelineEntry> | undefined): TimelineEntry[] => {
+    return (timeline ?? []).map(item =>
+        typeof item === 'string' ? { id: item } : { id: item.id, ...(item.reverse ? { reverse: true } : {}) }
+    );
+};
+
+export const getTimeline = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+): TimelineEntry[] => {
+    return normalizeTimeline(graph.getAttribute('timeline'));
 };
 
 /**
@@ -17,9 +34,12 @@ export const getTimeline = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttrib
  */
 export const setTimeline = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    timeline: Id[]
+    timeline: TimelineEntry[]
 ): void => {
-    graph.setAttribute('timeline', timeline);
+    graph.setAttribute(
+        'timeline',
+        timeline.map(item => ({ id: item.id, ...(item.reverse ? { reverse: true } : {}) }))
+    );
 };
 
 /**
@@ -151,23 +171,21 @@ export const findPathByTheme = (
  * When a node is skipped, its adjacent edge in newPath is also skipped.
  */
 export const deduplicateTimeline = (existing: Id[], newPath: Id[]): Id[] => {
-    const existingIds = new Set<string>(existing);
+    const existingEdges = new Set<string>(existing.filter(id => id.startsWith('line_')));
+
     const result = [...existing];
 
-    for (let i = 0; i < newPath.length; i++) {
-        const id = newPath[i];
+    for (const id of newPath) {
         const isEdge = id.startsWith('line_');
 
-        if (existingIds.has(id)) {
-            // For a duplicate node, also skip the next edge if present
-            if (!isEdge && i + 1 < newPath.length && newPath[i + 1].startsWith('line_')) {
-                i++;
-            }
-            continue;
-        }
+        if (isEdge) {
+            if (existingEdges.has(id)) continue;
 
-        existingIds.add(id);
-        result.push(id);
+            existingEdges.add(id);
+            result.push(id);
+        } else {
+            result.push(id);
+        }
     }
 
     return result;
@@ -194,9 +212,9 @@ export const getNodeDisplayName = (
  */
 export const getUnaddedNodes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    timeline: Id[]
+    timeline: TimelineEntry[]
 ): NodeId[] => {
-    const timelineNodes = new Set<string>(timeline);
+    const timelineNodes = new Set<string>(timeline.map(item => item.id));
     return graph.filterNodes(
         node => (node.startsWith('stn_') || node.startsWith('misc_node_')) && !timelineNodes.has(node)
     ) as NodeId[];

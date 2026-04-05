@@ -1,7 +1,7 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it, vi } from 'vitest';
-import type { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
+import type { EdgeAttributes, GraphAttributes, NodeAttributes, Theme, TimelineEntry } from '../constants/constants';
 import { CityCode } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
@@ -142,7 +142,7 @@ describe('getTimeline / setTimeline', () => {
 
     it('should round-trip timeline data', () => {
         const graph = makeGraph();
-        const tl = ['stn_a' as const, 'line_1' as const, 'stn_b' as const];
+        const tl: TimelineEntry[] = [{ id: 'stn_a' }, { id: 'line_1' }, { id: 'stn_b' }];
         setTimeline(graph, tl);
         expect(getTimeline(graph)).toEqual(tl);
     });

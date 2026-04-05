@@ -11,7 +11,6 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
-
     "panel": {
         "tools": {
             "showLess": "적게 표시",
@@ -703,7 +702,6 @@
             }
         }
     },
-
     "header": {
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
@@ -795,10 +793,14 @@
                 "fps": "프레임 속도 (FPS)",
                 "duration": "길이 (초)",
                 "quality": "비디오 품질",
-                "generating": "비디오 생성 중...",
+                "generating": "비디오를 생성하는 중...",
                 "progress": "진행률: {{progress}}%",
-                "description": "이 기능은 노드와 라인이 점진적으로 그려지는 애니메이션 비디오를 내보냅니다.",
-                "format": "WebM 형식"
+                "description": "이 기능은 노드와 선이 순서대로 그려지는 애니메이션 비디오를 내보냅니다.",
+                "shareInfo1": "이 동영상을 공유할 때",
+                "shareInfo2": "와(과) 해당 링크를 첨부합니다.",
+                "format": "WebM 형식",
+                "error": "비디오 내보내기에 실패했습니다. 다시 시도해 주세요.",
+                "noNodes": "비디오를 내보낼 수 없습니다: 그래프에 노드가 없습니다."
             }
         },
         "timeline": {
@@ -980,7 +982,6 @@
             "slackContent": "이 슬랙 채널에서 채팅해요!"
         }
     },
-
     "contextMenu": {
         "refresh": "새로 고침",
         "cut": "잘라내기",
@@ -998,7 +999,6 @@
         "flipDiagonal45": "45° 선을 기준으로 뒤집기",
         "flipDiagonal135": "135° 선을 기준으로 뒤집기"
     },
-
     "clipboard": {
         "errors": {
             "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
@@ -1006,6 +1006,5 @@
             "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
         }
     },
-
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
 }

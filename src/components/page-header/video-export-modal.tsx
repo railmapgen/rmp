@@ -60,6 +60,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [videoQuality, setVideoQuality] = React.useState(95);
     const [videoProgress, setVideoProgress] = React.useState(0);
     const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
+    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
 
@@ -102,6 +103,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 scale,
                 isSystemFontsOnly,
                 quality: videoQuality,
+                hideWatermark: isAttachSelected,
             };
 
             const blob = await exportVideo(graph.current, languages, existsNodeTypes, options, bgColor, progress =>
@@ -145,7 +147,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             label: t('header.download.scale'),
             value: scale,
             options: scaleOptions,
-            onChange: value => setScale(value as number),
+            onChange: value => setScale(Number(value)),
         },
         {
             type: 'switch',
@@ -168,6 +170,19 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                     <br />
                     <Checkbox isChecked={isSystemFontsOnly} onChange={e => setIsSystemFontsOnly(e.target.checked)}>
                         <Text>{t('header.download.isSystemFontsOnly')}</Text>
+                    </Checkbox>
+                    <Checkbox
+                        id="share_info_video"
+                        isChecked={isAttachSelected}
+                        onChange={e => setIsAttachSelected(e.target.checked)}
+                    >
+                        <Text>
+                            {t('header.download.videoExport.shareInfo1')}
+                            <Link color="teal.500" href="https://railmapgen.org/rmp">
+                                {t('header.about.rmp')} <Icon as={MdOpenInNew} />
+                            </Link>
+                            {t('header.download.videoExport.shareInfo2')}
+                        </Text>
                     </Checkbox>
                     <Checkbox
                         id="agree_terms_video"

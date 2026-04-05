@@ -13,7 +13,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -706,7 +705,6 @@
             }
         }
     },
-
     "header": {
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
@@ -798,10 +796,14 @@
                 "fps": "フレームレート（FPS）",
                 "duration": "長さ（秒）",
                 "quality": "ビデオ品質",
-                "generating": "ビデオを生成中...",
-                "progress": "進捗：{{progress}}%",
-                "description": "この機能は、ノードとラインが段階的に描画されるアニメーションビデオをエクスポートします。",
-                "format": "WebM形式"
+                "generating": "ビデオを生成しています...",
+                "progress": "進捗: {{progress}}%",
+                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "shareInfo1": "この動画を共有する際には",
+                "shareInfo2": "とそのリンクを添付します。",
+                "format": "WebM形式",
+                "error": "ビデオの書き出しに失敗しました。もう一度お試しください。",
+                "noNodes": "ビデオを書き出せません: グラフにノードがありません。"
             }
         },
         "timeline": {
@@ -814,7 +816,10 @@
             "selectTheme": "路線の色を選択：",
             "noPath": "選択したノード間のルートが見つかりません。",
             "unadded": "{{count}}個のノードがタイムラインに未追加",
-            "addStationOnly": "このノードのみ追加"
+            "addStationOnly": "このノードのみ追加",
+            "reverse": "反転",
+            "reverseSelected": "選択した線を反転",
+            "reversed": "反転済み"
         },
         "donation": {
             "title": "寄付",
@@ -982,7 +987,6 @@
             "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     },
-
     "contextMenu": {
         "refresh": "更新",
         "cut": "切り取り",
@@ -1000,7 +1004,6 @@
         "flipDiagonal45": "45° 線で反転",
         "flipDiagonal135": "135° 線で反転"
     },
-
     "clipboard": {
         "errors": {
             "readText": "クリップボードを読み取れませんでした。ブラウザーの権限を確認して再試行してください。",
@@ -1008,6 +1011,5 @@
             "cannotPasteSpecificAttrs": "独自属性を貼り付けできません。互換性のある対象を選択し、クリップボードに有効な独自属性データがあることを確認してください。"
         }
     },
-
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }
