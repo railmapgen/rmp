@@ -219,12 +219,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     />
                 </g>
             ) : (
-                <g
-                    id={`stn_name_${id}`}
-                    className="rmp-name-outline"
-                    strokeWidth="2.5"
-                    {...nameDragHandlers}
-                >
+                <g id={`stn_name_${id}`} className="rmp-name-outline" strokeWidth="2.5" {...nameDragHandlers}>
                     <g transform={`translate(0, ${textVerticalY})`} textAnchor={textVerticalAnchor.ja}>
                         {important && (
                             <rect

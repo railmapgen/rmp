@@ -286,7 +286,10 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                 {...nameDragHandlers}
             >
                 {!textVertical ? (
-                    <g transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`} textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}>
+                    <g
+                        transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                        textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                    >
                         <MultilineText
                             text={names[0].split('\n')}
                             fontSize={fontSize}

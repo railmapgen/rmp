@@ -13,7 +13,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
@@ -34,15 +34,15 @@ const NAME_DY_SH_INT = {
 
 const ShmetroIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const stationAttrs = attrs[StationType.ShmetroInt] ?? defaultShmetroIntStationAttributes;
     const {
         names = defaultStationAttributes.names,
-        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultShmetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultShmetroIntStationAttributes.nameOffsetY,
         rotate = defaultShmetroIntStationAttributes.rotate,
         width = defaultShmetroIntStationAttributes.width,
         height = defaultShmetroIntStationAttributes.height,
-    } = attrs[StationType.ShmetroInt] ?? defaultShmetroIntStationAttributes;
+    } = stationAttrs;
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -56,8 +56,6 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
-
-    const nameDragHandlers = useNameDrag(id);
 
     const iconWidth =
         rotate === 0 || rotate === 180 ? width : rotate === 90 || rotate === 270 ? height : width * Math.SQRT1_2;
@@ -73,6 +71,18 @@ const ShmetroIntStation = (props: StationComponentProps) => {
         NAME_DY[nameOffsetY].polarity;
     const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+
+    const fallbackLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<ShmetroIntStationAttributes>(
+        id,
+        StationType.ShmetroInt,
+        fallbackLayout
+    );
+    const preciseNameOffsets = previewPreciseNameOffsets ?? stationAttrs.preciseNameOffsets;
 
     return (
         <g>
@@ -95,11 +105,12 @@ const ShmetroIntStation = (props: StationComponentProps) => {
             </g>
             <g
                 id={`stn_name_${id}`}
-                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                transform={`translate(${preciseNameOffsets ? preciseNameOffsets.x : textX}, ${preciseNameOffsets ? preciseNameOffsets.y : textY})`}
                 textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}

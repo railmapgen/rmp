@@ -25,14 +25,8 @@ type StyleComponent = React.FC<
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
-        const {
-            elements,
-            selected,
-            handlePointerDown,
-            handlePointerMove,
-            handlePointerUp,
-            handleEdgePointerDown,
-        } = props;
+        const { elements, selected, handlePointerDown, handlePointerMove, handlePointerUp, handleEdgePointerDown } =
+            props;
 
         const layers = Object.fromEntries(
             Array.from({ length: 21 }, (_, i) => [
