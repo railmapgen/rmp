@@ -13,7 +13,9 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 
 export const LINE_HEIGHT = {
@@ -32,6 +34,7 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultChongqingRTIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultChongqingRTIntStationAttributes.nameOffsetY,
         transfer = defaultChongqingRTIntStationAttributes.transfer,
@@ -50,6 +53,8 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY, textDistance: TextDistance[]) => {
         const offsetX = textDistance[0] == 'far' ? HALF_SIZE : 5;
@@ -176,7 +181,14 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
                     d="M3.4614974.2162582c1.7925251,0,3.2455526,1.4530487,3.2455526,3.2453842,0,1.792366-1.4530275,3.2453995-3.2455526,3.2453995C1.6690944,6.7070418.21625,5.2540084.21625,3.4616424.21625,1.6693069,1.6690944.2162582,3.4614974.2162582Z"
                 />
             </g>
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                {...nameDragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={LINE_HEIGHT.zh}
@@ -251,30 +263,14 @@ const ChongqingRTIntAttrsComponent = (props: AttrsProps<ChongqingRTIntStationAtt
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: (attrs ?? defaultChongqingRTIntStationAttributes).nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
-            disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: (attrs ?? defaultChongqingRTIntStationAttributes).nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'select',
             label: t('panel.details.stations.chongqingRTInt.textDistance.x'),

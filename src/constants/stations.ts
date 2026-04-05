@@ -140,9 +140,6 @@ export interface StationComponentProps {
     handlePointerDown: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
-    handleNamePointerDown: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
-    handleNamePointerMove: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
-    handleNamePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
 }
 
 export interface StationAttributes {

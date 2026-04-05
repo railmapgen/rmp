@@ -13,7 +13,9 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 
 const LineHeight = {
@@ -26,6 +28,7 @@ const QingdaoMetroStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         color = defaultQingdaoMetroStationAttributes.color,
         nameOffsetX = defaultQingdaoMetroStationAttributes.nameOffsetX,
         nameOffsetY = defaultQingdaoMetroStationAttributes.nameOffsetY,
@@ -44,6 +47,8 @@ const QingdaoMetroStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const getBasicTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         const textX = oX === 'left' ? -6 : oX === 'right' ? 6 : 0;
@@ -94,7 +99,14 @@ const QingdaoMetroStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                {...nameDragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={8}
@@ -158,38 +170,14 @@ const qingdaoMetroStationAttrsComponent = (props: AttrsProps<QingdaoMetroStation
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultQingdaoMetroStationAttributes.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultQingdaoMetroStationAttributes.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX ?? defaultQingdaoMetroStationAttributes.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY ?? defaultQingdaoMetroStationAttributes.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'custom',
             label: t('color'),

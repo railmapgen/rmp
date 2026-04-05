@@ -13,6 +13,8 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -35,6 +37,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultJREastBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultJREastBasicStationAttributes.nameOffsetY,
         rotate = defaultJREastBasicStationAttributes.rotate,
@@ -56,6 +59,8 @@ const JREastBasicStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     // when all lines go beyond 0 or below 0, count 0 in so (x, y) is always inside the icon
     // this should also make text to always avoid (x, y)
@@ -170,7 +175,14 @@ const JREastBasicStation = (props: StationComponentProps) => {
                 ))}
             </g>
             {!textVertical ? (
-                <g transform={`translate(${textDX}, ${textDY})`} textAnchor={textAnchor}>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textDX}, ${textDY}`})`}
+                    textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    {...nameDragHandlers}
+                >
                     {important && (
                         <rect
                             x={iconImportantDX}
@@ -207,7 +219,12 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     />
                 </g>
             ) : (
-                <>
+                <g
+                    id={`stn_name_${id}`}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    {...nameDragHandlers}
+                >
                     <g transform={`translate(0, ${textVerticalY})`} textAnchor={textVerticalAnchor.ja}>
                         {important && (
                             <rect
@@ -249,7 +266,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             {...getLangStyle(TextLanguage.jreast_en)}
                         />
                     </g>
-                </>
+                </g>
             )}
             <g transform={`rotate(${rotate})`}>
                 <rect
@@ -328,30 +345,33 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.jrEastBasic.nameOffset'),
-            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                right: t('panel.details.stations.common.right'),
-                top: t('panel.details.stations.common.top'),
-                bottom: t('panel.details.stations.common.bottom'),
+        ...getNameOffsetField({
+            id,
+            attrs,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+            nameOffsetCustom: {
+                offset: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
+                options: {
+                    left: t('panel.details.stations.common.left'),
+                    right: t('panel.details.stations.common.right'),
+                    top: t('panel.details.stations.common.top'),
+                    bottom: t('panel.details.stations.common.bottom'),
+                },
+                onChange: (a, val) => {
+                    if (val === 'left' || val === 'right') {
+                        a.nameOffsetX = val as NameOffsetX;
+                        a.nameOffsetY = 'middle';
+                        a.textVertical = false;
+                    } else {
+                        a.nameOffsetX = 'middle';
+                        a.nameOffsetY = val as NameOffsetY;
+                        a.textOneLine = false;
+                    }
+                    return a;
+                },
             },
-            onChange: val => {
-                if (val === 'left' || val === 'right') {
-                    attrs.nameOffsetX = val as NameOffsetX;
-                    attrs.nameOffsetY = 'middle';
-                    attrs.textVertical = false;
-                } else {
-                    attrs.nameOffsetX = 'middle';
-                    attrs.nameOffsetY = val as NameOffsetY;
-                    attrs.textOneLine = false;
-                }
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        }),
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),

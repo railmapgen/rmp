@@ -12,6 +12,8 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 import { LINE_HEIGHT } from './bjsubway-basic';
 
@@ -22,6 +24,7 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultBjsubwayIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultBjsubwayIntStationAttributes.nameOffsetY,
         outOfStation = defaultBjsubwayIntStationAttributes.outOfStation,
@@ -40,6 +43,8 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const getTextOffset = (oX: NameOffsetX, oY: NameOffsetY) => {
         if (oX === 'left' && oY === 'top') {
@@ -85,7 +90,14 @@ const BjsubwayIntStation = (props: StationComponentProps) => {
                     className="removeMe"
                 />
             </g>
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                {...nameDragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={LINE_HEIGHT.zh}
@@ -187,38 +199,14 @@ const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttribute
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'slider',
             label: t('panel.details.stations.bjsubwayInt.scale'),

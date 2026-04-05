@@ -12,6 +12,8 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const NAME_DY_WUHAN_INT = {
@@ -33,6 +35,7 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultWuhanRTIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultWuhanRTIntStationAttributes.nameOffsetY,
     } = attrs[StationType.WuhanRTInt] ?? defaultWuhanRTIntStationAttributes;
@@ -49,6 +52,8 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const radius = 7.5;
     const textX = nameOffsetX === 'left' ? -radius - 1 : nameOffsetX === 'right' ? radius + 1 : 0;
@@ -87,7 +92,14 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                     transform="translate(-49.84, -50.15)"
                 />
             </g>
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                {...nameDragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={10}
@@ -151,38 +163,14 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
     ];
 
     return <RmgFields fields={fields} />;

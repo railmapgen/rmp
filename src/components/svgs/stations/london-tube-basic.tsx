@@ -16,6 +16,8 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import ThemeButton from '../../panels/theme-button';
 import { MultilineText } from '../common/multiline-text';
 
@@ -178,6 +180,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         transfer = defaultLondonTubeBasicStationAttributes.transfer,
         rotate = defaultLondonTubeBasicStationAttributes.rotate,
         terminal = defaultLondonTubeBasicStationAttributes.terminal,
@@ -197,6 +200,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     // rotate starts from top-middle while Math.sin/cos starts from middle-right
     const rad = ((rotate - 90) * Math.PI) / 180;
@@ -249,9 +254,13 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                 )}
             </g>
             <g
-                transform={`translate(${textDx}, ${textDy})`}
-                textAnchor={ROTATE_CONST[textRotate].textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textDx}, ${textDy}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : ROTATE_CONST[textRotate].textAnchor}
                 fill="#003888"
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                {...nameDragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -311,6 +320,12 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             },
             minW: 'full',
         },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),

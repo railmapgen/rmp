@@ -12,6 +12,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { getNameOffsetField } from '../../panels/details/name-offset-field';
 
@@ -31,16 +32,7 @@ export const NAME_DY_SH_BASIC = {
 };
 
 const ShmetroBasicStation = (props: StationComponentProps) => {
-    const {
-        id,
-        attrs,
-        handlePointerDown,
-        handlePointerMove,
-        handlePointerUp,
-        handleNamePointerDown,
-        handleNamePointerMove,
-        handleNamePointerUp,
-    } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
@@ -61,18 +53,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const onNamePointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handleNamePointerDown(id, e),
-        [id, handleNamePointerDown]
-    );
-    const onNamePointerMove = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handleNamePointerMove(id, e),
-        [id, handleNamePointerMove]
-    );
-    const onNamePointerUp = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handleNamePointerUp(id, e),
-        [id, handleNamePointerUp]
-    );
+    const nameDragHandlers = useNameDrag(id);
 
     const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
@@ -109,9 +90,7 @@ const ShmetroBasicStation = (props: StationComponentProps) => {
                 textAnchor={textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                onPointerDown={onNamePointerDown}
-                onPointerMove={onNamePointerMove}
-                onPointerUp={onNamePointerUp}
+                {...nameDragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}

@@ -13,6 +13,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
@@ -81,16 +82,7 @@ export const TokyoMetroBasicSvg = (props: TokyoMetroBasicSvgProps) => {
 };
 
 const TokyoMetroBasicStation = (props: StationComponentProps) => {
-    const {
-        id,
-        attrs,
-        handlePointerDown,
-        handlePointerMove,
-        handlePointerUp,
-        handleNamePointerDown,
-        handleNamePointerMove,
-        handleNamePointerUp,
-    } = props;
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
         preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
@@ -115,18 +107,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const onNamePointerDown = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handleNamePointerDown(id, e),
-        [id, handleNamePointerDown]
-    );
-    const onNamePointerMove = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handleNamePointerMove(id, e),
-        [id, handleNamePointerMove]
-    );
-    const onNamePointerUp = React.useCallback(
-        (e: React.PointerEvent<SVGElement>) => handleNamePointerUp(id, e),
-        [id, handleNamePointerUp]
-    );
+    const nameDragHandlers = useNameDrag(id);
 
     const [textLength, setTextLength] = React.useState(0);
     React.useEffect(() => {
@@ -170,14 +151,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g
-                textAnchor={textAnchor}
-                className="rmp-name-outline"
-                strokeWidth="1"
-                onPointerDown={onNamePointerDown}
-                onPointerMove={onNamePointerMove}
-                onPointerUp={onNamePointerUp}
-            >
+            <g textAnchor={textAnchor} className="rmp-name-outline" strokeWidth="1" {...nameDragHandlers}>
                 {!textVertical ? (
                     <g id={`stn_name_${id}`} transform={`translate(${nameTranslate})`}>
                         <MultilineText

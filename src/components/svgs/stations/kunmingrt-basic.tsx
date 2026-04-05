@@ -13,7 +13,9 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const NAME_DY_KM_BASIC = {
@@ -35,6 +37,7 @@ const KunmingRTBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultKunmingRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultKunmingRTBasicStationAttributes.nameOffsetY,
         color = defaultKunmingRTBasicStationAttributes.color,
@@ -53,6 +56,8 @@ const KunmingRTBasicStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    const nameDragHandlers = useNameDrag(id);
+
     const textX = nameOffsetX === 'left' ? -13.33 : nameOffsetX === 'right' ? 13.33 : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * NAME_DY_KM_BASIC[nameOffsetY].lineHeight +
@@ -69,10 +74,12 @@ const KunmingRTBasicStation = (props: StationComponentProps) => {
         >
             <circle id={`stn_core_${id}`} r="5" stroke={color[2]} strokeWidth="1.33" fill="white" />
             <g
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
+                {...nameDragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -136,38 +143,14 @@ const KunmingRTBasicAttrsComponent = (props: AttrsProps<KunmingRTBasicStationAtt
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'custom',
             label: t('color'),

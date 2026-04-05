@@ -263,9 +263,6 @@ const PredictNextNode = () => {
                     }}
                     handlePointerMove={() => {}}
                     handlePointerUp={() => {}}
-                    handleNamePointerDown={() => {}}
-                    handleNamePointerMove={() => {}}
-                    handleNamePointerUp={() => {}}
                 />
             </g>
         </g>

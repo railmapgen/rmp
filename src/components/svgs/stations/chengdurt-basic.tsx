@@ -13,7 +13,9 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -29,6 +31,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultChengduRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultChengduRTBasicStationAttributes.nameOffsetY,
         color = defaultChengduRTBasicStationAttributes.color,
@@ -49,6 +52,8 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const getTextOffset = () => {
         const [oX, oY] = [nameOffsetX, nameOffsetY];
@@ -197,7 +202,14 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                 </g>
             )}
             {direction == 'horizontal' ? (
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                    textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    {...nameDragHandlers}
+                >
                     <MultilineText
                         text={names[0].split('\n')}
                         fontSize={LINE_HEIGHT.zh}
@@ -352,36 +364,14 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultChengduRTBasicStationAttributes.nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
-            disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                // if (attrs.nameOffsetX != 'middle') {
-                //     attrs.direction = 'horizontal';
-                // }
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultChengduRTBasicStationAttributes.nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                // if (attrs.nameOffsetY == 'middle') {
-                //     attrs.direction = 'horizontal';
-                // }
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'custom',
             label: t('color'),

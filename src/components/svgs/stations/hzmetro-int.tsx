@@ -13,7 +13,9 @@ import {
     Rotate,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { NAME_DY, MultilineText } from '../common/multiline-text';
 
 export interface HzmetroIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
@@ -38,6 +40,7 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultHzmetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultHzmetroIntStationAttributes.nameOffsetY,
         rotate = defaultHzmetroIntStationAttributes.rotate,
@@ -58,6 +61,8 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const t1 = transfer?.[0]?.[0]?.[2] ?? 'grey';
     const t2 = transfer?.[0]?.[1]?.[2] ?? 'grey';
@@ -143,7 +148,14 @@ const HzmetroIntComponent: React.FC<StationComponentProps> = props => {
                 />
             </g>
 
-            <g transform={`translate(${textX}, ${textY}) scale(${scale} 1)`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`}) scale(${scale} 1)`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                {...nameDragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={18}
@@ -193,38 +205,14 @@ const HzmetroIntAttrsComponent: React.FC<AttrsProps<HzmetroIntStationAttributes>
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultHzmetroIntStationAttributes.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultHzmetroIntStationAttributes.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX ?? defaultHzmetroIntStationAttributes.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY ?? defaultHzmetroIntStationAttributes.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),

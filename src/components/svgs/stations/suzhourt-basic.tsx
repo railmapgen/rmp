@@ -13,7 +13,9 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -50,6 +52,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         color = defaultSuzhouRTBasicStationAttributes.color,
         nameOffsetX = defaultSuzhouRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultSuzhouRTBasicStationAttributes.nameOffsetY,
@@ -68,6 +71,8 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const textX = nameOffsetX === 'left' ? -5 : nameOffsetX === 'right' ? 5 : 0;
     const textY =
@@ -94,7 +99,14 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             {!textVertical ? (
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                    textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    {...nameDragHandlers}
+                >
                     <MultilineText
                         text={names[0].split('\n')}
                         fontSize={NAME_SZ_BASIC.zh.size}
@@ -189,40 +201,14 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultSuzhouRTBasicStationAttributes.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetX = val as NameOffsetX;
-                if (attrs.nameOffsetX !== 'middle') attrs.textVertical = false;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultSuzhouRTBasicStationAttributes.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-            onChange: val => {
-                attrs.nameOffsetY = val as NameOffsetY;
-                if (attrs.nameOffsetY === 'middle') attrs.textVertical = false;
-                handleAttrsUpdate(id, attrs);
-            },
-            minW: 'full',
-        },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            nameOffsetX: attrs.nameOffsetX,
+            nameOffsetY: attrs.nameOffsetY,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'switch',
             label: t('panel.details.stations.suzhouRTBasic.textVertical'),

@@ -11,13 +11,18 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
+import { getNameOffsetField } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { names = defaultStationAttributes.names, rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate } =
-        attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
+    const {
+        names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
+        rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate,
+    } = attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
@@ -37,6 +42,8 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     return (
         <g>
@@ -71,10 +78,12 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                 />
             </g>
             <g
-                transform={`translate(${ROTATE_CONST[rotate].textDx}, ${textDy})`}
-                textAnchor={ROTATE_CONST[rotate].textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${ROTATE_CONST[rotate].textDx}, ${textDy}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : ROTATE_CONST[rotate].textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
+                {...nameDragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -135,6 +144,12 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
             },
             minW: 'full',
         },
+        ...getNameOffsetField({
+            id,
+            attrs,
+            preciseNameOffsets: attrs.preciseNameOffsets,
+            handleAttrsUpdate,
+        }),
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),

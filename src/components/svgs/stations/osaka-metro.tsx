@@ -3,8 +3,9 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
-import { Station, StationComponentProps, StationType } from '../../../constants/stations';
+import { defaultStationAttributes, Station, StationComponentProps, StationType } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import { useNameDrag } from '../../../util/use-name-drag';
 import {
     InterchangeField,
     StationAttributesWithInterchange,
@@ -380,6 +381,7 @@ const OsakaMetroStation = (props: StationComponentProps) => {
     const {
         stationType = defaultOsakaMetroStationAttributes.stationType,
         names = defaultOsakaMetroStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         transfer = defaultOsakaMetroStationAttributes.transfer,
         nameDirection = defaultOsakaMetroStationAttributes.nameDirection,
         stationDirection = defaultOsakaMetroStationAttributes.stationDirection,
@@ -413,6 +415,8 @@ const OsakaMetroStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const nameDragHandlers = useNameDrag(id);
 
     const { width: stationWidth, height: stationHeight } = calculateStationDimensions(
         stationType,
@@ -510,10 +514,12 @@ const OsakaMetroStation = (props: StationComponentProps) => {
 
             {isHorizontal ? (
                 <g
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
+                    id={`stn_name_${id}`}
+                    transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                    textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
                     className="rmp-name-outline"
                     strokeWidth="1"
+                    {...nameDragHandlers}
                 >
                     <MultilineText
                         text={processedNameText.split('\n')}
@@ -551,10 +557,12 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                 </g>
             ) : (
                 <g
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
+                    id={`stn_name_${id}`}
+                    transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
+                    textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
                     className="rmp-name-outline"
                     strokeWidth="1"
+                    {...nameDragHandlers}
                 >
                     <MultilineTextVertical
                         text={processedNameText.split('\n')}
