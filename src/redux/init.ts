@@ -1,9 +1,11 @@
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { createEmptyTimelineDocument } from '../constants/timeline';
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
+import { normalizeTimelineDocument } from '../util/timeline';
 import { RootStore, startRootListening } from '.';
 import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
@@ -25,6 +27,7 @@ import {
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
 import { normalizeRandomStationsNames } from './state-migration';
+import { setFullState as setTimelineFullState } from './timeline/timeline-slice';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -95,10 +98,13 @@ export const initStore = async (store: RootStore) => {
     // Upgrade param and inject to ParamState.
     const param = await upgrade(paramState);
 
-    const { version, graph, ...save } = JSON.parse(param) as RMPSave;
+    const { version, graph, timeline, ...save } = JSON.parse(param) as RMPSave;
     window.graph = MultiDirectedGraph.from(graph);
     const state: ParamState = { ...save, present: graph, past: [], future: [] };
     store.dispatch(setFullState(state));
+    store.dispatch(
+        setTimelineFullState({ present: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()) })
+    );
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 
@@ -112,13 +118,18 @@ export const initStore = async (store: RootStore) => {
             // graph is not preserved as we want to reduce the number of refreshes. But this
             // comparison will always return true on dragging a node.
             return (
+                currentState.param !== previousState.param ||
                 currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges
+                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
+                currentState.timeline.present !== previousState.timeline.present
             );
         },
         effect: (_action, listenerApi) => {
             try {
-                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(store.getState().param));
+                localStorage.setItem(
+                    LocalStorageKey.PARAM,
+                    stringifyParam(store.getState().param, store.getState().timeline.present)
+                );
                 onRMPSaveUpdate(); // notify rmt to update the save
             } catch (error) {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {

@@ -720,6 +720,15 @@
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "search": "Search stations",
+        "timelinePage": {
+            "open": "Open timeline",
+            "backToEditor": "Back to editor",
+            "trackTitle": "Timeline track",
+            "selectHint": "Select one node or edge above, then add it to the track.",
+            "alreadyAdded": "Already added",
+            "addSelected": "Add selected",
+            "empty": "The track is empty. Select an element above to start building the timeline."
+        },
         "open": {
             "new": "New project",
             "config": "Import project",

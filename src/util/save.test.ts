@@ -1,7 +1,9 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
-import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
+import { createEmptyTimelineDocument } from '../constants/timeline';
+import { ParamState } from '../redux/param/param-slice';
+import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
     it('upgrade will return the default tutorial if originalParam is null', async () => {
@@ -43,6 +45,35 @@ describe('Unit tests for param upgrade function', () => {
         expect(allKeys.reduce((acc, cur) => acc + cur, 0)).toEqual(((CURRENT_VERSION - 1) * CURRENT_VERSION) / 2);
         // Maximum of allKeys equals CURRENT_VERSION - 1.
         expect(Math.max(...allKeys) + 1).toEqual(CURRENT_VERSION);
+    });
+
+    it('stringifyParam should export timeline at the top level', () => {
+        const paramState: ParamState = {
+            present: new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export(),
+            past: [],
+            future: [],
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+        };
+        const timeline = {
+            version: 1 as const,
+            track: [{ id: 'clip_1', kind: 'node' as const, refId: 'stn_a' as const }],
+        };
+
+        const save = JSON.parse(stringifyParam(paramState, timeline));
+
+        expect(save.timeline).toEqual(timeline);
+        expect(save.graph).toBeDefined();
+    });
+
+    it('71 -> 72', () => {
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"timeline":{"version":1,"track":[]},"version":71}';
+        const newParam = UPGRADE_COLLECTION[71](oldParam);
+        const upgraded = JSON.parse(newParam);
+
+        expect(upgraded.version).toBe(72);
+        expect(upgraded.timeline).toEqual(createEmptyTimelineDocument());
     });
 
     it('1 -> 2', () => {

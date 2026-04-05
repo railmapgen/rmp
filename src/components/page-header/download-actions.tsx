@@ -68,6 +68,7 @@ export default function DownloadActions() {
     } = useRootSelector(state => state.app);
     const { languages } = useRootSelector(state => state.fonts);
     const param = useRootSelector(state => state.param);
+    const timeline = useRootSelector(state => state.timeline.present);
     const { existsNodeTypes } = useRootSelector(state => state.runtime);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
@@ -176,8 +177,7 @@ export default function DownloadActions() {
                 images.push({ id: attr.href, base64: (await imageStoreIndexedDB.get(attr.href))! });
             }
         }
-        const data = { ...param, images };
-        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(data));
+        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(param, timeline, images));
     };
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f

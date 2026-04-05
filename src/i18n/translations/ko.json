@@ -719,6 +719,15 @@
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
         "search": "방송국 검색",
+        "timelinePage": {
+            "open": "타임라인 열기",
+            "backToEditor": "편집기로 돌아가기",
+            "trackTitle": "타임라인 트랙",
+            "selectHint": "위에서 노드 또는 선분 하나를 선택한 뒤 트랙에 추가하세요.",
+            "alreadyAdded": "이미 추가됨",
+            "addSelected": "선택 항목 추가",
+            "empty": "트랙이 비어 있습니다. 위에서 요소를 선택해 타임라인을 시작하세요."
+        },
         "open": {
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",

@@ -722,6 +722,15 @@
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "timelinePage": {
+            "open": "タイムラインを開く",
+            "backToEditor": "エディターに戻る",
+            "trackTitle": "タイムライントラック",
+            "selectHint": "上でノードまたはエッジを 1 つ選択して、トラックに追加します。",
+            "alreadyAdded": "追加済み",
+            "addSelected": "選択項目を追加",
+            "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。"
+        },
         "open": {
             "new": "新しい作品",
             "config": "作品をインポート",

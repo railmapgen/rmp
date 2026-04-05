@@ -719,6 +719,15 @@
         "popoverHeader": "你正在瀏覽<1>{{environment}}</1>環境！",
         "popoverBody": "我們正在測試最新的RMP。如果妳有任何建議，歡迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜尋車站",
+        "timelinePage": {
+            "open": "開啟時間線",
+            "backToEditor": "返回編輯器",
+            "trackTitle": "時間線軌道",
+            "selectHint": "先在上方選擇一個節點或線段，再將其加入軌道。",
+            "alreadyAdded": "已加入",
+            "addSelected": "加入已選項",
+            "empty": "軌道仍是空的。先在上方選擇元素，再開始建立時間線。"
+        },
         "open": {
             "new": "新項目",
             "config": "讀入項目",

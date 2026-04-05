@@ -4,14 +4,17 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { useRootDispatch } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import { setFullState as setTimelineFullState } from '../../redux/timeline/timeline-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
+import { normalizeTimelineDocument } from '../../util/timeline';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
@@ -43,6 +46,7 @@ export default function OpenActions() {
     const handleNew = () => {
         dispatch(clearSelected());
         graph.current.clear();
+        dispatch(setTimelineFullState({ present: createEmptyTimelineDocument() }));
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
         refreshAndSave();
@@ -50,10 +54,13 @@ export default function OpenActions() {
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, timeline, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
+        dispatch(
+            setTimelineFullState({ present: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()) })
+        );
 
         // reset graph with new data
         graph.current.clear();
