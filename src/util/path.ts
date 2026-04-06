@@ -27,29 +27,40 @@ interface ClosePath {
 type OpenPathDrawCommand = LineTo | CubicTo;
 type PathCommand = MoveTo | OpenPathDrawCommand | ClosePath;
 
+/**
+ * Structured path model used across the renderer.
+ *
+ * `kind` is the coarse geometry classification consumed by style/path helpers,
+ * while `commands` keeps the precise command sequence and `d` is the serialized SVG path data.
+ */
 interface BasePath<C extends readonly PathCommand[]> {
     readonly kind: string;
     readonly commands: C;
     readonly d: string;
 }
 
+/** Straight open path: `M L`. */
 export interface LinearPath extends BasePath<readonly [MoveTo, LineTo]> {
     readonly kind: 'ml';
 }
 
+/** Sharp corner open path: `M L L`. */
 export interface SharpTurnPath extends BasePath<readonly [MoveTo, LineTo, LineTo]> {
     readonly kind: 'mll';
 }
 
+/** Rounded corner open path: `M L C L`. */
 export interface RoundedTurnPath extends BasePath<readonly [MoveTo, LineTo, CubicTo, LineTo]> {
     readonly kind: 'mlcl';
 }
 
+/** Catch-all for longer open paths that do not match the short-path special cases above. */
 export interface ComplexOpenPath
     extends BasePath<readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[]]> {
     readonly kind: 'complex-open';
 }
 
+/** Closed filled geometry, typically derived from offset/outline helpers. */
 export interface ClosedAreaPath
     extends BasePath<readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[], ClosePath]> {
     readonly kind: 'closed-area';
@@ -90,6 +101,9 @@ const serializeCommand = (command: PathCommand): string => {
 const isLineTo = (command: PathCommand): command is LineTo => command.cmd === 'L';
 const isCubicTo = (command: PathCommand): command is CubicTo => command.cmd === 'C';
 const isClosePath = (command: PathCommand): command is ClosePath => command.cmd === 'Z';
+const isLineOnlyOpenPath = (
+    commands: readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
+): commands is readonly [MoveTo, LineTo, ...LineTo[]] => commands.slice(1).every(isLineTo);
 
 const makeBasePath = <TKind extends Path['kind'], TCommands extends readonly PathCommand[]>(
     kind: TKind,
@@ -129,11 +143,22 @@ export const makeClosedAreaPathFromOpenCommands = (
     commands: readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
 ): ClosedAreaPath => makeClosedAreaPath([...commands, closePath()] as const);
 
+/**
+ * Reconstruct the narrowest path kind from a command list.
+ *
+ * This keeps downstream helpers working on geometry semantics rather than raw command counts.
+ * For example, concatenating collinear `M L` segments should still produce a single `ml` path,
+ * not a synthetic `mll` corner.
+ */
 const makeOpenPathFromCommands = (
     commands: readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
 ): OpenPath => {
     if (commands.length === 2 && isLineTo(commands[1])) {
         return makeLinearPath(commands[0].to, commands[1].to);
+    }
+
+    if (isLineOnlyOpenPath(commands) && arePointsCollinear(commands.map(command => command.to))) {
+        return makeLinearPath(commands[0].to, commands.at(-1)!.to);
     }
 
     if (commands.length === 3 && isLineTo(commands[1]) && isLineTo(commands[2])) {
@@ -160,6 +185,24 @@ const makeOpenPathFromCommands = (
     throw new Error('Open path must contain at least one draw command.');
 };
 
+/** Treat points within a small epsilon as collinear so reconciled straight paths stay linear. */
+const arePointsCollinear = (points: readonly PathPoint[]) => {
+    if (points.length < 3) {
+        return true;
+    }
+
+    const anchor = points[0];
+    const directionPoint = points.find(
+        point => Math.abs(point.x - anchor.x) > 1e-9 || Math.abs(point.y - anchor.y) > 1e-9
+    );
+    if (!directionPoint) {
+        return true;
+    }
+
+    const [dx, dy] = [directionPoint.x - anchor.x, directionPoint.y - anchor.y];
+    return points.every(point => Math.abs((point.x - anchor.x) * dy - (point.y - anchor.y) * dx) <= 1e-9);
+};
+
 const extractPathNumbers = (pathD: string, expectedCount: number): number[] => {
     const numbers = pathD.match(/-?(?:\d+\.?\d*|\.\d+)(?:e[-+]?\d+)?/gi)?.map(Number) ?? [];
     if (numbers.length !== expectedCount || numbers.some(value => !Number.isFinite(value))) {
@@ -168,6 +211,7 @@ const extractPathNumbers = (pathD: string, expectedCount: number): number[] => {
     return numbers;
 };
 
+/** Parse the exact six-point `M L C L` shape emitted by rounded-turn generators back into structured form. */
 export const parseRoundedTurnPath = (pathD: string): RoundedTurnPath => {
     const numbers = extractPathNumbers(pathD, 12);
     return makeRoundedTurnPath(
@@ -190,9 +234,16 @@ export const getEndPoint = (path: Path): PathPoint => {
     return lastCommand.to;
 };
 
+/** Drop the leading `M` so multiple open paths can be stitched into one command stream. */
 export const dropInitialMoveTo = (path: OpenPath): readonly OpenPathDrawCommand[] =>
     path.commands.slice(1) as OpenPathDrawCommand[];
 
+/**
+ * Concatenate already-connected open paths and then normalize the result back to the most specific kind.
+ *
+ * This is used by reconciliation, so preserving straight-vs-corner semantics matters more than
+ * preserving the original command grouping.
+ */
 export const concatOpenPaths = (paths: readonly [OpenPath, ...OpenPath[]] | readonly OpenPath[]): OpenPath => {
     if (!paths.length) {
         throw new Error('concatOpenPaths() requires at least one path.');
