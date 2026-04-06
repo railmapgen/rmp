@@ -33,7 +33,8 @@ const useStationAttrsUpdate = <T extends StationAttributes>(id: StnId, type: Sta
 export const useDraggableStationName = <T extends StationAttributes>(
     id: StnId,
     type: StationType,
-    fallbackLayout: NameLayout
+    fallbackLayout: NameLayout,
+    customFields?: string[]
 ) => {
     const handleAttrsUpdate = useStationAttrsUpdate<T>(id, type);
     const selected = useRootSelector(state => state.runtime.selected);
@@ -109,9 +110,10 @@ export const useDraggableStationName = <T extends StationAttributes>(
             handleAttrsUpdate({
                 ...currentAttrs,
                 preciseNameOffsets: nextLayout,
+                preciseNameOffsetsCustomFields: customFields,
             });
         },
-        [getCurrentAttrs, handleAttrsUpdate, svgViewBoxZoom]
+        [customFields, getCurrentAttrs, handleAttrsUpdate, svgViewBoxZoom]
     );
 
     const onPointerCancel = React.useCallback((e: React.PointerEvent<SVGGElement>) => {

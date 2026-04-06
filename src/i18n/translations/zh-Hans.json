@@ -287,7 +287,8 @@
                     "middle": "中间",
                     "right": "右",
                     "top": "顶部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自定义"
                 },
                 "interchange": {
                     "title": "换乘",

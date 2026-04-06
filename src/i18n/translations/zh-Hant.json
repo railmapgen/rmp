@@ -287,7 +287,8 @@
                     "middle": "中間",
                     "right": "右",
                     "top": "頂部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自訂"
                 },
                 "interchange": {
                     "title": "換乘",

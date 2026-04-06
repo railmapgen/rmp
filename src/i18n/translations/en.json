@@ -287,7 +287,8 @@
                     "middle": "Middle",
                     "right": "Right",
                     "top": "Top",
-                    "bottom": "Bottom"
+                    "bottom": "Bottom",
+                    "custom": "Custom"
                 },
                 "interchange": {
                     "title": "Interchanges",

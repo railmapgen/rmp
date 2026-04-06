@@ -12,9 +12,13 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
-import { getNameOffsetField } from '../../panels/details/name-offset-field';
+import {
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+    getPreciseNameOffsetsSelectState,
+    resolvePreciseNameOffsetsSelectChange,
+} from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 
 export const ROTATE_CONST: {
@@ -93,14 +97,16 @@ export const ROTATE_CONST: {
     },
 };
 
+const PRECISE_NAME_OFFSET_CUSTOM_FIELDS = ['rotate'];
+
 const ShmetroBasic2020Station = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const stationAttrs = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
     const {
         names = defaultStationAttributes.names,
-        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         color = defaultShmetroBasic2020StationAttributes.color,
         rotate = defaultShmetroBasic2020StationAttributes.rotate,
-    } = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
+    } = stationAttrs;
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
@@ -121,7 +127,19 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const nameDragHandlers = useNameDrag(id);
+    const fallbackLayout: NameLayout = {
+        x: ROTATE_CONST[rotate].textDx,
+        y: textDy,
+        anchor: ROTATE_CONST[rotate].textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } =
+        useDraggableStationName<ShmetroBasic2020StationAttributes>(
+            id,
+            StationType.ShmetroBasic2020,
+            fallbackLayout,
+            PRECISE_NAME_OFFSET_CUSTOM_FIELDS
+        );
+    const preciseNameOffsets = previewPreciseNameOffsets ?? stationAttrs.preciseNameOffsets;
 
     return (
         <g>
@@ -146,7 +164,8 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : ROTATE_CONST[rotate].textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -186,6 +205,15 @@ const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttribute
 const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020StationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const rotateSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        fieldKey: 'rotate',
+        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
+        value: attrs.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -208,20 +236,26 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
             },
             minW: 'full',
         },
-        ...getNameOffsetField({
-            id,
-            attrs,
-            preciseNameOffsets: attrs.preciseNameOffsets,
-            handleAttrsUpdate,
-        }),
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            value: rotateSelect.value,
+            options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                handleAttrsUpdate(id, attrs);
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                handleAttrsUpdate(
+                    id,
+                    resolvePreciseNameOffsetsSelectChange({
+                        attrs,
+                        fieldKey: 'rotate',
+                        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
+                        value: Number(val) as Rotate,
+                        applyConcreteValue: (attrs, value) => {
+                            attrs.rotate = Number(value) as Rotate;
+                        },
+                    })
+                );
             },
             minW: 'full',
         },
