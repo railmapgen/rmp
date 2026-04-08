@@ -1,4 +1,5 @@
 import { Bezier } from 'bezier-js';
+import { find4thVertexOfAParallelogram, getLineIntersection, makeOffsetSegment, toPointTuple } from './geometry';
 import {
     ClosedAreaPath,
     LinearPath,
@@ -79,8 +80,6 @@ export const makeShortPathOutline = (
 
     return makeRoundedTurnOutline(path, d1, d2);
 };
-
-const toPointTuple = (point: PathPoint): Point => [point.x, point.y];
 
 const makeOffsetLinearPath = (path: LinearPath, d: number): LinearPath => {
     const start = getStartPoint(path);
@@ -200,33 +199,6 @@ const getPolylinePoints = (path: LinearPath | SharpTurnPath): PathPoint[] => {
     return [path.commands[0].to, path.commands[1].to, path.commands[2].to];
 };
 
-const makeOffsetSegment = (start: PathPoint, end: PathPoint, d: number) => {
-    const [dx, dy] = [end.x - start.x, end.y - start.y];
-    const length = Math.hypot(dx, dy);
-    if (length === 0) {
-        return { start, end };
-    }
-
-    const [nx, ny] = [dy / length, -dx / length];
-    return {
-        start: makePoint(start.x + nx * d, start.y + ny * d),
-        end: makePoint(end.x + nx * d, end.y + ny * d),
-    };
-};
-
-const getLineIntersection = (a1: PathPoint, a2: PathPoint, b1: PathPoint, b2: PathPoint): PathPoint | undefined => {
-    const denominator = (a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x);
-    if (Math.abs(denominator) < 1e-9) return;
-
-    const determinantA = a1.x * a2.y - a1.y * a2.x;
-    const determinantB = b1.x * b2.y - b1.y * b2.x;
-
-    return makePoint(
-        (determinantA * (b1.x - b2.x) - (a1.x - a2.x) * determinantB) / denominator,
-        (determinantA * (b1.y - b2.y) - (a1.y - a2.y) * determinantB) / denominator
-    );
-};
-
 const makeStartingAndEndingPointsOfParallelShortPaths = (
     m: Point,
     l: Point,
@@ -263,18 +235,4 @@ const makeStartingAndEndingPointsOfParallelShortPaths = (
     );
 
     return { mA: [mxA, myA], mB: [mxB, myB], endA: [endXA, endYA], endB: [endXB, endYB] };
-};
-
-/**
- * Given the coordinates of point A, B, and C,
- * this helper function find the 4th vertex of the parallelogram.
- *   D---C
- *  /   /
- * A---B
- * @returns The coordinates of point D.
- */
-const find4thVertexOfAParallelogram = (xa: number, xb: number, xc: number, ya: number, yb: number, yc: number) => {
-    const [xmid, ymid] = [xa + xc, ya + yc];
-    const [xd, yd] = [xmid - xb, ymid - yb];
-    return [xd, yd];
 };

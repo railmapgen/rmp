@@ -2,19 +2,15 @@ import { useEffect, useState } from 'react';
 import { RmgCircularSlider, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
+import { degToRad, getRayIntersection, sanitizeCoordinate } from '../../../../util/geometry';
+import { PathPoint, makeLinearPath, makePoint, makeSharpTurnPath, parseRoundedTurnPath } from '../../../../util/path';
 import { roundPathCorners } from '../../../../util/pathRounding';
-import { makeLinearPath, makePoint, makeSharpTurnPath, parseRoundedTurnPath } from '../../../../util/path';
-
-type Point = { x: number; y: number };
 
 const EPSILON = 1e-6;
 const MAX_RAY_GUIDED_ANGLE = 179;
 const DEFAULT_START_ANGLE = 0;
 const DEFAULT_END_ANGLE = 90;
 const MIN_RAY_GUIDED_ANGLE_GAP = 5;
-
-const degToRad = (angle: number) => (angle * Math.PI) / 180;
-const sanitizeCoordinate = (value: number): number => (Math.abs(value) < EPSILON ? 0 : value);
 
 export const normalizeRayGuidedAngle = (angle: number, fallback = DEFAULT_START_ANGLE): number => {
     if (!Number.isFinite(angle)) return fallback;
@@ -34,37 +30,22 @@ export const makeDisabledRayGuidedSliderValues = (blockedAngle: number, gap = MI
         value => getRayGuidedAngleDistance(value, blockedAngle) <= gap
     );
 
-const makeDirectionVector = (angle: number): Point => {
+const makeDirectionVector = (angle: number): PathPoint => {
     const rad = degToRad(normalizeRayGuidedAngle(angle));
     return { x: Math.sin(rad), y: -Math.cos(rad) };
 };
 
-const makeClockwiseNormalVector = (angle: number): Point => {
+const makeClockwiseNormalVector = (angle: number): PathPoint => {
     const direction = makeDirectionVector(angle);
     return { x: -direction.y, y: direction.x };
 };
 
-const makeNormalOffsetPoint = (x: number, y: number, angle: number, offset: number): Point => {
+const makeNormalOffsetPoint = (x: number, y: number, angle: number, offset: number): PathPoint => {
     // Positive offsets follow the guide ray's clockwise normal in SVG coordinates.
     const normal = makeClockwiseNormalVector(angle);
     return {
         x: sanitizeCoordinate(x + normal.x * offset),
         y: sanitizeCoordinate(y + normal.y * offset),
-    };
-};
-
-const cross = (a: Point, b: Point) => a.x * b.y - a.y * b.x;
-
-const getIntersection = (p1: Point, d1: Point, p2: Point, d2: Point): Point | undefined => {
-    const determinant = cross(d1, d2);
-    if (Math.abs(determinant) < EPSILON) return;
-
-    const delta = { x: p2.x - p1.x, y: p2.y - p1.y };
-    const t = cross(delta, d2) / determinant;
-
-    return {
-        x: sanitizeCoordinate(p1.x + d1.x * t),
-        y: sanitizeCoordinate(p1.y + d1.y * t),
     };
 };
 
@@ -83,7 +64,7 @@ export const generateRayGuidedPath: PathGenerator<RayGuidedPathAttributes> = (
 
     const start = makeNormalOffsetPoint(x1, y1, startAngle, offsetFrom);
     const end = makeNormalOffsetPoint(x2, y2, endAngle, offsetTo);
-    const middle = getIntersection(start, makeDirectionVector(startAngle), end, makeDirectionVector(endAngle));
+    const middle = getRayIntersection(start, makeDirectionVector(startAngle), end, makeDirectionVector(endAngle));
 
     if (!middle) {
         return makeLinearPath(makePoint(start.x, start.y), makePoint(end.x, end.y));
