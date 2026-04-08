@@ -5,95 +5,17 @@ import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    AttrsProps,
-    CityCode,
-    EdgeAttributes,
-    GraphAttributes,
-    LineId,
-    MiscNodeId,
-    NodeAttributes,
-    NodeId,
-} from '../../../constants/constants';
+import { AttrsProps, CityCode, LineId, MiscNodeId, NodeAttributes } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
+import { generateClosedPath } from '../../../util/generate-closed-path';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
-import {
-    ClosedAreaPath,
-    OpenPath,
-    dropInitialMoveTo,
-    makeClosedAreaPathFromOpenCommands,
-    makeLinearPath,
-    makePoint,
-} from '../../../util/path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
-import { RayGuidedPathAttributes } from '../lines/paths/ray-guided';
-
-/**
- * Generate the combined SVG path string for the closed loop.
- */
-const generateClosedPath = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: NodeId[],
-    edges: LineId[]
-): ClosedAreaPath | undefined => {
-    if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
-
-    type OpenMove = OpenPath['commands'][0];
-    type OpenDraw = ReturnType<typeof dropInitialMoveTo>[number];
-    let commands: [OpenMove, ...OpenDraw[]] | undefined;
-
-    for (let i = 0; i < edges.length; i++) {
-        const sourceNodeId = nodes[i];
-        const targetNodeId = nodes[i + 1];
-        const edgeId = edges[i];
-
-        const sourceAttrs = graph.getNodeAttributes(sourceNodeId);
-        const targetAttrs = graph.getNodeAttributes(targetNodeId);
-        const edgeAttrs = graph.getEdgeAttributes(edgeId);
-        const pathType = edgeAttrs.type;
-        const initialPathAttr = edgeAttrs[pathType]!;
-
-        const x1 = sourceAttrs.x,
-            y1 = sourceAttrs.y,
-            x2 = targetAttrs.x,
-            y2 = targetAttrs.y;
-        const finalPathAttr = structuredClone(initialPathAttr);
-
-        const isReversed = graph.source(edgeId) !== sourceNodeId;
-
-        if (isReversed) {
-            if ('startFrom' in finalPathAttr) {
-                finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
-            }
-            if (pathType === LinePathType.RayGuided) {
-                const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
-                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
-                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
-            }
-            // no need to handle simple path as it is symmetrical
-        }
-
-        const segment =
-            linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) ||
-            makeLinearPath(makePoint(x1, y1), makePoint(x2, y2));
-
-        if (i === 0) {
-            commands = [segment.commands[0], ...dropInitialMoveTo(segment)];
-        } else {
-            commands!.push(...dropInitialMoveTo(segment));
-        }
-    }
-
-    if (!commands || commands.length < 3) return undefined;
-
-    return makeClosedAreaPathFromOpenCommands(commands as [OpenMove, OpenDraw, OpenDraw, ...OpenDraw[]]);
-};
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
