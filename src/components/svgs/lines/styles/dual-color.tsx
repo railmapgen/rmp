@@ -16,17 +16,13 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
-import { makeShortPathParallel } from '../../../../util/bezier-parallel';
+import { makeOpenPathParallel } from '../../../../util/bezier-parallel';
 import { OpenPath } from '../../../../constants/path';
-import { isShortOpenPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
 const dualColorPathGenerator = (path: OpenPath, type: LinePathType, attrs: DualColorAttributes) => {
-    if (!isShortOpenPath(path)) return { pathA: path, pathB: path };
-
-    const _ = makeShortPathParallel(path, -1.25, 1.25);
-    if (!_) return { pathA: path, pathB: path };
-    return { pathA: _[0], pathB: _[1] };
+    const [pathA, pathB] = makeOpenPathParallel(path, -1.25, 1.25);
+    return { pathA, pathB };
 };
 
 const DualColor = (props: LineStyleComponentProps<DualColorAttributes>) => {

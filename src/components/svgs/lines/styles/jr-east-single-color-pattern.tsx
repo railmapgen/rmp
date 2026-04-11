@@ -9,9 +9,8 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { makeShortPathOutline } from '../../../../util/bezier-parallel';
+import { makeOpenPathOutline } from '../../../../util/bezier-parallel';
 import { OpenPath } from '../../../../constants/path';
-import { isShortOpenPath } from '../../../../util/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,
@@ -27,9 +26,9 @@ const PATTERN_CLIP_PATH_D = ((PATTERN_LEN * Math.SQRT2 - PATTERN_WIDTH) / 2) * M
 const OUTLINE_D = LINE_WIDTH * (1 - 0.05);
 
 const jrEastSingleColorPatternPathGenerator = (path: OpenPath) => {
-    const paths = isShortOpenPath(path) ? makeShortPathOutline(path, -OUTLINE_D / 2, OUTLINE_D / 2) : undefined;
+    const paths = makeOpenPathOutline(path, -OUTLINE_D / 2, OUTLINE_D / 2);
     return {
-        outline: paths?.outline || path,
+        outline: paths.outline,
         border: path,
         decorationMarker: path,
     };
