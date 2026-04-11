@@ -29,6 +29,9 @@ export default function TimelineClip({
     const accent = getTimelineEntryAccent(graph, entry);
     const exists = entry.kind === 'node' ? graph.hasNode(entry.refId) : graph.hasEdge(entry.refId);
 
+    const isMultiColor = accent.length > 1;
+    const borderColor = accent[0];
+
     return (
         <Box
             draggable
@@ -42,14 +45,31 @@ export default function TimelineClip({
             py={3}
             borderWidth="1px"
             borderRadius="lg"
-            borderColor={isSelected ? accent : 'chakra-border-color'}
+            borderColor={isSelected ? borderColor : 'chakra-border-color'}
             bg={isSelected ? 'blackAlpha.50' : 'chakra-body-bg'}
             boxShadow={isSelected ? 'md' : 'sm'}
             cursor="pointer"
             position="relative"
-            _hover={{ borderColor: accent }}
+            _hover={{ borderColor: borderColor }}
+            overflow="hidden"
         >
-            <Box position="absolute" top="0" left="0" bottom="0" width="6px" bg={accent} borderLeftRadius="lg" />
+            {isMultiColor ? (
+                <Box
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    bottom="0"
+                    width="6px"
+                    overflow="hidden"
+                    borderLeftRadius="lg"
+                >
+                    {accent.map((color, index) => (
+                        <Box key={index} h={`${100 / accent.length}%`} bg={color} />
+                    ))}
+                </Box>
+            ) : (
+                <Box position="absolute" top="0" left="0" bottom="0" width="6px" bg={accent[0]} borderLeftRadius="lg" />
+            )}
             <CloseButton
                 size="sm"
                 position="absolute"

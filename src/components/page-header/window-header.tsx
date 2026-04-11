@@ -80,28 +80,32 @@ export default function WindowHeader() {
                 <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>
                     {!isTimelinePage && <SearchPopover />}
 
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
-                        aria-label="Undo"
-                        icon={<MdUndo />}
-                        isDisabled={isTimelinePage || past.length === 0}
-                        onClick={handleUndo}
-                    />
-                    <IconButton
-                        size="sm"
-                        variant="ghost"
-                        aria-label="Redo"
-                        icon={<MdRedo />}
-                        isDisabled={isTimelinePage || future.length === 0}
-                        onClick={handleRedo}
-                    />
+                    {!isTimelinePage && (
+                        <IconButton
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Undo"
+                            icon={<MdUndo />}
+                            isDisabled={isTimelinePage || past.length === 0}
+                            onClick={handleUndo}
+                        />
+                    )}
+                    {!isTimelinePage && (
+                        <IconButton
+                            size="sm"
+                            variant="ghost"
+                            aria-label="Redo"
+                            icon={<MdRedo />}
+                            isDisabled={isTimelinePage || future.length === 0}
+                            onClick={handleRedo}
+                        />
+                    )}
 
-                    {!isTimelinePage && <ZoomPopover />}
+                    <ZoomPopover />
 
-                    <OpenActions />
+                    {!isTimelinePage && <OpenActions />}
 
-                    <DownloadActions />
+                    {!isTimelinePage && <DownloadActions />}
 
                     <IconButton
                         size="sm"

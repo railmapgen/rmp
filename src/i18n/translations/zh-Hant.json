@@ -726,6 +726,13 @@
             "selectHint": "先在上方選擇一個節點或線段，再將其加入軌道。",
             "alreadyAdded": "已加入",
             "addSelected": "加入已選項",
+            "addPathFromHere": "從此站開始添加",
+            "addPathByColor": "按線路顏色添加：",
+            "selectLineColor": "選擇線路顏色",
+            "selectDestNode": "在畫布中選擇終點車站",
+            "noPathFound": "所選顏色在這兩站之間沒有找到路徑。",
+            "pathAdded": "成功將 {{count}} 個元素添加進軌道。",
+            "pathAlreadyAdded": "此路徑中的所有元素都已存在於軌道中。",
             "empty": "軌道仍是空的。先在上方選擇元素，再開始建立時間線。"
         },
         "open": {

@@ -726,6 +726,13 @@
             "selectHint": "先在上方选择一个节点或线段，再将其添加到轨道中。",
             "alreadyAdded": "已添加",
             "addSelected": "添加已选项",
+            "addPathFromHere": "从此站开始添加",
+            "addPathByColor": "按线路颜色添加：",
+            "selectLineColor": "选择线路颜色",
+            "selectDestNode": "在画布中选择终点车站",
+            "noPathFound": "所选颜色在这两站之间没有找到路径。",
+            "pathAdded": "成功将 {{count}} 个元素添加进轨道。",
+            "pathAlreadyAdded": "此路径中的所有元素都已存在于轨道中。",
             "empty": "轨道还是空的。先在上方选择元素，再开始构建时间线。"
         },
         "open": {

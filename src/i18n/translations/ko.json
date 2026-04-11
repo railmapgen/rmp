@@ -726,6 +726,13 @@
             "selectHint": "위에서 노드 또는 선분 하나를 선택한 뒤 트랙에 추가하세요.",
             "alreadyAdded": "이미 추가됨",
             "addSelected": "선택 항목 추가",
+            "addPathFromHere": "여기서 경로 추가",
+            "addPathByColor": "색상으로 경로 추가:",
+            "selectLineColor": "선 색상 선택",
+            "selectDestNode": "캔버스에서 종착역 선택",
+            "noPathFound": "선택한 색상의 경로를 찾을 수 없습니다.",
+            "pathAdded": "트랙에 {{count}}개의 요소를 성공적으로 추가했습니다.",
+            "pathAlreadyAdded": "이 경로의 모든 요소가 이미 추가되었습니다.",
             "empty": "트랙이 비어 있습니다. 위에서 요소를 선택해 타임라인을 시작하세요."
         },
         "open": {

@@ -729,6 +729,13 @@
             "selectHint": "上でノードまたはエッジを 1 つ選択して、トラックに追加します。",
             "alreadyAdded": "追加済み",
             "addSelected": "選択項目を追加",
+            "addPathFromHere": "ここからパスを追加",
+            "addPathByColor": "色でパスを追加：",
+            "selectLineColor": "線の色を選択",
+            "selectDestNode": "キャンバスで終点駅を選択",
+            "noPathFound": "選択した色のパスが見つかりません。",
+            "pathAdded": "トラックに {{count}} 個の要素を追加しました。",
+            "pathAlreadyAdded": "このパスのすべての要素はすでに追加されています。",
             "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。"
         },
         "open": {

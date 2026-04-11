@@ -727,6 +727,13 @@
             "selectHint": "Select one node or edge above, then add it to the track.",
             "alreadyAdded": "Already added",
             "addSelected": "Add selected",
+            "addPathFromHere": "Add path from here",
+            "addPathByColor": "Add path by color:",
+            "selectLineColor": "Select a line color",
+            "selectDestNode": "Select destination station on canvas",
+            "noPathFound": "No path found between selected stations along this line.",
+            "pathAdded": "Successfully added {{count}} elements to the track.",
+            "pathAlreadyAdded": "All elements in this path are already added.",
             "empty": "The track is empty. Select an element above to start building the timeline."
         },
         "open": {
