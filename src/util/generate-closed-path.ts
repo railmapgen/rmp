@@ -4,6 +4,7 @@ import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from 
 import { LinePathType } from '../constants/lines';
 import {
     ClosedAreaPath,
+    MultiSegmentOpenPathCommands,
     OpenPath,
     makeClosedAreaPathFromOpenCommands,
     makeLinearPath,
@@ -70,5 +71,12 @@ export const generateClosedPath = (
 
     if (!commands || commands.length < 3) return undefined;
 
-    return makeClosedAreaPathFromOpenCommands(commands as [OpenMove, OpenDraw, OpenDraw, ...OpenDraw[]]);
+    const closedCommands = [
+        commands[0],
+        commands[1]!,
+        commands[2]!,
+        ...commands.slice(3),
+    ] as MultiSegmentOpenPathCommands;
+
+    return makeClosedAreaPathFromOpenCommands(closedCommands);
 };
