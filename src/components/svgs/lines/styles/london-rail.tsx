@@ -32,9 +32,9 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path
-                d={path}
+                d={path.d}
                 fill="none"
                 stroke={colorForeground[2]}
                 strokeWidth={(LINE_WIDTH / 5) * 2}
@@ -47,16 +47,16 @@ const LondonRail = (props: LineStyleComponentProps<LondonRailAttributes>) => {
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={colorBackground[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path
-                d={path}
+                d={path.d}
                 fill="none"
                 stroke={colorForeground[2]}
                 strokeWidth={(LINE_WIDTH / 5) * 4.25}
                 strokeLinecap="round"
             />
             <path
-                d={path}
+                d={path.d}
                 fill="none"
                 stroke={colorBackground[2]}
                 strokeWidth={(LINE_WIDTH / 5) * 2}

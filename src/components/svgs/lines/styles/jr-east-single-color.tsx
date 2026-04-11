@@ -4,12 +4,12 @@ import React from 'react';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
-    Path,
     LinePathType,
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
+import { OpenPath } from '../../../../constants/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,
@@ -19,7 +19,7 @@ import {
     makeJREastDecorationFields,
 } from './jr-east-single-color-utils';
 
-const jrEastSingleColorPathGenerator = (path: Path) => ({
+const jrEastSingleColorPathGenerator = (path: OpenPath) => ({
     border: path,
     main: path,
     decorationMarker: path,
@@ -35,7 +35,7 @@ const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAt
         >
             <path
                 id={`${LineStyleType.JREastSingleColor}_border_${id}`}
-                d={path}
+                d={path.d}
                 fill="none"
                 stroke="black"
                 strokeWidth={LINE_WIDTH}
@@ -63,7 +63,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
         >
             <path
                 id={`${LineStyleType.JREastSingleColor}_main_${id}`}
-                d={paths.main}
+                d={paths.main.d}
                 fill="none"
                 stroke={color[2]}
                 strokeWidth={LINE_WIDTH * (1 - 0.05)}
@@ -77,7 +77,7 @@ const JREastSingleColor = (props: LineStyleComponentProps<JREastSingleColorAttri
                 <path
                     key={`${id}_${decoration}_${decorationAt}`}
                     id={`${LineStyleType.JREastSingleColor}_decorationMarker_${id}`}
-                    d={paths.decorationMarker}
+                    d={paths.decorationMarker.d}
                     fill="none"
                     stroke="transparent"
                     strokeWidth="0.01"

@@ -13,6 +13,8 @@ import { useRootDispatch } from '../../../../redux';
 import { setSelected } from '../../../../redux/runtime/runtime-slice';
 import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import { makePoint, makeSharpTurnPath } from '../../../../constants/path';
+import { parseRoundedTurnPath } from '../../../../util/path';
 
 const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
     propsx1: number,
@@ -56,9 +58,9 @@ const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
     const [x1, y1, x2, y2] = startFrom === 'from' ? [x1b, y1b, x2b, y2b] : [x2b, y2b, x1b, y1b];
 
     // Round the path with corners.
-    const path = roundPathCorners(`M ${x1} ${y1} L ${x} ${y} L ${x2} ${y2}`, roundCornerFactor, false) as `M ${string}`;
+    const path = makeSharpTurnPath(makePoint(x1, y1), makePoint(x, y), makePoint(x2, y2));
 
-    return path;
+    return roundCornerFactor === 0 ? path : parseRoundedTurnPath(roundPathCorners(path.d, roundCornerFactor, false));
 };
 
 /**

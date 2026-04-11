@@ -18,7 +18,7 @@ const River = (props: LineStyleComponentProps<RiverAttributes>) => {
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth={width}
