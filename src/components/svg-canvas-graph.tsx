@@ -513,10 +513,12 @@ const SvgCanvas = () => {
                 activeSnapLines.map(p => (
                     <path
                         key={`snap_line_${p.a}_${p.b}_${p.c}_${p.node}`}
-                        d={linePaths[LinePathType.Simple].generatePath(
-                            ...makeSnapLinesPath(p, getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height)),
-                            linePaths[LinePathType.Simple].defaultAttrs
-                        )}
+                        d={
+                            linePaths[LinePathType.Simple].generatePath(
+                                ...makeSnapLinesPath(p, getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height)),
+                                linePaths[LinePathType.Simple].defaultAttrs
+                            ).d
+                        }
                         stroke="cyan"
                         strokeWidth={svgViewBoxZoom / 75}
                     />

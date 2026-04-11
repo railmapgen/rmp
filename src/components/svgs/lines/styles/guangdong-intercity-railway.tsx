@@ -26,8 +26,8 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
-            <path d={path} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH / 2} strokeDasharray="7.5" />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH / 2} strokeDasharray="7.5" />
         </g>
     );
 };

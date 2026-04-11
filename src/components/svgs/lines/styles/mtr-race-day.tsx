@@ -24,7 +24,7 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth={LINE_WIDTH}

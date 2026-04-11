@@ -39,6 +39,7 @@ import type { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-
 import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
+import type { ClosedAreaPath, OpenPath } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -128,11 +129,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
 }
 
-/* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
-
 export const LINE_WIDTH = 5;
-
-export type Path = `M${string}`;
 
 export interface LineWrapperComponentProps {
     id: LineId;
@@ -162,7 +159,7 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: Path;
+    path: OpenPath;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -304,11 +301,15 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => OpenPath;
 
 /**
  * The generator type of a line style.
  * This is used when a line style needs to generate complex paths based on the original path.
  * It takes the original path and return a record of paths with different keys.
  */
-export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;
+export type StylePathGenerator<T> = (
+    path: OpenPath,
+    type: LinePathType,
+    attrs: T
+) => Record<string, OpenPath | ClosedAreaPath>;
