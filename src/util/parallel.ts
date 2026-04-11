@@ -4,7 +4,7 @@ import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
-import { makeShortPathParallel } from './bezier-parallel';
+import { makeOpenPathParallel } from './bezier-parallel';
 import { isShortOpenPath } from './path';
 
 type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided>;
@@ -126,7 +126,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
             makeLinearPath(makePoint(x1, y1 - d), makePoint(x2, y2 - d)),
         ] as const;
         const [pathA, pathB] =
-            (isShortOpenPath(basePath) ? makeShortPathParallel(basePath, d) : undefined) ?? defaultSimpleParallelPath;
+            (isShortOpenPath(basePath) ? makeOpenPathParallel(basePath, d) : undefined) ?? defaultSimpleParallelPath;
 
         parallelPaths[lineEntry.edge as LineId] = pathFlip ? pathA : pathB;
     }

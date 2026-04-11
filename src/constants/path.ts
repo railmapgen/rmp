@@ -33,6 +33,15 @@ export interface ClosePath {
 export type OpenPathDrawCommand = LineTo | CubicTo;
 /** Minimal SVG command subset used by RailMapPainter path utilities. */
 export type PathCommand = MoveTo | OpenPathDrawCommand | ClosePath;
+/** Any open SVG path command stream supported by the structured model: `M` followed by one or more `L`/`C` draws. */
+export type OpenPathCommands = readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]];
+/** Multi-segment open SVG path command stream: `M` followed by at least two `L`/`C` draws. */
+export type MultiSegmentOpenPathCommands = readonly [
+    MoveTo,
+    OpenPathDrawCommand,
+    OpenPathDrawCommand,
+    ...OpenPathDrawCommand[],
+];
 
 /**
  * Structured path model used across the renderer.
@@ -62,14 +71,12 @@ export interface RoundedTurnPath extends BasePath<readonly [MoveTo, LineTo, Cubi
 }
 
 /** Catch-all for longer open paths that do not match the short-path special cases above. */
-export interface ComplexOpenPath
-    extends BasePath<readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[]]> {
+export interface ComplexOpenPath extends BasePath<MultiSegmentOpenPathCommands> {
     readonly kind: 'complex-open';
 }
 
 /** Closed filled geometry, typically derived from offset/outline helpers. */
-export interface ClosedAreaPath
-    extends BasePath<readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[], ClosePath]> {
+export interface ClosedAreaPath extends BasePath<readonly [...MultiSegmentOpenPathCommands, ClosePath]> {
     readonly kind: 'closed-area';
 }
 
@@ -136,15 +143,12 @@ export const makeRoundedTurnPath = (
 ): RoundedTurnPath =>
     makeBasePath('mlcl', [moveTo(start), lineTo(lineEnd), cubicTo(c1, c2, curveEnd), lineTo(end)] as const);
 
-export const makeComplexOpenPath = (
-    commands: readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
-): ComplexOpenPath => makeBasePath('complex-open', commands);
+export const makeComplexOpenPath = (commands: MultiSegmentOpenPathCommands): ComplexOpenPath =>
+    makeBasePath('complex-open', commands);
 
-export const makeClosedAreaPath = (
-    commands: readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[], ClosePath]
-): ClosedAreaPath => makeBasePath('closed-area', commands);
+export const makeClosedAreaPath = (commands: readonly [...MultiSegmentOpenPathCommands, ClosePath]): ClosedAreaPath =>
+    makeBasePath('closed-area', commands);
 
 /** Close an existing open outline by appending `Z` without rebuilding its drawable commands. */
-export const makeClosedAreaPathFromOpenCommands = (
-    commands: readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
-): ClosedAreaPath => makeClosedAreaPath([...commands, closePath()] as const);
+export const makeClosedAreaPathFromOpenCommands = (commands: MultiSegmentOpenPathCommands): ClosedAreaPath =>
+    makeClosedAreaPath([...commands, closePath()] as const);

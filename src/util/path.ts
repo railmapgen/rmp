@@ -3,8 +3,10 @@ import {
     CubicTo,
     LineTo,
     LinearPath,
+    MultiSegmentOpenPathCommands,
     MoveTo,
     OpenPath,
+    OpenPathCommands,
     OpenPathDrawCommand,
     Path,
     PathCommand,
@@ -22,9 +24,8 @@ import {
 const isLineTo = (command: PathCommand): command is LineTo => command.cmd === 'L';
 const isCubicTo = (command: PathCommand): command is CubicTo => command.cmd === 'C';
 const isClosePath = (command: PathCommand): command is ClosePath => command.cmd === 'Z';
-const isLineOnlyOpenPath = (
-    commands: readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
-): commands is readonly [MoveTo, LineTo, ...LineTo[]] => commands.slice(1).every(isLineTo);
+const isLineOnlyOpenPath = (commands: OpenPathCommands): commands is readonly [MoveTo, LineTo, ...LineTo[]] =>
+    commands.slice(1).every(isLineTo);
 
 /**
  * Reconstruct the narrowest path kind from a command list.
@@ -33,9 +34,7 @@ const isLineOnlyOpenPath = (
  * For example, concatenating collinear `M L` segments should still produce a single `ml` path,
  * not a synthetic `mll` corner.
  */
-const makeOpenPathFromCommands = (
-    commands: readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
-): OpenPath => {
+export const makeOpenPathFromCommands = (commands: OpenPathCommands): OpenPath => {
     if (commands.length === 2 && isLineTo(commands[1])) {
         return makeLinearPath(commands[0].to, commands[1].to);
     }
@@ -63,9 +62,13 @@ const makeOpenPathFromCommands = (
     }
 
     if (commands.length >= 3) {
-        return makeComplexOpenPath(
-            commands as readonly [MoveTo, OpenPathDrawCommand, OpenPathDrawCommand, ...OpenPathDrawCommand[]]
-        );
+        const complexCommands = [
+            commands[0],
+            commands[1]!,
+            commands[2]!,
+            ...commands.slice(3),
+        ] as MultiSegmentOpenPathCommands;
+        return makeComplexOpenPath(complexCommands);
     }
 
     throw new Error('Open path must contain at least one draw command.');
@@ -143,7 +146,8 @@ export const concatOpenPaths = (paths: readonly [OpenPath, ...OpenPath[]] | read
         commands.push(...dropInitialMoveTo(paths[i]));
     }
 
-    return makeOpenPathFromCommands(commands as [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]]);
+    const normalizedCommands = [commands[0], commands[1]!, ...commands.slice(2)] as OpenPathCommands;
+    return makeOpenPathFromCommands(normalizedCommands);
 };
 
 /** Split a straight segment at its midpoint for styles that render each half independently. */
