@@ -1,8 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { Path } from '../constants/path';
 import { getLines } from './process-elements';
-import { Path } from './path';
 
 type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
 

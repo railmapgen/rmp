@@ -3,9 +3,9 @@ import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
 import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths, supportsParallelLinePath } from './parallel';
-import { OpenPath, makeLinearPath, makePoint } from './path';
 import { makeReconciledPath, reconcileLines } from './reconcile';
 
 /**

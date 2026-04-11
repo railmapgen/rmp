@@ -2,15 +2,15 @@ import { MultiDirectedGraph } from 'graphology';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
-import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import {
     ClosedAreaPath,
     OpenPath,
-    dropInitialMoveTo,
     makeClosedAreaPathFromOpenCommands,
     makeLinearPath,
     makePoint,
-} from './path';
+} from '../constants/path';
+import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import { dropInitialMoveTo } from './path';
 
 /**
  * Generate a closed SVG area path by concatenating the line paths along a loop.

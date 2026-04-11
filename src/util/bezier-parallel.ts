@@ -1,5 +1,4 @@
 import { Bezier } from 'bezier-js';
-import { find4thVertexOfAParallelogram, getLineIntersection, makeOffsetSegment, toPointTuple } from './geometry';
 import {
     ClosedAreaPath,
     LinearPath,
@@ -10,8 +9,6 @@ import {
     ShortOpenPath,
     closePath,
     cubicTo,
-    getEndPoint,
-    getStartPoint,
     lineTo,
     makeClosedAreaPath,
     makeLinearPath,
@@ -19,7 +16,9 @@ import {
     makeRoundedTurnPath,
     makeSharpTurnPath,
     moveTo,
-} from './path';
+} from '../constants/path';
+import { find4thVertexOfAParallelogram, getLineIntersection, makeOffsetSegment, toPointTuple } from './geometry';
+import { getEndPoint, getStartPoint } from './path';
 
 type X = number;
 type Y = number;
@@ -234,5 +233,10 @@ const makeStartingAndEndingPointsOfParallelShortPaths = (
         end[1]
     );
 
-    return { mA: [mxA, myA], mB: [mxB, myB], endA: [endXA, endYA], endB: [endXB, endYB] };
+    return {
+        mA: [mxA, myA],
+        mB: [mxB, myB],
+        endA: [endXA, endYA],
+        endB: [endXB, endYB],
+    };
 };

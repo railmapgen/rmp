@@ -13,7 +13,8 @@ import { useRootDispatch } from '../../../../redux';
 import { setSelected } from '../../../../redux/runtime/runtime-slice';
 import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
-import { makePoint, makeSharpTurnPath, parseRoundedTurnPath } from '../../../../util/path';
+import { makePoint, makeSharpTurnPath } from '../../../../constants/path';
+import { parseRoundedTurnPath } from '../../../../util/path';
 
 const generatePerpendicularPath: PathGenerator<PerpendicularPathAttributes> = (
     x1: number,

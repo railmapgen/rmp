@@ -2,7 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../../constants/constants';
 import { LinePath, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
-import { makeLinearPath, makePoint } from '../../../../util/path';
+import { makeLinearPath, makePoint } from '../../../../constants/path';
 
 const generateSimplePath: PathGenerator<SimplePathAttributes> = (
     x1: number,

@@ -39,7 +39,7 @@ import type { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-
 import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
-import type { ClosedAreaPath, OpenPath } from '../util/path';
+import type { ClosedAreaPath, OpenPath } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',

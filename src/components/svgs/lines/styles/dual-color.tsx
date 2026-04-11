@@ -17,7 +17,8 @@ import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeShortPathParallel } from '../../../../util/bezier-parallel';
-import { OpenPath, isShortOpenPath } from '../../../../util/path';
+import { OpenPath } from '../../../../constants/path';
+import { isShortOpenPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
 const dualColorPathGenerator = (path: OpenPath, type: LinePathType, attrs: DualColorAttributes) => {

@@ -9,7 +9,7 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { OpenPath } from '../../../../util/path';
+import { OpenPath } from '../../../../constants/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,

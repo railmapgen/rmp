@@ -10,7 +10,8 @@ import {
     LineStyleType,
 } from '../../../../constants/lines';
 import { makeShortPathOutline } from '../../../../util/bezier-parallel';
-import { OpenPath, isShortOpenPath } from '../../../../util/path';
+import { OpenPath } from '../../../../constants/path';
+import { isShortOpenPath } from '../../../../util/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,

@@ -1,4 +1,4 @@
-import { PathPoint, makePoint } from './path';
+import { PathPoint, makePoint } from '../constants/path';
 
 /** Degrees to radians. */
 export const degToRad = (angle: number) => (angle * Math.PI) / 180;

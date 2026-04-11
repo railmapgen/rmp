@@ -16,7 +16,8 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
-import { OpenPath, isLinearPath, splitLinearPath } from '../../../../util/path';
+import { OpenPath } from '../../../../constants/path';
+import { isLinearPath, splitLinearPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
 const mrtTapeOutPathGenerator = (path: OpenPath, type: LinePathType, attrs: MRTTapeOutAttributes) => {

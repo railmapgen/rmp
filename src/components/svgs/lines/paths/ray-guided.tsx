@@ -3,7 +3,8 @@ import { RmgCircularSlider, RmgFields, RmgFieldsField } from '@railmapgen/rmg-co
 import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
 import { degToRad, getRayIntersection, sanitizeCoordinate } from '../../../../util/geometry';
-import { PathPoint, makeLinearPath, makePoint, makeSharpTurnPath, parseRoundedTurnPath } from '../../../../util/path';
+import { PathPoint, makeLinearPath, makePoint, makeSharpTurnPath } from '../../../../constants/path';
+import { parseRoundedTurnPath } from '../../../../util/path';
 import { roundPathCorners } from '../../../../util/pathRounding';
 
 const EPSILON = 1e-6;

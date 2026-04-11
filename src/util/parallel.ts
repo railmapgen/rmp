@@ -3,8 +3,9 @@ import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { makeShortPathParallel } from './bezier-parallel';
-import { OpenPath, isShortOpenPath, makeLinearPath, makePoint } from './path';
+import { isShortOpenPath } from './path';
 
 type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided>;
 export type ParallelLinePathAttributes = NonNullable<ExternalLinePathAttributes[ParallelLinePathType]>;

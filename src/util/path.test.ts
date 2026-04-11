@@ -1,17 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
-    concatOpenPaths,
     closePath,
     cubicTo,
-    getEndPoint,
     lineTo,
     makeClosedAreaPath,
     makeLinearPath,
     makePoint,
     makeRoundedTurnPath,
     moveTo,
-    parseRoundedTurnPath,
-} from './path';
+} from '../constants/path';
+import { concatOpenPaths, getEndPoint, parseRoundedTurnPath } from './path';
 
 describe('concatOpenPaths', () => {
     it('should collapse collinear linear segments back into a linear path', () => {

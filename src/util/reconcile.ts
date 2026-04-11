@@ -3,8 +3,9 @@ import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
-import { OpenPath, concatOpenPaths, makeLinearPath, makePoint } from './path';
+import { concatOpenPaths } from './path';
 
 /**
  * Only lines have a reconcileId will be considered.
