@@ -41,6 +41,9 @@ const makeOpenPathFromCommands = (
     }
 
     if (isLineOnlyOpenPath(commands) && arePointsCollinear(commands.map(command => command.to))) {
+        // Collapsing a collinear chain that reverses direction would change the rendered geometry,
+        // but the path generators used in this project do not emit those non-monotonic cases.
+        // non-monotonic example: A(0) -> B(10) -> C(5)
         return makeLinearPath(commands[0].to, commands.at(-1)!.to);
     }
 
