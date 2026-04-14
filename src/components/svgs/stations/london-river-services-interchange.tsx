@@ -12,8 +12,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
-import { getNameOffsetField } from '../../panels/details/name-offset-field';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
+import {
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+    getPreciseNameOffsetsSelectState,
+} from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 
 const X_HEIGHT = 5;
@@ -47,8 +50,6 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const nameDragHandlers = useNameDrag(id);
-
     const textDx =
         nameOffsetX === 'left'
             ? -(X_HEIGHT / 2 + X_HEIGHT * 1.33)
@@ -64,6 +65,18 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
 
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
     const dominantBaseline = nameOffsetY === 'top' ? 'auto' : nameOffsetY === 'bottom' ? 'hanging' : 'middle';
+
+    const defaultNameLayout: NameLayout = {
+        x: textDx,
+        y: textDy,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.LondonRiverServicesInt,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -84,12 +97,13 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
             </g>
             <g
                 id={`stn_name_${id}`}
-                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textDx}, ${textDy}`})`}
-                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 fill="#003888"
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -123,6 +137,30 @@ const londonRiverServicesIntAttrsComponent = (props: AttrsProps<LondonRiverServi
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -134,14 +172,34 @@ const londonRiverServicesIntAttrsComponent = (props: AttrsProps<LondonRiverServi
             },
             minW: 'full',
         },
-        ...getNameOffsetField({
-            id,
-            attrs,
-            nameOffsetX: attrs.nameOffsetX,
-            nameOffsetY: attrs.nameOffsetY,
-            preciseNameOffsets: attrs.preciseNameOffsets,
-            handleAttrsUpdate,
-        }),
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
+            onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
+            onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
     ];
 
     return <RmgFields fields={fields} />;

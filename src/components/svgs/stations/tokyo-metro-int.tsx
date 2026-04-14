@@ -13,9 +13,12 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
-import { getNameOffsetField } from '../../panels/details/name-offset-field';
+import {
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+    getPreciseNameOffsetsSelectState,
+} from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 import { TokyoMetroBasicSvg } from './tokyo-metro-basic';
@@ -48,8 +51,6 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
-
-    const nameDragHandlers = useNameDrag(id);
 
     const [textLength, setTextLength] = React.useState(0);
     React.useEffect(() => {
@@ -194,6 +195,17 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
             : nameOffsetX === 'right' || mereOffset === 'right1' || mereOffset === 'right2'
               ? 'start'
               : 'middle';
+    const defaultNameLayout: NameLayout = {
+        x: textVertical ? textXVer : textX,
+        y: textVertical ? textYVer : textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.TokyoMetroInt,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -280,16 +292,15 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
             )}
             <g
                 id={`stn_name_${id}`}
-                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="1"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 {!textVertical ? (
-                    <g
-                        transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
-                        textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
-                    >
+                    <g>
                         <MultilineText
                             text={names[0].split('\n')}
                             fontSize={fontSize}
@@ -301,7 +312,7 @@ const TokyoMetroIntStation = (props: StationComponentProps) => {
                         />
                     </g>
                 ) : (
-                    <g transform={`translate(${textXVer}, ${textYVer})`} textAnchor="middle">
+                    <g textAnchor="middle">
                         <MultilineTextVertical
                             text={names[0].split('\n')}
                             fontSize={fontSize}
@@ -354,6 +365,18 @@ const defaultTokyoMetroIntStationAttributes: TokyoMetroIntStationAttributes = {
 const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            right: t('panel.details.stations.common.right'),
+            top: t('panel.details.stations.common.top'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -366,25 +389,14 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
             },
             minW: 'full',
         },
-        ...getNameOffsetField({
-            id,
-            attrs,
-            nameOffsetX: attrs.nameOffsetX,
-            nameOffsetY: attrs.nameOffsetY,
-            preciseNameOffsets: attrs.preciseNameOffsets,
-            handleAttrsUpdate,
-        }),
         {
             type: 'select',
-            label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
-            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                right: t('panel.details.stations.common.right'),
-                top: t('panel.details.stations.common.top'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
+            label: t('panel.details.stations.common.nameOffset'),
+            value: nameOffsetSelect.value,
+            options: nameOffsetSelect.options,
+            disabledOptions: nameOffsetSelect.disabledOptions,
             onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 if (val === 'left' || val === 'right') {
                     attrs.nameOffsetX = val as NameOffsetX;
                     attrs.nameOffsetY = 'middle';
@@ -404,6 +416,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
                         attrs.mereOffset = 'none';
                     }
                 }
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

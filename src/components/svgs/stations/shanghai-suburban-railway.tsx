@@ -11,8 +11,7 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
-import { getNameOffsetField } from '../../panels/details/name-offset-field';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { MultilineText } from '../common/multiline-text';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
@@ -43,7 +42,17 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const nameDragHandlers = useNameDrag(id);
+    const defaultNameLayout: NameLayout = {
+        x: ROTATE_CONST[rotate].textDx,
+        y: textDy,
+        anchor: ROTATE_CONST[rotate].textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.ShanghaiSuburbanRailway,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -79,11 +88,12 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
             </g>
             <g
                 id={`stn_name_${id}`}
-                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${ROTATE_CONST[rotate].textDx}, ${textDy}`})`}
-                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : ROTATE_CONST[rotate].textAnchor}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -144,12 +154,6 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
             },
             minW: 'full',
         },
-        ...getNameOffsetField({
-            id,
-            attrs,
-            preciseNameOffsets: attrs.preciseNameOffsets,
-            handleAttrsUpdate,
-        }),
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),

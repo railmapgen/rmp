@@ -8,7 +8,7 @@ import { refreshNodesThunk } from '../redux/runtime/runtime-slice';
 export interface NameLayout {
     x: number;
     y: number;
-    anchor: 'start' | 'middle' | 'end';
+    anchor: 'start' | 'middle' | 'end' | 'inherit';
 }
 
 interface DragState {
@@ -33,8 +33,7 @@ const useStationAttrsUpdate = <T extends StationAttributes>(id: StnId, type: Sta
 export const useDraggableStationName = <T extends StationAttributes>(
     id: StnId,
     type: StationType,
-    fallbackLayout: NameLayout,
-    customFields?: string[]
+    fallbackLayout: NameLayout
 ) => {
     const handleAttrsUpdate = useStationAttrsUpdate<T>(id, type);
     const selected = useRootSelector(state => state.runtime.selected);
@@ -110,10 +109,9 @@ export const useDraggableStationName = <T extends StationAttributes>(
             handleAttrsUpdate({
                 ...currentAttrs,
                 preciseNameOffsets: nextLayout,
-                preciseNameOffsetsCustomFields: customFields,
             });
         },
-        [customFields, getCurrentAttrs, handleAttrsUpdate, svgViewBoxZoom]
+        [getCurrentAttrs, handleAttrsUpdate, svgViewBoxZoom]
     );
 
     const onPointerCancel = React.useCallback((e: React.PointerEvent<SVGGElement>) => {

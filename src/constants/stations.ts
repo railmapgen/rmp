@@ -153,10 +153,6 @@ export interface StationAttributes {
         y: number;
         anchor: 'start' | 'middle' | 'end';
     };
-    /**
-     * Tracks which preset controls are still in the "custom" state while preciseNameOffsets is active.
-     */
-    preciseNameOffsetsCustomFields?: string[];
 }
 // handy types for nameOffset
 export type NameOffsetX = 'left' | 'middle' | 'right';

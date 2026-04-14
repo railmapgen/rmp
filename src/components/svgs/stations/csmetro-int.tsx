@@ -12,9 +12,12 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
-import { getNameOffsetField } from '../../panels/details/name-offset-field';
+import {
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+    getPreciseNameOffsetsSelectState,
+} from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 /**
@@ -44,8 +47,6 @@ const CsmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    const nameDragHandlers = useNameDrag(id);
-
     // text position similar to shmetro-int
     const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
     const textY =
@@ -53,6 +54,18 @@ const CsmetroIntStation = (props: StationComponentProps) => {
             (nameOffsetY === 'top' ? 6 : nameOffsetY === 'bottom' ? 11 : 0)) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.CsmetroInt,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -96,11 +109,12 @@ const CsmetroIntStation = (props: StationComponentProps) => {
 
             <g
                 id={`stn_name_${id}`}
-                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
-                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -140,6 +154,30 @@ const csmetroIntAttrsComponent = (props: AttrsProps<CsmetroIntStationAttributes>
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -161,14 +199,34 @@ const csmetroIntAttrsComponent = (props: AttrsProps<CsmetroIntStationAttributes>
             },
             minW: 'full',
         },
-        ...getNameOffsetField({
-            id,
-            attrs,
-            nameOffsetX: attrs.nameOffsetX,
-            nameOffsetY: attrs.nameOffsetY,
-            preciseNameOffsets: attrs.preciseNameOffsets,
-            handleAttrsUpdate,
-        }),
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
+            onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
+            onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
         // Interchange editor (transfer list)
         {
             type: 'custom',

@@ -17,7 +17,6 @@ import { NameLayout, useDraggableStationName } from '../../../util/use-draggable
 import {
     PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
-    resolvePreciseNameOffsetsSelectChange,
 } from '../../panels/details/name-offset-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
@@ -35,8 +34,6 @@ const NAME_DY_SH_INT = {
         offset: -0.17 + 1, // offset + baseOffset
     },
 };
-
-const PRECISE_NAME_OFFSET_CUSTOM_FIELDS = ['nameOffsetX', 'nameOffsetY', 'rotate'];
 
 const ShmetroIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -78,7 +75,7 @@ const ShmetroIntStation = (props: StationComponentProps) => {
     const textY = (Math.abs(textDY) + iconHeight / 2) * Math.sign(textDY);
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
-    const fallbackLayout: NameLayout = {
+    const defaultNameLayout: NameLayout = {
         x: textX,
         y: textY,
         anchor: textAnchor,
@@ -86,10 +83,9 @@ const ShmetroIntStation = (props: StationComponentProps) => {
     const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<ShmetroIntStationAttributes>(
         id,
         StationType.ShmetroInt,
-        fallbackLayout,
-        PRECISE_NAME_OFFSET_CUSTOM_FIELDS
+        defaultNameLayout
     );
-    const preciseNameOffsets = previewPreciseNameOffsets ?? stationAttrs.preciseNameOffsets;
+    const nameLayout = previewPreciseNameOffsets ?? stationAttrs.preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -112,8 +108,8 @@ const ShmetroIntStation = (props: StationComponentProps) => {
             </g>
             <g
                 id={`stn_name_${id}`}
-                transform={`translate(${preciseNameOffsets ? preciseNameOffsets.x : textX}, ${preciseNameOffsets ? preciseNameOffsets.y : textY})`}
-                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
                 style={{ cursor: canDrag ? 'grab' : undefined }}
@@ -167,8 +163,6 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
     const customLabel = t('panel.details.stations.common.custom');
     const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
         attrs,
-        fieldKey: 'nameOffsetX',
-        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
         value: attrs.nameOffsetX,
         options: {
             left: t('panel.details.stations.common.left'),
@@ -180,8 +174,6 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
     });
     const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
         attrs,
-        fieldKey: 'nameOffsetY',
-        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
         value: attrs.nameOffsetY,
         options: {
             top: t('panel.details.stations.common.top'),
@@ -190,14 +182,6 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
         },
         customLabel,
         disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
-    });
-    const rotateSelect = getPreciseNameOffsetsSelectState({
-        attrs,
-        fieldKey: 'rotate',
-        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
-        value: attrs.rotate,
-        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-        customLabel,
     });
 
     const fields: RmgFieldsField[] = [
@@ -229,18 +213,9 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
             disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
-                handleAttrsUpdate(
-                    id,
-                    resolvePreciseNameOffsetsSelectChange({
-                        attrs,
-                        fieldKey: 'nameOffsetX',
-                        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
-                        value: val as NameOffsetX,
-                        applyConcreteValue: (attrs, value) => {
-                            attrs.nameOffsetX = value as NameOffsetX;
-                        },
-                    })
-                );
+                attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
         },
@@ -252,18 +227,9 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
             disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
-                handleAttrsUpdate(
-                    id,
-                    resolvePreciseNameOffsetsSelectChange({
-                        attrs,
-                        fieldKey: 'nameOffsetY',
-                        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
-                        value: val as NameOffsetY,
-                        applyConcreteValue: (attrs, value) => {
-                            attrs.nameOffsetY = value as NameOffsetY;
-                        },
-                    })
-                );
+                attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
         },
@@ -292,23 +258,13 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: rotateSelect.value,
-            options: rotateSelect.options,
-            disabledOptions: rotateSelect.disabledOptions,
+            value: attrs.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
-                handleAttrsUpdate(
-                    id,
-                    resolvePreciseNameOffsetsSelectChange({
-                        attrs,
-                        fieldKey: 'rotate',
-                        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
-                        value: Number(val) as Rotate,
-                        applyConcreteValue: (attrs, value) => {
-                            attrs.rotate = Number(value) as Rotate;
-                        },
-                    })
-                );
+                handleAttrsUpdate(id, {
+                    ...attrs,
+                    rotate: Number(val) as Rotate,
+                });
             },
             minW: 'full',
         },

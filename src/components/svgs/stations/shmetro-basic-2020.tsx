@@ -17,7 +17,6 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import {
     PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
-    resolvePreciseNameOffsetsSelectChange,
 } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -97,8 +96,6 @@ export const ROTATE_CONST: {
     },
 };
 
-const PRECISE_NAME_OFFSET_CUSTOM_FIELDS = ['rotate'];
-
 const ShmetroBasic2020Station = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const stationAttrs = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
@@ -133,12 +130,7 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
         anchor: ROTATE_CONST[rotate].textAnchor,
     };
     const { canDrag, dragHandlers, previewPreciseNameOffsets } =
-        useDraggableStationName<ShmetroBasic2020StationAttributes>(
-            id,
-            StationType.ShmetroBasic2020,
-            fallbackLayout,
-            PRECISE_NAME_OFFSET_CUSTOM_FIELDS
-        );
+        useDraggableStationName<ShmetroBasic2020StationAttributes>(id, StationType.ShmetroBasic2020, fallbackLayout);
     const preciseNameOffsets = previewPreciseNameOffsets ?? stationAttrs.preciseNameOffsets;
 
     return (
@@ -208,8 +200,6 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
     const customLabel = t('panel.details.stations.common.custom');
     const rotateSelect = getPreciseNameOffsetsSelectState({
         attrs,
-        fieldKey: 'rotate',
-        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
         value: attrs.rotate,
         options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
         customLabel,
@@ -243,19 +233,8 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
             options: rotateSelect.options,
             disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
-                handleAttrsUpdate(
-                    id,
-                    resolvePreciseNameOffsetsSelectChange({
-                        attrs,
-                        fieldKey: 'rotate',
-                        allCustomFields: PRECISE_NAME_OFFSET_CUSTOM_FIELDS,
-                        value: Number(val) as Rotate,
-                        applyConcreteValue: (attrs, value) => {
-                            attrs.rotate = Number(value) as Rotate;
-                        },
-                    })
-                );
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
         },

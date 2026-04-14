@@ -14,9 +14,12 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { useNameDrag } from '../../../util/use-name-drag';
+import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
-import { getNameOffsetField } from '../../panels/details/name-offset-field';
+import {
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+    getPreciseNameOffsetsSelectState,
+} from '../../panels/details/name-offset-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const FoshanMetroBasicStation = (props: StationComponentProps) => {
@@ -46,8 +49,6 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
-
-    const nameDragHandlers = useNameDrag(id);
 
     const iconEl = React.useRef<SVGGElement | null>(null);
     const [iconBBox, setIconBBox] = React.useState({ x: -18.5, y: -9.25, width: 37, height: 18.5 } as DOMRect);
@@ -110,6 +111,18 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
             : (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) *
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.FoshanMetroBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g>
             <g transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}>
@@ -140,11 +153,12 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
             <g
                 ref={textRef}
                 id={`stn_name_${id}`}
-                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${textX}, ${textY}`})`}
-                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : textAnchor}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
-                {...nameDragHandlers}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -240,6 +254,30 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -261,14 +299,34 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
             },
             minW: 'full',
         },
-        ...getNameOffsetField({
-            id,
-            attrs,
-            nameOffsetX: attrs.nameOffsetX,
-            nameOffsetY: attrs.nameOffsetY,
-            preciseNameOffsets: attrs.preciseNameOffsets,
-            handleAttrsUpdate,
-        }),
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetX'),
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
+            onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'select',
+            label: t('panel.details.stations.common.nameOffsetY'),
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
+            onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
+                attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
         {
             type: 'custom',
             label: t('color'),
