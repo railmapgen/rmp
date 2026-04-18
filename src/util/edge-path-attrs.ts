@@ -15,10 +15,16 @@ export const reverseEdgePathAttrs = (type: LinePathType, attrs: EdgePathAttrs): 
     if ('startFrom' in attrs) {
         attrs.startFrom = attrs.startFrom === 'from' ? 'to' : 'from';
     }
+    // Without this swap, the user's offsetFrom (which they think shifts the
+    // graph.source side) would silently end up shifting the graph.target side
+    // when the segment is traversed in reverse. Swapping keeps offsetFrom/To
+    // bound to graph.source/target regardless of traversal direction.
+    if ('offsetFrom' in attrs && 'offsetTo' in attrs) {
+        [attrs.offsetFrom, attrs.offsetTo] = [attrs.offsetTo, attrs.offsetFrom];
+    }
     if (type === LinePathType.RayGuided) {
         const rayGuided = attrs as RayGuidedPathAttributes;
         [rayGuided.startAngle, rayGuided.endAngle] = [rayGuided.endAngle, rayGuided.startAngle];
-        [rayGuided.offsetFrom, rayGuided.offsetTo] = [rayGuided.offsetTo, rayGuided.offsetFrom];
     }
     // simple path is symmetrical; no flip needed
 };

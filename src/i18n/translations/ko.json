@@ -42,8 +42,9 @@
                 "parallel": "평행선",
                 "parallelIndex": "평행 인덱스",
                 "reconcile": "통합",
-                "reconcileId": "통합 ID",
-                "reconcileAssign": "할당"
+                "reconcileId": "통합 고유 식별자",
+                "reconcileAssign": "할당",
+                "reconcileMembers": "통합 구성원"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -550,7 +551,8 @@
                     "from": "에서",
                     "to": "까지",
                     "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
-                    "changeInBaseLine": "기본선에서 변경하십시오:"
+                    "changeInBaseLine": "기본선에서 변경하십시오:",
+                    "reconcileDisabled": "이 선분은 통합 체인에 포함되어 있어 오프셋이 비활성화되었습니다. 체인 전체가 하나의 결합된 경로로 렌더링됩니다."
                 },
                 "simple": {
                     "displayName": "기본 선분",

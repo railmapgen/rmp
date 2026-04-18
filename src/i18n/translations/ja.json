@@ -44,8 +44,9 @@
                 "parallel": "並列路線",
                 "parallelIndex": "並列路線索引",
                 "reconcile": "統合",
-                "reconcileId": "統合ID",
-                "reconcileAssign": "割当"
+                "reconcileId": "統合一意識別子",
+                "reconcileAssign": "割当",
+                "reconcileMembers": "統合メンバー"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -553,7 +554,8 @@
                     "from": "から",
                     "to": "まで",
                     "parallelDisabled": "この路線が並列であるため、一部の属性が無効になっています。",
-                    "changeInBaseLine": "基準線で変更してください："
+                    "changeInBaseLine": "基準線で変更してください：",
+                    "reconcileDisabled": "この路線は統合チェーンに含まれるため、オフセットは無効です。チェーン全体が結合された一本のパスとして描画されます。"
                 },
                 "simple": {
                     "displayName": "簡単な経路",

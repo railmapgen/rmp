@@ -1,11 +1,14 @@
+import { Alert, AlertDescription, AlertIcon } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { RmgCircularSlider, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
+import { LineId } from '../../../../constants/constants';
 import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
 import { degToRad, getRayIntersection, sanitizeCoordinate } from '../../../../util/geometry';
 import { PathPoint, makeLinearPath, makePoint, makeSharpTurnPath } from '../../../../constants/path';
 import { parseRoundedTurnPath } from '../../../../util/path';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import { isInReconcileChain } from '../../../../util/reconcile';
 
 const EPSILON = 1e-6;
 const MAX_RAY_GUIDED_ANGLE = 179;
@@ -126,6 +129,10 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
         }
     }, [endAngle, endSliderValue]);
 
+    const inReconcileChain = isInReconcileChain(window.graph, id as LineId);
+    const isOffsetFromDisabled = inReconcileChain;
+    const isOffsetToDisabled = inReconcileChain;
+
     const fields: RmgFieldsField[] = [
         {
             type: 'custom',
@@ -182,6 +189,7 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
                 if (Number.isNaN(val)) val = '0';
                 handleAttrsUpdate(id, { ...attrs, offsetFrom: Number(val) });
             },
+            isDisabled: isOffsetFromDisabled,
             minW: 'full',
         },
         {
@@ -193,6 +201,7 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
                 if (Number.isNaN(val)) val = '0';
                 handleAttrsUpdate(id, { ...attrs, offsetTo: Number(val) });
             },
+            isDisabled: isOffsetToDisabled,
             minW: 'full',
         },
         {
@@ -207,6 +216,22 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
             minW: 'full',
         },
     ];
+
+    if (inReconcileChain) {
+        fields.unshift({
+            type: 'custom',
+            label: '',
+            component: (
+                <Alert status="info" fontSize="xs" borderRadius="md" py={1.5} px={2}>
+                    <AlertIcon boxSize={4} />
+                    <AlertDescription whiteSpace="normal" lineHeight="short">
+                        {t('panel.details.lines.common.reconcileDisabled')}
+                    </AlertDescription>
+                </Alert>
+            ),
+            minW: 'full',
+        });
+    }
 
     return <RmgFields fields={fields} />;
 };

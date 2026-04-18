@@ -42,8 +42,9 @@
                 "parallel": "平行线段",
                 "parallelIndex": "平行线段索引",
                 "reconcile": "合并线段",
-                "reconcileId": "合并线段ID",
-                "reconcileAssign": "指派"
+                "reconcileId": "合并线段唯一识别符",
+                "reconcileAssign": "指派",
+                "reconcileMembers": "合并线段成员"
             },
             "multipleSelection": {
                 "title": "多重选取",
@@ -550,7 +551,8 @@
                     "from": "从",
                     "to": "到",
                     "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
-                    "changeInBaseLine": "在基准线段中更改它们："
+                    "changeInBaseLine": "在基准线段中更改它们：",
+                    "reconcileDisabled": "此线段属于合并线段链，偏移已禁用。整条链作为一条合并路径渲染。"
                 },
                 "simple": {
                     "displayName": "基本线段",

@@ -42,8 +42,9 @@
                 "parallel": "Parallel line",
                 "parallelIndex": "Parallel index",
                 "reconcile": "Reconcile",
-                "reconcileId": "Reconcile ID",
-                "reconcileAssign": "Assign"
+                "reconcileId": "Reconcile unique identifier",
+                "reconcileAssign": "Assign",
+                "reconcileMembers": "Reconcile members"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -551,7 +552,8 @@
                     "to": "To",
                     "roundCornerFactor": "Round Corner Factor",
                     "parallelDisabled": "Some attributes are disabled as this line is parallel.",
-                    "changeInBaseLine": "Change them in the base line:"
+                    "changeInBaseLine": "Change them in the base line:",
+                    "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path."
                 },
                 "simple": {
                     "displayName": "Simple path",

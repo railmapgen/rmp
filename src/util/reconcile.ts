@@ -56,14 +56,10 @@ export const reconcileLines = (
             return;
         }
 
-        // all the lines in linesNeedToReconcile should be the same type and style
-        const type = graph.getEdgeAttribute(linesNeedToReconcile.at(0), 'type');
-        if (!linesNeedToReconcile.every(line => graph.getEdgeAttribute(line, 'type') === type)) {
-            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
-            return;
-        }
-        const style = graph.getEdgeAttribute(linesNeedToReconcile.at(0), 'style');
-        if (!linesNeedToReconcile.every(line => graph.getEdgeAttribute(line, 'style') === style)) {
+        // all the lines in linesNeedToReconcile should share the same style
+        // (path type may differ — each segment generates its own path independently)
+        const { style } = linesNeedToReconcile[0].attributes;
+        if (!linesNeedToReconcile.every(line => line.attributes.style === style)) {
             danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
             return;
         }
@@ -71,7 +67,7 @@ export const reconcileLines = (
         // Build undirected adjacency: each node maps to [{edge, neighbor}]
         const adjacency: { [node: string]: { edge: LineId; neighbor: string }[] } = {};
         for (const line of linesNeedToReconcile) {
-            const [source, target] = graph.extremities(line);
+            const { source, target } = line;
             if (!adjacency[source]) adjacency[source] = [];
             if (!adjacency[target]) adjacency[target] = [];
             adjacency[source].push({ edge: line.edge as LineId, neighbor: target });
@@ -118,6 +114,31 @@ export const reconcileLines = (
 };
 
 /**
+ * Returns true if the edge belongs to a valid (non-dangling) reconcile chain.
+ *
+ * A chain renders as one combined path, so per-segment offsets are stripped at
+ * render time — even chain-end offsets would distort the connection because the
+ * underlying path generators (e.g. diagonal) can introduce inner kinks. Attrs
+ * UIs use this to disable the offset fields entirely while inside a chain.
+ */
+export const isInReconcileChain = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    lineId: LineId
+): boolean => {
+    const reconcileId = graph.getEdgeAttribute(lineId, 'reconcileId');
+    if (!reconcileId) return false;
+
+    const group = getAllLinesNeedToReconcile(graph)[reconcileId];
+    if (!group || group.length < 2) return false;
+
+    const { allReconciledLines } = reconcileLines(graph, { [reconcileId]: group });
+    const chain = allReconciledLines[0];
+    if (!chain) return false;
+
+    return chain.some(e => e.edge === lineId);
+};
+
+/**
  * Call each line's `generatePath` and merge all the paths to a single path.
  *
  * When a chain entry has its traversal direction opposite to the edge direction
@@ -140,6 +161,12 @@ export const makeReconciledPath = (
         if (graph.source(edge) !== chainSource) {
             reverseEdgePathAttrs(type, attr);
         }
+
+        // Chains render as one combined path — strip every segment's offsets so users
+        // get a predictable shape. Chain-end offsets would distort segment-internal
+        // kinks (e.g. diagonal's M L L), and interior offsets would warp the joints.
+        if ('offsetFrom' in attr) attr.offsetFrom = 0;
+        if ('offsetTo' in attr) attr.offsetTo = 0;
 
         // TODO: disable parallel on reconciled lines, use offsetFrom to offsetTo instead
         const simplePathAvailability = checkSimplePathAvailability(
