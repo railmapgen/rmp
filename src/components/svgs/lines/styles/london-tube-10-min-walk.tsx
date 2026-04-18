@@ -17,7 +17,7 @@ const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkA
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke="black"
             strokeWidth={LINE_WIDTH}

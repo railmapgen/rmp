@@ -23,7 +23,7 @@ const ChongqingRTLineBadge = (props: LineStyleComponentProps<ChongqingRTLineBadg
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth="3"

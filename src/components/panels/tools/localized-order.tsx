@@ -38,8 +38,16 @@ export const localizedStations: { [k in LanguageCode]?: StationType[] } = {
 
 /* ------- Misc nodes ------ */
 
-const defaultMiscNodeType = Object.values(MiscNodeType);
-const alwaysFrontMiscNodeType = [MiscNodeType.Image, MiscNodeType.Fill, MiscNodeType.Facilities, MiscNodeType.Text];
+const defaultMiscNodeType = Object.values(MiscNodeType).filter(
+    type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText
+);
+const alwaysFrontMiscNodeType = [
+    MiscNodeType.Master,
+    MiscNodeType.Image,
+    MiscNodeType.Fill,
+    MiscNodeType.Facilities,
+    MiscNodeType.Text,
+];
 const enMiscNodeType = [
     MiscNodeType.LondonArrow,
     MiscNodeType.BerlinSBahnLineBadge,
@@ -50,8 +58,14 @@ const enMiscNodeType = [
 const jaMiscNodeType = [MiscNodeType.JREastLineBadge];
 
 export const localizedMiscNodes: { [k in LanguageCode]?: MiscNodeType[] } = {
-    'zh-Hans': defaultMiscNodeType,
-    'zh-Hant': defaultMiscNodeType,
+    'zh-Hans': [
+        ...alwaysFrontMiscNodeType,
+        ...defaultMiscNodeType.filter(misc => !alwaysFrontMiscNodeType.includes(misc)),
+    ],
+    'zh-Hant': [
+        ...alwaysFrontMiscNodeType,
+        ...defaultMiscNodeType.filter(misc => !alwaysFrontMiscNodeType.includes(misc)),
+    ],
     en: [
         ...alwaysFrontMiscNodeType,
         ...enMiscNodeType,
@@ -62,7 +76,7 @@ export const localizedMiscNodes: { [k in LanguageCode]?: MiscNodeType[] } = {
         ...jaMiscNodeType,
         ...defaultMiscNodeType.filter(misc => ![...jaMiscNodeType, ...alwaysFrontMiscNodeType].includes(misc)),
     ],
-    ko: defaultMiscNodeType,
+    ko: [...alwaysFrontMiscNodeType, ...defaultMiscNodeType.filter(misc => !alwaysFrontMiscNodeType.includes(misc))],
 };
 
 /* ------- Line styles ------ */
@@ -87,8 +101,14 @@ const enLineStyle = [
 const jaLineStyle = [LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern];
 
 export const localizedLineStyles: { [k in LanguageCode]?: LineStyleType[] } = {
-    'zh-Hans': defaultLineStyle,
-    'zh-Hant': defaultLineStyle,
+    'zh-Hans': [
+        ...alwaysFrontLineStyle,
+        ...defaultLineStyle.filter(lineStyle => !alwaysFrontLineStyle.includes(lineStyle)),
+    ],
+    'zh-Hant': [
+        ...alwaysFrontLineStyle,
+        ...defaultLineStyle.filter(lineStyle => !alwaysFrontLineStyle.includes(lineStyle)),
+    ],
     en: [
         ...alwaysFrontLineStyle,
         ...enLineStyle,
@@ -99,5 +119,5 @@ export const localizedLineStyles: { [k in LanguageCode]?: LineStyleType[] } = {
         ...jaLineStyle,
         ...defaultLineStyle.filter(lineStyle => ![...jaLineStyle, ...alwaysFrontLineStyle].includes(lineStyle)),
     ],
-    ko: defaultLineStyle,
+    ko: [...alwaysFrontLineStyle, ...defaultLineStyle.filter(lineStyle => !alwaysFrontLineStyle.includes(lineStyle))],
 };

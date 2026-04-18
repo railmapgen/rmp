@@ -628,7 +628,18 @@
                     "displayName": "싱가포르 MRT 환승을 위한 탭 아웃 스타일"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR 동일본 단색 스타일"
+                    "displayName": "JR 동일본 단색 스타일",
+                    "decoration": {
+                        "displayName": "종단 표시",
+                        "none": "없음",
+                        "thinTail": "다른 선구간",
+                        "blackBlock": "종점"
+                    },
+                    "decorationAt": {
+                        "displayName": "표시 위치",
+                        "from": "시점",
+                        "to": "종점"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR 동일본 단색 크로스해치 패턴 스타일"

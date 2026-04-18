@@ -1,8 +1,12 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
+import { linePaths } from '../components/svgs/lines/lines';
+import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { Path } from '../constants/lines';
-import { generateEdgePathSegment, mergePathSegments } from './graph-path';
+import { LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
+import { checkSimplePathAvailability } from './auto-simple';
+import { concatOpenPaths } from './path';
 
 /**
  * A reconciled line entry with its traversal direction.
@@ -114,18 +118,59 @@ export const reconcileLines = (
 };
 
 /**
- * Call each line's path generator and merge all the paths to a single path.
- * Uses `generateEdgePathSegment` to correctly handle reversed edges.
+ * Call each line's `generatePath` and merge all the paths to a single path.
+ *
+ * When a chain entry has its traversal direction opposite to the edge direction
+ * (reversed), attributes like `startFrom` and RayGuided angles are flipped so the
+ * generated segment visually connects chainSource → chainTarget.
  */
 export const makeReconciledPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     reconciledLines: ReconciledLineEntry[]
-): Path | undefined => {
+): OpenPath | undefined => {
     if (!reconciledLines.every(line => graph.hasEdge(line.edge))) return undefined;
 
-    const segments = reconciledLines.map(line =>
-        generateEdgePathSegment(graph, line.edge, line.chainSource, line.chainTarget)
-    );
+    // call each line's generatePath to generate its own path
+    const paths = reconciledLines.map(({ edge, chainSource, chainTarget }) => {
+        const sourceAttr = graph.getNodeAttributes(chainSource);
+        const targetAttr = graph.getNodeAttributes(chainTarget);
+        const { type } = graph.getEdgeAttributes(edge);
+        const attr = structuredClone(graph.getEdgeAttribute(edge, type) ?? linePaths[type].defaultAttrs);
 
-    return mergePathSegments(segments);
+        const isReversed = graph.source(edge) !== chainSource;
+        if (isReversed) {
+            if ('startFrom' in attr) {
+                attr.startFrom = attr.startFrom === 'from' ? 'to' : 'from';
+            }
+            if (type === LinePathType.RayGuided) {
+                const rayGuidedAttr = attr as RayGuidedPathAttributes;
+                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
+                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
+            }
+            // no need to handle simple path as it is symmetrical
+        }
+
+        // TODO: disable parallel on reconciled lines, use offsetFrom to offsetTo instead
+        const simplePathAvailability = checkSimplePathAvailability(
+            type,
+            sourceAttr.x,
+            sourceAttr.y,
+            targetAttr.x,
+            targetAttr.y,
+            attr
+        );
+        if (simplePathAvailability) {
+            // simple path hook on matched situation
+            const { x1, y1, x2, y2, offset } = simplePathAvailability;
+            return linePaths[LinePathType.Simple].generatePath(x1, x2, y1, y2, { offset });
+        }
+
+        return (
+            // @ts-ignore-error
+            linePaths[type]?.generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr) ??
+            makeLinearPath(makePoint(sourceAttr.x, sourceAttr.y), makePoint(targetAttr.x, targetAttr.y))
+        );
+    });
+
+    return concatOpenPaths(paths);
 };

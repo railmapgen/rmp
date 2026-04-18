@@ -36,7 +36,7 @@ const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
             {layers.map(({ id, color, width, opacity, linecap, dash, gap }) => (
                 <path
                     key={id}
-                    d={path}
+                    d={path.d}
                     fill="none"
                     stroke={color[2]}
                     strokeWidth={width}

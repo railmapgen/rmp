@@ -29,9 +29,9 @@ const LondonIFSCloudCableCar = (props: LineStyleComponentProps<LondonIFSCloudCab
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
-            <path d={path} fill="none" stroke="white" strokeWidth={(LINE_WIDTH / 5) * 3} />
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH / 5} />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} />
+            <path d={path.d} fill="none" stroke="white" strokeWidth={(LINE_WIDTH / 5) * 3} />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH / 5} />
         </g>
     );
 };

@@ -1,264 +1,224 @@
 import { Bezier } from 'bezier-js';
-import { LinePathType, Path } from '../constants/lines';
+import {
+    ClosedAreaPath,
+    CubicTo,
+    LineTo,
+    MultiSegmentOpenPathCommands,
+    OpenPath,
+    OpenPathCommands,
+    OpenPathDrawCommand,
+    PathPoint,
+    cubicTo,
+    lineTo,
+    makeClosedAreaPathFromOpenCommands,
+    makePoint,
+    moveTo,
+} from '../constants/path';
+import { getLineIntersection, makeOffsetSegment } from './geometry';
+import { dropInitialMoveTo, getEndPoint, getStartPoint, makeOpenPathFromCommands } from './path';
 
-type X = number;
-type Y = number;
-type Point = [X, Y];
+type OffsetDrawCommand = {
+    originalStart: PathPoint;
+    originalEnd: PathPoint;
+    offsetStart: PathPoint;
+    command: LineTo | CubicTo;
+};
 
-/**
- * Make a parallel path at the distance(d) of the given path.
- *
- * Note this is not reconcile ready meaning it only handles short path.
- * Short path is a path that starts with M, goes to some L and then curves C to some place and ends with L.
- * @param path The given path.
- * @param type Check if the path is a linear line (without any curve).
- * @param d1 The distance between the given path and the paralleled path.
- * @param d2 The other distance. Will be -d1 if not given.
- * @returns Two paths that are parallel to the give path at the distance of d1 and d2.
- */
-export const makeShortPathParallel = (
-    path: Path,
-    type: LinePathType,
-    d1: number,
-    d2?: number
-): [Path, Path] | undefined => {
-    d2 = d2 ?? -d1;
+const EPSILON = 1e-6;
 
-    const [m, end] = findStartAndEnd(path);
-    if (!m || !end) return;
+const isLineTo = (command: OpenPathDrawCommand): command is LineTo => command.cmd === 'L';
+const isCubicTo = (command: OpenPathDrawCommand): command is CubicTo => command.cmd === 'C';
 
-    // Check whether it is a linear line and process it specifically.
-    if (
-        m[0] === end[0] ||
-        m[1] === end[1] ||
-        (type === LinePathType.Diagonal && Math.abs(m[1] - end[1]) === Math.abs(m[0] - end[0]))
-    ) {
-        const d = Math.abs(d1);
-        return makeStraightParallel(m, end, d);
+const arePointsEqual = (a: PathPoint, b: PathPoint, epsilon = EPSILON) =>
+    Math.abs(a.x - b.x) <= epsilon && Math.abs(a.y - b.y) <= epsilon;
+
+const toPathPoint = (point: { x: number; y: number }): PathPoint => makePoint(point.x, point.y);
+const translatePointByVector = (point: PathPoint, dx: number, dy: number): PathPoint =>
+    makePoint(point.x + dx, point.y + dy);
+
+const makeOffsetDrawCommands = (path: OpenPath, d: number): [OffsetDrawCommand, ...OffsetDrawCommand[]] => {
+    let start = getStartPoint(path);
+    const offsetCommands = dropInitialMoveTo(path).map(command => {
+        const originalStart = start;
+        const originalEnd = command.to;
+        const result = isLineTo(command)
+            ? (() => {
+                  const offset = makeOffsetSegment(originalStart, originalEnd, d);
+                  return {
+                      originalStart,
+                      originalEnd,
+                      offsetStart: offset.start,
+                      command: lineTo(offset.end),
+                  };
+              })()
+            : (() => {
+                  const bezier = new Bezier([
+                      originalStart.x,
+                      originalStart.y,
+                      command.c1.x,
+                      command.c1.y,
+                      command.c2.x,
+                      command.c2.y,
+                      command.to.x,
+                      command.to.y,
+                  ]);
+                  const scaled = bezier.scale(d);
+                  return {
+                      originalStart,
+                      originalEnd,
+                      offsetStart: toPathPoint(scaled.points[0]),
+                      command: cubicTo(
+                          toPathPoint(scaled.points[1]),
+                          toPathPoint(scaled.points[2]),
+                          toPathPoint(scaled.points[3])
+                      ),
+                  };
+              })();
+
+        start = command.to;
+        return result;
+    });
+
+    if (!offsetCommands.length) {
+        throw new Error('Open path must contain at least one draw command.');
     }
 
-    // TODO: Check if it is a perpendicular or rotate-perpendicular line and process it specifically.
+    return offsetCommands as [OffsetDrawCommand, ...OffsetDrawCommand[]];
+};
 
-    const [l, c] = findBezierCurve(path);
-    if (!l || !c) return;
-    // Construct the Bezier curve in bezier-js.
-    const b = new Bezier([...l, ...c]);
-    // Make the parallel Bezier curves.
-    const [bA, bB] = [b.scale(d1), b.scale(d2)];
+const anchorOffsetLinesAroundCubicJoins = (
+    commands: [OffsetDrawCommand, ...OffsetDrawCommand[]]
+): [OffsetDrawCommand, ...OffsetDrawCommand[]] =>
+    commands.map((command, index, allCommands) => {
+        if (!isLineTo(command.command)) {
+            return command;
+        }
 
-    const _ = makeStartingAndEndingPointsOfParallelShortPaths(m, l, end, b, bA, bB);
-    if (!_) return;
-    const {
-        mA: [mxA, myA],
-        mB: [mxB, myB],
-        endA: [endXA, endYA],
-        endB: [endXB, endYB],
-    } = _;
+        const previous = allCommands[index - 1];
+        const next = allCommands[index + 1];
+        const [dx, dy] = [
+            command.originalEnd.x - command.originalStart.x,
+            command.originalEnd.y - command.originalStart.y,
+        ];
+        const hasPreviousCubic = Boolean(previous && isCubicTo(previous.command));
+        const hasNextCubic = Boolean(next && isCubicTo(next.command));
 
-    return [
-        `M ${mxA} ${myA} ${bA.toSVG().replace('M', 'L')} L ${endXA} ${endYA}`,
-        `M ${mxB} ${myB} ${bB.toSVG().replace('M', 'L')} L ${endXB} ${endYB}`,
-    ];
+        let offsetStart = command.offsetStart;
+        let offsetEnd = command.command.to;
+
+        if (previous && isCubicTo(previous.command)) {
+            offsetStart = previous.command.to;
+        }
+        if (next && isCubicTo(next.command)) {
+            offsetEnd = next.offsetStart;
+        }
+
+        if (hasPreviousCubic && !hasNextCubic) {
+            offsetEnd = translatePointByVector(offsetStart, dx, dy);
+        } else if (!hasPreviousCubic && hasNextCubic) {
+            offsetStart = translatePointByVector(offsetEnd, -dx, -dy);
+        }
+
+        return {
+            ...command,
+            offsetStart,
+            command: lineTo(offsetEnd),
+        };
+    }) as [OffsetDrawCommand, ...OffsetDrawCommand[]];
+
+const reverseOpenPath = (path: OpenPath): OpenPath => {
+    let start = getStartPoint(path);
+    const reversedDrawCommands = dropInitialMoveTo(path)
+        .map(command => {
+            const pair = { start, command };
+            start = command.to;
+            return pair;
+        })
+        .reverse()
+        .map(({ start: commandStart, command }) =>
+            isLineTo(command) ? lineTo(commandStart) : cubicTo(command.c2, command.c1, commandStart)
+        );
+
+    const reversedCommands = [
+        moveTo(getEndPoint(path)),
+        reversedDrawCommands[0]!,
+        ...reversedDrawCommands.slice(1),
+    ] satisfies OpenPathCommands;
+    return makeOpenPathFromCommands(reversedCommands);
+};
+
+const makeOffsetPath = (path: OpenPath, d: number): OpenPath => {
+    const offsetCommands = anchorOffsetLinesAroundCubicJoins(makeOffsetDrawCommands(path, d));
+    const commands: [ReturnType<typeof moveTo>, ...OpenPathDrawCommand[]] = [moveTo(offsetCommands[0].offsetStart)];
+
+    let currentPoint = offsetCommands[0].offsetStart;
+    for (let i = 0; i < offsetCommands.length; i += 1) {
+        const current = offsetCommands[i];
+        const next = offsetCommands[i + 1];
+
+        if (isLineTo(current.command)) {
+            let end = current.command.to;
+            if (next) {
+                end = isLineTo(next.command)
+                    ? (getLineIntersection(currentPoint, current.command.to, next.offsetStart, next.command.to) ??
+                      next.offsetStart)
+                    : current.command.to;
+            }
+
+            commands.push(lineTo(end));
+            currentPoint = end;
+            continue;
+        }
+
+        if (!arePointsEqual(currentPoint, current.offsetStart)) {
+            commands.push(lineTo(current.offsetStart));
+            currentPoint = current.offsetStart;
+        }
+
+        commands.push(cubicTo(current.command.c1, current.command.c2, current.command.to));
+        currentPoint = current.command.to;
+    }
+
+    const offsetPathCommands = [commands[0], commands[1]!, ...commands.slice(2)] as OpenPathCommands;
+    return makeOpenPathFromCommands(offsetPathCommands);
 };
 
 /**
- * Make two parallel paths at the distance(d) of the given path.
- * Also make the closing path that fill cloud be used on it.
- *
- * Note this is not reconcile ready meaning it only handles short path.
- * Short path is a path that starts with M, go to some L and then curve C to some place and end with L.
- * @param path The given path.
- * @param type Check if the path is a linear line (without any curve).
- * @param d1 The distance between the given path and the paralleled path.
- * @param d2 The other distance. Will be -d1 if not given.
- * @returns Two paths that are parallel to the give path at the distance of d1 and d2. The closing path that fill cloud be used on it.
+ * Make a parallel path pair at distances `d1` and `d2` from the given open path.
  */
-export const makeShortPathOutline = (
-    path: Path,
-    type: LinePathType,
+export const makeOpenPathParallel = (path: OpenPath, d1: number, d2?: number): [OpenPath, OpenPath] => {
+    const secondOffset = d2 ?? -d1;
+    return [makeOffsetPath(path, d1), makeOffsetPath(path, secondOffset)];
+};
+
+/**
+ * Make two parallel paths and the closed outline between them.
+ */
+export const makeOpenPathOutline = (
+    path: OpenPath,
     d1: number,
     d2?: number
-): { outline: Path; pA: Path; pB: Path } | undefined => {
-    d2 = d2 ?? -d1;
+): { outline: ClosedAreaPath; pA: OpenPath; pB: OpenPath } => {
+    const [pA, pB] = makeOpenPathParallel(path, d1, d2);
+    const reversedPathB = reverseOpenPath(pB);
+    const drawCommands = [...dropInitialMoveTo(pA)];
 
-    const [m, end] = findStartAndEnd(path);
-    if (!m || !end) return;
-
-    // Check whether it is a linear line and process it specifically.
-    if (m[0] === end[0] || m[1] === end[1] || Math.abs(Math.abs(m[1] - end[1]) - Math.abs(m[0] - end[0])) < 0.001) {
-        const d = Math.abs(d1);
-        const [pA, pB] = makeStraightParallel(m, end, d);
-        return { outline: makeStraightOutline(m, end, d), pA, pB };
+    const reversedStart = getStartPoint(reversedPathB);
+    if (!arePointsEqual(getEndPoint(pA), reversedStart)) {
+        drawCommands.push(lineTo(reversedStart));
     }
+    drawCommands.push(...dropInitialMoveTo(reversedPathB));
 
-    // TODO: Check if it is a perpendicular or rotate-perpendicular line and process it specifically.
-
-    const [l, c] = findBezierCurve(path);
-    if (!l || !c) return;
-    // Construct the Bezier curve in bezier-js.
-    const b = new Bezier([...l, ...c]);
-    // Make the parallel Bezier curves.
-    const [bA, bB] = [b.scale(d1), b.scale(d2)];
-
-    const _ = makeStartingAndEndingPointsOfParallelShortPaths(m, l, end, b, bA, bB);
-    if (!_) return;
-    const {
-        mA: [mxA, myA],
-        mB: [mxB, myB],
-        endA: [endXA, endYA],
-        endB: [endXB, endYB],
-    } = _;
-
-    const [lB, cB] = findBezierCurve(bB.toSVG().replace('M', 'L') as Path);
-    const [rlB, rcB] = reverseBezierCurve(lB, cB);
-    const outline = `M ${mxA} ${myA} ${bA
-        .toSVG()
-        .replace('M', 'L')} L ${endXA} ${endYA} L ${endXB} ${endYB} L ${rlB.join(' ')} C ${rcB.join(
-        ' '
-    )} L ${mxB} ${myB} Z` as Path;
+    const outlineCommands = [
+        moveTo(getStartPoint(pA)),
+        drawCommands[0]!,
+        drawCommands[1]!,
+        ...drawCommands.slice(2),
+    ] satisfies MultiSegmentOpenPathCommands;
 
     return {
-        outline,
-        pA: `M ${mxA} ${myA} ${bA.toSVG().replace('M', 'L')} L ${endXA} ${endYA}`,
-        pB: `M ${mxB} ${myB} ${bB.toSVG().replace('M', 'L')} L ${endXB} ${endYB}`,
+        outline: makeClosedAreaPathFromOpenCommands(outlineCommands),
+        pA,
+        pB,
     };
-};
-
-const findStartAndEnd = (path: Path) => {
-    // Find the start point of the original path.
-    const m = path
-        .match(/M\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-        ?.at(0)
-        ?.replace(/M\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    // Find the end point of the original path.
-    const end = path
-        .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*$/)
-        ?.at(0)
-        ?.replace(/L\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    return [m as Point, end as Point];
-};
-
-const makeStraightParallel = (m: Point, end: Point, d: number): [Path, Path] => {
-    const [x1, y1, x2, y2] = [m[0], m[1], end[0], end[1]];
-    const k = Math.abs((y2 - y1) / (x2 - x1));
-    if (k === Infinity) {
-        // Vertical line
-        return [`M ${x1 + d} ${y1} L ${x2 + d} ${y2}`, `M ${x1 - d} ${y1} L ${x2 - d} ${y2}`];
-    } else if (k === 0) {
-        // Horizontal line
-        return [`M ${x1} ${y1 + d} L ${x2} ${y2 + d}`, `M ${x1} ${y1 - d} L ${x2} ${y2 - d}`];
-    } else {
-        const kk = 1 / k;
-        const dx = d / Math.sqrt(kk * kk + 1);
-        const dy = dx * kk * -Math.sign((x2 - x1) * (y2 - y1));
-        return [`M ${x1 + dx} ${y1 + dy} L ${x2 + dx} ${y2 + dy}`, `M ${x1 - dx} ${y1 - dy} L ${x2 - dx} ${y2 - dy}`];
-    }
-};
-
-const makeStraightOutline = (m: Point, end: Point, d: number): Path => {
-    const [x1, y1, x2, y2] = [m[0], m[1], end[0], end[1]];
-    const k = Math.abs((y2 - y1) / (x2 - x1));
-    if (k === Infinity) {
-        // Vertical line
-        return `M ${x1 + d} ${y1} L ${x2 + d} ${y2} L ${x2 - d} ${y2} L ${x1 - d} ${y1} Z`;
-    } else if (k === 0) {
-        // Horizontal line
-        return `M ${x1} ${y1 + d} L ${x2} ${y2 + d} L ${x2} ${y2 - d} L ${x1} ${y1 - d} Z`;
-    } else {
-        const kk = 1 / k;
-        const dx = d / Math.sqrt(kk * kk + 1);
-        const dy = dx * kk * -Math.sign((x2 - x1) * (y2 - y1));
-        return `M ${x1 + dx} ${y1 + dy} L ${x2 + dx} ${y2 + dy} L ${x2 - dx} ${y2 - dy} L ${x1 - dx} ${y1 - dy} Z`;
-    }
-};
-
-const findBezierCurve = (path: Path): [Point, [...Point, ...Point, ...Point]] => {
-    // Deal with complex Bezier curve.
-    // Find the start point of the Bezier curve.
-    const l = path
-        .match(/L\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/)
-        ?.at(0)
-        ?.replace(/L\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    // Find the end point and control points of the Bezier curve.
-    const c = path
-        .match(
-            /C\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+\s*[+-]?([0-9]*[.])?[0-9]+/g
-        )
-        ?.at(0)
-        ?.replace(/C\s*/, '')
-        .split(' ')
-        .map(n => Number(n));
-    return [l as Point, c as [...Point, ...Point, ...Point]];
-};
-
-const reverseBezierCurve = (l: Point, c: [...Point, ...Point, ...Point]) => [
-    [c[4], c[5]],
-    [c[2], c[3], c[0], c[1], l[0], l[1]],
-];
-
-const makeStartingAndEndingPointsOfParallelShortPaths = (
-    m: Point,
-    l: Point,
-    end: Point,
-    b: Bezier,
-    bA: Bezier,
-    bB: Bezier
-): { mA: Point; mB: Point; endA: Point; endB: Point } | undefined => {
-    // Connect the curve with the first half of the linear line.
-    // Find the start point of the new curve path.
-    const cStartingA = [bA.points.at(0)!.x, bA.points.at(0)!.y];
-    // Find the start point of the new curve path.
-    const cStartingB = [bB.points.at(0)!.x, bB.points.at(0)!.y];
-    if (!m) return;
-    // Get the start point of the new path.
-    const [mxA, myA] = find4thVertexOfAParallelogram(m[0], l[0], cStartingA[0], m[1], l[1], cStartingA[1]);
-    const [mxB, myB] = find4thVertexOfAParallelogram(m[0], l[0], cStartingB[0], m[1], l[1], cStartingB[1]);
-
-    // Connect the curve with the second half of the linear line.
-    // Find the end point of the new curve path.
-    const bEndingA = [bA.points.at(-1)!.x, bA.points.at(-1)!.y];
-    // Find the end point of the new curve path.
-    const bEndingB = [bB.points.at(-1)!.x, bB.points.at(-1)!.y];
-    // Find the end point of the original curve path.
-    const bEnding = [b.points.at(-1)!.x, b.points.at(-1)!.y];
-    if (!end) return;
-    // Get the end point of the new path.
-    const [endXA, endYA] = find4thVertexOfAParallelogram(
-        bEndingA[0],
-        bEnding[0],
-        end[0],
-        bEndingA[1],
-        bEnding[1],
-        end[1]
-    );
-    const [endXB, endYB] = find4thVertexOfAParallelogram(
-        bEndingB[0],
-        bEnding[0],
-        end[0],
-        bEndingB[1],
-        bEnding[1],
-        end[1]
-    );
-
-    return { mA: [mxA, myA], mB: [mxB, myB], endA: [endXA, endYA], endB: [endXB, endYB] };
-};
-
-/**
- * Given the coordinates of point A, B, and C,
- * this helper function find the 4th vertex of the parallelogram.
- *   D---C
- *  /   /
- * A---B
- * @returns The coordinates of point D.
- */
-const find4thVertexOfAParallelogram = (xa: number, xb: number, xc: number, ya: number, yb: number, yc: number) => {
-    const [xmid, ymid] = [xa + xc, ya + yc];
-    const [xd, yd] = [xmid - xb, ymid - yb];
-    return [xd, yd];
 };

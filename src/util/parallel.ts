@@ -2,8 +2,10 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
-import { makeShortPathParallel } from './bezier-parallel';
+import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
+import { makeOpenPathParallel } from './bezier-parallel';
+import { isShortOpenPath } from './path';
 
 type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided>;
 export type ParallelLinePathAttributes = NonNullable<ExternalLinePathAttributes[ParallelLinePathType]>;
@@ -108,7 +110,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
 
     const pathFlip = checkPathFlip(type, x1, y1, x2, y2);
 
-    const parallelPaths: { [k in LineId]: Path } = {};
+    const parallelPaths: { [k in LineId]: OpenPath } = {};
     for (const lineEntry of parallelLines) {
         const parallelIndex = lineEntry.attributes.parallelIndex > 0 ? lineEntry.attributes.parallelIndex : 0;
 
@@ -120,10 +122,11 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
 
         const d = parallelIndex * 5;
         const defaultSimpleParallelPath = [
-            `M ${x1} ${y1 + d} L ${x2} ${y2 + d}`,
-            `M ${x1} ${y1 - d} L ${x2} ${y2 - d}`,
-        ] as [Path, Path];
-        const [pathA, pathB] = makeShortPathParallel(basePath, type, d) ?? defaultSimpleParallelPath;
+            makeLinearPath(makePoint(x1, y1 + d), makePoint(x2, y2 + d)),
+            makeLinearPath(makePoint(x1, y1 - d), makePoint(x2, y2 - d)),
+        ] as const;
+        const [pathA, pathB] =
+            (isShortOpenPath(basePath) ? makeOpenPathParallel(basePath, d) : undefined) ?? defaultSimpleParallelPath;
 
         parallelPaths[lineEntry.edge as LineId] = pathFlip ? pathA : pathB;
     }

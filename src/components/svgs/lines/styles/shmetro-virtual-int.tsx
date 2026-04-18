@@ -15,8 +15,8 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
-            <path d={path} fill="none" stroke="white" strokeWidth="4.33" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="white" strokeWidth="4.33" strokeLinecap="round" />
         </g>
     );
 };

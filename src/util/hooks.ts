@@ -1,5 +1,6 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
+import type { RefObject } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
@@ -137,6 +138,28 @@ export const useFonts = () => {
             loadFont(lang);
         }
     }, [refreshNodes, languages]);
+};
+
+/**
+ * Prevent the browser from interpreting Ctrl/Cmd + wheel as page zoom on the
+ * provided SVG element, so the application can use the same gesture for canvas zoom.
+ */
+export const usePreventBrowserZoom = (svgRef: RefObject<SVGSVGElement | null>) => {
+    useEffect(() => {
+        const svg = svgRef.current;
+        if (!svg) return;
+
+        const preventBrowserZoom = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault();
+            }
+        };
+
+        svg.addEventListener('wheel', preventBrowserZoom, { passive: false });
+        return () => {
+            svg.removeEventListener('wheel', preventBrowserZoom);
+        };
+    }, [svgRef]);
 };
 
 export const useScreenOrientation = () => {

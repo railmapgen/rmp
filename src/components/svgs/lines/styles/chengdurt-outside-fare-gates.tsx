@@ -20,7 +20,7 @@ const ChengduRTOutsideFareGates = (props: LineStyleComponentProps<ChengduRTOutsi
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke="#b4b4b5"
             strokeWidth={LINE_WIDTH}

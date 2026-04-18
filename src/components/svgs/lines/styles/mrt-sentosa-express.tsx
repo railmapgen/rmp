@@ -18,7 +18,7 @@ const MRTSentosaExpress = (props: LineStyleComponentProps<MRTSentosaExpressAttri
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke="black"
             strokeWidth={LINE_WIDTH}
