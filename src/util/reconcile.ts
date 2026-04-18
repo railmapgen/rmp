@@ -1,11 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
-import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability } from './auto-simple';
+import { reverseEdgePathAttrs } from './edge-path-attrs';
 import { concatOpenPaths } from './path';
 
 /**
@@ -137,17 +137,8 @@ export const makeReconciledPath = (
         const { type } = graph.getEdgeAttributes(edge);
         const attr = structuredClone(graph.getEdgeAttribute(edge, type) ?? linePaths[type].defaultAttrs);
 
-        const isReversed = graph.source(edge) !== chainSource;
-        if (isReversed) {
-            if ('startFrom' in attr) {
-                attr.startFrom = attr.startFrom === 'from' ? 'to' : 'from';
-            }
-            if (type === LinePathType.RayGuided) {
-                const rayGuidedAttr = attr as RayGuidedPathAttributes;
-                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
-                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
-            }
-            // no need to handle simple path as it is symmetrical
+        if (graph.source(edge) !== chainSource) {
+            reverseEdgePathAttrs(type, attr);
         }
 
         // TODO: disable parallel on reconciled lines, use offsetFrom to offsetTo instead
