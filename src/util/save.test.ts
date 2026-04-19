@@ -921,4 +921,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_a","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["A"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}},{"key":"stn_b","attributes":{"visible":true,"zIndex":0,"x":100,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["B"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}}],"edges":[{"key":"line_1","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color","jr-east-single-color":{"color":["tokyo","jy","#9ACD32","#000"],"decoration":"none","decorationAt":"to"},"reconcileId":"","parallelIndex":-1}},{"key":"line_2","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color-pattern","jr-east-single-color-pattern":{"color":["tokyo","jy","#9ACD32","#000"],"decoration":"none","decorationAt":"to"},"reconcileId":"","parallelIndex":-1}}]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('71 -> 72', () => {
+        // Bump save version to support shinkansen line style.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
+        const newParam = UPGRADE_COLLECTION[71](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
