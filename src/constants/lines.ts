@@ -39,7 +39,8 @@ import type { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-
 import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
-import type { ClosedAreaPath, OpenPath } from './path';
+import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
+import type { OpenPath, Path } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -91,6 +92,7 @@ export enum LineStyleType {
     ChongqingRTLoop = 'chongqingrt-loop',
     ChongqingRTLineBadge = 'chongqingrt-line-badge',
     ChengduRTOutsideFareGates = 'chengdurt-outside-fare-gates',
+    Shinkansen = 'shinkansen',
 }
 
 export interface ExternalLineStyleAttributes {
@@ -127,6 +129,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChongqingRTLoop]?: ChongqingRTLoopAttributes;
     [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
+    [LineStyleType.Shinkansen]?: ShinkansenAttributes;
 }
 
 export const LINE_WIDTH = 5;
@@ -308,8 +311,4 @@ export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, 
  * This is used when a line style needs to generate complex paths based on the original path.
  * It takes the original path and return a record of paths with different keys.
  */
-export type StylePathGenerator<T> = (
-    path: OpenPath,
-    type: LinePathType,
-    attrs: T
-) => Record<string, OpenPath | ClosedAreaPath>;
+export type StylePathGenerator<T> = (path: OpenPath, type: LinePathType, attrs: T) => Record<string, Path>;
