@@ -1,7 +1,10 @@
+import React from 'react';
+import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { makeLinearPath, makePoint, makeRoundedTurnPath } from '../../../../constants/path';
 import { concatOpenPaths } from '../../../../util/path';
-import { makeShinkansenArrowsPath } from './shinkansen';
+import shinkansen, { makeShinkansenArrowsPath } from './shinkansen';
 
 describe('makeShinkansenArrowsPath', () => {
     it('returns multiple closed arrows on a long linear path', () => {
@@ -87,5 +90,43 @@ describe('makeShinkansenArrowsPath', () => {
         });
 
         expect(result?.d.startsWith('M 10 0')).toBe(true);
+    });
+
+    it('renders the decoration marker when decoration is enabled', () => {
+        const path = makeLinearPath(makePoint(0, 0), makePoint(100, 0));
+        const props = {
+            id: 'line_edge_1' as const,
+            type: LinePathType.Simple,
+            path,
+            styleAttrs: {
+                ...shinkansen.defaultAttrs,
+                decoration: 'black-block' as const,
+                decorationAt: 'to' as const,
+            },
+            newLine: false,
+            handlePointerDown: () => undefined,
+        };
+        const PreComponent = shinkansen.preComponent;
+        const Component = shinkansen.component;
+
+        const children = [
+            PreComponent ? React.createElement(PreComponent, { ...props, key: 'pre' }) : null,
+            React.createElement(Component, { ...props, key: 'main' }),
+        ];
+        const { container } = render(React.createElement('svg', undefined, children));
+
+        const decorationPath = container.querySelector(
+            `#${LineStyleType.Shinkansen}_decorationMarker_line_edge_1`
+        ) as SVGUseElement | null;
+        const mainPath = container.querySelector(`#${LineStyleType.Shinkansen}_main_line_edge_1`);
+        const marker = container.querySelector('marker');
+
+        expect(mainPath).not.toBeNull();
+        expect(marker).not.toBeNull();
+        expect(decorationPath).not.toBeNull();
+        expect(decorationPath?.getAttribute('href')).toBe(`#${LineStyleType.Shinkansen}_main_line_edge_1`);
+        expect(decorationPath?.getAttribute('marker-end')).toContain(
+            'url(#jr_east_pattern_black-block_to_line_edge_1)'
+        );
     });
 });

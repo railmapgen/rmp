@@ -1,11 +1,9 @@
-import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { RmgFields } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { AttrsProps, CityCode } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
-    LinePathAttributes,
     LinePathType,
     LineStyle,
     LineStyleComponentProps,
@@ -27,7 +25,14 @@ import {
 import { getOpenPathLength, getPointAtPrimitiveArcLength } from '../../../../util/open-path-length';
 import { getOpenPathPrimitives } from '../../../../util/open-path-primitives';
 import { slicePrimitivesByArcLength } from '../../../../util/open-path-slice';
-import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
+import {
+    defaultJREastSingleColorDecorationAttributes,
+    getJREastDecorationMarkerProps,
+    getJREastMarkerId,
+    JREastMarker,
+    JREastSingleColorSharedAttributes,
+    makeJREastDecorationFields,
+} from './jr-east-single-color-utils';
 
 const EPSILON = 1e-6;
 
@@ -123,7 +128,13 @@ const shinkansenPathGenerator = (path: OpenPath): Record<string, Path> => ({
 
 const ShinkansenPre = (props: LineStyleComponentProps<ShinkansenAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
-    const { color = defaultShinkansenAttributes.color } = styleAttrs ?? defaultShinkansenAttributes;
+    const {
+        color = defaultShinkansenAttributes.color,
+        decoration = defaultShinkansenAttributes.decoration,
+        decorationAt = defaultShinkansenAttributes.decorationAt,
+    } = styleAttrs ?? defaultShinkansenAttributes;
+    const markerId = getJREastMarkerId(id, decoration, decorationAt);
+    const decorationMarkerProps = decoration === 'none' ? {} : getJREastDecorationMarkerProps(markerId, decorationAt);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -136,6 +147,11 @@ const ShinkansenPre = (props: LineStyleComponentProps<ShinkansenAttributes>) => 
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
+            <defs>
+                {decoration !== 'none' && (
+                    <JREastMarker id={markerId} fill={color[2]} thinTail={decoration === 'thin-tail'} blackBlock />
+                )}
+            </defs>
             <path
                 id={`${LineStyleType.Shinkansen}_main_${id}`}
                 d={path.d}
@@ -144,6 +160,17 @@ const ShinkansenPre = (props: LineStyleComponentProps<ShinkansenAttributes>) => 
                 strokeWidth={LINE_WIDTH * (1 - 0.05)}
                 strokeLinecap="butt"
             />
+            {decoration !== 'none' && (
+                <use
+                    key={`${id}_${decoration}_${decorationAt}`}
+                    id={`${LineStyleType.Shinkansen}_decorationMarker_${id}`}
+                    href={`#${LineStyleType.Shinkansen}_main_${id}`}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth="0.01"
+                    {...decorationMarkerProps}
+                />
+            )}
         </g>
     );
 };
@@ -168,23 +195,15 @@ const Shinkansen = (props: LineStyleComponentProps<ShinkansenAttributes>) => {
     );
 };
 
-export interface ShinkansenAttributes extends LinePathAttributes, ColorAttribute {}
+export interface ShinkansenAttributes extends JREastSingleColorSharedAttributes {}
 
 const defaultShinkansenAttributes: ShinkansenAttributes = {
     color: [CityCode.Tokyo, 'jy', '#3E9B4F', MonoColour.black],
+    ...defaultJREastSingleColorDecorationAttributes,
 };
 
-const shinkansenAttrsComponent = (_props: AttrsProps<ShinkansenAttributes>) => {
-    const { t } = useTranslation();
-
-    const fields: RmgFieldsField[] = [
-        {
-            type: 'custom',
-            label: t('color'),
-            component: <ColorField type={LineStyleType.Shinkansen} defaultTheme={defaultShinkansenAttributes.color} />,
-        },
-    ];
-
+const shinkansenAttrsComponent = (props: AttrsProps<ShinkansenAttributes>) => {
+    const fields = makeJREastDecorationFields(props, LineStyleType.Shinkansen, defaultShinkansenAttributes.color);
     return <RmgFields fields={fields} />;
 };
 
