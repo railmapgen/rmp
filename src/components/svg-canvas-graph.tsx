@@ -368,7 +368,11 @@ const SvgCanvas = () => {
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                     dispatch(saveGraph(graph.current.export()));
                     dispatch(refreshEdgesThunk());
+                } else {
+                    dispatch(clearSelected());
                 }
+            } else {
+                dispatch(clearSelected());
             }
         } else if (mode === 'free') {
             if (active) {
