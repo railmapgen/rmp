@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { IconContext } from 'react-icons';
 import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { getLinePathAndStyle, RuntimeMode, Theme } from '../../../constants/constants';
-import { LinePathType, LineStyleType } from '../../../constants/lines';
+import { ExternalLineStyleAttributes, LinePathType, LineStyleComponentProps, LineStyleType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
@@ -72,6 +72,25 @@ const selectIcon = (
 
 const EXPAND_ANIMATION_DURATION = 0.3; // in second
 const MAX_VISIBLE_COUNT = 5;
+
+const LineStyleLeftIcon = (props: { style: LineStyleType}) => {
+    type StyleComponent = React.FC<
+        LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
+    >;
+    const { style } = props;
+    const LineComponent = lineStyles[style].component as StyleComponent;
+    const styleAttr = structuredClone(lineStyles[style].defaultAttrs as NonNullable<
+        ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
+    >);
+    const path = linePaths[LinePathType.Simple].generatePath(6, 42, 42, 6, {offset: 0});
+    console.log(styleAttr);
+
+    return (
+        <svg viewBox="0 0 48 48" height={40} width={40} focusable={false}>
+            <LineComponent id={`line_icon_${style}`} type={LinePathType.Simple} path={path} styleAttrs={styleAttr} newLine={false} handlePointerDown={() => {}} />
+        </svg>
+    );
+}
 
 const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
@@ -319,7 +338,7 @@ const ToolsPanel = () => {
                                     />
                                     <Button
                                         aria-label={styleType}
-                                        leftIcon={<Box boxSize="40px" />}
+                                        leftIcon={(<LineStyleLeftIcon style={styleType} />)}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
                                         isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
