@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 71;
+export const CURRENT_VERSION = 72;
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -936,4 +936,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 71, graph: graph.export() });
     },
+    71: param =>
+        // Bump save version to support shinkansen line style.
+        JSON.stringify({ ...JSON.parse(param), version: 72 }),
 };
