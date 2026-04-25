@@ -808,6 +808,18 @@
             "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
             "confirm": "ダウンロード"
         },
+        "timeline": {
+            "title": "アニメーションタイムライン",
+            "empty": "タイムラインがありません。「ノード追加」をクリックして開始します。",
+            "addSegment": "ノード追加",
+            "clearAll": "すべてクリア",
+            "pickStart": "キャンバス上のノードをクリックして始点を選択...",
+            "pickEnd": "キャンバス上のノードをクリックして終点を選択...",
+            "selectTheme": "路線の色を選択：",
+            "noPath": "選択したノード間のルートが見つかりません。",
+            "unadded": "{{count}}個のノードがタイムラインに未追加",
+            "addStationOnly": "このノードのみ追加"
+        },
         "donation": {
             "title": "寄付",
             "openCollective": "Open Collective",
