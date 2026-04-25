@@ -933,7 +933,6 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
         expect(newParam).toEqual(expectParam);
     });
-
     it('72 -> 73', () => {
         // Add flipColor default to csmetro interchange stations.
         const oldParam =

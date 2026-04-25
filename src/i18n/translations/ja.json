@@ -684,6 +684,9 @@
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都鉄道交通改札乗換風格"
                 },
+                "shinkansen": {
+                    "displayName": "新幹線風格"
+                },
                 "generic": {
                     "displayName": "汎用スタイル",
                     "layers": "線レイヤー",

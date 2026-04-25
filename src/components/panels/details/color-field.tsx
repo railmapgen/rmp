@@ -80,6 +80,7 @@ const dynamicColorInjectionLineStyleKeys = [
     LineStyleType.GZMTRLoop,
     LineStyleType.ChongqingRTLoop,
     LineStyleType.ChongqingRTLineBadge,
+    LineStyleType.Shinkansen,
 ] as const;
 type DynamicColorInjectionStationKeys = (typeof dynamicColorInjectionStationKeys)[number];
 type DynamicColorInjectionMiscNodeKeys = (typeof dynamicColorInjectionMiscNodeKeys)[number];

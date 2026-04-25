@@ -681,6 +681,9 @@
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都轨道交通出闸换乘样式"
                 },
+                "shinkansen": {
+                    "displayName": "新干线样式"
+                },
                 "generic": {
                     "displayName": "通用样式",
                     "layers": "线层",

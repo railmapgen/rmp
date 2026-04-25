@@ -682,6 +682,9 @@
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
                 },
+                "shinkansen": {
+                    "displayName": "Shinkansen style"
+                },
                 "generic": {
                     "displayName": "Generic style",
                     "layers": "Line layers",

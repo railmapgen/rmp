@@ -681,6 +681,9 @@
                 "chengduRTOutsideFareGates": {
                     "displayName": "청두 도시철도 개찰구 환승 방식"
                 },
+                "shinkansen": {
+                    "displayName": "신칸센 스타일"
+                },
                 "generic": {
                     "displayName": "일반 스타일",
                     "layers": "선 레이어",
