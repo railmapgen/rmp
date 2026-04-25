@@ -1,3 +1,4 @@
+import type { FC } from 'react';
 import {
     LineStyleType,
     LineStyleComponentProps,
@@ -6,7 +7,7 @@ import {
 } from '../../../constants/lines';
 import { lineStyles, linePaths } from '../../svgs/lines/lines';
 
-type StyleComponent = React.FC<
+type StyleComponent = FC<
     LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
 >;
 
@@ -28,7 +29,7 @@ export const LineStyleLeftIcon = (props: { style: LineStyleType }) => {
                     type={LinePathType.Simple}
                     path={path}
                     styleAttrs={styleAttr}
-                    newLine={false}
+                    newLine={true}
                     handlePointerDown={() => {}}
                 />
             )}
@@ -37,7 +38,7 @@ export const LineStyleLeftIcon = (props: { style: LineStyleType }) => {
                 type={LinePathType.Simple}
                 path={path}
                 styleAttrs={styleAttr}
-                newLine={false}
+                newLine={true}
                 handlePointerDown={() => {}}
             />
             {LinePostComponent && (
@@ -46,7 +47,7 @@ export const LineStyleLeftIcon = (props: { style: LineStyleType }) => {
                     type={LinePathType.Simple}
                     path={path}
                     styleAttrs={styleAttr}
-                    newLine={false}
+                    newLine={true}
                     handlePointerDown={() => {}}
                 />
             )}
