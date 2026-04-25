@@ -26,6 +26,7 @@ const CsmetroIntStation = (props: StationComponentProps) => {
         nameOffsetX = defaultCsmetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultCsmetroIntStationAttributes.nameOffsetY,
         transfer = defaultCsmetroIntStationAttributes.transfer,
+        flipColor = defaultCsmetroIntStationAttributes.flipColor,
     } = attrs[StationType.CsmetroInt] ?? defaultCsmetroIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -41,8 +42,8 @@ const CsmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    // text position similar to shmetro-int
-    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
+    const txOffset = nameOffsetY === 'middle' ? 12 : 8;
+    const textX = nameOffsetX === 'left' ? -txOffset : nameOffsetX === 'right' ? txOffset : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * 12.67 +
             (nameOffsetY === 'top' ? 6 : nameOffsetY === 'bottom' ? 11 : 0)) *
@@ -58,7 +59,7 @@ const CsmetroIntStation = (props: StationComponentProps) => {
                     cy="11.7"
                     r="10.35"
                     fill="white"
-                    stroke={transfer?.[0]?.[0]?.[2] ?? '#9B9B9B'}
+                    stroke={transfer?.[0]?.[flipColor ? 1 : 0]?.[2] ?? '#9B9B9B'}
                     strokeMiterlimit={10}
                     strokeWidth="2.7"
                 />
@@ -120,12 +121,14 @@ const CsmetroIntStation = (props: StationComponentProps) => {
 export interface CsmetroIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    flipColor: boolean;
 }
 
 const defaultCsmetroIntStationAttributes: CsmetroIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    flipColor: false,
     transfer: [[]],
 };
 
@@ -185,6 +188,16 @@ const csmetroIntAttrsComponent = (props: AttrsProps<CsmetroIntStationAttributes>
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.csmetroInt.flipColor'),
+            isChecked: attrs.flipColor ?? defaultCsmetroIntStationAttributes.flipColor,
+            onChange: val => {
+                attrs.flipColor = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            oneLine: true,
         },
         // Interchange editor (transfer list)
         {
