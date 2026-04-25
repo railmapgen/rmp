@@ -174,7 +174,7 @@ const qingdaoMetroStationAttrsComponent = (props: AttrsProps<QingdaoMetroStation
         },
         customLabel,
         disabledOptions:
-            (attrs.nameOffsetY ?? defaultQingdaoMetroStationAttributes.nameOffsetY === 'middle') ? ['middle'] : [],
+            (attrs.nameOffsetY ?? defaultQingdaoMetroStationAttributes.nameOffsetY) === 'middle' ? ['middle'] : [],
     });
     const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
         attrs,
@@ -186,7 +186,7 @@ const qingdaoMetroStationAttrsComponent = (props: AttrsProps<QingdaoMetroStation
         },
         customLabel,
         disabledOptions:
-            (attrs.nameOffsetX ?? defaultQingdaoMetroStationAttributes.nameOffsetX === 'middle') ? ['middle'] : [],
+            (attrs.nameOffsetX ?? defaultQingdaoMetroStationAttributes.nameOffsetX) === 'middle' ? ['middle'] : [],
     });
 
     const fields: RmgFieldsField[] = [

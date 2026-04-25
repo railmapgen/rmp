@@ -86,11 +86,13 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
     const textVerticalAnchor = nameOffsetY === 'top' ? 'end' : 'start';
     const textVerticalEnX = (names[0].split('\n').length * NAME_SZ_BASIC.zh.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
 
-    const defaultNameLayout: NameLayout = {
-        x: textX,
-        y: textY,
-        anchor: textAnchor,
-    };
+    const defaultNameLayout: NameLayout = textVertical
+        ? { x: 0, y: 0, anchor: 'middle' }
+        : {
+              x: textX,
+              y: textY,
+              anchor: textAnchor,
+          };
     const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
         id,
         StationType.SuzhouRTBasic,
@@ -140,7 +142,14 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                     />
                 </g>
             ) : (
-                <>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
                     <g transform={`translate(-1, ${textVerticalY})`} textAnchor={textVerticalAnchor}>
                         <MultilineTextVertical
                             text={names[0].split('\n')}
@@ -167,7 +176,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                             fill="gray"
                         />
                     </g>
-                </>
+                </g>
             )}
         </g>
     );
@@ -248,6 +257,7 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
             onChange: val => {
                 if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.nameOffsetX = val as NameOffsetX;
+                if (val !== 'middle') attrs.textVertical = false;
                 delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },

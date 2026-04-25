@@ -445,7 +445,9 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
             label: t('panel.details.stations.tokyoMetroInt.mereOffset.displayName'),
             value: mereNameOffsetSelect.value,
             options: mereNameOffsetSelect.options,
+            disabledOptions: mereNameOffsetSelect.disabledOptions,
             onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.mereOffset = val as MereOffset;
                 delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);

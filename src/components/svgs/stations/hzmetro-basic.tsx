@@ -157,7 +157,7 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
         },
         customLabel,
         disabledOptions:
-            (attrs.nameOffsetY ?? defaultHzmetroBasicStationAttributes.nameOffsetY === 'middle') ? ['middle'] : [],
+            (attrs.nameOffsetY ?? defaultHzmetroBasicStationAttributes.nameOffsetY) === 'middle' ? ['middle'] : [],
     });
     const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
         attrs,
@@ -169,7 +169,7 @@ const hzmetroBasicAttrsComponent = (props: AttrsProps<HzmetroBasicStationAttribu
         },
         customLabel,
         disabledOptions:
-            (attrs.nameOffsetX ?? defaultHzmetroBasicStationAttributes.nameOffsetX === 'middle') ? ['middle'] : [],
+            (attrs.nameOffsetX ?? defaultHzmetroBasicStationAttributes.nameOffsetX) === 'middle' ? ['middle'] : [],
     });
 
     const fields: RmgFieldsField[] = [

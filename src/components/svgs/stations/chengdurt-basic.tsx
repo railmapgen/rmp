@@ -241,93 +241,104 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         baseOffset={1}
                     />
                 </g>
-            ) : nameOffsetX == 'middle' ? (
-                <>
-                    <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                        <MultilineTextVertical
-                            text={names[0].split('\n').reverse()}
-                            fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh + 1}
-                            grow="bidirectional"
-                            dominantBaseline="central"
-                            textOrientation="upright"
-                            {...getLangStyle(TextLanguage.zh)}
-                        />
-                    </g>
-                    <g
-                        transform={`translate(${textX + (LINE_HEIGHT.zh * names[0].split('\n').length) / 2 + 3}, ${textY})rotate(90)`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LINE_HEIGHT.en}
-                            lineHeight={LINE_HEIGHT.en}
-                            grow="up"
-                            {...getLangStyle(TextLanguage.en)}
-                            dominantBaseline="central"
-                        />
-                    </g>
-                </>
-            ) : nameOffsetX == 'right' ? (
-                <>
-                    <g
-                        transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 5}, ${textY})`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineTextVertical
-                            text={names[0].split('\n').reverse()}
-                            fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh + 1}
-                            grow="bidirectional"
-                            dominantBaseline="central"
-                            textOrientation="upright"
-                            {...getLangStyle(TextLanguage.zh)}
-                        />
-                    </g>
-                    <g
-                        transform={`translate(${textX + (names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1) + 12}, ${textY})rotate(90)`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LINE_HEIGHT.en}
-                            lineHeight={LINE_HEIGHT.en}
-                            grow="up"
-                            {...getLangStyle(TextLanguage.en)}
-                            dominantBaseline="central"
-                        />
-                    </g>
-                </>
             ) : (
-                <>
-                    <g
-                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY})`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineTextVertical
-                            text={names[0].split('\n').reverse()}
-                            fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh + 1}
-                            grow="bidirectional"
-                            dominantBaseline="central"
-                            textOrientation="upright"
-                            {...getLangStyle(TextLanguage.zh)}
-                        />
-                    </g>
-                    <g
-                        transform={`translate(${textX - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 7}, ${textY})rotate(90)`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LINE_HEIGHT.en}
-                            lineHeight={LINE_HEIGHT.en}
-                            grow="up"
-                            {...getLangStyle(TextLanguage.en)}
-                            dominantBaseline="central"
-                        />
-                    </g>
-                </>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x - textX}, ${nameLayout.y - textY})`}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
+                    {nameOffsetX == 'middle' ? (
+                        <>
+                            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                                <MultilineTextVertical
+                                    text={names[0].split('\n').reverse()}
+                                    fontSize={LINE_HEIGHT.zh}
+                                    lineWidth={LINE_HEIGHT.zh + 1}
+                                    grow="bidirectional"
+                                    dominantBaseline="central"
+                                    textOrientation="upright"
+                                    {...getLangStyle(TextLanguage.zh)}
+                                />
+                            </g>
+                            <g
+                                transform={`translate(${textX + (LINE_HEIGHT.zh * names[0].split('\n').length) / 2 + 3}, ${textY})rotate(90)`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineText
+                                    text={names[1].split('\n')}
+                                    fontSize={LINE_HEIGHT.en}
+                                    lineHeight={LINE_HEIGHT.en}
+                                    grow="up"
+                                    {...getLangStyle(TextLanguage.en)}
+                                    dominantBaseline="central"
+                                />
+                            </g>
+                        </>
+                    ) : nameOffsetX == 'right' ? (
+                        <>
+                            <g
+                                transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 5}, ${textY})`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineTextVertical
+                                    text={names[0].split('\n').reverse()}
+                                    fontSize={LINE_HEIGHT.zh}
+                                    lineWidth={LINE_HEIGHT.zh + 1}
+                                    grow="bidirectional"
+                                    dominantBaseline="central"
+                                    textOrientation="upright"
+                                    {...getLangStyle(TextLanguage.zh)}
+                                />
+                            </g>
+                            <g
+                                transform={`translate(${textX + (names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1) + 12}, ${textY})rotate(90)`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineText
+                                    text={names[1].split('\n')}
+                                    fontSize={LINE_HEIGHT.en}
+                                    lineHeight={LINE_HEIGHT.en}
+                                    grow="up"
+                                    {...getLangStyle(TextLanguage.en)}
+                                    dominantBaseline="central"
+                                />
+                            </g>
+                        </>
+                    ) : (
+                        <>
+                            <g
+                                transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY})`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineTextVertical
+                                    text={names[0].split('\n').reverse()}
+                                    fontSize={LINE_HEIGHT.zh}
+                                    lineWidth={LINE_HEIGHT.zh + 1}
+                                    grow="bidirectional"
+                                    dominantBaseline="central"
+                                    textOrientation="upright"
+                                    {...getLangStyle(TextLanguage.zh)}
+                                />
+                            </g>
+                            <g
+                                transform={`translate(${textX - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 7}, ${textY})rotate(90)`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineText
+                                    text={names[1].split('\n')}
+                                    fontSize={LINE_HEIGHT.en}
+                                    lineHeight={LINE_HEIGHT.en}
+                                    grow="up"
+                                    {...getLangStyle(TextLanguage.en)}
+                                    dominantBaseline="central"
+                                />
+                            </g>
+                        </>
+                    )}
+                </g>
             )}
         </g>
     );

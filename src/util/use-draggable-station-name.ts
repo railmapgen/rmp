@@ -108,7 +108,10 @@ export const useDraggableStationName = <T extends StationAttributes>(
             const currentAttrs = getCurrentAttrs();
             handleAttrsUpdate({
                 ...currentAttrs,
-                preciseNameOffsets: nextLayout,
+                preciseNameOffsets: {
+                    ...nextLayout,
+                    anchor: nextLayout.anchor === 'inherit' ? 'middle' : nextLayout.anchor,
+                },
             });
         },
         [getCurrentAttrs, handleAttrsUpdate, svgViewBoxZoom]

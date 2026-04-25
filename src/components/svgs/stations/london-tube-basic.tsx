@@ -18,7 +18,7 @@ import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import ThemeButton from '../../panels/theme-button';
-import { getPreciseNameOffsetsSelectState } from '../../panels/details/name-offset-field';
+import { getPreciseNameOffsetsSelectState, PRECISE_NAME_OFFSETS_CUSTOM_VALUE } from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 
 const X_HEIGHT = 5;
@@ -343,7 +343,9 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             label: t('panel.details.stations.common.rotate'),
             value: rotateSelect.value,
             options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.rotate = Number(val) as Rotate;
                 if (attrs.terminal) attrs.terminalNameRotate = attrs.rotate;
                 delete attrs.preciseNameOffsets;

@@ -13,7 +13,7 @@ import {
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { MultilineText } from '../common/multiline-text';
-import { getPreciseNameOffsetsSelectState } from '../../panels/details/name-offset-field';
+import { getPreciseNameOffsetsSelectState, PRECISE_NAME_OFFSETS_CUSTOM_VALUE } from '../../panels/details/name-offset-field';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
@@ -167,7 +167,9 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
             label: t('panel.details.stations.common.rotate'),
             value: rotateSelect.value,
             options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
+                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.rotate = Number(val) as Rotate;
                 delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);

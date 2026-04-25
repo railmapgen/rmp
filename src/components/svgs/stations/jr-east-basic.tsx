@@ -160,11 +160,13 @@ const JREastBasicStation = (props: StationComponentProps) => {
             NAME_JRE_BASIC.ja.size +
         (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
 
-    const defaultNameLayout: NameLayout = {
-        x: textDX,
-        y: textDY,
-        anchor: textAnchor,
-    };
+    const defaultNameLayout: NameLayout = textVertical
+        ? { x: 0, y: 0, anchor: 'middle' }
+        : {
+              x: textDX,
+              y: textDY,
+              anchor: textAnchor,
+          };
     const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
         id,
         StationType.JREastBasic,
@@ -235,6 +237,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
             ) : (
                 <g
                     id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
                     className="rmp-name-outline"
                     strokeWidth="2.5"
                     style={{ cursor: canDrag ? 'grab' : undefined }}
