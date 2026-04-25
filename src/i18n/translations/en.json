@@ -524,7 +524,8 @@
                     "displayName": "Changsha Metro basic station"
                 },
                 "csmetroInt": {
-                    "displayName": "Changsha Metro interchange station"
+                    "displayName": "Changsha Metro interchange station",
+                    "flipColor": "Flip color"
                 },
                 "hzmetroBasic": {
                     "displayName": "Hangzhou Metro basic station",

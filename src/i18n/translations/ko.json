@@ -523,7 +523,8 @@
                     "displayName": "창사 지하철 기본역"
                 },
                 "csmetroInt": {
-                    "displayName": "창사 지하철 환승역"
+                    "displayName": "창사 지하철 환승역",
+                    "flipColor": "색상 반전"
                 },
                 "hzmetroBasic": {
                     "displayName": "항저우 지하철 기본역",

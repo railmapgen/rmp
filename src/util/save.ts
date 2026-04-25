@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 72;
+export const CURRENT_VERSION = 73;
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -939,4 +939,21 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     71: param =>
         // Bump save version to support shinkansen line style.
         JSON.stringify({ ...JSON.parse(param), version: 72 }),
+    72: param => {
+        // Bump save version to add flipColor to csmetro interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.CsmetroInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (typeof attr.flipColor !== 'boolean') {
+                    attr.flipColor = false;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 73, graph: graph.export() });
+    },
 };

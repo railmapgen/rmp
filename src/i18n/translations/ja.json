@@ -526,7 +526,8 @@
                     "displayName": "長沙メトロ基本駅"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙メトロ乗り換え駅"
+                    "displayName": "長沙メトロ乗り換え駅",
+                    "flipColor": "色を反転"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州メトロ基本駅",
