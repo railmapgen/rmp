@@ -923,14 +923,26 @@ describe('Unit tests for param upgrade function', () => {
     });
 
     it('71 -> 72', () => {
-        // Add flipColor default to csmetro interchange stations.
+        // Bump save version to support shinkansen line style.
         const oldParam =
-            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
         const newParam = UPGRADE_COLLECTION[71](oldParam);
         const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
-            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]],"flipColor":false}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('72 -> 73', () => {
+        // Add flipColor default to csmetro interchange stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        const newParam = UPGRADE_COLLECTION[72](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]],"flipColor":false}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":73}';
         expect(newParam).toEqual(expectParam);
     });
 });
