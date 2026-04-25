@@ -377,6 +377,25 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         },
         customLabel,
     });
+    const mereNameOffsetSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.mereOffset,
+        options: {
+            none: t('panel.details.stations.tokyoMetroInt.mereOffset.none'),
+            ...(attrs.nameOffsetX === 'middle'
+                ? {
+                      left1: t('panel.details.stations.tokyoMetroInt.mereOffset.left1'),
+                      left2: t('panel.details.stations.tokyoMetroInt.mereOffset.left2'),
+                      right1: t('panel.details.stations.tokyoMetroInt.mereOffset.right1'),
+                      right2: t('panel.details.stations.tokyoMetroInt.mereOffset.right2'),
+                  }
+                : {
+                      up: t('panel.details.stations.tokyoMetroInt.mereOffset.up'),
+                      down: t('panel.details.stations.tokyoMetroInt.mereOffset.down'),
+                  }),
+        },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -391,7 +410,7 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         },
         {
             type: 'select',
-            label: t('panel.details.stations.common.nameOffset'),
+            label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
             value: nameOffsetSelect.value,
             options: nameOffsetSelect.options,
             disabledOptions: nameOffsetSelect.disabledOptions,
@@ -424,23 +443,11 @@ const tokyoMetroIntAttrsComponent = (props: AttrsProps<TokyoMetroIntStationAttri
         {
             type: 'select',
             label: t('panel.details.stations.tokyoMetroInt.mereOffset.displayName'),
-            value: attrs.mereOffset,
-            options: {
-                none: t('panel.details.stations.tokyoMetroInt.mereOffset.none'),
-                ...(attrs.nameOffsetX === 'middle'
-                    ? {
-                          left1: t('panel.details.stations.tokyoMetroInt.mereOffset.left1'),
-                          left2: t('panel.details.stations.tokyoMetroInt.mereOffset.left2'),
-                          right1: t('panel.details.stations.tokyoMetroInt.mereOffset.right1'),
-                          right2: t('panel.details.stations.tokyoMetroInt.mereOffset.right2'),
-                      }
-                    : {
-                          up: t('panel.details.stations.tokyoMetroInt.mereOffset.up'),
-                          down: t('panel.details.stations.tokyoMetroInt.mereOffset.down'),
-                      }),
-            },
+            value: mereNameOffsetSelect.value,
+            options: mereNameOffsetSelect.options,
             onChange: val => {
                 attrs.mereOffset = val as MereOffset;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

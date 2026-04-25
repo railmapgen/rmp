@@ -13,6 +13,7 @@ import {
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { MultilineText } from '../common/multiline-text';
+import { getPreciseNameOffsetsSelectState } from '../../panels/details/name-offset-field';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
@@ -132,6 +133,13 @@ const defaultShanghaiSuburbanRailwayStationAttributes: ShanghaiSuburbanRailwaySt
 const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburbanRailwayStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const rotateSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -157,10 +165,11 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            value: rotateSelect.value,
+            options: rotateSelect.options,
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

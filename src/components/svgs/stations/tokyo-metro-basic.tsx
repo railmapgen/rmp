@@ -238,7 +238,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         },
         {
             type: 'select',
-            label: t('panel.details.stations.common.nameOffset'),
+            label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
             value: nameOffsetSelect.value,
             options: nameOffsetSelect.options,
             disabledOptions: nameOffsetSelect.disabledOptions,
