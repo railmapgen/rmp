@@ -1,4 +1,4 @@
-import { Button, Divider, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
+import { Alert, AlertIcon, Button, Divider, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { nanoid } from 'nanoid';
@@ -278,6 +278,13 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
             <Text fontSize="xs" fontWeight="medium">
                 {t('panel.details.lines.generic.layers')}
             </Text>
+
+            {isAddOrCopyDisabled && (
+                <Alert status="warning">
+                    <AlertIcon />
+                    {t('panel.details.lines.generic.layerLimitWarning')}
+                </Alert>
+            )}
 
             <RmgCard direction="column">
                 {layers.map((layer, index) => (

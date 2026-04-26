@@ -692,6 +692,7 @@
                     "linecapSquare": "方頭",
                     "dash": "虛線長度",
                     "gap": "間隔長度",
+                    "layerLimitWarning": "訂閱可解鎖額外線層。",
                     "addLayer": "添加線層",
                     "copyLayer": "複製線層",
                     "moveLayerUp": "上移線層",

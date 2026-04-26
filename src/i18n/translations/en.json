@@ -693,6 +693,7 @@
                     "linecapSquare": "Square",
                     "dash": "Dash",
                     "gap": "Gap",
+                    "layerLimitWarning": "Subscribe to unlock additional line layers.",
                     "addLayer": "Add layer",
                     "copyLayer": "Copy layer",
                     "moveLayerUp": "Move layer up",

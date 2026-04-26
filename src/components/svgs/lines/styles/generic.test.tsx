@@ -34,6 +34,7 @@ describe('Generic attrs component', () => {
 
         expect(screen.getByRole('button', { name: i18n.t('panel.details.lines.generic.addLayer') })).toBeEnabled();
         expect(screen.getByRole('button', { name: i18n.t('panel.details.lines.generic.copyLayer') })).toBeEnabled();
+        expect(screen.queryByText(i18n.t('panel.details.lines.generic.layerLimitWarning'))).not.toBeInTheDocument();
     });
 
     it('disables add and copy for free users at two layers', () => {
@@ -48,6 +49,7 @@ describe('Generic attrs component', () => {
         screen
             .getAllByRole('button', { name: i18n.t('panel.details.lines.generic.copyLayer') })
             .forEach(button => expect(button).toBeDisabled());
+        expect(screen.getByText(i18n.t('panel.details.lines.generic.layerLimitWarning'))).toBeInTheDocument();
     });
 
     it('keeps add and copy enabled for subscribers at two layers', () => {
@@ -70,5 +72,6 @@ describe('Generic attrs component', () => {
         screen
             .getAllByRole('button', { name: i18n.t('panel.details.lines.generic.copyLayer') })
             .forEach(button => expect(button).toBeEnabled());
+        expect(screen.queryByText(i18n.t('panel.details.lines.generic.layerLimitWarning'))).not.toBeInTheDocument();
     });
 });

@@ -695,6 +695,7 @@
                     "linecapSquare": "スクエア",
                     "dash": "ダッシュ長",
                     "gap": "間隔長",
+                    "layerLimitWarning": "サブスクリプションで追加の線レイヤーを利用できます。",
                     "addLayer": "レイヤーを追加",
                     "copyLayer": "レイヤーを複製",
                     "moveLayerUp": "レイヤーを上へ移動",
