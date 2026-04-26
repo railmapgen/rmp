@@ -524,7 +524,8 @@
                     "displayName": "长沙轨道交通基本车站"
                 },
                 "csmetroInt": {
-                    "displayName": "长沙轨道交通换乘车站"
+                    "displayName": "长沙轨道交通换乘车站",
+                    "flipColor": "翻转颜色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地铁基本车站",
@@ -680,6 +681,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都轨道交通出闸换乘样式"
+                },
+                "shinkansen": {
+                    "displayName": "新干线样式"
                 },
                 "generic": {
                     "displayName": "通用样式",

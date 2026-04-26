@@ -524,7 +524,8 @@
                     "displayName": "長沙軌道交通基本車站"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙軌道交通換乘車站"
+                    "displayName": "長沙軌道交通換乘車站",
+                    "flipColor": "翻轉顏色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地鐵基本車站",
@@ -680,6 +681,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都軌道交通出閘換乘樣式"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線樣式"
                 },
                 "generic": {
                     "displayName": "通用樣式",

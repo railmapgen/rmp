@@ -525,7 +525,8 @@
                     "displayName": "Changsha Metro basic station"
                 },
                 "csmetroInt": {
-                    "displayName": "Changsha Metro interchange station"
+                    "displayName": "Changsha Metro interchange station",
+                    "flipColor": "Flip color"
                 },
                 "hzmetroBasic": {
                     "displayName": "Hangzhou Metro basic station",
@@ -681,6 +682,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
+                },
+                "shinkansen": {
+                    "displayName": "Shinkansen style"
                 },
                 "generic": {
                     "displayName": "Generic style",

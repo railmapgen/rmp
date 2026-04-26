@@ -524,7 +524,8 @@
                     "displayName": "창사 지하철 기본역"
                 },
                 "csmetroInt": {
-                    "displayName": "창사 지하철 환승역"
+                    "displayName": "창사 지하철 환승역",
+                    "flipColor": "색상 반전"
                 },
                 "hzmetroBasic": {
                     "displayName": "항저우 지하철 기본역",
@@ -680,6 +681,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "청두 도시철도 개찰구 환승 방식"
+                },
+                "shinkansen": {
+                    "displayName": "신칸센 스타일"
                 },
                 "generic": {
                     "displayName": "일반 스타일",
