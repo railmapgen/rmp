@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { memo, type FC } from 'react';
 import {
     LineStyleType,
     LineStyleComponentProps,
@@ -11,7 +11,7 @@ type StyleComponent = FC<
     LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
 >;
 
-export const LineStyleLeftIcon = (props: { style: LineStyleType }) => {
+export const LineStyleLeftIcon = memo((props: { style: LineStyleType }) => {
     const { style } = props;
     const LinePreComponent = lineStyles[style].preComponent as StyleComponent | undefined;
     const LineComponent = lineStyles[style].component as StyleComponent;
@@ -53,4 +53,4 @@ export const LineStyleLeftIcon = (props: { style: LineStyleType }) => {
             )}
         </svg>
     );
-};
+});
