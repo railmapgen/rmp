@@ -1,4 +1,4 @@
-import { Button, Divider, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
+import { Alert, AlertIcon, Button, Divider, HStack, IconButton, Text, VStack } from '@chakra-ui/react';
 import { RmgCard, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { nanoid } from 'nanoid';
@@ -16,6 +16,8 @@ import {
 import { useRootSelector } from '../../../../redux';
 import { usePaletteTheme } from '../../../../util/hooks';
 import ThemeButton from '../../../panels/theme-button';
+
+export const MAX_GENERIC_LAYERS_FREE = 2;
 
 const Generic = (props: LineStyleComponentProps<GenericAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -68,6 +70,8 @@ export interface GenericAttributes extends LinePathAttributes {
     layers: GenericLayer[];
 }
 
+export type GenericLineStyleAttrs = GenericAttributes;
+
 const defaultGenericLayer: Omit<GenericLayer, 'id'> = {
     color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
     width: LINE_WIDTH,
@@ -93,6 +97,7 @@ interface GenericLayerItemProps {
     index: number;
     total: number;
     layer: GenericLayer;
+    isCopyDisabled: boolean;
     onUpdate: (index: number, layer: GenericLayer) => void;
     onCopy: (index: number) => void;
     onDelete: (index: number) => void;
@@ -101,7 +106,7 @@ interface GenericLayerItemProps {
 }
 
 const GenericLayerItem = (props: GenericLayerItemProps) => {
-    const { index, total, layer, onUpdate, onCopy, onDelete, onUp, onDown } = props;
+    const { index, total, layer, isCopyDisabled, onUpdate, onCopy, onDelete, onUp, onDown } = props;
     const { t } = useTranslation();
 
     const { theme, requestThemeChange } = usePaletteTheme({
@@ -194,6 +199,7 @@ const GenericLayerItem = (props: GenericLayerItemProps) => {
                     aria-label={t('panel.details.lines.generic.copyLayer')}
                     onClick={() => onCopy(index)}
                     icon={<MdContentCopy />}
+                    isDisabled={isCopyDisabled}
                 />
 
                 <IconButton
@@ -235,8 +241,10 @@ const GenericLayerItem = (props: GenericLayerItemProps) => {
 const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
     const { layers } = attrs;
+    const isAddOrCopyDisabled = !activeSubscriptions.RMP_CLOUD && layers.length >= MAX_GENERIC_LAYERS_FREE;
 
     const handleAdd = () => {
         handleAttrsUpdate(id, { layers: [...layers, makeDefaultGenericLayer(runtimeTheme)] });
@@ -271,6 +279,13 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
                 {t('panel.details.lines.generic.layers')}
             </Text>
 
+            {isAddOrCopyDisabled && (
+                <Alert status="warning">
+                    <AlertIcon />
+                    {t('panel.details.lines.generic.layerLimitWarning')}
+                </Alert>
+            )}
+
             <RmgCard direction="column">
                 {layers.map((layer, index) => (
                     <GenericLayerItem
@@ -278,6 +293,7 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
                         index={index}
                         total={layers.length}
                         layer={layer}
+                        isCopyDisabled={isAddOrCopyDisabled}
                         onUpdate={handleUpdate}
                         onCopy={handleCopy}
                         onDelete={handleDelete}
@@ -287,7 +303,14 @@ const genericAttrsComponent = (props: AttrsProps<GenericAttributes>) => {
                 ))}
             </RmgCard>
 
-            <Button size="xs" variant="ghost" alignSelf="flex-end" leftIcon={<MdAdd />} onClick={handleAdd}>
+            <Button
+                size="xs"
+                variant="ghost"
+                alignSelf="flex-end"
+                leftIcon={<MdAdd />}
+                onClick={handleAdd}
+                isDisabled={isAddOrCopyDisabled}
+            >
                 {t('panel.details.lines.generic.addLayer')}
             </Button>
         </VStack>
@@ -308,7 +331,6 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.Simple,
         ],
     },
-    isPro: true,
 };
 
 export default generic;

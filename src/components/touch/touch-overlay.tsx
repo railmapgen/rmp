@@ -15,6 +15,7 @@ import { useWindowSize } from '../../util/hooks';
  */
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
+    const { activeSubscriptions } = useRootSelector(state => state.account);
     const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const { radialTouchMenu } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
@@ -42,7 +43,13 @@ export const TouchOverlay: React.FC = () => {
             const relativeX = touch.clientX - bbox.left;
             const relativeY = touch.clientY - bbox.top;
             const svgCoord = pointerPosToSVGCoord(relativeX, relativeY, svgViewBoxZoom, svgViewBoxMin);
-            const nearbyElements = findNearbyElements(graph.current, svgCoord, dispatch);
+            const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
+            const nearbyElements = findNearbyElements(
+                graph.current,
+                svgCoord,
+                dispatch,
+                isGenericLineStyleLayerLimited
+            );
             if (
                 [
                     ...nearbyElements[MenuCategory.STATION],

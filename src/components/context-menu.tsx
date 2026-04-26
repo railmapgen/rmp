@@ -49,6 +49,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         !autoParallel || // Disabled if autoParallel is off
         // Or disabled only if autoParallel is on and user has no cloud subscription and exceeds free limit
         (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
+    const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
 
     const hasSelection = selected.size > 0;
     const hasMoreThanOneNodeSelection = React.useMemo(
@@ -114,6 +115,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 graph.current,
                 isMasterDisabled,
                 isParallelDisabled,
+                isGenericLineStyleLayerLimited,
                 roundToMultiple(x, 5),
                 roundToMultiple(y, 5)
             );
@@ -234,7 +236,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             return;
         }
 
-        if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
+        if (
+            !importEdgeSpecificAttrs(
+                graph.current,
+                selected,
+                parsed.data as EdgeSpecificAttrsClipboardData,
+                isGenericLineStyleLayerLimited
+            )
+        ) {
             sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }

@@ -696,6 +696,7 @@
                     "linecapSquare": "스퀘어",
                     "dash": "대시 길이",
                     "gap": "간격 길이",
+                    "layerLimitWarning": "구독하면 추가 선 레이어를 사용할 수 있습니다.",
                     "addLayer": "레이어 추가",
                     "copyLayer": "레이어 복제",
                     "moveLayerUp": "레이어 위로 이동",

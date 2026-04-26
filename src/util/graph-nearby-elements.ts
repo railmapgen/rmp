@@ -57,7 +57,8 @@ export const emptyMenuLayerData: MenuLayerData = {
 export const findNearbyElements = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     svgCoord: { x: number; y: number },
-    dispatch: RootDispatch
+    dispatch: RootDispatch,
+    isGenericLineStyleLayerLimited: boolean
 ): MenuLayerData => {
     const data = structuredClone(emptyMenuLayerData);
 
@@ -154,7 +155,15 @@ export const findNearbyElements = (
         action: async () => {
             try {
                 const clipboardText = await navigator.clipboard.readText();
-                importSelectedNodesAndEdges(clipboardText, graph, false, false, svgCoord.x, svgCoord.y);
+                importSelectedNodesAndEdges(
+                    clipboardText,
+                    graph,
+                    false,
+                    false,
+                    isGenericLineStyleLayerLimited,
+                    svgCoord.x,
+                    svgCoord.y
+                );
             } catch (error) {
                 console.error('Failed to paste from clipboard:', error);
             }
