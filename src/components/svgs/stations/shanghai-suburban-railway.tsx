@@ -13,7 +13,10 @@ import {
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
 import { MultilineText } from '../common/multiline-text';
-import { getPreciseNameOffsetsSelectState, PRECISE_NAME_OFFSETS_CUSTOM_VALUE } from '../../panels/details/name-offset-field';
+import {
+    getPreciseNameOffsetsSelectState,
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+} from '../../panels/details/name-offset-field';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
