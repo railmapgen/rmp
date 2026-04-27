@@ -173,7 +173,6 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
             options: rotateSelect.options,
             disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.rotate = Number(val) as Rotate;
                 delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);

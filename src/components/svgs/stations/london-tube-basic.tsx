@@ -349,7 +349,6 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             options: rotateSelect.options,
             disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.rotate = Number(val) as Rotate;
                 if (attrs.terminal) attrs.terminalNameRotate = attrs.rotate;
                 delete attrs.preciseNameOffsets;

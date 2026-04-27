@@ -307,7 +307,6 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
             options: nameOffsetXSelect.options,
             disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.nameOffsetX = val as NameOffsetX;
                 delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
@@ -321,7 +320,6 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
             options: nameOffsetYSelect.options,
             disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 attrs.nameOffsetY = val as NameOffsetY;
                 delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);

@@ -722,7 +722,6 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             options: nameOverallPositionSelect.options,
             disabledOptions: nameOverallPositionSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 delete attrs.preciseNameOffsets;
                 updateAttr('nameOffsetPosition', 'middle');
                 updateAttr('nameOverallPosition', val as OsakaMetroNameOverallPosition);
@@ -737,7 +736,6 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             options: nameOffsetPositionSelect.options,
             disabledOptions: nameOffsetPositionSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 delete attrs.preciseNameOffsets;
                 updateAttr('nameOffsetPosition', val as OsakaMetroNameOffsetPosition);
             },

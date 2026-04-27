@@ -244,7 +244,6 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
             options: nameOffsetSelect.options,
             disabledOptions: nameOffsetSelect.disabledOptions,
             onChange: val => {
-                if (val === PRECISE_NAME_OFFSETS_CUSTOM_VALUE) return;
                 if (val === 'left' || val === 'right') {
                     attrs.nameOffsetX = val as NameOffsetX;
                     attrs.nameOffsetY = 'middle';

@@ -235,6 +235,7 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
             disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
