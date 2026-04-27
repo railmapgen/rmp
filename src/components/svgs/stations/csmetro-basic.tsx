@@ -13,13 +13,14 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
-import { MultilineText, NAME_DY } from '../common/multiline-text';
-import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import {
+    NameLayout,
     PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
-} from '../../panels/details/name-offset-field';
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
+import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const NAME_DY_CS_BASIC = {
     top: { lineHeight: 6, offset: 14 },

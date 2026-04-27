@@ -15,12 +15,13 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { TextLanguage, getLangStyle } from '../../../util/fonts';
-import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
-import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import {
+    NameLayout,
     PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
-} from '../../panels/details/name-offset-field';
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
+import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const CODE_POS = [

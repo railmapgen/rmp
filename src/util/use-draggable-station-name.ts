@@ -5,11 +5,37 @@ import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
 import { refreshNodesThunk } from '../redux/runtime/runtime-slice';
 
+type PreciseNameOffsetsDrivenAttrs = Pick<StationAttributes, 'preciseNameOffsets'>;
+
 export interface NameLayout {
     x: number;
     y: number;
     anchor: 'start' | 'middle' | 'end' | 'inherit';
 }
+
+export const PRECISE_NAME_OFFSETS_CUSTOM_VALUE = '__custom__';
+
+export const getPreciseNameOffsetsSelectState = <
+    T extends PreciseNameOffsetsDrivenAttrs,
+    V extends string | number,
+>(props: {
+    attrs: T;
+    value: V;
+    options: Record<string, string>;
+    customLabel: string;
+    disabledOptions?: string[];
+}) => {
+    const { attrs, value, options, customLabel, disabledOptions = [] } = props;
+    const isCustom = attrs.preciseNameOffsets !== undefined;
+
+    return {
+        value: isCustom ? PRECISE_NAME_OFFSETS_CUSTOM_VALUE : value,
+        options: isCustom ? { ...options, [PRECISE_NAME_OFFSETS_CUSTOM_VALUE]: customLabel } : options,
+        disabledOptions: isCustom
+            ? Array.from(new Set([...disabledOptions, PRECISE_NAME_OFFSETS_CUSTOM_VALUE]))
+            : disabledOptions,
+    };
+};
 
 interface DragState {
     startClientX: number;

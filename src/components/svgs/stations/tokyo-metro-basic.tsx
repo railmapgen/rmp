@@ -13,12 +13,13 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
-import { ColorField } from '../../panels/details/color-field';
 import {
+    NameLayout,
     PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
-} from '../../panels/details/name-offset-field';
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
+import { ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 

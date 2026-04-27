@@ -14,12 +14,13 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
-import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import {
+    NameLayout,
     PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
-} from '../../panels/details/name-offset-field';
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
+import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const [WIDTH, HEIGHT] = [15, 9];

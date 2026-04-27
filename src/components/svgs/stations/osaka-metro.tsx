@@ -5,16 +5,17 @@ import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import { defaultStationAttributes, Station, StationComponentProps, StationType } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
-import { NameLayout, useDraggableStationName } from '../../../util/use-draggable-station-name';
+import {
+    NameLayout,
+    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import {
     InterchangeField,
     StationAttributesWithInterchange,
     InterchangeInfo,
 } from '../../panels/details/interchange-field';
-import {
-    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
-    getPreciseNameOffsetsSelectState,
-} from '../../panels/details/name-offset-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
