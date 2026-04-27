@@ -18,7 +18,6 @@ import {
 import { TextLanguage, getLangStyle } from '../../../util/fonts';
 import {
     NameLayout,
-    PRECISE_NAME_OFFSETS_CUSTOM_VALUE,
     getPreciseNameOffsetsSelectState,
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
