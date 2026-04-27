@@ -378,7 +378,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         },
         {
             type: 'select',
-            label: t('panel.details.stations.common.nameOffset'),
+            label: t('panel.details.stations.jrEastBasic.nameOffset'),
             value: nameOffsetSelect.value,
             options: nameOffsetSelect.options,
             disabledOptions: nameOffsetSelect.disabledOptions,
