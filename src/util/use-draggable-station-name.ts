@@ -98,6 +98,8 @@ export const useDraggableStationName = <T extends StationAttributes>(
         (e: React.PointerEvent<SVGGElement>) => {
             if (!dragRef.current) return;
 
+            e.stopPropagation();
+
             const deltaX = -((dragRef.current.startClientX - e.clientX) * svgViewBoxZoom) / 100;
             const deltaY = -((dragRef.current.startClientY - e.clientY) * svgViewBoxZoom) / 100;
 
@@ -117,6 +119,8 @@ export const useDraggableStationName = <T extends StationAttributes>(
             }
 
             if (!dragRef.current) return;
+
+            e.stopPropagation();
 
             const deltaX = -((dragRef.current.startClientX - e.clientX) * svgViewBoxZoom) / 100;
             const deltaY = -((dragRef.current.startClientY - e.clientY) * svgViewBoxZoom) / 100;
@@ -147,6 +151,10 @@ export const useDraggableStationName = <T extends StationAttributes>(
         if (e.currentTarget.hasPointerCapture(e.pointerId)) {
             e.currentTarget.releasePointerCapture(e.pointerId);
         }
+
+        if (!dragRef.current) return;
+
+        e.stopPropagation();
 
         dragRef.current = null;
         setPreviewPreciseNameOffsets(null);
