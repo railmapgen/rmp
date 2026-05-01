@@ -16,6 +16,11 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { openPaletteAppClip } from '../../../redux/runtime/runtime-slice';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import ThemeButton from '../../panels/theme-button';
 import { MultilineText } from '../common/multiline-text';
 
@@ -178,6 +183,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         transfer = defaultLondonTubeBasicStationAttributes.transfer,
         rotate = defaultLondonTubeBasicStationAttributes.rotate,
         terminal = defaultLondonTubeBasicStationAttributes.terminal,
@@ -217,6 +223,18 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const accessibleDX = Math.sin((rotate * Math.PI) / 180) * accessibleD;
     const accessibleDY = Math.cos((rotate * Math.PI) / 180) * accessibleD;
 
+    const defaultNameLayout: NameLayout = {
+        x: textDx,
+        y: textDy,
+        anchor: ROTATE_CONST[textRotate].textAnchor ?? 'start',
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.LondonTubeBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g>
             <g
@@ -249,9 +267,14 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                 )}
             </g>
             <g
-                transform={`translate(${textDx}, ${textDy})`}
-                textAnchor={ROTATE_CONST[textRotate].textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 fill="#003888"
+                className="rmp-name-outline"
+                strokeWidth="2.5"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -293,6 +316,13 @@ const defaultLondonTubeBasicStationAttributes: LondonTubeBasicStationAttributes 
 const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const rotateSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+        customLabel,
+    });
 
     const terminalNameRotateOptions: Record<number, string> = Object.fromEntries([
         [(attrs.rotate + 0) % 360, ((attrs.rotate + 0) % 360).toString()],
@@ -314,11 +344,13 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            value: rotateSelect.value,
+            options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
                 if (attrs.terminal) attrs.terminalNameRotate = attrs.rotate;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

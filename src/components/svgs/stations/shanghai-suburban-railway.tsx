@@ -11,13 +11,21 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { MultilineText } from '../common/multiline-text';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
 const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
-    const { names = defaultStationAttributes.names, rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate } =
-        attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
+    const {
+        names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
+        rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate,
+    } = attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
@@ -37,6 +45,18 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
         [id, handlePointerUp]
     );
+
+    const defaultNameLayout: NameLayout = {
+        x: ROTATE_CONST[rotate].textDx,
+        y: textDy,
+        anchor: ROTATE_CONST[rotate].textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.ShanghaiSuburbanRailway,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -71,10 +91,13 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
                 />
             </g>
             <g
-                transform={`translate(${ROTATE_CONST[rotate].textDx}, ${textDy})`}
-                textAnchor={ROTATE_CONST[rotate].textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -113,6 +136,13 @@ const defaultShanghaiSuburbanRailwayStationAttributes: ShanghaiSuburbanRailwaySt
 const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburbanRailwayStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const rotateSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -138,10 +168,12 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            value: rotateSelect.value,
+            options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

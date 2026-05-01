@@ -3,8 +3,13 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
-import { Station, StationComponentProps, StationType } from '../../../constants/stations';
+import { defaultStationAttributes, Station, StationComponentProps, StationType } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import {
     InterchangeField,
     StationAttributesWithInterchange,
@@ -380,6 +385,7 @@ const OsakaMetroStation = (props: StationComponentProps) => {
     const {
         stationType = defaultOsakaMetroStationAttributes.stationType,
         names = defaultOsakaMetroStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         transfer = defaultOsakaMetroStationAttributes.transfer,
         nameDirection = defaultOsakaMetroStationAttributes.nameDirection,
         stationDirection = defaultOsakaMetroStationAttributes.stationDirection,
@@ -435,6 +441,17 @@ const OsakaMetroStation = (props: StationComponentProps) => {
     const adjustY =
         -(stationDirection === 'vertical' ? ((transferCount - 1) * LAYOUT_CONSTANTS.STATION.HEIGHT) / 2 : 0) -
         (transferCount > 1 ? LAYOUT_CONSTANTS.STATION.STROKE_WIDTH : 0);
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor ?? 'start',
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<OsakaMetroStationAttributes>(
+        id,
+        StationType.OsakaMetro,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g transform={`translate(${adjustX}, ${adjustY})`}>
@@ -510,10 +527,13 @@ const OsakaMetroStation = (props: StationComponentProps) => {
 
             {isHorizontal ? (
                 <g
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
                     className="rmp-name-outline"
                     strokeWidth="1"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
                 >
                     <MultilineText
                         text={processedNameText.split('\n')}
@@ -551,10 +571,13 @@ const OsakaMetroStation = (props: StationComponentProps) => {
                 </g>
             ) : (
                 <g
-                    transform={`translate(${textX}, ${textY})`}
-                    textAnchor={textAnchor}
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
                     className="rmp-name-outline"
                     strokeWidth="1"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
                 >
                     <MultilineTextVertical
                         text={processedNameText.split('\n')}
@@ -602,6 +625,36 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
     const isHorizontal = attrs.nameDirection === 'horizontal';
     const isMultipleTransfers = interchangeCount > 1;
     const isNameUpOrDown = ['up', 'down'].includes(attrs.nameOverallPosition);
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOverallPositionSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOverallPosition,
+        options: {
+            up: t('panel.details.stations.osakaMetro.up'),
+            left: t('panel.details.stations.common.left'),
+            right: t('panel.details.stations.common.right'),
+            down: t('panel.details.stations.osakaMetro.down'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameDirection === 'vertical' ? ['left', 'right'] : [],
+    });
+    const nameOffsetPositionSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetPosition,
+        options: isNameUpOrDown
+            ? {
+                  left: t('panel.details.stations.common.left'),
+                  middle: t('panel.details.stations.common.middle'),
+                  right: t('panel.details.stations.common.right'),
+              }
+            : {
+                  up: t('panel.details.stations.osakaMetro.up'),
+                  middle: t('panel.details.stations.common.middle'),
+                  down: t('panel.details.stations.osakaMetro.down'),
+              },
+        customLabel,
+        disabledOptions: isNameUpOrDown ? ['up', 'down'] : ['left', 'right'],
+    });
 
     React.useEffect(() => {
         if (isMultipleTransfers) {
@@ -664,15 +717,11 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.osakaMetro.nameOverallPosition'),
-            value: attrs.nameOverallPosition,
-            options: {
-                up: t('panel.details.stations.osakaMetro.up'),
-                left: t('panel.details.stations.common.left'),
-                right: t('panel.details.stations.common.right'),
-                down: t('panel.details.stations.osakaMetro.down'),
-            },
-            disabledOptions: attrs.nameDirection === 'vertical' ? ['left', 'right'] : [],
+            value: nameOverallPositionSelect.value,
+            options: nameOverallPositionSelect.options,
+            disabledOptions: nameOverallPositionSelect.disabledOptions,
             onChange: val => {
+                delete attrs.preciseNameOffsets;
                 updateAttr('nameOffsetPosition', 'middle');
                 updateAttr('nameOverallPosition', val as OsakaMetroNameOverallPosition);
             },
@@ -682,20 +731,11 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
             type: 'select',
             label: t('panel.details.stations.osakaMetro.nameOffsetPosition'),
             hidden: !isHorizontal,
-            value: attrs.nameOffsetPosition,
-            options: isNameUpOrDown
-                ? {
-                      left: t('panel.details.stations.common.left'),
-                      middle: t('panel.details.stations.common.middle'),
-                      right: t('panel.details.stations.common.right'),
-                  }
-                : {
-                      up: t('panel.details.stations.osakaMetro.up'),
-                      middle: t('panel.details.stations.common.middle'),
-                      down: t('panel.details.stations.osakaMetro.down'),
-                  },
-            disabledOptions: isNameUpOrDown ? ['up', 'down'] : ['left', 'right'],
+            value: nameOffsetPositionSelect.value,
+            options: nameOffsetPositionSelect.options,
+            disabledOptions: nameOffsetPositionSelect.disabledOptions,
             onChange: val => {
+                delete attrs.preciseNameOffsets;
                 updateAttr('nameOffsetPosition', val as OsakaMetroNameOffsetPosition);
             },
             minW: 'full',

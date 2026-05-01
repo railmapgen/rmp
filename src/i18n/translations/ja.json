@@ -289,7 +289,8 @@
                     "middle": "中央",
                     "right": "右",
                     "top": "上",
-                    "bottom": "下"
+                    "bottom": "下",
+                    "custom": "カスタム"
                 },
                 "interchange": {
                     "title": "乗り換え",

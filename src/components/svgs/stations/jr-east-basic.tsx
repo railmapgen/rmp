@@ -13,6 +13,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -35,6 +40,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultJREastBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultJREastBasicStationAttributes.nameOffsetY,
         rotate = defaultJREastBasicStationAttributes.rotate,
@@ -154,6 +160,20 @@ const JREastBasicStation = (props: StationComponentProps) => {
             NAME_JRE_BASIC.ja.size +
         (important ? 2 : 0) * NAME_DY[nameOffsetY].polarity * -1;
 
+    const defaultNameLayout: NameLayout = textVertical
+        ? { x: 0, y: 0, anchor: 'middle' }
+        : {
+              x: textDX,
+              y: textDY,
+              anchor: textAnchor,
+          };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.JREastBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g>
             <g transform={`rotate(${rotate})`}>
@@ -170,7 +190,15 @@ const JREastBasicStation = (props: StationComponentProps) => {
                 ))}
             </g>
             {!textVertical ? (
-                <g transform={`translate(${textDX}, ${textDY})`} textAnchor={textAnchor}>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
                     {important && (
                         <rect
                             x={iconImportantDX}
@@ -207,7 +235,15 @@ const JREastBasicStation = (props: StationComponentProps) => {
                     />
                 </g>
             ) : (
-                <>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
                     <g transform={`translate(0, ${textVerticalY})`} textAnchor={textVerticalAnchor.ja}>
                         {important && (
                             <rect
@@ -249,7 +285,7 @@ const JREastBasicStation = (props: StationComponentProps) => {
                             {...getLangStyle(TextLanguage.jreast_en)}
                         />
                     </g>
-                </>
+                </g>
             )}
             <g transform={`rotate(${rotate})`}>
                 <rect
@@ -298,6 +334,18 @@ const defaultJREastBasicStationAttributes: JREastBasicStationAttributes = {
 const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            right: t('panel.details.stations.common.right'),
+            top: t('panel.details.stations.common.top'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -331,13 +379,9 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
         {
             type: 'select',
             label: t('panel.details.stations.jrEastBasic.nameOffset'),
-            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                right: t('panel.details.stations.common.right'),
-                top: t('panel.details.stations.common.top'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
+            value: nameOffsetSelect.value,
+            options: nameOffsetSelect.options,
+            disabledOptions: nameOffsetSelect.disabledOptions,
             onChange: val => {
                 if (val === 'left' || val === 'right') {
                     attrs.nameOffsetX = val as NameOffsetX;
@@ -348,6 +392,7 @@ const jrEastBasicAttrsComponent = (props: AttrsProps<JREastBasicStationAttribute
                     attrs.nameOffsetY = val as NameOffsetY;
                     attrs.textOneLine = false;
                 }
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

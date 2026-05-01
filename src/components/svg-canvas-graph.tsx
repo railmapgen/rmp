@@ -392,6 +392,7 @@ const SvgCanvas = () => {
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
+
     const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
         if (!e.shiftKey) dispatch(clearSelected());

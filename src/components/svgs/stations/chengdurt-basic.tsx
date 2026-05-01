@@ -13,6 +13,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
@@ -29,6 +34,7 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultChengduRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultChengduRTBasicStationAttributes.nameOffsetY,
         color = defaultChengduRTBasicStationAttributes.color,
@@ -136,6 +142,18 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                 ? 'start'
                 : 'middle';
 
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.ChengduRTBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g>
             {stationType == 'normal' || stationType == 'branchTerminal' ? (
@@ -197,7 +215,15 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                 </g>
             )}
             {direction == 'horizontal' ? (
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
                     <MultilineText
                         text={names[0].split('\n')}
                         fontSize={LINE_HEIGHT.zh}
@@ -215,93 +241,104 @@ const ChengduRTBasicStation = (props: StationComponentProps) => {
                         baseOffset={1}
                     />
                 </g>
-            ) : nameOffsetX == 'middle' ? (
-                <>
-                    <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
-                        <MultilineTextVertical
-                            text={names[0].split('\n').reverse()}
-                            fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh + 1}
-                            grow="bidirectional"
-                            dominantBaseline="central"
-                            textOrientation="upright"
-                            {...getLangStyle(TextLanguage.zh)}
-                        />
-                    </g>
-                    <g
-                        transform={`translate(${textX + (LINE_HEIGHT.zh * names[0].split('\n').length) / 2 + 3}, ${textY})rotate(90)`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LINE_HEIGHT.en}
-                            lineHeight={LINE_HEIGHT.en}
-                            grow="up"
-                            {...getLangStyle(TextLanguage.en)}
-                            dominantBaseline="central"
-                        />
-                    </g>
-                </>
-            ) : nameOffsetX == 'right' ? (
-                <>
-                    <g
-                        transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 5}, ${textY})`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineTextVertical
-                            text={names[0].split('\n').reverse()}
-                            fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh + 1}
-                            grow="bidirectional"
-                            dominantBaseline="central"
-                            textOrientation="upright"
-                            {...getLangStyle(TextLanguage.zh)}
-                        />
-                    </g>
-                    <g
-                        transform={`translate(${textX + (names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1) + 12}, ${textY})rotate(90)`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LINE_HEIGHT.en}
-                            lineHeight={LINE_HEIGHT.en}
-                            grow="up"
-                            {...getLangStyle(TextLanguage.en)}
-                            dominantBaseline="central"
-                        />
-                    </g>
-                </>
             ) : (
-                <>
-                    <g
-                        transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY})`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineTextVertical
-                            text={names[0].split('\n').reverse()}
-                            fontSize={LINE_HEIGHT.zh}
-                            lineWidth={LINE_HEIGHT.zh + 1}
-                            grow="bidirectional"
-                            dominantBaseline="central"
-                            textOrientation="upright"
-                            {...getLangStyle(TextLanguage.zh)}
-                        />
-                    </g>
-                    <g
-                        transform={`translate(${textX - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 7}, ${textY})rotate(90)`}
-                        textAnchor={textAnchor}
-                    >
-                        <MultilineText
-                            text={names[1].split('\n')}
-                            fontSize={LINE_HEIGHT.en}
-                            lineHeight={LINE_HEIGHT.en}
-                            grow="up"
-                            {...getLangStyle(TextLanguage.en)}
-                            dominantBaseline="central"
-                        />
-                    </g>
-                </>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x - textX}, ${nameLayout.y - textY})`}
+                    className="rmp-name-outline"
+                    strokeWidth="2.5"
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
+                    {nameOffsetX == 'middle' ? (
+                        <>
+                            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                                <MultilineTextVertical
+                                    text={names[0].split('\n').reverse()}
+                                    fontSize={LINE_HEIGHT.zh}
+                                    lineWidth={LINE_HEIGHT.zh + 1}
+                                    grow="bidirectional"
+                                    dominantBaseline="central"
+                                    textOrientation="upright"
+                                    {...getLangStyle(TextLanguage.zh)}
+                                />
+                            </g>
+                            <g
+                                transform={`translate(${textX + (LINE_HEIGHT.zh * names[0].split('\n').length) / 2 + 3}, ${textY})rotate(90)`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineText
+                                    text={names[1].split('\n')}
+                                    fontSize={LINE_HEIGHT.en}
+                                    lineHeight={LINE_HEIGHT.en}
+                                    grow="up"
+                                    {...getLangStyle(TextLanguage.en)}
+                                    dominantBaseline="central"
+                                />
+                            </g>
+                        </>
+                    ) : nameOffsetX == 'right' ? (
+                        <>
+                            <g
+                                transform={`translate(${textX + ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 + 5}, ${textY})`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineTextVertical
+                                    text={names[0].split('\n').reverse()}
+                                    fontSize={LINE_HEIGHT.zh}
+                                    lineWidth={LINE_HEIGHT.zh + 1}
+                                    grow="bidirectional"
+                                    dominantBaseline="central"
+                                    textOrientation="upright"
+                                    {...getLangStyle(TextLanguage.zh)}
+                                />
+                            </g>
+                            <g
+                                transform={`translate(${textX + (names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1) + 12}, ${textY})rotate(90)`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineText
+                                    text={names[1].split('\n')}
+                                    fontSize={LINE_HEIGHT.en}
+                                    lineHeight={LINE_HEIGHT.en}
+                                    grow="up"
+                                    {...getLangStyle(TextLanguage.en)}
+                                    dominantBaseline="central"
+                                />
+                            </g>
+                        </>
+                    ) : (
+                        <>
+                            <g
+                                transform={`translate(${textX - ((names[0].split('\n').length - 1) * (LINE_HEIGHT.zh + 1)) / 2 - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 14}, ${textY})`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineTextVertical
+                                    text={names[0].split('\n').reverse()}
+                                    fontSize={LINE_HEIGHT.zh}
+                                    lineWidth={LINE_HEIGHT.zh + 1}
+                                    grow="bidirectional"
+                                    dominantBaseline="central"
+                                    textOrientation="upright"
+                                    {...getLangStyle(TextLanguage.zh)}
+                                />
+                            </g>
+                            <g
+                                transform={`translate(${textX - (names[1].split('\n').length - 1) * LINE_HEIGHT.en - 7}, ${textY})rotate(90)`}
+                                textAnchor={textAnchor}
+                            >
+                                <MultilineText
+                                    text={names[1].split('\n')}
+                                    fontSize={LINE_HEIGHT.en}
+                                    lineHeight={LINE_HEIGHT.en}
+                                    grow="up"
+                                    {...getLangStyle(TextLanguage.en)}
+                                    dominantBaseline="central"
+                                />
+                            </g>
+                        </>
+                    )}
+                </g>
             )}
         </g>
     );
@@ -331,6 +368,30 @@ const defaultChengduRTBasicStationAttributes: ChengduRTBasicStationAttributes = 
 const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -355,14 +416,12 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultChengduRTBasicStationAttributes.nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
-            disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
-                // if (attrs.nameOffsetX != 'middle') {
-                //     attrs.direction = 'horizontal';
-                // }
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -370,14 +429,12 @@ const ChengduRTBasicAttrsComponent = (props: AttrsProps<ChengduRTBasicStationAtt
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultChengduRTBasicStationAttributes.nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
-                // if (attrs.nameOffsetY == 'middle') {
-                //     attrs.direction = 'horizontal';
-                // }
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

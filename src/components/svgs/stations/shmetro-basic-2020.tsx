@@ -12,6 +12,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -93,11 +98,12 @@ export const ROTATE_CONST: {
 
 const ShmetroBasic2020Station = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+    const stationAttrs = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
     const {
         names = defaultStationAttributes.names,
         color = defaultShmetroBasic2020StationAttributes.color,
         rotate = defaultShmetroBasic2020StationAttributes.rotate,
-    } = attrs[StationType.ShmetroBasic2020] ?? defaultShmetroBasic2020StationAttributes;
+    } = stationAttrs;
 
     const textDy =
         ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
@@ -118,6 +124,15 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
+    const fallbackLayout: NameLayout = {
+        x: ROTATE_CONST[rotate].textDx,
+        y: textDy,
+        anchor: ROTATE_CONST[rotate].textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } =
+        useDraggableStationName<ShmetroBasic2020StationAttributes>(id, StationType.ShmetroBasic2020, fallbackLayout);
+    const preciseNameOffsets = previewPreciseNameOffsets ?? stationAttrs.preciseNameOffsets;
+
     return (
         <g>
             <g transform={`rotate(${rotate})`}>
@@ -136,10 +151,13 @@ const ShmetroBasic2020Station = (props: StationComponentProps) => {
                 />
             </g>
             <g
-                transform={`translate(${ROTATE_CONST[rotate].textDx}, ${textDy})`}
-                textAnchor={ROTATE_CONST[rotate].textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${preciseNameOffsets ? `${preciseNameOffsets.x}, ${preciseNameOffsets.y}` : `${ROTATE_CONST[rotate].textDx}, ${textDy}`})`}
+                textAnchor={preciseNameOffsets ? preciseNameOffsets.anchor : ROTATE_CONST[rotate].textAnchor}
                 className="rmp-name-outline"
                 strokeWidth="2.5"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -179,6 +197,13 @@ const defaultShmetroBasic2020StationAttributes: ShmetroBasic2020StationAttribute
 const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020StationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const rotateSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.rotate,
+        options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -204,10 +229,12 @@ const shmetroBasic2020AttrsComponent = (props: AttrsProps<ShmetroBasic2020Statio
         {
             type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            value: rotateSelect.value,
+            options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
             onChange: val => {
                 attrs.rotate = Number(val) as Rotate;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
