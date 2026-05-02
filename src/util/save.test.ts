@@ -37,6 +37,84 @@ describe('Unit tests for param upgrade function', () => {
         expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
     });
 
+    it('upgrade repairs invalid node coordinates in current-version saves', async () => {
+        localStorage.clear();
+        const save = JSON.stringify({
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [
+                    {
+                        key: 'stn_invalid_x',
+                        attributes: {
+                            visible: true,
+                            zIndex: 0,
+                            x: null,
+                            y: 100,
+                            type: 'shmetro-basic',
+                            'shmetro-basic': {
+                                names: ['A'],
+                                nameOffsetX: 'right',
+                                nameOffsetY: 'top',
+                                color: ['shanghai', 'sh1', '#E4002B', '#fff'],
+                            },
+                        },
+                    },
+                    {
+                        key: 'misc_node_invalid_y',
+                        attributes: {
+                            visible: true,
+                            zIndex: 0,
+                            x: 200,
+                            y: null,
+                            type: 'virtual',
+                            virtual: {},
+                        },
+                    },
+                ],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: CURRENT_VERSION,
+        });
+
+        const upgraded = await upgrade(save);
+        const repaired = JSON.parse(upgraded);
+
+        expect(repaired.version).toBe(CURRENT_VERSION);
+        expect(repaired.graph.nodes).toEqual([
+            {
+                key: 'stn_invalid_x',
+                attributes: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 0,
+                    y: 100,
+                    type: 'shmetro-basic',
+                    'shmetro-basic': {
+                        names: ['A'],
+                        nameOffsetX: 'right',
+                        nameOffsetY: 'top',
+                        color: ['shanghai', 'sh1', '#E4002B', '#fff'],
+                    },
+                },
+            },
+            {
+                key: 'misc_node_invalid_y',
+                attributes: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 200,
+                    y: 0,
+                    type: 'virtual',
+                    virtual: {},
+                },
+            },
+        ]);
+        expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
+    });
+
     it('UPGRADE_COLLECTION contains all the upgrade functions to CURRENT_VERSION', () => {
         const allKeys = Object.keys(UPGRADE_COLLECTION).map(k => Number(k));
         // UPGRADE_COLLECTION contains key from 0...CURRENT_VERSION - 1.

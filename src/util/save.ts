@@ -60,6 +60,39 @@ export interface RMPSave {
 export const CURRENT_VERSION = 73;
 
 /**
+ * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
+ */
+const repairNodeXYNullCoordinates = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave;
+    const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    graph.import(save.graph);
+
+    let changed = false;
+
+    for (const { node, attributes } of graph.nodeEntries()) {
+        const nextAttrs: Partial<NodeAttributes> = {};
+
+        if (attributes.x === null) {
+            nextAttrs.x = 0;
+        }
+        if (attributes.y === null) {
+            nextAttrs.y = 0;
+        }
+
+        if (Object.keys(nextAttrs).length > 0) {
+            graph.mergeNodeAttributes(node, nextAttrs);
+            changed = true;
+        }
+    }
+
+    if (!changed) {
+        return saveStr;
+    }
+
+    return JSON.stringify({ ...save, graph: graph.export() });
+};
+
+/**
  * Parse the version from a save string without fully validating the save.
  *
  * @param saveStr The save string.
@@ -104,6 +137,11 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
         version = Number(JSON.parse(save).version);
         changed = true;
     }
+
+    // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
+    const repairedSave = repairNodeXYNullCoordinates(save);
+    changed ||= repairedSave !== save;
+    save = repairedSave;
 
     if (changed) {
         logger.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
