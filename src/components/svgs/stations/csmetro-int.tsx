@@ -113,7 +113,7 @@ const CsmetroIntStation = (props: StationComponentProps) => {
                 transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
                 textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
-                strokeWidth="2.5"
+                strokeWidth="1"
                 style={{ cursor: canDrag ? 'grab' : undefined }}
                 {...dragHandlers}
             >

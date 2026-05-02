@@ -100,8 +100,6 @@ const LondonRiverServicesIntStation = (props: StationComponentProps) => {
                 transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
                 textAnchor={nameLayout.anchor}
                 fill="#003888"
-                className="rmp-name-outline"
-                strokeWidth="2.5"
                 style={{ cursor: canDrag ? 'grab' : undefined }}
                 {...dragHandlers}
             >

@@ -109,8 +109,6 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
                 id={`stn_name_${id}`}
                 transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
                 textAnchor={nameLayout.anchor}
-                className="rmp-name-outline"
-                strokeWidth="2.5"
                 style={{ cursor: canDrag ? 'grab' : undefined }}
                 {...dragHandlers}
             >
