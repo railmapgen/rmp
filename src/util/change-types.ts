@@ -51,7 +51,8 @@ const supportsTransferProperty = (
 ): boolean => {
     const stationType = graph.getNodeAttribute(station, 'type') as StationType;
     const attrs = graph.getNodeAttribute(station, stationType);
-    return !!(attrs && 'transfer' in attrs);
+    const defaultAttrs = stations[stationType].defaultAttrs;
+    return !!((attrs && 'transfer' in attrs) || 'transfer' in defaultAttrs);
 };
 
 /**
