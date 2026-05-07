@@ -93,6 +93,7 @@ const SvgWrapper = () => {
         !autoParallel || // Disabled if autoParallel is off
         // Or disabled only if autoParallel is on and user has no cloud subscription and exceeds free limit
         (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
+    const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
 
     const {
         viewportRef,
@@ -365,6 +366,7 @@ const SvgWrapper = () => {
                     graph.current,
                     isMasterDisabled,
                     isParallelDisabled,
+                    isGenericLineStyleLayerLimited,
                     roundToMultiple(svgMidX, 5),
                     roundToMultiple(svgMidY, 5)
                 );
