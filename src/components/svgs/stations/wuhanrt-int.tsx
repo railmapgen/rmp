@@ -44,18 +44,11 @@ const WUHAN_RT_INT_SOURCE_SCALE = WUHAN_RT_INT_RADIUS / WUHAN_RT_INT_SOURCE_RADI
 const WUHAN_RT_INT_STROKE_WIDTH = 1.2;
 const WUHAN_RT_INT_SOURCE_STROKE_WIDTH = WUHAN_RT_INT_STROKE_WIDTH / WUHAN_RT_INT_SOURCE_SCALE;
 
-const WuhanRTIntTwoLineIcon = (props: {
-    color: string;
-    id?: string;
-    onPointerDown?: React.PointerEventHandler<SVGGElement>;
-    onPointerMove?: React.PointerEventHandler<SVGGElement>;
-    onPointerUp?: React.PointerEventHandler<SVGGElement>;
-    style?: React.CSSProperties;
-}) => {
-    const { color, id, onPointerDown, onPointerMove, onPointerUp, style } = props;
+const WuhanRTIntTwoLineIcon = (props: { color: string }) => {
+    const { color } = props;
 
     return (
-        <g id={id} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} style={style}>
+        <g>
             <circle r={WUHAN_RT_INT_RADIUS} fill="white" stroke={color} strokeWidth={WUHAN_RT_INT_STROKE_WIDTH} />
             <g transform="scale(0.32)">
                 <path
@@ -75,24 +68,12 @@ const WuhanRTIntTwoLineIcon = (props: {
     );
 };
 
-const WuhanRTIntThreeLineIcon = (props: {
-    color: string;
-    id?: string;
-    onPointerDown?: React.PointerEventHandler<SVGGElement>;
-    onPointerMove?: React.PointerEventHandler<SVGGElement>;
-    onPointerUp?: React.PointerEventHandler<SVGGElement>;
-    style?: React.CSSProperties;
-}) => {
-    const { color, id, onPointerDown, onPointerMove, onPointerUp, style } = props;
+const WuhanRTIntThreeLineIcon = (props: { color: string }) => {
+    const { color } = props;
 
     return (
         <g
-            id={id}
             transform={`scale(${WUHAN_RT_INT_SOURCE_SCALE}) translate(${-WUHAN_RT_INT_SOURCE_CX} ${-WUHAN_RT_INT_SOURCE_CY})`}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            style={style}
         >
             <circle
                 cx={WUHAN_RT_INT_SOURCE_CX}
@@ -175,24 +156,19 @@ const WuhanRTIntStation = (props: StationComponentProps) => {
     return (
         <g>
             {hasThreeOrMoreTransfers ? (
-                <WuhanRTIntThreeLineIcon
-                    color={WUHAN_RT_INT_COLOUR}
-                    id={`stn_core_${id}`}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+                <WuhanRTIntThreeLineIcon color={WUHAN_RT_INT_COLOUR} />
             ) : (
-                <WuhanRTIntTwoLineIcon
-                    color={WUHAN_RT_INT_COLOUR}
-                    id={`stn_core_${id}`}
-                    onPointerDown={onPointerDown}
-                    onPointerMove={onPointerMove}
-                    onPointerUp={onPointerUp}
-                    style={{ cursor: 'move' }}
-                />
+                <WuhanRTIntTwoLineIcon color={WUHAN_RT_INT_COLOUR} />
             )}
+            <circle
+                id={`stn_core_${id}`}
+                r={radius}
+                fill="transparent"
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                style={{ cursor: 'move' }}
+            />
             <g
                 id={`stn_name_${id}`}
                 transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
