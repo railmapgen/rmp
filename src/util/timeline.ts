@@ -19,6 +19,15 @@ import {
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 
+export interface TimelineCoverage {
+    missingNodeIds: NodeId[];
+    missingEdgeIds: LineId[];
+    missingIds: Id[];
+    missingNodeCount: number;
+    missingEdgeCount: number;
+    isComplete: boolean;
+}
+
 const getNodePrimaryName = (graph: TimelineGraph, nodeId: NodeId): string => {
     if (!graph.hasNode(nodeId)) return nodeId;
 
@@ -81,6 +90,22 @@ export const normalizeTimelineDocument = (doc?: TimelineDocument | null): Timeli
                 (entry.kind === 'node' || entry.kind === 'edge') &&
                 typeof entry.refId === 'string'
         ),
+    };
+};
+
+export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument): TimelineCoverage => {
+    const addedRefs = new Set<Id>(doc.track.map(entry => entry.refId));
+    const missingNodeIds = graph.nodes().filter(node => !addedRefs.has(node as NodeId)) as NodeId[];
+    const missingEdgeIds = graph.edges().filter(edge => !addedRefs.has(edge as LineId)) as LineId[];
+    const missingIds = [...missingNodeIds, ...missingEdgeIds];
+
+    return {
+        missingNodeIds,
+        missingEdgeIds,
+        missingIds,
+        missingNodeCount: missingNodeIds.length,
+        missingEdgeCount: missingEdgeIds.length,
+        isComplete: missingIds.length === 0,
     };
 };
 

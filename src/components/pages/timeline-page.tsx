@@ -3,7 +3,7 @@ import React from 'react';
 import { Id } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTimelineDocument } from '../../redux/timeline/timeline-slice';
-import { normalizeTimelineDocument } from '../../util/timeline';
+import { getTimelineCoverage, normalizeTimelineDocument } from '../../util/timeline';
 import TimelineTrackPanel from '../timeline/timeline-track-panel';
 import TimelineSvgWrapper, { TimelineSvgHandle } from '../timeline/timeline-svg-wrapper';
 
@@ -19,6 +19,16 @@ export default function TimelinePage() {
     const svgHandleRef = React.useRef<TimelineSvgHandle>(null);
     const graph = React.useRef(window.graph);
     const [selectedId, setSelectedId] = React.useState<Id | undefined>(undefined);
+    const [showMissingHighlight, setShowMissingHighlight] = React.useState(false);
+
+    const coverage = React.useMemo(
+        () => getTimelineCoverage(graph.current, timeline),
+        [refreshEdges, refreshNodes, timeline]
+    );
+    const highlightedIds = React.useMemo(
+        () => (showMissingHighlight && !coverage.isComplete ? new Set<Id>(coverage.missingIds) : undefined),
+        [coverage.isComplete, coverage.missingIds, showMissingHighlight]
+    );
 
     const handleTimelineChange = React.useCallback(
         (nextDocument: typeof timeline) => {
@@ -38,16 +48,31 @@ export default function TimelinePage() {
         setSelectedId(undefined);
     }, [refreshEdges, refreshNodes, selectedId]);
 
+    React.useEffect(() => {
+        if (!coverage.isComplete) return;
+        setShowMissingHighlight(false);
+    }, [coverage.isComplete]);
+
     return (
         <Flex direction="column" height="100%" overflow="hidden">
             <Box flex="1" minH="0">
-                <TimelineSvgWrapper ref={svgHandleRef} selectedId={selectedId} onSelect={setSelectedId} />
+                <TimelineSvgWrapper
+                    ref={svgHandleRef}
+                    selectedId={selectedId}
+                    highlightedIds={highlightedIds}
+                    onSelect={setSelectedId}
+                />
             </Box>
             <Divider borderColor={borderColor} />
             <Box height={`${TRACK_PANEL_HEIGHT}px`} minH={`${TRACK_PANEL_HEIGHT}px`} maxH={`${TRACK_PANEL_HEIGHT}px`}>
                 <TimelineTrackPanel
                     document={timeline}
                     selectedId={selectedId}
+                    missingNodeCount={coverage.missingNodeCount}
+                    missingEdgeCount={coverage.missingEdgeCount}
+                    isCoverageComplete={coverage.isComplete}
+                    isMissingHighlightShown={showMissingHighlight}
+                    onToggleMissingHighlight={() => setShowMissingHighlight(value => !value)}
                     onSelectEntry={handleSelectEntry}
                     onDocumentChange={handleTimelineChange}
                 />

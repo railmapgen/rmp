@@ -19,6 +19,11 @@ import TimelineTrack from './timeline-track';
 interface TimelineTrackPanelProps {
     document: TimelineDocument;
     selectedId?: Id;
+    missingNodeCount: number;
+    missingEdgeCount: number;
+    isCoverageComplete: boolean;
+    isMissingHighlightShown: boolean;
+    onToggleMissingHighlight: () => void;
     onSelectEntry: (refId: Id) => void;
     onDocumentChange: (document: TimelineDocument) => void;
 }
@@ -26,6 +31,11 @@ interface TimelineTrackPanelProps {
 export default function TimelineTrackPanel({
     document,
     selectedId,
+    missingNodeCount,
+    missingEdgeCount,
+    isCoverageComplete,
+    isMissingHighlightShown,
+    onToggleMissingHighlight,
     onSelectEntry,
     onDocumentChange,
 }: TimelineTrackPanelProps) {
@@ -188,6 +198,30 @@ export default function TimelineTrackPanel({
                             <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
                                 {t('header.timelinePage.selectHint')}
                             </Text>
+                        )}
+                        {isCoverageComplete ? (
+                            <Text fontSize="xs" color="green.600" noOfLines={1} w="full">
+                                {t('header.timelinePage.coverageComplete')}
+                            </Text>
+                        ) : (
+                            <HStack spacing={2} wrap="wrap" w="full">
+                                <Text fontSize="xs" color="orange.600" noOfLines={1}>
+                                    {t('header.timelinePage.missingCoverage', {
+                                        nodeCount: missingNodeCount,
+                                        edgeCount: missingEdgeCount,
+                                    })}
+                                </Text>
+                                <Button
+                                    size="xs"
+                                    variant="link"
+                                    colorScheme="orange"
+                                    onClick={onToggleMissingHighlight}
+                                >
+                                    {isMissingHighlightShown
+                                        ? t('header.timelinePage.clearMissingHighlight')
+                                        : t('header.timelinePage.highlightMissing')}
+                                </Button>
+                            </HStack>
                         )}
                     </VStack>
 

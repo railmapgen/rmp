@@ -7,10 +7,11 @@ import SvgLayer from '../svg-layer';
 
 interface TimelineSvgCanvasProps {
     selectedId?: Id;
+    highlightedIds?: Set<Id>;
     onSelect: (id: Id) => void;
 }
 
-export default function TimelineSvgCanvas({ selectedId, onSelect }: TimelineSvgCanvasProps) {
+export default function TimelineSvgCanvas({ selectedId, highlightedIds, onSelect }: TimelineSvgCanvasProps) {
     const graph = React.useRef(window.graph);
     const {
         refresh: { nodes: refreshNodes, edges: refreshEdges },
@@ -36,6 +37,7 @@ export default function TimelineSvgCanvas({ selectedId, onSelect }: TimelineSvgC
         <SvgLayer
             elements={elements}
             selected={selected}
+            highlighted={highlightedIds}
             handlePointerDown={handlePointerDown}
             handlePointerMove={() => {}}
             handlePointerUp={() => {}}

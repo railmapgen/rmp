@@ -12,6 +12,7 @@ import { default as allStations } from './svgs/stations/stations';
 interface SvgLayerProps {
     elements: Element[];
     selected: Set<Id>;
+    highlighted?: Set<Id>;
     handlePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
@@ -29,6 +30,7 @@ const SvgLayer = React.memo(
         const {
             elements,
             selected,
+            highlighted,
             handlePointerDown,
             handlePointerMove,
             handlePointerUp,
@@ -44,7 +46,12 @@ const SvgLayer = React.memo(
         );
         for (const element of elements) {
             const isSelected = selected.has(element.id);
-            const selectedGlowClassName = isSelected ? 'rmp-selected-glow' : undefined;
+            const isHighlighted = highlighted?.has(element.id);
+            const glowClassName = isSelected
+                ? 'rmp-selected-glow'
+                : isHighlighted
+                  ? 'rmp-timeline-missing-glow'
+                  : undefined;
 
             if (element.type === 'line') {
                 const id = element.id as LineId;
@@ -60,7 +67,7 @@ const SvgLayer = React.memo(
                         <g
                             key={`${id}.pre`}
                             id={`${id}.pre`}
-                            className={selectedGlowClassName}
+                            className={glowClassName}
                             onDoubleClick={e => handleEdgeDoubleClick(id, e)}
                         >
                             <PreStyleComponent
@@ -77,12 +84,7 @@ const SvgLayer = React.memo(
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <g
-                        key={id}
-                        id={id}
-                        className={selectedGlowClassName}
-                        onDoubleClick={e => handleEdgeDoubleClick(id, e)}
-                    >
+                    <g key={id} id={id} className={glowClassName} onDoubleClick={e => handleEdgeDoubleClick(id, e)}>
                         <StyleComponent
                             id={id}
                             type={type}
@@ -100,7 +102,7 @@ const SvgLayer = React.memo(
                         <g
                             key={`${id}.post`}
                             id={`${id}.post`}
-                            className={selectedGlowClassName}
+                            className={glowClassName}
                             onDoubleClick={e => handleEdgeDoubleClick(id, e)}
                         >
                             <PostStyleComponent
@@ -126,7 +128,7 @@ const SvgLayer = React.memo(
                             key={`${element.id}.pre`}
                             id={`${element.id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            className={glowClassName}
                         >
                             <PreStationComponent
                                 id={id}
@@ -143,7 +145,7 @@ const SvgLayer = React.memo(
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={selectedGlowClassName}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={glowClassName}>
                         <StationComponent
                             id={id}
                             x={attr.x}
@@ -163,7 +165,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            className={glowClassName}
                         >
                             <PostStationComponent
                                 id={id}
@@ -189,7 +191,7 @@ const SvgLayer = React.memo(
                             key={`${id}.pre`}
                             id={`${id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            className={glowClassName}
                         >
                             <PreMiscNodeComponent
                                 id={id}
@@ -207,7 +209,7 @@ const SvgLayer = React.memo(
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={selectedGlowClassName}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={glowClassName}>
                         <MiscNodeComponent
                             id={id}
                             x={attr.x}
@@ -228,7 +230,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            className={glowClassName}
                         >
                             <PostMiscNodeComponent
                                 id={id}
@@ -252,7 +254,10 @@ const SvgLayer = React.memo(
 
         return jsxElements;
     },
-    (prevProps, nextProps) => prevProps.elements === nextProps.elements && prevProps.selected === nextProps.selected
+    (prevProps, nextProps) =>
+        prevProps.elements === nextProps.elements &&
+        prevProps.selected === nextProps.selected &&
+        prevProps.highlighted === nextProps.highlighted
 );
 
 export default SvgLayer;

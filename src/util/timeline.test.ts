@@ -6,6 +6,7 @@ import { TimelineDocument } from '../constants/timeline';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import {
     appendTimelineEntry,
+    getTimelineCoverage,
     getTimelineElementCenter,
     getTimelineEntryTitle,
     moveTimelineEntry,
@@ -81,5 +82,51 @@ describe('timeline utilities', () => {
         expect(getTimelineEntryTitle(graph, { id: '2', kind: 'edge', refId: 'line_ab' })).toBe('Alpha -> Beta');
         expect(getTimelineElementCenter(graph, 'stn_a')).toEqual({ x: 10, y: 20 });
         expect(getTimelineElementCenter(graph, 'line_ab')).toEqual({ x: 60, y: 120 });
+    });
+
+    it('should report all graph entries as missing for an empty timeline', () => {
+        const graph = makeGraph();
+        const coverage = getTimelineCoverage(graph, { version: 1, track: [] });
+
+        expect(coverage.missingNodeIds).toEqual(['stn_a', 'stn_b']);
+        expect(coverage.missingEdgeIds).toEqual(['line_ab']);
+        expect(coverage.missingIds).toEqual(['stn_a', 'stn_b', 'line_ab']);
+        expect(coverage.missingNodeCount).toBe(2);
+        expect(coverage.missingEdgeCount).toBe(1);
+        expect(coverage.isComplete).toBe(false);
+    });
+
+    it('should report only graph entries that are not already on the timeline', () => {
+        const graph = makeGraph();
+        const coverage = getTimelineCoverage(graph, {
+            version: 1,
+            track: [
+                { id: 'clip_1', kind: 'node', refId: 'stn_a' },
+                { id: 'clip_deleted', kind: 'edge', refId: 'line_deleted' },
+            ],
+        });
+
+        expect(coverage.missingNodeIds).toEqual(['stn_b']);
+        expect(coverage.missingEdgeIds).toEqual(['line_ab']);
+        expect(coverage.missingIds).toEqual(['stn_b', 'line_ab']);
+        expect(coverage.isComplete).toBe(false);
+    });
+
+    it('should mark coverage complete when every current graph entry is on the timeline', () => {
+        const graph = makeGraph();
+        const coverage = getTimelineCoverage(graph, {
+            version: 1,
+            track: [
+                { id: 'clip_1', kind: 'node', refId: 'stn_a' },
+                { id: 'clip_2', kind: 'node', refId: 'stn_b' },
+                { id: 'clip_3', kind: 'edge', refId: 'line_ab' },
+                { id: 'clip_deleted', kind: 'node', refId: 'stn_deleted' },
+            ],
+        });
+
+        expect(coverage.missingNodeIds).toEqual([]);
+        expect(coverage.missingEdgeIds).toEqual([]);
+        expect(coverage.missingIds).toEqual([]);
+        expect(coverage.isComplete).toBe(true);
     });
 });

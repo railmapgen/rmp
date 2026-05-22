@@ -736,7 +736,11 @@
             "noPathFound": "選択した色のパスが見つかりません。",
             "pathAdded": "トラックに {{count}} 個の要素を追加しました。",
             "pathAlreadyAdded": "このパスのすべての要素はすでに追加されています。",
-            "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。"
+            "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。",
+            "missingCoverage": "{{nodeCount}} 個のノードと {{edgeCount}} 本の線分がタイムラインに未追加です。",
+            "highlightMissing": "未追加を強調",
+            "clearMissingHighlight": "強調を解除",
+            "coverageComplete": "すべてのノードと線分がタイムラインに追加されています。"
         },
         "open": {
             "new": "新しい作品",

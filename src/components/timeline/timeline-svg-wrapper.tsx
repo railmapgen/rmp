@@ -10,6 +10,7 @@ import TimelineSvgCanvas from './timeline-svg-canvas';
 
 interface TimelineSvgWrapperProps {
     selectedId?: Id;
+    highlightedIds?: Set<Id>;
     onSelect: (id: Id | undefined) => void;
 }
 
@@ -34,7 +35,7 @@ const viewportToTransform = (viewport: Viewport) => {
 };
 
 export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(function TimelineSvgWrapper(
-    { selectedId, onSelect },
+    { selectedId, highlightedIds, onSelect },
     ref
 ) {
     const containerRef = React.useRef<HTMLDivElement>(null);
@@ -221,7 +222,11 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
                 <rect x="0" y="0" width={size.width} height={size.height} fill="transparent" pointerEvents="all" />
                 <g transform={viewportToTransform(viewport)}>
                     <utils.SvgAssetsContextProvider>
-                        <TimelineSvgCanvas selectedId={selectedId} onSelect={handleSelect} />
+                        <TimelineSvgCanvas
+                            selectedId={selectedId}
+                            highlightedIds={highlightedIds}
+                            onSelect={handleSelect}
+                        />
                     </utils.SvgAssetsContextProvider>
                 </g>
             </svg>

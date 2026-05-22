@@ -733,7 +733,11 @@
             "noPathFound": "所选颜色在这两站之间没有找到路径。",
             "pathAdded": "成功将 {{count}} 个元素添加进轨道。",
             "pathAlreadyAdded": "此路径中的所有元素都已存在于轨道中。",
-            "empty": "轨道还是空的。先在上方选择元素，再开始构建时间线。"
+            "empty": "轨道还是空的。先在上方选择元素，再开始构建时间线。",
+            "missingCoverage": "还有 {{nodeCount}} 个节点、{{edgeCount}} 条线段未加入时间线。",
+            "highlightMissing": "高亮遗漏",
+            "clearMissingHighlight": "取消高亮",
+            "coverageComplete": "所有节点和线段都已加入时间线。"
         },
         "open": {
             "new": "新项目",
