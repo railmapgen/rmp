@@ -230,7 +230,12 @@
                     "airport_chengdu": "成都空港",
                     "railway_chengdu": "成都鉄道駅",
                     "railway_taiwan": "台湾鉄道",
-                    "hsr_taiwan": "台湾高速鉄道"
+                    "hsr_taiwan": "台湾高速鉄道",
+                    "railway_shenzhen": "深圳鉄道駅",
+                    "intercity_shenzhen": "深圳都市間鉄道",
+                    "ferry_shenzhen": "深圳フェリー",
+                    "tram_shenzhen": "深圳トラム",
+                    "airport_shenzhen": "深圳空港"
                 },
                 "text": {
                     "displayName": "任意の文字",

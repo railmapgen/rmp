@@ -228,7 +228,12 @@
                     "airport_chengdu": "Airport Chengdu",
                     "railway_chengdu": "Railway Chengdu",
                     "railway_taiwan": "Railway Taiwan",
-                    "hsr_taiwan": "High Speed Railway Taiwan"
+                    "hsr_taiwan": "High Speed Railway Taiwan",
+                    "railway_shenzhen": "Railway Shenzhen",
+                    "intercity_shenzhen": "Intercity Shenzhen",
+                    "ferry_shenzhen": "Ferry Shenzhen",
+                    "tram_shenzhen": "Tram Shenzhen",
+                    "airport_shenzhen": "Airport Shenzhen"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
