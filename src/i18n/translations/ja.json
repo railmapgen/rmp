@@ -171,6 +171,9 @@
                     "displayName": "台北地下鉄路線記号",
                     "tram": "路面電車"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通路線記号"
+                },
                 "image": {
                     "displayName": "画像",
                     "label": "ラベル",

@@ -169,6 +169,9 @@
                     "displayName": "Taipei Metro line badge",
                     "tram": "Tram"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "Wuhan Rail Transit line badge"
+                },
                 "image": {
                     "displayName": "Image",
                     "label": "Label",

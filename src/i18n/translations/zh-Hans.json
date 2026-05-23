@@ -169,6 +169,9 @@
                     "displayName": "台北捷运线路标志",
                     "tram": "轻轨"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武汉轨道交通线路标识"
+                },
                 "image": {
                     "displayName": "图像",
                     "label": "标签",
