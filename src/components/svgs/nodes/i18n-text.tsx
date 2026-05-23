@@ -7,7 +7,7 @@ const I18nText = (props: NodeComponentProps<I18nTextAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const translateName = useTranslatedName();
 
-    attrs.content = translateName(attrs.contents);
+    const textAttrs = { ...attrs, content: translateName(attrs.contents) };
 
     const Text = text.component;
 
@@ -19,7 +19,7 @@ const I18nText = (props: NodeComponentProps<I18nTextAttributes>) => {
             handlePointerDown={handlePointerDown}
             handlePointerMove={handlePointerMove}
             handlePointerUp={handlePointerUp}
-            attrs={attrs}
+            attrs={textAttrs}
         />
     );
 };
