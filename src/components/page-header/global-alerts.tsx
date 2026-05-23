@@ -30,10 +30,19 @@ export default function GlobalAlerts() {
                     zIndex="1"
                 >
                     <AlertIcon />
+                    const isValidUrl = (url: string) => {
+                        try {
+                            const parsed = new URL(url);
+                            return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+                        } catch {
+                            return false;
+                        }
+                    };
+
                     {linkedApp ? (
                         <Link onClick={() => handleAppOpen(linkedApp)}>{message}</Link>
-                    ) : url ? (
-                        <Link href={url} target="_blank">
+                    ) : url && isValidUrl(url) ? (
+                        <Link href={url} target="_blank" rel="noopener noreferrer">
                             {message}
                         </Link>
                     ) : (
