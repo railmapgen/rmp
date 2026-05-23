@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 74;
+export const CURRENT_VERSION = 75;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1011,4 +1011,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 74, graph: graph.export() });
     },
+    74: param =>
+        // Bump save version to support Shenzhen facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 75 }),
 };

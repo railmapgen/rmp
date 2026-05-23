@@ -1034,4 +1034,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_wuhan_old","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_wuhan_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["三线换乘"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[["wuhan","wuhan1","#28628E","#fff","",""],["wuhan","wuhan2","#9A1F40","#fff","",""],["wuhan","wuhan3","#CA9A8E","#000","",""]]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":74}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('74 -> 75', () => {
+        // Bump save version to support Shenzhen facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_shenzhen_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"airport_shenzhen"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":74}';
+        const newParam = UPGRADE_COLLECTION[74](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_shenzhen_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"airport_shenzhen"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":75}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
