@@ -62,7 +62,7 @@ const WuhanRTLineBadge = (props: NodeComponentProps<WuhanRTLineBadgeAttributes>)
                 x={width / 2}
                 y={BADGE_TEXT_Y}
                 letterSpacing="-0.5"
-                fill={MonoColour.white}
+                fill={color[3]}
                 fontSize={BADGE_FONT_SIZE}
                 dominantBaseline="central"
             >
