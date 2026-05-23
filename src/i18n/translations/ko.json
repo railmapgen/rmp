@@ -228,7 +228,12 @@
                     "airport_chengdu": "청두 공항",
                     "railway_chengdu": "청두 기차역",
                     "railway_taiwan": "대만 철도",
-                    "hsr_taiwan": "대만 고속철도 (HSR)"
+                    "hsr_taiwan": "대만 고속철도 (HSR)",
+                    "railway_shenzhen": "선전 기차역",
+                    "intercity_shenzhen": "선전 시외 철도",
+                    "ferry_shenzhen": "선전 페리",
+                    "tram_shenzhen": "선전 트램",
+                    "airport_shenzhen": "선전 공항"
                 },
                 "text": {
                     "displayName": "임의 글자",
