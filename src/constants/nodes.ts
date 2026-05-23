@@ -28,6 +28,7 @@ import type { GuangdongIntercityRailwayLineBadgeAttributes } from '../components
 import type { LondonArrowAttributes } from '../components/svgs/nodes/london-arrow';
 import type { ChengduRTLineBadgeAttributes } from '../components/svgs/nodes/chengdurt-line-badge';
 import type { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
+import type { WuhanRTLineBadgeAttributes } from '../components/svgs/nodes/wuhanrt-line-badge';
 import type { FillAttributes } from '../components/svgs/nodes/fill';
 
 export enum MiscNodeType {
@@ -59,6 +60,7 @@ export enum MiscNodeType {
     LondonArrow = 'london-arrow',
     ChengduRTLineBadge = 'chengdurt-line-badge',
     TaiPeiMetroLineBadege = 'taipei-metro-line-badge',
+    WuhanRTLineBadge = 'wuhanrt-line-badge',
 }
 
 export interface MiscNodeAttributes {
@@ -90,6 +92,7 @@ export interface MiscNodeAttributes {
     [MiscNodeType.LondonArrow]?: LondonArrowAttributes;
     [MiscNodeType.ChengduRTLineBadge]?: ChengduRTLineBadgeAttributes;
     [MiscNodeType.TaiPeiMetroLineBadege]?: TaipeiMetroLineBadgeAttributes;
+    [MiscNodeType.WuhanRTLineBadge]?: WuhanRTLineBadgeAttributes;
 }
 
 /* ----- Below are core types for all miscellaneous nodes, DO NOT TOUCH. ----- */

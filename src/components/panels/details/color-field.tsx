@@ -61,6 +61,7 @@ const dynamicColorInjectionMiscNodeKeys = [
     MiscNodeType.LondonArrow,
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.TaiPeiMetroLineBadege,
+    MiscNodeType.WuhanRTLineBadge,
 ] as const;
 const dynamicColorInjectionLineStyleKeys = [
     LineStyleType.SingleColor,

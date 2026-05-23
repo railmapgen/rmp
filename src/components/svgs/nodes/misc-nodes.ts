@@ -27,6 +27,7 @@ import guangdongIntercityRailwayLineBadge from './guangdong-intercity-railway-li
 import londonArrow from './london-arrow';
 import chengduRTLineBadge from './chengdurt-line-badge';
 import taipeiMetroLineBadge from './taipei-metro-line-badge';
+import wuhanRTLineBadge from './wuhanrt-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -57,6 +58,7 @@ const miscNodes = {
     [MiscNodeType.LondonArrow]: londonArrow,
     [MiscNodeType.ChengduRTLineBadge]: chengduRTLineBadge,
     [MiscNodeType.TaiPeiMetroLineBadege]: taipeiMetroLineBadge,
+    [MiscNodeType.WuhanRTLineBadge]: wuhanRTLineBadge,
 };
 
 export default miscNodes;

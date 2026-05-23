@@ -169,6 +169,9 @@
                     "displayName": "台北捷運線路標識",
                     "tram": "輕軌"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通線路標識"
+                },
                 "image": {
                     "displayName": "影像",
                     "label": "標籤",

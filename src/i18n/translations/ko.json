@@ -169,6 +169,9 @@
                     "displayName": "타이페이 지하철 노선 뱃지",
                     "tram": "트램"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "우한 도시철도 노선 표식"
+                },
                 "image": {
                     "displayName": "이미지",
                     "label": "라벨",
