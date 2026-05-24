@@ -41,6 +41,10 @@ const defaultMasterSelected: MasterTypeList = {
     fg: MonoColour.white,
 };
 
+export const isSupportedMasterVersion = (version: unknown) => {
+    return typeof version === 'number' && version >= 2 && version <= 4;
+};
+
 const styles: SystemStyleObject = {
     h: '80%',
     w: '80%',
@@ -111,7 +115,7 @@ export const MasterImport = (props: {
                 core: p.core,
                 version: p.version,
             };
-            if (!param.version || param.version < 2) {
+            if (!isSupportedMasterVersion(param.version)) {
                 toast({
                     title: 'Outdated configuration!',
                     status: 'error' as const,

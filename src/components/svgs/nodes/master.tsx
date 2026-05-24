@@ -8,6 +8,7 @@ import { AttrsProps, Theme } from '../../../constants/constants';
 import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { usePaletteTheme } from '../../../util/hooks';
+import { evaluateMasterSvgAttrs, normalizeTheme } from '../../../util/master-attr-binding';
 import { MasterImport } from '../../page-header/master-import';
 import { MasterManager } from '../../page-header/master-manager';
 import ThemeButton from '../../panels/theme-button';
@@ -30,14 +31,18 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     const calcFunc = (str: string, ...rest: string[]) => new Function(...rest, `return ${str}`);
 
-    const modifyAttributes = <T extends Record<string, any>>(t: T, varValues: string[], varType: string[]): T => {
-        const modifiedAttrs: Partial<T> = {};
+    const modifyAttributes = <T extends Record<string, any>>(
+        t: T | undefined,
+        varValues: string[],
+        varType: string[]
+    ): T => {
+        const modifiedAttrs: Record<string, any> = {};
 
-        for (const key in t) {
+        for (const key in t ?? {}) {
             if (Object.prototype.hasOwnProperty.call(t, key)) {
                 try {
                     modifiedAttrs[key] = calcFunc(
-                        (t[key] as string).slice(1),
+                        (t![key] as string).slice(1),
                         ...attrs.components.map(s => s.label),
                         'color'
                     )(
@@ -76,11 +81,15 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                 attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
                     ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
                     : {};
-            const calcAttrs = modifyAttributes(
-                s.attrs,
-                attrs.components.map(s => s.value),
-                attrs.components.map(s => s.type)
-            );
+            const evaluatedAttrs =
+                attrs.version === 4
+                    ? evaluateMasterSvgAttrs(s, attrs.components).attrs
+                    : modifyAttributes(
+                          s.attrs,
+                          attrs.components.map(s => s.value),
+                          attrs.components.map(s => s.type)
+                      );
+            const calcAttrs = evaluatedAttrs as Record<string, any>;
             return (
                 <g key={s.id} transform={`translate(${calcAttrs.x ?? 0}, ${calcAttrs.y ?? 0})`}>
                     {React.createElement(
@@ -96,8 +105,8 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                             : !('_rmp_children_text' in calcAttrs)
                               ? null
                               : s.type === 'style'
-                                ? updateCSS(calcAttrs._rmp_children_text)
-                                : (calcAttrs._rmp_children_text as string)
+                                ? updateCSS(String(calcAttrs._rmp_children_text))
+                                : String(calcAttrs._rmp_children_text)
                     )}
                 </g>
             );
@@ -133,6 +142,20 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
 export interface MasterAttributes extends MasterParam {}
 
+const MasterComponentThemeButton = (props: {
+    component: MasterParam['components'][number];
+    onChange: (theme: Theme) => void;
+}) => {
+    const { component, onChange } = props;
+    const normalizedTheme = normalizeTheme(component.value ?? component.defaultValue).value;
+    const { theme, requestThemeChange } = usePaletteTheme({
+        theme: normalizedTheme,
+        onThemeApplied: onChange,
+    });
+
+    return <ThemeButton theme={theme} onClick={requestThemeChange} />;
+};
+
 const defaultMasterAttributes: MasterAttributes = {
     randomId: undefined,
     label: undefined,
@@ -157,20 +180,30 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
         param.components.forEach((c, i) => {
             param.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
         });
-        if (param.color !== undefined) param.color.value = attrs.color ? attrs.color.value : param.color.defaultValue;
+        if (param.color !== undefined)
+            param.color.value = attrs.color
+                ? (attrs.color.value ?? attrs.color.defaultValue)
+                : param.color.defaultValue;
         handleAttrsUpdate(id, param);
     };
 
+    const updateComponentValue = (index: number, value: unknown) => {
+        const components = attrs.components.map((component, componentIndex) =>
+            componentIndex === index ? { ...component, value } : component
+        );
+        handleAttrsUpdate(id, { ...attrs, components });
+    };
+
     const componentField: RmgFieldsField[] = attrs.components.map((c, i) => {
-        const { label, type, defaultValue, value } = c;
+        const { type, defaultValue, value } = c;
+        const label = c.name || c.label;
         if (type === 'number' || type === 'text') {
             return {
                 label: t(label),
                 type: 'input',
                 value: value ?? defaultValue,
                 onChange: v => {
-                    attrs.components[i].value = v;
-                    handleAttrsUpdate(id, { ...attrs, components: attrs.components });
+                    updateComponentValue(i, v);
                 },
             };
         } else if (type === 'switch') {
@@ -179,8 +212,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
                 type: 'switch',
                 isChecked: value !== undefined ? !!value : defaultValue,
                 onChange: v => {
-                    attrs.components[i].value = v;
-                    handleAttrsUpdate(id, { ...attrs, components: attrs.components });
+                    updateComponentValue(i, v);
                 },
             };
         } else if (type === 'textarea') {
@@ -189,9 +221,16 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
                 type: 'textarea',
                 value: value ?? defaultValue,
                 onChange: v => {
-                    attrs.components[i].value = v;
-                    handleAttrsUpdate(id, { ...attrs, components: attrs.components });
+                    updateComponentValue(i, v);
                 },
+            };
+        } else if (type === 'color') {
+            return {
+                type: 'custom',
+                label: t(label),
+                component: (
+                    <MasterComponentThemeButton component={c} onChange={theme => updateComponentValue(i, theme)} />
+                ),
             };
         } else {
             return {
@@ -254,7 +293,9 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
                 {t('header.settings.procedures.masterManager.title')}
             </Button>
             {attrs.randomId && <RmgFields fields={componentField} minW="full" />}
-            {attrs.randomId && attrs.color !== undefined && <RmgFields fields={colorField} minW="full" />}
+            {attrs.randomId && attrs.version !== 4 && attrs.color !== undefined && (
+                <RmgFields fields={colorField} minW="full" />
+            )}
             <MasterImport isOpen={openImport} onClose={() => setOpenImport(false)} onSubmit={handleImportParam} />
             <MasterManager isOpen={openManager} onClose={() => setOpenManager(false)} />
         </>
