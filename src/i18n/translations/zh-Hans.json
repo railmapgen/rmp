@@ -679,7 +679,10 @@
                     "displayName": "伦敦IFS云缆车样式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "广东城际铁路样式"
+                    "displayName": "广东城际铁路样式",
+                    "color": "颜色",
+                    "blue": "蓝色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重庆轨道交通线路标识连接线样式"

@@ -682,7 +682,10 @@
                     "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道風格"
+                    "displayName": "広東省都市間鉄道風格",
+                    "color": "色",
+                    "blue": "青色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶鉄道交通路線標識接続線風格"

@@ -679,7 +679,10 @@
                     "displayName": "런던 IFS 클라우드 케이블카 스타일"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "광동성 도시간 철도 스타일"
+                    "displayName": "광동성 도시간 철도 스타일",
+                    "color": "색상",
+                    "blue": "파란색",
+                    "gray": "회색"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "충칭 궤도교통 노선 표지 연결선 스타일"
