@@ -680,7 +680,10 @@
                     "displayName": "London IFS Cloud Cable Car style"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway style"
+                    "displayName": "Guangdong Intercity Railway style",
+                    "color": "Color",
+                    "blue": "Blue",
+                    "gray": "Gray"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "Chongqing Rail Transit line badge style"

@@ -679,7 +679,10 @@
                     "displayName": "倫敦IFS雲纜車樣式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路樣式"
+                    "displayName": "廣東城際鐵路樣式",
+                    "color": "顏色",
+                    "blue": "藍色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶軌道交通線路標識連接線樣式"
