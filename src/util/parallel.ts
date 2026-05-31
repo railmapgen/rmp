@@ -7,13 +7,13 @@ import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { makeOpenPathParallel } from './bezier-parallel';
 import { isShortOpenPath } from './path';
 
-type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided>;
+type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided | LinePathType.Freeform>;
 export type ParallelLinePathAttributes = NonNullable<ExternalLinePathAttributes[ParallelLinePathType]>;
 
 const MIN_ROUND_CORNER_FACTOR = 1;
 
 export const supportsParallelLinePath = (type: LinePathType): type is ParallelLinePathType =>
-    type !== LinePathType.Simple && type !== LinePathType.RayGuided;
+    type !== LinePathType.Simple && type !== LinePathType.RayGuided && type !== LinePathType.Freeform;
 
 /**
  * Classify all the lines between source and target of the provided line

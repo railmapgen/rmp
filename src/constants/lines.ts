@@ -6,6 +6,7 @@ import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diag
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
@@ -48,6 +49,7 @@ export enum LinePathType {
     RotatePerpendicular = 'ro-perp',
     RayGuided = 'ray-guided',
     Simple = 'simple',
+    Freeform = 'freeform',
 }
 
 export interface ExternalLinePathAttributes {
@@ -56,6 +58,7 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
     [LinePathType.RayGuided]?: RayGuidedPathAttributes;
+    [LinePathType.Freeform]?: FreeformPathAttributes;
 }
 
 export enum LineStyleType {
@@ -163,6 +166,7 @@ export interface LineStyleComponentProps<
      */
     type: LinePathType;
     path: OpenPath;
+    areaPathD?: string;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
