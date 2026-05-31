@@ -14,15 +14,17 @@ import {
     normalizeLondonTubeLineBadgeItem,
 } from './london-tube-line-badge-utils';
 
-const TITLE_FONT_SIZE = 0.72 * LINE_WIDTH;
-const SUBTITLE_FONT_SIZE = 0.42 * LINE_WIDTH;
-const HORIZONTAL_PADDING = 0.7 * LINE_WIDTH;
-const MIN_WIDTH = 7 * LINE_WIDTH;
-const DOUBLE_LINE_CENTER_OFFSET = 0.35 * LINE_WIDTH;
-const WALKING_SINGLE_TITLE_CENTER_Y = -0.18 * LINE_WIDTH;
-const WALKING_MULTI_TITLE_START_Y = -0.62 * LINE_WIDTH;
-const WALKING_TITLE_LINE_STEP = 0.62 * LINE_WIDTH;
-const WALKING_SUBTITLE_GAP = 0.64 * LINE_WIDTH;
+const FILLED_BADGE_SCALE = 1.6;
+const FILLED_WALKING_BADGE_SCALE = 1.75;
+const TITLE_FONT_SIZE_RATIO = 0.72;
+const SUBTITLE_FONT_SIZE_RATIO = 0.42;
+const HORIZONTAL_PADDING_RATIO = 0.7;
+const MIN_WIDTH_RATIO = 7;
+const DOUBLE_LINE_CENTER_OFFSET_RATIO = 0.35;
+const WALKING_SINGLE_TITLE_CENTER_Y_RATIO = -0.18;
+const WALKING_MULTI_TITLE_START_Y_RATIO = -0.62;
+const WALKING_TITLE_LINE_STEP_RATIO = 0.62;
+const WALKING_SUBTITLE_GAP_RATIO = 0.64;
 
 const defaultLondonTubeLineBadgeAttributes: LondonTubeLineBadgeAttributes = {
     items: [createDefaultLondonTubeLineBadgeItem()],
@@ -31,14 +33,19 @@ const defaultLondonTubeLineBadgeAttributes: LondonTubeLineBadgeAttributes = {
 const areWidthsEqual = (prev: number[], next: number[]) =>
     prev.length === next.length && prev.every((width, index) => Math.abs(width - next[index]) < 0.01);
 
-const getWalkingTitleYs = (lineCount: number) => {
+const getItemScale = (item: LondonTubeLineBadgeItem) =>
+    item.kind === 'filled-walking' ? FILLED_WALKING_BADGE_SCALE : FILLED_BADGE_SCALE;
+
+const getItemLineWidth = (item: LondonTubeLineBadgeItem) => LINE_WIDTH * getItemScale(item);
+
+const getWalkingTitleYs = (lineCount: number, itemLineWidth: number) => {
     if (lineCount <= 1) {
-        return [WALKING_SINGLE_TITLE_CENTER_Y];
+        return [WALKING_SINGLE_TITLE_CENTER_Y_RATIO * itemLineWidth];
     }
 
     return Array.from(
         { length: lineCount },
-        (_, index) => WALKING_MULTI_TITLE_START_Y + index * WALKING_TITLE_LINE_STEP
+        (_, index) => (WALKING_MULTI_TITLE_START_Y_RATIO + index * WALKING_TITLE_LINE_STEP_RATIO) * itemLineWidth
     );
 };
 
@@ -82,8 +89,19 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
         };
     }, [measure]);
 
-    const stackWidth = Math.max(MIN_WIDTH, ...contentWidths.map(width => width + 2 * HORIZONTAL_PADDING));
-    const itemHeights = items.map(item => getLondonTubeLineBadgeHeight(item, LINE_WIDTH));
+    const itemLineWidths = items.map(getItemLineWidth);
+    const stackWidth =
+        items.length === 0
+            ? 0
+            : Math.max(
+                  ...items.map((item, index) =>
+                      Math.max(
+                          MIN_WIDTH_RATIO * itemLineWidths[index],
+                          (contentWidths[index] ?? 0) + 2 * HORIZONTAL_PADDING_RATIO * itemLineWidths[index]
+                      )
+                  )
+              );
+    const itemHeights = items.map((item, index) => getLondonTubeLineBadgeHeight(item, itemLineWidths[index]));
     const totalHeight = itemHeights.reduce((sum, height) => sum + height, 0);
 
     const itemCenters = React.useMemo(() => {
@@ -117,9 +135,13 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
             {items.map((item, index) => {
                 const lines = getLondonTubeLineBadgeDisplayLines(item);
                 const subtitle = item.kind === 'filled-walking' ? getLondonTubeLineBadgeSubtitle(item) : '';
-                const walkingTitleYs = item.kind === 'filled-walking' ? getWalkingTitleYs(lines.length) : [];
+                const itemLineWidth = itemLineWidths[index];
+                const titleFontSize = TITLE_FONT_SIZE_RATIO * itemLineWidth;
+                const subtitleFontSize = SUBTITLE_FONT_SIZE_RATIO * itemLineWidth;
+                const walkingTitleYs =
+                    item.kind === 'filled-walking' ? getWalkingTitleYs(lines.length, itemLineWidth) : [];
                 const walkingSubtitleY = walkingTitleYs.length
-                    ? walkingTitleYs[walkingTitleYs.length - 1] + WALKING_SUBTITLE_GAP
+                    ? walkingTitleYs[walkingTitleYs.length - 1] + WALKING_SUBTITLE_GAP_RATIO * itemLineWidth
                     : 0;
 
                 return (
@@ -146,7 +168,7 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
                                             key={`${line}-${lineIndex}`}
                                             {...getLangStyle(TextLanguage.tube)}
                                             y={walkingTitleYs[lineIndex]}
-                                            fontSize={TITLE_FONT_SIZE}
+                                            fontSize={titleFontSize}
                                             dominantBaseline="central"
                                         >
                                             {line}
@@ -155,7 +177,7 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
                                     <text
                                         {...getLangStyle(TextLanguage.tube)}
                                         y={walkingSubtitleY}
-                                        fontSize={SUBTITLE_FONT_SIZE}
+                                        fontSize={subtitleFontSize}
                                         dominantBaseline="central"
                                     >
                                         {subtitle}
@@ -165,16 +187,16 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
                                 <>
                                     <text
                                         {...getLangStyle(TextLanguage.tube)}
-                                        y={-DOUBLE_LINE_CENTER_OFFSET}
-                                        fontSize={TITLE_FONT_SIZE}
+                                        y={-DOUBLE_LINE_CENTER_OFFSET_RATIO * itemLineWidth}
+                                        fontSize={titleFontSize}
                                         dominantBaseline="central"
                                     >
                                         {lines[0]}
                                     </text>
                                     <text
                                         {...getLangStyle(TextLanguage.tube)}
-                                        y={DOUBLE_LINE_CENTER_OFFSET}
-                                        fontSize={TITLE_FONT_SIZE}
+                                        y={DOUBLE_LINE_CENTER_OFFSET_RATIO * itemLineWidth}
+                                        fontSize={titleFontSize}
                                         dominantBaseline="central"
                                     >
                                         {lines[1]}
@@ -184,7 +206,7 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
                                 <text
                                     {...getLangStyle(TextLanguage.tube)}
                                     y={0}
-                                    fontSize={TITLE_FONT_SIZE}
+                                    fontSize={titleFontSize}
                                     dominantBaseline="central"
                                 >
                                     {lines[0] ?? ''}
