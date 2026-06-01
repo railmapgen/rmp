@@ -156,6 +156,15 @@
                     "sandwich": "三明治",
                     "tube": "地铁"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "伦敦地铁线路标牌",
+                    "lineName": "线路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目标",
+                    "distance": "距离",
+                    "addItem": "添加标牌",
+                    "noItems": "暂无标牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都轨道交通线路标识",
                     "badgeType": {
