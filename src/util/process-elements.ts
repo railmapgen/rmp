@@ -2,9 +2,10 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
-import { ExternalLinePathAttributes, LinePathType, Path } from '../constants/lines';
+import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
-import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths } from './parallel';
+import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths, supportsParallelLinePath } from './parallel';
 import { makeReconciledPath, reconcileLines } from './reconcile';
 
 /**
@@ -30,7 +31,7 @@ export const getNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
 
 interface LinePathElement {
     attr: EdgeAttributes;
-    path: Path;
+    path: OpenPath;
 }
 type NonNullableExternalLinePathAttribute = NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>;
 
@@ -59,10 +60,10 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     for (const lineEntry of graph.edgeEntries()) {
         let simplePathAvailability = cachedSimplePathAvailability[lineEntry.edge as LineId];
 
-        const { parallelIndex } = lineEntry.attributes;
-        if (parallelIndex >= 0) {
+        const { parallelIndex, type } = lineEntry.attributes;
+        if (parallelIndex >= 0 && supportsParallelLinePath(type)) {
             // only find the base parallel line and see if it is a simple path
-            const baseLineId = getBaseParallelLineID(graph, lineEntry.attributes.type, lineEntry.edge as LineId);
+            const baseLineId = getBaseParallelLineID(graph, type, lineEntry.edge as LineId);
             const baseSimplePathAvailability = cachedSimplePathAvailability[baseLineId];
             if (!baseSimplePathAvailability) {
                 parallelLines.push(lineEntry);
@@ -156,7 +157,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         ];
         if (!(type in linePaths)) {
             // unknown line path type
-            resolvedLines[lineID] = { attr, path: `M ${x1} ${y1} L ${x2} ${y2}` };
+            resolvedLines[lineID] = { attr, path: makeLinearPath(makePoint(x1, y1), makePoint(x2, y2)) };
             continue;
         }
 

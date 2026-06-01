@@ -28,8 +28,8 @@ const BjsubwaySingleColor = (props: LineStyleComponentProps<BjsubwaySingleColorA
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH * 1.2} strokeLinecap="round" />
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="white" strokeWidth={LINE_WIDTH * 1.2} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
         </g>
     );
 };
@@ -74,6 +74,7 @@ const bjsubwaySingleColor: LineStyle<BjsubwaySingleColorAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

@@ -8,6 +8,7 @@ import {
     EdgeSpecificAttrsClipboardData,
     exportEdgeSpecificAttrs,
     exportNodeSpecificAttrs,
+    exportSelectedNodesAndEdges,
     getSelectedElementsType,
     importEdgeSpecificAttrs,
     importNodeSpecificAttrs,
@@ -16,6 +17,17 @@ import {
     parseClipboardData,
 } from './clipboard';
 import { CURRENT_VERSION } from './save';
+
+const makeGenericLayers = (count: number) =>
+    Array.from({ length: count }, (_, index) => ({
+        id: `layer_${index}`,
+        color: ['shanghai', `sh${index + 1}`, `#00000${index}`, '#fff'],
+        width: 5 + index,
+        opacity: 1,
+        linecap: 'butt' as const,
+        dash: 0,
+        gap: 0,
+    }));
 
 describe('Unit tests for specific attributes clipboard functions', () => {
     let graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -247,9 +259,45 @@ describe('Unit tests for specific attributes clipboard functions', () => {
 
             const clipboardText = exportNodeSpecificAttrs(graph, nodeId);
 
-            expect(() => importSelectedNodesAndEdges(clipboardText, graph, false, false, 0, 0)).toThrow(
+            expect(() => importSelectedNodesAndEdges(clipboardText, graph, false, false, false, 0, 0)).toThrow(
                 'Clipboard does not contain element data'
             );
+        });
+
+        it('should clamp pasted generic line styles to two layers for free users', () => {
+            const sourceGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+            const nodeId1 = 'stn_node1' as NodeId;
+            const nodeId2 = 'stn_node2' as NodeId;
+            const edgeId = 'line_test1' as LineId;
+
+            sourceGraph.addNode(nodeId1, { x: 0, y: 0, type: StationType.ShmetroBasic, visible: true, zIndex: 0 });
+            sourceGraph.addNode(nodeId2, { x: 100, y: 100, type: StationType.ShmetroBasic, visible: true, zIndex: 0 });
+            sourceGraph.addDirectedEdgeWithKey(edgeId, nodeId1, nodeId2, {
+                type: LinePathType.Diagonal,
+                style: LineStyleType.Generic,
+                visible: true,
+                zIndex: 0,
+                reconcileId: 'test',
+                parallelIndex: -1,
+                [LinePathType.Diagonal]: {
+                    startFrom: 'from',
+                    offsetFrom: 0,
+                    offsetTo: 0,
+                    roundCornerFactor: 15,
+                },
+                [LineStyleType.Generic]: {
+                    layers: makeGenericLayers(3),
+                },
+            } as EdgeAttributes);
+
+            const clipboardText = exportSelectedNodesAndEdges(sourceGraph, new Set([nodeId1, nodeId2, edgeId]));
+            const destGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+
+            importSelectedNodesAndEdges(clipboardText, destGraph, false, false, true, 0, 0);
+
+            expect(destGraph.getEdgeAttribute(edgeId, LineStyleType.Generic)).toEqual({
+                layers: makeGenericLayers(2),
+            });
         });
     });
 
@@ -429,7 +477,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 styleAttrs: { color: ['beijing', 'bj1', '#c23a30', '#fff'] },
             };
 
-            const result = importEdgeSpecificAttrs(graph, new Set([edgeId]), data);
+            const result = importEdgeSpecificAttrs(graph, new Set([edgeId]), data, false);
 
             expect(result).toBe(true);
             expect(graph.getEdgeAttribute(edgeId, LineStyleType.SingleColor)).toEqual({
@@ -475,7 +523,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 styleAttrs: { color: ['beijing', 'bj1', '#c23a30', '#fff'] },
             };
 
-            const result = importEdgeSpecificAttrs(graph, new Set([edgeId]), data);
+            const result = importEdgeSpecificAttrs(graph, new Set([edgeId]), data, false);
 
             expect(result).toBe(true); // Style still applied
             expect(graph.getEdgeAttribute(edgeId, LineStyleType.SingleColor)).toEqual({
@@ -521,7 +569,7 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 styleAttrs: { color: ['beijing', 'bj1', '#c23a30', '#fff'] },
             };
 
-            const result = importEdgeSpecificAttrs(graph, new Set([nodeId1, edgeId]), data);
+            const result = importEdgeSpecificAttrs(graph, new Set([nodeId1, edgeId]), data, false);
 
             expect(result).toBe(true);
             expect(graph.getEdgeAttribute(edgeId, LineStyleType.SingleColor)).toEqual({
@@ -532,6 +580,50 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 offsetFrom: 1,
                 offsetTo: 2,
                 roundCornerFactor: 20,
+            });
+        });
+
+        it('should clamp pasted generic style attributes to two layers for free users', () => {
+            const nodeId1 = 'stn_node1' as NodeId;
+            const nodeId2 = 'stn_node2' as NodeId;
+            const edgeId = 'line_test1' as LineId;
+
+            graph.addNode(nodeId1, { x: 0, y: 0, type: StationType.ShmetroBasic, visible: true, zIndex: 0 });
+            graph.addNode(nodeId2, { x: 100, y: 100, type: StationType.ShmetroBasic, visible: true, zIndex: 0 });
+            graph.addDirectedEdgeWithKey(edgeId, nodeId1, nodeId2, {
+                type: LinePathType.Diagonal,
+                style: LineStyleType.Generic,
+                visible: true,
+                zIndex: 0,
+                reconcileId: 'test',
+                parallelIndex: -1,
+                [LinePathType.Diagonal]: {
+                    startFrom: 'from',
+                    offsetFrom: 1,
+                    offsetTo: 2,
+                    roundCornerFactor: 15,
+                },
+                [LineStyleType.Generic]: {
+                    layers: makeGenericLayers(1),
+                },
+            } as EdgeAttributes);
+
+            const data: EdgeSpecificAttrsClipboardData = {
+                app: 'rmp',
+                version: CLIPBOARD_VERSION,
+                saveVersion: CURRENT_VERSION,
+                type: LineStyleType.Generic,
+                pathType: LinePathType.Diagonal,
+                styleAttrs: {
+                    layers: makeGenericLayers(3),
+                },
+            };
+
+            const result = importEdgeSpecificAttrs(graph, new Set([edgeId]), data, true);
+
+            expect(result).toBe(true);
+            expect(graph.getEdgeAttribute(edgeId, LineStyleType.Generic)).toEqual({
+                layers: makeGenericLayers(2),
             });
         });
     });

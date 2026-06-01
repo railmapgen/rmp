@@ -13,6 +13,8 @@ import { useRootDispatch } from '../../../../redux';
 import { setSelected } from '../../../../redux/runtime/runtime-slice';
 import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import { makePoint, makeSharpTurnPath } from '../../../../constants/path';
+import { parseRoundedTurnPath } from '../../../../util/path';
 
 const generateRotatePerpendicularPath: PathGenerator<RotatePerpendicularPathAttributes> = (
     x1: number,
@@ -59,13 +61,9 @@ const generateRotatePerpendicularPath: PathGenerator<RotatePerpendicularPathAttr
     // rotate the coordinate system back to 0° for the middle (turing) point
     const [x, y] = [rx * Math.SQRT1_2 - ry * Math.SQRT1_2, rx * Math.SQRT1_2 + ry * Math.SQRT1_2];
 
-    const path = roundPathCorners(
-        `M ${x1offset} ${y1offset} L ${x} ${y} L ${x2offset} ${y2offset}`,
-        roundCornerFactor,
-        false
-    ) as `M ${string}`;
+    const path = makeSharpTurnPath(makePoint(x1offset, y1offset), makePoint(x, y), makePoint(x2offset, y2offset));
 
-    return path;
+    return roundCornerFactor === 0 ? path : parseRoundedTurnPath(roundPathCorners(path.d, roundCornerFactor, false));
 };
 
 /**

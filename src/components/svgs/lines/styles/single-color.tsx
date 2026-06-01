@@ -24,7 +24,7 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth={LINE_WIDTH}
@@ -72,6 +72,7 @@ const singleColor: LineStyle<SingleColorAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

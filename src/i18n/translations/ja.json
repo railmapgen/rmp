@@ -180,6 +180,9 @@
                     "displayName": "台北地下鉄路線記号",
                     "tram": "路面電車"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通路線記号"
+                },
                 "image": {
                     "displayName": "画像",
                     "label": "ラベル",
@@ -239,7 +242,12 @@
                     "airport_chengdu": "成都空港",
                     "railway_chengdu": "成都鉄道駅",
                     "railway_taiwan": "台湾鉄道",
-                    "hsr_taiwan": "台湾高速鉄道"
+                    "hsr_taiwan": "台湾高速鉄道",
+                    "railway_shenzhen": "深圳鉄道駅",
+                    "intercity_shenzhen": "深圳都市間鉄道",
+                    "ferry_shenzhen": "深圳フェリー",
+                    "tram_shenzhen": "深圳トラム",
+                    "airport_shenzhen": "深圳空港"
                 },
                 "text": {
                     "displayName": "任意の文字",
@@ -298,7 +306,8 @@
                     "middle": "中央",
                     "right": "右",
                     "top": "上",
-                    "bottom": "下"
+                    "bottom": "下",
+                    "custom": "カスタム"
                 },
                 "interchange": {
                     "title": "乗り換え",
@@ -535,7 +544,8 @@
                     "displayName": "長沙メトロ基本駅"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙メトロ乗り換え駅"
+                    "displayName": "長沙メトロ乗り換え駅",
+                    "flipColor": "色を反転"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州メトロ基本駅",
@@ -553,6 +563,8 @@
                     "offsetFrom": "補正値（From）",
                     "offsetTo": "補正値（To）",
                     "startFrom": "開始位置",
+                    "startAngle": "開始点角度",
+                    "endAngle": "終了点角度",
                     "roundCornerFactor": "角の丸め係数",
                     "from": "から",
                     "to": "まで",
@@ -571,6 +583,9 @@
                 },
                 "rotatePerpendicular": {
                     "displayName": "90°回転する垂直経路"
+                },
+                "rayGuided": {
+                    "displayName": "任意角度経路"
                 },
                 "singleColor": {
                     "displayName": "単色風格"
@@ -632,7 +647,18 @@
                     "displayName": "シンガポールMRT改札外乗り換え風格"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR東日本単色風格"
+                    "displayName": "JR東日本単色風格",
+                    "decoration": {
+                        "displayName": "終端表示",
+                        "none": "なし",
+                        "thinTail": "他線区",
+                        "blackBlock": "終端"
+                    },
+                    "decorationAt": {
+                        "displayName": "表示位置",
+                        "from": "始点",
+                        "to": "終点"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本単色網目模様風格"
@@ -665,7 +691,10 @@
                     "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道風格"
+                    "displayName": "広東省都市間鉄道風格",
+                    "color": "色",
+                    "blue": "青色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶鉄道交通路線標識接続線風格"
@@ -675,6 +704,28 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都鉄道交通改札乗換風格"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線風格"
+                },
+                "generic": {
+                    "displayName": "汎用スタイル",
+                    "layers": "線レイヤー",
+                    "layer": "レイヤー {{index}}",
+                    "width": "幅",
+                    "opacity": "不透明度",
+                    "linecap": "ラインキャップ",
+                    "linecapButt": "バット",
+                    "linecapRound": "ラウンド",
+                    "linecapSquare": "スクエア",
+                    "dash": "ダッシュ長",
+                    "gap": "間隔長",
+                    "layerLimitWarning": "サブスクリプションで追加の線レイヤーを利用できます。",
+                    "addLayer": "レイヤーを追加",
+                    "copyLayer": "レイヤーを複製",
+                    "moveLayerUp": "レイヤーを上へ移動",
+                    "moveLayerDown": "レイヤーを下へ移動",
+                    "removeLayer": "レイヤーを削除"
                 }
             },
             "edges": {},

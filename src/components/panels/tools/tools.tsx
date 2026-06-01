@@ -42,7 +42,8 @@ import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
 import FavoriteButton from './favorite-button';
-import { localizedMiscNodes, localizedStaions } from './localized-order';
+import { localizedLineStyles, localizedMiscNodes, localizedStations } from './localized-order';
+import { LineStyleLeftIcon } from './line-style-left-icon';
 
 const buttonStyle: SystemStyleObject = {
     borderRadius: 0,
@@ -145,22 +146,19 @@ const ToolsPanel = () => {
     // Note: All line paths are always shown regardless of favorites filter
 
     const getFilteredLineStyles = React.useCallback(() => {
-        const allStyles = Object.entries(lineStyles);
+        const allStyles = localizedLineStyles[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allStyles;
-        return allStyles.filter(([styleType]) => favorites.lineStyles.includes(styleType as LineStyleType));
-    }, [showOnlyFavorites, favorites.lineStyles]);
+        return allStyles.filter(styleType => favorites.lineStyles.includes(styleType));
+    }, [showOnlyFavorites, favorites.lineStyles, i18n.language]);
 
     const getFilteredStations = React.useCallback(() => {
-        const allStations = localizedStaions[i18n.language as LanguageCode] || [];
+        const allStations = localizedStations[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allStations;
         return allStations.filter(type => favorites.stations.includes(type));
     }, [showOnlyFavorites, favorites.stations, i18n.language]);
 
     const getFilteredMiscNodes = React.useCallback(() => {
-        const allMiscNodes =
-            localizedMiscNodes[i18n.language as LanguageCode]?.filter(
-                type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText && type !== MiscNodeType.Master
-            ) || [];
+        const allMiscNodes = localizedMiscNodes[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allMiscNodes;
         return allMiscNodes.filter(type => favorites.miscNodes.includes(type));
     }, [showOnlyFavorites, favorites.miscNodes, i18n.language]);
@@ -240,26 +238,45 @@ const ToolsPanel = () => {
 
                             {Object.values(LinePathType)
                                 .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                                .map(type => (
-                                    <Flex key={type} w="100%" align="stretch">
-                                        <Box
-                                            w="4px"
-                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
-                                            transition="background-color 0.2s"
-                                        />
-                                        <Button
-                                            aria-label={type}
-                                            leftIcon={linePaths[type].icon}
-                                            onClick={() => handleLine(type)}
-                                            variant="ghost"
-                                            isDisabled={currentStyle ? !isPathCompatible(type, currentStyle) : false}
-                                            sx={buttonStyle}
-                                            flex={1}
-                                        >
-                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                        </Button>
-                                    </Flex>
-                                ))}
+                                .map(type => {
+                                    const isProLinePath = !!linePaths[type].isPro;
+                                    const isLinePathDisabled =
+                                        (!activeSubscriptions.RMP_CLOUD && isProLinePath) ||
+                                        (currentStyle ? !isPathCompatible(type, currentStyle) : false);
+
+                                    return (
+                                        <Flex key={type} w="100%" align="stretch">
+                                            <Box
+                                                w="4px"
+                                                bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                                transition="background-color 0.2s"
+                                            />
+                                            <Button
+                                                aria-label={type}
+                                                leftIcon={linePaths[type].icon}
+                                                onClick={() => handleLine(type)}
+                                                variant="ghost"
+                                                isDisabled={isLinePathDisabled}
+                                                sx={buttonStyle}
+                                                flex={1}
+                                            >
+                                                {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                                {isTextShown && isProLinePath ? (
+                                                    <Tooltip label={t('header.settings.pro')}>
+                                                        <Badge
+                                                            ml="1"
+                                                            color="gray.50"
+                                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                            mr="auto"
+                                                        >
+                                                            PRO
+                                                        </Badge>
+                                                    </Tooltip>
+                                                ) : undefined}
+                                            </Button>
+                                        </Flex>
+                                    );
+                                })}
 
                             <Flex w="100%" align="stretch">
                                 <Box
@@ -294,7 +311,7 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            {getFilteredLineStyles().map(([styleType, style]) => (
+                            {getFilteredLineStyles().map(styleType => (
                                 <Flex key={styleType} w="100%" align="stretch">
                                     <Box
                                         w="4px"
@@ -303,25 +320,31 @@ const ToolsPanel = () => {
                                     />
                                     <Button
                                         aria-label={styleType}
-                                        leftIcon={<Box boxSize="40px" />}
-                                        onClick={() => handleLineStyle(styleType as LineStyleType)}
+                                        leftIcon={<LineStyleLeftIcon style={styleType} />}
+                                        onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
-                                        isDisabled={
-                                            currentPath
-                                                ? !isStyleCompatible(styleType as LineStyleType, currentPath)
-                                                : false
-                                        }
+                                        isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
                                         sx={buttonStyle}
                                         flex={1}
                                     >
-                                        {isTextShown ? t(style.metadata.displayName) : undefined}
+                                        {isTextShown ? t(lineStyles[styleType].metadata.displayName) : undefined}
+                                        {isTextShown && !!lineStyles[styleType].isPro ? (
+                                            <Tooltip label={t('header.settings.pro')}>
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                    mr="auto"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tooltip>
+                                        ) : undefined}
                                     </Button>
                                     {isTextShown && (
                                         <FavoriteButton
-                                            isFavorite={favorites.lineStyles.includes(styleType as LineStyleType)}
-                                            onToggle={() =>
-                                                dispatch(toggleFavoriteLineStyle(styleType as LineStyleType))
-                                            }
+                                            isFavorite={favorites.lineStyles.includes(styleType)}
+                                            onToggle={() => dispatch(toggleFavoriteLineStyle(styleType))}
                                             ariaLabel={`favorite-${styleType}`}
                                         />
                                     )}
@@ -388,41 +411,6 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            <Flex w="100%" align="stretch">
-                                <Box
-                                    w="4px"
-                                    bg={mode === `misc-node-${MiscNodeType.Master}` ? 'blue.500' : 'transparent'}
-                                    transition="background-color 0.2s"
-                                />
-                                <Button
-                                    aria-label={MiscNodeType.Master}
-                                    leftIcon={miscNodes[MiscNodeType.Master].icon}
-                                    onClick={() => handleMiscNode(MiscNodeType.Master)}
-                                    variant="ghost"
-                                    isDisabled={isMasterDisabled}
-                                    sx={buttonStyle}
-                                    flex={1}
-                                >
-                                    {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
-                                    {isTextShown ? (
-                                        <>
-                                            <Badge ml="1" colorScheme="green">
-                                                New
-                                            </Badge>
-                                            <Tooltip label={t('header.settings.proWithTrial')}>
-                                                <Badge
-                                                    ml="1"
-                                                    color="gray.50"
-                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                    mr="auto"
-                                                >
-                                                    PRO
-                                                </Badge>
-                                            </Tooltip>
-                                        </>
-                                    ) : undefined}
-                                </Button>
-                            </Flex>
                             {getFilteredMiscNodes().map(type => (
                                 <Flex key={type} w="100%" align="stretch">
                                     <Box
@@ -439,6 +427,18 @@ const ToolsPanel = () => {
                                         flex={1}
                                     >
                                         {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
+                                        {isTextShown && type === MiscNodeType.Master && (
+                                            <Tooltip label={t('header.settings.proWithTrial')}>
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                    mr="auto"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tooltip>
+                                        )}
                                     </Button>
                                     {isTextShown && (
                                         <FavoriteButton

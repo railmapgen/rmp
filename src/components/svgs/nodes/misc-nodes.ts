@@ -28,6 +28,7 @@ import londonArrow from './london-arrow';
 import londonTubeLineBadge from './london-tube-line-badge/london-tube-line-badge';
 import chengduRTLineBadge from './chengdurt-line-badge';
 import taipeiMetroLineBadge from './taipei-metro-line-badge';
+import wuhanRTLineBadge from './wuhanrt-line-badge';
 
 const miscNodes = {
     [MiscNodeType.Virtual]: virtual,
@@ -59,6 +60,7 @@ const miscNodes = {
     [MiscNodeType.LondonTubeLineBadge]: londonTubeLineBadge,
     [MiscNodeType.ChengduRTLineBadge]: chengduRTLineBadge,
     [MiscNodeType.TaiPeiMetroLineBadege]: taipeiMetroLineBadge,
+    [MiscNodeType.WuhanRTLineBadge]: wuhanRTLineBadge,
 };
 
 export default miscNodes;

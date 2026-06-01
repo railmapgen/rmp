@@ -11,11 +11,11 @@
         "@chakra-ui/react": "^2.10.9",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
-        "@railmapgen/rmg-components": "^10.1.11",
+        "@railmapgen/rmg-components": "^10.1.13",
         "@railmapgen/rmg-palette-resources": "^3.0.0",
         "@railmapgen/rmg-runtime": "^12.0.3",
         "@railmapgen/rmg-translate": "^3.4.3",
-        "@railmapgen/svg-assets": "^8.0.4",
+        "@railmapgen/svg-assets": "^8.0.6",
         "@reduxjs/toolkit": "^2.9.0",
         "bezier-js": "^6.1.4",
         "canvas-size": "^2.0.0",
@@ -30,7 +30,7 @@
         "react-redux": "^9.2.0",
         "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
-        "rollup": "^4.59.0",
+        "rollup": "^4.60.4",
         "vite-plugin-svgr": "^4.5.0"
     },
     "devDependencies": {
@@ -58,6 +58,7 @@
         "graphology-types": "^0.24.8",
         "jsdom": "^27.0.0",
         "prettier": "^3.6.2",
+        "rollup-plugin-visualizer": "^7.0.1",
         "typescript": "^5.9.2",
         "typescript-eslint": "^8.44.0",
         "vite": "^7.1.11",
@@ -72,5 +73,5 @@
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
     },
-    "version": "5.5.18"
+    "version": "5.5.43"
 }

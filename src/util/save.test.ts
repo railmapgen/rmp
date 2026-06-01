@@ -37,6 +37,84 @@ describe('Unit tests for param upgrade function', () => {
         expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
     });
 
+    it('upgrade repairs invalid node coordinates in current-version saves', async () => {
+        localStorage.clear();
+        const save = JSON.stringify({
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [
+                    {
+                        key: 'stn_invalid_x',
+                        attributes: {
+                            visible: true,
+                            zIndex: 0,
+                            x: null,
+                            y: 100,
+                            type: 'shmetro-basic',
+                            'shmetro-basic': {
+                                names: ['A'],
+                                nameOffsetX: 'right',
+                                nameOffsetY: 'top',
+                                color: ['shanghai', 'sh1', '#E4002B', '#fff'],
+                            },
+                        },
+                    },
+                    {
+                        key: 'misc_node_invalid_y',
+                        attributes: {
+                            visible: true,
+                            zIndex: 0,
+                            x: 200,
+                            y: null,
+                            type: 'virtual',
+                            virtual: {},
+                        },
+                    },
+                ],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: CURRENT_VERSION,
+        });
+
+        const upgraded = await upgrade(save);
+        const repaired = JSON.parse(upgraded);
+
+        expect(repaired.version).toBe(CURRENT_VERSION);
+        expect(repaired.graph.nodes).toEqual([
+            {
+                key: 'stn_invalid_x',
+                attributes: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 0,
+                    y: 100,
+                    type: 'shmetro-basic',
+                    'shmetro-basic': {
+                        names: ['A'],
+                        nameOffsetX: 'right',
+                        nameOffsetY: 'top',
+                        color: ['shanghai', 'sh1', '#E4002B', '#fff'],
+                    },
+                },
+            },
+            {
+                key: 'misc_node_invalid_y',
+                attributes: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 200,
+                    y: 0,
+                    type: 'virtual',
+                    virtual: {},
+                },
+            },
+        ]);
+        expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
+    });
+
     it('UPGRADE_COLLECTION contains all the upgrade functions to CURRENT_VERSION', () => {
         const allKeys = Object.keys(UPGRADE_COLLECTION).map(k => Number(k));
         // UPGRADE_COLLECTION contains key from 0...CURRENT_VERSION - 1.
@@ -883,6 +961,101 @@ describe('Unit tests for param upgrade function', () => {
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"hzmetro-basic","hzmetro-basic":{"names":["车站"],"nameOffsetX":"right","nameOffsetY":"top","color":["hangzhou","1","#dd4231","#fff"],"scale":1}}},{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":200,"y":200,"type":"hzmetro-int","hzmetro-int":{"names":["换乘站"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[]],"scale":1,"mirror":false}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":68}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('68 -> 69', () => {
+        // Bump save version to support the ray-guided line path.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":68}';
+        const newParam = UPGRADE_COLLECTION[68](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('69 -> 70', () => {
+        // Bump save version to support generic line style.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
+        const newParam = UPGRADE_COLLECTION[69](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":70}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('70 -> 71', () => {
+        // Add decoration and decorationAt defaults to JR East line styles.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_a","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["A"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}},{"key":"stn_b","attributes":{"visible":true,"zIndex":0,"x":100,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["B"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}}],"edges":[{"key":"line_1","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color","jr-east-single-color":{"color":["tokyo","jy","#9ACD32","#000"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_2","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color-pattern","jr-east-single-color-pattern":{"color":["tokyo","jy","#9ACD32","#000"]},"reconcileId":"","parallelIndex":-1}}]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":70}';
+        const newParam = UPGRADE_COLLECTION[70](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_a","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["A"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}},{"key":"stn_b","attributes":{"visible":true,"zIndex":0,"x":100,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["B"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}}],"edges":[{"key":"line_1","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color","jr-east-single-color":{"color":["tokyo","jy","#9ACD32","#000"],"decoration":"none","decorationAt":"to"},"reconcileId":"","parallelIndex":-1}},{"key":"line_2","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color-pattern","jr-east-single-color-pattern":{"color":["tokyo","jy","#9ACD32","#000"],"decoration":"none","decorationAt":"to"},"reconcileId":"","parallelIndex":-1}}]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('71 -> 72', () => {
+        // Bump save version to support shinkansen line style.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
+        const newParam = UPGRADE_COLLECTION[71](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        expect(newParam).toEqual(expectParam);
+    });
+    it('72 -> 73', () => {
+        // Add flipColor default to csmetro interchange stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        const newParam = UPGRADE_COLLECTION[72](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]],"flipColor":false}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":73}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('73 -> 74', () => {
+        // Add transfer default to wuhanrt interchange stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_wuhan_old","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top"}}},{"key":"stn_wuhan_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["三线换乘"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[["wuhan","wuhan1","#28628E","#fff","",""],["wuhan","wuhan2","#9A1F40","#fff","",""],["wuhan","wuhan3","#CA9A8E","#000","",""]]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":73}';
+        const newParam = UPGRADE_COLLECTION[73](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_wuhan_old","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_wuhan_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["三线换乘"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[["wuhan","wuhan1","#28628E","#fff","",""],["wuhan","wuhan2","#9A1F40","#fff","",""],["wuhan","wuhan3","#CA9A8E","#000","",""]]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":74}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('74 -> 75', () => {
+        // Bump save version to support Shenzhen facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_shenzhen_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"airport_shenzhen"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":74}';
+        const newParam = UPGRADE_COLLECTION[74](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_shenzhen_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"airport_shenzhen"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":75}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('75 -> 76', () => {
+        // Bump save version to support Wuhan Rail Transit line badge.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":75}';
+        const newParam = UPGRADE_COLLECTION[75](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":76}';
         expect(newParam).toEqual(expectParam);
     });
 });

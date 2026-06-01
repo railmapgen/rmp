@@ -2,8 +2,10 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../constants/constants';
-import { LinePathType, Path } from '../constants/lines';
+import { LinePathType } from '../constants/lines';
+import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
+import { concatOpenPaths } from './path';
 
 /**
  * Only lines have a reconcileId will be considered.
@@ -116,7 +118,7 @@ export const reconcileLines = (
 export const makeReconciledPath = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     reconciledLines: LineId[]
-): Path | undefined => {
+): OpenPath | undefined => {
     if (!reconciledLines.every(line => graph.hasEdge(line))) return undefined;
 
     // call each line's generatePath to generate its own path
@@ -145,16 +147,9 @@ export const makeReconciledPath = (
         return (
             // @ts-ignore-error
             linePaths[type]?.generatePath(sourceAttr.x, targetAttr.x, sourceAttr.y, targetAttr.y, attr) ??
-            `M ${sourceAttr.x} ${sourceAttr.y} L ${targetAttr.x} ${targetAttr.y}`
+            makeLinearPath(makePoint(sourceAttr.x, sourceAttr.y), makePoint(targetAttr.x, targetAttr.y))
         );
     });
 
-    // merge paths to one
-    let path = `${paths[0]} `;
-    for (let i = 1; i < reconciledLines.length; i = i + 1) {
-        path += paths[i].replace(/M\s*-?\d+(\.\d+)?(\s*|,)-?\d+(\.*\d+)?\s*/i, '');
-    }
-    // console.log(reconciledLines, paths, path);
-
-    return path as Path;
+    return concatOpenPaths(paths);
 };

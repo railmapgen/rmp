@@ -12,22 +12,18 @@ import {
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
-    Path,
 } from '../../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
+import { OpenPath } from '../../../../constants/path';
+import { isLinearPath, splitLinearPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
-const mrtTapeOutPathGenerator = (path: Path, type: LinePathType, attrs: MRTTapeOutAttributes) => {
-    const [startPoint, endPoint] = path
-        .substring(2) // Remove 'M ' (command and following space) at the start
-        .split('L') // Split by 'L' to get the start and end points
-        .map(point => point.trim().split(' ').map(Number));
-    const midPoint = [(startPoint[0] + endPoint[0]) / 2, (startPoint[1] + endPoint[1]) / 2];
+const mrtTapeOutPathGenerator = (path: OpenPath, type: LinePathType, attrs: MRTTapeOutAttributes) => {
+    if (!isLinearPath(path)) return { pathA: path, pathB: path };
 
-    const pathA = `M ${startPoint[0]} ${startPoint[1]} L ${midPoint[0]} ${midPoint[1]}` as Path;
-    const pathB = `M ${midPoint[0]} ${midPoint[1]} L ${endPoint[0]} ${endPoint[1]}` as Path;
+    const [pathA, pathB] = splitLinearPath(path);
 
     return { pathA, pathB };
 };
@@ -85,7 +81,7 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
             </defs>
             <path
                 id={`${LineStyleType.MRTTapeOut}_pathA_${id}`}
-                d={paths.pathA}
+                d={paths.pathA.d}
                 fill="none"
                 stroke={colorA[2]}
                 strokeWidth={LINE_WIDTH}
@@ -93,7 +89,7 @@ const MRTTapeOut = (props: LineStyleComponentProps<MRTTapeOutAttributes>) => {
             />
             <path
                 id={`${LineStyleType.MRTTapeOut}_pathB_${id}`}
-                d={paths.pathB}
+                d={paths.pathB.d}
                 fill="none"
                 stroke={colorB[2]}
                 strokeWidth={LINE_WIDTH}

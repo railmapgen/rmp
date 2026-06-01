@@ -178,6 +178,9 @@
                     "displayName": "台北捷运线路标志",
                     "tram": "轻轨"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武汉轨道交通线路标识"
+                },
                 "image": {
                     "displayName": "图像",
                     "label": "标签",
@@ -237,7 +240,12 @@
                     "airport_chengdu": "成都机场",
                     "railway_chengdu": "成都火车站",
                     "railway_taiwan": "台湾铁路",
-                    "hsr_taiwan": "台湾高铁"
+                    "hsr_taiwan": "台湾高铁",
+                    "railway_shenzhen": "深圳火车站",
+                    "intercity_shenzhen": "深圳城际铁路",
+                    "ferry_shenzhen": "深圳轮渡",
+                    "tram_shenzhen": "深圳有轨电车",
+                    "airport_shenzhen": "深圳机场"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -296,7 +304,8 @@
                     "middle": "中间",
                     "right": "右",
                     "top": "顶部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自定义"
                 },
                 "interchange": {
                     "title": "换乘",
@@ -532,7 +541,8 @@
                     "displayName": "长沙轨道交通基本车站"
                 },
                 "csmetroInt": {
-                    "displayName": "长沙轨道交通换乘车站"
+                    "displayName": "长沙轨道交通换乘车站",
+                    "flipColor": "翻转颜色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地铁基本车站",
@@ -550,6 +560,8 @@
                     "offsetFrom": "起始点偏移",
                     "offsetTo": "结束点偏移",
                     "startFrom": "从这里开始",
+                    "startAngle": "起始点角度",
+                    "endAngle": "结束点角度",
                     "roundCornerFactor": "转折圆角因子",
                     "from": "从",
                     "to": "到",
@@ -568,6 +580,9 @@
                 },
                 "rotatePerpendicular": {
                     "displayName": "90°旋转垂直线段"
+                },
+                "rayGuided": {
+                    "displayName": "任意角度线段"
                 },
                 "singleColor": {
                     "displayName": "纯色样式"
@@ -629,7 +644,18 @@
                     "displayName": "新加坡MRT出站换乘样式"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR东日本单色样式"
+                    "displayName": "JR东日本单色样式",
+                    "decoration": {
+                        "displayName": "终端显示",
+                        "none": "无",
+                        "thinTail": "其他线区",
+                        "blackBlock": "终点"
+                    },
+                    "decorationAt": {
+                        "displayName": "显示位置",
+                        "from": "起点",
+                        "to": "终点"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR东日本单色网状图案样式"
@@ -662,7 +688,10 @@
                     "displayName": "伦敦IFS云缆车样式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "广东城际铁路样式"
+                    "displayName": "广东城际铁路样式",
+                    "color": "颜色",
+                    "blue": "蓝色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重庆轨道交通线路标识连接线样式"
@@ -672,6 +701,28 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都轨道交通出闸换乘样式"
+                },
+                "shinkansen": {
+                    "displayName": "新干线样式"
+                },
+                "generic": {
+                    "displayName": "通用样式",
+                    "layers": "线层",
+                    "layer": "第{{index}}层",
+                    "width": "宽度",
+                    "opacity": "透明度",
+                    "linecap": "线帽",
+                    "linecapButt": "平头",
+                    "linecapRound": "圆头",
+                    "linecapSquare": "方头",
+                    "dash": "虚线长度",
+                    "gap": "间隔长度",
+                    "layerLimitWarning": "订阅可解锁额外线层。",
+                    "addLayer": "添加线层",
+                    "copyLayer": "复制线层",
+                    "moveLayerUp": "上移线层",
+                    "moveLayerDown": "下移线层",
+                    "removeLayer": "删除线层"
                 }
             },
             "edges": {},

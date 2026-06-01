@@ -1,7 +1,7 @@
 /// <reference types="vitest" />
 
-import legacy from '@vitejs/plugin-legacy';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import checker from 'vite-plugin-checker';
 import svgr from 'vite-plugin-svgr';
@@ -13,10 +13,7 @@ export default defineConfig({
         react(),
         svgr(),
         checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } }),
-        legacy({
-            targets: ['defaults', '>0.2%', 'not dead'],
-            modernPolyfills: true,
-        }),
+        visualizer({ filename: 'dist/bundle-report.html', gzipSize: true }),
     ],
     build: {
         rollupOptions: {
@@ -25,7 +22,6 @@ export default defineConfig({
                     react: [
                         'react',
                         'react-dom',
-                        'react-router-dom',
                         '@reduxjs/toolkit',
                         'react-redux',
                         'react-i18next',

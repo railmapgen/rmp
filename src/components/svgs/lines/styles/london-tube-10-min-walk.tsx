@@ -17,7 +17,7 @@ const LondonTube10MinWalk = (props: LineStyleComponentProps<LondonTube10MinWalkA
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke="black"
             strokeWidth={LINE_WIDTH}
@@ -49,6 +49,7 @@ const londonTube10MinWalk: LineStyle<LondonTube10MinWalkAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
         ],
     },
 };

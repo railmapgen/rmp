@@ -19,10 +19,10 @@ import {
     Theme,
 } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
-import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { MiscNodeType } from '../constants/nodes';
 import { MasterParam } from '../constants/master';
-import { makeParallelIndex, NonSimpleLinePathAttributes } from './parallel';
+import { MiscNodeType } from '../constants/nodes';
+import { ExternalStationAttributes, StationType } from '../constants/stations';
+import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 
 const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
@@ -30,6 +30,7 @@ const stationsWithoutNameOffset = [
     StationType.ShanghaiSuburbanRailway,
     StationType.OsakaMetro,
 ];
+
 type StationsWithoutNameOffset =
     | StationType.ShmetroBasic2020
     | StationType.LondonTubeBasic
@@ -50,7 +51,11 @@ const supportsTransferProperty = (
 ): boolean => {
     const stationType = graph.getNodeAttribute(station, 'type') as StationType;
     const attrs = graph.getNodeAttribute(station, stationType);
-    return !!(attrs && 'transfer' in attrs);
+    const defaultAttrs = stations[stationType]?.defaultAttrs;
+    if (!defaultAttrs) {
+        return false;
+    }
+    return !!((attrs && 'transfer' in attrs) || 'transfer' in defaultAttrs);
 };
 
 /**
@@ -146,9 +151,9 @@ export const changeLinePathType = (
         // calculate parallel index before changing the type
         // so that makeParallelIndex won't consider this line as an existing line
         let parallelIndex = -1;
-        if (autoParallel && newLinePathType !== LinePathType.Simple) {
+        if (autoParallel && supportsParallelLinePath(newLinePathType)) {
             const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
-            const startFrom = (newAttrs as NonSimpleLinePathAttributes).startFrom;
+            const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
             parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
         }
         graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
@@ -201,7 +206,18 @@ export const changeLineStyleType = (
         const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
         if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
             (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-        else if (dynamicColorInjection.has(newLineStyleType) && theme) (newAttrs as AttributesWithColor).color = theme;
+        else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
+
+        // do we really need each hack for each style here?
+        const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
+        if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
+            (newAttrs as { decoration: string; decorationAt: string }).decoration =
+                (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
+            (newAttrs as { decoration: string; decorationAt: string }).decorationAt =
+                (oldAttrs as { decorationAt?: string }).decorationAt ??
+                (newAttrs as { decorationAt: string }).decorationAt;
+        }
+
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
@@ -323,23 +339,6 @@ export const changeZIndexInBatch = (
     });
     lines.forEach(s => {
         graph.setEdgeAttribute(s, 'zIndex', value);
-    });
-};
-
-export const increaseZIndexInBatch = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    stations: StnId[],
-    miscNodes: MiscNodeId[],
-    lines: LineId[],
-    value: number
-) => {
-    [...stations, ...miscNodes].forEach(s => {
-        const z = graph.getNodeAttribute(s, 'zIndex');
-        graph.setNodeAttribute(s, 'zIndex', z + value);
-    });
-    lines.forEach(s => {
-        const z = graph.getEdgeAttribute(s, 'zIndex');
-        graph.setEdgeAttribute(s, 'zIndex', z + value);
     });
 };
 
