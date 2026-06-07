@@ -1,7 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { Path } from '../constants/path';
+import { LinePathType } from '../constants/lines';
 import { getLines } from './process-elements';
 
 type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
@@ -57,15 +57,15 @@ const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
  * Necessary for complex line styles where a single logical line may consist of multiple
  * visual path elements that need to stay in sync during real-time interaction.
  */
-const updatePathDRecursive = (id: string, pathD: Path) => {
+const updatePathDRecursive = (id: string, pathD: string) => {
     const root = document.getElementById(id);
     root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
         updatePathD(path, pathD);
     });
 };
 
-const updatePathD = (elem: SVGPathElement, pathD: Path) => {
-    elem.setAttribute('d', pathD.d);
+const updatePathD = (elem: SVGPathElement, pathD: string) => {
+    elem.setAttribute('d', pathD);
 };
 
 /**
@@ -96,6 +96,13 @@ export const moveNodesAndRedrawLines = (
         .filter(l => edges.has(l.id as LineId))
         .forEach(l => {
             const style = l.line!.attr.style;
+            if (l.line!.attr.type === LinePathType.Freeform && l.line!.areaPathD) {
+                updatePathDRecursive(`${l.id}.pre`, l.line!.areaPathD);
+                updatePathDRecursive(l.id, l.line!.areaPathD);
+                updatePathDRecursive(`${l.id}.post`, l.line!.areaPathD);
+                return;
+            }
+
             if (lineStyles[style].pathGenerator) {
                 const path = lineStyles[style].pathGenerator!(
                     l.line!.path,
@@ -105,12 +112,12 @@ export const moveNodesAndRedrawLines = (
                 );
                 for (const [key, value] of Object.entries(path)) {
                     const elem = document.getElementById(`${style}_${key}_${l.id}`);
-                    if (elem instanceof SVGPathElement) updatePathD(elem, value);
+                    if (elem instanceof SVGPathElement) updatePathD(elem, value.d);
                 }
             } else {
-                updatePathDRecursive(`${l.id}.pre`, l.line!.path);
-                updatePathDRecursive(l.id, l.line!.path);
-                updatePathDRecursive(`${l.id}.post`, l.line!.path);
+                updatePathDRecursive(`${l.id}.pre`, l.line!.path.d);
+                updatePathDRecursive(l.id, l.line!.path.d);
+                updatePathDRecursive(`${l.id}.post`, l.line!.path.d);
             }
         });
 };

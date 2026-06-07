@@ -4,6 +4,7 @@ import diagonalPath from './paths/diagonal';
 import perpendicularPath from './paths/perpendicular';
 import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import rayGuidedPath from './paths/ray-guided';
+import freeformPath from './paths/freeform';
 import singleColor from './styles/single-color';
 import generic from './styles/generic';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
@@ -45,6 +46,7 @@ export const linePaths = {
     [LinePathType.RotatePerpendicular]: rotatePerpendicularPath,
     [LinePathType.RayGuided]: rayGuidedPath,
     [LinePathType.Simple]: simplePath,
+    [LinePathType.Freeform]: freeformPath,
 };
 
 export const lineStyles = {

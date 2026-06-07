@@ -584,6 +584,22 @@
                 "rayGuided": {
                     "displayName": "任意角度线段"
                 },
+                "freeform": {
+                    "displayName": "自由绘制线段",
+                    "widthStops": "宽度点",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "位置 (%)",
+                    "widthStopWidth": "宽度 (px)",
+                    "baseWidthHint": "5px 是线段基准宽度",
+                    "smoothing": "平滑度",
+                    "startCap": "起点端帽",
+                    "endCap": "终点端帽",
+                    "round": "圆形",
+                    "flat": "平直",
+                    "arrow": "箭头",
+                    "arrowLength": "箭头长度",
+                    "arrowWidth": "箭头宽度"
+                },
                 "singleColor": {
                     "displayName": "纯色样式"
                 },

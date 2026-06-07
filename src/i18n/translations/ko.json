@@ -584,6 +584,22 @@
                 "rayGuided": {
                     "displayName": "임의 각도 회전"
                 },
+                "freeform": {
+                    "displayName": "자유형 선분",
+                    "widthStops": "너비 점",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "위치 (%)",
+                    "widthStopWidth": "너비 (px)",
+                    "baseWidthHint": "5px는 선분의 기준 너비입니다.",
+                    "smoothing": "부드러움",
+                    "startCap": "시작점 끝 모양",
+                    "endCap": "끝점 끝 모양",
+                    "round": "둥근형",
+                    "flat": "평평한형",
+                    "arrow": "화살표",
+                    "arrowLength": "화살표 길이",
+                    "arrowWidth": "화살표 너비"
+                },
                 "singleColor": {
                     "displayName": "단색 스타일"
                 },
