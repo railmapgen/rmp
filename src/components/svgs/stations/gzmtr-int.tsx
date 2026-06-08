@@ -4,6 +4,7 @@ import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fme
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -474,6 +475,12 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
             minW: 'full',
         },
         {

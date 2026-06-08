@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -241,6 +242,12 @@ const HzmetroIntAttrsComponent: React.FC<AttrsProps<HzmetroIntStationAttributes>
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
             minW: 'full',
         },
         {
