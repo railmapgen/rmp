@@ -26,8 +26,10 @@ import type { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east
 import type { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
 import type { GuangdongIntercityRailwayLineBadgeAttributes } from '../components/svgs/nodes/guangdong-intercity-railway-line-badge';
 import type { LondonArrowAttributes } from '../components/svgs/nodes/london-arrow';
+import type { LondonTubeLineBadgeAttributes } from '../components/svgs/nodes/london-tube-line-badge/london-tube-line-badge';
 import type { ChengduRTLineBadgeAttributes } from '../components/svgs/nodes/chengdurt-line-badge';
 import type { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
+import type { WuhanRTLineBadgeAttributes } from '../components/svgs/nodes/wuhanrt-line-badge';
 import type { FillAttributes } from '../components/svgs/nodes/fill';
 
 export enum MiscNodeType {
@@ -57,8 +59,10 @@ export enum MiscNodeType {
     QingdaoMetroNumLineBadge = 'qingdao-metro-num-line-badge',
     GuangdongIntercityRailwayLineBadge = 'gd-intercity-rwy-line-badge',
     LondonArrow = 'london-arrow',
+    LondonTubeLineBadge = 'london-tube-line-badge',
     ChengduRTLineBadge = 'chengdurt-line-badge',
     TaiPeiMetroLineBadege = 'taipei-metro-line-badge',
+    WuhanRTLineBadge = 'wuhanrt-line-badge',
 }
 
 export interface MiscNodeAttributes {
@@ -88,8 +92,10 @@ export interface MiscNodeAttributes {
     [MiscNodeType.QingdaoMetroNumLineBadge]?: QingdaoMetroNumLineBadgeAttributes;
     [MiscNodeType.GuangdongIntercityRailwayLineBadge]?: GuangdongIntercityRailwayLineBadgeAttributes;
     [MiscNodeType.LondonArrow]?: LondonArrowAttributes;
+    [MiscNodeType.LondonTubeLineBadge]?: LondonTubeLineBadgeAttributes;
     [MiscNodeType.ChengduRTLineBadge]?: ChengduRTLineBadgeAttributes;
     [MiscNodeType.TaiPeiMetroLineBadege]?: TaipeiMetroLineBadgeAttributes;
+    [MiscNodeType.WuhanRTLineBadge]?: WuhanRTLineBadgeAttributes;
 }
 
 /* ----- Below are core types for all miscellaneous nodes, DO NOT TOUCH. ----- */

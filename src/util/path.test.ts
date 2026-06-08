@@ -3,7 +3,9 @@ import {
     closePath,
     cubicTo,
     lineTo,
+    makeCompoundClosedAreaPath,
     makeClosedAreaPath,
+    makeEmptyOpenPath,
     makeLinearPath,
     makePoint,
     makeRoundedTurnPath,
@@ -82,5 +84,20 @@ describe('getEndPoint', () => {
         ]);
 
         expect(getEndPoint(area)).toEqual(makePoint(0, 0));
+    });
+
+    it('should return the last drawable point of a compound closed area path', () => {
+        const area = makeCompoundClosedAreaPath([
+            [moveTo(makePoint(0, 0)), lineTo(makePoint(10, 0)), lineTo(makePoint(0, 0)), closePath()],
+            [moveTo(makePoint(20, 0)), lineTo(makePoint(30, 0)), lineTo(makePoint(20, 0)), closePath()],
+        ]);
+
+        expect(area.kind).toBe('compound-closed-area');
+        expect(area.d).toBe('M 0 0 L 10 0 L 0 0 Z M 20 0 L 30 0 L 20 0 Z');
+        expect(getEndPoint(area)).toEqual(makePoint(20, 0));
+    });
+
+    it('should reject an empty open path', () => {
+        expect(() => getEndPoint(makeEmptyOpenPath())).toThrow('Empty path does not have an endpoint.');
     });
 });

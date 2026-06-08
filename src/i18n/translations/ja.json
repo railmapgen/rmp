@@ -162,6 +162,15 @@
                     "sandwich": "サンドイッチ",
                     "tube": "地下鉄"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "ロンドン地下鉄路線バッジ",
+                    "lineName": "路線名",
+                    "walking": "徒歩",
+                    "walkingTarget": "徒歩先",
+                    "distance": "距離",
+                    "addItem": "バッジを追加",
+                    "noItems": "バッジはありません"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都鉄道交通路線記号",
                     "badgeType": {
@@ -174,6 +183,9 @@
                 "taipeiMetroLineBadge": {
                     "displayName": "台北地下鉄路線記号",
                     "tram": "路面電車"
+                },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通路線記号"
                 },
                 "image": {
                     "displayName": "画像",
@@ -234,7 +246,12 @@
                     "airport_chengdu": "成都空港",
                     "railway_chengdu": "成都鉄道駅",
                     "railway_taiwan": "台湾鉄道",
-                    "hsr_taiwan": "台湾高速鉄道"
+                    "hsr_taiwan": "台湾高速鉄道",
+                    "railway_shenzhen": "深圳鉄道駅",
+                    "intercity_shenzhen": "深圳都市間鉄道",
+                    "ferry_shenzhen": "深圳フェリー",
+                    "tram_shenzhen": "深圳トラム",
+                    "airport_shenzhen": "深圳空港"
                 },
                 "text": {
                     "displayName": "任意の文字",
@@ -293,7 +310,8 @@
                     "middle": "中央",
                     "right": "右",
                     "top": "上",
-                    "bottom": "下"
+                    "bottom": "下",
+                    "custom": "カスタム"
                 },
                 "interchange": {
                     "title": "乗り換え",
@@ -530,7 +548,8 @@
                     "displayName": "長沙メトロ基本駅"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙メトロ乗り換え駅"
+                    "displayName": "長沙メトロ乗り換え駅",
+                    "flipColor": "色を反転"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州メトロ基本駅",
@@ -677,7 +696,10 @@
                     "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道風格"
+                    "displayName": "広東省都市間鉄道風格",
+                    "color": "色",
+                    "blue": "青色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶鉄道交通路線標識接続線風格"
@@ -687,6 +709,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都鉄道交通改札乗換風格"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線風格"
                 },
                 "generic": {
                     "displayName": "汎用スタイル",
@@ -700,6 +725,7 @@
                     "linecapSquare": "スクエア",
                     "dash": "ダッシュ長",
                     "gap": "間隔長",
+                    "layerLimitWarning": "サブスクリプションで追加の線レイヤーを利用できます。",
                     "addLayer": "レイヤーを追加",
                     "copyLayer": "レイヤーを複製",
                     "moveLayerUp": "レイヤーを上へ移動",

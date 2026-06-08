@@ -160,6 +160,15 @@
                     "sandwich": "Sandwich",
                     "tube": "Tube"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "London Tube line badge",
+                    "lineName": "Line name",
+                    "walking": "Walking",
+                    "walkingTarget": "Walking target",
+                    "distance": "Distance",
+                    "addItem": "Add badge",
+                    "noItems": "No badges"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "Chengdu Rail Transit Line Badge",
                     "badgeType": {
@@ -172,6 +181,9 @@
                 "taipeiMetroLineBadge": {
                     "displayName": "Taipei Metro line badge",
                     "tram": "Tram"
+                },
+                "wuhanRTLineBadge": {
+                    "displayName": "Wuhan Rail Transit line badge"
                 },
                 "image": {
                     "displayName": "Image",
@@ -232,7 +244,12 @@
                     "airport_chengdu": "Airport Chengdu",
                     "railway_chengdu": "Railway Chengdu",
                     "railway_taiwan": "Railway Taiwan",
-                    "hsr_taiwan": "High Speed Railway Taiwan"
+                    "hsr_taiwan": "High Speed Railway Taiwan",
+                    "railway_shenzhen": "Railway Shenzhen",
+                    "intercity_shenzhen": "Intercity Shenzhen",
+                    "ferry_shenzhen": "Ferry Shenzhen",
+                    "tram_shenzhen": "Tram Shenzhen",
+                    "airport_shenzhen": "Airport Shenzhen"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
@@ -291,7 +308,8 @@
                     "middle": "Middle",
                     "right": "Right",
                     "top": "Top",
-                    "bottom": "Bottom"
+                    "bottom": "Bottom",
+                    "custom": "Custom"
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -528,7 +546,8 @@
                     "displayName": "Changsha Metro basic station"
                 },
                 "csmetroInt": {
-                    "displayName": "Changsha Metro interchange station"
+                    "displayName": "Changsha Metro interchange station",
+                    "flipColor": "Flip color"
                 },
                 "hzmetroBasic": {
                     "displayName": "Hangzhou Metro basic station",
@@ -675,7 +694,10 @@
                     "displayName": "London IFS Cloud Cable Car style"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway style"
+                    "displayName": "Guangdong Intercity Railway style",
+                    "color": "Color",
+                    "blue": "Blue",
+                    "gray": "Gray"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "Chongqing Rail Transit line badge style"
@@ -685,6 +707,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
+                },
+                "shinkansen": {
+                    "displayName": "Shinkansen style"
                 },
                 "generic": {
                     "displayName": "Generic style",
@@ -698,6 +723,7 @@
                     "linecapSquare": "Square",
                     "dash": "Dash",
                     "gap": "Gap",
+                    "layerLimitWarning": "Subscribe to unlock additional line layers.",
                     "addLayer": "Add layer",
                     "copyLayer": "Copy layer",
                     "moveLayerUp": "Move layer up",

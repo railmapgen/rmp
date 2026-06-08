@@ -1,6 +1,8 @@
+import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
-import { CityCode } from '../../../../constants/constants';
+import { useTranslation } from 'react-i18next';
+import { AttrsProps, CityCode, Theme } from '../../../../constants/constants';
 import {
     LINE_WIDTH,
     LinePathAttributes,
@@ -9,6 +11,13 @@ import {
     LineStyleComponentProps,
 } from '../../../../constants/lines';
 import { ColorAttribute } from '../../../panels/details/color-field';
+
+type GuangdongIntercityRailwayColor = 'blue' | 'gray';
+
+const GUANGDONG_INTERCITY_RAILWAY_COLORS: Record<GuangdongIntercityRailwayColor, Theme> = {
+    blue: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],
+    gray: [CityCode.Guangzhou, 'ir-gray', '#515151', MonoColour.white],
+};
 
 const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongIntercityRailwayAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -38,10 +47,35 @@ const GuangdongIntercityRailway = (props: LineStyleComponentProps<GuangdongInter
 export interface GuangdongIntercityRailwayAttributes extends LinePathAttributes, ColorAttribute {}
 
 const defaultGuangdongIntercityRailwayAttributes: GuangdongIntercityRailwayAttributes = {
-    color: [CityCode.Guangzhou, 'ir', '#2559a8', MonoColour.white],
+    color: GUANGDONG_INTERCITY_RAILWAY_COLORS.blue,
 };
 
-const attrsComponent = () => undefined;
+const getColorValue = (color: Theme): GuangdongIntercityRailwayColor =>
+    color[2].toLowerCase() === GUANGDONG_INTERCITY_RAILWAY_COLORS.gray[2].toLowerCase() ? 'gray' : 'blue';
+
+const attrsComponent = (props: AttrsProps<GuangdongIntercityRailwayAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+
+    const fields: RmgFieldsField[] = [
+        {
+            type: 'select',
+            label: t('panel.details.lines.guangdongIntercityRailway.color'),
+            value: getColorValue(attrs.color ?? defaultGuangdongIntercityRailwayAttributes.color),
+            options: {
+                blue: t('panel.details.lines.guangdongIntercityRailway.blue'),
+                gray: t('panel.details.lines.guangdongIntercityRailway.gray'),
+            },
+            onChange: val => {
+                attrs.color = GUANGDONG_INTERCITY_RAILWAY_COLORS[val as GuangdongIntercityRailwayColor];
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+    ];
+
+    return <RmgFields fields={fields} />;
+};
 
 const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> = {
     component: GuangdongIntercityRailway,

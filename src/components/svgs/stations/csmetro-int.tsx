@@ -12,6 +12,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
@@ -23,9 +28,11 @@ const CsmetroIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultCsmetroIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultCsmetroIntStationAttributes.nameOffsetY,
         transfer = defaultCsmetroIntStationAttributes.transfer,
+        flipColor = defaultCsmetroIntStationAttributes.flipColor,
     } = attrs[StationType.CsmetroInt] ?? defaultCsmetroIntStationAttributes;
 
     const onPointerDown = React.useCallback(
@@ -41,13 +48,25 @@ const CsmetroIntStation = (props: StationComponentProps) => {
         [id, handlePointerUp]
     );
 
-    // text position similar to shmetro-int
-    const textX = nameOffsetX === 'left' ? -8 : nameOffsetX === 'right' ? 8 : 0;
+    const txOffset = nameOffsetY === 'middle' ? 12 : 8;
+    const textX = nameOffsetX === 'left' ? -txOffset : nameOffsetX === 'right' ? txOffset : 0;
     const textY =
         (names[NAME_DY[nameOffsetY].namesPos].split('\n').length * 12.67 +
             (nameOffsetY === 'top' ? 6 : nameOffsetY === 'bottom' ? 11 : 0)) *
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.CsmetroInt,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -58,7 +77,7 @@ const CsmetroIntStation = (props: StationComponentProps) => {
                     cy="11.7"
                     r="10.35"
                     fill="white"
-                    stroke={transfer?.[0]?.[0]?.[2] ?? '#9B9B9B'}
+                    stroke={transfer?.[0]?.[flipColor ? 1 : 0]?.[2] ?? '#9B9B9B'}
                     strokeMiterlimit={10}
                     strokeWidth="2.7"
                 />
@@ -90,10 +109,13 @@ const CsmetroIntStation = (props: StationComponentProps) => {
             </g>
 
             <g
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="1"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -120,18 +142,44 @@ const CsmetroIntStation = (props: StationComponentProps) => {
 export interface CsmetroIntStationAttributes extends StationAttributes, StationAttributesWithInterchange {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    flipColor: boolean;
 }
 
 const defaultCsmetroIntStationAttributes: CsmetroIntStationAttributes = {
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    flipColor: false,
     transfer: [[]],
 };
 
 const csmetroIntAttrsComponent = (props: AttrsProps<CsmetroIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -157,15 +205,12 @@ const csmetroIntAttrsComponent = (props: AttrsProps<CsmetroIntStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -173,18 +218,25 @@ const csmetroIntAttrsComponent = (props: AttrsProps<CsmetroIntStationAttributes>
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.csmetroInt.flipColor'),
+            isChecked: attrs.flipColor ?? defaultCsmetroIntStationAttributes.flipColor,
+            onChange: val => {
+                attrs.flipColor = val;
+                handleAttrsUpdate(id, attrs);
+            },
+            oneLine: true,
         },
         // Interchange editor (transfer list)
         {

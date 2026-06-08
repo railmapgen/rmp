@@ -55,6 +55,7 @@ const DetailsPanel = () => {
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
+    const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
 
     const canCopyAttrs = selected.size === 1;
     const hasMultipleEdges = React.useMemo(
@@ -150,7 +151,14 @@ const DetailsPanel = () => {
             return;
         }
 
-        if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
+        if (
+            !importEdgeSpecificAttrs(
+                graph.current,
+                selected,
+                parsed.data as EdgeSpecificAttrsClipboardData,
+                isGenericLineStyleLayerLimited
+            )
+        ) {
             sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }

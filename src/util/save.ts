@@ -57,7 +57,40 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 71;
+export const CURRENT_VERSION = 76;
+
+/**
+ * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
+ */
+const repairNodeXYNullCoordinates = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave;
+    const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    graph.import(save.graph);
+
+    let changed = false;
+
+    for (const { node, attributes } of graph.nodeEntries()) {
+        const nextAttrs: Partial<NodeAttributes> = {};
+
+        if (attributes.x === null) {
+            nextAttrs.x = 0;
+        }
+        if (attributes.y === null) {
+            nextAttrs.y = 0;
+        }
+
+        if (Object.keys(nextAttrs).length > 0) {
+            graph.mergeNodeAttributes(node, nextAttrs);
+            changed = true;
+        }
+    }
+
+    if (!changed) {
+        return saveStr;
+    }
+
+    return JSON.stringify({ ...save, graph: graph.export() });
+};
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -104,6 +137,11 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
         version = Number(JSON.parse(save).version);
         changed = true;
     }
+
+    // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
+    const repairedSave = repairNodeXYNullCoordinates(save);
+    changed ||= repairedSave !== save;
+    save = repairedSave;
 
     if (changed) {
         logger.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
@@ -936,4 +974,47 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 71, graph: graph.export() });
     },
+    71: param =>
+        // Bump save version to support shinkansen line style.
+        JSON.stringify({ ...JSON.parse(param), version: 72 }),
+    72: param => {
+        // Bump save version to add flipColor to csmetro interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.CsmetroInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (typeof attr.flipColor !== 'boolean') {
+                    attr.flipColor = false;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 73, graph: graph.export() });
+    },
+    73: param => {
+        // Bump save version to add transfer to wuhanrt interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.WuhanRTInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (!Array.isArray(attr.transfer)) {
+                    attr.transfer = [[]];
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 74, graph: graph.export() });
+    },
+    74: param =>
+        // Bump save version to support Shenzhen facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 75 }),
+    75: param =>
+        // Bump save version to support Wuhan Rail Transit line badge.
+        JSON.stringify({ ...JSON.parse(param), version: 76 }),
 };

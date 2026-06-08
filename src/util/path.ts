@@ -115,11 +115,23 @@ export const parseRoundedTurnPath = (pathD: string): RoundedTurnPath => {
 };
 
 /** Every supported path starts with `M`, so the first command endpoint is always the start point. */
-export const getStartPoint = (path: Path): PathPoint => path.commands[0].to;
+export const getStartPoint = (path: Path): PathPoint => {
+    if (path.kind === 'empty-open') {
+        throw new Error('Empty path does not have a start point.');
+    }
+    return path.commands[0].to;
+};
 
 /** For closed areas, ignore the trailing `Z` and return the last drawable endpoint instead. */
 export const getEndPoint = (path: Path): PathPoint => {
-    const lastCommand = path.kind === 'closed-area' ? path.commands.at(-2) : path.commands.at(-1);
+    if (path.kind === 'empty-open') {
+        throw new Error('Empty path does not have an endpoint.');
+    }
+
+    const lastCommand =
+        path.kind === 'closed-area' || path.kind === 'compound-closed-area'
+            ? path.commands.at(-2)
+            : path.commands.at(-1);
     if (!lastCommand || isClosePath(lastCommand)) {
         throw new Error('Path does not have a drawable endpoint.');
     }

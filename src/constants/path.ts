@@ -42,6 +42,10 @@ export type MultiSegmentOpenPathCommands = readonly [
     OpenPathDrawCommand,
     ...OpenPathDrawCommand[],
 ];
+/** Closed subpath command stream: `M`, one or more draws, then `Z`. */
+export type ClosedSubpathCommands = readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[], ClosePath];
+/** Compound closed path command stream with one or more `M ... Z` subpaths serialized in sequence. */
+export type CompoundClosedAreaCommands = readonly [MoveTo, OpenPathDrawCommand, ...PathCommand[]];
 
 /**
  * Structured path model used across the renderer.
@@ -53,6 +57,11 @@ interface BasePath<C extends readonly PathCommand[]> {
     readonly kind: string;
     readonly commands: C;
     readonly d: string;
+}
+
+/** Empty open path placeholder used when a style always needs a path-shaped return value. */
+export interface EmptyOpenPath extends BasePath<readonly []> {
+    readonly kind: 'empty-open';
 }
 
 /** Straight open path: `M L`. */
@@ -80,9 +89,15 @@ export interface ClosedAreaPath extends BasePath<readonly [...MultiSegmentOpenPa
     readonly kind: 'closed-area';
 }
 
+/** Closed filled geometry composed of multiple `M ... Z` subpaths. */
+export interface CompoundClosedAreaPath extends BasePath<CompoundClosedAreaCommands> {
+    readonly kind: 'compound-closed-area';
+    readonly subpaths: readonly [ClosedSubpathCommands, ...ClosedSubpathCommands[]];
+}
+
 export type OpenPath = LinearPath | SharpTurnPath | RoundedTurnPath | ComplexOpenPath;
 
-export type Path = OpenPath | ClosedAreaPath;
+export type Path = OpenPath | ClosedAreaPath | CompoundClosedAreaPath | EmptyOpenPath;
 
 export type ShortOpenPath = LinearPath | SharpTurnPath | RoundedTurnPath;
 
@@ -152,3 +167,22 @@ export const makeClosedAreaPath = (commands: readonly [...MultiSegmentOpenPathCo
 /** Close an existing open outline by appending `Z` without rebuilding its drawable commands. */
 export const makeClosedAreaPathFromOpenCommands = (commands: MultiSegmentOpenPathCommands): ClosedAreaPath =>
     makeClosedAreaPath([...commands, closePath()] as const);
+
+/** Serialize a list of closed subpaths into one SVG `d` while keeping subpath boundaries explicit. */
+export const makeCompoundClosedAreaPath = (
+    subpaths: readonly [ClosedSubpathCommands, ...ClosedSubpathCommands[]]
+): CompoundClosedAreaPath => {
+    const commands = subpaths.flat() as unknown as CompoundClosedAreaCommands;
+    return {
+        kind: 'compound-closed-area',
+        subpaths,
+        commands,
+        d: commands.map(serializeCommand).join(' '),
+    };
+};
+
+export const makeEmptyOpenPath = (): EmptyOpenPath => ({
+    kind: 'empty-open',
+    commands: [] as const,
+    d: '',
+});

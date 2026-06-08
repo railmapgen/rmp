@@ -160,6 +160,15 @@
                     "sandwich": "三明治",
                     "tube": "地鐵"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "倫敦地鐵線路標牌",
+                    "lineName": "線路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目標",
+                    "distance": "距離",
+                    "addItem": "新增標牌",
+                    "noItems": "暫無標牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都軌道交通線路標識",
                     "badgeType": {
@@ -172,6 +181,9 @@
                 "taipeiMetroLineBadge": {
                     "displayName": "台北捷運線路標識",
                     "tram": "輕軌"
+                },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通線路標識"
                 },
                 "image": {
                     "displayName": "影像",
@@ -232,7 +244,12 @@
                     "airport_chengdu": "成都機場",
                     "railway_chengdu": "成都火車站",
                     "railway_taiwan": "臺灣鐵路",
-                    "hsr_taiwan": "台灣高鐵"
+                    "hsr_taiwan": "台灣高鐵",
+                    "railway_shenzhen": "深圳火車站",
+                    "intercity_shenzhen": "深圳城際鐵路",
+                    "ferry_shenzhen": "深圳渡輪",
+                    "tram_shenzhen": "深圳有軌電車",
+                    "airport_shenzhen": "深圳機場"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -291,7 +308,8 @@
                     "middle": "中間",
                     "right": "右",
                     "top": "頂部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自訂"
                 },
                 "interchange": {
                     "title": "換乘",
@@ -527,7 +545,8 @@
                     "displayName": "長沙軌道交通基本車站"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙軌道交通換乘車站"
+                    "displayName": "長沙軌道交通換乘車站",
+                    "flipColor": "翻轉顏色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地鐵基本車站",
@@ -674,7 +693,10 @@
                     "displayName": "倫敦IFS雲纜車樣式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路樣式"
+                    "displayName": "廣東城際鐵路樣式",
+                    "color": "顏色",
+                    "blue": "藍色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶軌道交通線路標識連接線樣式"
@@ -684,6 +706,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都軌道交通出閘換乘樣式"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線樣式"
                 },
                 "generic": {
                     "displayName": "通用樣式",
@@ -697,6 +722,7 @@
                     "linecapSquare": "方頭",
                     "dash": "虛線長度",
                     "gap": "間隔長度",
+                    "layerLimitWarning": "訂閱可解鎖額外線層。",
                     "addLayer": "添加線層",
                     "copyLayer": "複製線層",
                     "moveLayerUp": "上移線層",

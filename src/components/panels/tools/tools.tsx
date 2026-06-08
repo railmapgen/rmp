@@ -43,6 +43,7 @@ import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
 import FavoriteButton from './favorite-button';
 import { localizedLineStyles, localizedMiscNodes, localizedStations } from './localized-order';
+import { LineStyleLeftIcon } from './line-style-left-icon';
 
 const buttonStyle: SystemStyleObject = {
     borderRadius: 0,
@@ -319,7 +320,7 @@ const ToolsPanel = () => {
                                     />
                                     <Button
                                         aria-label={styleType}
-                                        leftIcon={<Box boxSize="40px" />}
+                                        leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
                                         isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
