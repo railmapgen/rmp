@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { station_name_translation_endpoint } from '../constants/server';
 import { translateStationNameByPinyin, translateStationNameBySemantic } from './station-name-translation';
 
 afterEach(() => {
@@ -45,7 +46,7 @@ describe('translateStationNameBySemantic', () => {
 
         await expect(translateStationNameBySemantic('南京东路', 'token')).resolves.toBe('East Nanjing Road');
         expect(fetch).toHaveBeenCalledWith(
-            'https://railmapgen.org/v1/stationNameTranslation',
+            station_name_translation_endpoint,
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({

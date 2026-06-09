@@ -6,6 +6,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../constants/constants';
 import { StationAttributes, StationType } from '../../../constants/stations';
+import i18n from '../../../i18n/config';
 import store, { createStore } from '../../../redux';
 import { render } from '../../../test-utils';
 import StationNameTranslateButton from './station-name-translate-button';
@@ -79,7 +80,7 @@ describe('StationNameTranslateButton', () => {
 
         render(<Harness />, { store: mockStore });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Translate' }));
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('panel.details.stations.common.translateName') }));
 
         const [, englishTextarea] = screen.getAllByRole('textbox');
         await waitFor(() => expect(englishTextarea).toHaveValue('Nan Jing Dong Lu'));
