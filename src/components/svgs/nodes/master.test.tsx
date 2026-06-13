@@ -1,5 +1,5 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import React from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { CityCode, MiscNodeId, Theme } from '../../../constants/constants';
@@ -115,6 +115,11 @@ describe('MasterNode rendering', () => {
                         width: { kind: 'literal', value: 10 },
                         height: { kind: 'literal', value: 5 },
                         fill: { kind: 'variable', componentId: 'primary', path: 'hex' },
+                        stroke: { kind: 'literal', value: '#111111' },
+                        'stroke-width': { kind: 'literal', value: 2 },
+                        strokeWidth: { kind: 'literal', value: 0 },
+                        'fill-rule': { kind: 'literal', value: 'evenodd' },
+                        class: { kind: 'literal', value: 'master-shape' },
                     },
                 },
             ],
@@ -131,6 +136,143 @@ describe('MasterNode rendering', () => {
         expect(rect?.getAttribute('x')).toBe('0');
         expect(rect?.getAttribute('y')).toBe('0');
         expect(rect?.getAttribute('fill')).toBe(theme[2]);
+        expect(rect?.getAttribute('stroke')).toBe('#111111');
+        expect(rect?.getAttribute('stroke-width')).toBe('2');
+        expect(rect?.getAttribute('fill-rule')).toBe('evenodd');
+        expect(rect?.getAttribute('class')).toBe('master-shape');
+    });
+
+    it('normalizes SVG style strings for React rendering', () => {
+        const attrs: MasterAttributes = {
+            randomId: 'v4-style',
+            version: 4,
+            transform: defaultMasterTransform,
+            nodeType: 'MiscNode',
+            components: [],
+            svgs: [
+                {
+                    id: 'path',
+                    type: 'path',
+                    attrBindings: {
+                        d: { kind: 'literal', value: 'M0 0L10 0' },
+                        style: { kind: 'literal', value: 'fill: none; stroke: #123456; stroke-width: 3' },
+                    },
+                },
+            ],
+        };
+
+        const { container } = render(
+            <svg>
+                <MasterNodeComponent {...baseProps} attrs={attrs} />
+            </svg>
+        );
+
+        const path = container.querySelector('path');
+        expect(path?.style.fill).toBe('none');
+        expect(path?.style.stroke).toBe('#123456');
+        expect(path?.style.strokeWidth).toBe('3');
+    });
+
+    it('uses the whole wrapper as the station core for v4 station masters without core', () => {
+        const handlePointerDown = vi.fn();
+        const attrs: MasterAttributes = {
+            randomId: 'v4-station',
+            version: 4,
+            transform: defaultMasterTransform,
+            nodeType: 'Station',
+            components: [],
+            svgs: [
+                {
+                    id: 'rect',
+                    type: 'rect',
+                    attrBindings: {
+                        x: { kind: 'literal', value: 0 },
+                        y: { kind: 'literal', value: 0 },
+                        width: { kind: 'literal', value: 10 },
+                        height: { kind: 'literal', value: 5 },
+                    },
+                },
+            ],
+        };
+
+        const { container } = render(
+            <svg>
+                <MasterNodeComponent {...baseProps} handlePointerDown={handlePointerDown} attrs={attrs} />
+            </svg>
+        );
+
+        const core = container.querySelector('[id="stn_core_misc_node_master"]');
+        expect(container.querySelectorAll('[id="stn_core_misc_node_master"]')).toHaveLength(1);
+        expect(core?.tagName.toLowerCase()).toBe('g');
+
+        fireEvent.pointerDown(core!);
+        expect(handlePointerDown).toHaveBeenCalledWith(baseProps.id, expect.anything());
+    });
+
+    it('ignores stale core fields for v4 station masters', () => {
+        const attrs: MasterAttributes = {
+            randomId: 'v4-station',
+            version: 4,
+            transform: defaultMasterTransform,
+            nodeType: 'Station',
+            components: [],
+            core: 'rect',
+            svgs: [
+                {
+                    id: 'rect',
+                    type: 'rect',
+                    attrBindings: {
+                        x: { kind: 'literal', value: 0 },
+                        y: { kind: 'literal', value: 0 },
+                        width: { kind: 'literal', value: 10 },
+                        height: { kind: 'literal', value: 5 },
+                    },
+                },
+            ],
+        };
+
+        const { container } = render(
+            <svg>
+                <MasterNodeComponent {...baseProps} attrs={attrs} />
+            </svg>
+        );
+
+        const coreElements = container.querySelectorAll('[id="stn_core_misc_node_master"]');
+        expect(coreElements).toHaveLength(1);
+        expect(coreElements[0].tagName.toLowerCase()).toBe('g');
+    });
+
+    it('keeps legacy station master core on the configured child element', () => {
+        const attrs: MasterAttributes = {
+            randomId: 'legacy-station',
+            version: 3,
+            transform: defaultMasterTransform,
+            nodeType: 'Station',
+            components: [{ id: 'width', label: 'width', type: 'number', defaultValue: 10, value: 10 }],
+            core: 'rect',
+            svgs: [
+                {
+                    id: 'rect',
+                    type: 'rect',
+                    attrs: {
+                        x: '=0',
+                        y: '=0',
+                        width: '=width',
+                        height: '=5',
+                    },
+                },
+            ],
+        };
+
+        const { container } = render(
+            <svg>
+                <MasterNodeComponent {...baseProps} attrs={attrs} />
+            </svg>
+        );
+
+        const coreElements = container.querySelectorAll('[id="stn_core_misc_node_master"]');
+        expect(coreElements).toHaveLength(1);
+        expect(coreElements[0].tagName.toLowerCase()).toBe('rect');
     });
 
     it('renders and updates multiple v4 color variables independently', () => {

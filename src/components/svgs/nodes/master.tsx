@@ -13,6 +13,60 @@ import { MasterImport } from '../../page-header/master-import';
 import { MasterManager } from '../../page-header/master-manager';
 import ThemeButton from '../../panels/theme-button';
 
+const svgAttrNameOverrides: Record<string, string> = {
+    class: 'className',
+    'xlink:href': 'xlinkHref',
+    'xml:space': 'xmlSpace',
+    'xmlns:xlink': 'xmlnsXlink',
+};
+
+const normalizeSvgAttrName = (attrName: string) => {
+    if (attrName in svgAttrNameOverrides) return svgAttrNameOverrides[attrName];
+    if (attrName.startsWith('aria-') || attrName.startsWith('data-')) return attrName;
+    return attrName.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+};
+
+const normalizeSvgStyleForReact = (style: unknown) => {
+    if (typeof style !== 'string') return style;
+
+    return Object.fromEntries(
+        style
+            .split(';')
+            .map(rule => rule.trim())
+            .filter(Boolean)
+            .map(rule => {
+                const separatorIndex = rule.indexOf(':');
+                if (separatorIndex === -1) return undefined;
+
+                const property = rule.slice(0, separatorIndex).trim();
+                const value = rule.slice(separatorIndex + 1).trim();
+                if (!property) return undefined;
+
+                return [normalizeSvgAttrName(property), value];
+            })
+            .filter((entry): entry is [string, string] => !!entry)
+    );
+};
+
+const normalizeSvgAttrsForReact = (attrs: Record<string, any>) => {
+    const reactAttrs: Record<string, any> = {};
+    const attrPriorities: Record<string, number> = {};
+
+    Object.entries(attrs)
+        .filter(([attrName]) => attrName !== '_rmp_children_text')
+        .forEach(([attrName, value]) => {
+            const reactAttrName = normalizeSvgAttrName(attrName);
+            const priority = attrName.includes('-') || attrName.includes(':') || attrName === 'class' ? 1 : 0;
+
+            if (reactAttrName in reactAttrs && priority < attrPriorities[reactAttrName]) return;
+
+            reactAttrs[reactAttrName] = attrName === 'style' ? normalizeSvgStyleForReact(value) : value;
+            attrPriorities[reactAttrName] = priority;
+        });
+
+    return reactAttrs;
+};
+
 const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
 
@@ -62,6 +116,10 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
 
     const gPointerEvents =
         attrs.nodeType === 'MiscNode' ? { onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } } : {};
+    const v4StationCoreProps =
+        attrs.version === 4 && attrs.nodeType === 'Station'
+            ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
+            : {};
 
     /**
      * Fix #843: We add an ID filter to apply style to class only under this ID.
@@ -78,7 +136,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
     const dfsCreateElement = (svgs: MasterSvgsElem[]): ReactNode => {
         return svgs.map(s => {
             const coreProps =
-                attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
+                attrs.version !== 4 && attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
                     ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
                     : {};
             const evaluatedAttrs =
@@ -90,12 +148,13 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                           attrs.components.map(s => s.type)
                       );
             const calcAttrs = evaluatedAttrs as Record<string, any>;
+            const reactAttrs = normalizeSvgAttrsForReact(calcAttrs);
             return (
                 <g key={s.id} transform={`translate(${calcAttrs.x ?? 0}, ${calcAttrs.y ?? 0})`}>
                     {React.createElement(
                         s.type,
                         {
-                            ...calcAttrs,
+                            ...reactAttrs,
                             x: 0,
                             y: 0,
                             ...coreProps,
@@ -122,6 +181,7 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
         { ...gPointerEvents },
         attrs.randomId ? (
             <g
+                {...v4StationCoreProps}
                 transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}
             >
                 {elements}
