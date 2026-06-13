@@ -113,7 +113,8 @@ export const initStore = async (store: RootStore) => {
             // comparison will always return true on dragging a node.
             return (
                 currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges
+                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
+                currentState.param.present !== previousState.param.present
             );
         },
         effect: (_action, listenerApi) => {
