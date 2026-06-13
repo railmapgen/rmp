@@ -2,7 +2,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { describe, expect, it } from 'vitest';
 import { CityCode, Theme } from '../constants/constants';
 import { MasterComponent, MasterSvgsElem } from '../constants/master';
-import { evaluateMasterSvgAttrs } from './master-attr-binding';
+import { collectMasterSvgAttrErrors, evaluateMasterSvgAttrs } from './master-attr-binding';
 
 const lineColor: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
 
@@ -117,5 +117,32 @@ describe('evaluateMasterSvgAttrs', () => {
         const result = evaluateMasterSvgAttrs(svg, components);
 
         expect(result.error).toContain('Legacy attr binding is not supported');
+    });
+
+    it('collects attr binding errors from nested SVG elements', () => {
+        const svgs: MasterSvgsElem[] = [
+            {
+                id: 'parent',
+                type: 'g',
+                attrBindings: {
+                    fill: { kind: 'variable', componentId: 'missing_component' },
+                },
+                children: [
+                    {
+                        id: 'child',
+                        type: 'rect',
+                        attrBindings: {
+                            x: { kind: 'legacy', expression: 'param_width + 1' },
+                        },
+                    },
+                ],
+            },
+        ];
+
+        const result = collectMasterSvgAttrErrors(svgs, components);
+
+        expect(result).toHaveLength(2);
+        expect(result[0]).toContain('parent.fill');
+        expect(result[1]).toContain('child.x');
     });
 });

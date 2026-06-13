@@ -1,4 +1,4 @@
-import { Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React, { ReactNode } from 'react';
@@ -8,7 +8,7 @@ import { AttrsProps, Theme } from '../../../constants/constants';
 import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { usePaletteTheme } from '../../../util/hooks';
-import { evaluateMasterSvgAttrs, normalizeTheme } from '../../../util/master-attr-binding';
+import { collectMasterSvgAttrErrors, evaluateMasterSvgAttrs, normalizeTheme } from '../../../util/master-attr-binding';
 import { MasterImport } from '../../page-header/master-import';
 import { MasterManager } from '../../page-header/master-manager';
 import ThemeButton from '../../panels/theme-button';
@@ -139,15 +139,17 @@ const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
                 attrs.version !== 4 && attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
                     ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
                     : {};
-            const evaluatedAttrs =
+            const evaluatedAttrsResult =
                 attrs.version === 4
-                    ? evaluateMasterSvgAttrs(s, attrs.components).attrs
-                    : modifyAttributes(
-                          s.attrs,
-                          attrs.components.map(s => s.value),
-                          attrs.components.map(s => s.type)
-                      );
-            const calcAttrs = evaluatedAttrs as Record<string, any>;
+                    ? evaluateMasterSvgAttrs(s, attrs.components)
+                    : {
+                          attrs: modifyAttributes(
+                              s.attrs,
+                              attrs.components.map(s => s.value),
+                              attrs.components.map(s => s.type)
+                          ),
+                      };
+            const calcAttrs = evaluatedAttrsResult.attrs as Record<string, any>;
             const reactAttrs = normalizeSvgAttrsForReact(calcAttrs);
             return (
                 <g key={s.id} transform={`translate(${calcAttrs.x ?? 0}, ${calcAttrs.y ?? 0})`}>
@@ -207,9 +209,9 @@ const MasterComponentThemeButton = (props: {
     onChange: (theme: Theme) => void;
 }) => {
     const { component, onChange } = props;
-    const normalizedTheme = normalizeTheme(component.value ?? component.defaultValue).value;
+    const normalizedThemeResult = normalizeTheme(component.value ?? component.defaultValue);
     const { theme, requestThemeChange } = usePaletteTheme({
-        theme: normalizedTheme,
+        ...(normalizedThemeResult.value ? { theme: normalizedThemeResult.value } : {}),
         onThemeApplied: onChange,
     });
 
@@ -230,6 +232,10 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
     const { t } = useTranslation();
     const [openImport, setOpenImport] = React.useState(false);
     const [openManager, setOpenManager] = React.useState(false);
+    const masterAttrErrors = React.useMemo(
+        () => (attrs.version === 4 ? collectMasterSvgAttrErrors(attrs.svgs, attrs.components) : []),
+        [attrs.components, attrs.svgs, attrs.version]
+    );
 
     const getComponentValue = (query: string) => {
         const p = attrs.components.find(c => c.id === query);
@@ -352,6 +358,18 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
             <Button width="100%" leftIcon={<MdSettings />} onClick={() => setOpenManager(true)}>
                 {t('header.settings.procedures.masterManager.title')}
             </Button>
+            {masterAttrErrors.length > 0 && (
+                <Alert status="error" variant="left-accent" borderRadius="md" alignItems="flex-start" width="100%">
+                    <AlertIcon mt={1} />
+                    <Flex direction="column" minW={0}>
+                        <AlertTitle fontSize="sm">{t('panel.details.nodes.master.attrBindingError')}</AlertTitle>
+                        <AlertDescription fontSize="xs" wordBreak="break-word">
+                            {masterAttrErrors[0]}
+                            {masterAttrErrors.length > 1 ? ` (+${masterAttrErrors.length - 1})` : ''}
+                        </AlertDescription>
+                    </Flex>
+                </Alert>
+            )}
             {attrs.randomId && <RmgFields fields={componentField} minW="full" />}
             {attrs.randomId && attrs.version !== 4 && attrs.color !== undefined && (
                 <RmgFields fields={colorField} minW="full" />

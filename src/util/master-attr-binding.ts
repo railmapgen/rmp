@@ -339,3 +339,18 @@ export const evaluateMasterSvgAttrs = (
 
     return { attrs };
 };
+
+export const collectMasterSvgAttrErrors = (svgs: MasterSvgsElem[], components: MasterComponent[]): string[] => {
+    const errors: string[] = [];
+
+    const collectErrors = (svg: MasterSvgsElem) => {
+        const result = evaluateMasterSvgAttrs(svg, components);
+        if (result.error) {
+            errors.push(result.error);
+        }
+        svg.children?.forEach(collectErrors);
+    };
+
+    svgs.forEach(collectErrors);
+    return errors;
+};
