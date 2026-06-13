@@ -54,19 +54,17 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
                 const attrs = structuredClone(nodeAttrs[MiscNodeType.Master]!);
 
                 const getComponentValue = (query: string) => {
-                    attrs.components.forEach(c => {
-                        if (c.id === query) {
-                            return c.value ?? c.defaultValue;
-                        }
-                    });
-                    return undefined;
+                    const component = attrs.components.find(c => c.id === query);
+                    return component ? (component.value ?? component.defaultValue) : undefined;
                 };
 
                 newParam.components.forEach((c, i) => {
                     newParam.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
                 });
                 if (newParam.color !== undefined)
-                    newParam.color.value = attrs.color ? newParam.color.value : newParam.color.defaultValue;
+                    newParam.color.value = attrs.color
+                        ? (attrs.color.value ?? attrs.color.defaultValue)
+                        : newParam.color.defaultValue;
                 graph.current.mergeNodeAttributes(node, { [MiscNodeType.Master]: newParam });
             });
         dispatch(saveGraph(graph.current.export()));
@@ -74,20 +72,24 @@ export const MasterManager = (props: { isOpen: boolean; onClose: () => void }) =
     };
 
     const handleDownload = (p: MasterParam) => {
-        const param = {
+        const components = structuredClone(p.components);
+        components.forEach(c => {
+            c.value = c.defaultValue;
+        });
+
+        const param: Record<string, unknown> = {
             id: p.randomId,
             type: p.nodeType,
             label: p.label,
             svgs: p.svgs,
-            components: p.components,
-            color: p.color,
+            components,
             core: p.core,
             transform: p.transform,
             version: p.version,
         };
-        param.components.forEach((c, i) => {
-            param.components[i].value = c.defaultValue;
-        });
+        if (p.version !== 4 && p.color) {
+            param.color = { ...p.color, value: p.color.defaultValue };
+        }
         downloadAs(`RMP_Master_Node_${new Date().valueOf()}.json`, 'application/json', JSON.stringify(param));
     };
 

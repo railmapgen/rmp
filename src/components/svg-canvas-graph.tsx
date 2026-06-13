@@ -59,6 +59,25 @@ const connectableNodesType = [
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.GzmtrLineBadge,
 ];
+const connectableTargetPrefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'] as const;
+
+export const findConnectableTarget = (elements: Element[]) => {
+    for (const element of elements) {
+        let current: Element | null = element;
+
+        while (current) {
+            const id = current.getAttribute('id');
+            const matchedPrefix = connectableTargetPrefixes.find(prefix => id?.startsWith(prefix));
+
+            if (id && matchedPrefix) {
+                return { id, matchedPrefix };
+            }
+
+            if (id === 'canvas') break;
+            current = current.parentElement;
+        }
+    }
+};
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -325,27 +344,27 @@ const SvgCanvas = () => {
                 graph.current.hasNode(active) &&
                 connectableNodesType.includes(graph.current.getNodeAttribute(active, 'type'));
 
-            const prefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
-            const elems = document.elementsFromPoint(e.clientX, e.clientY);
-            const id = elems.at(0)?.attributes?.getNamedItem('id')?.value;
             // all connectable nodes have prefixes in their mask/event elements' ids
             // also known as couldTargetBeConnected
-            const matchedPrefix = prefixes.find(prefix => id?.startsWith(prefix));
+            const target = findConnectableTarget(document.elementsFromPoint(e.clientX, e.clientY));
 
-            if (couldSourceBeConnected && matchedPrefix) {
+            if (couldSourceBeConnected && target) {
                 const { path, style: style_ } = getLinePathAndStyle(mode);
                 const [type, style] = [path!, style_!]; // assured by startsWith('line') check
                 const newLineId: LineId = `line_${nanoid(10)}`;
-                const [source, target] = [active! as NodeId, id!.slice(matchedPrefix.length) as NodeId];
-                if (source !== target) {
+                const [source, targetNode] = [
+                    active! as NodeId,
+                    target.id.slice(target.matchedPrefix.length) as NodeId,
+                ];
+                if (source !== targetNode) {
                     const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
                     // TODO: there should be some way for a style to disable auto theme injection
                     if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
                     const parallelIndex =
                         autoParallel && supportsParallelLinePath(type)
-                            ? makeParallelIndex(graph.current, type, source, target, 'from')
+                            ? makeParallelIndex(graph.current, type, source, targetNode, 'from')
                             : -1;
-                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
+                    graph.current.addDirectedEdgeWithKey(newLineId, source, targetNode, {
                         visible: true,
                         zIndex: 0,
                         type,
@@ -360,8 +379,8 @@ const SvgCanvas = () => {
                     if (autoChangeStationType && source.startsWith('stn')) {
                         checkAndChangeStationIntType(graph.current, source as StnId);
                     }
-                    if (autoChangeStationType && target.startsWith('stn')) {
-                        checkAndChangeStationIntType(graph.current, target as StnId);
+                    if (autoChangeStationType && targetNode.startsWith('stn')) {
+                        checkAndChangeStationIntType(graph.current, targetNode as StnId);
                     }
 
                     dispatch(setSelected(new Set([newLineId])));
