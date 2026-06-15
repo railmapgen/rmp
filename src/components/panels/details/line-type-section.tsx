@@ -12,7 +12,7 @@ import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { LinePathType, LineStyleType } from '../../../constants/lines';
+import { LinePathType, LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
@@ -98,9 +98,11 @@ export default function LineTypeSection() {
     const disabledLinePathOptions = Object.values(LinePathType).filter(linePathType =>
         isLinePathAndStyleDisabled(linePathType, currentLineStyleType, activeSubscriptions.RMP_CLOUD)
     );
-    const disabledLineStyleOptions = Object.values(LineStyleType).filter(lineStyleType =>
-        isLinePathAndStyleDisabled(currentLinePathType, lineStyleType, activeSubscriptions.RMP_CLOUD)
-    );
+    const disabledLineStyleOptions = Object.values(LineStyleType)
+        .filter(isVisibleLineStyle)
+        .filter(lineStyleType =>
+            isLinePathAndStyleDisabled(currentLinePathType, lineStyleType, activeSubscriptions.RMP_CLOUD)
+        );
 
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {
         if (newLinePathType) {

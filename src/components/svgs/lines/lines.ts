@@ -6,6 +6,7 @@ import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import rayGuidedPath from './paths/ray-guided';
 import singleColor from './styles/single-color';
 import generic from './styles/generic';
+import unknownLineStyle from './styles/unknown';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import gzmtrVirtualInt from './styles/gzmtr-virtual-int';
@@ -50,6 +51,7 @@ export const linePaths = {
 export const lineStyles = {
     [LineStyleType.SingleColor]: singleColor,
     [LineStyleType.Generic]: generic,
+    [LineStyleType.Unknown]: unknownLineStyle,
     [LineStyleType.ShmetroVirtualInt]: shmetroVirtualInt,
     [LineStyleType.ShanghaiSuburbanRailway]: shanghaiSuburbanRailway,
     [LineStyleType.GzmtrVirtualInt]: gzmtrVirtualInt,

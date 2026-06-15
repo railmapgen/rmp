@@ -2,7 +2,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeEntry } from 'graphology-types';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes, StnId } from '../constants/constants';
-import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
+import { ExternalLinePathAttributes, LinePathType, LineStyleType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
 import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths, supportsParallelLinePath } from './parallel';
@@ -19,7 +19,7 @@ export interface Element {
     type: 'station' | 'misc-node' | 'line';
     station?: NodeAttributes;
     miscNode?: NodeAttributes;
-    line?: LinePathElement;
+    line?: LineRenderElement;
 }
 
 export const getNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Element[] =>
@@ -29,14 +29,17 @@ export const getNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             : { id: _.node as MiscNodeId, type: 'misc-node', miscNode: _.attributes }
     );
 
-interface LinePathElement {
+export interface LineRenderElement {
     attr: EdgeAttributes;
     path: OpenPath;
 }
+
 type NonNullableExternalLinePathAttribute = NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>;
 
 export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Element[] => {
-    const resolvedLines: { [k in LineId]: LinePathElement } = {};
+    const resolvedLines: Element[] = [];
+    const reconciledLines: Element[] = [];
+    const danglingLines: Element[] = [];
 
     const cachedSimplePathAvailability: { [k in LineId]: ReturnType<typeof checkSimplePathAvailability> } = {};
     const parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[] = [];
@@ -88,10 +91,14 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             const lineID = lineEntry.edge as LineId;
             const attr = lineEntry.attributes;
             const { x1, y1, x2, y2, offset } = simplePathAvailability;
-            resolvedLines[lineID] = {
-                attr,
-                path: linePaths[LinePathType.Simple].generatePath(x1, x2, y1, y2, { offset }),
-            };
+            resolvedLines.push({
+                id: lineID,
+                type: 'line',
+                line: {
+                    attr,
+                    path: linePaths[LinePathType.Simple].generatePath(x1, x2, y1, y2, { offset }),
+                },
+            });
             continue;
         }
         normalLines.push(lineEntry);
@@ -112,36 +119,57 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         const parallelPaths = makeParallelPaths(parallels);
         for (const parallel of parallels) {
             const lineID = parallel.edge as LineId;
-            resolvedLines[lineID] = {
-                attr: parallel.attributes,
-                path: parallelPaths[lineID],
-            };
+            resolvedLines.push({
+                id: lineID,
+                type: 'line',
+                line: {
+                    attr: parallel.attributes,
+                    path: parallelPaths[lineID],
+                },
+            });
         }
     }
 
     // Handle reconcile lines.
-    const { allReconciledLines, danglingLines } = reconcileLines(graph, lineGroupsToReconcile);
+    const { allReconciledLines, danglingLines: danglingLineIds } = reconcileLines(graph, lineGroupsToReconcile);
     for (const reconciledLine of allReconciledLines) {
         const path = makeReconciledPath(graph, reconciledLine);
         if (!path) continue;
         const lineID = reconciledLine[0].edge;
-        resolvedLines[lineID] = { attr: graph.getEdgeAttributes(lineID), path };
+        reconciledLines.push({
+            id: lineID,
+            type: 'line',
+            line: {
+                attr: graph.getEdgeAttributes(lineID),
+                path,
+            },
+        });
     }
-    for (const danglingLine of danglingLines) {
+    for (const danglingLine of danglingLineIds) {
         const attr = graph.getEdgeAttributes(danglingLine);
         const [source, target] = graph.extremities(danglingLine);
         const sourceAttr = graph.getNodeAttributes(source);
         const targetAttr = graph.getNodeAttributes(target);
-        resolvedLines[danglingLine] = {
-            attr,
-            path: linePaths[LinePathType.Simple].generatePath(
-                sourceAttr.x,
-                targetAttr.x,
-                sourceAttr.y,
-                targetAttr.y,
-                linePaths[LinePathType.Simple].defaultAttrs
-            ),
-        };
+        danglingLines.push({
+            id: danglingLine,
+            type: 'line',
+            line: {
+                attr: {
+                    ...attr,
+                    // Dangling reconciled lines will have a visual warning (unknown style).
+                    // Mark only this render-time copy as unknown so the graph data stays unchanged.
+                    style: LineStyleType.Unknown,
+                    [LineStyleType.Unknown]: {},
+                },
+                path: linePaths[LinePathType.Simple].generatePath(
+                    sourceAttr.x,
+                    targetAttr.x,
+                    sourceAttr.y,
+                    targetAttr.y,
+                    linePaths[LinePathType.Simple].defaultAttrs
+                ),
+            },
+        });
     }
 
     // Handle normal lines.
@@ -157,13 +185,27 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         ];
         if (!(type in linePaths)) {
             // unknown line path type
-            resolvedLines[lineID] = { attr, path: makeLinearPath(makePoint(x1, y1), makePoint(x2, y2)) };
+            resolvedLines.push({
+                id: lineID,
+                type: 'line',
+                line: {
+                    attr,
+                    path: makeLinearPath(makePoint(x1, y1), makePoint(x2, y2)),
+                },
+            });
             continue;
         }
 
         // regular line path type, call the corresponding generatePath function
-        resolvedLines[lineID] = { attr, path: linePaths[type].generatePath(x1, x2, y1, y2, attr[type] as any) };
+        resolvedLines.push({
+            id: lineID,
+            type: 'line',
+            line: {
+                attr,
+                path: linePaths[type].generatePath(x1, x2, y1, y2, attr[type] as any),
+            },
+        });
     }
 
-    return Object.entries(resolvedLines).map(([id, line]) => ({ id: id as LineId, type: 'line', line }));
+    return [...resolvedLines, ...reconciledLines, ...danglingLines];
 };
