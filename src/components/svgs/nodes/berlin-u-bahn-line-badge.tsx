@@ -95,7 +95,7 @@ const BerlinUBahnLineBadgeAttrsComponent = (props: AttrsProps<BerlinUBahnLineBad
 const berlinUBahnLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="20" height="16" />
-        <text x="4" y="17" fill="white" fontSize="14">
+        <text x="4" y="17" fill="var(--chakra-colors-chakra-body-bg)" fontSize="14">
             U1
         </text>
     </svg>

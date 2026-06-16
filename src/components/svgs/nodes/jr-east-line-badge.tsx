@@ -222,11 +222,11 @@ const jrEastLineBadgeAttrsComponent = (props: AttrsProps<JREastLineBadgeAttribut
 const jrEastLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="1" y="6" width="22" height="7" />
-        <circle cx="3.5" cy="9.25" r="2" fill="white" />
+        <circle cx="3.5" cy="9.25" r="2" fill="var(--chakra-colors-chakra-body-bg)" />
         <text x="3" y="10.5" fontSize="3">
             9
         </text>
-        <text x="6" y="11.25" fontSize="5" fill="white">
+        <text x="6" y="11.25" fontSize="5" fill="var(--chakra-colors-chakra-body-bg)">
             山手線
         </text>
         <text x="1.5" y="16" fontSize="3">
