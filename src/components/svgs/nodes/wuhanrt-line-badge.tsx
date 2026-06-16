@@ -118,7 +118,14 @@ const wuhanRTLineBadgeAttrsComponent = (props: AttrsProps<WuhanRTLineBadgeAttrib
 const wuhanRTLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="7" width="20" height="10" rx="2" />
-        <text x="12" y="12" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="7">
+        <text
+            x="12"
+            y="12"
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="var(--chakra-colors-chakra-body-bg)"
+            fontSize="7"
+        >
             3号线
         </text>
     </svg>

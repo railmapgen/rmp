@@ -303,8 +303,18 @@ const ChengduRTIntAttrsComponent = (props: AttrsProps<ChengduRTIntStationAttribu
 const chengduRTIntStationIcon = (
     <svg viewBox="-1 -1 61 16" height={40} width={40} focusable={false} style={{ padding: 5 }}>
         <g textAnchor="middle">
-            <rect x={0} y={-5} width={60} height={30} stroke={'black'} strokeWidth={2} rx={15} ry={15} fill={'white'} />
-            <text fontSize={16} textAnchor="middle" x={30} y={15} fill={'black'} fontWeight={800}>
+            <rect
+                x={0}
+                y={-5}
+                width={60}
+                height={30}
+                stroke="currentColor"
+                strokeWidth={2}
+                rx={15}
+                ry={15}
+                fill="var(--chakra-colors-chakra-body-bg)"
+            />
+            <text fontSize={16} textAnchor="middle" x={30} y={15} fill="currentColor" fontWeight={800}>
                 孵化园
             </text>
         </g>

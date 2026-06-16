@@ -324,10 +324,24 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
 const mrtBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <rect x="6" y="8.6035" rx="1.575" ry="3.151" width="12" height="6.793" fill="currentColor" />
-        <text fontSize="3.5" dx="10" dy="13" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3.5"
+            dx="10"
+            dy="13"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             NS
         </text>
-        <text fontSize="3.5" dx="15" dy="13" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3.5"
+            dx="15"
+            dy="13"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             28
         </text>
     </svg>

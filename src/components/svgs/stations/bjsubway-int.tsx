@@ -292,8 +292,8 @@ const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttribute
 const bjsubwayIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <g transform="translate(12, 12)">
-            <circle r="6" stroke="black" strokeWidth="1" fill="white" />
-            <path d={PATH_ARROW} fill="black" fillRule="evenodd" stroke="none" />
+            <circle r="6" stroke="currentColor" strokeWidth="1" fill="var(--chakra-colors-chakra-body-bg)" />
+            <path d={PATH_ARROW} fill="currentColor" fillRule="evenodd" stroke="none" />
         </g>
     </svg>
 );
