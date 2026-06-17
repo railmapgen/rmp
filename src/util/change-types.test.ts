@@ -4,7 +4,53 @@ import { describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { StationType } from '../constants/stations';
-import { autoPopulateTransfer, autoUpdateStationType, checkAndChangeStationIntType } from './change-types';
+import {
+    autoPopulateTransfer,
+    autoUpdateStationType,
+    changeStationType,
+    checkAndChangeStationIntType,
+} from './change-types';
+
+describe('changeStationType', () => {
+    it('should deep clone nested default attrs when changing to JR East basic stations', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const makeGzmtrBasicNode = (name: string, x: number): NodeAttributes => ({
+            x,
+            y: 0,
+            type: StationType.GzmtrBasic,
+            zIndex: 0,
+            visible: true,
+            [StationType.GzmtrBasic]: {
+                names: [name, name],
+                nameOffsetX: 'right',
+                nameOffsetY: 'top',
+                lineCode: '1',
+                stationCode: '101',
+                open: true,
+                secondaryNames: ['', ''],
+                tram: false,
+                color: [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black],
+            },
+        });
+
+        graph.addNode('stn_1', makeGzmtrBasicNode('Station 1', 0));
+        graph.addNode('stn_2', makeGzmtrBasicNode('Station 2', 100));
+
+        changeStationType(graph, 'stn_1', StationType.JREastBasic);
+        changeStationType(graph, 'stn_2', StationType.JREastBasic);
+
+        const stn1Attrs = graph.getNodeAttribute('stn_1', StationType.JREastBasic)!;
+        const stn2Attrs = graph.getNodeAttribute('stn_2', StationType.JREastBasic)!;
+
+        expect(stn1Attrs.lines).not.toBe(stn2Attrs.lines);
+
+        stn1Attrs.lines[0] = 0.5;
+        graph.mergeNodeAttributes('stn_1', { [StationType.JREastBasic]: stn1Attrs });
+
+        expect(graph.getNodeAttribute('stn_1', StationType.JREastBasic)!.lines).toEqual([0.5, 0, 1]);
+        expect(graph.getNodeAttribute('stn_2', StationType.JREastBasic)!.lines).toEqual([-1, 0, 1]);
+    });
+});
 
 describe('checkAndChangeStationIntType', () => {
     it('should change station to interchange type and populate transfer when multiple lines with different colors are connected', () => {
