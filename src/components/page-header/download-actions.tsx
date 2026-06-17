@@ -23,7 +23,6 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
-    useColorModeValue,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
@@ -58,7 +57,6 @@ const getTauriUrl = () => {
 };
 
 export default function DownloadActions() {
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
     const {
         activeSubscriptions: { RMP_EXPORT },
@@ -233,9 +231,9 @@ export default function DownloadActions() {
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        // set background, with respect to dark mode
+        // Keep exported images independent from the editor color mode.
         if (!isTransparent) {
-            ctx.fillStyle = bgColor;
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
 
