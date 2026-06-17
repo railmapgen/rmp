@@ -1,10 +1,14 @@
 import {
+    Alert,
     AlertDialog,
     AlertDialogBody,
     AlertDialogContent,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogOverlay,
+    AlertDescription,
+    AlertIcon,
+    Box,
     Button,
     Checkbox,
 } from '@chakra-ui/react';
@@ -12,12 +16,14 @@ import { RmgLabel, RmgSelect } from '@railmapgen/rmg-components';
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { LineId } from '../../../constants/constants';
 import { LinePathType, LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
+import { getBaseReconciledLineID } from '../../../util/reconcile';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
 
@@ -104,6 +110,9 @@ export default function LineTypeSection() {
             isLinePathAndStyleDisabled(currentLinePathType, lineStyleType, activeSubscriptions.RMP_CLOUD)
         );
 
+    const baseReconciledLineID = getBaseReconciledLineID(graph.current, selectedFirst as LineId);
+    const isReconciledStyleDisabled = baseReconciledLineID !== selectedFirst;
+
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {
         if (newLinePathType) {
             changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
@@ -153,10 +162,29 @@ export default function LineTypeSection() {
                     }}
                 />
             </RmgLabel>
+            {isReconciledStyleDisabled && (
+                <Alert status="info" fontSize="xs" borderRadius="md" py={1.5} px={2} my={1}>
+                    <AlertIcon boxSize={4} />
+                    <Box>
+                        <AlertDescription whiteSpace="normal" lineHeight="short" display="block">
+                            {t('panel.details.lines.common.reconcileStyleDisabled')}
+                        </AlertDescription>
+                        <Button
+                            size="xs"
+                            variant="link"
+                            mt={0.5}
+                            onClick={() => dispatch(setSelected(new Set([baseReconciledLineID])))}
+                        >
+                            {t('panel.details.lines.common.changeInBaseLine')} {baseReconciledLineID}
+                        </Button>
+                    </Box>
+                </Alert>
+            )}
             <RmgLabel label={t('panel.details.info.lineStyleType')} minW="276">
                 <RmgSelect
                     options={availableLineStyleOptions}
                     disabledOptions={disabledLineStyleOptions}
+                    isDisabled={isReconciledStyleDisabled}
                     defaultValue={currentLineStyleType}
                     value={currentLineStyleType}
                     onChange={({ target: { value } }) => {

@@ -114,6 +114,24 @@ export const reconcileLines = (
 };
 
 /**
+ * Return the valid reconcile chain that contains this line.
+ * Dangling groups and non-reconciled lines return undefined.
+ */
+const getReconciledLineChain = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    lineId: LineId
+): ReconciledLineEntry[] | undefined => {
+    const reconcileId = graph.getEdgeAttribute(lineId, 'reconcileId');
+    if (!reconcileId) return undefined;
+
+    const group = getAllLinesNeedToReconcile(graph)[reconcileId];
+    if (!group || group.length < 2) return undefined;
+
+    const { allReconciledLines } = reconcileLines(graph, { [reconcileId]: group });
+    return allReconciledLines.find(chain => chain.some(e => e.edge === lineId));
+};
+
+/**
  * Returns true if the edge belongs to a valid (non-dangling) reconcile chain.
  *
  * A chain renders as one combined path, so per-segment offsets are stripped at
@@ -124,19 +142,18 @@ export const reconcileLines = (
 export const isInReconcileChain = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     lineId: LineId
-): boolean => {
-    const reconcileId = graph.getEdgeAttribute(lineId, 'reconcileId');
-    if (!reconcileId) return false;
+): boolean => !!getReconciledLineChain(graph, lineId);
 
-    const group = getAllLinesNeedToReconcile(graph)[reconcileId];
-    if (!group || group.length < 2) return false;
-
-    const { allReconciledLines } = reconcileLines(graph, { [reconcileId]: group });
-    const chain = allReconciledLines[0];
-    if (!chain) return false;
-
-    return chain.some(e => e.edge === lineId);
-};
+/**
+ * Return the first line of a valid reconcile chain, otherwise the provided line itself.
+ *
+ * Reconciled chains render with the first line's style attributes, so attrs UIs use
+ * this to direct style edits to the line that actually controls the rendered style.
+ */
+export const getBaseReconciledLineID = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    lineId: LineId
+): LineId => getReconciledLineChain(graph, lineId)?.[0].edge ?? lineId;
 
 /**
  * Call each line's `generatePath` and merge all the paths to a single path.

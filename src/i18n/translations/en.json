@@ -572,7 +572,8 @@
                     "roundCornerFactor": "Round Corner Factor",
                     "parallelDisabled": "Some attributes are disabled as this line is parallel.",
                     "changeInBaseLine": "Change them in the base line:",
-                    "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path."
+                    "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path.",
+                    "reconcileStyleDisabled": "Style attributes are disabled because this line is part of a reconcile chain. The rendered style is controlled by the base line."
                 },
                 "simple": {
                     "displayName": "Simple path",

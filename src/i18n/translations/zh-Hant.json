@@ -571,7 +571,8 @@
                     "to": "到",
                     "parallelDisabled": "由於此線段是平行的，因此某些屬性已被禁用。",
                     "changeInBaseLine": "在基準線段中更改它們：",
-                    "reconcileDisabled": "此線段屬於合併線段鏈，偏移已停用。整條鏈作為一條合併路徑渲染。"
+                    "reconcileDisabled": "此線段屬於合併線段鏈，偏移已停用。整條鏈作為一條合併路徑渲染。",
+                    "reconcileStyleDisabled": "此線段屬於合併線段鏈，樣式屬性已停用。最終渲染樣式由基準線段控制。"
                 },
                 "simple": {
                     "displayName": "基本線段",
