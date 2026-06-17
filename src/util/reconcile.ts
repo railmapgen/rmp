@@ -56,14 +56,6 @@ export const reconcileLines = (
             return;
         }
 
-        // all the lines in linesNeedToReconcile should share the same style
-        // (path type may differ — each segment generates its own path independently)
-        const { style } = linesNeedToReconcile[0].attributes;
-        if (!linesNeedToReconcile.every(line => line.attributes.style === style)) {
-            danglingLines.push(...linesNeedToReconcile.map(_ => _.edge as LineId));
-            return;
-        }
-
         // Build undirected adjacency: each node maps to [{edge, neighbor}]
         const adjacency: { [node: string]: { edge: LineId; neighbor: string }[] } = {};
         for (const line of linesNeedToReconcile) {

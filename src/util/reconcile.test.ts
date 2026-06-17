@@ -34,6 +34,15 @@ const makeLineAttrs = (reconcileId: string): EdgeAttributes => ({
     parallelIndex: -1,
 });
 
+const makeRiverLineAttrs = (reconcileId: string): EdgeAttributes => ({
+    ...makeLineAttrs(reconcileId),
+    style: LineStyleType.River,
+    [LineStyleType.River]: {
+        color: [CityCode.Shanghai, 'river', '#B9E3F9', MonoColour.white],
+        width: 20,
+    },
+});
+
 describe('getBaseReconciledLineID', () => {
     it('returns the first line in a valid reconcile chain', () => {
         const graph = makeGraph();
@@ -44,6 +53,19 @@ describe('getBaseReconciledLineID', () => {
         graph.addDirectedEdgeWithKey('line_b', 'misc_node_b', 'misc_node_c', makeLineAttrs('reconcile-a'));
 
         expect(getBaseReconciledLineID(graph, 'line_a')).toBe('line_a');
+        expect(getBaseReconciledLineID(graph, 'line_b')).toBe('line_a');
+        expect(isInReconcileChain(graph, 'line_a')).toBe(true);
+        expect(isInReconcileChain(graph, 'line_b')).toBe(true);
+    });
+
+    it('does not require every line in the chain to have the same style type', () => {
+        const graph = makeGraph();
+        addNode(graph, 'misc_node_a', 0, 0);
+        addNode(graph, 'misc_node_b', 100, 0);
+        addNode(graph, 'misc_node_c', 200, 0);
+        graph.addDirectedEdgeWithKey('line_a', 'misc_node_a', 'misc_node_b', makeLineAttrs('reconcile-a'));
+        graph.addDirectedEdgeWithKey('line_b', 'misc_node_b', 'misc_node_c', makeRiverLineAttrs('reconcile-a'));
+
         expect(getBaseReconciledLineID(graph, 'line_b')).toBe('line_a');
         expect(isInReconcileChain(graph, 'line_a')).toBe(true);
         expect(isInReconcileChain(graph, 'line_b')).toBe(true);
