@@ -46,8 +46,8 @@ describe('SecondaryNameText', () => {
         const texts = container.querySelectorAll('text');
         expect(texts).toHaveLength(1);
         expect(texts[0].textContent).toBe('Guangzhounan');
-        expect(texts[0].getAttribute('font-size')).toBe('7.12');
+        expect(texts[0].getAttribute('font-size')).toBe('11');
         expect(texts[0].getAttribute('dominant-baseline')).toBe('middle');
-        expect(texts[0].hasAttribute('dy')).toBe(false);
+        expect(texts[0].getAttribute('dy')).toBe('-0.5');
     });
 });
