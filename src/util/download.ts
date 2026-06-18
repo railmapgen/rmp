@@ -30,16 +30,17 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * Clone the svg element and add fonts & missing external svg to it.
  * The returned svg should be opened and displayed correctly in any svg viewer.
  * @param graph The graph.
- * @param generateRMPInfo Whether to call `generateRmpInfo`.
+ * @param isShareInfoAttached Whether the user confirmed they will attach RMP info when sharing the image.
  * @param isSystemFontsOnly Whether to add font-family to elements with fonts classes.
+ * @param forceRMPInfo Whether RMP info must be embedded regardless of the user's confirmation.
  * @returns The all in one SVGSVGElement and the size of canvas.
  */
 export const makeRenderReadySVGElement = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    generateRMPInfo: boolean,
+    isShareInfoAttached: boolean,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
-    existsNodeTypes: Set<NodeType>,
+    forceRMPInfo: boolean,
     svgVersion: 1.1 | 2
 ) => {
     // get the minimum and maximum of the graph
@@ -115,8 +116,8 @@ export const makeRenderReadySVGElement = async (
 
     await loadFacilitiesSvg(elem, graph);
 
-    // append rmp info if some nodes exist
-    if (!generateRMPInfo || rmpInfoSpecificNodeExists(existsNodeTypes)) {
+    // append RMP info unless the user confirms external attribution and no node forces embedded attribution.
+    if (!isShareInfoAttached || forceRMPInfo) {
         // intelligent placement to avoid overlapping existing elements.
         const [infoX, infoY] = findRmpInfoPosition(graph, { xMin, yMin, xMax, yMax }, { width: 350, height: 50 });
         elem.appendChild(await generateRmpInfo(infoX, infoY));
@@ -191,6 +192,10 @@ export const rmpInfoSpecificNodeExists = (existsNodeTypes: Set<NodeType>) => {
         return true;
     }
     return false;
+};
+
+export const shouldForceRmpInfo = (existsNodeTypes: Set<NodeType>, hasRmpExportSubscription: boolean) => {
+    return rmpInfoSpecificNodeExists(existsNodeTypes) && !hasRmpExportSubscription;
 };
 
 // Intelligent placement using candidate positions; overlap detection via graph traversal.

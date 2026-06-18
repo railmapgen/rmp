@@ -156,6 +156,15 @@
                     "sandwich": "샌드위치",
                     "tube": "튜브"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "런던 지하철 노선 배지",
+                    "lineName": "노선명",
+                    "walking": "도보",
+                    "walkingTarget": "도보 목적지",
+                    "distance": "거리",
+                    "addItem": "배지 추가",
+                    "noItems": "배지가 없습니다"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "청두 도시철도 노선 표식",
                     "badgeType": {

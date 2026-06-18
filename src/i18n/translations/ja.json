@@ -158,6 +158,15 @@
                     "sandwich": "サンドイッチ",
                     "tube": "地下鉄"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "ロンドン地下鉄路線バッジ",
+                    "lineName": "路線名",
+                    "walking": "徒歩",
+                    "walkingTarget": "徒歩先",
+                    "distance": "距離",
+                    "addItem": "バッジを追加",
+                    "noItems": "バッジはありません"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都鉄道交通路線記号",
                     "badgeType": {
