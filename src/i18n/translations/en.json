@@ -472,7 +472,9 @@
                     "displayName": "London river services interchange station"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway station"
+                    "displayName": "Guangdong Intercity Railway station",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English"
                 },
                 "chongqingRTBasic": {
                     "displayName": "Chongqing Rail Transit basic station",

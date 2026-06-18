@@ -474,7 +474,9 @@
                     "displayName": "ロンドン川サービス乗換駅"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道駅"
+                    "displayName": "広東省都市間鉄道駅",
+                    "secondaryNameZh": "中国語の補助駅名",
+                    "secondaryNameEn": "英語の補助駅名"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重慶鉄道交通基本駅",

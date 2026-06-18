@@ -23,6 +23,7 @@ import {
 } from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
+import { SecondaryNameText } from './secondary-name';
 
 const FONT_SIZE = {
     en: 6.56,
@@ -216,14 +217,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                     >
                         ）
                     </text>
-                    <g ref={secondaryTextRef}>
-                        <text fontSize="10" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
-                            {secondaryNames[0]}
-                        </text>
-                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
-                            {secondaryNames[1]}
-                        </text>
-                    </g>
+                    <SecondaryNameText ref={secondaryTextRef} names={secondaryNames} />
                 </g>
             )}
             {!open && (

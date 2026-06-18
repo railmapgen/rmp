@@ -471,7 +471,9 @@
                     "displayName": "伦敦河流服务换乘站"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "广东城际铁路车站"
+                    "displayName": "广东城际铁路车站",
+                    "secondaryNameZh": "中文第二名称",
+                    "secondaryNameEn": "英文第二名称"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重庆轨道交通基本车站",
