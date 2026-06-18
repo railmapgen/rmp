@@ -307,7 +307,11 @@
                     "right": "右",
                     "top": "上",
                     "bottom": "下",
-                    "custom": "カスタム"
+                    "custom": "カスタム",
+                    "translateName": "駅名を英語に翻訳",
+                    "translateNameEmpty": "中国語名を入力してください。",
+                    "translateNameNotSubscribed": "意味翻訳には RMP Cloud が必要です。",
+                    "translateNameFailed": "駅名を翻訳できませんでした。"
                 },
                 "interchange": {
                     "title": "乗り換え",
@@ -875,6 +879,13 @@
                     "empty": "空欄",
                     "shmetro": "上海",
                     "bjsubway": "北京"
+                },
+                "stationNameTranslationMode": {
+                    "title": "駅名翻訳方式",
+                    "pinyinSpaced": "ピンイン-1字ずつ大文字・空白あり",
+                    "pinyinCompact": "ピンイン-先頭大文字・空白なし",
+                    "pinyinUppercase": "ピンイン-すべて大文字",
+                    "semantic": "意味翻訳"
                 },
                 "gridline": "グリッドガイドラインを表示",
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",

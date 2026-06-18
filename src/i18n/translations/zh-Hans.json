@@ -305,7 +305,11 @@
                     "right": "右",
                     "top": "顶部",
                     "bottom": "底部",
-                    "custom": "自定义"
+                    "custom": "自定义",
+                    "translateName": "翻译站名到英文",
+                    "translateNameEmpty": "请先填写中文名称。",
+                    "translateNameNotSubscribed": "意译需要 RMP Cloud 订阅。",
+                    "translateNameFailed": "车站名称翻译失败。"
                 },
                 "interchange": {
                     "title": "换乘",
@@ -872,6 +876,13 @@
                     "empty": "空白",
                     "shmetro": "上海",
                     "bjsubway": "北京"
+                },
+                "stationNameTranslationMode": {
+                    "title": "站名翻译方式",
+                    "pinyinSpaced": "音译-单字大写有空格",
+                    "pinyinCompact": "音译-首字大写无空格",
+                    "pinyinUppercase": "音译-全大写",
+                    "semantic": "意译"
                 },
                 "gridline": "显示网格参考线",
                 "snapline": "磁性吸附到参考线",
