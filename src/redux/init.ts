@@ -15,6 +15,7 @@ import {
     setRandomStationsNames,
     setShowOnlyFavorites,
     setSnapLines,
+    setStationNameTranslationMode,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
@@ -24,7 +25,7 @@ import {
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
-import { normalizeRandomStationsNames } from './state-migration';
+import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -49,6 +50,12 @@ export const initStore = async (store: RootStore) => {
         if ('randomStationsNames' in appState.preference)
             store.dispatch(
                 setRandomStationsNames(normalizeRandomStationsNames(appState.preference.randomStationsNames))
+            );
+        if ('stationNameTranslationMode' in appState.preference)
+            store.dispatch(
+                setStationNameTranslationMode(
+                    normalizeStationNameTranslationMode(appState.preference.stationNameTranslationMode)
+                )
             );
         if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));

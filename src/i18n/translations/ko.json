@@ -305,7 +305,11 @@
                     "right": "오른쪽",
                     "top": "위",
                     "bottom": "아래",
-                    "custom": "사용자 지정"
+                    "custom": "사용자 지정",
+                    "translateName": "역명을 영어로 번역",
+                    "translateNameEmpty": "중국어 이름을 먼저 입력하세요.",
+                    "translateNameNotSubscribed": "의역에는 RMP Cloud가 필요합니다.",
+                    "translateNameFailed": "역 이름을 번역하지 못했습니다."
                 },
                 "interchange": {
                     "title": "환승",
@@ -870,6 +874,13 @@
                     "empty": "빈 문자열",
                     "shmetro": "상하이",
                     "bjsubway": "베이징"
+                },
+                "stationNameTranslationMode": {
+                    "title": "역명 번역 방식",
+                    "pinyinSpaced": "병음-글자별 대문자+공백",
+                    "pinyinCompact": "병음-첫 글자 대문자+공백 없음",
+                    "pinyinUppercase": "병음-전체 대문자",
+                    "semantic": "의역"
                 },
                 "gridline": "격자 가이드 라인 표시",
                 "snapline": "가이드 라인과 포인트에 자동 스냅",

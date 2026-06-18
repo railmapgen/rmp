@@ -5,6 +5,7 @@ import { MiscNodeType } from '../../constants/nodes';
 import { StationType } from '../../constants/stations';
 
 export type RandomStationsNamesValue = 'default' | 'empty' | StationCity;
+export type StationNameTranslationMode = 'pinyin-spaced' | 'pinyin-compact' | 'pinyin-uppercase' | 'semantic';
 
 /**
  * AppState contains all the settings users want to preserve after restart.
@@ -43,6 +44,7 @@ export interface AppState {
          */
         autoParallel: boolean;
         randomStationsNames: RandomStationsNamesValue;
+        stationNameTranslationMode: StationNameTranslationMode;
         gridLines: boolean;
         snapLines: boolean;
         predictNextNode: boolean;
@@ -80,6 +82,7 @@ export const initialState: AppState = {
         },
         autoParallel: true,
         randomStationsNames: 'default',
+        stationNameTranslationMode: 'pinyin-spaced',
         gridLines: false,
         snapLines: true,
         predictNextNode: true,
@@ -114,6 +117,9 @@ const appSlice = createSlice({
         },
         setRandomStationsNames: (state, action: PayloadAction<RandomStationsNamesValue>) => {
             state.preference.randomStationsNames = action.payload;
+        },
+        setStationNameTranslationMode: (state, action: PayloadAction<StationNameTranslationMode>) => {
+            state.preference.stationNameTranslationMode = action.payload;
         },
         setGridLines: (state, action: PayloadAction<boolean>) => {
             state.preference.gridLines = action.payload;
@@ -174,6 +180,7 @@ export const {
     setToolsPanelExpansion,
     setAutoParallel,
     setRandomStationsNames,
+    setStationNameTranslationMode,
     setGridLines,
     setSnapLines,
     setPredictNextNode,

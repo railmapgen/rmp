@@ -305,7 +305,11 @@
                     "right": "Right",
                     "top": "Top",
                     "bottom": "Bottom",
-                    "custom": "Custom"
+                    "custom": "Custom",
+                    "translateName": "Translate station name to English",
+                    "translateNameEmpty": "Enter a Chinese name first.",
+                    "translateNameNotSubscribed": "Semantic translation requires RMP Cloud.",
+                    "translateNameFailed": "Failed to translate station name."
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -871,6 +875,13 @@
                     "empty": "Empty",
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
+                },
+                "stationNameTranslationMode": {
+                    "title": "Station name translation",
+                    "pinyinSpaced": "Pinyin - Spaced Title Case",
+                    "pinyinCompact": "Pinyin - Compact Title Case",
+                    "pinyinUppercase": "Pinyin - Uppercase",
+                    "semantic": "Semantic"
                 },
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
