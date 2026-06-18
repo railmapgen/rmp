@@ -3,6 +3,7 @@ import { lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { Path } from '../constants/path';
 import { Element, LineRenderElement, getLines } from './process-elements';
+import { getBaseReconciledLineID } from './reconcile';
 
 type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
 type LineElement = Element & { id: LineId; type: 'line'; line: LineRenderElement };
@@ -91,7 +92,8 @@ export const moveNodesAndRedrawLines = (
         offsetNodeTransforms(node, dx, dy);
         const connectedLines = graph.edges(node) as LineId[];
         connectedLines.forEach(line => {
-            if (!edges.has(line)) edges.add(line);
+            edges.add(line);
+            edges.add(getBaseReconciledLineID(graph, line));
         });
     });
 

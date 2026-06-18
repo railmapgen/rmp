@@ -90,7 +90,7 @@ export const ChangeTypeModal = (props: {
             Object.values(LineStyleType)
                 .filter(isVisibleLineStyle)
                 .map(lineStyleType => [lineStyleType, t(lineStyles[lineStyleType].metadata.displayName).toString()])
-        ) as { [k in LineStyleType]: string }),
+        ) as Partial<Record<LineStyleType, string>>),
     };
     const availableStationOptions = {
         any: t('header.settings.procedures.changeType.any'),

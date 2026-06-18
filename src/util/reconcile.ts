@@ -73,8 +73,11 @@ export const reconcileLines = (
             return;
         }
 
-        // Traverse from one endpoint to the other
-        const [start] = endpoints;
+        // Traverse from the endpoint whose endpoint edge has the smaller id, so
+        // the rendered base edge is stable and still starts from a chain end.
+        const start = endpoints
+            .map(endpoint => ({ endpoint, edge: adjacency[endpoint][0].edge }))
+            .sort((a, b) => a.edge.localeCompare(b.edge))[0].endpoint;
         const reconciledEntries: ReconciledLineEntry[] = [];
         const visitedEdges = new Set<string>();
         let current = start;
