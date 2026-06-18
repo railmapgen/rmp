@@ -50,7 +50,12 @@ const WuhanRTIntTwoLineIcon = (props: { color: string }) => {
 
     return (
         <g>
-            <circle r={WUHAN_RT_INT_RADIUS} fill="white" stroke={color} strokeWidth={WUHAN_RT_INT_STROKE_WIDTH} />
+            <circle
+                r={WUHAN_RT_INT_RADIUS}
+                fill="var(--chakra-colors-chakra-body-bg)"
+                stroke={color}
+                strokeWidth={WUHAN_RT_INT_STROKE_WIDTH}
+            />
             <g transform="scale(0.32)">
                 <path
                     fill={color}
@@ -80,7 +85,7 @@ const WuhanRTIntThreeLineIcon = (props: { color: string }) => {
                 cx={WUHAN_RT_INT_SOURCE_CX}
                 cy={WUHAN_RT_INT_SOURCE_CY}
                 r={WUHAN_RT_INT_SOURCE_RADIUS}
-                fill="white"
+                fill="var(--chakra-colors-chakra-body-bg)"
                 stroke={color}
                 strokeMiterlimit={10}
                 strokeWidth={WUHAN_RT_INT_SOURCE_STROKE_WIDTH}
@@ -315,7 +320,14 @@ const wuhanRTIntAttrsComponent = (props: AttrsProps<WuhanRTIntStationAttributes>
 
 const wuhanRTIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="10" fill="white" stroke="currentColor" strokeWidth={WUHAN_RT_INT_STROKE_WIDTH} />
+        <circle
+            cx="12"
+            cy="12"
+            r="10"
+            fill="var(--chakra-colors-chakra-body-bg)"
+            stroke="currentColor"
+            strokeWidth={WUHAN_RT_INT_STROKE_WIDTH}
+        />
         <g transform="translate(12, 12)">
             <g transform="scale(0.426667)">
                 <path

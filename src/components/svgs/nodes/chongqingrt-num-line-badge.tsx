@@ -99,7 +99,7 @@ const ChongqingRTNumLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTNumL
 const chongqingRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
-        <text x="8" y="18" fill="white" fontSize="18">
+        <text x="8" y="18" fill="var(--chakra-colors-chakra-body-bg)" fontSize="18">
             1
         </text>
     </svg>

@@ -116,10 +116,10 @@ const guangdongIntercityRailwayLineBadgeAttrsComponent = (
 const guangdongIntercityRailwayLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" width="20" height="12" />
-        <text x="4.5" y="11" fontSize="4" fill="white">
+        <text x="4.5" y="11" fontSize="4" fill="var(--chakra-colors-chakra-body-bg)">
             广清城际
         </text>
-        <text x="3" y="16" fontSize="2" fill="white">
+        <text x="3" y="16" fontSize="2" fill="var(--chakra-colors-chakra-body-bg)">
             Guangzhou-Qingyuan Intercity
         </text>
     </svg>

@@ -359,11 +359,11 @@ const chongqingRTBasicStation2021Icon = (
             y={0}
             width={12}
             height={12}
-            stroke="black"
+            stroke="currentColor"
             strokeWidth={1.2}
             rx={2}
             ry={2}
-            fill="white"
+            fill="var(--chakra-colors-chakra-body-bg)"
             style={{ cursor: 'move' }}
         />
         <text fontSize={5.5} textAnchor="middle" x={6} y={5}>
@@ -372,7 +372,7 @@ const chongqingRTBasicStation2021Icon = (
         <text fontSize={5.5} textAnchor="middle" x={6} y={11}>
             01
         </text>
-        <line x1={1.5} y1={6} x2={10.5} y2={6} stroke={'black'} strokeWidth={0.6} />
+        <line x1={1.5} y1={6} x2={10.5} y2={6} stroke="currentColor" strokeWidth={0.6} />
     </svg>
 );
 

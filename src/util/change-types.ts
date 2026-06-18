@@ -78,7 +78,8 @@ export const changeStationType = (
             names.pop();
         }
     }
-    const newAttrs = { ...stations[newStnType].defaultAttrs, names };
+    const newAttrs = structuredClone(stations[newStnType].defaultAttrs);
+    newAttrs.names = names;
     if (
         !Object.values(stationsWithoutNameOffset).includes(currentStnType) ||
         !Object.values(stationsWithoutNameOffset).includes(newStnType)

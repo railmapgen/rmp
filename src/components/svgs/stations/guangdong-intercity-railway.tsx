@@ -226,8 +226,22 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
 
 const guangdongIntercityRailwayStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2.25" fill="white" />
-        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" fill="white" />
+        <circle
+            cx="12"
+            cy="12"
+            r="8"
+            stroke="currentColor"
+            strokeWidth="2.25"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
+        <circle
+            cx="12"
+            cy="12"
+            r="4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
     </svg>
 );
 

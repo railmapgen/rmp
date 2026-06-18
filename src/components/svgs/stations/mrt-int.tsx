@@ -343,16 +343,44 @@ const MRTIntAttrsComponent = (props: AttrsProps<MRTIntStationAttributes>) => {
 const mrtIntStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <rect x="2" y="9.0985" rx="1.038" ry="2.076" width="20" height="5.803" fill="currentColor" />
-        <text fontSize="3" dx="5" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3"
+            dx="5"
+            dy="13.25"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             NE
         </text>
-        <text fontSize="3" dx="9.5" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3"
+            dx="9.5"
+            dy="13.25"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             4
         </text>
-        <text fontSize="3" dx="14.5" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3"
+            dx="14.5"
+            dy="13.25"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             DT
         </text>
-        <text fontSize="3" dx="19" dy="13.25" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3"
+            dx="19"
+            dy="13.25"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             19
         </text>
     </svg>

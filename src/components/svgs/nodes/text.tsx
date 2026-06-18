@@ -300,7 +300,7 @@ const textAttrsComponent = (props: AttrsProps<TextAttributes>) => {
 
 const textIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <text x="12" y="12" textAnchor="middle" dominantBaseline="middle" fontSize="10">
+        <text x="12" y="12" textAnchor="middle" dominantBaseline="middle" fontSize="10" fill="currentColor">
             Text
         </text>
     </svg>

@@ -134,13 +134,13 @@ const attrsComponent = (props: AttrsProps<QingdaoMetroNumLineBadgeAttributes>) =
 const qingdaoMetroNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" rx="1" ry="1" width="10" height="10" />
-        <text x="4" y="15" fill="white" fontSize="12">
+        <text x="4" y="15" fill="var(--chakra-colors-chakra-body-bg)" fontSize="12">
             1
         </text>
-        <text x="12" y="11.5" fill="black" fontSize="6">
+        <text x="12" y="11.5" fill="currentColor" fontSize="6">
             号线
         </text>
-        <text x="12" y="15.5" fill="black" fontSize="4">
+        <text x="12" y="15.5" fill="currentColor" fontSize="4">
             Line1
         </text>
     </svg>

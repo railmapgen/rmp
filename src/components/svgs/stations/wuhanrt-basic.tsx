@@ -231,7 +231,14 @@ const wuhanRTBasicAttrsComponent = (props: AttrsProps<WuhanRTBasicStationAttribu
 
 const wuhanRTBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="1.5" fill="white" />
+        <circle
+            cx="12"
+            cy="12"
+            r="5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
     </svg>
 );
 

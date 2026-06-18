@@ -212,8 +212,22 @@ const shmetroOsysiAttrsComponent = (props: AttrsProps<ShmetroOsysiStationAttribu
 
 const shmetroOsysiStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.67" fill="white" />
-        <circle cx="12" cy="12" r="4.6" stroke="currentColor" strokeWidth="2.67" fill="white" />
+        <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="2.67"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
+        <circle
+            cx="12"
+            cy="12"
+            r="4.6"
+            stroke="currentColor"
+            strokeWidth="2.67"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
     </svg>
 );
 
