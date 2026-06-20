@@ -14,7 +14,7 @@ import {
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
-    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
+    const { id, type, path, areaPathD, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultSingleColorAttributes.color } = styleAttrs ?? defaultSingleColorAttributes;
 
     const onPointerDown = React.useCallback(
@@ -22,7 +22,16 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
         [id, handlePointerDown]
     );
 
-    return (
+    return type === LinePathType.Freeform && areaPathD ? (
+        <path
+            d={areaPathD}
+            fill={color[2]}
+            stroke="none"
+            cursor="pointer"
+            onPointerDown={newLine ? undefined : onPointerDown}
+            pointerEvents={newLine ? 'none' : undefined}
+        />
+    ) : (
         <path
             d={path.d}
             fill="none"
@@ -73,6 +82,7 @@ const singleColor: LineStyle<SingleColorAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Freeform,
         ],
     },
 };

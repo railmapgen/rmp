@@ -44,6 +44,8 @@ import {
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
+import { FreeformLineOverlay } from './freeform-line/freeform-line-overlay';
+import { useFreeformLineEditor } from './freeform-line/use-freeform-line-editor';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
@@ -117,7 +119,20 @@ const SvgCanvas = () => {
     // the active snap points, only used when there is only one active snap line
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
 
+    const freeformLineEditor = useFreeformLineEditor({
+        selected,
+        mode,
+        svgViewBoxZoom,
+        svgViewBoxMin,
+        keepLastPath,
+        theme,
+        autoChangeStationType,
+        isAllowProjectTelemetry,
+    });
+
     const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
+        if (freeformLineEditor.handleNodePointerDown(node, e)) return;
+
         e.stopPropagation();
         e.currentTarget.setPointerCapture(e.pointerId);
         const { x, y } = getMousePosition(e);
@@ -151,6 +166,8 @@ const SvgCanvas = () => {
         // console.log('down ', graph.current.getNodeAttributes(node));
     });
     const handlePointerMove = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
+        if (freeformLineEditor.handleNodePointerMove(node, e)) return;
+
         const { x, y } = getMousePosition(e);
         // in normal case, the element is already captured in pointer down
         // however in predict-next-node, the element is created without pointer capture
@@ -316,6 +333,8 @@ const SvgCanvas = () => {
         }
     });
     const handlePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
+        if (freeformLineEditor.handleNodePointerUp(node, e)) return;
+
         e.currentTarget.releasePointerCapture(e.pointerId);
 
         if (mode.startsWith('line')) {
@@ -400,6 +419,11 @@ const SvgCanvas = () => {
         else dispatch(addSelected(edge));
 
         if (mode.startsWith('station') || mode.startsWith('misc-node-virtual') || mode.startsWith('misc-node-master')) {
+            if (graph.current.getEdgeAttribute(edge, 'type') === LinePathType.Freeform) {
+                dispatch(setMode('free'));
+                return;
+            }
+
             const x = e.clientX - document.getElementById('canvas')!.getBoundingClientRect().left;
             const y = e.clientY - document.getElementById('canvas')!.getBoundingClientRect().top;
             // Add station in the current line
@@ -492,7 +516,16 @@ const SvgCanvas = () => {
                 handleEdgePointerDown={handleEdgePointerDown}
                 handleEdgeDoubleClick={handleEdgeDoubleClick}
             />
-            {mode.startsWith('line') && active && active !== 'background' && (
+            {freeformLineEditor.drawingPreviewAreaPathD && (
+                <path
+                    d={freeformLineEditor.drawingPreviewAreaPathD}
+                    fill={theme[2]}
+                    fillOpacity="0.65"
+                    stroke="none"
+                    pointerEvents="none"
+                />
+            )}
+            {mode.startsWith('line') && linePath !== LinePathType.Freeform && active && active !== 'background' && (
                 <LineStyleComponent
                     id="line_create_in_progress___no_use"
                     type={linePath}
@@ -510,6 +543,12 @@ const SvgCanvas = () => {
                     handlePointerDown={() => {}} // no use
                 />
             )}
+            <FreeformLineOverlay
+                selectedFreeform={freeformLineEditor.selectedFreeform}
+                handleSize={freeformLineEditor.handleSize}
+                handleSelection={freeformLineEditor.handleSelection}
+                handlers={freeformLineEditor.overlayHandlers}
+            />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path

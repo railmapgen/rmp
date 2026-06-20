@@ -591,6 +591,22 @@
                 "rayGuided": {
                     "displayName": "任意角度経路"
                 },
+                "freeform": {
+                    "displayName": "フリーフォーム経路",
+                    "widthStops": "幅ポイント",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "位置 (%)",
+                    "widthStopWidth": "幅 (px)",
+                    "baseWidthHint": "5px は線分の基準幅です。",
+                    "smoothing": "スムージング",
+                    "startCap": "始点キャップ",
+                    "endCap": "終点キャップ",
+                    "round": "丸",
+                    "flat": "平面",
+                    "arrow": "矢印",
+                    "arrowLength": "矢印の長さ",
+                    "arrowWidth": "矢印の幅"
+                },
                 "singleColor": {
                     "displayName": "単色風格"
                 },
