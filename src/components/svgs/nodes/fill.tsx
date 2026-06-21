@@ -1,7 +1,6 @@
 import { Button, Checkbox, Text, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';

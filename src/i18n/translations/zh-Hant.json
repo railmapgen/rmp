@@ -40,7 +40,11 @@
                 "lineStyleType": "線段樣式類型",
                 "type": "類型",
                 "parallel": "平行線段",
-                "parallelIndex": "平行線段索引"
+                "parallelIndex": "平行線段索引",
+                "reconcile": "合併線段",
+                "reconcileId": "合併線段唯一識別符",
+                "reconcileAssign": "指派",
+                "reconcileMembers": "合併線段成員"
             },
             "multipleSelection": {
                 "title": "多重選取",
@@ -570,7 +574,9 @@
                     "from": "從",
                     "to": "到",
                     "parallelDisabled": "由於此線段是平行的，因此某些屬性已被禁用。",
-                    "changeInBaseLine": "在基準線段中更改它們："
+                    "changeInBaseLine": "在基準線段中更改它們：",
+                    "reconcileDisabled": "此線段屬於合併線段鏈，偏移已停用。整條鏈作為一條合併路徑渲染。",
+                    "reconcileStyleDisabled": "此線段屬於合併線段鏈，樣式屬性已停用。最終渲染樣式由基準線段控制。"
                 },
                 "simple": {
                     "displayName": "基本線段",
@@ -1021,7 +1027,8 @@
         "flipVertical": "垂直翻轉",
         "flipHorizontal": "水平翻轉",
         "flipDiagonal45": "沿45°線翻轉",
-        "flipDiagonal135": "沿135°線翻轉"
+        "flipDiagonal135": "沿135°線翻轉",
+        "reconcile": "合併線段"
     },
 
     "clipboard": {

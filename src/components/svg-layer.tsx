@@ -4,8 +4,9 @@ import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constan
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
-import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
+import { UnknownNode } from './svgs/common/unknown';
 import { lineStyles } from './svgs/lines/lines';
+import { UnknownLineStyle } from './svgs/lines/styles/unknown';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as allStations } from './svgs/stations/stations';
 

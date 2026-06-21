@@ -68,6 +68,7 @@ const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

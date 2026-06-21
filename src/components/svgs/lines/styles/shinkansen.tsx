@@ -222,6 +222,7 @@ const shinkansen: LineStyle<ShinkansenAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

@@ -76,6 +76,7 @@ const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

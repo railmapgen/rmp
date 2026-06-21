@@ -330,6 +330,7 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.RayGuided,
             LinePathType.Simple,
         ],
+        supportsReconcile: true,
     },
 };
 

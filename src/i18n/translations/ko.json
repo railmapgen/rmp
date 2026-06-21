@@ -40,7 +40,11 @@
                 "lineStyleType": "선분 스타일 유형",
                 "type": "유형",
                 "parallel": "평행선",
-                "parallelIndex": "평행 인덱스"
+                "parallelIndex": "평행 인덱스",
+                "reconcile": "통합",
+                "reconcileId": "통합 고유 식별자",
+                "reconcileAssign": "할당",
+                "reconcileMembers": "통합 구성원"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -570,7 +574,9 @@
                     "from": "에서",
                     "to": "까지",
                     "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
-                    "changeInBaseLine": "기본선에서 변경하십시오:"
+                    "changeInBaseLine": "기본선에서 변경하십시오:",
+                    "reconcileDisabled": "이 선분은 통합 체인에 포함되어 있어 오프셋이 비활성화되었습니다. 체인 전체가 하나의 결합된 경로로 렌더링됩니다.",
+                    "reconcileStyleDisabled": "이 선분은 통합 체인에 포함되어 있어 스타일 속성이 비활성화되었습니다. 렌더링되는 스타일은 기본선에서 제어됩니다."
                 },
                 "simple": {
                     "displayName": "기본 선분",
@@ -1021,7 +1027,8 @@
         "flipVertical": "수직 뒤집기",
         "flipHorizontal": "수평 뒤집기",
         "flipDiagonal45": "45° 선을 기준으로 뒤집기",
-        "flipDiagonal135": "135° 선을 기준으로 뒤집기"
+        "flipDiagonal135": "135° 선을 기준으로 뒤집기",
+        "reconcile": "통합"
     },
 
     "clipboard": {

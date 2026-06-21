@@ -22,6 +22,7 @@ import {
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { sendErrorNotification } from '../util/notifications';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
+import { reconcileSelectedEdges } from '../util/reconcile-ui';
 import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
 
 interface ContextMenuProps {
@@ -54,6 +55,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const hasSelection = selected.size > 0;
     const hasMoreThanOneNodeSelection = React.useMemo(
         () => [...selected].filter(id => graph.current.hasNode(id)).length > 1,
+        [selected]
+    );
+    const hasMultipleEdgeSelection = React.useMemo(
+        () => [...selected].filter(id => graph.current.hasEdge(id)).length >= 2,
         [selected]
     );
     const menuRef = React.useRef<HTMLDivElement>(null);
@@ -263,6 +268,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         }
     });
 
+    const handleReconcile = useEvent(() => {
+        if (reconcileSelectedEdges(graph.current, selected)) {
+            refreshAndSave();
+        }
+    });
+
     if (!isOpen) return null;
 
     return (
@@ -451,6 +462,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         isDisabled={!hasMoreThanOneNodeSelection}
                     >
                         {t('contextMenu.flipDiagonal135')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleReconcile();
+                            onClose();
+                        }}
+                        isDisabled={!hasMultipleEdgeSelection}
+                    >
+                        {t('contextMenu.reconcile')}
                     </MenuItem>
                 </Box>
             </Box>

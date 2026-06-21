@@ -76,6 +76,7 @@ const londonTubeTerminal: LineStyle<LondonTubeTerminalAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

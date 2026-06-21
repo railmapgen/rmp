@@ -84,7 +84,8 @@ export type RuntimeMode =
     | 'select'
     | `line-${LinePathType}/${LineStyleType}`
     | `station-${StationType}`
-    | `misc-node-${MiscNodeType}`;
+    | `misc-node-${MiscNodeType}`
+    | `reconcile-${string}`;
 
 /**
  * Helper function to extract path and style from mode

@@ -74,6 +74,7 @@ const singleColor: LineStyle<SingleColorAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

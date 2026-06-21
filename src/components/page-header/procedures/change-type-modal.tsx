@@ -21,7 +21,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { CityCode, LineId, MiscNodeId, NodeId, StnId, Theme } from '../../../constants/constants';
-import { LinePathType, LineStyleType } from '../../../constants/lines';
+import { LinePathType, LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
@@ -87,8 +87,10 @@ export const ChangeTypeModal = (props: {
     const availableLineStyleOptions = {
         any: t('header.settings.procedures.changeType.any'),
         ...(Object.fromEntries(
-            Object.entries(lineStyles).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-        ) as { [k in LineStyleType]: string }),
+            Object.values(LineStyleType)
+                .filter(isVisibleLineStyle)
+                .map(lineStyleType => [lineStyleType, t(lineStyles[lineStyleType].metadata.displayName).toString()])
+        ) as Partial<Record<LineStyleType, string>>),
     };
     const availableStationOptions = {
         any: t('header.settings.procedures.changeType.any'),

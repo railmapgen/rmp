@@ -90,6 +90,7 @@ const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> 
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

@@ -3,7 +3,6 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NodeId } from '../../../constants/constants';
-import { LinePathType } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
@@ -18,6 +17,7 @@ import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
 import InfoMultipleSection from './info-multiple-selection';
 import LineTypeSection from './line-type-section';
+import ReconcileSection from './reconcile-section';
 import StationTypeSection from './station-type-section';
 
 export default function InfoSection() {
@@ -138,7 +138,12 @@ export default function InfoSection() {
                 selectedFirst!.startsWith('line') &&
                 graph.current.hasEdge(selectedFirst) &&
                 graph.current.getEdgeAttribute(selectedFirst, 'type') in linePaths &&
-                graph.current.getEdgeAttribute(selectedFirst, 'style') in lineStyles && <LineTypeSection />}
+                graph.current.getEdgeAttribute(selectedFirst, 'style') in lineStyles && (
+                    <>
+                        <ReconcileSection />
+                        <LineTypeSection />
+                    </>
+                )}
 
             {selected.size > 1 && <InfoMultipleSection />}
         </Box>
