@@ -57,7 +57,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 76;
+export const CURRENT_VERSION = 77;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1017,4 +1017,21 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     75: param =>
         // Bump save version to support Wuhan Rail Transit line badge.
         JSON.stringify({ ...JSON.parse(param), version: 76 }),
+    76: param => {
+        // Bump save version to add secondary names to Guangdong Intercity Railway stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GuangdongIntercityRailway)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (!Array.isArray(attr.secondaryNames)) {
+                    attr.secondaryNames = ['', ''];
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 77, graph: graph.export() });
+    },
 };

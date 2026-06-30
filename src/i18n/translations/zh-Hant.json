@@ -480,7 +480,9 @@
                     "displayName": "倫敦河流服務換乘站"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路車站"
+                    "displayName": "廣東城際鐵路車站",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重慶軌道交通基本車站",

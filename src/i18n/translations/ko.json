@@ -480,7 +480,9 @@
                     "displayName": "런던 강 서비스 환승역"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "광둥 시외 기차역"
+                    "displayName": "광둥 시외 기차역",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭"
                 },
                 "chongqingRTBasic": {
                     "displayName": "충칭 궤도교통 기본역",
