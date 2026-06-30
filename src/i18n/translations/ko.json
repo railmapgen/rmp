@@ -196,7 +196,8 @@
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
-                    "undefined": "정의되지 않음"
+                    "undefined": "정의되지 않음",
+                    "attrBindingError": "마스터 속성 바인딩 오류"
                 },
                 "facilities": {
                     "displayName": "시설",

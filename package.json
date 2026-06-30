@@ -19,6 +19,7 @@
         "@reduxjs/toolkit": "^2.9.0",
         "bezier-js": "^6.1.4",
         "canvas-size": "^2.0.0",
+        "expr-eval": "^2.0.2",
         "graphology": "^0.26.0",
         "graphology-utils": "^2.5.2",
         "mime-types": "^3.0.1",

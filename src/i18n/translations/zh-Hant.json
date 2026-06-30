@@ -196,7 +196,8 @@
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
-                    "undefined": "未定義"
+                    "undefined": "未定義",
+                    "attrBindingError": "大師屬性綁定錯誤"
                 },
                 "facilities": {
                     "displayName": "設施",

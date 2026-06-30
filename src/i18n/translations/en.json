@@ -196,7 +196,8 @@
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
-                    "undefined": "Undefined"
+                    "undefined": "Undefined",
+                    "attrBindingError": "Master attribute binding error"
                 },
                 "facilities": {
                     "displayName": "Facilities",
