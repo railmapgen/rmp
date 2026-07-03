@@ -85,7 +85,7 @@ const WuhanRTIntThreeLineIcon = (props: { color: string }) => {
                 cx={WUHAN_RT_INT_SOURCE_CX}
                 cy={WUHAN_RT_INT_SOURCE_CY}
                 r={WUHAN_RT_INT_SOURCE_RADIUS}
-                fill="var(--chakra-colors-chakra-body-bg)"
+                fill="white"
                 stroke={color}
                 strokeMiterlimit={10}
                 strokeWidth={WUHAN_RT_INT_SOURCE_STROKE_WIDTH}
