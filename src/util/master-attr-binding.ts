@@ -51,9 +51,6 @@ export const normalizeTheme = (value: unknown): EvaluateResult<Theme> => {
     const normalizedMono =
         mono === 'black' ? MonoColour.black : mono === 'white' ? MonoColour.white : (mono as MonoColour);
 
-    if (!Object.values(CityCode).includes(city as CityCode)) {
-        return { error: `Invalid theme city code: ${String(city)}.` };
-    }
     if (typeof line !== 'string') {
         return { error: 'Invalid theme line id: expected string.' };
     }
