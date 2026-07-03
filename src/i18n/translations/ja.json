@@ -41,6 +41,7 @@
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
                 "type": "種類",
+                "visible": "エクスポート時に表示",
                 "parallel": "並列路線",
                 "parallelIndex": "並列路線索引",
                 "reconcile": "統合",

@@ -45,12 +45,16 @@ const SvgLayer = React.memo(
         );
         for (const element of elements) {
             const isSelected = selected.has(element.id);
-            const selectedGlowClassName = isSelected ? 'rmp-selected-glow' : undefined;
 
             if (element.type === 'line') {
                 const id = element.id as LineId;
                 const type = element.line!.attr.type;
                 const style = element.line!.attr.style;
+                const visible = element.line!.attr.visible;
+                const wrapperProps = {
+                    className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
+                    filter: visible ? undefined : 'url(#invisible)',
+                };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
@@ -61,7 +65,7 @@ const SvgLayer = React.memo(
                         <g
                             key={`${id}.pre`}
                             id={`${id}.pre`}
-                            className={selectedGlowClassName}
+                            {...wrapperProps}
                             onDoubleClick={e => handleEdgeDoubleClick(id, e)}
                         >
                             <PreStyleComponent
@@ -78,12 +82,7 @@ const SvgLayer = React.memo(
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <g
-                        key={id}
-                        id={id}
-                        className={selectedGlowClassName}
-                        onDoubleClick={e => handleEdgeDoubleClick(id, e)}
-                    >
+                    <g key={id} id={id} {...wrapperProps} onDoubleClick={e => handleEdgeDoubleClick(id, e)}>
                         <StyleComponent
                             id={id}
                             type={type}
@@ -101,7 +100,7 @@ const SvgLayer = React.memo(
                         <g
                             key={`${id}.post`}
                             id={`${id}.post`}
-                            className={selectedGlowClassName}
+                            {...wrapperProps}
                             onDoubleClick={e => handleEdgeDoubleClick(id, e)}
                         >
                             <PostStyleComponent
@@ -119,6 +118,11 @@ const SvgLayer = React.memo(
                 const id = element.id as StnId;
                 const attr = element.station!;
                 const type = attr.type as StationType;
+                const visible = attr.visible;
+                const wrapperProps = {
+                    className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
+                    filter: visible ? undefined : 'url(#invisible)',
+                };
 
                 const PreStationComponent = allStations[type]?.preComponent;
                 if (PreStationComponent) {
@@ -127,7 +131,7 @@ const SvgLayer = React.memo(
                             key={`${element.id}.pre`}
                             id={`${element.id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PreStationComponent
                                 id={id}
@@ -144,7 +148,7 @@ const SvgLayer = React.memo(
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={selectedGlowClassName}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} {...wrapperProps}>
                         <StationComponent
                             id={id}
                             x={attr.x}
@@ -164,7 +168,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PostStationComponent
                                 id={id}
@@ -182,6 +186,11 @@ const SvgLayer = React.memo(
                 const id = element.id as MiscNodeId;
                 const attr = element.miscNode!;
                 const type = attr.type as MiscNodeType;
+                const visible = attr.visible;
+                const wrapperProps = {
+                    className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
+                    filter: visible ? undefined : 'url(#invisible)',
+                };
 
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
@@ -190,7 +199,7 @@ const SvgLayer = React.memo(
                             key={`${id}.pre`}
                             id={`${id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PreMiscNodeComponent
                                 id={id}
@@ -208,7 +217,7 @@ const SvgLayer = React.memo(
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={selectedGlowClassName}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} {...wrapperProps}>
                         <MiscNodeComponent
                             id={id}
                             x={attr.x}
@@ -229,7 +238,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={selectedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PostMiscNodeComponent
                                 id={id}

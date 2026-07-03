@@ -23,11 +23,6 @@ import StationTypeSection from './station-type-section';
 export default function InfoSection() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const hardRefresh = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
@@ -37,11 +32,30 @@ export default function InfoSection() {
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
+    const refreshSelectedElements = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
+
+        let hasNode = false;
+        let hasEdge = false;
+        selected.forEach(id => {
+            if (graph.current.hasNode(id)) hasNode = true;
+            if (graph.current.hasEdge(id)) hasEdge = true;
+        });
+
+        if (hasNode) dispatch(refreshNodesThunk());
+        if (hasEdge) dispatch(refreshEdgesThunk());
+    }, [dispatch, selected]);
+
+    const handleVisibleChange = (visible: boolean) => {
+        if (graph.current.hasNode(selectedFirst)) graph.current.setNodeAttribute(selectedFirst, 'visible', visible);
+        if (graph.current.hasEdge(selectedFirst)) graph.current.setEdgeAttribute(selectedFirst, 'visible', visible);
+        refreshSelectedElements();
+    };
     const handleZIndexChange = (val: number) => {
         const zIndex = Math.min(Math.max(val, -10), 10);
         if (graph.current.hasNode(selectedFirst)) graph.current.setNodeAttribute(selectedFirst, 'zIndex', zIndex);
         if (graph.current.hasEdge(selectedFirst)) graph.current.setEdgeAttribute(selectedFirst, 'zIndex', zIndex);
-        hardRefresh();
+        refreshSelectedElements();
     };
     const handleParallelSwitch = (val: boolean, startFrom: 'from' | 'to') => {
         let parallelIndex = -1; // default to turn off
@@ -67,6 +81,20 @@ export default function InfoSection() {
             type: 'input',
             label: t('panel.details.info.id'),
             value: selectedFirst!,
+            minW: 276,
+        });
+        fields.push({
+            type: 'switch',
+            label: t('panel.details.info.visible'),
+            isChecked: selectedFirst
+                ? graph.current.hasNode(selectedFirst)
+                    ? (graph.current.getNodeAttribute(selectedFirst, 'visible') ?? true)
+                    : graph.current.hasEdge(selectedFirst)
+                      ? (graph.current.getEdgeAttribute(selectedFirst, 'visible') ?? true)
+                      : true
+                : true,
+            onChange: handleVisibleChange,
+            oneLine: true,
             minW: 276,
         });
         fields.push({

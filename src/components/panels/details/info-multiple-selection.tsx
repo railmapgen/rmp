@@ -1,11 +1,17 @@
-import { Badge, Box, Button, Divider, HStack, Heading, Tooltip, VStack } from '@chakra-ui/react';
+import { Badge, Box, Button, Checkbox, Divider, HStack, Heading, Tooltip, VStack } from '@chakra-ui/react';
 import { RmgButtonGroup } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdDeselect } from 'react-icons/md';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { removeSelected, setSelected } from '../../../redux/runtime/runtime-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
+import {
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    removeSelected,
+    setSelected,
+} from '../../../redux/runtime/runtime-slice';
 import { ChangeTypeModal, FilterType } from '../../page-header/procedures/change-type-modal';
 
 export default function InfoMultipleSection() {
@@ -14,6 +20,73 @@ export default function InfoMultipleSection() {
     const { selected } = useRootSelector(state => state.runtime);
 
     const graph = React.useRef(window.graph);
+    const getVisible = (id: string) =>
+        graph.current.hasNode(id)
+            ? (graph.current.getNodeAttribute(id, 'visible') ?? true)
+            : graph.current.hasEdge(id)
+              ? (graph.current.getEdgeAttribute(id, 'visible') ?? true)
+              : true;
+
+    const selectionKey = [...selected].sort().join('\n');
+    const initialVisibilityRef = React.useRef<{ selectionKey: string; visibleById: Map<string, boolean> } | null>(null);
+    if (initialVisibilityRef.current?.selectionKey !== selectionKey) {
+        initialVisibilityRef.current = {
+            selectionKey,
+            visibleById: new Map([...selected].map(id => [id, getVisible(id)])),
+        };
+    }
+
+    let visibleCount = 0;
+    let hiddenCount = 0;
+    selected.forEach(id => {
+        const visible = getVisible(id);
+        if (visible) visibleCount += 1;
+        else hiddenCount += 1;
+    });
+    const visibilityState = {
+        isChecked: selected.size > 0 && hiddenCount === 0,
+        isIndeterminate: visibleCount > 0 && hiddenCount > 0,
+    };
+
+    const handleVisibleChange = (checked: boolean) => {
+        const initialVisibleValues = [...initialVisibilityRef.current!.visibleById.values()];
+        const hasInitialMixedVisibility = initialVisibleValues.some(Boolean) && initialVisibleValues.some(val => !val);
+        const currentState = visibilityState.isIndeterminate
+            ? 'mixed'
+            : visibilityState.isChecked
+              ? 'visible'
+              : 'hidden';
+        const nextState = hasInitialMixedVisibility
+            ? currentState === 'mixed'
+                ? 'visible'
+                : currentState === 'visible'
+                  ? 'hidden'
+                  : 'mixed'
+            : checked
+              ? 'visible'
+              : 'hidden';
+        let hasNode = false;
+        let hasEdge = false;
+
+        selected.forEach(id => {
+            const visible =
+                nextState === 'mixed'
+                    ? (initialVisibilityRef.current!.visibleById.get(id) ?? true)
+                    : nextState === 'visible';
+            if (graph.current.hasNode(id)) {
+                graph.current.setNodeAttribute(id, 'visible', visible);
+                hasNode = true;
+            }
+            if (graph.current.hasEdge(id)) {
+                graph.current.setEdgeAttribute(id, 'visible', visible);
+                hasEdge = true;
+            }
+        });
+
+        dispatch(saveGraph(graph.current.export()));
+        if (hasNode) dispatch(refreshNodesThunk());
+        if (hasEdge) dispatch(refreshEdgesThunk());
+    };
 
     const getName = (id: string) => {
         if (graph.current.hasNode(id)) {
@@ -54,6 +127,14 @@ export default function InfoMultipleSection() {
                 {t('panel.details.multipleSelection.selected')} {selected.size}
             </Heading>
             <VStack m="var(--chakra-space-1)">
+                <Checkbox
+                    width="100%"
+                    isChecked={visibilityState.isChecked}
+                    isIndeterminate={visibilityState.isIndeterminate}
+                    onChange={e => handleVisibleChange(e.target.checked)}
+                >
+                    {t('panel.details.info.visible')}
+                </Checkbox>
                 <HStack w="100%">
                     <Heading as="h5" size="xs" w="100%">
                         {t('panel.details.multipleSelection.show')}
