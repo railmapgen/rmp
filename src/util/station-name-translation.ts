@@ -1,17 +1,18 @@
-import pinyin from 'tiny-pinyin';
+import { pinyin } from 'pinyin-pro';
 import { station_name_translation_endpoint } from '../constants/server';
 
 export type PinyinStationNameTranslationMode = 'pinyin-spaced' | 'pinyin-compact' | 'pinyin-uppercase';
 
 const titleCaseWord = (word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 const literalWordPattern = /^[A-Za-z0-9]$/;
+const pinyinOptions = { toneType: 'none', type: 'all', v: true } as const;
 
 const translateStationNameLineBySpacedPinyin = (line: string): string => {
     let result = '';
     let previousLiteralWord = false;
 
-    for (const token of pinyin.parse(line)) {
-        if (token.source.trim().length === 0) {
+    for (const token of pinyin(line, pinyinOptions)) {
+        if (token.origin.trim().length === 0) {
             if (result.length > 0 && !result.endsWith(' ')) {
                 result += ' ';
             }
@@ -19,9 +20,9 @@ const translateStationNameLineBySpacedPinyin = (line: string): string => {
             continue;
         }
 
-        const isPinyinWord = token.type === 2;
-        const isLiteralWord = !isPinyinWord && literalWordPattern.test(token.source);
-        const value = isPinyinWord ? titleCaseWord(token.target) : token.source;
+        const isPinyinWord = token.isZh;
+        const isLiteralWord = !isPinyinWord && literalWordPattern.test(token.origin);
+        const value = isPinyinWord ? titleCaseWord(token.result) : token.origin;
 
         if (isPinyinWord || isLiteralWord) {
             if (result.length === 0 || result.endsWith(' ')) {
@@ -44,19 +45,19 @@ const translateStationNameLineByCompactPinyin = (line: string): string => {
     let result = '';
     let shouldCapitalizeNextPinyin = true;
 
-    for (const token of pinyin.parse(line)) {
-        if (token.source.trim().length === 0) {
+    for (const token of pinyin(line, pinyinOptions)) {
+        if (token.origin.trim().length === 0) {
             shouldCapitalizeNextPinyin = true;
             continue;
         }
 
-        const isPinyinWord = token.type === 2;
+        const isPinyinWord = token.isZh;
         if (isPinyinWord) {
-            const value = token.target.toLowerCase();
+            const value = token.result.toLowerCase();
             result += shouldCapitalizeNextPinyin ? titleCaseWord(value) : value;
             shouldCapitalizeNextPinyin = false;
         } else {
-            result += token.source;
+            result += token.origin;
             shouldCapitalizeNextPinyin = true;
         }
     }

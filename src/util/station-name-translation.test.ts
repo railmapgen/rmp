@@ -10,6 +10,8 @@ describe('translateStationNameByPinyin', () => {
     it('romanises Chinese station names with spaced title-case pinyin by default', () => {
         expect(translateStationNameByPinyin('南京东路')).toBe('Nan Jing Dong Lu');
         expect(translateStationNameByPinyin('龙阳路')).toBe('Long Yang Lu');
+        expect(translateStationNameByPinyin('北京北')).toBe('Bei Jing Bei');
+        expect(translateStationNameByPinyin('北新桥')).toBe('Bei Xin Qiao');
     });
 
     it('romanises Chinese station names with compact title-case pinyin', () => {
