@@ -39,6 +39,7 @@
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型",
                 "type": "类型",
+                "visible": "导出时可见",
                 "parallel": "平行线段",
                 "parallelIndex": "平行线段索引",
                 "reconcile": "合并线段",

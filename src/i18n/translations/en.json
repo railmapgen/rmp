@@ -39,6 +39,7 @@
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type",
                 "type": "Type",
+                "visible": "Visible in export",
                 "parallel": "Parallel line",
                 "parallelIndex": "Parallel index",
                 "reconcile": "Reconcile",
