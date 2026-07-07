@@ -24,6 +24,14 @@ describe('translateStationNameByPinyin', () => {
         expect(translateStationNameByPinyin('龙阳路', 'pinyin-uppercase')).toBe('LONGYANGLU');
     });
 
+    it('separates non-initial a, o, and e syllables in compact pinyin', () => {
+        expect(translateStationNameByPinyin('西安站', 'pinyin-compact')).toBe("Xi'anzhan");
+        expect(translateStationNameByPinyin('额尔古纳', 'pinyin-compact')).toBe("E'erguna");
+        expect(translateStationNameByPinyin('安定门', 'pinyin-compact')).toBe('Andingmen');
+        expect(translateStationNameByPinyin('T3安定门', 'pinyin-compact')).toBe('T3Andingmen');
+        expect(translateStationNameByPinyin('西安站', 'pinyin-uppercase')).toBe("XI'ANZHAN");
+    });
+
     it('keeps multiline station names multiline', () => {
         expect(translateStationNameByPinyin('南京东路\n上海火车站')).toBe('Nan Jing Dong Lu\nShang Hai Huo Che Zhan');
     });
