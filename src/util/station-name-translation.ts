@@ -5,6 +5,7 @@ export type PinyinStationNameTranslationMode = 'pinyin-spaced' | 'pinyin-compact
 
 const titleCaseWord = (word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 const literalWordPattern = /^[A-Za-z0-9]$/;
+const pinyinSyllableSeparatorPattern = /^[aoe]/i;
 const pinyinOptions = { toneType: 'none', type: 'all', v: true } as const;
 
 const translateStationNameLineBySpacedPinyin = (line: string): string => {
@@ -44,6 +45,7 @@ const translateStationNameLineBySpacedPinyin = (line: string): string => {
 const translateStationNameLineByCompactPinyin = (line: string): string => {
     let result = '';
     let shouldCapitalizeNextPinyin = true;
+    let hasSeenPinyinWord = false;
 
     for (const token of pinyin(line, pinyinOptions)) {
         if (token.origin.trim().length === 0) {
@@ -54,8 +56,12 @@ const translateStationNameLineByCompactPinyin = (line: string): string => {
         const isPinyinWord = token.isZh;
         if (isPinyinWord) {
             const value = token.result.toLowerCase();
+            if (hasSeenPinyinWord && pinyinSyllableSeparatorPattern.test(value)) {
+                result += "'";
+            }
             result += shouldCapitalizeNextPinyin ? titleCaseWord(value) : value;
             shouldCapitalizeNextPinyin = false;
+            hasSeenPinyinWord = true;
         } else {
             result += token.origin;
             shouldCapitalizeNextPinyin = true;
