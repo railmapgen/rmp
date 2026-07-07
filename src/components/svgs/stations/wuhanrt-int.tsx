@@ -50,12 +50,7 @@ const WuhanRTIntTwoLineIcon = (props: { color: string }) => {
 
     return (
         <g>
-            <circle
-                r={WUHAN_RT_INT_RADIUS}
-                fill="var(--chakra-colors-chakra-body-bg)"
-                stroke={color}
-                strokeWidth={WUHAN_RT_INT_STROKE_WIDTH}
-            />
+            <circle r={WUHAN_RT_INT_RADIUS} fill="white" stroke={color} strokeWidth={WUHAN_RT_INT_STROKE_WIDTH} />
             <g transform="scale(0.32)">
                 <path
                     fill={color}
