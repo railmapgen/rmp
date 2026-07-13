@@ -467,14 +467,6 @@ const SvgWrapper = () => {
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
-                    <filter id="invisible" colorInterpolationFilters="sRGB">
-                        <feColorMatrix type="saturate" values="0" />
-                        <feComponentTransfer>
-                            <feFuncR type="table" tableValues="0.42 0.84" />
-                            <feFuncG type="table" tableValues="0.45 0.86" />
-                            <feFuncB type="table" tableValues="0.54 0.92" />
-                        </feComponentTransfer>
-                    </filter>
                 </defs>
 
                 <g

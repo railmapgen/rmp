@@ -68,7 +68,7 @@ describe('SvgLayer', () => {
         expect(container.querySelector('path')?.getAttribute('stroke')).toBe('grey');
     });
 
-    it('keeps invisible lines rendered and marks their wrapper with the hidden filter', () => {
+    it('keeps invisible lines rendered and marks their wrapper with the hidden style', () => {
         const elements: Element[] = [
             {
                 id: 'line_hidden',
@@ -98,8 +98,7 @@ describe('SvgLayer', () => {
         expect(group).toBeInTheDocument();
         expect(group).toHaveClass('removeMe');
         expect(group).not.toHaveClass('rmp-hidden-pattern');
-        expect(group).not.toHaveAttribute('opacity');
-        expect(group).toHaveAttribute('filter', 'url(#invisible)');
+        expect(group).toHaveStyle({ filter: 'grayscale(100%)', opacity: 0.5 });
         expect(group?.querySelector('path')).toBeInTheDocument();
         expect(container.querySelector('path[stroke="url(#opaque)"]')).not.toBeInTheDocument();
         expect(container.querySelector('[id="line_hidden_hidden_mask"]')).not.toBeInTheDocument();
@@ -140,7 +139,7 @@ describe('SvgLayer', () => {
         expect(group).not.toHaveAttribute('filter');
     });
 
-    it('does not apply selected glow to hidden wrappers because both states use filters', () => {
+    it('does not apply selected glow to hidden wrappers', () => {
         const elements: Element[] = [
             {
                 id: 'line_hidden',
@@ -168,10 +167,10 @@ describe('SvgLayer', () => {
 
         const group = container.querySelector('#line_hidden');
         expect(group).not.toHaveClass('rmp-selected-glow');
-        expect(group).toHaveAttribute('filter', 'url(#invisible)');
+        expect(group).toHaveStyle({ filter: 'grayscale(100%)', opacity: 0.5 });
     });
 
-    it('marks invisible node wrappers with the hidden filter', () => {
+    it('marks invisible node wrappers with the hidden style', () => {
         const elements: Element[] = [
             {
                 id: 'misc_node_hidden',
@@ -204,14 +203,14 @@ describe('SvgLayer', () => {
         const group = container.querySelector('#misc_node_hidden');
         expect(group).toHaveClass('removeMe');
         expect(group).not.toHaveClass('rmp-hidden-pattern');
-        expect(group).toHaveAttribute('filter', 'url(#invisible)');
+        expect(group).toHaveStyle({ filter: 'grayscale(100%)', opacity: 0.5 });
         expect(container.querySelector('rect[width="80"][height="80"][fill="url(#opaque)"]')).not.toBeInTheDocument();
         expect(container.querySelector('circle[fill="url(#opaque)"]')).not.toBeInTheDocument();
         expect(container.querySelector('[id="misc_node_hidden_hidden_mask"]')).not.toBeInTheDocument();
         expect(container.querySelector('[id="misc_node_hidden_hidden_pattern"]')).not.toBeInTheDocument();
     });
 
-    it('marks invisible station wrappers with the hidden filter', () => {
+    it('marks invisible station wrappers with the hidden style', () => {
         const elements: Element[] = [
             {
                 id: 'stn_hidden',
@@ -239,7 +238,7 @@ describe('SvgLayer', () => {
 
         const group = container.querySelector('#stn_hidden');
         expect(group).toHaveClass('removeMe');
-        expect(group).toHaveAttribute('filter', 'url(#invisible)');
+        expect(group).toHaveStyle({ filter: 'grayscale(100%)', opacity: 0.5 });
     });
 
     it('treats legacy stations and misc nodes without visible as visible', () => {

@@ -53,7 +53,7 @@ const SvgLayer = React.memo(
                 const visible = element.line!.attr.visible ?? true;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
-                    filter: visible ? undefined : 'url(#invisible)',
+                    style: visible ? undefined : { filter: 'grayscale(100%)', opacity: 0.5 },
                 };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
@@ -121,7 +121,7 @@ const SvgLayer = React.memo(
                 const visible = attr.visible ?? true;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
-                    filter: visible ? undefined : 'url(#invisible)',
+                    style: visible ? undefined : { filter: 'grayscale(100%)', opacity: 0.5 },
                 };
 
                 const PreStationComponent = allStations[type]?.preComponent;
@@ -189,7 +189,7 @@ const SvgLayer = React.memo(
                 const visible = attr.visible ?? true;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
-                    filter: visible ? undefined : 'url(#invisible)',
+                    style: visible ? undefined : { filter: 'grayscale(100%)', opacity: 0.5 },
                 };
 
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
