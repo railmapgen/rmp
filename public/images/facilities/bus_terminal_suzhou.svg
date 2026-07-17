@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="13.333" height="13.333">
+  <defs>
+    <clipPath id="a" clipPathUnits="userSpaceOnUse">
+      <path d="M0 10h10V0H0Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#a)" transform="matrix(1.33333 0 0 -1.33333 0 13.333)">
+    <path d="M0 0a1.636 1.636 0 1 0-3.272 0A1.636 1.636 0 0 0 0 0" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(6.636 4.954)"/>
+    <path d="M0 0c-.022.14-2.574.287-5.165-1.033-.508-.259-3.131-1.595-2.927-2.927.096-.624.78-1.026 1.378-1.377 1.295-.761 2.698-.862 2.754-.689.038.115-.549.233-1.033.861-.058.076-.518.689-.516 1.377.003 1.024 1.026 1.756 1.721 2.239C-1.836-.194.019-.12 0 0" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(8.277 8.82)"/>
+    <path d="M0 0c.022-.14 2.574-.287 5.165 1.033.508.259 3.131 1.595 2.927 2.927-.096.624-.78 1.026-1.378 1.377-1.295.761-2.698.862-2.754.689-.038-.115.549-.233 1.033-.861.058-.076.518-.689.516-1.377-.003-1.024-1.026-1.756-1.721-2.239C1.836.194-.019.12 0 0" style="fill:#275b87;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(1.723 1.088)"/>
+    <path d="m0 0 .994.709c.105.084.26.292.276.425l.06 1.169h.345l.06-1.169a.5.5 0 0 1 .189-.339l1.08-.796-.172-.298-1.136.544a.52.52 0 0 1-.387.001L.172-.298Z" style="fill:#fff;fill-opacity:1;fill-rule:nonzero;stroke:none" transform="translate(3.498 4.287)"/>
+  </g>
+</svg>

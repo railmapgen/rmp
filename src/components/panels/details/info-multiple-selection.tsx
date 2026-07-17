@@ -1,0 +1,208 @@
+import { Badge, Box, Button, Checkbox, Divider, HStack, Heading, Tooltip, VStack } from '@chakra-ui/react';
+import { RmgButtonGroup } from '@railmapgen/rmg-components';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdDeselect } from 'react-icons/md';
+import { StationAttributes } from '../../../constants/stations';
+import { useRootDispatch, useRootSelector } from '../../../redux';
+import { saveGraph } from '../../../redux/param/param-slice';
+import {
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    removeSelected,
+    setSelected,
+} from '../../../redux/runtime/runtime-slice';
+import { ChangeTypeModal, FilterType } from '../../page-header/procedures/change-type-modal';
+
+export default function InfoMultipleSection() {
+    const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+    const { selected } = useRootSelector(state => state.runtime);
+
+    const graph = React.useRef(window.graph);
+    const getVisible = (id: string) =>
+        graph.current.hasNode(id)
+            ? (graph.current.getNodeAttribute(id, 'visible') ?? true)
+            : graph.current.hasEdge(id)
+              ? (graph.current.getEdgeAttribute(id, 'visible') ?? true)
+              : true;
+
+    const selectionKey = [...selected].sort().join('\n');
+    const initialVisibilityRef = React.useRef<{ selectionKey: string; visibleById: Map<string, boolean> } | null>(null);
+    if (initialVisibilityRef.current?.selectionKey !== selectionKey) {
+        initialVisibilityRef.current = {
+            selectionKey,
+            visibleById: new Map([...selected].map(id => [id, getVisible(id)])),
+        };
+    }
+
+    let visibleCount = 0;
+    let hiddenCount = 0;
+    selected.forEach(id => {
+        const visible = getVisible(id);
+        if (visible) visibleCount += 1;
+        else hiddenCount += 1;
+    });
+    const visibilityState = {
+        isChecked: selected.size > 0 && hiddenCount === 0,
+        isIndeterminate: visibleCount > 0 && hiddenCount > 0,
+    };
+
+    const handleVisibleChange = (checked: boolean) => {
+        const initialVisibleValues = [...initialVisibilityRef.current!.visibleById.values()];
+        const hasInitialMixedVisibility = initialVisibleValues.some(Boolean) && initialVisibleValues.some(val => !val);
+        const currentState = visibilityState.isIndeterminate
+            ? 'mixed'
+            : visibilityState.isChecked
+              ? 'visible'
+              : 'hidden';
+        const nextState = hasInitialMixedVisibility
+            ? currentState === 'mixed'
+                ? 'visible'
+                : currentState === 'visible'
+                  ? 'hidden'
+                  : 'mixed'
+            : checked
+              ? 'visible'
+              : 'hidden';
+        let hasNode = false;
+        let hasEdge = false;
+
+        selected.forEach(id => {
+            const visible =
+                nextState === 'mixed'
+                    ? (initialVisibilityRef.current!.visibleById.get(id) ?? true)
+                    : nextState === 'visible';
+            if (graph.current.hasNode(id)) {
+                graph.current.setNodeAttribute(id, 'visible', visible);
+                hasNode = true;
+            }
+            if (graph.current.hasEdge(id)) {
+                graph.current.setEdgeAttribute(id, 'visible', visible);
+                hasEdge = true;
+            }
+        });
+
+        dispatch(saveGraph(graph.current.export()));
+        if (hasNode) dispatch(refreshNodesThunk());
+        if (hasEdge) dispatch(refreshEdgesThunk());
+    };
+
+    const getName = (id: string) => {
+        if (graph.current.hasNode(id)) {
+            const attr = graph.current.getNodeAttributes(id);
+            const type = attr.type;
+            return id.startsWith('stn') ? (attr[type] as StationAttributes).names.join('/') : type;
+        } else if (graph.current.hasEdge(id)) {
+            const [s, t] = graph.current.extremities(id);
+            const source = graph.current.getSourceAttributes(id);
+            const target = graph.current.getTargetAttributes(id);
+            const sT = source.type;
+            const tT = target.type;
+            return (
+                (s.startsWith('stn') ? (source[sT] as StationAttributes).names[0] : sT) +
+                ' - ' +
+                (t.startsWith('stn') ? (target[tT] as StationAttributes).names[0] : tT)
+            );
+        }
+    };
+
+    const [filter, setFilter] = React.useState<FilterType[]>([]);
+    React.useEffect(() => {
+        setFilter(['station', 'misc-node', 'line']);
+    }, [selected]);
+
+    const [isOpenChangeModal, setIsOpenChangeModal] = React.useState(false);
+
+    const filteredSelected = React.useMemo(() => {
+        return [...selected]
+            .filter(id => filter.includes('station') || !id.startsWith('stn'))
+            .filter(id => filter.includes('misc-node') || !id.startsWith('misc'))
+            .filter(id => filter.includes('line') || !id.startsWith('line'));
+    }, [selected, filter]);
+
+    return (
+        <Box>
+            <Heading as="h5" size="sm">
+                {t('panel.details.multipleSelection.selected')} {selected.size}
+            </Heading>
+            <VStack m="var(--chakra-space-1)">
+                <Checkbox
+                    width="100%"
+                    isChecked={visibilityState.isChecked}
+                    isIndeterminate={visibilityState.isIndeterminate}
+                    onChange={e => handleVisibleChange(e.target.checked)}
+                >
+                    {t('panel.details.info.visible')}
+                </Checkbox>
+                <HStack w="100%">
+                    <Heading as="h5" size="xs" w="100%">
+                        {t('panel.details.multipleSelection.show')}
+                    </Heading>
+                    <RmgButtonGroup
+                        selections={[
+                            {
+                                label: t('panel.details.multipleSelection.station'),
+                                value: 'station',
+                            },
+                            {
+                                label: t('panel.details.multipleSelection.miscNode'),
+                                value: 'misc-node',
+                            },
+                            {
+                                label: t('panel.details.multipleSelection.edge'),
+                                value: 'line',
+                            },
+                        ]}
+                        defaultValue={filter}
+                        multiSelect={true}
+                        onChange={value => setFilter(value as FilterType[])}
+                    />
+                </HStack>
+                {filter.length !== 0 && (
+                    <>
+                        <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
+                            {t('panel.details.multipleSelection.change')}
+                            <Tooltip label={t('header.settings.pro')}>
+                                <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
+                                    PRO
+                                </Badge>
+                            </Tooltip>
+                        </Button>
+                        <Divider />
+                    </>
+                )}
+                {filteredSelected.length > 500 && (
+                    <Box textAlign="center" fontSize="xs" color="gray.500" fontStyle="italic">
+                        {t('panel.details.multipleSelection.showingFirst500')}
+                    </Box>
+                )}
+                {filteredSelected.slice(0, 500).map(id => (
+                    <HStack key={id} width="100%">
+                        <Button
+                            width="100%"
+                            size="sm"
+                            variant="solid"
+                            onClick={() => dispatch(setSelected(new Set([id])))}
+                            overflow="hidden"
+                            textOverflow="ellipsis"
+                            whiteSpace="nowrap"
+                            display="ruby"
+                        >
+                            {getName(id)?.replaceAll('\n', '⏎')}
+                        </Button>
+                        <Button size="sm" onClick={() => dispatch(removeSelected(id))}>
+                            <MdDeselect />
+                        </Button>
+                    </HStack>
+                ))}
+            </VStack>
+            <ChangeTypeModal
+                isOpen={isOpenChangeModal}
+                onClose={() => setIsOpenChangeModal(false)}
+                isSelect={true}
+                filter={filter}
+            />
+        </Box>
+    );
+}

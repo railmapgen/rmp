@@ -1,0 +1,406 @@
+import { Alert, AlertDescription, AlertIcon, AlertTitle, Button, Flex, IconButton, Spacer } from '@chakra-ui/react';
+import { RmgFields, RmgFieldsField, RmgLabel, RmgLineBadge } from '@railmapgen/rmg-components';
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
+import React, { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdSettings, MdUpload } from 'react-icons/md';
+import { AttrsProps, Theme } from '../../../constants/constants';
+import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
+import { Node, NodeComponentProps } from '../../../constants/nodes';
+import { usePaletteTheme } from '../../../util/hooks';
+import { collectMasterSvgAttrErrors, evaluateMasterSvgAttrs, normalizeTheme } from '../../../util/master-attr-binding';
+import { MasterImport } from '../../page-header/master-import';
+import { MasterManager } from '../../page-header/master-manager';
+import ThemeButton from '../../panels/theme-button';
+
+const svgAttrNameOverrides: Record<string, string> = {
+    class: 'className',
+    'xlink:href': 'xlinkHref',
+    'xml:space': 'xmlSpace',
+    'xmlns:xlink': 'xmlnsXlink',
+};
+
+const normalizeSvgAttrName = (attrName: string) => {
+    if (attrName in svgAttrNameOverrides) return svgAttrNameOverrides[attrName];
+    if (attrName.startsWith('aria-') || attrName.startsWith('data-')) return attrName;
+    return attrName.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
+};
+
+const normalizeSvgStyleForReact = (style: unknown) => {
+    if (typeof style !== 'string') return style;
+
+    return Object.fromEntries(
+        style
+            .split(';')
+            .map(rule => rule.trim())
+            .filter(Boolean)
+            .map(rule => {
+                const separatorIndex = rule.indexOf(':');
+                if (separatorIndex === -1) return undefined;
+
+                const property = rule.slice(0, separatorIndex).trim();
+                const value = rule.slice(separatorIndex + 1).trim();
+                if (!property) return undefined;
+
+                return [normalizeSvgAttrName(property), value];
+            })
+            .filter((entry): entry is [string, string] => !!entry)
+    );
+};
+
+const normalizeSvgAttrsForReact = (attrs: Record<string, any>) => {
+    const reactAttrs: Record<string, any> = {};
+    const attrPriorities: Record<string, number> = {};
+
+    Object.entries(attrs)
+        .filter(([attrName]) => attrName !== '_rmp_children_text')
+        .forEach(([attrName, value]) => {
+            const reactAttrName = normalizeSvgAttrName(attrName);
+            const priority = attrName.includes('-') || attrName.includes(':') || attrName === 'class' ? 1 : 0;
+
+            if (reactAttrName in reactAttrs && priority < attrPriorities[reactAttrName]) return;
+
+            reactAttrs[reactAttrName] = attrName === 'style' ? normalizeSvgStyleForReact(value) : value;
+            attrPriorities[reactAttrName] = priority;
+        });
+
+    return reactAttrs;
+};
+
+const MasterNode = (props: NodeComponentProps<MasterAttributes>) => {
+    const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
+
+    const onPointerDown = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
+        [id, handlePointerDown]
+    );
+    const onPointerMove = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerMove(id, e),
+        [id, handlePointerMove]
+    );
+    const onPointerUp = React.useCallback(
+        (e: React.PointerEvent<SVGElement>) => handlePointerUp(id, e),
+        [id, handlePointerUp]
+    );
+
+    const calcFunc = (str: string, ...rest: string[]) => new Function(...rest, `return ${str}`);
+
+    const modifyAttributes = <T extends Record<string, any>>(
+        t: T | undefined,
+        varValues: string[],
+        varType: string[]
+    ): T => {
+        const modifiedAttrs: Record<string, any> = {};
+
+        for (const key in t ?? {}) {
+            if (Object.prototype.hasOwnProperty.call(t, key)) {
+                try {
+                    modifiedAttrs[key] = calcFunc(
+                        (t![key] as string).slice(1),
+                        ...attrs.components.map(s => s.label),
+                        'color'
+                    )(
+                        ...varValues.map((v, varI) =>
+                            varType[varI] === 'number' && !Number.isNaN(Number(v)) ? Number(v) : v
+                        ),
+                        attrs.color ? (attrs.color.value ?? attrs.color.defaultValue) : ''
+                    );
+                } catch (e) {
+                    modifiedAttrs[key] = '' as any;
+                }
+            }
+        }
+
+        return modifiedAttrs as T;
+    };
+
+    const gPointerEvents =
+        attrs.nodeType === 'MiscNode' ? { onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } } : {};
+    const v4StationCoreProps =
+        attrs.version === 4 && attrs.nodeType === 'Station'
+            ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
+            : {};
+
+    /**
+     * Fix #843: We add an ID filter to apply style to class only under this ID.
+     *   In node A, <style> .cls1{ fill: white } </style>
+     *   In node B, <style> .cls1{ fill: black } </style>
+     *   There is a conflict of styles between A and B.
+     *   So we add selector #ID for them.
+     *   e.g.  .cls-1 { ... }  =>  #A .cls-1 { ... }
+     * */
+    const updateCSS = (cssString: string) => {
+        return cssString.replace(/(^|,)\s*([^{},]+)/g, `$1 #${id} $2`);
+    };
+
+    const dfsCreateElement = (svgs: MasterSvgsElem[]): ReactNode => {
+        return svgs.map(s => {
+            const coreProps =
+                attrs.version !== 4 && attrs.nodeType === 'Station' && attrs.core && attrs.core === s.id
+                    ? { id: `stn_core_${id}`, onPointerDown, onPointerMove, onPointerUp, style: { cursor: 'move' } }
+                    : {};
+            const evaluatedAttrsResult =
+                attrs.version === 4
+                    ? evaluateMasterSvgAttrs(s, attrs.components)
+                    : {
+                          attrs: modifyAttributes(
+                              s.attrs,
+                              attrs.components.map(s => s.value),
+                              attrs.components.map(s => s.type)
+                          ),
+                      };
+            const calcAttrs = evaluatedAttrsResult.attrs as Record<string, any>;
+            const reactAttrs = normalizeSvgAttrsForReact(calcAttrs);
+            return (
+                <g key={s.id} transform={`translate(${calcAttrs.x ?? 0}, ${calcAttrs.y ?? 0})`}>
+                    {React.createElement(
+                        s.type,
+                        {
+                            ...reactAttrs,
+                            x: 0,
+                            y: 0,
+                            ...coreProps,
+                        },
+                        s.children
+                            ? dfsCreateElement(s.children)
+                            : !('_rmp_children_text' in calcAttrs)
+                              ? null
+                              : s.type === 'style'
+                                ? updateCSS(String(calcAttrs._rmp_children_text))
+                                : String(calcAttrs._rmp_children_text)
+                    )}
+                </g>
+            );
+        });
+    };
+
+    const masterTransform = attrs.transform ?? defaultMasterTransform;
+
+    const elements = React.useMemo(() => dfsCreateElement(attrs.svgs), [JSON.stringify(attrs)]);
+
+    return React.createElement(
+        'g',
+        { ...gPointerEvents },
+        attrs.randomId ? (
+            <g
+                {...v4StationCoreProps}
+                transform={`translate(${masterTransform.translateX}, ${masterTransform.translateY}) scale(${masterTransform.scale}) rotate(${masterTransform.rotate})`}
+            >
+                {elements}
+            </g>
+        ) : (
+            <g>
+                <circle r="5.5" />
+                <g transform="translate(-4.7, -5) scale(0.8)">
+                    <polygon
+                        points="6,1 7.5,4.25 11,4.65 8.5,7.1 9.2,10.75 6,9 2.8,10.75 3.5,7.1 1,4.65 4.5,4.25"
+                        fill="white"
+                    />
+                </g>
+            </g>
+        )
+    );
+};
+
+export interface MasterAttributes extends MasterParam {}
+
+const MasterComponentThemeButton = (props: {
+    component: MasterParam['components'][number];
+    onChange: (theme: Theme) => void;
+}) => {
+    const { component, onChange } = props;
+    const normalizedThemeResult = normalizeTheme(component.value ?? component.defaultValue);
+    const { theme, requestThemeChange } = usePaletteTheme({
+        ...(normalizedThemeResult.value ? { theme: normalizedThemeResult.value } : {}),
+        onThemeApplied: onChange,
+    });
+
+    return <ThemeButton theme={theme} onClick={requestThemeChange} />;
+};
+
+const defaultMasterAttributes: MasterAttributes = {
+    randomId: undefined,
+    label: undefined,
+    transform: defaultMasterTransform,
+    nodeType: 'MiscNode',
+    svgs: [],
+    components: [],
+};
+
+const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
+    const { id, attrs, handleAttrsUpdate } = props;
+    const { t } = useTranslation();
+    const [openImport, setOpenImport] = React.useState(false);
+    const [openManager, setOpenManager] = React.useState(false);
+    const masterAttrErrors = React.useMemo(
+        () => (attrs.version === 4 ? collectMasterSvgAttrErrors(attrs.svgs, attrs.components) : []),
+        [attrs.components, attrs.svgs, attrs.version]
+    );
+
+    const getComponentValue = (query: string) => {
+        const p = attrs.components.find(c => c.id === query);
+        return p ? (p.value ?? p.defaultValue) : undefined;
+    };
+
+    const handleImportParam = (param: MasterParam) => {
+        param.components.forEach((c, i) => {
+            param.components[i].value = getComponentValue(c.id) ?? c.defaultValue;
+        });
+        if (param.color !== undefined)
+            param.color.value = attrs.color
+                ? (attrs.color.value ?? attrs.color.defaultValue)
+                : param.color.defaultValue;
+        handleAttrsUpdate(id, param);
+    };
+
+    const updateComponentValue = (index: number, value: unknown) => {
+        const components = attrs.components.map((component, componentIndex) =>
+            componentIndex === index ? { ...component, value } : component
+        );
+        handleAttrsUpdate(id, { ...attrs, components });
+    };
+
+    const componentField: RmgFieldsField[] = attrs.components.map((c, i) => {
+        const { type, defaultValue, value } = c;
+        const label = c.name || c.label;
+        if (type === 'number' || type === 'text') {
+            return {
+                label: t(label),
+                type: 'input',
+                value: value ?? defaultValue,
+                onChange: v => {
+                    updateComponentValue(i, v);
+                },
+            };
+        } else if (type === 'switch') {
+            return {
+                label: t(label),
+                type: 'switch',
+                isChecked: value !== undefined ? !!value : defaultValue,
+                onChange: v => {
+                    updateComponentValue(i, v);
+                },
+            };
+        } else if (type === 'textarea') {
+            return {
+                label: t(label),
+                type: 'textarea',
+                value: value ?? defaultValue,
+                onChange: v => {
+                    updateComponentValue(i, v);
+                },
+            };
+        } else if (type === 'color') {
+            return {
+                type: 'custom',
+                label: t(label),
+                component: (
+                    <MasterComponentThemeButton component={c} onChange={theme => updateComponentValue(i, theme)} />
+                ),
+            };
+        } else {
+            return {
+                type: 'input',
+                label: 'undefined',
+                value: 'none',
+            };
+        }
+    });
+
+    const handleChangeColor = (theme: Theme) => {
+        if (attrs.color) {
+            attrs.color.value = theme;
+            handleAttrsUpdate(id, { ...attrs, color: attrs.color });
+        }
+    };
+
+    const { theme, requestThemeChange } = usePaletteTheme({
+        theme: attrs.color?.value,
+        onThemeApplied: handleChangeColor,
+    });
+
+    const colorField: RmgFieldsField[] = [
+        {
+            type: 'custom',
+            label: t('color'),
+            component: <ThemeButton theme={theme} onClick={requestThemeChange} />,
+        },
+    ];
+
+    return (
+        <>
+            <Flex direction="row" mr="auto" width="100%">
+                <RmgLabel width="100%" overflow="hidden" label={t('panel.details.nodes.master.type')}>
+                    <Flex width="100%" overflow="hidden">
+                        <RmgLineBadge
+                            name={attrs.label ?? t('panel.details.nodes.master.undefined')}
+                            fg={attrs.labelColorFg ?? MonoColour.white}
+                            bg={attrs.labelColorBg ?? '#000000'}
+                            sx={{
+                                display: 'inline-block',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            }}
+                            mr={1}
+                        />
+                        <RmgLineBadge
+                            name={attrs.randomId ?? 'UNDEFINED'}
+                            fg={MonoColour.white}
+                            bg={attrs.randomId ? '#19B3EA' : '#000000'}
+                            sx={{ display: 'inline-block' }}
+                            mr={1}
+                        />
+                    </Flex>
+                </RmgLabel>
+                <Spacer />
+                <IconButton icon={<MdUpload />} onClick={() => setOpenImport(true)} aria-label="upload" />
+            </Flex>
+            <Button width="100%" leftIcon={<MdSettings />} onClick={() => setOpenManager(true)}>
+                {t('header.settings.procedures.masterManager.title')}
+            </Button>
+            {masterAttrErrors.length > 0 && (
+                <Alert status="error" variant="left-accent" borderRadius="md" alignItems="flex-start" width="100%">
+                    <AlertIcon mt={1} />
+                    <Flex direction="column" minW={0}>
+                        <AlertTitle fontSize="sm">{t('panel.details.nodes.master.attrBindingError')}</AlertTitle>
+                        <AlertDescription fontSize="xs" wordBreak="break-word">
+                            {masterAttrErrors[0]}
+                            {masterAttrErrors.length > 1 ? ` (+${masterAttrErrors.length - 1})` : ''}
+                        </AlertDescription>
+                    </Flex>
+                </Alert>
+            )}
+            {attrs.randomId && <RmgFields fields={componentField} minW="full" />}
+            {attrs.randomId && attrs.version !== 4 && attrs.color !== undefined && (
+                <RmgFields fields={colorField} minW="full" />
+            )}
+            <MasterImport isOpen={openImport} onClose={() => setOpenImport(false)} onSubmit={handleImportParam} />
+            <MasterManager isOpen={openManager} onClose={() => setOpenManager(false)} />
+        </>
+    );
+};
+
+const masterIcon = (
+    <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
+        <circle cx="12" cy="12" r="6" stroke="currentColor" fill="none" />
+        <g transform="translate(7.25, 7) scale(0.8)">
+            <polygon
+                points="6,1 7.5,4.25 11,4.65 8.5,7.1 9.2,10.75 6,9 2.8,10.75 3.5,7.1 1,4.65 4.5,4.25"
+                fill="currentColor"
+            />
+        </g>
+    </svg>
+);
+
+const masterNode: Node<MasterAttributes> = {
+    component: MasterNode,
+    icon: masterIcon,
+    defaultAttrs: defaultMasterAttributes,
+    attrsComponent,
+    metadata: {
+        displayName: 'panel.details.nodes.master.displayName',
+        tags: [],
+    },
+};
+
+export default masterNode;

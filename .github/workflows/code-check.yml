@@ -1,0 +1,21 @@
+name: Code Quality Check
+
+on:
+  pull_request:
+
+jobs:
+  check:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - run: npm i
+      - run: npm i rollup
+      - name: Check
+        run: |
+          npm run lint
+          npm run test
