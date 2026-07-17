@@ -13,6 +13,14 @@ Rail Map Painter needs an opt-in project kind that keeps the existing editor and
 - Loading a save restores its type. Diagram projects do not initialize the map loader or issue tile requests.
 - A map project always has the map enabled. The map cannot be selected or disabled.
 
+### Project Replacement And Undo History
+
+- Graph edits continue to use `saveGraph` and retain the existing graph-only undo history.
+- New projects and full-project imports use a dedicated `replaceGraph` action. It replaces `present` and clears both `past` and `future` instead of making the previous project undoable.
+- Changing the project type invalidates `past` and `future` immediately. Undo history must never cross the `diagram`/`map` boundary.
+- File imports and Gallery imports restore the saved project type and replace the graph without retaining history from the previous project.
+- AARC import remains a diagram-producing full replacement. It explicitly sets `type: 'diagram'` and replaces the graph with cleared history.
+
 ## Coordinate System
 
 Map projects continue to store ordinary graph node `x` and `y` coordinates. No latitude, longitude, map center, or per-project geographic anchor is added.
