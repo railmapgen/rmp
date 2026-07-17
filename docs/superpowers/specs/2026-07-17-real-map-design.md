@@ -16,10 +16,11 @@ Rail Map Painter needs an opt-in project kind that keeps the existing editor and
 ### Project Replacement And Undo History
 
 - Graph edits continue to use `saveGraph` and retain the existing graph-only undo history.
-- New projects and full-project imports use a dedicated `replaceGraph` action. It replaces `present` and clears both `past` and `future` instead of making the previous project undoable.
-- Changing the project type invalidates `past` and `future` immediately. Undo history must never cross the `diagram`/`map` boundary.
-- File imports and Gallery imports restore the saved project type and replace the graph without retaining history from the previous project.
-- AARC import remains a diagram-producing full replacement. It explicitly sets `type: 'diagram'` and replaces the graph with cleared history.
+- New projects and full-project imports use a dedicated `replaceGraph({ type, graph })` action so the project-type comparison and graph replacement are atomic.
+- Replacing a graph with the same project type follows the existing `saveGraph` history behavior: clear `future`, push the previous `present` into `past`, enforce the undo limit, and install the replacement graph.
+- Replacing a graph with a different project type clears both `past` and `future`. Undo history must never cross the `diagram`/`map` boundary.
+- File imports and Gallery imports pass the saved project type to `replaceGraph`. Same-type imports remain undoable; cross-type imports invalidate history.
+- AARC import remains a diagram-producing full replacement and passes `type: 'diagram'` to `replaceGraph`. It preserves history in a diagram project and clears history when replacing a map project.
 
 ## Coordinate System
 
