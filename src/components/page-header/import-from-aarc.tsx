@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, StnId } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
 import { useRootDispatch } from '../../redux';
-import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { replaceGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { autoPopulateTransfer, changeStationsTypeInBatch } from '../../util/change-types';
 import { convertAARCToRmp, StationTypeOption, stationTypeOptions } from '../../util/import-from-aarc';
@@ -39,8 +39,8 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     const graph = React.useRef(window.graph);
     const graphNew = React.useRef(new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>());
 
-    const refreshAndSave = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
+    const refreshAndReplace = React.useCallback(() => {
+        dispatch(replaceGraph({ type: 'diagram', graph: graph.current.export() }));
         dispatch(refreshNodesThunk());
         dispatch(refreshEdgesThunk());
     }, [dispatch]);
@@ -89,7 +89,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
         graph.current.import(graphNew.current.export());
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
-        refreshAndSave();
+        refreshAndReplace();
         setText('');
         setStep(1);
         onClose();

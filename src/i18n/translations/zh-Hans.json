@@ -761,6 +761,7 @@
         "search": "搜索车站",
         "open": {
             "new": "新项目",
+            "newMap": "新地图项目",
             "config": "导入项目",
             "projectRMG": "从RMG项目中导入",
             "invalidType": "无效的文件类型！仅接受JSON格式的文件。",
@@ -1043,5 +1044,9 @@
         }
     },
 
-    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
+    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
+    "map": {
+        "loading": "正在加载地图",
+        "loadError": "无法加载地图底图。"
+    }
 }

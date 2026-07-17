@@ -762,6 +762,7 @@
         "search": "Search stations",
         "open": {
             "new": "New project",
+            "newMap": "New map project",
             "config": "Import project",
             "projectRMG": "Import from RMG project",
             "invalidType": "Invalid file type! Only file in JSON format is accepted.",
@@ -1044,5 +1045,9 @@
         }
     },
 
-    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
+    "map": {
+        "loading": "Loading map",
+        "loadError": "Unable to load the map background."
+    }
 }

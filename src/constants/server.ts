@@ -6,6 +6,7 @@ export const random_station_names_endpoint = `${server}/v1/randomStationNames`;
 export const station_name_translation_endpoint = `${server}/v1/stationNameTranslation`;
 export const shared_work_endpoint = `${server}/v1/share`;
 export const image_endpoint = `${server}/v1/image`;
+export const map_tile_base_url = 'https://tiles-2aw.pages.dev/';
 
 // rmgRuntime.getInstance() === 'Tauri' requires an async rmgRuntime.ready().
 export const isTauri = '__TAURI__' in window.parent;

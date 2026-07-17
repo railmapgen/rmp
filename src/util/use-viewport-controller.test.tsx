@@ -10,10 +10,14 @@ type ViewportControllerApi = ReturnType<typeof useViewportController>;
 
 interface HookHarnessProps {
     viewport: LiveViewport;
+    onViewportChange?: (viewport: LiveViewport) => void;
 }
 
 const HookHarness = React.forwardRef<ViewportControllerApi, HookHarnessProps>((props, ref) => {
-    const controller = useViewportController({ viewport: props.viewport });
+    const controller = useViewportController({
+        viewport: props.viewport,
+        onViewportChange: props.onViewportChange,
+    });
 
     React.useImperativeHandle(ref, () => controller, [controller]);
 
@@ -79,6 +83,23 @@ describe('useViewportController', () => {
 
         expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(-60, -80) scale(2)');
         expect(store.getState().viewport.liveViewport).toEqual({ x: 30, y: 40, zoom: 50 });
+    });
+
+    it('notifies the imperative observer only when a viewport transform is applied', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+        const observer = vi.fn();
+
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} onViewportChange={observer} />, { store });
+        expect(observer).toHaveBeenLastCalledWith({ x: 0, y: 0, zoom: 100 });
+
+        act(() => {
+            ref.current?.viewportPreview({ x: 20, y: 30, zoom: 50 });
+        });
+        expect(observer).toHaveBeenCalledTimes(1);
+
+        flushRaf();
+        expect(observer).toHaveBeenLastCalledWith({ x: 20, y: 30, zoom: 50 });
     });
 
     it('returns the latest queued viewport before the RAF flushes', () => {

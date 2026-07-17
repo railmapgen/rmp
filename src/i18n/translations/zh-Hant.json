@@ -761,6 +761,7 @@
         "search": "搜尋車站",
         "open": {
             "new": "新項目",
+            "newMap": "新地圖項目",
             "config": "讀入項目",
             "projectRMG": "從RMG專案中讀入",
             "invalidType": "無效的文件類型！僅接受JSON格式的文件。",
@@ -1043,5 +1044,9 @@
         }
     },
 
-    "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
+    "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。",
+    "map": {
+        "loading": "正在載入地圖",
+        "loadError": "無法載入地圖底圖。"
+    }
 }

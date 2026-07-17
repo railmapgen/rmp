@@ -39,7 +39,7 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { ParamState } from '../redux/param/param-slice';
+import { ParamState, ProjectType } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 
 /**
@@ -51,13 +51,14 @@ export interface RMPSave {
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
     version: number;
+    type: ProjectType;
     graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     svgViewBoxZoom: number;
     svgViewBoxMin: { x: number; y: number };
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 77;
+export const CURRENT_VERSION = 78;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1034,4 +1035,10 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
+    77: param =>
+        JSON.stringify({
+            ...JSON.parse(param),
+            version: 78,
+            type: 'diagram',
+        }),
 };

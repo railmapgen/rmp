@@ -22,6 +22,7 @@ interface Point {
  */
 interface UseViewportControllerOptions {
     viewport: LiveViewport;
+    onViewportChange?: (viewport: LiveViewport) => void;
 }
 
 /**
@@ -92,7 +93,7 @@ interface ViewportFrameState {
  * - higher-level application decisions such as how wheel zoom should be calculated
  * - tool mode changes, selection logic, or business-specific branching
  */
-export const useViewportController = ({ viewport }: UseViewportControllerOptions) => {
+export const useViewportController = ({ viewport, onViewportChange }: UseViewportControllerOptions) => {
     const dispatch = useRootDispatch();
     const store = useRootStore();
 
@@ -104,6 +105,8 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * every high-frequency interaction event.
      */
     const viewportRef = React.useRef<SVGGElement>(null);
+    const viewportObserverRef = React.useRef(onViewportChange);
+    viewportObserverRef.current = onViewportChange;
 
     /**
      * Ref to the root `<svg>` element.
@@ -175,6 +178,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
         const y = -nextViewport.y * scale;
 
         viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+        viewportObserverRef.current?.(nextViewport);
     }, []);
 
     /**

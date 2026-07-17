@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
 import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { ProjectType, replaceGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
@@ -51,11 +51,14 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const graph = React.useRef(window.graph);
 
-    const refreshAndSave = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
+    const refreshAndReplace = React.useCallback(
+        (type: ProjectType) => {
+            dispatch(replaceGraph({ type, graph: graph.current.export() }));
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
+        },
+        [dispatch, refreshNodesThunk, refreshEdgesThunk, replaceGraph, graph]
+    );
 
     const handleOpenWork = async (rmpSave: RMPSave) => {
         // works may be obsolete and require upgrades
@@ -75,14 +78,14 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         // ensure all server images used in the graph are available in IndexedDB
         dispatch(pullServerImages());
 
-        // hard refresh the canvas
-        refreshAndSave();
-
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
         if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
         if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
+
+        // hard refresh the canvas after restoring project-level settings
+        refreshAndReplace(save.type);
     };
 
     const handleConfirmOpen = async () => {

@@ -3,12 +3,44 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import store from '../index';
-import appReducer, { MAX_UNDO_SIZE, redoAction, saveGraph, undoAction } from './param-slice';
+import appReducer, { MAX_UNDO_SIZE, redoAction, replaceGraph, saveGraph, undoAction } from './param-slice';
 
 const realStore = store.getState();
 const emptySerializedGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
 
 describe('ParamSlice', () => {
+    it('preserves graph history when replacing a project with the same type', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('1', { visible: false, zIndex: 0, x: 0, y: 0, type: MiscNodeType.Virtual });
+        const nextState = appReducer(
+            { ...realStore.param, future: [emptySerializedGraph] },
+            replaceGraph({ type: 'diagram', graph: graph.export() })
+        );
+
+        expect(nextState.type).toBe('diagram');
+        expect(nextState.present).toEqual(graph.export());
+        expect(nextState.past).toEqual([emptySerializedGraph]);
+        expect(nextState.future).toEqual([]);
+    });
+
+    it('clears graph history when replacing a project with a different type', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('1', { visible: false, zIndex: 0, x: 0, y: 0, type: MiscNodeType.Virtual });
+        const nextState = appReducer(
+            {
+                ...realStore.param,
+                past: [emptySerializedGraph],
+                future: [emptySerializedGraph],
+            },
+            replaceGraph({ type: 'map', graph: graph.export() })
+        );
+
+        expect(nextState.type).toBe('map');
+        expect(nextState.present).toEqual(graph.export());
+        expect(nextState.past).toEqual([]);
+        expect(nextState.future).toEqual([]);
+    });
+
     it('Can save graph as expected', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         const nextState = appReducer(realStore.param, saveGraph(graph.export()));

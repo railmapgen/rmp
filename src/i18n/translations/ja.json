@@ -764,6 +764,7 @@
         "search": "駅を探す",
         "open": {
             "new": "新しい作品",
+            "newMap": "新しい地図作品",
             "config": "作品をインポート",
             "projectRMG": "RMG作品からインポート",
             "invalidType": "無効なファイルタイプです！JSON形式のファイルのみが受け付けられます。",
@@ -1045,5 +1046,9 @@
         }
     },
 
-    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
+    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
+    "map": {
+        "loading": "地図を読み込み中",
+        "loadError": "地図の背景を読み込めません。"
+    }
 }

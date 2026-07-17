@@ -2,10 +2,11 @@ import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useDisclosure 
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
+import { MdInsertDriveFile, MdMap, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
+import { getMapInitialViewport } from '../../map/map-config';
 import { useRootDispatch } from '../../redux';
-import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { ProjectType, replaceGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
@@ -25,7 +26,7 @@ export default function OpenActions() {
     const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
 
     const size = useWindowSize();
-    const { height } = getCanvasSize(size);
+    const { height, width } = getCanvasSize(size);
 
     const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -34,18 +35,27 @@ export default function OpenActions() {
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
     const [isOpenAarc, setIsOpenAarc] = React.useState(false);
 
-    const refreshAndSave = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
+    const refreshAndReplace = React.useCallback(
+        (type: ProjectType) => {
+            dispatch(replaceGraph({ type, graph: graph.current.export() }));
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
+        },
+        [dispatch, refreshNodesThunk, refreshEdgesThunk, replaceGraph, graph]
+    );
 
-    const handleNew = () => {
+    const handleNew = (type: ProjectType) => {
         dispatch(clearSelected());
         graph.current.clear();
-        dispatch(setSvgViewBoxZoom(100));
-        dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
-        refreshAndSave();
+        if (type === 'map') {
+            const viewport = getMapInitialViewport(width, height);
+            dispatch(setSvgViewBoxZoom(viewport.zoom));
+            dispatch(setSvgViewBoxMin({ x: viewport.x, y: viewport.y }));
+        } else {
+            dispatch(setSvgViewBoxZoom(100));
+            dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
+        }
+        refreshAndReplace(type);
     };
 
     const loadParam = async (paramStr: string) => {
@@ -66,14 +76,14 @@ export default function OpenActions() {
         // ensure all server images used in the graph are available in IndexedDB
         dispatch(pullServerImages());
 
-        // hard refresh the canvas
-        refreshAndSave();
-
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
         if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
         if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
+
+        // hard refresh the canvas after restoring project-level settings
+        refreshAndReplace(save.type);
     };
 
     const handleConfirmLoad = async () => {
@@ -154,8 +164,11 @@ export default function OpenActions() {
             <Menu>
                 <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdUpload />} />
                 <MenuList>
-                    <MenuItem icon={<MdNoteAdd />} onClick={handleNew}>
+                    <MenuItem icon={<MdNoteAdd />} onClick={() => handleNew('diagram')}>
                         {t('header.open.new')}
+                    </MenuItem>
+                    <MenuItem icon={<MdMap />} onClick={() => handleNew('map')}>
+                        {t('header.open.newMap')}
                     </MenuItem>
 
                     <input

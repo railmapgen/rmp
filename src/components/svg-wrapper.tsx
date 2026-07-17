@@ -1,4 +1,4 @@
-import { IconButton, useColorModeValue } from '@chakra-ui/react';
+import { HStack, IconButton, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
@@ -11,6 +11,8 @@ import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
+import { isMapZoomed, MAP_TILE_BASE_URL } from '../map/map-config';
+import { MapTileController } from '../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
 import { redoAction, saveGraph, undoAction } from '../redux/param/param-slice';
@@ -73,7 +75,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { type: projectType, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
         active,
@@ -88,6 +90,21 @@ const SvgWrapper = () => {
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const canvasFilter = useColorModeValue('none', 'brightness(0.78) contrast(0.95)');
+    const mapLayerRef = React.useRef<SVGGElement>(null);
+    const editorLayerRef = React.useRef<SVGGElement>(null);
+    const mapControllerRef = React.useRef<MapTileController | undefined>(undefined);
+    const [isMapLoading, setIsMapLoading] = React.useState(false);
+
+    const handleViewportChange = React.useCallback(
+        (viewport: { x: number; y: number; zoom: number }) => {
+            if (editorLayerRef.current) {
+                editorLayerRef.current.style.display =
+                    projectType === 'map' && !isMapZoomed(viewport.zoom) ? 'none' : '';
+            }
+            mapControllerRef.current?.updateViewport(viewport);
+        },
+        [projectType]
+    );
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled =
@@ -109,7 +126,45 @@ const SvgWrapper = () => {
         panEnd,
     } = useViewportController({
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
+        onViewportChange: handleViewportChange,
     });
+
+    React.useEffect(() => {
+        if (projectType !== 'map' || !mapLayerRef.current) {
+            mapControllerRef.current?.dispose();
+            mapControllerRef.current = undefined;
+            setIsMapLoading(false);
+            if (editorLayerRef.current) editorLayerRef.current.style.display = '';
+            return;
+        }
+
+        const controller = new MapTileController({
+            root: mapLayerRef.current,
+            baseUrl: MAP_TILE_BASE_URL,
+            getViewportSize: () => ({
+                width: svgRef.current?.clientWidth || width,
+                height: svgRef.current?.clientHeight || height,
+            }),
+            onLoadingChange: setIsMapLoading,
+        });
+        mapControllerRef.current = controller;
+        handleViewportChange(viewportGetLatest());
+        void controller.initialize().catch(error => {
+            if (mapControllerRef.current !== controller) return;
+            setIsMapLoading(false);
+            console.error('Failed to initialize map tiles', error);
+            sendErrorNotification(t('error'), t('map.loadError'));
+        });
+
+        return () => {
+            controller.dispose();
+            if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
+        };
+    }, [projectType]);
+
+    React.useEffect(() => {
+        mapControllerRef.current?.updateViewport(viewportGetLatest());
+    }, [height, width]);
 
     const makeStationName = useMakeStationName();
     useFonts();
@@ -482,34 +537,55 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
-                    {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                    {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
-                    {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-                    <utils.SvgAssetsContextProvider>
-                        <SvgCanvas />
-                    </utils.SvgAssetsContextProvider>
-                    {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                        <rect
-                            x={selectCoord.sx}
-                            y={selectCoord.sy}
-                            width={selectCoord.ex - selectCoord.sx}
-                            height={selectCoord.ey - selectCoord.sy}
-                            rx="2"
-                            stroke="#b5b5b6"
-                            strokeWidth="2"
-                            strokeOpacity="0.4"
-                            fill="#b5b5b6"
-                            opacity="0.75"
-                        />
-                    )}
-                    {isTouchClient() &&
-                        [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
-                            <VirtualJoystick />
+                    <g ref={mapLayerRef} data-map-layer="" />
+                    <g ref={editorLayerRef} data-editor-layer="">
+                        {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
+                        {isTouchClient() && mode === 'free' && <TouchOverlay />}
+                        {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
+                        {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                        <utils.SvgAssetsContextProvider>
+                            <SvgCanvas />
+                        </utils.SvgAssetsContextProvider>
+                        {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                            <rect
+                                x={selectCoord.sx}
+                                y={selectCoord.sy}
+                                width={selectCoord.ex - selectCoord.sx}
+                                height={selectCoord.ey - selectCoord.sy}
+                                rx="2"
+                                stroke="#b5b5b6"
+                                strokeWidth="2"
+                                strokeOpacity="0.4"
+                                fill="#b5b5b6"
+                                opacity="0.75"
+                            />
                         )}
-                    <RadialTouchMenu />
+                        {isTouchClient() &&
+                            [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
+                                <VirtualJoystick />
+                            )}
+                        <RadialTouchMenu />
+                    </g>
                 </g>
             </svg>
+            {projectType === 'map' && isMapLoading && (
+                <HStack
+                    position="fixed"
+                    top="52px"
+                    left="50%"
+                    transform="translateX(-50%)"
+                    zIndex={2}
+                    px={3}
+                    py={2}
+                    borderRadius="sm"
+                    bg="whiteAlpha.900"
+                    boxShadow="sm"
+                    pointerEvents="none"
+                >
+                    <Spinner size="sm" />
+                    <Text fontSize="sm">{t('map.loading')}</Text>
+                </HStack>
+            )}
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (
                 <IconButton

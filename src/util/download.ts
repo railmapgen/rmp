@@ -103,6 +103,7 @@ export const makeRenderReadySVGElement = async (
     });
     // remove transform set by updateViewportTransform for dragging performance
     elem.querySelector('g')?.removeAttribute('transform');
+    positionMapAttributionForExport(elem, { xMin, yMax });
 
     if (!isSystemFontsOnly) {
         // add additional fonts data to the final svg in encoded base64 format
@@ -124,6 +125,14 @@ export const makeRenderReadySVGElement = async (
     }
 
     return { elem, width, height };
+};
+
+export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xMin: number; yMax: number }) => {
+    const mapAttribution = svg.querySelector<SVGTextElement>('[data-map-attribution]');
+    if (!mapAttribution) return;
+    mapAttribution.setAttribute('x', String(bounds.xMin + 8));
+    mapAttribution.setAttribute('y', String(bounds.yMax - 8));
+    mapAttribution.setAttribute('font-size', '10');
 };
 
 const loadFacilitiesSvg = async (
