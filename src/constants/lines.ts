@@ -226,6 +226,16 @@ export interface LinePathOverlayProps {
     svgViewBoxMin: PathPoint;
 }
 
+export interface LinePathDrawingSession<T extends LinePathAttributes> {
+    pointerMove: (pointer: PathPoint) => void;
+    createAttrs: (target: PathPoint, pointer: PathPoint) => T | undefined;
+    getPreview: (pointer: PathPoint) => React.JSX.Element | null;
+}
+
+export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
+    createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
+}
+
 /**
  * The type a line path should export.
  */
@@ -247,6 +257,10 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * An optional interactive overlay displayed when a line using this path is selected.
      */
     overlayComponent?: React.FC<LinePathOverlayProps>;
+    /**
+     * Optional path-specific behavior for drawing gestures. The canvas uses the default endpoint behavior otherwise.
+     */
+    drawingBehavior?: LinePathDrawingBehavior<T>;
     /**
      * Metadata for this line path.
      */

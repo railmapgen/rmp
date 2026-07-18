@@ -1,17 +1,70 @@
 import { Input, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { nanoid } from 'nanoid';
 import { useTranslation } from 'react-i18next';
-import { LinePath, LinePathAttrsProps, LinePathAttributes, PathGenerator } from '../../../../constants/lines';
+import {
+    LinePath,
+    LinePathAttrsProps,
+    LinePathAttributes,
+    LinePathDrawingBehavior,
+    PathGenerator,
+} from '../../../../constants/lines';
 import { makePoint } from '../../../../constants/path';
 import {
     FreeformPathAttributes as BaseFreeformPathAttributes,
+    createFreeformPathAttributes,
     defaultFreeformPathAttributes,
+    generateFreeformAreaPathD,
     makeFreeformCenterlinePath,
     normalizeFreeformPathAttributes,
 } from '../../../../util/freeform-line';
 import { FreeformLineOverlay } from '../../../freeform-line/freeform-line-overlay';
 
 export interface FreeformPathAttributes extends LinePathAttributes, BaseFreeformPathAttributes {}
+
+const freeformDrawingBehavior: LinePathDrawingBehavior<FreeformPathAttributes> = {
+    createSession: (source, initialPointer) => {
+        const points = [source, initialPointer];
+
+        return {
+            pointerMove: pointer => {
+                const previous = points[points.length - 1];
+                if (previous && Math.hypot(previous.x - pointer.x, previous.y - pointer.y) < 1) return;
+                points.push(pointer);
+            },
+            createAttrs: (target, pointer) =>
+                createFreeformPathAttributes([...points, pointer], source, target, () => nanoid(10)),
+            getPreview: pointer => {
+                let id = 0;
+                const attrs = createFreeformPathAttributes(
+                    [...points, pointer],
+                    source,
+                    pointer,
+                    () => `preview_${id++}`,
+                    {
+                        minPointDistance: 1,
+                        simplifyTolerance: 0.5,
+                    }
+                );
+                if (!attrs) return null;
+
+                return (
+                    <path
+                        d={generateFreeformAreaPathD(
+                            attrs,
+                            makePoint(pointer.x - source.x, pointer.y - source.y),
+                            source
+                        )}
+                        fill="currentColor"
+                        fillOpacity="0.65"
+                        stroke="none"
+                        pointerEvents="none"
+                    />
+                );
+            },
+        };
+    },
+};
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
@@ -196,6 +249,7 @@ const freeformIcon = (
 const freeformPath: LinePath<FreeformPathAttributes> = {
     generatePath: generateFreeformPath,
     overlayComponent: FreeformLineOverlay,
+    drawingBehavior: freeformDrawingBehavior,
     icon: freeformIcon,
     defaultAttrs: defaultFreeformPathAttributes,
     attrsComponent,

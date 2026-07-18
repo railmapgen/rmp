@@ -26,6 +26,7 @@ describe('freeform line path registration', () => {
     it('registers freeform as a line path supported only by single-color', () => {
         expect(linePaths[LinePathType.Freeform]).toBeDefined();
         expect(linePaths[LinePathType.Freeform].overlayComponent).toBeDefined();
+        expect(linePaths[LinePathType.Freeform].drawingBehavior).toBeDefined();
         expect(lineStyles[LineStyleType.SingleColor].metadata.supportLinePathType).toContain(LinePathType.Freeform);
 
         Object.entries(lineStyles)
@@ -33,6 +34,23 @@ describe('freeform line path registration', () => {
             .forEach(([, lineStyle]) =>
                 expect(lineStyle.metadata.supportLinePathType).not.toContain(LinePathType.Freeform)
             );
+    });
+
+    it('uses its drawing behavior to collect points and build path attributes', () => {
+        const session = linePaths[LinePathType.Freeform].drawingBehavior!.createSession(
+            { x: 0, y: 0 },
+            { x: 10, y: 10 }
+        );
+
+        session.pointerMove({ x: 10.5, y: 10 });
+        session.pointerMove({ x: 40, y: 25 });
+        expect(session.getPreview({ x: 70, y: 10 })).not.toBeNull();
+
+        const attrs = session.createAttrs({ x: 100, y: 0 }, { x: 80, y: 20 });
+        expect(attrs?.points.length).toBeGreaterThan(2);
+        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 10, y: 10 })]));
+        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 80, y: 20 })]));
+        expect(attrs?.points.at(-1)).toMatchObject({ x: 100, y: 0 });
     });
 
     it('does not support parallel line generation', () => {
