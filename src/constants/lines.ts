@@ -41,7 +41,7 @@ import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
-import type { OpenPath, Path } from './path';
+import type { OpenPath, Path, PathPoint } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -219,6 +219,13 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
 }
 
 export interface LinePathAttributes {}
+
+export interface LinePathOverlayProps {
+    id: LineId;
+    svgViewBoxZoom: number;
+    svgViewBoxMin: PathPoint;
+}
+
 /**
  * The type a line path should export.
  */
@@ -236,6 +243,10 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * Will be displayed in the details panel.
      */
     attrsComponent: React.FC<LinePathAttrsProps<T>>;
+    /**
+     * An optional interactive overlay displayed when a line using this path is selected.
+     */
+    overlayComponent?: React.FC<LinePathOverlayProps>;
     /**
      * Metadata for this line path.
      */

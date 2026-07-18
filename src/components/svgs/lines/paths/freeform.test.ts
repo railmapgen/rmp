@@ -3,6 +3,9 @@ import { MultiDirectedGraph } from 'graphology';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { MiscNodeType } from '../../../../constants/nodes';
+import { supportsParallelLinePath } from '../../../../util/parallel';
+import { getLines } from '../../../../util/process-elements';
+import { linePaths, lineStyles } from '../lines';
 
 describe('freeform line path registration', () => {
     beforeAll(() => {
@@ -20,10 +23,9 @@ describe('freeform line path registration', () => {
         }
     });
 
-    it('registers freeform as a line path supported only by single-color', async () => {
-        const { linePaths, lineStyles } = await import('../lines');
-
+    it('registers freeform as a line path supported only by single-color', () => {
         expect(linePaths[LinePathType.Freeform]).toBeDefined();
+        expect(linePaths[LinePathType.Freeform].overlayComponent).toBeDefined();
         expect(lineStyles[LineStyleType.SingleColor].metadata.supportLinePathType).toContain(LinePathType.Freeform);
 
         Object.entries(lineStyles)
@@ -33,14 +35,11 @@ describe('freeform line path registration', () => {
             );
     });
 
-    it('does not support parallel line generation', async () => {
-        const { supportsParallelLinePath } = await import('../../../../util/parallel');
-
+    it('does not support parallel line generation', () => {
         expect(supportsParallelLinePath(LinePathType.Freeform)).toBe(false);
     });
 
-    it('resolves centerline and area path without auto-simple or reconcile handling', async () => {
-        const { getLines } = await import('../../../../util/process-elements');
+    it('resolves centerline and area path without auto-simple or reconcile handling', () => {
         const graph = new MultiDirectedGraph<any, any, any>();
         graph.addNode('misc_node_a', {
             x: 0,

@@ -1,21 +1,183 @@
+import { nanoid } from 'nanoid';
 import React from 'react';
+import useEvent from 'react-use-event-hook';
+import { LinePathOverlayProps } from '../../constants/lines';
+import { makePoint } from '../../constants/path';
+import { useRootDispatch } from '../../redux';
+import { saveGraph } from '../../redux/param/param-slice';
+import { refreshEdgesThunk } from '../../redux/runtime/runtime-slice';
 import {
     getFreeformCenterlineD,
     getFreeformControlPoints,
     getFreeformWidthStopGeometry,
 } from '../../util/freeform-line';
-import type { FreeformEditable, FreeformHandleSelection, FreeformHandleSize } from './freeform-line-editor-controller';
-import type { FreeformOverlayHandlers } from './use-freeform-line-editor';
+import { pointerPosToSVGCoord } from '../../util/helpers';
+import { FreeformDrag, FreeformHandleSelection, FreeformLineEditorController } from './freeform-line-editor-controller';
 
-interface FreeformLineOverlayProps {
-    selectedFreeform?: FreeformEditable;
-    handleSize: FreeformHandleSize;
-    handleSelection: FreeformHandleSelection;
-    handlers: FreeformOverlayHandlers;
-}
+export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
+    const dispatch = useRootDispatch();
+    const graph = React.useRef(window.graph);
+    const [freeformDrag, setFreeformDrag] = React.useState<FreeformDrag>();
+    const [handleSelection, setHandleSelection] = React.useState<FreeformHandleSelection>();
 
-export const FreeformLineOverlay = (props: FreeformLineOverlayProps) => {
-    const { selectedFreeform, handleSize, handleSelection, handlers } = props;
+    const controller = React.useMemo(
+        () =>
+            new FreeformLineEditorController({
+                graph: graph.current,
+                selected: new Set([id]),
+                svgViewBoxZoom,
+            }),
+        [id, svgViewBoxZoom]
+    );
+    const selectedFreeform = controller.getFreeformEditableById(id);
+    const handleSize = controller.getHandleSize();
+
+    const refreshEdges = useEvent((save = false) => {
+        if (save) dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+    });
+
+    const getLocalPointerPosition = useEvent((event: React.MouseEvent<SVGElement>) => {
+        const canvas = document.getElementById('canvas');
+        const bbox = canvas?.getBoundingClientRect();
+        if (!bbox || !selectedFreeform) return makePoint(0, 0);
+        const point = pointerPosToSVGCoord(
+            event.clientX - bbox.left,
+            event.clientY - bbox.top,
+            svgViewBoxZoom,
+            svgViewBoxMin
+        );
+        return makePoint(point.x - selectedFreeform.source.x, point.y - selectedFreeform.source.y);
+    });
+
+    const handlePointPointerDown = useEvent((pointId: string, event: React.PointerEvent<SVGElement>) => {
+        if (!selectedFreeform || event.button !== 0 || controller.isEndpointPoint(selectedFreeform, pointId)) {
+            event.stopPropagation();
+            return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setHandleSelection({ edgeId: id, kind: 'point', id: pointId });
+        setFreeformDrag({ edgeId: id, kind: 'point', id: pointId });
+    });
+
+    const handleWidthPositionPointerDown = useEvent((stopId: string, event: React.PointerEvent<SVGElement>) => {
+        if (!selectedFreeform || event.button !== 0) {
+            event.stopPropagation();
+            return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setHandleSelection({ edgeId: id, kind: 'width', id: stopId });
+        setFreeformDrag({ edgeId: id, kind: 'width-position', id: stopId });
+    });
+
+    const handleWidthSizePointerDown = useEvent((stopId: string, event: React.PointerEvent<SVGElement>) => {
+        if (!selectedFreeform || event.button !== 0) {
+            event.stopPropagation();
+            return;
+        }
+        event.stopPropagation();
+        event.preventDefault();
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setHandleSelection({ edgeId: id, kind: 'width', id: stopId });
+        setFreeformDrag({ edgeId: id, kind: 'width-size', id: stopId });
+    });
+
+    const handlePointContextMenu = useEvent((pointId: string, event: React.MouseEvent<SVGElement>) => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (controller.removeControlPoint(id, pointId)) refreshEdges(true);
+        setHandleSelection(undefined);
+        setFreeformDrag(undefined);
+    });
+
+    const handlePointDoubleClick = useEvent((pointId: string, event: React.MouseEvent<SVGElement>) => {
+        event.stopPropagation();
+        event.preventDefault();
+        const stopId = nanoid(10);
+        if (controller.addWidthStopAtPoint(id, pointId, stopId)) {
+            refreshEdges(true);
+            setHandleSelection({ edgeId: id, kind: 'width', id: stopId });
+        }
+        setFreeformDrag(undefined);
+    });
+
+    const handleWidthContextMenu = useEvent((stopId: string, event: React.MouseEvent<SVGElement>) => {
+        event.stopPropagation();
+        event.preventDefault();
+        if (controller.removeWidthStop(id, stopId)) refreshEdges(true);
+        setHandleSelection(undefined);
+        setFreeformDrag(undefined);
+    });
+
+    const handleOverlayPointerMove = useEvent((event: React.PointerEvent<SVGElement>) => {
+        if (!freeformDrag) return;
+        const editable = controller.getFreeformEditableById(id);
+        if (!editable) return;
+        event.stopPropagation();
+        const localPoint = getLocalPointerPosition(event);
+        const updated =
+            freeformDrag.kind === 'point'
+                ? controller.moveControlPoint(id, freeformDrag.id, localPoint)
+                : freeformDrag.kind === 'width-position'
+                  ? controller.moveWidthStop(id, freeformDrag.id, localPoint)
+                  : controller.resizeWidthStop(id, freeformDrag.id, localPoint);
+        if (updated) refreshEdges(false);
+    });
+
+    const handleOverlayPointerUp = useEvent((event: React.PointerEvent<SVGElement>) => {
+        if (!freeformDrag) return;
+        event.stopPropagation();
+        try {
+            (event.target as Element).releasePointerCapture?.(event.pointerId);
+        } catch {
+            // no-op: the capturing handle can be replaced during drag re-rendering.
+        }
+        setFreeformDrag(undefined);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+    });
+
+    const handlePathDoubleClick = useEvent((event: React.MouseEvent<SVGElement>) => {
+        if (!selectedFreeform) return;
+        event.stopPropagation();
+        event.preventDefault();
+        const pointId = nanoid(10);
+        if (controller.insertControlPoint(id, getLocalPointerPosition(event), pointId)) {
+            refreshEdges(true);
+            setHandleSelection({ edgeId: id, kind: 'point', id: pointId });
+        }
+    });
+
+    const handleKeyDelete = useEvent(() => {
+        if (!handleSelection) return false;
+        const removed =
+            handleSelection.kind === 'point'
+                ? controller.removeControlPoint(id, handleSelection.id)
+                : controller.removeWidthStop(id, handleSelection.id);
+        if (!removed) return false;
+        refreshEdges(true);
+        setHandleSelection(undefined);
+        setFreeformDrag(undefined);
+        return true;
+    });
+
+    React.useEffect(() => {
+        const handleNativeKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== 'Delete' && event.key !== 'Backspace') return;
+            const target = event.target as HTMLElement | null;
+            if (target?.closest('input, textarea, select, [contenteditable="true"]')) return;
+            if (!handleKeyDelete()) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        };
+        document.addEventListener('keydown', handleNativeKeyDown, true);
+        return () => document.removeEventListener('keydown', handleNativeKeyDown, true);
+    }, [handleKeyDelete]);
+
     if (!selectedFreeform) return null;
 
     const centerlineD = getFreeformCenterlineD(selectedFreeform.attrs, selectedFreeform.targetRelative);
@@ -24,9 +186,9 @@ export const FreeformLineOverlay = (props: FreeformLineOverlayProps) => {
     return (
         <g
             transform={`translate(${selectedFreeform.source.x}, ${selectedFreeform.source.y})`}
-            onPointerMove={handlers.onOverlayPointerMove}
-            onPointerUp={handlers.onOverlayPointerUp}
-            onPointerCancel={handlers.onOverlayPointerUp}
+            onPointerMove={handleOverlayPointerMove}
+            onPointerUp={handleOverlayPointerUp}
+            onPointerCancel={handleOverlayPointerUp}
         >
             <path
                 d={centerlineD}
@@ -34,8 +196,8 @@ export const FreeformLineOverlay = (props: FreeformLineOverlayProps) => {
                 stroke="transparent"
                 strokeWidth={handleSize.hitStrokeWidth}
                 pointerEvents="stroke"
-                onPointerDown={handlers.onPathPointerDown}
-                onDoubleClick={handlers.onPathDoubleClick}
+                onPointerDown={event => event.stopPropagation()}
+                onDoubleClick={handlePathDoubleClick}
             />
             <path
                 d={centerlineD}
@@ -68,9 +230,9 @@ export const FreeformLineOverlay = (props: FreeformLineOverlayProps) => {
                         strokeWidth={handleSize.strokeWidth}
                         cursor={isEndpoint ? 'default' : 'move'}
                         pointerEvents={isEndpoint ? 'none' : undefined}
-                        onPointerDown={event => handlers.onPointPointerDown(point.id, event)}
-                        onContextMenu={event => handlers.onPointContextMenu(point.id, event)}
-                        onDoubleClick={event => handlers.onPointDoubleClick(point.id, event)}
+                        onPointerDown={event => handlePointPointerDown(point.id, event)}
+                        onContextMenu={event => handlePointContextMenu(point.id, event)}
+                        onDoubleClick={event => handlePointDoubleClick(point.id, event)}
                     />
                 );
             })}
@@ -107,8 +269,8 @@ export const FreeformLineOverlay = (props: FreeformLineOverlayProps) => {
                             stroke="#FFFFFF"
                             strokeWidth={handleSize.strokeWidth}
                             cursor="grab"
-                            onPointerDown={event => handlers.onWidthPositionPointerDown(stop.id, event)}
-                            onContextMenu={event => handlers.onWidthContextMenu(stop.id, event)}
+                            onPointerDown={event => handleWidthPositionPointerDown(stop.id, event)}
+                            onContextMenu={event => handleWidthContextMenu(stop.id, event)}
                         />
                         <circle
                             cx={geometry.start.x}
@@ -118,8 +280,8 @@ export const FreeformLineOverlay = (props: FreeformLineOverlayProps) => {
                             stroke="#FFFFFF"
                             strokeWidth={handleSize.strokeWidth}
                             cursor="ew-resize"
-                            onPointerDown={event => handlers.onWidthSizePointerDown(stop.id, event)}
-                            onContextMenu={event => handlers.onWidthContextMenu(stop.id, event)}
+                            onPointerDown={event => handleWidthSizePointerDown(stop.id, event)}
+                            onContextMenu={event => handleWidthContextMenu(stop.id, event)}
                         />
                     </g>
                 );

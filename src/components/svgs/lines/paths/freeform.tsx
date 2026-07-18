@@ -9,6 +9,7 @@ import {
     makeFreeformCenterlinePath,
     normalizeFreeformPathAttributes,
 } from '../../../../util/freeform-line';
+import { FreeformLineOverlay } from '../../../freeform-line/freeform-line-overlay';
 
 export interface FreeformPathAttributes extends LinePathAttributes, BaseFreeformPathAttributes {}
 
@@ -194,6 +195,7 @@ const freeformIcon = (
 
 const freeformPath: LinePath<FreeformPathAttributes> = {
     generatePath: generateFreeformPath,
+    overlayComponent: FreeformLineOverlay,
     icon: freeformIcon,
     defaultAttrs: defaultFreeformPathAttributes,
     attrsComponent,

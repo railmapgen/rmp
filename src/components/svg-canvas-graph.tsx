@@ -44,7 +44,7 @@ import {
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { FreeformLineOverlay } from './freeform-line/freeform-line-overlay';
+import { LinePathOverlayLayer } from './line-path-overlay-layer';
 import { useFreeformLineEditor } from './freeform-line/use-freeform-line-editor';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -120,7 +120,6 @@ const SvgCanvas = () => {
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
 
     const freeformLineEditor = useFreeformLineEditor({
-        selected,
         mode,
         svgViewBoxZoom,
         svgViewBoxMin,
@@ -543,12 +542,7 @@ const SvgCanvas = () => {
                     handlePointerDown={() => {}} // no use
                 />
             )}
-            <FreeformLineOverlay
-                selectedFreeform={freeformLineEditor.selectedFreeform}
-                handleSize={freeformLineEditor.handleSize}
-                handleSelection={freeformLineEditor.handleSelection}
-                handlers={freeformLineEditor.overlayHandlers}
-            />
+            <LinePathOverlayLayer selected={selected} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path
