@@ -4,8 +4,8 @@ import { nanoid } from 'nanoid';
 import { useTranslation } from 'react-i18next';
 import {
     LinePath,
-    LinePathAttrsProps,
     LinePathAttributes,
+    LinePathAttrsProps,
     LinePathDrawingBehavior,
     PathGenerator,
 } from '../../../../constants/lines';
@@ -18,7 +18,7 @@ import {
     makeFreeformCenterlinePath,
     normalizeFreeformPathAttributes,
 } from '../../../../util/freeform-line';
-import { FreeformLineOverlay } from '../../../freeform-line/freeform-line-overlay';
+import { FreeformLineOverlay } from './freeform-overlay';
 
 export interface FreeformPathAttributes extends LinePathAttributes, BaseFreeformPathAttributes {}
 

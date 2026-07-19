@@ -1,7 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { LineId, NodeAttributes, EdgeAttributes, GraphAttributes, Id } from '../../constants/constants';
-import { LinePathType } from '../../constants/lines';
-import { PathPoint, makePoint } from '../../constants/path';
+import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes } from '../../../../constants/constants';
+import { LinePathType } from '../../../../constants/lines';
+import { PathPoint, makePoint } from '../../../../constants/path';
 import {
     FreeformPathAttributes,
     addFreeformWidthStop,
@@ -15,7 +15,7 @@ import {
     removeFreeformControlPoint,
     removeFreeformWidthStop,
     resizeFreeformWidthStop,
-} from '../../util/freeform-line';
+} from '../../../../util/freeform-line';
 
 export type FreeformHandleSelection =
     | { edgeId: LineId; kind: 'point'; id: string }

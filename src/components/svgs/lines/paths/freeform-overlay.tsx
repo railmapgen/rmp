@@ -1,18 +1,18 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LinePathOverlayProps } from '../../constants/lines';
-import { makePoint } from '../../constants/path';
-import { useRootDispatch } from '../../redux';
-import { saveGraph } from '../../redux/param/param-slice';
-import { refreshEdgesThunk } from '../../redux/runtime/runtime-slice';
+import { LinePathOverlayProps } from '../../../../constants/lines';
+import { makePoint } from '../../../../constants/path';
+import { useRootDispatch } from '../../../../redux';
+import { saveGraph } from '../../../../redux/param/param-slice';
+import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import {
     getFreeformCenterlineD,
     getFreeformControlPoints,
     getFreeformWidthStopGeometry,
-} from '../../util/freeform-line';
-import { pointerPosToSVGCoord } from '../../util/helpers';
-import { FreeformDrag, FreeformHandleSelection, FreeformLineEditorController } from './freeform-line-editor-controller';
+} from '../../../../util/freeform-line';
+import { pointerPosToSVGCoord } from '../../../../util/helpers';
+import { FreeformDrag, FreeformHandleSelection, FreeformLineEditorController } from './freeform-editor-controller';
 
 export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
     const dispatch = useRootDispatch();
