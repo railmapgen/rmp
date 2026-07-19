@@ -61,7 +61,25 @@ const connectableNodesType = [
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.GzmtrLineBadge,
 ];
-const connectablePrefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'];
+const connectableTargetPrefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'] as const;
+
+export const findConnectableTarget = (elements: Element[]) => {
+    for (const element of elements) {
+        let current: Element | null = element;
+
+        while (current) {
+            const id = current.getAttribute('id');
+            const matchedPrefix = connectableTargetPrefixes.find(prefix => id?.startsWith(prefix));
+
+            if (id && matchedPrefix) {
+                return { id, matchedPrefix };
+            }
+
+            if (id === 'canvas') break;
+            current = current.parentElement;
+        }
+    }
+};
 
 interface LineDrawingGesture {
     type: LinePathType;
@@ -113,13 +131,9 @@ const SvgCanvas = () => {
         return pointerPosToSVGCoord(event.clientX - bbox.left, event.clientY - bbox.top, svgViewBoxZoom, svgViewBoxMin);
     };
     const getConnectableNodeFromPointer = (event: React.PointerEvent<SVGElement>): NodeId | undefined => {
-        for (const element of document.elementsFromPoint(event.clientX, event.clientY)) {
-            const id = element.attributes?.getNamedItem('id')?.value;
-            const prefix = connectablePrefixes.find(item => id?.startsWith(item));
-            const node = prefix ? id!.slice(prefix.length) : undefined;
-            if (isConnectableNode(node)) return node;
-        }
-        return undefined;
+        const target = findConnectableTarget(document.elementsFromPoint(event.clientX, event.clientY));
+        const node = target?.id.slice(target.matchedPrefix.length);
+        return isConnectableNode(node) ? node : undefined;
     };
 
     // all possible snap lines in the current view, pre-calculated for performance
@@ -173,6 +187,8 @@ const SvgCanvas = () => {
         }
 
         if (mode === 'select') dispatch(setMode('free'));
+        // Exit reconcile assign mode when clicking a node
+        if (mode.startsWith('reconcile-')) dispatch(setMode('free'));
 
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
@@ -451,6 +467,19 @@ const SvgCanvas = () => {
 
     const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
+
+        // Reconcile assign mode: clicking a line sets its reconcileId
+        if (mode.startsWith('reconcile-')) {
+            const reconcileId = mode.slice('reconcile-'.length);
+            const style = graph.current.getEdgeAttribute(edge, 'style');
+            if (lineStyles[style].metadata.supportsReconcile) {
+                graph.current.setEdgeAttribute(edge, 'reconcileId', reconcileId);
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
+            }
+            return; // don't change selection
+        }
+
         if (!e.shiftKey) dispatch(clearSelected());
         if (e.shiftKey && selected.has(edge)) dispatch(removeSelected(edge));
         else dispatch(addSelected(edge));

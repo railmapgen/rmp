@@ -43,6 +43,7 @@ const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
             LinePathType.RayGuided,
             LinePathType.Simple,
         ],
+        supportsReconcile: true,
     },
 };
 

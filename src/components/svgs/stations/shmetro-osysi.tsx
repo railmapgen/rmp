@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -173,6 +174,12 @@ const shmetroOsysiAttrsComponent = (props: AttrsProps<ShmetroOsysiStationAttribu
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
             value: nameOffsetXSelect.value,
@@ -205,8 +212,22 @@ const shmetroOsysiAttrsComponent = (props: AttrsProps<ShmetroOsysiStationAttribu
 
 const shmetroOsysiStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.67" fill="white" />
-        <circle cx="12" cy="12" r="4.6" stroke="currentColor" strokeWidth="2.67" fill="white" />
+        <circle
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            strokeWidth="2.67"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
+        <circle
+            cx="12"
+            cy="12"
+            r="4.6"
+            stroke="currentColor"
+            strokeWidth="2.67"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
     </svg>
 );
 

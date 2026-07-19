@@ -83,6 +83,7 @@ const londonLutonAirportDART: LineStyle<LondonLutonAirportDARTAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

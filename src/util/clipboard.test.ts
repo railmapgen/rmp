@@ -227,14 +227,14 @@ describe('Unit tests for specific attributes clipboard functions', () => {
                 )
             ).toBeNull();
         });
-        it('should return null for unknown clipboard type', () => {
+        it('should return null for unrecognized clipboard type', () => {
             expect(
                 parseClipboardData(
                     JSON.stringify({
                         app: 'rmp',
                         version: CLIPBOARD_VERSION,
                         saveVersion: CURRENT_VERSION,
-                        type: 'unknown',
+                        type: 'not-a-type',
                     })
                 )
             ).toBeNull();

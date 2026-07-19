@@ -84,6 +84,7 @@ const singleColor: LineStyle<SingleColorAttributes> = {
             LinePathType.RayGuided,
             LinePathType.Freeform,
         ],
+        supportsReconcile: true,
     },
 };
 

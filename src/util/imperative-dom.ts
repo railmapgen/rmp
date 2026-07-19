@@ -2,9 +2,12 @@ import { MultiDirectedGraph } from 'graphology';
 import { lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { LinePathType } from '../constants/lines';
-import { getLines } from './process-elements';
+import { Path } from '../constants/path';
+import { Element, LineRenderElement, getLines } from './process-elements';
+import { getBaseReconciledLineID } from './reconcile';
 
 type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
+type LineElement = Element & { id: LineId; type: 'line'; line: LineRenderElement };
 
 /**
  * Directly updates the nodes' transform attribute to bypass React's render cycle.
@@ -57,16 +60,18 @@ const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
  * Necessary for complex line styles where a single logical line may consist of multiple
  * visual path elements that need to stay in sync during real-time interaction.
  */
-const updatePathDRecursive = (id: string, pathD: string) => {
+const updatePathDRecursive = (id: string, path: Path | string) => {
     const root = document.getElementById(id);
-    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
-        updatePathD(path, pathD);
+    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(pathElement => {
+        updatePathD(pathElement, path);
     });
 };
 
-const updatePathD = (elem: SVGPathElement, pathD: string) => {
-    elem.setAttribute('d', pathD);
+const updatePathD = (elem: SVGPathElement, path: Path | string) => {
+    elem.setAttribute('d', typeof path === 'string' ? path : path.d);
 };
+
+const isLineElement = (element: Element): element is LineElement => element.type === 'line' && !!element.line;
 
 /**
  * Orchestrates a manual "repaint" of nodes and their connected lines.
@@ -88,36 +93,40 @@ export const moveNodesAndRedrawLines = (
         offsetNodeTransforms(node, dx, dy);
         const connectedLines = graph.edges(node) as LineId[];
         connectedLines.forEach(line => {
-            if (!edges.has(line)) edges.add(line);
+            edges.add(line);
+            edges.add(getBaseReconciledLineID(graph, line));
         });
     });
 
-    getLines(graph)
-        .filter(l => edges.has(l.id as LineId))
-        .forEach(l => {
-            const style = l.line!.attr.style;
-            if (l.line!.attr.type === LinePathType.Freeform && l.line!.areaPathD) {
-                updatePathDRecursive(`${l.id}.pre`, l.line!.areaPathD);
-                updatePathDRecursive(l.id, l.line!.areaPathD);
-                updatePathDRecursive(`${l.id}.post`, l.line!.areaPathD);
+    const lineUpdates = getLines(graph).filter(isLineElement);
+
+    lineUpdates
+        .filter(element => edges.has(element.id))
+        .forEach(element => {
+            const { id, line } = element;
+            const style = line.attr.style;
+            if (line.attr.type === LinePathType.Freeform && line.areaPathD) {
+                updatePathDRecursive(`${id}.pre`, line.areaPathD);
+                updatePathDRecursive(id, line.areaPathD);
+                updatePathDRecursive(`${id}.post`, line.areaPathD);
                 return;
             }
 
             if (lineStyles[style].pathGenerator) {
                 const path = lineStyles[style].pathGenerator!(
-                    l.line!.path,
-                    l.line!.attr.type,
+                    line.path,
+                    line.attr.type,
                     // @ts-expect-error
-                    l.line!.attr[style]!
+                    line.attr[style]!
                 );
                 for (const [key, value] of Object.entries(path)) {
-                    const elem = document.getElementById(`${style}_${key}_${l.id}`);
-                    if (elem instanceof SVGPathElement) updatePathD(elem, value.d);
+                    const elem = document.getElementById(`${style}_${key}_${id}`);
+                    if (elem instanceof SVGPathElement) updatePathD(elem, value);
                 }
             } else {
-                updatePathDRecursive(`${l.id}.pre`, l.line!.path.d);
-                updatePathDRecursive(l.id, l.line!.path.d);
-                updatePathDRecursive(`${l.id}.post`, l.line!.path.d);
+                updatePathDRecursive(`${id}.pre`, line.path);
+                updatePathDRecursive(id, line.path);
+                updatePathDRecursive(`${id}.post`, line.path);
             }
         });
 };

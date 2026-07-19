@@ -23,7 +23,6 @@ import {
     ModalHeader,
     ModalOverlay,
     Text,
-    useColorModeValue,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
@@ -35,11 +34,11 @@ import { Events } from '../../constants/constants';
 import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
-import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, rmpInfoSpecificNodeExists } from '../../util/download';
+import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, shouldForceRmpInfo } from '../../util/download';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
-import { stringifyParam } from '../../util/save';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
+import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
 
@@ -58,7 +57,6 @@ const getTauriUrl = () => {
 };
 
 export default function DownloadActions() {
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const dispatch = useRootDispatch();
     const {
         activeSubscriptions: { RMP_EXPORT },
@@ -125,10 +123,10 @@ export default function DownloadActions() {
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
-    const [isAttachDisabled, setIsAttachDisabled] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
+    const isRmpInfoForced = shouldForceRmpInfo(existsNodeTypes, RMP_EXPORT);
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
@@ -150,15 +148,14 @@ export default function DownloadActions() {
                 scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
             );
             setResvgScaleOptions(disabledScales);
-
-            if (rmpInfoSpecificNodeExists(existsNodeTypes)) {
-                setIsAttachSelected(false);
-                setIsAttachDisabled(true);
-            } else {
-                setIsAttachDisabled(false);
-            }
         }
     }, [isDownloadModalOpen]);
+
+    React.useEffect(() => {
+        if (isDownloadModalOpen && isRmpInfoForced) {
+            setIsAttachSelected(false);
+        }
+    }, [isDownloadModalOpen, isRmpInfoForced]);
 
     const handleDownloadJson = async () => {
         if (isAllowAppTelemetry)
@@ -194,7 +191,7 @@ export default function DownloadActions() {
             isAttachSelected,
             isSystemFontsOnly,
             languages,
-            existsNodeTypes,
+            isRmpInfoForced,
             svgVersion
         );
         // white spaces will be converted to &nbsp; and will fail the canvas render process
@@ -234,9 +231,9 @@ export default function DownloadActions() {
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        // set background, with respect to dark mode
+        // Keep exported images independent from the editor color mode.
         if (!isTransparent) {
-            ctx.fillStyle = bgColor;
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         }
 
@@ -301,7 +298,7 @@ export default function DownloadActions() {
                             <Checkbox
                                 id="share_info"
                                 isChecked={isAttachSelected}
-                                isDisabled={isAttachDisabled && !RMP_EXPORT}
+                                isDisabled={isRmpInfoForced}
                                 onChange={e => setIsAttachSelected(e.target.checked)}
                             >
                                 <Text>
@@ -312,7 +309,7 @@ export default function DownloadActions() {
                                     {t('header.download.shareInfo2')}
                                 </Text>
                             </Checkbox>
-                            {isAttachDisabled && (
+                            {isRmpInfoForced && (
                                 <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
                                     PRO
                                 </Badge>
@@ -332,7 +329,7 @@ export default function DownloadActions() {
                             </Text>
                         </Checkbox>
 
-                        {isAttachDisabled && (
+                        {isRmpInfoForced && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />
                                 <Box>

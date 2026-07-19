@@ -15,6 +15,7 @@ import {
     refreshNodesThunk,
 } from '../../../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../../../util/change-types';
+import { reconcileSelectedEdges } from '../../../util/reconcile-ui';
 import {
     EdgeSpecificAttrsClipboardData,
     exportEdgeSpecificAttrs,
@@ -57,6 +58,10 @@ const DetailsPanel = () => {
     const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
 
     const canCopyAttrs = selected.size === 1;
+    const hasMultipleEdges = React.useMemo(
+        () => [...selected].filter(id => graph.current.hasEdge(id)).length >= 2,
+        [selected]
+    );
 
     const handleClose = () => {
         if (!isPortraitClient()) {
@@ -161,6 +166,12 @@ const DetailsPanel = () => {
         hardRefresh();
     };
 
+    const handleReconcile = () => {
+        if (reconcileSelectedEdges(graph.current, selected)) {
+            hardRefresh();
+        }
+    };
+
     return (
         <RmgSidePanel isOpen={isDetailsOpen === 'show'} width={300} header="Dummy header" alwaysOverlay>
             <RmgSidePanelHeader onClose={handleClose}>{t('panel.details.header')}</RmgSidePanelHeader>
@@ -212,6 +223,11 @@ const DetailsPanel = () => {
                     <Button size="sm" variant="outline" onClick={handlePasteAttrs}>
                         {t('pasteAttrs')}
                     </Button>
+                    {hasMultipleEdges && (
+                        <Button size="sm" variant="outline" onClick={handleReconcile}>
+                            {t('panel.details.info.reconcile')}
+                        </Button>
+                    )}
                 </VStack>
             </RmgSidePanelFooter>
         </RmgSidePanel>

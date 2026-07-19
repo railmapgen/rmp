@@ -5,6 +5,7 @@ import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } fro
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -23,6 +24,7 @@ import {
 } from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
+import { SecondaryNameText } from './secondary-name';
 
 const FONT_SIZE = {
     en: 6.56,
@@ -216,14 +218,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
                     >
                         ）
                     </text>
-                    <g ref={secondaryTextRef}>
-                        <text fontSize="10" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
-                            {secondaryNames[0]}
-                        </text>
-                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
-                            {secondaryNames[1]}
-                        </text>
-                    </g>
+                    <SecondaryNameText ref={secondaryTextRef} names={secondaryNames} />
                 </g>
             )}
             {!open && (
@@ -325,6 +320,12 @@ const gzmtrInt2024StationAttrsComponents = (props: AttrsProps<GzmtrInt2024Statio
                 attrs.names[1] = val;
                 handleAttrsUpdate(id, attrs);
             },
+            minW: 'full',
+        },
+        {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
             minW: 'full',
         },
         {

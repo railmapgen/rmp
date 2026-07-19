@@ -258,7 +258,7 @@ const runtimeSlice = createSlice({
             state.refresh.images = Date.now();
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
-            if (state.mode !== 'free') state.lastTool = state.mode;
+            if (state.mode !== 'free' && !state.mode.startsWith('reconcile-')) state.lastTool = state.mode;
             state.mode = action.payload;
             state.isDetailsOpen = getIsDetailsOpen(state);
         },

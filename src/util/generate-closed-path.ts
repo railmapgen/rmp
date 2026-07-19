@@ -1,7 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { linePaths } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { LinePathType } from '../constants/lines';
 import {
     ClosedAreaPath,
     MultiSegmentOpenPathCommands,
@@ -10,7 +9,7 @@ import {
     makeLinearPath,
     makePoint,
 } from '../constants/path';
-import { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import { reverseEdgePathAttrs } from './edge-path-attrs';
 import { dropInitialMoveTo } from './path';
 
 /**
@@ -44,18 +43,8 @@ export const generateClosedPath = (
             y2 = targetAttrs.y;
         const finalPathAttr = structuredClone(initialPathAttr);
 
-        const isReversed = graph.source(edgeId) !== sourceNodeId;
-
-        if (isReversed) {
-            if ('startFrom' in finalPathAttr) {
-                finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
-            }
-            if (pathType === LinePathType.RayGuided) {
-                const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
-                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
-                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
-            }
-            // no need to handle simple path as it is symmetrical
+        if (graph.source(edgeId) !== sourceNodeId) {
+            reverseEdgePathAttrs(pathType, finalPathAttr);
         }
 
         const segment =

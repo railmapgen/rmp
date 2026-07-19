@@ -1,6 +1,7 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, NodeId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -10,6 +11,30 @@ type MoveNodesAndRedrawLines = typeof import('./imperative-dom').moveNodesAndRed
 type GetLines = typeof import('./process-elements').getLines;
 
 const createGraph = () => new MultiDirectedGraph() as TestGraph;
+
+const addVirtualNode = (graph: TestGraph, id: NodeId, x: number, y: number) => {
+    graph.addNode(id, {
+        visible: true,
+        zIndex: 0,
+        x,
+        y,
+        type: MiscNodeType.Virtual,
+        [MiscNodeType.Virtual]: {},
+    });
+};
+
+const makeLineAttrs = (reconcileId: string): EdgeAttributes => ({
+    visible: true,
+    zIndex: 0,
+    type: LinePathType.Simple,
+    [LinePathType.Simple]: { offset: 0 },
+    style: LineStyleType.SingleColor,
+    [LineStyleType.SingleColor]: {
+        color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+    },
+    reconcileId,
+    parallelIndex: -1,
+});
 
 describe('imperative DOM helpers', () => {
     let moveNodesAndRedrawLines: MoveNodesAndRedrawLines;
@@ -115,5 +140,28 @@ describe('imperative DOM helpers', () => {
         const expectedAreaPathD = getLines(graph).find(line => line.id === 'line_freeform')?.line?.areaPathD;
         expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toBe(expectedAreaPathD);
         expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toMatch(/ Z$/);
+    });
+
+    it('updates the rendered reconcile base edge when dragging a non-base member endpoint', () => {
+        const graph = createGraph();
+        addVirtualNode(graph, 'misc_node_a', 0, 0);
+        addVirtualNode(graph, 'misc_node_b', 100, 0);
+        addVirtualNode(graph, 'misc_node_c', 200, 0);
+        graph.addDirectedEdgeWithKey('line_z', 'misc_node_a', 'misc_node_b', makeLineAttrs('reconcile-a'));
+        graph.addDirectedEdgeWithKey('line_a', 'misc_node_b', 'misc_node_c', makeLineAttrs('reconcile-a'));
+        graph.mergeNodeAttributes('misc_node_a', { x: -50, y: 0 });
+
+        document.body.innerHTML = `
+            <svg>
+                <g id="line_a"><path d="M 0 0 L 0 0"></path></g>
+                <g id="line_z"><path d="M 0 0 L 0 0"></path></g>
+            </svg>
+        `;
+
+        moveNodesAndRedrawLines(graph, ['misc_node_a'], -50, 0);
+
+        const expectedPath = getLines(graph).find(element => element.id === 'line_a')?.line?.path.d;
+        expect(document.querySelector('#line_a path')?.getAttribute('d')).toBe(expectedPath);
+        expect(document.querySelector('#line_z path')?.getAttribute('d')).toBe('M 0 0 L 0 0');
     });
 });

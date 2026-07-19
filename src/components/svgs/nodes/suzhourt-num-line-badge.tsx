@@ -118,7 +118,14 @@ const SuzhouRTNumLineBadgeAttrsComponent = (props: AttrsProps<SuzhouRTNumLineBad
 const suzhouRTNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="4" y="4" width="16" height="16" rx="3" ry="3" />
-        <text x="12" y="13.4" textAnchor="middle" dominantBaseline="middle" fill="white" fontSize="14">
+        <text
+            x="12"
+            y="13.4"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="var(--chakra-colors-chakra-body-bg)"
+            fontSize="14"
+        >
             1
         </text>
     </svg>

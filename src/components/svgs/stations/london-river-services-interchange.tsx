@@ -203,7 +203,7 @@ const londonRiverServicesIntAttrsComponent = (props: AttrsProps<LondonRiverServi
 
 const londonRiverServicesIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
-        <circle cx="12" cy="12" r="6" stroke="currentColor" fill="white" />
+        <circle cx="12" cy="12" r="6" stroke="currentColor" fill="var(--chakra-colors-chakra-body-bg)" />
         <g transform="translate(12, 12)scale(0.18)">
             <path stroke="currentColor" d={D1} />
             <path stroke="currentColor" d={D2} />

@@ -122,10 +122,10 @@ const SHMetroTextLineBadgeAttrsComponent = (props: AttrsProps<ShmetroTextLineBad
 const shmetroTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" width="20" height="12" />
-        <text x="5" y="11" fontSize="5" fill="white">
+        <text x="5" y="11" fontSize="5" fill="var(--chakra-colors-chakra-body-bg)">
             浦江线
         </text>
-        <text x="3" y="16" fontSize="4" fill="white">
+        <text x="3" y="16" fontSize="4" fill="var(--chakra-colors-chakra-body-bg)">
             Pujiang Line
         </text>
     </svg>

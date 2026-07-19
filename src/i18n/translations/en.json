@@ -39,8 +39,13 @@
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type",
                 "type": "Type",
+                "visible": "Visible in export",
                 "parallel": "Parallel line",
-                "parallelIndex": "Parallel index"
+                "parallelIndex": "Parallel index",
+                "reconcile": "Reconcile",
+                "reconcileId": "Reconcile unique identifier",
+                "reconcileAssign": "Assign",
+                "reconcileMembers": "Reconcile members"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -156,6 +161,15 @@
                     "sandwich": "Sandwich",
                     "tube": "Tube"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "London Tube line badge",
+                    "lineName": "Line name",
+                    "walking": "Walking",
+                    "walkingTarget": "Walking target",
+                    "distance": "Distance",
+                    "addItem": "Add badge",
+                    "noItems": "No badges"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "Chengdu Rail Transit Line Badge",
                     "badgeType": {
@@ -183,7 +197,8 @@
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
-                    "undefined": "Undefined"
+                    "undefined": "Undefined",
+                    "attrBindingError": "Master attribute binding error"
                 },
                 "facilities": {
                     "displayName": "Facilities",
@@ -296,7 +311,11 @@
                     "right": "Right",
                     "top": "Top",
                     "bottom": "Bottom",
-                    "custom": "Custom"
+                    "custom": "Custom",
+                    "translateName": "Translate station name to English",
+                    "translateNameEmpty": "Enter a Chinese name first.",
+                    "translateNameNotSubscribed": "Semantic translation requires RMP Cloud.",
+                    "translateNameFailed": "Failed to translate station name."
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -463,7 +482,9 @@
                     "displayName": "London river services interchange station"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway station"
+                    "displayName": "Guangdong Intercity Railway station",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English"
                 },
                 "chongqingRTBasic": {
                     "displayName": "Chongqing Rail Transit basic station",
@@ -558,7 +579,9 @@
                     "to": "To",
                     "roundCornerFactor": "Round Corner Factor",
                     "parallelDisabled": "Some attributes are disabled as this line is parallel.",
-                    "changeInBaseLine": "Change them in the base line:"
+                    "changeInBaseLine": "Change them in the base line:",
+                    "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path.",
+                    "reconcileStyleDisabled": "Style attributes are disabled because this line is part of a reconcile chain. The rendered style is controlled by the base line."
                 },
                 "simple": {
                     "displayName": "Simple path",
@@ -879,6 +902,13 @@
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
                 },
+                "stationNameTranslationMode": {
+                    "title": "Station name translation",
+                    "pinyinSpaced": "Pinyin - Spaced Title Case",
+                    "pinyinCompact": "Pinyin - Compact Title Case",
+                    "pinyinUppercase": "Pinyin - Uppercase",
+                    "semantic": "Semantic"
+                },
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
@@ -1018,7 +1048,8 @@
         "flipVertical": "Flip vertically",
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
-        "flipDiagonal135": "Flip across 135° line"
+        "flipDiagonal135": "Flip across 135° line",
+        "reconcile": "Reconcile"
     },
 
     "clipboard": {

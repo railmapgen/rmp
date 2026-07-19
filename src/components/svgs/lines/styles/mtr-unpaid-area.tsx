@@ -45,6 +45,7 @@ const mtrUnpaidArea: LineStyle<MTRUnpaidAreaAttributes> = {
             LinePathType.RayGuided,
             LinePathType.Simple,
         ],
+        supportsReconcile: true,
     },
 };
 

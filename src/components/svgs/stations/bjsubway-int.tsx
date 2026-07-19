@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -236,6 +237,12 @@ const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttribute
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
             value: nameOffsetXSelect.value,
@@ -292,8 +299,8 @@ const BJSubwayIntAttrsComponent = (props: AttrsProps<BjsubwayIntStationAttribute
 const bjsubwayIntStationIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <g transform="translate(12, 12)">
-            <circle r="6" stroke="black" strokeWidth="1" fill="white" />
-            <path d={PATH_ARROW} fill="black" fillRule="evenodd" stroke="none" />
+            <circle r="6" stroke="currentColor" strokeWidth="1" fill="var(--chakra-colors-chakra-body-bg)" />
+            <path d={PATH_ARROW} fill="currentColor" fillRule="evenodd" stroke="none" />
         </g>
     </svg>
 );

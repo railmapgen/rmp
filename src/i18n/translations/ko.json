@@ -39,8 +39,13 @@
                 "linePathType": "선분 경로 유형",
                 "lineStyleType": "선분 스타일 유형",
                 "type": "유형",
+                "visible": "내보낼 때 표시",
                 "parallel": "평행선",
-                "parallelIndex": "평행 인덱스"
+                "parallelIndex": "평행 인덱스",
+                "reconcile": "통합",
+                "reconcileId": "통합 고유 식별자",
+                "reconcileAssign": "할당",
+                "reconcileMembers": "통합 구성원"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -156,6 +161,15 @@
                     "sandwich": "샌드위치",
                     "tube": "튜브"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "런던 지하철 노선 배지",
+                    "lineName": "노선명",
+                    "walking": "도보",
+                    "walkingTarget": "도보 목적지",
+                    "distance": "거리",
+                    "addItem": "배지 추가",
+                    "noItems": "배지가 없습니다"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "청두 도시철도 노선 표식",
                     "badgeType": {
@@ -183,7 +197,8 @@
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
-                    "undefined": "정의되지 않음"
+                    "undefined": "정의되지 않음",
+                    "attrBindingError": "마스터 속성 바인딩 오류"
                 },
                 "facilities": {
                     "displayName": "시설",
@@ -296,7 +311,11 @@
                     "right": "오른쪽",
                     "top": "위",
                     "bottom": "아래",
-                    "custom": "사용자 지정"
+                    "custom": "사용자 지정",
+                    "translateName": "역명을 영어로 번역",
+                    "translateNameEmpty": "중국어 이름을 먼저 입력하세요.",
+                    "translateNameNotSubscribed": "의역에는 RMP Cloud가 필요합니다.",
+                    "translateNameFailed": "역 이름을 번역하지 못했습니다."
                 },
                 "interchange": {
                     "title": "환승",
@@ -462,7 +481,9 @@
                     "displayName": "런던 강 서비스 환승역"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "광둥 시외 기차역"
+                    "displayName": "광둥 시외 기차역",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭"
                 },
                 "chongqingRTBasic": {
                     "displayName": "충칭 궤도교통 기본역",
@@ -557,7 +578,9 @@
                     "from": "에서",
                     "to": "까지",
                     "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
-                    "changeInBaseLine": "기본선에서 변경하십시오:"
+                    "changeInBaseLine": "기본선에서 변경하십시오:",
+                    "reconcileDisabled": "이 선분은 통합 체인에 포함되어 있어 오프셋이 비활성화되었습니다. 체인 전체가 하나의 결합된 경로로 렌더링됩니다.",
+                    "reconcileStyleDisabled": "이 선분은 통합 체인에 포함되어 있어 스타일 속성이 비활성화되었습니다. 렌더링되는 스타일은 기본선에서 제어됩니다."
                 },
                 "simple": {
                     "displayName": "기본 선분",
@@ -878,6 +901,13 @@
                     "shmetro": "상하이",
                     "bjsubway": "베이징"
                 },
+                "stationNameTranslationMode": {
+                    "title": "역명 번역 방식",
+                    "pinyinSpaced": "병음-글자별 대문자+공백",
+                    "pinyinCompact": "병음-첫 글자 대문자+공백 없음",
+                    "pinyinUppercase": "병음-전체 대문자",
+                    "semantic": "의역"
+                },
                 "gridline": "격자 가이드 라인 표시",
                 "snapline": "가이드 라인과 포인트에 자동 스냅",
                 "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
@@ -1017,7 +1047,8 @@
         "flipVertical": "수직 뒤집기",
         "flipHorizontal": "수평 뒤집기",
         "flipDiagonal45": "45° 선을 기준으로 뒤집기",
-        "flipDiagonal135": "135° 선을 기준으로 뒤집기"
+        "flipDiagonal135": "135° 선을 기준으로 뒤집기",
+        "reconcile": "통합"
     },
 
     "clipboard": {

@@ -39,8 +39,13 @@
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型",
                 "type": "类型",
+                "visible": "导出时可见",
                 "parallel": "平行线段",
-                "parallelIndex": "平行线段索引"
+                "parallelIndex": "平行线段索引",
+                "reconcile": "合并线段",
+                "reconcileId": "合并线段唯一识别符",
+                "reconcileAssign": "指派",
+                "reconcileMembers": "合并线段成员"
             },
             "multipleSelection": {
                 "title": "多重选取",
@@ -156,6 +161,15 @@
                     "sandwich": "三明治",
                     "tube": "地铁"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "伦敦地铁线路标牌",
+                    "lineName": "线路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目标",
+                    "distance": "距离",
+                    "addItem": "添加标牌",
+                    "noItems": "暂无标牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都轨道交通线路标识",
                     "badgeType": {
@@ -183,7 +197,8 @@
                 "master": {
                     "displayName": "大师节点",
                     "type": "大师节点类型",
-                    "undefined": "未定义"
+                    "undefined": "未定义",
+                    "attrBindingError": "大师属性绑定错误"
                 },
                 "facilities": {
                     "displayName": "设施",
@@ -296,7 +311,11 @@
                     "right": "右",
                     "top": "顶部",
                     "bottom": "底部",
-                    "custom": "自定义"
+                    "custom": "自定义",
+                    "translateName": "翻译站名到英文",
+                    "translateNameEmpty": "请先填写中文名称。",
+                    "translateNameNotSubscribed": "意译需要 RMP Cloud 订阅。",
+                    "translateNameFailed": "车站名称翻译失败。"
                 },
                 "interchange": {
                     "title": "换乘",
@@ -462,7 +481,9 @@
                     "displayName": "伦敦河流服务换乘站"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "广东城际铁路车站"
+                    "displayName": "广东城际铁路车站",
+                    "secondaryNameZh": "中文第二名称",
+                    "secondaryNameEn": "英文第二名称"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重庆轨道交通基本车站",
@@ -557,7 +578,9 @@
                     "from": "从",
                     "to": "到",
                     "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
-                    "changeInBaseLine": "在基准线段中更改它们："
+                    "changeInBaseLine": "在基准线段中更改它们：",
+                    "reconcileDisabled": "此线段属于合并线段链，偏移已禁用。整条链作为一条合并路径渲染。",
+                    "reconcileStyleDisabled": "此线段属于合并线段链，样式属性已禁用。最终渲染样式由基准线段控制。"
                 },
                 "simple": {
                     "displayName": "基本线段",
@@ -878,6 +901,13 @@
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
+                "stationNameTranslationMode": {
+                    "title": "站名翻译方式",
+                    "pinyinSpaced": "音译-单字大写有空格",
+                    "pinyinCompact": "音译-首字大写无空格",
+                    "pinyinUppercase": "音译-全大写",
+                    "semantic": "意译"
+                },
                 "gridline": "显示网格参考线",
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
@@ -1017,7 +1047,8 @@
         "flipVertical": "垂直翻转",
         "flipHorizontal": "水平翻转",
         "flipDiagonal45": "沿45°线翻转",
-        "flipDiagonal135": "沿135°线翻转"
+        "flipDiagonal135": "沿135°线翻转",
+        "reconcile": "合并线段"
     },
 
     "clipboard": {

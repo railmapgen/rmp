@@ -90,7 +90,7 @@ const OsakaMetroStationIcon = (
             textAnchor="middle"
             fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE * LAYOUT_CONSTANTS.ICON_RATIO}
             fontWeight={LAYOUT_CONSTANTS.STATION.FONT_WEIGHT}
-            fill="white"
+            fill="var(--chakra-colors-chakra-body-bg)"
         >
             M16
         </text>

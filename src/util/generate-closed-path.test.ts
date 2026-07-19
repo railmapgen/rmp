@@ -81,10 +81,14 @@ const legacyGenerateClosedPath = (
             if ('startFrom' in finalPathAttr) {
                 finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
             }
+            // Swap offsetFrom/offsetTo so the user's "offsetFrom = graph.source side"
+            // semantics survive a reversed traversal (mirror of reverseEdgePathAttrs).
+            if ('offsetFrom' in finalPathAttr && 'offsetTo' in finalPathAttr) {
+                [finalPathAttr.offsetFrom, finalPathAttr.offsetTo] = [finalPathAttr.offsetTo, finalPathAttr.offsetFrom];
+            }
             if (pathType === LinePathType.RayGuided) {
                 const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
                 [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
-                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
             }
         }
 

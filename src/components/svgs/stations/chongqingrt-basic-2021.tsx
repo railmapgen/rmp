@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -275,6 +276,12 @@ const ChongqingRTBasic2021AttrsComponent = (props: AttrsProps<ChongqingRTBasicSt
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
             value: nameOffsetXSelect.value,
@@ -352,11 +359,11 @@ const chongqingRTBasicStation2021Icon = (
             y={0}
             width={12}
             height={12}
-            stroke="black"
+            stroke="currentColor"
             strokeWidth={1.2}
             rx={2}
             ry={2}
-            fill="white"
+            fill="var(--chakra-colors-chakra-body-bg)"
             style={{ cursor: 'move' }}
         />
         <text fontSize={5.5} textAnchor="middle" x={6} y={5}>
@@ -365,7 +372,7 @@ const chongqingRTBasicStation2021Icon = (
         <text fontSize={5.5} textAnchor="middle" x={6} y={11}>
             01
         </text>
-        <line x1={1.5} y1={6} x2={10.5} y2={6} stroke={'black'} strokeWidth={0.6} />
+        <line x1={1.5} y1={6} x2={10.5} y2={6} stroke="currentColor" strokeWidth={0.6} />
     </svg>
 );
 

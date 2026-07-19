@@ -1058,4 +1058,16 @@ describe('Unit tests for param upgrade function', () => {
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":76}';
         expect(newParam).toEqual(expectParam);
     });
+
+    it('76 -> 77', () => {
+        // Bump save version to add secondary names to Guangdong Intercity Railway stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_gd_ir","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["番禺","Panyu"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false}}},{"key":"stn_gd_ir_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["花都","Huadu"],"nameOffsetX":"left","nameOffsetY":"bottom","secondaryNames":["广州北站","Guangzhoubei Railway Station"],"interchange":true}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":76}';
+        const newParam = UPGRADE_COLLECTION[76](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_gd_ir","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["番禺","Panyu"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false,"secondaryNames":["",""]}}},{"key":"stn_gd_ir_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["花都","Huadu"],"nameOffsetX":"left","nameOffsetY":"bottom","secondaryNames":["广州北站","Guangzhoubei Railway Station"],"interchange":true}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":77}';
+        expect(newParam).toEqual(expectParam);
+    });
 });
