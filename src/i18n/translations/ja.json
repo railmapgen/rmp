@@ -617,6 +617,11 @@
                     "arrowLength": "矢印の長さ",
                     "arrowWidth": "矢印の幅"
                 },
+                "bezier": {
+                    "displayName": "ベジェ曲線",
+                    "along": "線方向の位置",
+                    "normal": "法線オフセット"
+                },
                 "singleColor": {
                     "displayName": "単色風格"
                 },

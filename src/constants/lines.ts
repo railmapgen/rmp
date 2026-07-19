@@ -7,6 +7,7 @@ import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform';
+import type { BezierPathAttributes } from '../components/svgs/lines/paths/bezier';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { UnknownLineAttributes } from '../components/svgs/lines/styles/unknown';
@@ -51,6 +52,7 @@ export enum LinePathType {
     RayGuided = 'ray-guided',
     Simple = 'simple',
     Freeform = 'freeform',
+    Bezier = 'bezier',
 }
 
 export interface ExternalLinePathAttributes {
@@ -60,6 +62,7 @@ export interface ExternalLinePathAttributes {
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
     [LinePathType.RayGuided]?: RayGuidedPathAttributes;
     [LinePathType.Freeform]?: FreeformPathAttributes;
+    [LinePathType.Bezier]?: BezierPathAttributes;
 }
 
 export enum LineStyleType {

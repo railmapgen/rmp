@@ -614,6 +614,11 @@
                     "arrowLength": "箭头长度",
                     "arrowWidth": "箭头宽度"
                 },
+                "bezier": {
+                    "displayName": "贝塞尔曲线",
+                    "along": "沿线位置",
+                    "normal": "法向偏移"
+                },
                 "singleColor": {
                     "displayName": "纯色样式"
                 },
