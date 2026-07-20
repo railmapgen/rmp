@@ -104,7 +104,12 @@ export const initStore = async (store: RootStore) => {
 
     const { version, graph, ...save } = JSON.parse(param) as RMPSave;
     window.graph = MultiDirectedGraph.from(graph);
-    const state: ParamState = { ...save, present: graph, past: [], future: [] };
+    const state: ParamState = {
+        ...save,
+        present: graph,
+        past: [],
+        future: [],
+    };
     store.dispatch(setFullState(state));
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
@@ -120,7 +125,8 @@ export const initStore = async (store: RootStore) => {
             // comparison will always return true on dragging a node.
             return (
                 currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges
+                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
+                currentState.param.mapStyle !== previousState.param.mapStyle
             );
         },
         effect: (_action, listenerApi) => {

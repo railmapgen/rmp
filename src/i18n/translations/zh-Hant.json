@@ -1047,6 +1047,31 @@
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。",
     "map": {
         "loading": "正在載入地圖",
-        "loadError": "無法載入地圖底圖。"
+        "loadError": "無法載入地圖底圖。",
+        "style": {
+            "title": "地圖樣式",
+            "reset": "恢復預設",
+            "type": "類型",
+            "widthScale": "寬度倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "描邊",
+                "color": "路面",
+                "path": "小徑",
+                "local": "支路",
+                "collector": "次幹路",
+                "arterial": "主幹路"
+            },
+            "rails": {
+                "title": "鐵路",
+                "metro": "地鐵",
+                "national": "國鐵"
+            },
+            "labels": {
+                "title": "標籤",
+                "enabled": "顯示標籤",
+                "sizeScale": "字號倍率"
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
@@ -1086,6 +1087,28 @@ describe('Unit tests for param upgrade function', () => {
             svgViewBoxMin: { x: 0, y: 0 },
             version: 78,
             type: 'diagram',
+        });
+    });
+
+    it('78 -> 79', () => {
+        const oldParam = JSON.stringify({
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: 78,
+            type: 'diagram',
+        });
+        const newParam = UPGRADE_COLLECTION[78](oldParam);
+
+        expect(JSON.parse(newParam)).toEqual({
+            ...JSON.parse(oldParam),
+            version: 79,
+            mapStyle: DEFAULT_MAP_STYLE,
         });
     });
 });

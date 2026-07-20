@@ -5,8 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdMap, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
 import { getMapInitialViewport } from '../../map/map-config';
+import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { useRootDispatch } from '../../redux';
-import { ProjectType, replaceGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import {
+    ProjectType,
+    replaceGraph,
+    setMapStyle,
+    setSvgViewBoxMin,
+    setSvgViewBoxZoom,
+} from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
@@ -51,6 +58,7 @@ export default function OpenActions() {
             const viewport = getMapInitialViewport(width, height);
             dispatch(setSvgViewBoxZoom(viewport.zoom));
             dispatch(setSvgViewBoxMin({ x: viewport.x, y: viewport.y }));
+            dispatch(setMapStyle(structuredClone(DEFAULT_MAP_STYLE)));
         } else {
             dispatch(setSvgViewBoxZoom(100));
             dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
@@ -81,6 +89,7 @@ export default function OpenActions() {
         if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
         if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
+        dispatch(setMapStyle(save.mapStyle));
 
         // hard refresh the canvas after restoring project-level settings
         refreshAndReplace(save.type);

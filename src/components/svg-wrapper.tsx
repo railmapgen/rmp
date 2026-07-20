@@ -12,6 +12,7 @@ import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
 import { isMapZoomed, MAP_TILE_BASE_URL } from '../map/map-config';
+import { compileMapStyleCss } from '../map/map-style';
 import { MapTileController } from '../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
@@ -75,7 +76,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { type: projectType, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { type: projectType, mapStyle, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
         active,
@@ -94,6 +95,7 @@ const SvgWrapper = () => {
     const editorLayerRef = React.useRef<SVGGElement>(null);
     const mapControllerRef = React.useRef<MapTileController | undefined>(undefined);
     const [isMapLoading, setIsMapLoading] = React.useState(false);
+    const mapStyleCss = React.useMemo(() => compileMapStyleCss(mapStyle), [mapStyle]);
 
     const handleViewportChange = React.useCallback(
         (viewport: { x: number; y: number; zoom: number }) => {
@@ -518,6 +520,7 @@ const SvgWrapper = () => {
                 onKeyDown={handleKeyDown}
             >
                 <defs>
+                    {projectType === 'map' && <style data-map-style="">{mapStyleCss}</style>}
                     <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />

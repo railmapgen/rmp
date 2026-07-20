@@ -39,6 +39,7 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { DEFAULT_MAP_STYLE, MapStyle } from '../map/map-style';
 import { ParamState, ProjectType } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 
@@ -52,13 +53,14 @@ export interface RMPSave {
      */
     version: number;
     type: ProjectType;
+    mapStyle: MapStyle;
     graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     svgViewBoxZoom: number;
     svgViewBoxMin: { x: number; y: number };
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 78;
+export const CURRENT_VERSION = 79;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1040,5 +1042,11 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             ...JSON.parse(param),
             version: 78,
             type: 'diagram',
+        }),
+    78: param =>
+        JSON.stringify({
+            ...JSON.parse(param),
+            version: 79,
+            mapStyle: DEFAULT_MAP_STYLE,
         }),
 };

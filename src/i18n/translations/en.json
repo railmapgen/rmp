@@ -1048,6 +1048,31 @@
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
     "map": {
         "loading": "Loading map",
-        "loadError": "Unable to load the map background."
+        "loadError": "Unable to load the map background.",
+        "style": {
+            "title": "Map style",
+            "reset": "Reset",
+            "type": "Type",
+            "widthScale": "Width scale",
+            "roads": {
+                "title": "Roads",
+                "casingColor": "Outline",
+                "color": "Surface",
+                "path": "Path",
+                "local": "Local",
+                "collector": "Collector",
+                "arterial": "Arterial"
+            },
+            "rails": {
+                "title": "Railways",
+                "metro": "Metro",
+                "national": "National railway"
+            },
+            "labels": {
+                "title": "Labels",
+                "enabled": "Show labels",
+                "sizeScale": "Size scale"
+            }
+        }
     }
 }

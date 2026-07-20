@@ -6,7 +6,13 @@ import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
 import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { ProjectType, replaceGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import {
+    ProjectType,
+    replaceGraph,
+    setMapStyle,
+    setSvgViewBoxMin,
+    setSvgViewBoxZoom,
+} from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
@@ -83,6 +89,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
         if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
         if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
             dispatch(setSvgViewBoxMin(svgViewBoxMin));
+        dispatch(setMapStyle(save.mapStyle));
 
         // hard refresh the canvas after restoring project-level settings
         refreshAndReplace(save.type);

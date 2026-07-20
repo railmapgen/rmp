@@ -457,6 +457,8 @@ export class MapTileController {
         tile.setAttribute('width', String(graphSize));
         tile.setAttribute('height', String(graphSize));
         tile.setAttribute('overflow', 'hidden');
+        tile.classList.add('rmp-map-tile');
+        tile.dataset.level = request.level.name;
         tile.dataset.tileKey = request.key;
     }
 

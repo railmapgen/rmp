@@ -143,11 +143,15 @@ describe('MapTileController', () => {
         await vi.waitFor(() => expect(parseSpy).toHaveBeenCalled());
         controller.updateViewport(initialViewport);
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="7/107/52"]')).not.toBeNull());
+        const overviewTile = root.querySelector<SVGSVGElement>('[data-tile-key="7/107/52"]')!;
+        expect(overviewTile.classList.contains('rmp-map-tile')).toBe(true);
+        expect(overviewTile.dataset.level).toBe('overview');
         expect(root.querySelector('[data-map-attribution]')?.textContent).toContain('OpenStreetMap');
 
         controller.updateViewport({ ...initialViewport, zoom: MAP_ZOOMED_SWITCH_THRESHOLD });
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="7/107/52"]')).toBeNull());
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="13/6860/3347"]')).not.toBeNull());
+        expect(root.querySelector<SVGSVGElement>('[data-tile-key="13/6860/3347"]')!.dataset.level).toBe('zoomed');
         expect(loading).toEqual([true, true, false, true, false]);
         controller.dispose();
         expect((fetcherMock.mock.calls[0][1] as RequestInit).signal?.aborted).toBe(true);

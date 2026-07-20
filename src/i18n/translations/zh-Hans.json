@@ -1047,6 +1047,31 @@
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
     "map": {
         "loading": "正在加载地图",
-        "loadError": "无法加载地图底图。"
+        "loadError": "无法加载地图底图。",
+        "style": {
+            "title": "地图样式",
+            "reset": "恢复默认",
+            "type": "类型",
+            "widthScale": "宽度倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "描边",
+                "color": "路面",
+                "path": "小径",
+                "local": "支路",
+                "collector": "次干路",
+                "arterial": "主干路"
+            },
+            "rails": {
+                "title": "铁路",
+                "metro": "地铁",
+                "national": "国铁"
+            },
+            "labels": {
+                "title": "标签",
+                "enabled": "显示标签",
+                "sizeScale": "字号倍率"
+            }
+        }
     }
 }

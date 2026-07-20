@@ -1,9 +1,10 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { MiscNodeType } from '../../constants/nodes';
 import store from '../index';
-import appReducer, { MAX_UNDO_SIZE, redoAction, replaceGraph, saveGraph, undoAction } from './param-slice';
+import appReducer, { MAX_UNDO_SIZE, redoAction, replaceGraph, saveGraph, setMapStyle, undoAction } from './param-slice';
 
 const realStore = store.getState();
 const emptySerializedGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
@@ -105,5 +106,15 @@ describe('ParamSlice', () => {
             saveGraph(graph.export())
         );
         expect(nextState.past.length).toEqual(MAX_UNDO_SIZE);
+    });
+
+    it('stores map styles', () => {
+        const style = structuredClone(DEFAULT_MAP_STYLE);
+        style.roads.arterial.color = '#ABCDEF';
+        style.roads.arterial.widthScale = 2;
+
+        const nextState = appReducer(realStore.param, setMapStyle(style));
+
+        expect(nextState.mapStyle).toEqual(style);
     });
 });

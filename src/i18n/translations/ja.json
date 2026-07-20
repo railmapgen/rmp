@@ -1049,6 +1049,31 @@
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
     "map": {
         "loading": "地図を読み込み中",
-        "loadError": "地図の背景を読み込めません。"
+        "loadError": "地図の背景を読み込めません。",
+        "style": {
+            "title": "地図スタイル",
+            "reset": "初期設定に戻す",
+            "type": "種類",
+            "widthScale": "幅の倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "縁取り",
+                "color": "路面",
+                "path": "小道",
+                "local": "一般道",
+                "collector": "補助幹線道路",
+                "arterial": "幹線道路"
+            },
+            "rails": {
+                "title": "鉄道",
+                "metro": "地下鉄",
+                "national": "一般鉄道"
+            },
+            "labels": {
+                "title": "ラベル",
+                "enabled": "ラベルを表示",
+                "sizeScale": "文字サイズ倍率"
+            }
+        }
     }
 }
