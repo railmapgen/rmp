@@ -37,6 +37,7 @@ import {
 } from '../../../redux/app/app-slice';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
+import { getAvailableLinePathTypes } from '../../../util/line-path-availability';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -78,6 +79,7 @@ const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
+    const projectType = useRootSelector(state => state.param.type);
     const {
         preference: {
             toolsPanel: { expand: isToolsExpanded, showOnlyFavorites },
@@ -90,6 +92,7 @@ const ToolsPanel = () => {
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
+    const availableLinePathTypes = getAvailableLinePathTypes(projectType, activeSubscriptions.RMP_CLOUD);
 
     const handleThemeApplied = React.useCallback((theme: Theme) => {
         dispatch(setTheme(theme));
@@ -114,9 +117,10 @@ const ToolsPanel = () => {
     };
     const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
         const path = linePaths[pathType];
+        const pathAvailable = availableLinePathTypes.includes(pathType);
         const styleSupported = lineStyles[styleType].metadata.supportLinePathType.includes(pathType);
         const subscriptionOK = !path.isPro || activeSubscriptions.RMP_CLOUD;
-        return styleSupported && subscriptionOK;
+        return pathAvailable && styleSupported && subscriptionOK;
     };
     const handleLine = (pathType: LinePathType) => {
         let { style: currentStyle } = getLinePathAndStyle(mode);
@@ -236,47 +240,45 @@ const ToolsPanel = () => {
                                 </Text>
                             </Flex>
 
-                            {Object.values(LinePathType)
-                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                                .map(type => {
-                                    const isProLinePath = !!linePaths[type].isPro;
-                                    const isLinePathDisabled =
-                                        (!activeSubscriptions.RMP_CLOUD && isProLinePath) ||
-                                        (currentStyle ? !isPathCompatible(type, currentStyle) : false);
+                            {availableLinePathTypes.map(type => {
+                                const isProLinePath = !!linePaths[type].isPro;
+                                const isLinePathDisabled =
+                                    (!activeSubscriptions.RMP_CLOUD && isProLinePath) ||
+                                    (currentStyle ? !isPathCompatible(type, currentStyle) : false);
 
-                                    return (
-                                        <Flex key={type} w="100%" align="stretch">
-                                            <Box
-                                                w="4px"
-                                                bg={currentPath === type ? 'blue.500' : 'transparent'}
-                                                transition="background-color 0.2s"
-                                            />
-                                            <Button
-                                                aria-label={type}
-                                                leftIcon={linePaths[type].icon}
-                                                onClick={() => handleLine(type)}
-                                                variant="ghost"
-                                                isDisabled={isLinePathDisabled}
-                                                sx={buttonStyle}
-                                                flex={1}
-                                            >
-                                                {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                                {isTextShown && isProLinePath ? (
-                                                    <Tooltip label={t('header.settings.pro')}>
-                                                        <Badge
-                                                            ml="1"
-                                                            color="gray.50"
-                                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                            mr="auto"
-                                                        >
-                                                            PRO
-                                                        </Badge>
-                                                    </Tooltip>
-                                                ) : undefined}
-                                            </Button>
-                                        </Flex>
-                                    );
-                                })}
+                                return (
+                                    <Flex key={type} w="100%" align="stretch">
+                                        <Box
+                                            w="4px"
+                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                            transition="background-color 0.2s"
+                                        />
+                                        <Button
+                                            aria-label={type}
+                                            leftIcon={linePaths[type].icon}
+                                            onClick={() => handleLine(type)}
+                                            variant="ghost"
+                                            isDisabled={isLinePathDisabled}
+                                            sx={buttonStyle}
+                                            flex={1}
+                                        >
+                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                            {isTextShown && isProLinePath ? (
+                                                <Tooltip label={t('header.settings.pro')}>
+                                                    <Badge
+                                                        ml="1"
+                                                        color="gray.50"
+                                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                        mr="auto"
+                                                    >
+                                                        PRO
+                                                    </Badge>
+                                                </Tooltip>
+                                            ) : undefined}
+                                        </Button>
+                                    </Flex>
+                                );
+                            })}
 
                             <Flex w="100%" align="stretch">
                                 <Box
