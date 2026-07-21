@@ -599,6 +599,27 @@
                 "rayGuided": {
                     "displayName": "Arbitrary angle path"
                 },
+                "freeform": {
+                    "displayName": "Freeform path",
+                    "widthStops": "Width stops",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "Position (%)",
+                    "widthStopWidth": "Width (px)",
+                    "baseWidthHint": "5px is the baseline line width.",
+                    "smoothing": "Smoothing",
+                    "startCap": "Start cap",
+                    "endCap": "End cap",
+                    "round": "Round",
+                    "flat": "Flat",
+                    "arrow": "Arrow",
+                    "arrowLength": "Arrow length",
+                    "arrowWidth": "Arrow width"
+                },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along position",
+                    "normal": "Normal offset"
+                },
                 "singleColor": {
                     "displayName": "Single color style"
                 },

@@ -14,6 +14,7 @@ import {
     RoundedTurnPath,
     ShortOpenPath,
     makeComplexOpenPath,
+    makeCubicPath,
     makeLinearPath,
     makePoint,
     makeRoundedTurnPath,
@@ -37,6 +38,10 @@ const isLineOnlyOpenPath = (commands: OpenPathCommands): commands is readonly [M
 export const makeOpenPathFromCommands = (commands: OpenPathCommands): OpenPath => {
     if (commands.length === 2 && isLineTo(commands[1])) {
         return makeLinearPath(commands[0].to, commands[1].to);
+    }
+
+    if (commands.length === 2 && isCubicTo(commands[1])) {
+        return makeCubicPath(commands[0].to, commands[1].c1, commands[1].c2, commands[1].to);
     }
 
     if (isLineOnlyOpenPath(commands) && arePointsCollinear(commands.map(command => command.to))) {

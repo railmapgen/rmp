@@ -6,6 +6,8 @@ import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diag
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform';
+import type { BezierPathAttributes } from '../components/svgs/lines/paths/bezier';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { UnknownLineAttributes } from '../components/svgs/lines/styles/unknown';
@@ -41,7 +43,7 @@ import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
-import type { OpenPath, Path } from './path';
+import type { OpenPath, Path, PathPoint } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -49,6 +51,8 @@ export enum LinePathType {
     RotatePerpendicular = 'ro-perp',
     RayGuided = 'ray-guided',
     Simple = 'simple',
+    Freeform = 'freeform',
+    Bezier = 'bezier',
 }
 
 export interface ExternalLinePathAttributes {
@@ -57,6 +61,8 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
     [LinePathType.RayGuided]?: RayGuidedPathAttributes;
+    [LinePathType.Freeform]?: FreeformPathAttributes;
+    [LinePathType.Bezier]?: BezierPathAttributes;
 }
 
 export enum LineStyleType {
@@ -168,6 +174,7 @@ export interface LineStyleComponentProps<
      */
     type: LinePathType;
     path: OpenPath;
+    areaPathD?: string;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -220,6 +227,23 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
 }
 
 export interface LinePathAttributes {}
+
+export interface LinePathOverlayProps {
+    id: LineId;
+    svgViewBoxZoom: number;
+    svgViewBoxMin: PathPoint;
+}
+
+export interface LinePathDrawingSession<T extends LinePathAttributes> {
+    pointerMove: (pointer: PathPoint) => void;
+    createAttrs: (target: PathPoint, pointer: PathPoint) => T | undefined;
+    getPreview: (pointer: PathPoint) => React.JSX.Element | null;
+}
+
+export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
+    createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
+}
+
 /**
  * The type a line path should export.
  */
@@ -237,6 +261,14 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * Will be displayed in the details panel.
      */
     attrsComponent: React.FC<LinePathAttrsProps<T>>;
+    /**
+     * An optional interactive overlay displayed when a line using this path is selected.
+     */
+    overlayComponent?: React.FC<LinePathOverlayProps>;
+    /**
+     * Optional path-specific behavior for drawing gestures. The canvas uses the default endpoint behavior otherwise.
+     */
+    drawingBehavior?: LinePathDrawingBehavior<T>;
     /**
      * Metadata for this line path.
      */

@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { LinePathType } from '../constants/lines';
 import { Path } from '../constants/path';
 import { Element, LineRenderElement, getLines } from './process-elements';
 import { getBaseReconciledLineID } from './reconcile';
@@ -59,15 +60,15 @@ const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
  * Necessary for complex line styles where a single logical line may consist of multiple
  * visual path elements that need to stay in sync during real-time interaction.
  */
-const updatePathDRecursive = (id: string, pathD: Path) => {
+const updatePathDRecursive = (id: string, path: Path | string) => {
     const root = document.getElementById(id);
-    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
-        updatePathD(path, pathD);
+    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(pathElement => {
+        updatePathD(pathElement, path);
     });
 };
 
-const updatePathD = (elem: SVGPathElement, pathD: Path) => {
-    elem.setAttribute('d', pathD.d);
+const updatePathD = (elem: SVGPathElement, path: Path | string) => {
+    elem.setAttribute('d', typeof path === 'string' ? path : path.d);
 };
 
 const isLineElement = (element: Element): element is LineElement => element.type === 'line' && !!element.line;
@@ -104,6 +105,13 @@ export const moveNodesAndRedrawLines = (
         .forEach(element => {
             const { id, line } = element;
             const style = line.attr.style;
+            if (line.attr.type === LinePathType.Freeform && line.areaPathD) {
+                updatePathDRecursive(`${id}.pre`, line.areaPathD);
+                updatePathDRecursive(id, line.areaPathD);
+                updatePathDRecursive(`${id}.post`, line.areaPathD);
+                return;
+            }
+
             if (lineStyles[style].pathGenerator) {
                 const path = lineStyles[style].pathGenerator!(
                     line.path,

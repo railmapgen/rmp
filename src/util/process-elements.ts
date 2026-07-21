@@ -5,6 +5,7 @@ import { EdgeAttributes, GraphAttributes, Id, LineId, MiscNodeId, NodeAttributes
 import { ExternalLinePathAttributes, LinePathType, LineStyleType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './auto-simple';
+import { generateFreeformAreaPathD } from './freeform-line';
 import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths, supportsParallelLinePath } from './parallel';
 import { makeReconciledPath, reconcileLines } from './reconcile';
 
@@ -32,6 +33,7 @@ export const getNodes = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
 export interface LineRenderElement {
     attr: EdgeAttributes;
     path: OpenPath;
+    areaPathD?: string;
 }
 
 type NonNullableExternalLinePathAttribute = NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>;
@@ -64,6 +66,10 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         let simplePathAvailability = cachedSimplePathAvailability[lineEntry.edge as LineId];
 
         const { parallelIndex, type } = lineEntry.attributes;
+        if (type === LinePathType.Freeform) {
+            normalLines.push(lineEntry);
+            continue;
+        }
         if (parallelIndex >= 0 && supportsParallelLinePath(type)) {
             // only find the base parallel line and see if it is a simple path
             const baseLineId = getBaseParallelLineID(graph, type, lineEntry.edge as LineId);
@@ -203,6 +209,10 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             line: {
                 attr,
                 path: linePaths[type].generatePath(x1, x2, y1, y2, attr[type] as any),
+                areaPathD:
+                    type === LinePathType.Freeform
+                        ? generateFreeformAreaPathD(attr[type] as any, makePoint(x2 - x1, y2 - y1), makePoint(x1, y1))
+                        : undefined,
             },
         });
     }
