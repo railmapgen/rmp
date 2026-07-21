@@ -15,7 +15,7 @@ import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
-import { redoAction, undoAction } from '../param/param-slice';
+import { redoAction, replaceGraph, undoAction } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -339,6 +339,11 @@ const runtimeSlice = createSlice({
             .addCase(redoAction, state => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+            })
+            .addCase(replaceGraph, state => {
+                state.mode = 'free';
+                state.lastTool = undefined;
+                state.isDetailsOpen = getIsDetailsOpen(state);
             });
     },
 });
