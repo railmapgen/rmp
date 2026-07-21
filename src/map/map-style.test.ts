@@ -4,7 +4,9 @@ import { compileMapStyleCss, DEFAULT_MAP_STYLE } from './map-style';
 describe('map style', () => {
     it('compiles scoped level-aware SVG rules', () => {
         const style = structuredClone(DEFAULT_MAP_STYLE);
+        style.roads.local.enabled = false;
         style.roads.arterial.widthScale = 2;
+        style.rails.metro.enabled = false;
         style.rails.national.color = '#112233';
         style.rails.national.widthScale = 2;
         style.labels.enabled = false;
@@ -13,7 +15,10 @@ describe('map style', () => {
         const css = compileMapStyleCss(style);
 
         expect(css).toContain('[data-map-layer] .rmp-map-tile[data-level="overview"] .road-arterial.detail');
+        expect(css).toContain('.road-local { display: none; }');
+        expect(css).toContain('.road-area { display: none; }');
         expect(css).toContain('stroke-width: 1.6');
+        expect(css).toContain('.rail-metro { display: none; }');
         expect(css).toContain('.rail-national.casing { stroke: #112233; }');
         expect(css).toContain('[data-level="overview"] .rail-national.detail { stroke-width: 0.8; }');
         expect(css).toContain('.labels { display: none; }');

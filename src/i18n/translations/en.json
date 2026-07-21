@@ -1074,6 +1074,7 @@
             "title": "Map style",
             "reset": "Reset",
             "type": "Type",
+            "enabled": "Show",
             "widthScale": "Width scale",
             "roads": {
                 "title": "Roads",

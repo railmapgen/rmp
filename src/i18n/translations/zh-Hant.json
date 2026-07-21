@@ -1073,6 +1073,7 @@
             "title": "地圖樣式",
             "reset": "恢復預設",
             "type": "類型",
+            "enabled": "顯示",
             "widthScale": "寬度倍率",
             "roads": {
                 "title": "道路",

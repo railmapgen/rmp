@@ -1073,6 +1073,7 @@
             "title": "지도 스타일",
             "reset": "기본값 복원",
             "type": "유형",
+            "enabled": "표시",
             "widthScale": "너비 배율",
             "roads": {
                 "title": "도로",

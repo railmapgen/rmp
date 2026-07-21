@@ -1,14 +1,12 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
-import { fireEvent, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
 import { render } from '../../test-utils';
 import { MapStyleSection } from './map-style-section';
 
 describe('MapStyleSection', () => {
-    afterEach(() => vi.unstubAllGlobals());
-
-    it('keeps slider changes local until the interaction ends', () => {
+    beforeEach(() => {
         vi.stubGlobal(
             'matchMedia',
             vi.fn().mockReturnValue({
@@ -22,6 +20,11 @@ describe('MapStyleSection', () => {
                 dispatchEvent: vi.fn(),
             })
         );
+    });
+
+    afterEach(() => vi.unstubAllGlobals());
+
+    const renderSection = () => {
         const store = createStore();
         render(
             <RmgThemeProvider>
@@ -29,6 +32,11 @@ describe('MapStyleSection', () => {
             </RmgThemeProvider>,
             { store }
         );
+        return store;
+    };
+
+    it('keeps slider changes local until the interaction ends', () => {
+        const store = renderSection();
 
         const slider = screen.getAllByRole('slider')[0];
         const sliderRoot = slider.parentElement;
@@ -42,5 +50,39 @@ describe('MapStyleSection', () => {
         fireEvent.pointerUp(window);
 
         expect(store.getState().param.mapStyle.roads.path.widthScale).toBe(0.25);
+    });
+
+    it('places each visibility switch on the same row as its controls', () => {
+        renderSection();
+
+        const pathRowElement = screen.getByTestId('map-style-road-path');
+        const pathRow = within(pathRowElement);
+        expect(pathRow.getByRole('checkbox', { name: 'Path Show' })).toBeInTheDocument();
+        expect(pathRow.getByRole('button', { name: 'Color' })).toBeInTheDocument();
+        expect(pathRow.getByRole('slider')).toBeInTheDocument();
+        expect(pathRow.getByRole('checkbox').closest('td')).toBe(pathRowElement.lastElementChild);
+
+        const metroRowElement = screen.getByTestId('map-style-rail-metro');
+        const metroRow = within(metroRowElement);
+        expect(metroRow.getByRole('checkbox', { name: 'Metro Show' })).toBeInTheDocument();
+        expect(metroRow.getByRole('button', { name: 'Color' })).toBeInTheDocument();
+        expect(metroRow.getByRole('slider')).toBeInTheDocument();
+        expect(metroRow.getByRole('checkbox').closest('td')).toBe(metroRowElement.lastElementChild);
+        expect(metroRowElement.closest('table')).toBeInTheDocument();
+
+        const labelsRow = within(screen.getByTestId('map-style-labels'));
+        expect(labelsRow.getByRole('checkbox', { name: 'Show labels' })).toBeInTheDocument();
+        expect(labelsRow.getByRole('slider')).toBeInTheDocument();
+    });
+
+    it('hides a map category and disables its controls', () => {
+        const store = renderSection();
+        const pathRow = within(screen.getByTestId('map-style-road-path'));
+
+        fireEvent.click(pathRow.getByRole('checkbox', { name: 'Path Show' }));
+
+        expect(store.getState().param.mapStyle.roads.path.enabled).toBe(false);
+        expect(pathRow.getByRole('button', { name: 'Color' })).toBeDisabled();
+        expect(pathRow.getByRole('slider')).toHaveAttribute('aria-disabled', 'true');
     });
 });

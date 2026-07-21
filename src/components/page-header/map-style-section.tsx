@@ -28,7 +28,7 @@ import ThemeButton from '../panels/theme-button';
 const roadKinds: MapRoadKind[] = ['path', 'local', 'collector', 'arterial'];
 const railKinds: MapRailKind[] = ['metro', 'national'];
 
-const PaletteColorInput = (props: { value: string; onChange: (value: string) => void }) => {
+const PaletteColorInput = (props: { value: string; isDisabled?: boolean; onChange: (value: string) => void }) => {
     const paletteTheme = React.useMemo<Theme>(
         () => [CityCode.Other, 'other', props.value as Theme[2], getContrastingColor(props.value as `#${string}`)],
         [props.value]
@@ -38,10 +38,15 @@ const PaletteColorInput = (props: { value: string; onChange: (value: string) => 
         onThemeApplied: nextTheme => props.onChange(nextTheme[2]),
     });
 
-    return <ThemeButton theme={theme} onClick={requestThemeChange} />;
+    return <ThemeButton theme={theme} onClick={requestThemeChange} size="sm" isDisabled={props.isDisabled} />;
 };
 
-const ScaleSlider = (props: { value: number; label: string; onChange: (value: number) => void }) => {
+const ScaleSlider = (props: {
+    value: number;
+    label: string;
+    isDisabled?: boolean;
+    onChange: (value: number) => void;
+}) => {
     const [draftValue, setDraftValue] = React.useState(props.value);
 
     React.useEffect(() => setDraftValue(props.value), [props.value]);
@@ -55,6 +60,7 @@ const ScaleSlider = (props: { value: number; label: string; onChange: (value: nu
                     min={0.25}
                     max={4}
                     step={0.05}
+                    isDisabled={props.isDisabled}
                     onChange={setDraftValue}
                     onChangeEnd={props.onChange}
                 />
@@ -65,6 +71,44 @@ const ScaleSlider = (props: { value: number; label: string; onChange: (value: nu
         </HStack>
     );
 };
+
+const ScaleAndSwitchHeader = (props: { scaleLabel: string; enabledLabel: string }) => (
+    <HStack justify="flex-end" spacing="3">
+        <Text width="160px" textAlign="center">
+            {props.scaleLabel}
+        </Text>
+        <Text width="40px" textAlign="right">
+            {props.enabledLabel}
+        </Text>
+    </HStack>
+);
+
+const ScaleAndSwitch = (props: {
+    value: number;
+    scaleLabel: string;
+    switchLabel: string;
+    isChecked: boolean;
+    onScaleChange: (value: number) => void;
+    onEnabledChange: (enabled: boolean) => void;
+}) => (
+    <HStack justify="flex-end" spacing="3">
+        <Box opacity={props.isChecked ? 1 : 0.5}>
+            <ScaleSlider
+                label={props.scaleLabel}
+                value={props.value}
+                isDisabled={!props.isChecked}
+                onChange={props.onScaleChange}
+            />
+        </Box>
+        <Box width="40px" minWidth="40px" display="flex" justifyContent="flex-end">
+            <Switch
+                aria-label={props.switchLabel}
+                isChecked={props.isChecked}
+                onChange={({ target: { checked } }) => props.onEnabledChange(checked)}
+            />
+        </Box>
+    </HStack>
+);
 
 export const MapStyleSection = () => {
     const { t } = useTranslation();
@@ -119,34 +163,46 @@ export const MapStyleSection = () => {
                         <Th px="1">{t('map.style.type')}</Th>
                         <Th px="1">{t('map.style.roads.casingColor')}</Th>
                         <Th px="1">{t('map.style.roads.color')}</Th>
-                        <Th px="1">{t('map.style.widthScale')}</Th>
+                        <Th px="1">
+                            <ScaleAndSwitchHeader
+                                scaleLabel={t('map.style.widthScale')}
+                                enabledLabel={t('map.style.enabled')}
+                            />
+                        </Th>
                     </Tr>
                 </Thead>
                 <Tbody>
                     {roadKinds.map(kind => (
-                        <Tr key={kind}>
-                            <Td px="1">{t(`map.style.roads.${kind}`)}</Td>
+                        <Tr key={kind} data-testid={`map-style-road-${kind}`}>
                             <Td px="1">
+                                <Text>{t(`map.style.roads.${kind}`)}</Text>
+                            </Td>
+                            <Td px="1" opacity={mapStyle.roads[kind].enabled ? 1 : 0.5}>
                                 {kind === 'path' ? (
                                     <Text color="gray.500">—</Text>
                                 ) : (
                                     <PaletteColorInput
                                         value={mapStyle.roads[kind].casingColor}
+                                        isDisabled={!mapStyle.roads[kind].enabled}
                                         onChange={casingColor => updateRoad(kind, { casingColor })}
                                     />
                                 )}
                             </Td>
-                            <Td px="1">
+                            <Td px="1" opacity={mapStyle.roads[kind].enabled ? 1 : 0.5}>
                                 <PaletteColorInput
                                     value={mapStyle.roads[kind].color}
+                                    isDisabled={!mapStyle.roads[kind].enabled}
                                     onChange={color => updateRoad(kind, { color })}
                                 />
                             </Td>
                             <Td px="1">
-                                <ScaleSlider
-                                    label={t('map.style.widthScale')}
+                                <ScaleAndSwitch
+                                    scaleLabel={t('map.style.widthScale')}
+                                    switchLabel={`${t(`map.style.roads.${kind}`)} ${t('map.style.enabled')}`}
                                     value={mapStyle.roads[kind].widthScale}
-                                    onChange={widthScale => updateRoad(kind, { widthScale })}
+                                    isChecked={mapStyle.roads[kind].enabled}
+                                    onScaleChange={widthScale => updateRoad(kind, { widthScale })}
+                                    onEnabledChange={enabled => updateRoad(kind, { enabled })}
                                 />
                             </Td>
                         </Tr>
@@ -157,42 +213,60 @@ export const MapStyleSection = () => {
             <Text as="b" display="block" mt="4" mb="1">
                 {t('map.style.rails.title')}
             </Text>
-            <VStack align="stretch" spacing="1">
-                {railKinds.map(kind => (
-                    <HStack key={kind}>
-                        <Text flex="1">{t(`map.style.rails.${kind}`)}</Text>
-                        <PaletteColorInput
-                            value={mapStyle.rails[kind].color}
-                            onChange={color => updateRail(kind, { color })}
-                        />
-                        <ScaleSlider
-                            label={t('map.style.widthScale')}
-                            value={mapStyle.rails[kind].widthScale}
-                            onChange={widthScale => updateRail(kind, { widthScale })}
-                        />
-                    </HStack>
-                ))}
-            </VStack>
+            <Table size="sm">
+                <Thead>
+                    <Tr>
+                        <Th px="1">{t('map.style.type')}</Th>
+                        <Th px="1">{t('map.style.roads.color')}</Th>
+                        <Th px="1">
+                            <ScaleAndSwitchHeader
+                                scaleLabel={t('map.style.widthScale')}
+                                enabledLabel={t('map.style.enabled')}
+                            />
+                        </Th>
+                    </Tr>
+                </Thead>
+                <Tbody>
+                    {railKinds.map(kind => (
+                        <Tr key={kind} data-testid={`map-style-rail-${kind}`}>
+                            <Td px="1">{t(`map.style.rails.${kind}`)}</Td>
+                            <Td px="1" opacity={mapStyle.rails[kind].enabled ? 1 : 0.5}>
+                                <PaletteColorInput
+                                    value={mapStyle.rails[kind].color}
+                                    isDisabled={!mapStyle.rails[kind].enabled}
+                                    onChange={color => updateRail(kind, { color })}
+                                />
+                            </Td>
+                            <Td px="1">
+                                <ScaleAndSwitch
+                                    scaleLabel={t('map.style.widthScale')}
+                                    switchLabel={`${t(`map.style.rails.${kind}`)} ${t('map.style.enabled')}`}
+                                    value={mapStyle.rails[kind].widthScale}
+                                    isChecked={mapStyle.rails[kind].enabled}
+                                    onScaleChange={widthScale => updateRail(kind, { widthScale })}
+                                    onEnabledChange={enabled => updateRail(kind, { enabled })}
+                                />
+                            </Td>
+                        </Tr>
+                    ))}
+                </Tbody>
+            </Table>
 
             <Text as="b" display="block" mt="4" mb="1">
                 {t('map.style.labels.title')}
             </Text>
             <VStack align="stretch" spacing="1">
-                <HStack>
-                    <Text flex="1">{t('map.style.labels.enabled')}</Text>
-                    <Switch
-                        isChecked={mapStyle.labels.enabled}
-                        onChange={({ target: { checked } }) =>
-                            saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, enabled: checked } })
-                        }
-                    />
-                </HStack>
-                <HStack>
+                <HStack data-testid="map-style-labels">
                     <Text flex="1">{t('map.style.labels.sizeScale')}</Text>
-                    <ScaleSlider
-                        label={t('map.style.labels.sizeScale')}
+                    <ScaleAndSwitch
+                        scaleLabel={t('map.style.labels.sizeScale')}
+                        switchLabel={t('map.style.labels.enabled')}
                         value={mapStyle.labels.sizeScale}
-                        onChange={sizeScale => saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, sizeScale } })}
+                        isChecked={mapStyle.labels.enabled}
+                        onScaleChange={sizeScale =>
+                            saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, sizeScale } })
+                        }
+                        onEnabledChange={enabled => saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, enabled } })}
                     />
                 </HStack>
             </VStack>

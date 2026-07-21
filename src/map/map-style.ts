@@ -2,14 +2,21 @@ export type MapRoadKind = 'path' | 'local' | 'collector' | 'arterial';
 export type MapRailKind = 'metro' | 'national';
 
 export interface MapRoadStyle {
+    enabled: boolean;
     casingColor: string;
+    color: string;
+    widthScale: number;
+}
+
+export interface MapRailStyle {
+    enabled: boolean;
     color: string;
     widthScale: number;
 }
 
 export interface MapStyle {
     roads: Record<MapRoadKind, MapRoadStyle>;
-    rails: Record<MapRailKind, { color: string; widthScale: number }>;
+    rails: Record<MapRailKind, MapRailStyle>;
     labels: {
         enabled: boolean;
         sizeScale: number;
@@ -18,14 +25,14 @@ export interface MapStyle {
 
 export const DEFAULT_MAP_STYLE: MapStyle = {
     roads: {
-        path: { casingColor: '#dedbd4', color: '#dedbd4', widthScale: 1 },
-        local: { casingColor: '#cfd39c', color: '#fbf8d0', widthScale: 1 },
-        collector: { casingColor: '#c8cf86', color: '#f7fabf', widthScale: 1 },
-        arterial: { casingColor: '#d8ab62', color: '#f6d19b', widthScale: 1 },
+        path: { enabled: true, casingColor: '#dedbd4', color: '#dedbd4', widthScale: 1 },
+        local: { enabled: true, casingColor: '#cfd39c', color: '#fbf8d0', widthScale: 1 },
+        collector: { enabled: true, casingColor: '#c8cf86', color: '#f7fabf', widthScale: 1 },
+        arterial: { enabled: true, casingColor: '#d8ab62', color: '#f6d19b', widthScale: 1 },
     },
     rails: {
-        metro: { color: '#4d8fd1', widthScale: 1 },
-        national: { color: '#8f8a83', widthScale: 1 },
+        metro: { enabled: true, color: '#4d8fd1', widthScale: 1 },
+        national: { enabled: true, color: '#8f8a83', widthScale: 1 },
     },
     labels: {
         enabled: true,
@@ -44,9 +51,15 @@ const scaled = (base: number, scale: number) => formatNumber(base * scale);
  */
 export const compileMapStyleCss = (style: MapStyle) => {
     const { path, local, collector, arterial } = style.roads;
+    const display = (enabled: boolean) => (enabled ? 'inline' : 'none');
     const labelDisplay = style.labels.enabled ? 'inline' : 'none';
 
     return `
+[data-map-layer] .rmp-map-tile .road-path { display: ${display(path.enabled)}; }
+[data-map-layer] .rmp-map-tile .road-local { display: ${display(local.enabled)}; }
+[data-map-layer] .rmp-map-tile .road-collector { display: ${display(collector.enabled)}; }
+[data-map-layer] .rmp-map-tile .road-arterial { display: ${display(arterial.enabled)}; }
+[data-map-layer] .rmp-map-tile .road-area { display: ${display(local.enabled)}; }
 [data-map-layer] .rmp-map-tile .road-path.detail { stroke: ${path.color}; }
 [data-map-layer] .rmp-map-tile .road-local.casing { stroke: ${local.casingColor}; }
 [data-map-layer] .rmp-map-tile .road-local.detail { stroke: ${local.color}; }
@@ -66,6 +79,8 @@ export const compileMapStyleCss = (style: MapStyle) => {
 [data-map-layer] .rmp-map-tile[data-level="overview"] .road-arterial.casing { stroke-width: ${scaled(1.4, arterial.widthScale)}; }
 [data-map-layer] .rmp-map-tile[data-level="overview"] .road-arterial.detail { stroke-width: ${scaled(0.8, arterial.widthScale)}; }
 
+[data-map-layer] .rmp-map-tile .rail-metro { display: ${display(style.rails.metro.enabled)}; }
+[data-map-layer] .rmp-map-tile .rail-national { display: ${display(style.rails.national.enabled)}; }
 [data-map-layer] .rmp-map-tile .rail-metro.casing { stroke: ${style.rails.metro.color}; }
 [data-map-layer] .rmp-map-tile .rail-national.casing { stroke: ${style.rails.national.color}; }
 [data-map-layer] .rmp-map-tile[data-level="zoomed"] .rail-metro.casing { stroke-width: ${scaled(1.2, style.rails.metro.widthScale)}; }
