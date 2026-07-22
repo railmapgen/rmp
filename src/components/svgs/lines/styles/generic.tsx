@@ -329,6 +329,7 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

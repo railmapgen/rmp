@@ -1,22 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { LinePathType, LineStyleType } from '../../../../constants/lines';
+import { LinePathType } from '../../../../constants/lines';
 import { supportsParallelLinePath } from '../../../../util/parallel';
 import { getBezierControlPoint, getBezierLocalCoordinates } from '../../../../util/bezier-line';
 import { linePaths, lineStyles } from '../lines';
 import { defaultBezierPathAttributes, generateBezierPath } from './bezier';
 
 describe('bezier line path', () => {
-    it('registers its overlay and is supported only by single-color', () => {
+    it('registers its overlay and is supported by every line style', () => {
         expect(linePaths[LinePathType.Bezier]).toBeDefined();
         expect(linePaths[LinePathType.Bezier].overlayComponent).toBeDefined();
         expect(linePaths[LinePathType.Bezier].drawingBehavior).toBeUndefined();
-        expect(lineStyles[LineStyleType.SingleColor].metadata.supportLinePathType).toContain(LinePathType.Bezier);
 
-        Object.entries(lineStyles)
-            .filter(([style]) => style !== LineStyleType.SingleColor)
-            .forEach(([, lineStyle]) =>
-                expect(lineStyle.metadata.supportLinePathType).not.toContain(LinePathType.Bezier)
-            );
+        Object.values(lineStyles).forEach(lineStyle =>
+            expect(lineStyle.metadata.supportLinePathType).toContain(LinePathType.Bezier)
+        );
     });
 
     it('builds one cubic segment through the tangent intersection model', () => {

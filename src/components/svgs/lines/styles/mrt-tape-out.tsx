@@ -185,7 +185,7 @@ const mrtTapeOut: LineStyle<MRTTapeOutAttributes> = {
     pathGenerator: mrtTapeOutPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.mrtTapeOut.displayName',
-        supportLinePathType: [LinePathType.Simple],
+        supportLinePathType: [LinePathType.Simple, LinePathType.Bezier],
         supportsReconcile: true,
     },
 };

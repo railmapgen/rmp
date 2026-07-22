@@ -75,6 +75,7 @@ const river: LineStyle<RiverAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

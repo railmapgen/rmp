@@ -50,6 +50,7 @@ const londonTube10MinWalk: LineStyle<LondonTube10MinWalkAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },
