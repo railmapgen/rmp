@@ -1,27 +1,21 @@
 import React from 'react';
-import { Id, LineId } from '../constants/constants';
+import { LineId } from '../constants/constants';
 import { LinePathOverlayProps, LinePathType } from '../constants/lines';
-import { PathPoint } from '../constants/path';
+import { useRootSelector } from '../redux';
 import { linePaths } from './svgs/lines/lines';
 
-interface LinePathOverlayLayerProps {
-    /** Current canvas selection; overlays are intentionally limited to one selected edge. */
-    selected: Set<Id>;
-    /** Current zoom used by path editors to keep controls at a stable on-screen size. */
-    svgViewBoxZoom: number;
-    /** Current viewport origin used when converting pointer positions to SVG coordinates. */
-    svgViewBoxMin: PathPoint;
-}
-
 /**
- * Mounts the editor overlay registered by the selected edge's path type.
+ * Renders the path-specific editing UI for the currently selected line above the regular graph layers.
  *
- * Path geometry has different handles and interaction rules, so this layer only resolves the appropriate component;
- * it deliberately leaves path-specific graph mutations and event handling to that component. Multiple selections do
- * not have one unambiguous local editing context and therefore do not render an overlay.
+ * Some line paths need temporary visuals such as control points, guides, or enlarged interaction targets. Those
+ * visuals belong to the editor rather than the exported map and vary with the path's geometry, so each path type may
+ * register its own overlay while this component provides their common mounting point. An overlay is shown only for a
+ * single selected edge because path editing requires one unambiguous geometry to operate on.
  */
-export const LinePathOverlayLayer = (props: LinePathOverlayLayerProps) => {
-    const { selected, svgViewBoxZoom, svgViewBoxMin } = props;
+export const LinePathOverlayLayer = () => {
+    const selected = useRootSelector(state => state.runtime.selected);
+    const svgViewBoxZoom = useRootSelector(state => state.param.svgViewBoxZoom);
+    const svgViewBoxMin = useRootSelector(state => state.param.svgViewBoxMin);
     if (selected.size !== 1) return null;
 
     const [selectedId] = selected;

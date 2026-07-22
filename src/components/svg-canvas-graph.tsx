@@ -619,7 +619,7 @@ const SvgCanvas = () => {
                         handlePointerDown={() => {}} // no use
                     />
                 ))}
-            <LinePathOverlayLayer selected={selected} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+            <LinePathOverlayLayer />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path
