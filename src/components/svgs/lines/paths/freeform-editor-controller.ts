@@ -89,6 +89,7 @@ export class FreeformLineEditorController {
     }
 
     getHandleSize(): FreeformHandleSize {
+        // Handles live in SVG coordinates but should remain a stable physical size as the canvas zoom changes.
         const screenToSvgScale = this.svgViewBoxZoom / 100;
         return {
             hitStrokeWidth: 16 * screenToSvgScale,
@@ -169,6 +170,7 @@ export class FreeformLineEditorController {
             : undefined;
         if (!editable || !geometry) return false;
 
+        // A width stop expands symmetrically around the centerline, so one side-handle distance is half the width.
         return this.updateAttrs(edgeId, attrs =>
             resizeFreeformWidthStop(
                 attrs,

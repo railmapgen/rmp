@@ -32,6 +32,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
     const selectedFreeform = controller.getFreeformEditableById(id);
     const handleSize = controller.getHandleSize();
 
+    // Drag frames only refresh the rendered graph. Saving once at gesture end keeps one drag as one undo step.
     const refreshEdges = useEvent((save = false) => {
         if (save) dispatch(saveGraph(graph.current.export()));
         dispatch(refreshEdgesThunk());
@@ -166,6 +167,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
     });
 
     React.useEffect(() => {
+        // Capture the key before the canvas can interpret Delete as removing the selected edge as a whole.
         const handleNativeKeyDown = (event: KeyboardEvent) => {
             if (event.key !== 'Delete' && event.key !== 'Backspace') return;
             const target = event.target as HTMLElement | null;

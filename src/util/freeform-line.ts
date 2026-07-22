@@ -4,34 +4,76 @@ import { makeOpenPathFromCommands } from './path';
 export type FreeformStartCap = 'round' | 'flat';
 export type FreeformEndCap = 'round' | 'flat' | 'arrow';
 
+/**
+ * A control point in the source node's local coordinate system.
+ *
+ * The first and last points are connection anchors rather than freely editable handles. Normalisation pins them to
+ * `(0, 0)` and the current target position so moving either connected node cannot detach the stored shape.
+ */
 export interface FreeformPoint {
+    /** Stable identity used to preserve handle selection when points are inserted or removed. */
     id: string;
+    /** Horizontal offset from the source node, in SVG user units. */
     x: number;
+    /** Vertical offset from the source node, in SVG user units. */
     y: number;
 }
 
+/**
+ * A width sample positioned by normalised distance along the smoothed centerline.
+ *
+ * Using arc length instead of a control-point index keeps width transitions attached to the visible curve even when
+ * control points are unevenly spaced.
+ */
 export interface FreeformWidthStop {
+    /** Stable identity used by the overlay while stops are reordered by position. */
     id: string;
+    /** Position from source (`0`) to target (`1`); values are clamped and sorted during normalisation. */
     t: number;
+    /** Full outline width across the centerline, in SVG user units. */
     width: number;
 }
 
+/**
+ * Persisted path-specific state for a freeform edge.
+ *
+ * Consumers should normalise this value before generating geometry because node moves and imported saves can leave
+ * endpoints or optional values out of date.
+ */
 export interface FreeformPathAttributes {
+    /** Schema version for future changes to the persisted freeform representation. */
     version: 1;
+    /** Source-relative control points, including the two node-owned endpoints. */
     points: FreeformPoint[];
+    /** Width samples interpolated by arc length along the generated centerline. */
     widthStops: FreeformWidthStop[];
+    /** Blend from the straight control polygon (`0`) to the Catmull-Rom curve (`1`). */
     smoothing: number;
+    /** Shape used to close the outline at the source node. */
     startCap: FreeformStartCap;
+    /** Shape used to close the outline at the target node. */
     endCap: FreeformEndCap;
+    /** Arrowhead dimensions, used only when `endCap` is `arrow`. */
     arrow?: {
+        /** Distance reserved from the end of the centerline for the arrowhead. */
         length: number;
+        /** Full width of the arrowhead at its base. */
         width: number;
     };
 }
 
+/**
+ * Controls how a raw pointer stream is reduced into persisted freeform geometry.
+ *
+ * Preview and commit use different values: previews favour immediate visual fidelity, while committed paths favour a
+ * smaller representation that stays responsive during later editing.
+ */
 interface FreeformCreateOptions {
+    /** Minimum distance between retained pointer samples, in SVG user units. */
     minPointDistance?: number;
+    /** Ramer-Douglas-Peucker tolerance applied after distance filtering, in SVG user units. */
     simplifyTolerance?: number;
+    /** Constant width assigned when the newly drawn path has no explicit width stops. */
     defaultWidth?: number;
 }
 

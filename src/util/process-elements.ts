@@ -67,6 +67,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
 
         const { parallelIndex, type } = lineEntry.attributes;
         if (type === LinePathType.Freeform) {
+            // Freeform is authored geometry; endpoint-derived parallel/simple reconciliation would replace its shape.
             normalLines.push(lineEntry);
             continue;
         }

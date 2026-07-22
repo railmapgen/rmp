@@ -106,6 +106,7 @@ export const moveNodesAndRedrawLines = (
             const { id, line } = element;
             const style = line.attr.style;
             if (line.attr.type === LinePathType.Freeform && line.areaPathD) {
+                // Freeform renders its filled outline, not the centerline consumed by regular style generators.
                 updatePathDRecursive(`${id}.pre`, line.areaPathD);
                 updatePathDRecursive(id, line.areaPathD);
                 updatePathDRecursive(`${id}.post`, line.areaPathD);

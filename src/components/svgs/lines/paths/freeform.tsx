@@ -24,6 +24,8 @@ export interface FreeformPathAttributes extends LinePathAttributes, BaseFreeform
 
 const freeformDrawingBehavior: LinePathDrawingBehavior<FreeformPathAttributes> = {
     createSession: (source, initialPointer) => {
+        // Keep raw samples in the gesture session rather than React state: dropping pointer events between renders
+        // changes the shape the user actually drew.
         const points = [source, initialPointer];
 
         return {
@@ -42,6 +44,8 @@ const freeformDrawingBehavior: LinePathDrawingBehavior<FreeformPathAttributes> =
                     pointer,
                     () => `preview_${id++}`,
                     {
+                        // The preview follows the pointer more closely; the committed path is simplified further
+                        // to keep persisted data and later editing work bounded.
                         minPointDistance: 1,
                         simplifyTolerance: 0.5,
                     }
