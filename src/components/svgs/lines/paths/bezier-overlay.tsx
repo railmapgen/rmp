@@ -3,7 +3,7 @@ import useEvent from 'react-use-event-hook';
 import { LineId } from '../../../../constants/constants';
 import { LinePathOverlayProps, LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
-import { useRootDispatch } from '../../../../redux';
+import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import {
@@ -11,6 +11,7 @@ import {
     getBezierControlPoint,
     getBezierLocalCoordinates,
 } from '../../../../util/bezier-line';
+import { getBezierTangentCandidates, getSnappedBezierControlPoint } from '../../../../util/bezier-snap';
 import { pointerPosToSVGCoord } from '../../../../util/helpers';
 import type { BezierPathAttributes } from '../../../svgs/lines/paths/bezier';
 
@@ -37,6 +38,7 @@ const getBezierEditable = (id: LineId): BezierEditable | undefined => {
 
 export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
     const dispatch = useRootDispatch();
+    const snapLines = useRootSelector(state => state.app.preference.snapLines);
     const [dragging, setDragging] = React.useState(false);
     const editable = getBezierEditable(id);
 
@@ -67,7 +69,11 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         if (!current || !pointer) return;
 
         event.stopPropagation();
-        const attrs = getBezierLocalCoordinates(current.source, current.target, pointer);
+        const snapDistance = 6 * (svgViewBoxZoom / 100);
+        const snapped = snapLines
+            ? getSnappedBezierControlPoint(pointer, getBezierTangentCandidates(window.graph, id), snapDistance)
+            : undefined;
+        const attrs = getBezierLocalCoordinates(current.source, current.target, snapped ?? pointer);
         window.graph.mergeEdgeAttributes(id, { [LinePathType.Bezier]: attrs });
         dispatch(refreshEdgesThunk());
     });
