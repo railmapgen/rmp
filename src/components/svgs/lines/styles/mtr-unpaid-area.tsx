@@ -44,6 +44,7 @@ const mtrUnpaidArea: LineStyle<MTRUnpaidAreaAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

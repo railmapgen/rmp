@@ -91,6 +91,7 @@ const londonSandwich: LineStyle<LondonSandwichAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

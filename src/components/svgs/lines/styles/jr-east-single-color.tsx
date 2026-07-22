@@ -121,6 +121,7 @@ const jrEastSingleColor: LineStyle<JREastSingleColorAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

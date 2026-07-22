@@ -152,7 +152,12 @@ const dualColor: LineStyle<DualColorAttributes> = {
     isSameStyle: (a, b) => a.colorA[2] === b.colorA[2] && a.colorB[2] === b.colorB[2],
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.Bezier,
+        ],
         supportsReconcile: true,
     },
 };

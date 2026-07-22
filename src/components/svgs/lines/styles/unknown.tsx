@@ -36,6 +36,7 @@ const unknownLineStyle: LineStyle<UnknownLineAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: false,
     },
