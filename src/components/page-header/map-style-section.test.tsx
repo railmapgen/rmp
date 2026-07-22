@@ -2,6 +2,7 @@ import { RmgThemeProvider } from '@railmapgen/rmg-components';
 import { fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
+import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { render } from '../../test-utils';
 import { MapStyleSection } from './map-style-section';
 
@@ -24,8 +25,9 @@ describe('MapStyleSection', () => {
 
     afterEach(() => vi.unstubAllGlobals());
 
-    const renderSection = () => {
+    const renderSection = (isSubscriber = true) => {
         const store = createStore();
+        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: isSubscriber, RMP_EXPORT: false }));
         render(
             <RmgThemeProvider>
                 <MapStyleSection />
@@ -84,5 +86,14 @@ describe('MapStyleSection', () => {
         expect(store.getState().param.mapStyle.roads.path.enabled).toBe(false);
         expect(pathRow.getByRole('button', { name: 'Color' })).toBeDisabled();
         expect(pathRow.getByRole('slider')).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('disables all map style controls for free users', () => {
+        renderSection(false);
+
+        expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+        screen.getAllByRole('button', { name: 'Color' }).forEach(button => expect(button).toBeDisabled());
+        screen.getAllByRole('slider').forEach(slider => expect(slider).toHaveAttribute('aria-disabled', 'true'));
+        screen.getAllByRole('checkbox').forEach(checkbox => expect(checkbox).toBeDisabled());
     });
 });

@@ -88,15 +88,16 @@ const ScaleAndSwitch = (props: {
     scaleLabel: string;
     switchLabel: string;
     isChecked: boolean;
+    isDisabled: boolean;
     onScaleChange: (value: number) => void;
     onEnabledChange: (enabled: boolean) => void;
 }) => (
     <HStack justify="flex-end" spacing="3">
-        <Box opacity={props.isChecked ? 1 : 0.5}>
+        <Box opacity={props.isChecked && !props.isDisabled ? 1 : 0.5}>
             <ScaleSlider
                 label={props.scaleLabel}
                 value={props.value}
-                isDisabled={!props.isChecked}
+                isDisabled={props.isDisabled || !props.isChecked}
                 onChange={props.onScaleChange}
             />
         </Box>
@@ -104,6 +105,7 @@ const ScaleAndSwitch = (props: {
             <Switch
                 aria-label={props.switchLabel}
                 isChecked={props.isChecked}
+                isDisabled={props.isDisabled}
                 onChange={({ target: { checked } }) => props.onEnabledChange(checked)}
             />
         </Box>
@@ -114,6 +116,7 @@ export const MapStyleSection = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const mapStyle = useRootSelector(state => state.param.mapStyle);
+    const isDisabled = !useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
 
     const saveStyle = (style: MapStyle) => dispatch(setMapStyle(style));
 
@@ -149,6 +152,7 @@ export const MapStyleSection = () => {
                         variant="ghost"
                         aria-label={t('map.style.reset')}
                         icon={<MdRestartAlt />}
+                        isDisabled={isDisabled}
                         onClick={() => saveStyle(structuredClone(DEFAULT_MAP_STYLE))}
                     />
                 </Tooltip>
@@ -183,7 +187,7 @@ export const MapStyleSection = () => {
                                 ) : (
                                     <PaletteColorInput
                                         value={mapStyle.roads[kind].casingColor}
-                                        isDisabled={!mapStyle.roads[kind].enabled}
+                                        isDisabled={isDisabled || !mapStyle.roads[kind].enabled}
                                         onChange={casingColor => updateRoad(kind, { casingColor })}
                                     />
                                 )}
@@ -191,7 +195,7 @@ export const MapStyleSection = () => {
                             <Td px="1" opacity={mapStyle.roads[kind].enabled ? 1 : 0.5}>
                                 <PaletteColorInput
                                     value={mapStyle.roads[kind].color}
-                                    isDisabled={!mapStyle.roads[kind].enabled}
+                                    isDisabled={isDisabled || !mapStyle.roads[kind].enabled}
                                     onChange={color => updateRoad(kind, { color })}
                                 />
                             </Td>
@@ -201,6 +205,7 @@ export const MapStyleSection = () => {
                                     switchLabel={`${t(`map.style.roads.${kind}`)} ${t('map.style.enabled')}`}
                                     value={mapStyle.roads[kind].widthScale}
                                     isChecked={mapStyle.roads[kind].enabled}
+                                    isDisabled={isDisabled}
                                     onScaleChange={widthScale => updateRoad(kind, { widthScale })}
                                     onEnabledChange={enabled => updateRoad(kind, { enabled })}
                                 />
@@ -233,7 +238,7 @@ export const MapStyleSection = () => {
                             <Td px="1" opacity={mapStyle.rails[kind].enabled ? 1 : 0.5}>
                                 <PaletteColorInput
                                     value={mapStyle.rails[kind].color}
-                                    isDisabled={!mapStyle.rails[kind].enabled}
+                                    isDisabled={isDisabled || !mapStyle.rails[kind].enabled}
                                     onChange={color => updateRail(kind, { color })}
                                 />
                             </Td>
@@ -243,6 +248,7 @@ export const MapStyleSection = () => {
                                     switchLabel={`${t(`map.style.rails.${kind}`)} ${t('map.style.enabled')}`}
                                     value={mapStyle.rails[kind].widthScale}
                                     isChecked={mapStyle.rails[kind].enabled}
+                                    isDisabled={isDisabled}
                                     onScaleChange={widthScale => updateRail(kind, { widthScale })}
                                     onEnabledChange={enabled => updateRail(kind, { enabled })}
                                 />
@@ -263,6 +269,7 @@ export const MapStyleSection = () => {
                         switchLabel={t('map.style.labels.enabled')}
                         value={mapStyle.labels.sizeScale}
                         isChecked={mapStyle.labels.enabled}
+                        isDisabled={isDisabled}
                         onScaleChange={sizeScale =>
                             saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, sizeScale } })
                         }
