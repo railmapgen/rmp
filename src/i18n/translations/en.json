@@ -599,6 +599,11 @@
                 "rayGuided": {
                     "displayName": "Arbitrary angle path"
                 },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along position",
+                    "normal": "Normal offset"
+                },
                 "freeform": {
                     "displayName": "Freeform path",
                     "widthStops": "Width stops",
@@ -614,11 +619,6 @@
                     "arrow": "Arrow",
                     "arrowLength": "Arrow length",
                     "arrowWidth": "Arrow width"
-                },
-                "bezier": {
-                    "displayName": "Bezier curve",
-                    "along": "Along position",
-                    "normal": "Normal offset"
                 },
                 "singleColor": {
                     "displayName": "Single color style"

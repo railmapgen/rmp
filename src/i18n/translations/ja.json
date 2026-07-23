@@ -601,6 +601,11 @@
                 "rayGuided": {
                     "displayName": "任意角度経路"
                 },
+                "bezier": {
+                    "displayName": "ベジェ曲線",
+                    "along": "線方向の位置",
+                    "normal": "法線オフセット"
+                },
                 "freeform": {
                     "displayName": "フリーフォーム経路",
                     "widthStops": "幅ポイント",
@@ -616,11 +621,6 @@
                     "arrow": "矢印",
                     "arrowLength": "矢印の長さ",
                     "arrowWidth": "矢印の幅"
-                },
-                "bezier": {
-                    "displayName": "ベジェ曲線",
-                    "along": "線方向の位置",
-                    "normal": "法線オフセット"
                 },
                 "singleColor": {
                     "displayName": "単色風格"

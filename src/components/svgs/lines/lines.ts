@@ -4,8 +4,8 @@ import diagonalPath from './paths/diagonal';
 import perpendicularPath from './paths/perpendicular';
 import rotatePerpendicularPath from './paths/rotate-perpendicular';
 import rayGuidedPath from './paths/ray-guided';
-import freeformPath from './paths/freeform';
 import bezierPath from './paths/bezier';
+import freeformPath from './paths/freeform';
 import singleColor from './styles/single-color';
 import generic from './styles/generic';
 import unknownLineStyle from './styles/unknown';
@@ -48,8 +48,8 @@ export const linePaths = {
     [LinePathType.RotatePerpendicular]: rotatePerpendicularPath,
     [LinePathType.RayGuided]: rayGuidedPath,
     [LinePathType.Simple]: simplePath,
-    [LinePathType.Freeform]: freeformPath,
     [LinePathType.Bezier]: bezierPath,
+    [LinePathType.Freeform]: freeformPath,
 };
 
 export const lineStyles = {
