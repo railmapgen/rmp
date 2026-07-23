@@ -1,6 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { MiscNodeType } from '../../../../constants/nodes';
 import { supportsParallelLinePath } from '../../../../util/parallel';
@@ -57,7 +57,7 @@ describe('freeform line path registration', () => {
         expect(supportsParallelLinePath(LinePathType.Freeform)).toBe(false);
     });
 
-    it('resolves centerline and area path without auto-simple or reconcile handling', () => {
+    it('resolves its area path without auto-simple or reconcile handling', () => {
         const graph = new MultiDirectedGraph<any, any, any>();
         graph.addNode('misc_node_a', {
             x: 0,
@@ -99,9 +99,12 @@ describe('freeform line path registration', () => {
             parallelIndex: 3,
         });
 
+        const generatePath = vi.spyOn(linePaths[LinePathType.Freeform], 'generatePath');
         const [line] = getLines(graph);
         expect(line.id).toBe('line_freeform');
-        expect(line.line?.path.d).toMatch(/^M 0 0/);
-        expect(line.line?.areaPathD).toMatch(/^M .* Z$/);
+        expect(line.line?.path.kind).toBe('closed-area');
+        expect(line.line?.path.d).toMatch(/^M .* Z$/);
+        expect(generatePath).toHaveBeenCalledOnce();
+        generatePath.mockRestore();
     });
 });

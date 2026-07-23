@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
     addFreeformWidthStop,
     createFreeformPathAttributes,
-    generateFreeformAreaPathD,
     getFreeformCenterline,
     getFreeformControlPoints,
     getFreeformWidthStopGeometry,
     getWidthAtT,
+    makeFreeformAreaPath,
     moveFreeformControlPoint,
     moveFreeformWidthStop,
     normalizeFreeformPathAttributes,
@@ -165,6 +165,9 @@ describe('freeform line geometry', () => {
         expect(getFreeformControlPoints(attrs, { x: 100, y: 0 })).toHaveLength(3);
         expect(getFreeformCenterline(attrs, { x: 100, y: 0 }).length).toBeGreaterThan(3);
         expect(getFreeformWidthStopGeometry(attrs, { x: 100, y: 0 }, 'a')).toBeDefined();
-        expect(generateFreeformAreaPathD(attrs, { x: 100, y: 0 })).toMatch(/^M .* Z$/);
+        const area = makeFreeformAreaPath(attrs, { x: 100, y: 0 });
+        expect(area.kind).toBe('closed-area');
+        expect(area.d).toMatch(/^M .* Z$/);
+        expect(area.commands.some(command => command.cmd === 'A')).toBe(true);
     });
 });

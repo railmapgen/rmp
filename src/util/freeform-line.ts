@@ -1,5 +1,16 @@
-import { OpenPath, OpenPathCommands, PathPoint, lineTo, makePoint, moveTo } from '../constants/path';
-import { makeOpenPathFromCommands } from './path';
+import {
+    AreaPathDrawCommand,
+    ClosedAreaCommands,
+    ClosedAreaPath,
+    EmptyOpenPath,
+    PathPoint,
+    arcTo,
+    closePath,
+    lineTo,
+    makeClosedAreaPath,
+    makeEmptyOpenPath,
+    moveTo,
+} from '../constants/path';
 
 export type FreeformStartCap = 'round' | 'flat';
 export type FreeformEndCap = 'round' | 'flat' | 'arrow';
@@ -486,33 +497,17 @@ export const getFreeformWidthStopGeometry = (
     };
 };
 
-export const makeFreeformCenterlinePath = (
+export const makeFreeformAreaPath = (
     attrs: FreeformPathAttributes,
     targetRelative: PathPoint,
     origin: PathPoint = { x: 0, y: 0 }
-): OpenPath => {
-    const centerline = getFreeformCenterline(attrs, targetRelative, origin);
-    const fallbackEnd = add(origin, targetRelative);
-    const points = centerline.length >= 2 ? centerline : [origin, fallbackEnd];
-    const drawCommands = points.slice(1).map(point => lineTo(makePoint(point.x, point.y)));
-    return makeOpenPathFromCommands([
-        moveTo(makePoint(points[0].x, points[0].y)),
-        drawCommands[0]!,
-        ...drawCommands.slice(1),
-    ] as OpenPathCommands);
-};
-
-export const generateFreeformAreaPathD = (
-    attrs: FreeformPathAttributes,
-    targetRelative: PathPoint,
-    origin: PathPoint = { x: 0, y: 0 }
-): string => {
+): ClosedAreaPath | EmptyOpenPath => {
     const safeAttrs = normalizeFreeformPathAttributes(attrs, targetRelative);
-    if (!safeAttrs) return '';
+    if (!safeAttrs) return makeEmptyOpenPath();
 
     const centerline = getFreeformCenterline(safeAttrs, targetRelative);
     const fullMetrics = getPolylineMetrics(centerline);
-    if (centerline.length < 2 || fullMetrics.total < MIN_PATH_LENGTH) return '';
+    if (centerline.length < 2 || fullMetrics.total < MIN_PATH_LENGTH) return makeEmptyOpenPath();
 
     const usesArrow = safeAttrs.endCap === 'arrow';
     const arrowLength = usesArrow
@@ -521,7 +516,7 @@ export const generateFreeformAreaPathD = (
     const bodyEndDistance = usesArrow ? fullMetrics.total - arrowLength : fullMetrics.total;
     const bodyLine = usesArrow ? trimPolylineAtDistance(centerline, bodyEndDistance) : centerline;
     const bodyMetrics = getPolylineMetrics(bodyLine);
-    if (bodyLine.length < 2 || bodyMetrics.total <= 0) return '';
+    if (bodyLine.length < 2 || bodyMetrics.total <= 0) return makeEmptyOpenPath();
 
     const edges = bodyLine.map((point, index) => {
         const previous = bodyLine[Math.max(0, index - 1)];
@@ -540,13 +535,9 @@ export const generateFreeformAreaPathD = (
     });
 
     const withOrigin = (point: PathPoint) => add(origin, point);
-    const commandFor = (prefix: 'M' | 'L', point: PathPoint) => {
-        const absolutePoint = withOrigin(point);
-        return `${prefix} ${formatNumber(absolutePoint.x)} ${formatNumber(absolutePoint.y)}`;
-    };
-    const commands: string[] = [commandFor('M', edges[0].left)];
+    const drawCommands: AreaPathDrawCommand[] = [];
 
-    edges.slice(1).forEach(edge => commands.push(commandFor('L', edge.left)));
+    edges.slice(1).forEach(edge => drawCommands.push(lineTo(withOrigin(edge.left))));
 
     if (usesArrow) {
         const base = pointAtDistance(centerline, bodyEndDistance);
@@ -555,42 +546,37 @@ export const generateFreeformAreaPathD = (
         const arrowHalfWidth = Math.max(MIN_WIDTH, safeAttrs.arrow?.width ?? DEFAULT_WIDTH * 2) / 2;
         const baseLeft = add(base, scale(endNormal, arrowHalfWidth));
         const baseRight = add(base, scale(endNormal, -arrowHalfWidth));
-        commands.push(commandFor('L', baseLeft));
-        commands.push(commandFor('L', tip));
-        commands.push(commandFor('L', baseRight));
-        commands.push(commandFor('L', edges[edges.length - 1].right));
+        drawCommands.push(lineTo(withOrigin(baseLeft)));
+        drawCommands.push(lineTo(withOrigin(tip)));
+        drawCommands.push(lineTo(withOrigin(baseRight)));
+        drawCommands.push(lineTo(withOrigin(edges[edges.length - 1].right)));
     } else if (safeAttrs.endCap === 'round') {
         const end = edges[edges.length - 1];
         const radius = Math.max(MIN_WIDTH, end.width / 2);
-        const endRight = withOrigin(end.right);
-        commands.push(
-            `A ${formatNumber(radius)} ${formatNumber(radius)} 0 0 0 ${formatNumber(endRight.x)} ${formatNumber(
-                endRight.y
-            )}`
-        );
+        drawCommands.push(arcTo(radius, radius, 0, false, false, withOrigin(end.right)));
     } else {
-        commands.push(commandFor('L', edges[edges.length - 1].right));
+        drawCommands.push(lineTo(withOrigin(edges[edges.length - 1].right)));
     }
 
     for (let i = edges.length - 2; i >= 0; i -= 1) {
-        commands.push(commandFor('L', edges[i].right));
+        drawCommands.push(lineTo(withOrigin(edges[i].right)));
     }
 
     if (safeAttrs.startCap === 'round') {
         const start = edges[0];
         const radius = Math.max(MIN_WIDTH, start.width / 2);
-        const startLeft = withOrigin(start.left);
-        commands.push(
-            `A ${formatNumber(radius)} ${formatNumber(radius)} 0 0 0 ${formatNumber(startLeft.x)} ${formatNumber(
-                startLeft.y
-            )}`
-        );
+        drawCommands.push(arcTo(radius, radius, 0, false, false, withOrigin(start.left)));
     } else {
-        commands.push(commandFor('L', edges[0].left));
+        drawCommands.push(lineTo(withOrigin(edges[0].left)));
     }
 
-    commands.push('Z');
-    return commands.join(' ');
+    return makeClosedAreaPath([
+        moveTo(withOrigin(edges[0].left)),
+        drawCommands[0]!,
+        drawCommands[1]!,
+        ...drawCommands.slice(2),
+        closePath(),
+    ] as ClosedAreaCommands);
 };
 
 export const insertFreeformControlPointAtNearestSegment = (

@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { CityCode, EdgeAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { makeLinearPath, makePoint } from '../constants/path';
+import { closePath, lineTo, makeClosedAreaPath, makeLinearPath, makePoint, moveTo } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
 import SvgLayer from './svg-layer';
@@ -39,6 +39,48 @@ const makeStationAttrs = (): NodeAttributes => ({
 });
 
 describe('SvgLayer', () => {
+    it('lets single-color fill a closed line path instead of stroking it as a centerline', () => {
+        const area = makeClosedAreaPath([
+            moveTo(makePoint(0, -3)),
+            lineTo(makePoint(100, -3)),
+            lineTo(makePoint(100, 3)),
+            lineTo(makePoint(0, 3)),
+            closePath(),
+        ]);
+        const elements: Element[] = [
+            {
+                id: 'line_area',
+                type: 'line',
+                line: {
+                    attr: {
+                        ...makeLineAttrs(),
+                        type: LinePathType.Freeform,
+                    },
+                    path: area,
+                },
+            },
+        ];
+
+        const { container } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    handlePointerDown={vi.fn()}
+                    handlePointerMove={vi.fn()}
+                    handlePointerUp={vi.fn()}
+                    handleEdgePointerDown={vi.fn()}
+                    handleEdgeDoubleClick={vi.fn()}
+                />
+            </svg>
+        );
+
+        const path = container.querySelector('#line_area path');
+        expect(path).toHaveAttribute('d', area.d);
+        expect(path).toHaveAttribute('fill', '#E4002B');
+        expect(path).toHaveAttribute('stroke', 'none');
+    });
+
     it('renders unknown line style with UnknownLineStyle', () => {
         const elements: Element[] = [
             {

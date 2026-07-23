@@ -137,8 +137,8 @@ describe('imperative DOM helpers', () => {
 
         moveNodesAndRedrawLines(graph, ['misc_node_a'], 10, 0);
 
-        const expectedAreaPathD = getLines(graph).find(line => line.id === 'line_freeform')?.line?.areaPathD;
-        expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toBe(expectedAreaPathD);
+        const expectedPathD = getLines(graph).find(line => line.id === 'line_freeform')?.line?.path.d;
+        expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toBe(expectedPathD);
         expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toMatch(/ Z$/);
     });
 

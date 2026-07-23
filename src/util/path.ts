@@ -1,5 +1,7 @@
 import {
+    ClosedAreaPath,
     ClosePath,
+    CompoundClosedAreaPath,
     CubicTo,
     LineTo,
     LinearPath,
@@ -73,6 +75,14 @@ export const makeOpenPathFromCommands = (commands: OpenPathCommands): OpenPath =
 
     throw new Error('Open path must contain at least one draw command.');
 };
+
+/** Narrow the renderer-wide path union before applying algorithms that require a source-to-target centerline. */
+export const isOpenPath = (path: Path): path is OpenPath =>
+    path.kind === 'ml' || path.kind === 'mll' || path.kind === 'mlcl' || path.kind === 'complex-open';
+
+/** Filled paths are painted as areas rather than stroked as centerlines. */
+export const isAreaPath = (path: Path): path is ClosedAreaPath | CompoundClosedAreaPath =>
+    path.kind === 'closed-area' || path.kind === 'compound-closed-area';
 
 /** Treat points within a small epsilon as collinear so reconciled straight paths stay linear. */
 const arePointsCollinear = (points: readonly PathPoint[]) => {

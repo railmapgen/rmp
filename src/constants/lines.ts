@@ -42,7 +42,7 @@ import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
-import type { OpenPath, Path, PathPoint } from './path';
+import type { Path, PathPoint } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -170,8 +170,11 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: OpenPath;
-    areaPathD?: string;
+    /**
+     * The path-owned geometry to paint. Styles must inspect its kind before applying algorithms that require an open
+     * centerline; filled path types can provide their outline directly as a closed area.
+     */
+    path: Path;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -370,11 +373,11 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => OpenPath;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
 
 /**
  * The generator type of a line style.
  * This is used when a line style needs to generate complex paths based on the original path.
  * It takes the original path and return a record of paths with different keys.
  */
-export type StylePathGenerator<T> = (path: OpenPath, type: LinePathType, attrs: T) => Record<string, Path>;
+export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;

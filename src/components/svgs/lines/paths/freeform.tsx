@@ -14,8 +14,7 @@ import {
     FreeformPathAttributes as BaseFreeformPathAttributes,
     createFreeformPathAttributes,
     defaultFreeformPathAttributes,
-    generateFreeformAreaPathD,
-    makeFreeformCenterlinePath,
+    makeFreeformAreaPath,
     normalizeFreeformPathAttributes,
 } from '../../../../util/freeform-line';
 import { FreeformLineOverlay } from './freeform-overlay';
@@ -52,19 +51,8 @@ const freeformDrawingBehavior: LinePathDrawingBehavior<FreeformPathAttributes> =
                 );
                 if (!attrs) return null;
 
-                return (
-                    <path
-                        d={generateFreeformAreaPathD(
-                            attrs,
-                            makePoint(pointer.x - source.x, pointer.y - source.y),
-                            source
-                        )}
-                        fill="currentColor"
-                        fillOpacity="0.65"
-                        stroke="none"
-                        pointerEvents="none"
-                    />
-                );
+                const path = makeFreeformAreaPath(attrs, makePoint(pointer.x - source.x, pointer.y - source.y), source);
+                return <path d={path.d} fill="currentColor" fillOpacity="0.65" stroke="none" pointerEvents="none" />;
             },
         };
     },
@@ -80,8 +68,7 @@ export const generateFreeformPath: PathGenerator<FreeformPathAttributes> = (
     attrs: FreeformPathAttributes = defaultFreeformPathAttributes
 ) => {
     const targetRelative = makePoint(x2 - x1, y2 - y1);
-    const safeAttrs = normalizeFreeformPathAttributes(attrs, targetRelative) ?? defaultFreeformPathAttributes;
-    return makeFreeformCenterlinePath(safeAttrs, targetRelative, makePoint(x1, y1));
+    return makeFreeformAreaPath(attrs, targetRelative, makePoint(x1, y1));
 };
 
 const attrsComponent = (props: LinePathAttrsProps<FreeformPathAttributes>) => {

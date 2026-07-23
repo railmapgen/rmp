@@ -6,7 +6,7 @@ import { LinePathType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability } from './auto-simple';
 import { reverseEdgePathAttrs } from './edge-path-attrs';
-import { concatOpenPaths } from './path';
+import { concatOpenPaths, isOpenPath } from './path';
 
 /**
  * A reconciled line entry with its traversal direction.
@@ -202,5 +202,6 @@ export const makeReconciledPath = (
         );
     });
 
+    if (!paths.every(isOpenPath)) return undefined;
     return concatOpenPaths(paths);
 };
