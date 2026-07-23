@@ -4,26 +4,41 @@ import { LinePathType } from '../constants/lines';
 import { PathPoint, makePoint } from '../constants/path';
 import { defaultBezierControlAttributes, getBezierControlPoint } from './bezier-line';
 
+/** Which endpoint of the edited Bezier receives the tangent alignment feedback. */
 export type BezierEndpoint = 'source' | 'target';
 
+/**
+ * A tangent line supplied by another Bezier that shares one endpoint with the
+ * edited line. The line is represented by the shared node and the neighbour's
+ * tangent-intersection control point, because that is the same editable model
+ * used by the current Bezier overlay.
+ */
 export interface BezierTangentCandidate {
     endpoint: BezierEndpoint;
     node: PathPoint;
     control: PathPoint;
 }
 
+/**
+ * Snap result plus the endpoint(s) that should be highlighted. Keeping endpoint
+ * metadata avoids showing both overlay handles as snapped when only one tangent
+ * was actually aligned.
+ */
 export interface BezierTangentSnap {
     point: PathPoint;
     endpoints: BezierEndpoint[];
 }
 
+/** Projection data is cached per candidate so intersection and nearest-line logic can share the same distance check. */
 interface ProjectedBezierTangent extends BezierTangentCandidate {
     direction: PathPoint;
     projection: PathPoint;
     distance: number;
 }
 
+/** Ignore tangent candidates whose control point is effectively on top of the shared node. */
 const TANGENT_LENGTH_EPSILON = 1e-6;
+/** Treat nearly parallel tangent lines as non-intersecting to avoid unstable far-away intersections. */
 const PARALLEL_EPSILON = 1e-9;
 
 const getNodePoint = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>, nodeId: NodeId) => {
@@ -31,7 +46,13 @@ const getNodePoint = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, 
     return makePoint(attrs.x, attrs.y);
 };
 
-/** Get tangent lines contributed by other Bezier edges at both endpoints of the edited edge. */
+/**
+ * Get tangent lines contributed by other Bezier edges at both endpoints of the edited edge.
+ *
+ * Only connected Bezier edges participate: unrelated lines would not share a
+ * node tangent, and non-Bezier paths do not expose the same single
+ * tangent-intersection model to align against.
+ */
 export const getBezierTangentCandidates = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeId: LineId
@@ -45,7 +66,11 @@ export const getBezierTangentCandidates = (
         ] as const
     ).flatMap(([endpoint, nodeId]) => {
         const node = getNodePoint(graph, nodeId);
-        return (graph.edges(nodeId) as LineId[])
+        const candidateIds = graph.edges(nodeId) as LineId[];
+
+        // The dragged line already defines the tangent being edited, so it must
+        // not be used as its own snap target.
+        return candidateIds
             .filter(candidateId => candidateId !== edgeId)
             .flatMap(candidateId => {
                 const edgeAttrs = graph.getEdgeAttributes(candidateId);
@@ -61,6 +86,7 @@ export const getBezierTangentCandidates = (
     });
 };
 
+/** Project the pointer onto a candidate tangent line and keep the perpendicular miss distance. */
 const projectToTangent = (
     pointer: PathPoint,
     candidate: BezierTangentCandidate
@@ -68,6 +94,8 @@ const projectToTangent = (
     const dx = candidate.control.x - candidate.node.x;
     const dy = candidate.control.y - candidate.node.y;
     const length = Math.hypot(dx, dy);
+    // If the neighbour's control point collapses onto the shared node, there is
+    // no reliable tangent direction to align with.
     if (length < TANGENT_LENGTH_EPSILON) return undefined;
 
     const direction = makePoint(dx / length, dy / length);
@@ -84,6 +112,7 @@ const projectToTangent = (
     };
 };
 
+/** Find the intersection of two projected tangent lines when both endpoints can be aligned at once. */
 const getIntersection = (a: ProjectedBezierTangent, b: ProjectedBezierTangent): PathPoint | undefined => {
     const determinant = a.direction.x * b.direction.y - a.direction.y * b.direction.x;
     if (Math.abs(determinant) < PARALLEL_EPSILON) return undefined;
@@ -100,6 +129,8 @@ export const getBezierTangentSnap = (
     candidates: BezierTangentCandidate[],
     snapDistance: number
 ): BezierTangentSnap | undefined => {
+    // Keep only candidates already close enough to the pointer. This makes the
+    // interaction predictable: far tangents do not pull the handle across the map.
     const eligible = candidates
         .map(candidate => projectToTangent(pointer, candidate))
         .filter((candidate): candidate is ProjectedBezierTangent =>
@@ -109,6 +140,8 @@ export const getBezierTangentSnap = (
     let nearestIntersection: { point: PathPoint; distance: number; endpoints: BezierEndpoint[] } | undefined;
     const sourceTangents = eligible.filter(candidate => candidate.endpoint === 'source');
     const targetTangents = eligible.filter(candidate => candidate.endpoint === 'target');
+    // Prefer a source/target intersection when available because it aligns both
+    // endpoint tangents and gives the strongest visual constraint.
     sourceTangents.forEach(source => {
         targetTangents.forEach(target => {
             const point = getIntersection(source, target);
@@ -121,6 +154,8 @@ export const getBezierTangentSnap = (
     });
     if (nearestIntersection) return { point: nearestIntersection.point, endpoints: nearestIntersection.endpoints };
 
+    // With candidates on only one endpoint, fall back to the nearest tangent
+    // projection and report just that endpoint for one-sided overlay feedback.
     const nearest = eligible.reduce<ProjectedBezierTangent | undefined>(
         (nearest, candidate) => (!nearest || candidate.distance < nearest.distance ? candidate : nearest),
         undefined
@@ -134,5 +169,7 @@ export const getSnappedBezierControlPoint = (
     candidates: BezierTangentCandidate[],
     snapDistance: number
 ): PathPoint | undefined => {
+    // Keep the point-only helper for callers that do not need overlay highlight
+    // metadata, while the overlay uses getBezierTangentSnap directly.
     return getBezierTangentSnap(pointer, candidates, snapDistance)?.point;
 };

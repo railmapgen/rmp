@@ -9,6 +9,12 @@ import {
 } from '../../../../util/bezier-line';
 import { BezierLineOverlay } from './bezier-overlay';
 
+/**
+ * Bezier paths keep a single editable tangent-intersection point instead of two
+ * independent cubic handles. Storing that point in chord-local coordinates keeps
+ * the curve stable when connected nodes move, and avoids save data depending on
+ * absolute control-point positions.
+ */
 export interface BezierPathAttributes extends LinePathAttributes, BezierControlAttributes {
     /** Position of the tangent intersection along the source-to-target chord. */
     along: number;
@@ -23,6 +29,14 @@ export const defaultBezierPathAttributes: BezierPathAttributes = {
 export const finiteBezierAttributeOr = (value: number | undefined, fallback: number) =>
     Number.isFinite(value) ? (value as number) : fallback;
 
+/**
+ * Generate the cubic path used by every line style.
+ *
+ * The user-facing handle is the tangent intersection. The SVG path is still a
+ * cubic curve because the rest of the rendering pipeline already works with
+ * cubic OpenPath data; using the quadratic-to-cubic 2/3 conversion preserves the
+ * handle as the visual tangent intersection without adding another path type.
+ */
 export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     x1,
     x2,
@@ -33,6 +47,8 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     const source = makePoint(x1, y1);
     const target = makePoint(x2, y2);
     const control = getBezierControlPoint(source, target, attrs);
+    // A quadratic Bezier with control `control` is represented as a cubic so
+    // styles can treat Bezier paths like all other OpenPath-based line paths.
     const c1 = makePoint(source.x + (2 / 3) * (control.x - source.x), source.y + (2 / 3) * (control.y - source.y));
     const c2 = makePoint(target.x + (2 / 3) * (control.x - target.x), target.y + (2 / 3) * (control.y - target.y));
 
@@ -41,6 +57,8 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
 
 const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
     const { t } = useTranslation();
+    // Detail-panel edits can see imported or partially migrated data, so guard
+    // each numeric field independently instead of assuming attrs are complete.
     const safeAttrs = {
         along: finiteBezierAttributeOr(attrs.along, defaultBezierPathAttributes.along),
         normal: finiteBezierAttributeOr(attrs.normal, defaultBezierPathAttributes.normal),
@@ -78,6 +96,9 @@ const bezierIcon = (
 
 const bezierPath: LinePath<BezierPathAttributes> = {
     generatePath: generateBezierPath,
+    // Bezier uses the normal node-to-node creation flow. The overlay is only
+    // needed after selection, where the shared tangent-intersection handle can
+    // edit both cubic tangents without introducing a custom drawing behavior.
     overlayComponent: BezierLineOverlay,
     icon: bezierIcon,
     defaultAttrs: defaultBezierPathAttributes,

@@ -18,8 +18,11 @@ import { getLineIntersection, makeOffsetSegment } from './geometry';
 import { dropInitialMoveTo, getEndPoint, getStartPoint, makeOpenPathFromCommands } from './path';
 
 type OffsetDrawCommand = {
+    /** Original segment start is needed later to repair joins after offsetting. */
     originalStart: PathPoint;
+    /** Original segment end is the next segment's original start. */
     originalEnd: PathPoint;
+    /** Cubic offsets can shift their start point, so keep it separately from the generated command. */
     offsetStart: PathPoint;
     command: LineTo | CubicTo;
 };
@@ -36,6 +39,14 @@ const toPathPoint = (point: { x: number; y: number }): PathPoint => makePoint(po
 const translatePointByVector = (point: PathPoint, dx: number, dy: number): PathPoint =>
     makePoint(point.x + dx, point.y + dy);
 
+/**
+ * Offset every draw command independently while retaining enough original
+ * geometry to reconnect the pieces afterwards.
+ *
+ * Lines use our existing segment offset helper. Cubics use bezier-js because a
+ * reliable cubic offset is not just a parallel translation of the two control
+ * points.
+ */
 const makeOffsetDrawCommands = (path: OpenPath, d: number): [OffsetDrawCommand, ...OffsetDrawCommand[]] => {
     let start = getStartPoint(path);
     const offsetCommands = dropInitialMoveTo(path).map(command => {
@@ -43,6 +54,8 @@ const makeOffsetDrawCommands = (path: OpenPath, d: number): [OffsetDrawCommand, 
         const originalEnd = command.to;
         const result = isLineTo(command)
             ? (() => {
+                  // Straight segments can be offset exactly by translating both
+                  // endpoints along the segment normal.
                   const offset = makeOffsetSegment(originalStart, originalEnd, d);
                   return {
                       originalStart,
@@ -52,6 +65,8 @@ const makeOffsetDrawCommands = (path: OpenPath, d: number): [OffsetDrawCommand, 
                   };
               })()
             : (() => {
+                  // A cubic's offset endpoints and controls depend on curve
+                  // curvature, so defer that calculation to bezier-js.
                   const bezier = new Bezier([
                       originalStart.x,
                       originalStart.y,
@@ -86,6 +101,14 @@ const makeOffsetDrawCommands = (path: OpenPath, d: number): [OffsetDrawCommand, 
     return offsetCommands as [OffsetDrawCommand, ...OffsetDrawCommand[]];
 };
 
+/**
+ * Re-anchor straight offset segments that touch cubics.
+ *
+ * bezier-js can move the offset cubic's endpoints. If an adjacent straight
+ * segment keeps its independently offset endpoints, the composed path can show a
+ * small gap or kink. Anchoring the line to the cubic offset endpoint preserves
+ * continuity while keeping the straight segment's original direction.
+ */
 const anchorOffsetLinesAroundCubicJoins = (
     commands: [OffsetDrawCommand, ...OffsetDrawCommand[]]
 ): [OffsetDrawCommand, ...OffsetDrawCommand[]] =>
@@ -113,6 +136,9 @@ const anchorOffsetLinesAroundCubicJoins = (
             offsetEnd = next.offsetStart;
         }
 
+        // When the line touches a cubic on only one side, preserve the original
+        // line vector from the anchored endpoint. This avoids changing a straight
+        // connector's length just because the cubic offset endpoint moved.
         if (hasPreviousCubic && !hasNextCubic) {
             offsetEnd = translatePointByVector(offsetStart, dx, dy);
         } else if (!hasPreviousCubic && hasNextCubic) {
@@ -126,6 +152,12 @@ const anchorOffsetLinesAroundCubicJoins = (
         };
     }) as [OffsetDrawCommand, ...OffsetDrawCommand[]];
 
+/**
+ * Reverse an open path while preserving its visual shape.
+ *
+ * Cubic controls must be swapped when reversing a segment; otherwise the
+ * endpoint tangents would point in the wrong direction.
+ */
 const reverseOpenPath = (path: OpenPath): OpenPath => {
     let start = getStartPoint(path);
     const reversedDrawCommands = dropInitialMoveTo(path)
@@ -147,6 +179,13 @@ const reverseOpenPath = (path: OpenPath): OpenPath => {
     return makeOpenPathFromCommands(reversedCommands);
 };
 
+/**
+ * Build one offset open path and reconnect neighbouring offset segments.
+ *
+ * Adjacent offset lines meet at their mathematical intersection. Cubic joins are
+ * connected with short line segments when necessary, because a cubic offset can
+ * start or end at a point that does not exactly match the previous command.
+ */
 const makeOffsetPath = (path: OpenPath, d: number): OpenPath => {
     const offsetCommands = anchorOffsetLinesAroundCubicJoins(makeOffsetDrawCommands(path, d));
     const commands: [ReturnType<typeof moveTo>, ...OpenPathDrawCommand[]] = [moveTo(offsetCommands[0].offsetStart)];
@@ -159,6 +198,9 @@ const makeOffsetPath = (path: OpenPath, d: number): OpenPath => {
         if (isLineTo(current.command)) {
             let end = current.command.to;
             if (next) {
+                // Line-line joins should meet at the miter point. If nearly
+                // parallel lines do not intersect numerically, fall back to the
+                // next segment's start to keep the path connected.
                 end = isLineTo(next.command)
                     ? (getLineIntersection(currentPoint, current.command.to, next.offsetStart, next.command.to) ??
                       next.offsetStart)
@@ -170,6 +212,9 @@ const makeOffsetPath = (path: OpenPath, d: number): OpenPath => {
             continue;
         }
 
+        // Cubic offsets may not begin exactly at the current point, especially
+        // after line joins were repaired. Insert a connector instead of moving,
+        // so the resulting open path remains continuous for styling/outline use.
         if (!arePointsEqual(currentPoint, current.offsetStart)) {
             commands.push(lineTo(current.offsetStart));
             currentPoint = current.offsetStart;
@@ -185,6 +230,9 @@ const makeOffsetPath = (path: OpenPath, d: number): OpenPath => {
 
 /**
  * Make a parallel path pair at distances `d1` and `d2` from the given open path.
+ *
+ * If `d2` is omitted, use the opposite side of the source path so styles can ask
+ * for a symmetric outline around a centerline with a single width value.
  */
 export const makeOpenPathParallel = (path: OpenPath, d1: number, d2?: number): [OpenPath, OpenPath] => {
     const secondOffset = d2 ?? -d1;
@@ -193,6 +241,9 @@ export const makeOpenPathParallel = (path: OpenPath, d1: number, d2?: number): [
 
 /**
  * Make two parallel paths and the closed outline between them.
+ *
+ * The second offset path is reversed before closing so the outline winds around
+ * the stroke perimeter instead of drawing both sides in the same direction.
  */
 export const makeOpenPathOutline = (
     path: OpenPath,

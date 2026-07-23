@@ -21,9 +21,14 @@ interface BezierEditable {
     target: PathPoint;
 }
 
+// Drag snapping should feel like a screen-space affordance, so it scales with
+// zoom. Already-aligned highlighting uses a much smaller geometry tolerance
+// below so nearby-but-not-aligned curves do not look snapped when selected.
 const BEZIER_TANGENT_SNAP_DISTANCE = 12;
 const BEZIER_TANGENT_ALIGNMENT_DISTANCE = 0.01;
 const BEZIER_OVERLAY_STROKE = '#3182CE';
+// Match the existing snap-point guide color so tangent snap feedback reads as
+// part of the same alignment system.
 const BEZIER_OVERLAY_SNAP_STROKE = '#FC8181';
 
 type BezierSnapEndpoints = Record<BezierEndpoint, boolean>;
@@ -33,11 +38,19 @@ const INACTIVE_BEZIER_SNAP_ENDPOINTS: BezierSnapEndpoints = {
     target: false,
 };
 
+/** Convert snap metadata into direct lookup flags for the two overlay guide lines. */
 const getBezierSnapEndpoints = (endpoints: BezierEndpoint[]): BezierSnapEndpoints => ({
     source: endpoints.includes('source'),
     target: endpoints.includes('target'),
 });
 
+/**
+ * Detect which side of an already-selected Bezier is exactly tangent-aligned.
+ *
+ * This is separate from drag snapping because selection feedback should only
+ * show true persisted alignment, not every nearby tangent within the larger
+ * drag-assist radius.
+ */
 const getAlignedBezierSnapEndpoints = (id: LineId, control: PathPoint, snapLines: boolean): BezierSnapEndpoints => {
     if (!snapLines) return INACTIVE_BEZIER_SNAP_ENDPOINTS;
 
@@ -49,6 +62,7 @@ const getAlignedBezierSnapEndpoints = (id: LineId, control: PathPoint, snapLines
     return snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS;
 };
 
+/** Read the selected Bezier's editable geometry from the graph at render/drag time. */
 const getBezierEditable = (id: LineId): BezierEditable | undefined => {
     if (!window.graph.hasEdge(id)) return undefined;
     const edgeAttrs = window.graph.getEdgeAttributes(id);
@@ -64,6 +78,11 @@ const getBezierEditable = (id: LineId): BezierEditable | undefined => {
     };
 };
 
+/**
+ * Selection overlay for editing a Bezier line's shared tangent-intersection
+ * handle. The graph is refreshed during dragging for live feedback, but the
+ * undoable save entry is written only when the drag finishes.
+ */
 export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
     const dispatch = useRootDispatch();
     const snapLines = useRootSelector(state => state.app.preference.snapLines);
@@ -72,6 +91,8 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
     const editable = getBezierEditable(id);
 
     const getPointerPosition = useEvent((event: React.PointerEvent<SVGElement>) => {
+        // Pointer events are delivered in screen coordinates; converting through
+        // the canvas bounds keeps dragging consistent with the current SVG viewBox.
         const bbox = document.getElementById('canvas')?.getBoundingClientRect();
         if (!bbox) return undefined;
         const point = pointerPosToSVGCoord(
@@ -92,6 +113,10 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         const currentControl = current
             ? getBezierControlPoint(current.source, current.target, current.attrs)
             : undefined;
+        // During a drag, rendered color comes from state instead of recomputing
+        // from graph data. Seed that state from the selected line's current
+        // alignment so a perfectly aligned handle does not flicker blue before
+        // the first pointer move.
         setSnapEndpoints(
             currentControl
                 ? getAlignedBezierSnapEndpoints(id, currentControl, snapLines)
@@ -107,11 +132,15 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         if (!current || !pointer) return;
 
         event.stopPropagation();
+        // Scale the snap radius by viewBox zoom so users feel roughly the same
+        // pixel-distance snap threshold at different zoom levels.
         const snapDistance = BEZIER_TANGENT_SNAP_DISTANCE * (svgViewBoxZoom / 100);
         const snap = snapLines
             ? getBezierTangentSnap(pointer, getBezierTangentCandidates(window.graph, id), snapDistance)
             : undefined;
         setSnapEndpoints(snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS);
+        // Save local chord coordinates rather than absolute control coordinates
+        // so subsequent node movement preserves the intended curve shape.
         const attrs = getBezierLocalCoordinates(current.source, current.target, snap?.point ?? pointer);
         window.graph.mergeEdgeAttributes(id, { [LinePathType.Bezier]: attrs });
         dispatch(refreshEdgesThunk());
@@ -134,6 +163,8 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
     if (!editable) return null;
 
     const control = getBezierControlPoint(editable.source, editable.target, editable.attrs);
+    // Selection state should show persisted alignment. Drag state should show
+    // the active snap target even before the graph refresh catches up.
     const alignedSnapEndpoints = getAlignedBezierSnapEndpoints(id, control, snapLines);
     const visibleSnapEndpoints = dragging ? snapEndpoints : alignedSnapEndpoints;
     const screenToSvgScale = svgViewBoxZoom / 100;
