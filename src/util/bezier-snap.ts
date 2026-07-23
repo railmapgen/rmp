@@ -12,6 +12,11 @@ export interface BezierTangentCandidate {
     control: PathPoint;
 }
 
+export interface BezierTangentSnap {
+    point: PathPoint;
+    endpoints: BezierEndpoint[];
+}
+
 interface ProjectedBezierTangent extends BezierTangentCandidate {
     direction: PathPoint;
     projection: PathPoint;
@@ -89,19 +94,19 @@ const getIntersection = (a: ProjectedBezierTangent, b: ProjectedBezierTangent): 
     return makePoint(a.node.x + alongA * a.direction.x, a.node.y + alongA * a.direction.y);
 };
 
-/** Snap a dragged Bezier control point to one tangent, or to the intersection of tangents at opposite endpoints. */
-export const getSnappedBezierControlPoint = (
+/** Get the snapped control point and which side(s) of the edited Bezier are aligned by that snap. */
+export const getBezierTangentSnap = (
     pointer: PathPoint,
     candidates: BezierTangentCandidate[],
     snapDistance: number
-): PathPoint | undefined => {
+): BezierTangentSnap | undefined => {
     const eligible = candidates
         .map(candidate => projectToTangent(pointer, candidate))
         .filter((candidate): candidate is ProjectedBezierTangent =>
             Boolean(candidate && candidate.distance <= snapDistance)
         );
 
-    let nearestIntersection: { point: PathPoint; distance: number } | undefined;
+    let nearestIntersection: { point: PathPoint; distance: number; endpoints: BezierEndpoint[] } | undefined;
     const sourceTangents = eligible.filter(candidate => candidate.endpoint === 'source');
     const targetTangents = eligible.filter(candidate => candidate.endpoint === 'target');
     sourceTangents.forEach(source => {
@@ -110,14 +115,24 @@ export const getSnappedBezierControlPoint = (
             if (!point) return;
             const distance = Math.hypot(pointer.x - point.x, pointer.y - point.y);
             if (distance <= snapDistance && (!nearestIntersection || distance < nearestIntersection.distance)) {
-                nearestIntersection = { point, distance };
+                nearestIntersection = { point, distance, endpoints: [source.endpoint, target.endpoint] };
             }
         });
     });
-    if (nearestIntersection) return nearestIntersection.point;
+    if (nearestIntersection) return { point: nearestIntersection.point, endpoints: nearestIntersection.endpoints };
 
-    return eligible.reduce<ProjectedBezierTangent | undefined>(
+    const nearest = eligible.reduce<ProjectedBezierTangent | undefined>(
         (nearest, candidate) => (!nearest || candidate.distance < nearest.distance ? candidate : nearest),
         undefined
-    )?.projection;
+    );
+    return nearest ? { point: nearest.projection, endpoints: [nearest.endpoint] } : undefined;
+};
+
+/** Snap a dragged Bezier control point to one tangent, or to the intersection of tangents at opposite endpoints. */
+export const getSnappedBezierControlPoint = (
+    pointer: PathPoint,
+    candidates: BezierTangentCandidate[],
+    snapDistance: number
+): PathPoint | undefined => {
+    return getBezierTangentSnap(pointer, candidates, snapDistance)?.point;
 };

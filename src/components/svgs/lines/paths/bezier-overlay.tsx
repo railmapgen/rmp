@@ -11,7 +11,7 @@ import {
     getBezierControlPoint,
     getBezierLocalCoordinates,
 } from '../../../../util/bezier-line';
-import { getBezierTangentCandidates, getSnappedBezierControlPoint } from '../../../../util/bezier-snap';
+import { type BezierEndpoint, getBezierTangentCandidates, getBezierTangentSnap } from '../../../../util/bezier-snap';
 import { pointerPosToSVGCoord } from '../../../../util/helpers';
 import type { BezierPathAttributes } from '../../../svgs/lines/paths/bezier';
 
@@ -20,6 +20,34 @@ interface BezierEditable {
     source: PathPoint;
     target: PathPoint;
 }
+
+const BEZIER_TANGENT_SNAP_DISTANCE = 12;
+const BEZIER_TANGENT_ALIGNMENT_DISTANCE = 0.01;
+const BEZIER_OVERLAY_STROKE = '#3182CE';
+const BEZIER_OVERLAY_SNAP_STROKE = '#FC8181';
+
+type BezierSnapEndpoints = Record<BezierEndpoint, boolean>;
+
+const INACTIVE_BEZIER_SNAP_ENDPOINTS: BezierSnapEndpoints = {
+    source: false,
+    target: false,
+};
+
+const getBezierSnapEndpoints = (endpoints: BezierEndpoint[]): BezierSnapEndpoints => ({
+    source: endpoints.includes('source'),
+    target: endpoints.includes('target'),
+});
+
+const getAlignedBezierSnapEndpoints = (id: LineId, control: PathPoint, snapLines: boolean): BezierSnapEndpoints => {
+    if (!snapLines) return INACTIVE_BEZIER_SNAP_ENDPOINTS;
+
+    const snap = getBezierTangentSnap(
+        control,
+        getBezierTangentCandidates(window.graph, id),
+        BEZIER_TANGENT_ALIGNMENT_DISTANCE
+    );
+    return snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS;
+};
 
 const getBezierEditable = (id: LineId): BezierEditable | undefined => {
     if (!window.graph.hasEdge(id)) return undefined;
@@ -40,6 +68,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
     const dispatch = useRootDispatch();
     const snapLines = useRootSelector(state => state.app.preference.snapLines);
     const [dragging, setDragging] = React.useState(false);
+    const [snapEndpoints, setSnapEndpoints] = React.useState<BezierSnapEndpoints>(INACTIVE_BEZIER_SNAP_ENDPOINTS);
     const editable = getBezierEditable(id);
 
     const getPointerPosition = useEvent((event: React.PointerEvent<SVGElement>) => {
@@ -59,6 +88,15 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         event.stopPropagation();
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
+        const current = getBezierEditable(id);
+        const currentControl = current
+            ? getBezierControlPoint(current.source, current.target, current.attrs)
+            : undefined;
+        setSnapEndpoints(
+            currentControl
+                ? getAlignedBezierSnapEndpoints(id, currentControl, snapLines)
+                : INACTIVE_BEZIER_SNAP_ENDPOINTS
+        );
         setDragging(true);
     });
 
@@ -69,11 +107,12 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         if (!current || !pointer) return;
 
         event.stopPropagation();
-        const snapDistance = 6 * (svgViewBoxZoom / 100);
-        const snapped = snapLines
-            ? getSnappedBezierControlPoint(pointer, getBezierTangentCandidates(window.graph, id), snapDistance)
+        const snapDistance = BEZIER_TANGENT_SNAP_DISTANCE * (svgViewBoxZoom / 100);
+        const snap = snapLines
+            ? getBezierTangentSnap(pointer, getBezierTangentCandidates(window.graph, id), snapDistance)
             : undefined;
-        const attrs = getBezierLocalCoordinates(current.source, current.target, snapped ?? pointer);
+        setSnapEndpoints(snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS);
+        const attrs = getBezierLocalCoordinates(current.source, current.target, snap?.point ?? pointer);
         window.graph.mergeEdgeAttributes(id, { [LinePathType.Bezier]: attrs });
         dispatch(refreshEdgesThunk());
     });
@@ -86,6 +125,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         } catch {
             // The captured circle can be replaced while the graph refreshes during dragging.
         }
+        setSnapEndpoints(INACTIVE_BEZIER_SNAP_ENDPOINTS);
         setDragging(false);
         dispatch(saveGraph(window.graph.export()));
         dispatch(refreshEdgesThunk());
@@ -94,11 +134,15 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
     if (!editable) return null;
 
     const control = getBezierControlPoint(editable.source, editable.target, editable.attrs);
+    const alignedSnapEndpoints = getAlignedBezierSnapEndpoints(id, control, snapLines);
+    const visibleSnapEndpoints = dragging ? snapEndpoints : alignedSnapEndpoints;
     const screenToSvgScale = svgViewBoxZoom / 100;
     const guideStrokeWidth = 1.5 * screenToSvgScale;
     const handleStrokeWidth = 2 * screenToSvgScale;
     const handleRadius = 6 * screenToSvgScale;
     const dashArray = `${4 * screenToSvgScale} ${3 * screenToSvgScale}`;
+    const sourceGuideStroke = visibleSnapEndpoints.source ? BEZIER_OVERLAY_SNAP_STROKE : BEZIER_OVERLAY_STROKE;
+    const targetGuideStroke = visibleSnapEndpoints.target ? BEZIER_OVERLAY_SNAP_STROKE : BEZIER_OVERLAY_STROKE;
 
     return (
         <g onPointerMove={handlePointerMove} onPointerUp={finishDrag} onPointerCancel={finishDrag}>
@@ -107,7 +151,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
                 y1={editable.source.y}
                 x2={control.x}
                 y2={control.y}
-                stroke="#3182CE"
+                stroke={sourceGuideStroke}
                 strokeWidth={guideStrokeWidth}
                 strokeDasharray={dashArray}
                 pointerEvents="none"
@@ -117,7 +161,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
                 y1={editable.target.y}
                 x2={control.x}
                 y2={control.y}
-                stroke="#3182CE"
+                stroke={targetGuideStroke}
                 strokeWidth={guideStrokeWidth}
                 strokeDasharray={dashArray}
                 pointerEvents="none"

@@ -4,7 +4,12 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/co
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { makePoint } from '../constants/path';
-import { BezierTangentCandidate, getBezierTangentCandidates, getSnappedBezierControlPoint } from './bezier-snap';
+import {
+    BezierTangentCandidate,
+    getBezierTangentCandidates,
+    getBezierTangentSnap,
+    getSnappedBezierControlPoint,
+} from './bezier-snap';
 
 const candidate = (
     endpoint: BezierTangentCandidate['endpoint'],
@@ -30,6 +35,24 @@ describe('Bezier tangent snapping', () => {
         const candidates = [candidate('source', [0, 0], [10, 0]), candidate('target', [10, 10], [10, 0])];
 
         expect(getSnappedBezierControlPoint(makePoint(9.5, 0.5), candidates, 1)).toEqual(makePoint(10, 0));
+    });
+
+    it('reports the aligned endpoint when snapping to one tangent', () => {
+        const candidates = [candidate('source', [0, 0], [10, 0])];
+
+        expect(getBezierTangentSnap(makePoint(5, 1), candidates, 6)).toEqual({
+            point: makePoint(5, 0),
+            endpoints: ['source'],
+        });
+    });
+
+    it('reports both aligned endpoints when snapping to a tangent intersection', () => {
+        const candidates = [candidate('source', [0, 0], [10, 0]), candidate('target', [10, 10], [10, 0])];
+
+        expect(getBezierTangentSnap(makePoint(9.5, 0.5), candidates, 1)).toEqual({
+            point: makePoint(10, 0),
+            endpoints: ['source', 'target'],
+        });
     });
 
     it('does not intersect different tangents contributed by the same endpoint', () => {
