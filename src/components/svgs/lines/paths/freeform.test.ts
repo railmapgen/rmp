@@ -53,6 +53,15 @@ describe('freeform line path registration', () => {
         expect(attrs?.points.at(-1)).toMatchObject({ x: 100, y: 0 });
     });
 
+    it('rejects drawing gestures that are too short to form a useful path', () => {
+        const session = linePaths[LinePathType.Freeform].drawingBehavior!.createSession(
+            { x: 0, y: 0 },
+            { x: 0.5, y: 0.5 }
+        );
+
+        expect(session.createAttrs({ x: 1, y: 1 }, { x: 1, y: 1 })).toBeUndefined();
+    });
+
     it('does not support parallel line generation', () => {
         expect(supportsParallelLinePath(LinePathType.Freeform)).toBe(false);
     });

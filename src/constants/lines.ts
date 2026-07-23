@@ -6,7 +6,7 @@ import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diag
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
-import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform';
+import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform-model';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { UnknownLineAttributes } from '../components/svgs/lines/styles/unknown';
