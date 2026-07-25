@@ -1,8 +1,9 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { LinePathType } from '../constants/lines';
-import { PathPoint, makePoint } from '../constants/path';
-import { defaultBezierControlAttributes, getBezierControlPoint } from './bezier-line';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../../../../constants/constants';
+import { LinePathType } from '../../../../constants/lines';
+import { PathPoint, makePoint } from '../../../../constants/path';
+import { getBezierControlPoint } from './bezier-geometry';
+import { normalizeBezierPathAttributes } from './bezier-model';
 
 /** Which endpoint of the edited Bezier receives the tangent alignment feedback. */
 export type BezierEndpoint = 'source' | 'target';
@@ -79,7 +80,7 @@ export const getBezierTangentCandidates = (
                 const [candidateSourceId, candidateTargetId] = graph.extremities(candidateId) as [NodeId, NodeId];
                 const source = getNodePoint(graph, candidateSourceId);
                 const target = getNodePoint(graph, candidateTargetId);
-                const attrs = edgeAttrs[LinePathType.Bezier] ?? defaultBezierControlAttributes;
+                const attrs = normalizeBezierPathAttributes(edgeAttrs[LinePathType.Bezier]);
 
                 return [{ endpoint, node, control: getBezierControlPoint(source, target, attrs) }];
             });
@@ -161,15 +162,4 @@ export const getBezierTangentSnap = (
         undefined
     );
     return nearest ? { point: nearest.projection, endpoints: [nearest.endpoint] } : undefined;
-};
-
-/** Snap a dragged Bezier control point to one tangent, or to the intersection of tangents at opposite endpoints. */
-export const getSnappedBezierControlPoint = (
-    pointer: PathPoint,
-    candidates: BezierTangentCandidate[],
-    snapDistance: number
-): PathPoint | undefined => {
-    // Keep the point-only helper for callers that do not need overlay highlight
-    // metadata, while the overlay uses getBezierTangentSnap directly.
-    return getBezierTangentSnap(pointer, candidates, snapDistance)?.point;
 };

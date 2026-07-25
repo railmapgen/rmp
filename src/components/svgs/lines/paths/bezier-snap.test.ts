@@ -1,15 +1,10 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
-import { LinePathType, LineStyleType } from '../constants/lines';
-import { MiscNodeType } from '../constants/nodes';
-import { makePoint } from '../constants/path';
-import {
-    BezierTangentCandidate,
-    getBezierTangentCandidates,
-    getBezierTangentSnap,
-    getSnappedBezierControlPoint,
-} from './bezier-snap';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../../constants/constants';
+import { LinePathType, LineStyleType } from '../../../../constants/lines';
+import { MiscNodeType } from '../../../../constants/nodes';
+import { makePoint } from '../../../../constants/path';
+import { BezierTangentCandidate, getBezierTangentCandidates, getBezierTangentSnap } from './bezier-snap';
 
 const candidate = (
     endpoint: BezierTangentCandidate['endpoint'],
@@ -28,13 +23,13 @@ describe('Bezier tangent snapping', () => {
     ])('can select the nearest of multiple tangents at one node: %s', (_name, pointer, expected) => {
         const candidates = [candidate('source', [0, 0], [10, 0]), candidate('source', [0, 0], [0, 10])];
 
-        expect(getSnappedBezierControlPoint(pointer, candidates, 6)).toEqual(expected);
+        expect(getBezierTangentSnap(pointer, candidates, 6)?.point).toEqual(expected);
     });
 
     it('snaps to an intersection to align tangents at both endpoints', () => {
         const candidates = [candidate('source', [0, 0], [10, 0]), candidate('target', [10, 10], [10, 0])];
 
-        expect(getSnappedBezierControlPoint(makePoint(9.5, 0.5), candidates, 1)).toEqual(makePoint(10, 0));
+        expect(getBezierTangentSnap(makePoint(9.5, 0.5), candidates, 1)?.point).toEqual(makePoint(10, 0));
     });
 
     it('reports the aligned endpoint when snapping to one tangent', () => {
@@ -58,19 +53,19 @@ describe('Bezier tangent snapping', () => {
     it('does not intersect different tangents contributed by the same endpoint', () => {
         const candidates = [candidate('source', [0, 0], [10, 0]), candidate('source', [0, 0], [0, 10])];
 
-        expect(getSnappedBezierControlPoint(makePoint(0.5, 0.75), candidates, 1)).toEqual(makePoint(0, 0.75));
+        expect(getBezierTangentSnap(makePoint(0.5, 0.75), candidates, 1)?.point).toEqual(makePoint(0, 0.75));
     });
 
     it('ignores tangent directions shorter than the numerical epsilon', () => {
         const candidates = [candidate('source', [0, 0], [0.0000005, 0])];
 
-        expect(getSnappedBezierControlPoint(makePoint(5, 0.1), candidates, 1)).toBeUndefined();
+        expect(getBezierTangentSnap(makePoint(5, 0.1), candidates, 1)).toBeUndefined();
     });
 
     it('does not snap beyond the requested distance', () => {
         const candidates = [candidate('source', [0, 0], [10, 0])];
 
-        expect(getSnappedBezierControlPoint(makePoint(5, 7), candidates, 6)).toBeUndefined();
+        expect(getBezierTangentSnap(makePoint(5, 7), candidates, 6)).toBeUndefined();
     });
 
     it('collects only other Bezier edges connected to the edited edge endpoints', () => {

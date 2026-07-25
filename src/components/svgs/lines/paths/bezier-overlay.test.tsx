@@ -8,8 +8,8 @@ import { makePoint } from '../../../../constants/path';
 import { createStore } from '../../../../redux';
 import { setSnapLines } from '../../../../redux/app/app-slice';
 import { render } from '../../../../test-utils';
-import { getBezierControlPoint, getBezierLocalCoordinates } from '../../../../util/bezier-line';
-import { BezierPathAttributes } from './bezier';
+import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
+import { BezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
 
 const createGraph = (editedAttrs: BezierPathAttributes = { along: 0.5, normal: -0.35 }) => {
