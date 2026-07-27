@@ -16,11 +16,14 @@ import {
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
-import { OpenPath } from '../../../../constants/path';
-import { isLinearPath, splitLinearPath } from '../../../../util/path';
+import { Path, makeEmptyOpenPath } from '../../../../constants/path';
+import { isLinearPath, isOpenPath, splitLinearPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
-const mrtTapeOutPathGenerator = (path: OpenPath, type: LinePathType, attrs: MRTTapeOutAttributes) => {
+const mrtTapeOutPathGenerator = (path: Path, type: LinePathType, attrs: MRTTapeOutAttributes) => {
+    if (!isOpenPath(path)) {
+        return { pathA: makeEmptyOpenPath(), pathB: makeEmptyOpenPath() };
+    }
     if (!isLinearPath(path)) return { pathA: path, pathB: path };
 
     const [pathA, pathB] = splitLinearPath(path);

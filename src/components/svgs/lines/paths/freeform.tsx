@@ -2,72 +2,21 @@ import { Input, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { nanoid } from 'nanoid';
 import { useTranslation } from 'react-i18next';
-import {
-    LinePath,
-    LinePathAttributes,
-    LinePathAttrsProps,
-    LinePathDrawingBehavior,
-    PathGenerator,
-} from '../../../../constants/lines';
-import { makePoint } from '../../../../constants/path';
-import {
-    FreeformPathAttributes as BaseFreeformPathAttributes,
-    createFreeformPathAttributes,
-    defaultFreeformPathAttributes,
-    generateFreeformAreaPathD,
-    makeFreeformCenterlinePath,
-    normalizeFreeformPathAttributes,
-} from '../../../../util/freeform-line';
+import { LinePath, LinePathAttrsProps, LinePathDrawingBehavior, PathGenerator } from '../../../../constants/lines';
+import { makeEmptyOpenPath, makePoint } from '../../../../constants/path';
+import { createFreeformPathAttributes, makeFreeformAreaPath } from './freeform-geometry';
+import { defaultFreeformPathAttributes, normalizeFreeformPathAttributes } from './freeform-model';
+import type { FreeformPathAttributes } from './freeform-model';
 import { FreeformLineOverlay } from './freeform-overlay';
 
-export interface FreeformPathAttributes extends LinePathAttributes, BaseFreeformPathAttributes {}
+export type { FreeformPathAttributes } from './freeform-model';
 
-const freeformDrawingBehavior: LinePathDrawingBehavior<FreeformPathAttributes> = {
-    createSession: (source, initialPointer) => {
-        const points = [source, initialPointer];
-
-        return {
-            pointerMove: pointer => {
-                const previous = points[points.length - 1];
-                if (previous && Math.hypot(previous.x - pointer.x, previous.y - pointer.y) < 1) return;
-                points.push(pointer);
-            },
-            createAttrs: (target, pointer) =>
-                createFreeformPathAttributes([...points, pointer], source, target, () => nanoid(10)),
-            getPreview: pointer => {
-                let id = 0;
-                const attrs = createFreeformPathAttributes(
-                    [...points, pointer],
-                    source,
-                    pointer,
-                    () => `preview_${id++}`,
-                    {
-                        minPointDistance: 1,
-                        simplifyTolerance: 0.5,
-                    }
-                );
-                if (!attrs) return null;
-
-                return (
-                    <path
-                        d={generateFreeformAreaPathD(
-                            attrs,
-                            makePoint(pointer.x - source.x, pointer.y - source.y),
-                            source
-                        )}
-                        fill="currentColor"
-                        fillOpacity="0.65"
-                        stroke="none"
-                        pointerEvents="none"
-                    />
-                );
-            },
-        };
-    },
-};
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
+/**
+ * Generate the filled-area representation for a freeform edge.
+ *
+ * The generator is the only rendering boundary that accepts possibly stale attrs; it normalizes with the current graph
+ * endpoints before delegating to geometry, which keeps geometry functions free of graph-position repair logic.
+ */
 export const generateFreeformPath: PathGenerator<FreeformPathAttributes> = (
     x1: number,
     x2: number,
@@ -76,19 +25,64 @@ export const generateFreeformPath: PathGenerator<FreeformPathAttributes> = (
     attrs: FreeformPathAttributes = defaultFreeformPathAttributes
 ) => {
     const targetRelative = makePoint(x2 - x1, y2 - y1);
-    const safeAttrs = normalizeFreeformPathAttributes(attrs, targetRelative) ?? defaultFreeformPathAttributes;
-    return makeFreeformCenterlinePath(safeAttrs, targetRelative, makePoint(x1, y1));
+    const safeAttrs = normalizeFreeformPathAttributes(attrs, targetRelative);
+    return safeAttrs ? makeFreeformAreaPath(safeAttrs, makePoint(x1, y1)) : makeEmptyOpenPath();
 };
 
+const freeformDrawingBehavior: LinePathDrawingBehavior<FreeformPathAttributes> = {
+    /** Start a pointer-driven drawing session between the chosen source and target nodes. */
+    createSession: (source, initialPointer) => {
+        // Keep raw samples in the gesture session rather than React state: dropping pointer events between renders
+        // changes the shape the user actually drew.
+        const points = [source, initialPointer];
+
+        return {
+            /** Collect pointer samples for the eventual committed path. */
+            pointerMove: pointer => {
+                const previous = points[points.length - 1];
+                // Ignore sub-pixel jitter so accidental hand tremor does not become persisted geometry.
+                if (previous && Math.hypot(previous.x - pointer.x, previous.y - pointer.y) < 1) return;
+                points.push(pointer);
+            },
+            /** Build the final persisted attrs once the target node is known. */
+            createAttrs: (target, pointer) =>
+                createFreeformPathAttributes([...points, pointer], source, target, () => nanoid(10)),
+            /** Render a transient filled preview while the user is still choosing the target. */
+            getPreview: pointer => {
+                let id = 0;
+                const attrs = createFreeformPathAttributes(
+                    [...points, pointer],
+                    source,
+                    pointer,
+                    () => `preview_${id++}`,
+                    {
+                        // The preview follows the pointer more closely; the committed path is simplified further
+                        // to keep persisted data and later editing work bounded.
+                        minPointDistance: 1,
+                        simplifyTolerance: 0.5,
+                    }
+                );
+                if (!attrs) return null;
+
+                const path = generateFreeformPath(source.x, pointer.x, source.y, pointer.y, attrs);
+                return <path d={path.d} fill="currentColor" fillOpacity="0.65" stroke="none" pointerEvents="none" />;
+            },
+        };
+    },
+};
+
+/** Render the freeform-specific details panel controls. */
 const attrsComponent = (props: LinePathAttrsProps<FreeformPathAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const safeAttrs = normalizeFreeformPathAttributes(attrs) ?? defaultFreeformPathAttributes;
 
+    /** Patch canonical attrs so partial UI edits do not drop normalized defaults. */
     const updateAttrs = (patch: Partial<FreeformPathAttributes>) => {
         handleAttrsUpdate(id, { ...safeAttrs, ...patch });
     };
 
+    /** Update one width stop while preserving the other sorted stops and their stable ids. */
     const updateWidthStop = (stopId: string, patch: { t?: number; width?: number }) => {
         updateAttrs({
             widthStops: safeAttrs.widthStops.map(stop => ({
@@ -149,7 +143,10 @@ const attrsComponent = (props: LinePathAttrsProps<FreeformPathAttributes>) => {
                                         onChange={event => {
                                             const value = Number(event.target.value);
                                             if (!Number.isFinite(value)) return;
-                                            updateWidthStop(stop.id, { t: clamp(value / 100, 0, 1) });
+                                            // The UI shows percentages, while the model stores normalized distance.
+                                            updateWidthStop(stop.id, {
+                                                t: Math.min(1, Math.max(0, value / 100)),
+                                            });
                                         }}
                                     />
                                 </Td>
@@ -166,6 +163,7 @@ const attrsComponent = (props: LinePathAttrsProps<FreeformPathAttributes>) => {
                                         onChange={event => {
                                             const value = Number(event.target.value);
                                             if (!Number.isFinite(value) || value <= 0) return;
+                                            // Keep user-entered widths above the renderer's minimum outline width.
                                             updateWidthStop(stop.id, { width: Math.max(0.5, value) });
                                         }}
                                     />
@@ -246,6 +244,12 @@ const freeformIcon = (
     </svg>
 );
 
+/**
+ * Register freeform as a line path type.
+ *
+ * `overlayComponent` opts into an editable SVG overlay for selected lines, and `drawingBehavior` opts into a custom
+ * gesture that records a sampled stroke instead of deriving the path solely from two endpoints.
+ */
 const freeformPath: LinePath<FreeformPathAttributes> = {
     generatePath: generateFreeformPath,
     overlayComponent: FreeformLineOverlay,

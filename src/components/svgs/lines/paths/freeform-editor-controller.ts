@@ -3,19 +3,12 @@ import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes } from '../
 import { LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
 import {
-    FreeformPathAttributes,
-    addFreeformWidthStop,
-    getFreeformControlPoints,
-    getFreeformWidthStopGeometry,
     getNearestFreeformCenterlineT,
-    insertFreeformControlPointAtNearestSegment,
-    moveFreeformControlPoint,
-    moveFreeformWidthStop,
-    normalizeFreeformPathAttributes,
-    removeFreeformControlPoint,
-    removeFreeformWidthStop,
-    resizeFreeformWidthStop,
-} from '../../../../util/freeform-line';
+    getNearestFreeformControlSegmentIndex,
+    getFreeformWidthStopGeometry,
+    getWidthAtT,
+} from './freeform-geometry';
+import { FreeformPathAttributes, normalizeFreeformPathAttributes } from './freeform-model';
 
 export type FreeformHandleSelection =
     | { edgeId: LineId; kind: 'point'; id: string }
@@ -54,17 +47,25 @@ interface FreeformEditorContext {
     svgViewBoxZoom: number;
 }
 
+/**
+ * Encapsulates freeform edit mutations so the overlay stays mostly concerned with pointer events and rendering.
+ *
+ * This controller is also the graph boundary for freeform editing: values are normalized when read and normalized again
+ * before being written, so lower-level geometry helpers can assume canonical attributes.
+ */
 export class FreeformLineEditorController {
     private readonly graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     private readonly selected: Set<Id>;
     private readonly svgViewBoxZoom: number;
 
+    /** Store the live graph and viewport context used by one overlay render. */
     constructor(context: FreeformEditorContext) {
         this.graph = context.graph;
         this.selected = context.selected;
         this.svgViewBoxZoom = context.svgViewBoxZoom;
     }
 
+    /** Resolve an edge id into normalized freeform edit data, including source-relative target coordinates. */
     getFreeformEditableById(id: Id): FreeformEditable | undefined {
         if (!this.graph.hasEdge(id)) return undefined;
         const edgeId = id as LineId;
@@ -77,18 +78,22 @@ export class FreeformLineEditorController {
         const source = makePoint(sourceAttrs.x, sourceAttrs.y);
         const target = makePoint(targetAttrs.x, targetAttrs.y);
         const targetRelative = makePoint(target.x - source.x, target.y - source.y);
+        // The graph's current node positions own the endpoints, so stale persisted endpoints are repaired on read.
         const attrs = normalizeFreeformPathAttributes(edgeAttrs[LinePathType.Freeform], targetRelative);
         if (!attrs) return undefined;
 
         return { edgeId, attrs, source, target, targetRelative };
     }
 
+    /** Return the editable only when a single selected item is a freeform edge. */
     getSelectedFreeform(): FreeformEditable | undefined {
         if (this.selected.size !== 1) return undefined;
         return this.getFreeformEditableById(Array.from(this.selected)[0]);
     }
 
+    /** Scale overlay handles with zoom so they keep a stable screen size while the canvas coordinate system changes. */
     getHandleSize(): FreeformHandleSize {
+        // Handles live in SVG coordinates but should remain a stable physical size as the canvas zoom changes.
         const screenToSvgScale = this.svgViewBoxZoom / 100;
         return {
             hitStrokeWidth: 16 * screenToSvgScale,
@@ -103,12 +108,14 @@ export class FreeformLineEditorController {
         };
     }
 
+    /** Identify node-owned endpoint handles, which are visible anchors but not directly draggable control points. */
     isEndpointPoint(editable: FreeformEditable, pointId: string): boolean {
-        const points = getFreeformControlPoints(editable.attrs, editable.targetRelative);
+        const points = editable.attrs.points;
         const index = points.findIndex(point => point.id === pointId);
         return index === 0 || index === points.length - 1;
     }
 
+    /** Apply a mutation to canonical attrs and write the repaired result back to the graph. */
     updateAttrs(
         edgeId: LineId,
         updater: (attrs: FreeformPathAttributes, editable: FreeformEditable) => FreeformPathAttributes
@@ -116,6 +123,7 @@ export class FreeformLineEditorController {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable) return false;
 
+        // Re-normalize after every edit because moving/removing points can create stale endpoints or invalid width stops.
         const nextAttrs = normalizeFreeformPathAttributes(updater(editable.attrs, editable), editable.targetRelative);
         if (!nextAttrs) return false;
 
@@ -123,65 +131,89 @@ export class FreeformLineEditorController {
         return true;
     }
 
+    /** Move an editable middle control point in source-relative coordinates. */
     moveControlPoint(edgeId: LineId, pointId: string, point: PathPoint): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable || this.isEndpointPoint(editable, pointId)) return false;
-        return this.updateAttrs(edgeId, attrs =>
-            moveFreeformControlPoint(attrs, editable.targetRelative, pointId, point)
-        );
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            points: attrs.points.map(item => (item.id === pointId ? { ...item, x: point.x, y: point.y } : item)),
+        }));
     }
 
+    /** Remove a middle control point while preserving endpoint anchors. */
     removeControlPoint(edgeId: LineId, pointId: string): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable || this.isEndpointPoint(editable, pointId)) return false;
-        return this.updateAttrs(edgeId, attrs => removeFreeformControlPoint(attrs, editable.targetRelative, pointId));
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            points: attrs.points.filter(item => item.id !== pointId),
+        }));
     }
 
+    /** Insert a new control point into the nearest authored segment instead of appending by creation time. */
     insertControlPoint(edgeId: LineId, point: PathPoint, pointId: string): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable) return false;
-        return this.updateAttrs(edgeId, attrs =>
-            insertFreeformControlPointAtNearestSegment(attrs, editable.targetRelative, point, () => pointId)
-        );
+        // Insertion uses the raw control polygon, not the smoothed centerline, so later editing order remains intuitive.
+        const insertIndex = getNearestFreeformControlSegmentIndex(editable.attrs, point);
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            points: [
+                ...attrs.points.slice(0, insertIndex),
+                { id: pointId, x: point.x, y: point.y },
+                ...attrs.points.slice(insertIndex),
+            ],
+        }));
     }
 
+    /** Create a width stop at the visible centerline position nearest to a control point. */
     addWidthStopAtPoint(edgeId: LineId, pointId: string, stopId: string): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         const point = editable?.attrs.points.find(item => item.id === pointId);
         if (!editable || !point) return false;
 
-        const t = getNearestFreeformCenterlineT(editable.attrs, editable.targetRelative, point);
-        return this.updateAttrs(edgeId, attrs => addFreeformWidthStop(attrs, editable.targetRelative, () => stopId, t));
+        // Store the stop at the rendered curve position and initialize it with the current interpolated width.
+        const t = getNearestFreeformCenterlineT(editable.attrs, point);
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            widthStops: [...attrs.widthStops, { id: stopId, t, width: getWidthAtT(attrs, t) }],
+        }));
     }
 
+    /** Drag a width stop along the rendered centerline by projecting the pointer onto that curve. */
     moveWidthStop(edgeId: LineId, stopId: string, point: PathPoint): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable) return false;
 
-        const t = getNearestFreeformCenterlineT(editable.attrs, editable.targetRelative, point);
-        return this.updateAttrs(edgeId, attrs => moveFreeformWidthStop(attrs, editable.targetRelative, stopId, t));
+        const t = getNearestFreeformCenterlineT(editable.attrs, point);
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            widthStops: attrs.widthStops.map(stop => (stop.id === stopId ? { ...stop, t } : stop)),
+        }));
     }
 
+    /** Resize a width stop from one side handle while storing full outline width. */
     resizeWidthStop(edgeId: LineId, stopId: string, point: PathPoint): boolean {
         const editable = this.getFreeformEditableById(edgeId);
-        const geometry = editable
-            ? getFreeformWidthStopGeometry(editable.attrs, editable.targetRelative, stopId)
-            : undefined;
+        const geometry = editable ? getFreeformWidthStopGeometry(editable.attrs, stopId) : undefined;
         if (!editable || !geometry) return false;
 
-        return this.updateAttrs(edgeId, attrs =>
-            resizeFreeformWidthStop(
-                attrs,
-                editable.targetRelative,
-                stopId,
-                Math.hypot(point.x - geometry.center.x, point.y - geometry.center.y) * 2
-            )
-        );
+        // A width stop expands symmetrically around the centerline, so one side-handle distance is half the width.
+        const width = Math.hypot(point.x - geometry.center.x, point.y - geometry.center.y) * 2;
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            widthStops: attrs.widthStops.map(stop => (stop.id === stopId ? { ...stop, width } : stop)),
+        }));
     }
 
+    /** Remove a width stop unless it is the last remaining sample needed for width interpolation. */
     removeWidthStop(edgeId: LineId, stopId: string): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable || editable.attrs.widthStops.length <= 1) return false;
-        return this.updateAttrs(edgeId, attrs => removeFreeformWidthStop(attrs, editable.targetRelative, stopId));
+        return this.updateAttrs(edgeId, attrs => ({
+            ...attrs,
+            widthStops: attrs.widthStops.filter(stop => stop.id !== stopId),
+        }));
     }
 }
