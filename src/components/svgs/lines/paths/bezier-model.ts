@@ -17,23 +17,3 @@ export const defaultBezierPathAttributes: BezierPathAttributes = {
     along: 0.5,
     normal: -0.35,
 };
-
-const finiteBezierAttributeOr = (value: unknown, fallback: number) =>
-    typeof value === 'number' && Number.isFinite(value) ? value : fallback;
-
-/**
- * Repair imported or partially migrated Bezier attributes at graph/UI
- * boundaries. Keeping the fallback here avoids scattering `Number.isFinite`
- * checks across rendering, snapping, and settings controls.
- */
-export const normalizeBezierPathAttributes = (attrs: unknown): BezierPathAttributes => {
-    const values =
-        typeof attrs === 'object' && attrs !== null
-            ? (attrs as Partial<Record<keyof BezierPathAttributes, unknown>>)
-            : {};
-
-    return {
-        along: finiteBezierAttributeOr(values.along, defaultBezierPathAttributes.along),
-        normal: finiteBezierAttributeOr(values.normal, defaultBezierPathAttributes.normal),
-    };
-};

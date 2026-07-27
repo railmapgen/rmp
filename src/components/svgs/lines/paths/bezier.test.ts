@@ -4,7 +4,7 @@ import { supportsParallelLinePath } from '../../../../util/parallel';
 import { linePaths, lineStyles } from '../lines';
 import { generateBezierPath } from './bezier';
 import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
-import { defaultBezierPathAttributes, normalizeBezierPathAttributes } from './bezier-model';
+import { defaultBezierPathAttributes } from './bezier-model';
 
 describe('bezier line path', () => {
     it('registers its overlay and is supported by every line style', () => {
@@ -41,14 +41,6 @@ describe('bezier line path', () => {
 
         expect(getBezierLocalCoordinates(source, target, control).along).toBeCloseTo(attrs.along);
         expect(getBezierLocalCoordinates(source, target, control).normal).toBeCloseTo(attrs.normal);
-    });
-
-    it('repairs missing or non-finite attributes before path generation uses them', () => {
-        expect(normalizeBezierPathAttributes({ along: Infinity, normal: 0.2 })).toEqual({
-            along: defaultBezierPathAttributes.along,
-            normal: 0.2,
-        });
-        expect(normalizeBezierPathAttributes(undefined)).toEqual(defaultBezierPathAttributes);
     });
 
     it('does not enter the parallel-line pipeline', () => {

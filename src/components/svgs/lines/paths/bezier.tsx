@@ -3,14 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
 import { makePoint } from '../../../../constants/path';
 import { makeBezierPath } from './bezier-geometry';
-import { BezierPathAttributes, defaultBezierPathAttributes, normalizeBezierPathAttributes } from './bezier-model';
+import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
 
-/**
- * Generate the cubic path used by every line style. Attributes are normalized at
- * this public boundary so old or hand-edited project data cannot leak NaN into
- * downstream style-specific path generators.
- */
+/** Generate the cubic path used by every line style. */
 export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     x1,
     x2,
@@ -20,19 +16,18 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
 ) => {
     const source = makePoint(x1, y1);
     const target = makePoint(x2, y2);
-    return makeBezierPath(source, target, normalizeBezierPathAttributes(attrs));
+    return makeBezierPath(source, target, attrs);
 };
 
 const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
     const { t } = useTranslation();
-    const safeAttrs = normalizeBezierPathAttributes(attrs);
-    const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...safeAttrs, ...patch });
+    const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...attrs, ...patch });
 
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.lines.bezier.along'),
-            value: safeAttrs.along.toString(),
+            value: attrs.along.toString(),
             variant: 'number',
             onChange: val => update({ along: Number(val) || 0 }),
             minW: 'full',
@@ -40,7 +35,7 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
         {
             type: 'input',
             label: t('panel.details.lines.bezier.normal'),
-            value: safeAttrs.normal.toString(),
+            value: attrs.normal.toString(),
             variant: 'number',
             onChange: val => update({ normal: Number(val) || 0 }),
             minW: 'full',

@@ -3,7 +3,7 @@ import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from 
 import { LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
 import { getBezierControlPoint } from './bezier-geometry';
-import { normalizeBezierPathAttributes } from './bezier-model';
+import { defaultBezierPathAttributes } from './bezier-model';
 
 /** Which endpoint of the edited Bezier receives the tangent alignment feedback. */
 export type BezierEndpoint = 'source' | 'target';
@@ -80,7 +80,7 @@ export const getBezierTangentCandidates = (
                 const [candidateSourceId, candidateTargetId] = graph.extremities(candidateId) as [NodeId, NodeId];
                 const source = getNodePoint(graph, candidateSourceId);
                 const target = getNodePoint(graph, candidateTargetId);
-                const attrs = normalizeBezierPathAttributes(edgeAttrs[LinePathType.Bezier]);
+                const attrs = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
 
                 return [{ endpoint, node, control: getBezierControlPoint(source, target, attrs) }];
             });

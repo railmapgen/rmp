@@ -8,7 +8,7 @@ import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { pointerPosToSVGCoord } from '../../../../util/helpers';
 import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
-import { normalizeBezierPathAttributes } from './bezier-model';
+import { defaultBezierPathAttributes } from './bezier-model';
 import { type BezierEndpoint, getBezierTangentCandidates, getBezierTangentSnap } from './bezier-snap';
 import type { BezierPathAttributes } from './bezier-model';
 
@@ -69,7 +69,7 @@ const getBezierEditable = (id: LineId): BezierEditable | undefined => {
     const sourceAttrs = window.graph.getNodeAttributes(sourceId);
     const targetAttrs = window.graph.getNodeAttributes(targetId);
     return {
-        attrs: normalizeBezierPathAttributes(edgeAttrs[LinePathType.Bezier]),
+        attrs: edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes,
         source: makePoint(sourceAttrs.x, sourceAttrs.y),
         target: makePoint(targetAttrs.x, targetAttrs.y),
     };
