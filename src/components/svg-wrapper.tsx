@@ -1,4 +1,4 @@
-import { HStack, IconButton, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
+import { IconButton, useColorModeValue } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
@@ -11,9 +11,6 @@ import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
-import { isMapZoomed, MAP_TILE_BASE_URL } from '../map/map-config';
-import { compileMapStyleCss } from '../map/map-style';
-import { MapTileController } from '../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
 import { redoAction, saveGraph, undoAction } from '../redux/param/param-slice';
@@ -52,6 +49,7 @@ import { rotateSelectedNodes } from '../util/transform';
 import { useViewportController } from '../util/use-viewport-controller';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
+import MapCanvas, { type MapCanvasHandle } from './map-canvas';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
@@ -76,7 +74,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { type: projectType, mapStyle, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const {
         selected,
         active,
@@ -91,21 +89,12 @@ const SvgWrapper = () => {
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const canvasFilter = useColorModeValue('none', 'brightness(0.78) contrast(0.95)');
-    const mapLayerRef = React.useRef<SVGGElement>(null);
-    const editorLayerRef = React.useRef<SVGGElement>(null);
-    const mapControllerRef = React.useRef<MapTileController | undefined>(undefined);
-    const [isMapLoading, setIsMapLoading] = React.useState(false);
-    const mapStyleCss = React.useMemo(() => compileMapStyleCss(mapStyle), [mapStyle]);
+    const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
+    const [isMapOverview, setIsMapOverview] = React.useState(false);
 
     const handleViewportChange = React.useCallback(
-        (viewport: { x: number; y: number; zoom: number }) => {
-            if (editorLayerRef.current) {
-                editorLayerRef.current.style.display =
-                    projectType === 'map' && !isMapZoomed(viewport.zoom) ? 'none' : '';
-            }
-            mapControllerRef.current?.updateViewport(viewport);
-        },
-        [projectType]
+        (viewport: { x: number; y: number; zoom: number }) => mapCanvasRef.current?.updateViewport(viewport),
+        []
     );
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
@@ -130,43 +119,6 @@ const SvgWrapper = () => {
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
         onViewportChange: handleViewportChange,
     });
-
-    React.useEffect(() => {
-        if (projectType !== 'map' || !mapLayerRef.current) {
-            mapControllerRef.current?.dispose();
-            mapControllerRef.current = undefined;
-            setIsMapLoading(false);
-            if (editorLayerRef.current) editorLayerRef.current.style.display = '';
-            return;
-        }
-
-        const controller = new MapTileController({
-            root: mapLayerRef.current,
-            baseUrl: MAP_TILE_BASE_URL,
-            getViewportSize: () => ({
-                width: svgRef.current?.clientWidth || width,
-                height: svgRef.current?.clientHeight || height,
-            }),
-            onLoadingChange: setIsMapLoading,
-        });
-        mapControllerRef.current = controller;
-        handleViewportChange(viewportGetLatest());
-        void controller.initialize().catch(error => {
-            if (mapControllerRef.current !== controller) return;
-            setIsMapLoading(false);
-            console.error('Failed to initialize map tiles', error);
-            sendErrorNotification(t('error'), t('map.loadError'));
-        });
-
-        return () => {
-            controller.dispose();
-            if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
-        };
-    }, [projectType]);
-
-    React.useEffect(() => {
-        mapControllerRef.current?.updateViewport(viewportGetLatest());
-    }, [height, width]);
 
     const makeStationName = useMakeStationName();
     useFonts();
@@ -520,7 +472,6 @@ const SvgWrapper = () => {
                 onKeyDown={handleKeyDown}
             >
                 <defs>
-                    {projectType === 'map' && <style data-map-style="">{mapStyleCss}</style>}
                     <pattern id="opaque" width="5" height="5" patternUnits="userSpaceOnUse">
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
@@ -540,8 +491,8 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    <g ref={mapLayerRef} data-map-layer="" />
-                    <g ref={editorLayerRef} data-editor-layer="">
+                    <MapCanvas ref={mapCanvasRef} onOverviewChange={setIsMapOverview} />
+                    <g data-editor-layer="" display={isMapOverview ? 'none' : undefined}>
                         {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
                         {isTouchClient() && mode === 'free' && <TouchOverlay />}
                         {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
@@ -571,24 +522,6 @@ const SvgWrapper = () => {
                     </g>
                 </g>
             </svg>
-            {projectType === 'map' && isMapLoading && (
-                <HStack
-                    position="fixed"
-                    top="52px"
-                    left="50%"
-                    transform="translateX(-50%)"
-                    zIndex={2}
-                    px={3}
-                    py={2}
-                    borderRadius="sm"
-                    bg="whiteAlpha.900"
-                    boxShadow="sm"
-                    pointerEvents="none"
-                >
-                    <Spinner size="sm" />
-                    <Text fontSize="sm">{t('map.loading')}</Text>
-                </HStack>
-            )}
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (
                 <IconButton
