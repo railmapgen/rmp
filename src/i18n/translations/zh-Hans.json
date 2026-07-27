@@ -598,6 +598,11 @@
                 "rayGuided": {
                     "displayName": "任意角度线段"
                 },
+                "bezier": {
+                    "displayName": "贝塞尔曲线",
+                    "along": "沿线位置",
+                    "normal": "法向偏移"
+                },
                 "freeform": {
                     "displayName": "自由绘制线段",
                     "widthStops": "宽度点",
@@ -613,11 +618,6 @@
                     "arrow": "箭头",
                     "arrowLength": "箭头长度",
                     "arrowWidth": "箭头宽度"
-                },
-                "bezier": {
-                    "displayName": "贝塞尔曲线",
-                    "along": "沿线位置",
-                    "normal": "法向偏移"
                 },
                 "singleColor": {
                     "displayName": "纯色样式"

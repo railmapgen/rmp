@@ -11,10 +11,11 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
+import { isAreaPath } from '../../../../util/path';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
-    const { id, type, path, areaPathD, styleAttrs, newLine, handlePointerDown } = props;
+    const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultSingleColorAttributes.color } = styleAttrs ?? defaultSingleColorAttributes;
 
     const onPointerDown = React.useCallback(
@@ -22,9 +23,9 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
         [id, handlePointerDown]
     );
 
-    return type === LinePathType.Freeform && areaPathD ? (
+    return isAreaPath(path) ? (
         <path
-            d={areaPathD}
+            d={path.d}
             fill={color[2]}
             stroke="none"
             cursor="pointer"

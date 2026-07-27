@@ -1,28 +1,12 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
-import { makeCubicPath, makePoint } from '../../../../constants/path';
-import {
-    BezierControlAttributes,
-    defaultBezierControlAttributes,
-    getBezierControlPoint,
-} from '../../../../util/bezier-line';
+import { LinePath, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
+import { makePoint } from '../../../../constants/path';
+import { makeBezierPath } from './bezier-geometry';
+import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
 
-export interface BezierPathAttributes extends LinePathAttributes, BezierControlAttributes {
-    /** Position of the tangent intersection along the source-to-target chord. */
-    along: number;
-    /** Signed perpendicular offset, normalized by the chord length. */
-    normal: number;
-}
-
-export const defaultBezierPathAttributes: BezierPathAttributes = {
-    ...defaultBezierControlAttributes,
-};
-
-export const finiteBezierAttributeOr = (value: number | undefined, fallback: number) =>
-    Number.isFinite(value) ? (value as number) : fallback;
-
+/** Generate the cubic path used by every line style. */
 export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     x1,
     x2,
@@ -32,26 +16,18 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
 ) => {
     const source = makePoint(x1, y1);
     const target = makePoint(x2, y2);
-    const control = getBezierControlPoint(source, target, attrs);
-    const c1 = makePoint(source.x + (2 / 3) * (control.x - source.x), source.y + (2 / 3) * (control.y - source.y));
-    const c2 = makePoint(target.x + (2 / 3) * (control.x - target.x), target.y + (2 / 3) * (control.y - target.y));
-
-    return makeCubicPath(source, c1, c2, target);
+    return makeBezierPath(source, target, attrs);
 };
 
 const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
     const { t } = useTranslation();
-    const safeAttrs = {
-        along: finiteBezierAttributeOr(attrs.along, defaultBezierPathAttributes.along),
-        normal: finiteBezierAttributeOr(attrs.normal, defaultBezierPathAttributes.normal),
-    };
-    const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...safeAttrs, ...patch });
+    const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...attrs, ...patch });
 
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
             label: t('panel.details.lines.bezier.along'),
-            value: safeAttrs.along.toString(),
+            value: attrs.along.toString(),
             variant: 'number',
             onChange: val => update({ along: Number(val) || 0 }),
             minW: 'full',
@@ -59,7 +35,7 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
         {
             type: 'input',
             label: t('panel.details.lines.bezier.normal'),
-            value: safeAttrs.normal.toString(),
+            value: attrs.normal.toString(),
             variant: 'number',
             onChange: val => update({ normal: Number(val) || 0 }),
             minW: 'full',
@@ -78,6 +54,9 @@ const bezierIcon = (
 
 const bezierPath: LinePath<BezierPathAttributes> = {
     generatePath: generateBezierPath,
+    // Bezier uses the normal node-to-node creation flow. The overlay is only
+    // needed after selection, where the shared tangent-intersection handle can
+    // edit both cubic tangents without introducing a custom drawing behavior.
     overlayComponent: BezierLineOverlay,
     icon: bezierIcon,
     defaultAttrs: defaultBezierPathAttributes,

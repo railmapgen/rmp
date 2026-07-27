@@ -55,7 +55,7 @@ const renderToolsPanel = (type: 'diagram' | 'map', isSubscriber = true) => {
 };
 
 describe('ToolsPanel line paths by project type', () => {
-    it('shows the original paths and Simple but hides Freeform and Bezier in diagram projects', () => {
+    it('shows the original paths and Simple but hides Bezier and Freeform in diagram projects', () => {
         renderToolsPanel('diagram');
 
         expect(screen.getByRole('button', { name: LinePathType.Diagonal, hidden: true })).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe('ToolsPanel line paths by project type', () => {
         expect(screen.queryByRole('button', { name: LinePathType.Bezier, hidden: true })).not.toBeInTheDocument();
     });
 
-    it('only shows Simple, Freeform and Bezier paths in map projects', () => {
+    it('only shows Simple, Bezier and Freeform paths in map projects', () => {
         renderToolsPanel('map');
 
         expect(screen.queryByRole('button', { name: LinePathType.Diagonal, hidden: true })).not.toBeInTheDocument();

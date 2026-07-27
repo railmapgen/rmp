@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { LinePathType } from '../../../../constants/lines';
 import { supportsParallelLinePath } from '../../../../util/parallel';
-import { getBezierControlPoint, getBezierLocalCoordinates } from '../../../../util/bezier-line';
 import { linePaths, lineStyles } from '../lines';
-import { defaultBezierPathAttributes, generateBezierPath } from './bezier';
+import { generateBezierPath } from './bezier';
+import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
+import { defaultBezierPathAttributes } from './bezier-model';
 
 describe('bezier line path', () => {
     it('registers its overlay and is supported by every line style', () => {
@@ -20,11 +21,10 @@ describe('bezier line path', () => {
         const path = generateBezierPath(0, 100, 0, 0, defaultBezierPathAttributes);
 
         expect(path.kind).toBe('mc');
+        if (path.kind !== 'mc') throw new Error('Expected one cubic path.');
         expect(path.commands).toHaveLength(2);
         expect(path.commands[0]).toEqual({ cmd: 'M', to: { x: 0, y: 0 } });
         const curve = path.commands[1];
-        expect(curve.cmd).toBe('C');
-        if (curve.cmd !== 'C') throw new Error('Expected one cubic draw command.');
         expect(curve.c1.x).toBeCloseTo(100 / 3);
         expect(curve.c1.y).toBeCloseTo(-70 / 3);
         expect(curve.c2.x).toBeCloseTo(200 / 3);

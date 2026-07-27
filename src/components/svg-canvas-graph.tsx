@@ -116,6 +116,8 @@ const SvgCanvas = () => {
 
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
+    // Path-specific sessions keep high-frequency drawing data out of React while endpoint-derived paths retain the
+    // existing preview when they do not provide custom drawing behaviour.
     const drawingGesture = React.useRef<LineDrawingGesture | undefined>(undefined);
 
     const getNodePoint = (node: NodeId): PathPoint => ({
@@ -486,6 +488,8 @@ const SvgCanvas = () => {
 
         if (mode.startsWith('station') || mode.startsWith('misc-node-virtual') || mode.startsWith('misc-node-master')) {
             if (graph.current.getEdgeAttribute(edge, 'type') === LinePathType.Freeform) {
+                // The generic splitter only derives a new path from endpoints. Freeform also needs its points and
+                // width stops partitioned, otherwise inserting a node would silently discard the authored shape.
                 dispatch(setMode('free'));
                 return;
             }
@@ -615,7 +619,7 @@ const SvgCanvas = () => {
                         handlePointerDown={() => {}} // no use
                     />
                 ))}
-            <LinePathOverlayLayer selected={selected} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+            <LinePathOverlayLayer />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path

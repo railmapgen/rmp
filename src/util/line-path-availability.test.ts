@@ -20,15 +20,15 @@ describe('getAvailableLinePathTypes', () => {
         ]);
     });
 
-    it('only exposes Simple, Freeform and Bezier in map projects for subscribers', () => {
+    it('only exposes Simple, Bezier and Freeform in map projects for subscribers', () => {
         expect(getAvailableLinePathTypes('map', true)).toEqual([
             LinePathType.Simple,
-            LinePathType.Freeform,
             LinePathType.Bezier,
+            LinePathType.Freeform,
         ]);
     });
 
-    it('only exposes Freeform and Bezier in map projects for free users', () => {
-        expect(getAvailableLinePathTypes('map', false)).toEqual([LinePathType.Freeform, LinePathType.Bezier]);
+    it('only exposes Bezier and Freeform in map projects for free users', () => {
+        expect(getAvailableLinePathTypes('map', false)).toEqual([LinePathType.Bezier, LinePathType.Freeform]);
     });
 });

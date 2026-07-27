@@ -6,14 +6,16 @@ import { makePoint } from '../../../../constants/path';
 import { useRootDispatch } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
-import {
-    getFreeformCenterlineD,
-    getFreeformControlPoints,
-    getFreeformWidthStopGeometry,
-} from '../../../../util/freeform-line';
 import { pointerPosToSVGCoord } from '../../../../util/helpers';
 import { FreeformDrag, FreeformHandleSelection, FreeformLineEditorController } from './freeform-editor-controller';
+import { getFreeformCenterlineD, getFreeformWidthStopGeometry } from './freeform-geometry';
 
+/**
+ * Renders and handles the edit overlay for a selected freeform line.
+ *
+ * The overlay owns pointer/keyboard interaction only; graph mutation and geometry calculations stay in the controller
+ * and geometry modules so this component can be treated as a thin SVG interaction layer.
+ */
 export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
@@ -32,15 +34,19 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
     const selectedFreeform = controller.getFreeformEditableById(id);
     const handleSize = controller.getHandleSize();
 
+    // Drag frames only refresh the rendered graph. Saving once at gesture end keeps one drag as one undo step.
+    /** Refresh the SVG immediately, and optionally persist a graph snapshot for undo history. */
     const refreshEdges = useEvent((save = false) => {
         if (save) dispatch(saveGraph(graph.current.export()));
         dispatch(refreshEdgesThunk());
     });
 
+    /** Convert a browser pointer event into coordinates local to the selected edge's source node. */
     const getLocalPointerPosition = useEvent((event: React.MouseEvent<SVGElement>) => {
         const canvas = document.getElementById('canvas');
         const bbox = canvas?.getBoundingClientRect();
         if (!bbox || !selectedFreeform) return makePoint(0, 0);
+        // Pointer helpers work in canvas coordinates; freeform attrs store points relative to the source node.
         const point = pointerPosToSVGCoord(
             event.clientX - bbox.left,
             event.clientY - bbox.top,
@@ -50,6 +56,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         return makePoint(point.x - selectedFreeform.source.x, point.y - selectedFreeform.source.y);
     });
 
+    /** Start dragging a middle control point and capture the pointer before the canvas selection layer sees it. */
     const handlePointPointerDown = useEvent((pointId: string, event: React.PointerEvent<SVGElement>) => {
         if (!selectedFreeform || event.button !== 0 || controller.isEndpointPoint(selectedFreeform, pointId)) {
             event.stopPropagation();
@@ -62,6 +69,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         setFreeformDrag({ edgeId: id, kind: 'point', id: pointId });
     });
 
+    /** Start moving a width stop along the centerline. */
     const handleWidthPositionPointerDown = useEvent((stopId: string, event: React.PointerEvent<SVGElement>) => {
         if (!selectedFreeform || event.button !== 0) {
             event.stopPropagation();
@@ -74,6 +82,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         setFreeformDrag({ edgeId: id, kind: 'width-position', id: stopId });
     });
 
+    /** Start resizing a width stop from one of its side handles. */
     const handleWidthSizePointerDown = useEvent((stopId: string, event: React.PointerEvent<SVGElement>) => {
         if (!selectedFreeform || event.button !== 0) {
             event.stopPropagation();
@@ -86,6 +95,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         setFreeformDrag({ edgeId: id, kind: 'width-size', id: stopId });
     });
 
+    /** Remove a control point from the context menu gesture. */
     const handlePointContextMenu = useEvent((pointId: string, event: React.MouseEvent<SVGElement>) => {
         event.stopPropagation();
         event.preventDefault();
@@ -94,6 +104,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         setFreeformDrag(undefined);
     });
 
+    /** Double-clicking a control point creates a width stop at its nearest visible centerline position. */
     const handlePointDoubleClick = useEvent((pointId: string, event: React.MouseEvent<SVGElement>) => {
         event.stopPropagation();
         event.preventDefault();
@@ -105,6 +116,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         setFreeformDrag(undefined);
     });
 
+    /** Remove a width stop from the context menu gesture. */
     const handleWidthContextMenu = useEvent((stopId: string, event: React.MouseEvent<SVGElement>) => {
         event.stopPropagation();
         event.preventDefault();
@@ -113,6 +125,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         setFreeformDrag(undefined);
     });
 
+    /** Apply live drag updates without saving undo history for every pointer frame. */
     const handleOverlayPointerMove = useEvent((event: React.PointerEvent<SVGElement>) => {
         if (!freeformDrag) return;
         const editable = controller.getFreeformEditableById(id);
@@ -128,6 +141,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         if (updated) refreshEdges(false);
     });
 
+    /** Finish the current drag and save exactly one graph snapshot for the completed gesture. */
     const handleOverlayPointerUp = useEvent((event: React.PointerEvent<SVGElement>) => {
         if (!freeformDrag) return;
         event.stopPropagation();
@@ -141,6 +155,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         dispatch(refreshEdgesThunk());
     });
 
+    /** Insert a new control point by double-clicking the transparent centerline hit target. */
     const handlePathDoubleClick = useEvent((event: React.MouseEvent<SVGElement>) => {
         if (!selectedFreeform) return;
         event.stopPropagation();
@@ -152,6 +167,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         }
     });
 
+    /** Delete the selected overlay handle without deleting the whole selected edge. */
     const handleKeyDelete = useEvent(() => {
         if (!handleSelection) return false;
         const removed =
@@ -166,6 +182,8 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
     });
 
     React.useEffect(() => {
+        // Capture the key before the canvas can interpret Delete as removing the selected edge as a whole.
+        /** Intercept native Delete/Backspace while focus is not inside an editable form control. */
         const handleNativeKeyDown = (event: KeyboardEvent) => {
             if (event.key !== 'Delete' && event.key !== 'Backspace') return;
             const target = event.target as HTMLElement | null;
@@ -180,8 +198,8 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
 
     if (!selectedFreeform) return null;
 
-    const centerlineD = getFreeformCenterlineD(selectedFreeform.attrs, selectedFreeform.targetRelative);
-    const points = getFreeformControlPoints(selectedFreeform.attrs, selectedFreeform.targetRelative);
+    const centerlineD = getFreeformCenterlineD(selectedFreeform.attrs);
+    const points = selectedFreeform.attrs.points;
 
     return (
         <g
@@ -207,6 +225,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
                 strokeDasharray={handleSize.dashArray}
                 pointerEvents="none"
             />
+            {/* Control points are rendered in source-local coordinates to match the stored freeform attributes. */}
             {points.map((point, index) => {
                 const isEndpoint = index === 0 || index === points.length - 1;
                 const isSelected =
@@ -236,12 +255,9 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
                     />
                 );
             })}
+            {/* Width stops use computed normal handles because their stored data is centerline position + total width. */}
             {selectedFreeform.attrs.widthStops.map(stop => {
-                const geometry = getFreeformWidthStopGeometry(
-                    selectedFreeform.attrs,
-                    selectedFreeform.targetRelative,
-                    stop.id
-                );
+                const geometry = getFreeformWidthStopGeometry(selectedFreeform.attrs, stop.id);
                 if (!geometry) return null;
 
                 const isSelected =
