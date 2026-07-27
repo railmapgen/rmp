@@ -41,9 +41,14 @@ interface MapLevelManifest {
     tileBounds: { minX: number; minY: number; maxX: number; maxY: number };
 }
 
-/** Top-level metadata is intentionally small so no tile payload is needed to initialize the map. */
+/**
+ * Models only the manifest fields that affect placement and loading. Version 3's
+ * `defaultStyle` is deliberately not consumed because RMP owns the stylesheet
+ * embedded in both its live canvas and exported SVG.
+ */
 interface MapManifest {
     formatVersion: number;
+    projection: { name: string; tileSize: number };
     levels: MapLevelManifest[];
     attribution: string;
 }
@@ -207,8 +212,12 @@ export class MapTileController {
         const manifestUrl = new URL('manifest.json', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
         this.manifestUrl = manifestUrl;
         const manifest = await this.fetchJson<MapManifest>(manifestUrl);
-        if (manifest.formatVersion !== 2 || !Array.isArray(manifest.levels)) {
-            throw new Error('Map manifest format version must be 2');
+        if (manifest.formatVersion !== 3 || !Array.isArray(manifest.levels)) {
+            throw new Error('Map manifest format version must be 3');
+        }
+        if (manifest.projection?.name !== 'WebMercatorQuad' || manifest.projection.tileSize !== MAP_TILE_SIZE) {
+            // Tile placement assumes this projection and size; accepting another value would silently misalign the map.
+            throw new Error('Unsupported map projection or tile size');
         }
         const overviewManifest = requireLevel(manifest, 'overview');
         const zoomedManifest = requireLevel(manifest, 'zoomed');

@@ -57,6 +57,132 @@ const formatNumber = (value: number) => Number(value.toFixed(4)).toString();
 const scaled = (base: number, scale: number) => formatNumber(base * scale);
 
 /**
+ * RMP owns its rendering defaults instead of trusting presentation supplied by
+ * a tile host. Manifest v3 tiles contain only semantic classes, so
+ * these rules are required for both the live canvas and self-contained exports;
+ * the manifest's `defaultStyle` remains a reference for other consumers.
+ */
+const MAP_BASE_STYLE_CSS = `
+[data-map-layer] .rmp-map-tile .area-water {
+    fill: #aacfe0;
+    fill-opacity: 0.48;
+    fill-rule: nonzero;
+    stroke: none;
+    stroke-width: 0;
+}
+[data-map-layer] .rmp-map-tile .landuse-residential {
+    fill: #e8e5dc;
+}
+[data-map-layer] .rmp-map-tile .landuse-commercial {
+    fill: #f2d6d6;
+}
+[data-map-layer] .rmp-map-tile .landuse-industrial {
+    fill: #ded7e8;
+}
+[data-map-layer] .rmp-map-tile .landuse-education {
+    fill: #f2dfb7;
+}
+[data-map-layer] .rmp-map-tile .landuse-healthcare {
+    fill: #f6d4dc;
+}
+[data-map-layer] .rmp-map-tile .area-farmland {
+    fill: #efe8b7;
+    fill-opacity: 0.24;
+}
+[data-map-layer] .rmp-map-tile .area-forest {
+    fill: #b9d7a8;
+    fill-opacity: 0.32;
+}
+[data-map-layer] .rmp-map-tile .area-grass {
+    fill: #d9ecc8;
+    fill-opacity: 0.32;
+}
+[data-map-layer] .rmp-map-tile .area-park {
+    fill: #cde7bd;
+    fill-opacity: 0.36;
+}
+[data-map-layer] .rmp-map-tile .area-cemetery {
+    fill: #cbdcc1;
+    fill-opacity: 0.24;
+}
+[data-map-layer] .rmp-map-tile .landuse-residential,
+[data-map-layer] .rmp-map-tile .landuse-commercial,
+[data-map-layer] .rmp-map-tile .landuse-industrial,
+[data-map-layer] .rmp-map-tile .landuse-education,
+[data-map-layer] .rmp-map-tile .landuse-healthcare,
+[data-map-layer] .rmp-map-tile .area-farmland,
+[data-map-layer] .rmp-map-tile .area-forest,
+[data-map-layer] .rmp-map-tile .area-grass,
+[data-map-layer] .rmp-map-tile .area-park,
+[data-map-layer] .rmp-map-tile .area-cemetery,
+[data-map-layer] .rmp-map-tile .road-area {
+    fill-rule: nonzero;
+    stroke: none;
+    stroke-width: 0;
+}
+[data-map-layer] .rmp-map-tile .building {
+    fill: #e8e5dc;
+    fill-rule: nonzero;
+    stroke: #d5d1c8;
+    stroke-linejoin: round;
+    stroke-width: 0.25;
+}
+
+[data-map-layer] .rmp-map-tile .road.casing,
+[data-map-layer] .rmp-map-tile .road.detail,
+[data-map-layer] .rmp-map-tile .rail.casing,
+[data-map-layer] .rmp-map-tile .rail.detail,
+[data-map-layer] .rmp-map-tile .boundary.detail {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+[data-map-layer] .rmp-map-tile[data-level="overview"] .boundary-national.detail {
+    stroke: #9b9488;
+    stroke-width: 1.25;
+}
+[data-map-layer] .rmp-map-tile[data-level="overview"] .boundary-provincial.detail {
+    stroke: #b8b0a4;
+    stroke-dasharray: 3 2;
+    stroke-width: 0.75;
+}
+[data-map-layer] .rmp-map-tile .rail.detail {
+    stroke: #f8f5ef;
+    stroke-dasharray: 2 2;
+}
+
+[data-map-layer] .rmp-map-tile .labels {
+    font-family: "Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+    paint-order: stroke fill;
+    stroke: #f8f5ef;
+    stroke-linejoin: round;
+    stroke-width: 1.4;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+[data-map-layer] .rmp-map-tile .label-place-major { fill: #3a342d; }
+[data-map-layer] .rmp-map-tile .label-transport-airport { fill: #3d6482; }
+[data-map-layer] .rmp-map-tile .label-transport-rail { fill: #3f3a34; }
+[data-map-layer] .rmp-map-tile .label-place-medium { fill: #4a443d; }
+[data-map-layer] .rmp-map-tile .label-transport-metro { fill: #4d6c88; }
+[data-map-layer] .rmp-map-tile .label-place-minor,
+[data-map-layer] .rmp-map-tile .label-area-residential { fill: #625c54; }
+[data-map-layer] .rmp-map-tile .label-road-arterial { fill: #554f48; }
+[data-map-layer] .rmp-map-tile .label-road-collector { fill: #68625a; }
+[data-map-layer] .rmp-map-tile .label-building { fill: #726c64; }
+[data-map-layer] .rmp-map-tile .label-area-commercial { fill: #795a5a; }
+[data-map-layer] .rmp-map-tile .label-area-industrial { fill: #675d75; }
+[data-map-layer] .rmp-map-tile .label-area-education { fill: #715f3b; }
+[data-map-layer] .rmp-map-tile .label-area-healthcare { fill: #7a5661; }
+[data-map-layer] .rmp-map-tile .label-area-park { fill: #4f6f45; }
+[data-map-layer] .rmp-map-tile .label-area-grass { fill: #5f744e; }
+[data-map-layer] .rmp-map-tile .label-area-forest { fill: #4f6a43; }
+[data-map-layer] .rmp-map-tile .label-area-farmland { fill: #746d45; }
+[data-map-layer] .rmp-map-tile .label-area-cemetery { fill: #5e6f58; }
+[data-map-layer] .rmp-map-tile .label-area-water { fill: #477285; }
+`.trim();
+
+/**
  * Produces the single stylesheet used by live tiles and exported SVG snapshots.
  * Selectors are scoped to the map layer so editor elements with generic class names
  * such as `labels` cannot be affected.
@@ -67,7 +193,8 @@ export const compileMapStyleCss = (style: MapStyle) => {
     const labelDisplay = style.labels.enabled ? 'inline' : 'none';
 
     // Filled road polygons are generated as part of the local-road layer and must share its visibility and color.
-    return `
+    return `${MAP_BASE_STYLE_CSS}
+
 [data-map-layer] .rmp-map-tile .road-path { display: ${display(path.enabled)}; }
 [data-map-layer] .rmp-map-tile .road-local { display: ${display(local.enabled)}; }
 [data-map-layer] .rmp-map-tile .road-collector { display: ${display(collector.enabled)}; }

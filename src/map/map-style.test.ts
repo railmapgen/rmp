@@ -14,6 +14,11 @@ describe('map style', () => {
 
         const css = compileMapStyleCss(style);
 
+        expect(css).toContain('.area-water {\n    fill: #aacfe0;');
+        expect(css).toContain('.building {\n    fill: #e8e5dc;');
+        expect(css).toContain('.boundary-provincial.detail');
+        expect(css).toContain('stroke-dasharray: 3 2');
+        expect(css).toContain('.label-area-water { fill: #477285; }');
         expect(css).toContain('[data-map-layer] .rmp-map-tile[data-level="overview"] .road-arterial.detail');
         expect(css).toContain('.road-local { display: none; }');
         expect(css).toContain('.road-area { display: none; }');

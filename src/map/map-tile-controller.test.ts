@@ -49,19 +49,20 @@ describe('MapTileController', () => {
         });
         vi.stubGlobal('cancelAnimationFrame', vi.fn());
 
-        const overview = { zoom: 7, x: 107, y: 52 };
+        const overview = { zoom: 8, x: 214, y: 104 };
         const zoomed = { zoom: 13, x: 6860, y: 3347 };
         const manifest = {
-            formatVersion: 2,
+            formatVersion: 3,
+            projection: { name: 'WebMercatorQuad', tileSize: 256 },
             attribution: 'OpenStreetMap contributors / ODbL',
             levels: [
                 {
                     name: 'overview',
                     zoom: overview.zoom,
                     bundleFormat: 'RMPB1',
-                    bundleIndex: 'bundle-index/z7.json',
-                    bundleTemplate: 'bundles/overview/7/{side}/{x}/{y}.rmpb',
-                    availability: 'availability/z7.bin',
+                    bundleIndex: 'bundle-index/z8.json',
+                    bundleTemplate: 'bundles/overview/8/{side}/{x}/{y}.rmpb',
+                    availability: 'availability/z8.bin',
                     tileBounds: { minX: overview.x, minY: overview.y, maxX: overview.x, maxY: overview.y },
                 },
                 {
@@ -77,10 +78,10 @@ describe('MapTileController', () => {
         };
         const responses = new Map<string, BodyInit>([
             ['https://tiles.example/manifest.json', JSON.stringify(manifest)],
-            ['https://tiles.example/availability/z7.bin', availability(overview.zoom, overview.x, overview.y)],
+            ['https://tiles.example/availability/z8.bin', availability(overview.zoom, overview.x, overview.y)],
             ['https://tiles.example/availability/z13.bin', availability(zoomed.zoom, zoomed.x, zoomed.y)],
             [
-                'https://tiles.example/bundle-index/z7.json',
+                'https://tiles.example/bundle-index/z8.json',
                 JSON.stringify({
                     formatVersion: 1,
                     level: 'overview',
@@ -98,7 +99,7 @@ describe('MapTileController', () => {
                 }),
             ],
             [
-                `https://tiles.example/bundles/overview/7/1/${overview.x}/${overview.y}.rmpb`,
+                `https://tiles.example/bundles/overview/8/1/${overview.x}/${overview.y}.rmpb`,
                 bundle(overview.zoom, overview.x, overview.y),
             ],
             [
@@ -133,7 +134,7 @@ describe('MapTileController', () => {
         await controller.initialize();
         await vi.waitFor(() =>
             expect(fetcherMock).toHaveBeenCalledWith(
-                new URL(`https://tiles.example/bundles/overview/7/1/${overview.x}/${overview.y}.rmpb`),
+                new URL(`https://tiles.example/bundles/overview/8/1/${overview.x}/${overview.y}.rmpb`),
                 expect.objectContaining({ signal: expect.anything() })
             )
         );
@@ -142,14 +143,14 @@ describe('MapTileController', () => {
         releaseOverviewBundle();
         await vi.waitFor(() => expect(parseSpy).toHaveBeenCalled());
         controller.updateViewport(initialViewport);
-        await vi.waitFor(() => expect(root.querySelector('[data-tile-key="7/107/52"]')).not.toBeNull());
-        const overviewTile = root.querySelector<SVGSVGElement>('[data-tile-key="7/107/52"]')!;
+        await vi.waitFor(() => expect(root.querySelector('[data-tile-key="8/214/104"]')).not.toBeNull());
+        const overviewTile = root.querySelector<SVGSVGElement>('[data-tile-key="8/214/104"]')!;
         expect(overviewTile.classList.contains('rmp-map-tile')).toBe(true);
         expect(overviewTile.dataset.level).toBe('overview');
         expect(root.querySelector('[data-map-attribution]')?.textContent).toContain('OpenStreetMap');
 
         controller.updateViewport({ ...initialViewport, zoom: MAP_ZOOMED_SWITCH_THRESHOLD });
-        await vi.waitFor(() => expect(root.querySelector('[data-tile-key="7/107/52"]')).toBeNull());
+        await vi.waitFor(() => expect(root.querySelector('[data-tile-key="8/214/104"]')).toBeNull());
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="13/6860/3347"]')).not.toBeNull());
         expect(root.querySelector<SVGSVGElement>('[data-tile-key="13/6860/3347"]')!.dataset.level).toBe('zoomed');
         expect(loading).toEqual([true, true, false, true, false]);
