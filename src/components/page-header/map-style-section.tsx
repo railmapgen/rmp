@@ -47,6 +47,11 @@ const ScaleSlider = (props: {
     isDisabled?: boolean;
     onChange: (value: number) => void;
 }) => {
+    /**
+     * Slider movement is kept local until the gesture ends. Each persisted style
+     * update also recompiles map CSS and writes the project save, neither of which
+     * needs to run for every pointer event.
+     */
     const [draftValue, setDraftValue] = React.useState(props.value);
 
     React.useEffect(() => setDraftValue(props.value), [props.value]);
@@ -116,6 +121,13 @@ export const MapStyleSection = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const mapStyle = useRootSelector(state => state.param.mapStyle);
+
+    /**
+     * Subscription state is read at the section boundary so reset, switches,
+     * sliders, and color pickers share one gate. Accepting a caller-provided flag
+     * would let a future mounting point accidentally expose only part of the
+     * subscribed editor.
+     */
     const isDisabled = !useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
 
     const saveStyle = (style: MapStyle) => dispatch(setMapStyle(style));

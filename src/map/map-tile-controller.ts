@@ -27,6 +27,10 @@ const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 export type MapLevelName = 'overview' | 'zoomed';
 
+/**
+ * A level is described by separate availability and bundle indexes so the
+ * client can rule out empty tiles without downloading their binary bundles.
+ */
 interface MapLevelManifest {
     name: MapLevelName;
     zoom: number;
@@ -37,12 +41,14 @@ interface MapLevelManifest {
     tileBounds: { minX: number; minY: number; maxX: number; maxY: number };
 }
 
+/** Top-level metadata is intentionally small so no tile payload is needed to initialize the map. */
 interface MapManifest {
     formatVersion: number;
     levels: MapLevelManifest[];
     attribution: string;
 }
 
+/** The bundle index lists only files actually published for a sparse level. */
 interface BundleIndexEntry {
     side: number;
     x: number;
@@ -50,6 +56,7 @@ interface BundleIndexEntry {
 }
 
 interface MapLevel extends MapLevelManifest {
+    // Parsed lookup structures are kept with the manifest to prevent cross-level coordinate mistakes.
     availabilityIndex: AvailabilityIndex;
     bundles: Map<string, BundleIndexEntry>;
 }
@@ -63,6 +70,7 @@ interface TileRequest {
     url: string;
 }
 
+/** Queued promises retain their own resolvers because some tasks wait before fetch even starts. */
 interface FetchQueueEntry<T> {
     task: () => Promise<T>;
     resolve: (value: T) => void;
@@ -70,6 +78,11 @@ interface FetchQueueEntry<T> {
 }
 
 export interface MapTileControllerOptions {
+    /**
+     * This root is owned imperatively for the controller's entire lifetime.
+     * React must not mount children inside it because level switches and dispose
+     * intentionally replace all of its children.
+     */
     root: SVGGElement;
     baseUrl: string;
     getViewportSize: () => { width: number; height: number };
@@ -77,9 +90,18 @@ export interface MapTileControllerOptions {
     fetch?: typeof globalThis.fetch;
 }
 
+/**
+ * Bundle maps are already scoped to one level, so zoom is intentionally omitted
+ * from this key. Using the same encoding for index creation and lookup prevents
+ * subtle disagreement over bundle coordinates.
+ */
 const bundleAddressKey = (address: Pick<BundleAddress, 'side' | 'x' | 'y'>) =>
     `${address.side}/${address.x}/${address.y}`;
 
+/**
+ * Requires exactly one level instead of accepting the first match. Duplicate or
+ * incomplete manifests would otherwise produce order-dependent rendering.
+ */
 const requireLevel = (manifest: MapManifest, name: MapLevelName): MapLevelManifest => {
     const matches = manifest.levels.filter(level => level.name === name);
     if (matches.length !== 1) throw new Error(`Expected exactly one ${name} level`);
@@ -100,16 +122,41 @@ const requireLevel = (manifest: MapManifest, name: MapLevelName): MapLevelManife
     return level;
 };
 
+/**
+ * Imperatively streams sparse map tiles into an SVG layer.
+ *
+ * React owns the stable layer boundary and style element; this controller owns
+ * high-frequency visibility calculation, bounded network/cache work, and tile
+ * DOM beneath that boundary. Keeping those lifecycles separate avoids rerendering
+ * the editor tree on every viewport frame.
+ */
 export class MapTileController {
     private readonly fetcher: typeof globalThis.fetch;
     private readonly abortController = new AbortController();
     private readonly tileRoot: SVGGElement;
     private readonly attribution: SVGTextElement;
+
+    /**
+     * Bundles avoid repeated network/parse work; tile templates avoid repeated
+     * UTF-8 and SVG parsing. Templates are never mounted directly because one
+     * DOM node cannot represent the same cached tile in multiple mount cycles.
+     */
     private readonly bundleCache = new ByteLru<ParsedBundle>(MAP_BUNDLE_CACHE_MAX_BYTES);
     private readonly tileCache = new ByteLru<SVGSVGElement>(MAP_TILE_CACHE_MAX_BYTES, MAP_TILE_CACHE_MAX_ENTRIES);
+
+    // A cache only helps completed work; these maps also deduplicate concurrent requests for the same resource.
     private readonly bundleRequests = new Map<string, Promise<ParsedBundle>>();
     private readonly tileRequests = new Map<string, Promise<SVGSVGElement>>();
+
+    // Fetches are queued globally across indexes and tile bundles to cap bursts caused by fast pans.
     private readonly fetchQueue: FetchQueueEntry<unknown>[] = [];
+
+    /**
+     * `desired` is recalculated from the latest viewport. The other collections
+     * track which desired tiles are mounted, still loading, or definitively
+     * finished (including failures), allowing a level switch to terminate even
+     * when an individual tile cannot be loaded.
+     */
     private readonly nodes = new Map<string, SVGSVGElement>();
     private readonly pending = new Set<string>();
     private readonly settled = new Set<string>();
@@ -119,7 +166,14 @@ export class MapTileController {
     private viewport: LiveViewport | undefined;
     private activeLevel: MapLevel | undefined;
     private activeFetches = 0;
+
+    /**
+     * Network promises may outlive a viewport or level. Capturing this generation
+     * at request time prevents stale completions from mounting into the new level.
+     */
     private generation = 0;
+
+    // Rendering and DOM insertion are independently batched to one write per animation frame.
     private renderFrame: number | undefined;
     private mountFrame: number | undefined;
     private mountQueue: Array<{ generation: number; request: TileRequest; tile: SVGSVGElement }> = [];
@@ -135,10 +189,17 @@ export class MapTileController {
         this.attribution.setAttribute('fill', '#4a4a4a');
         this.attribution.setAttribute('font-family', 'Arial, sans-serif');
         this.attribution.setAttribute('opacity', '0.8');
+
+        // The basemap is visual context; editor gestures must continue to target the SVG interaction layer above it.
         options.root.style.pointerEvents = 'none';
         options.root.append(this.tileRoot, this.attribution);
     }
 
+    /**
+     * Loads both levels before rendering so crossing the zoom threshold never
+     * has to reinterpret partially initialized metadata. `updateViewport` may
+     * safely run first; its latest value is rendered once initialization ends.
+     */
     async initialize() {
         const baseUrl = this.options.baseUrl.trim();
         if (!baseUrl) throw new Error('Map tile base URL is not configured');
@@ -161,9 +222,15 @@ export class MapTileController {
         this.scheduleRender();
     }
 
+    /**
+     * Accepts every transient viewport frame because Redux only receives settled
+     * pan/zoom state. The latest frame controls both level choice and tile range.
+     */
     updateViewport(viewport: LiveViewport) {
         if (this.disposed) return;
         this.viewport = viewport;
+
+        // Attribution must follow even before tile metadata is ready, because viewport updates are independent of loading.
         this.positionAttribution(viewport);
         if (this.levels) {
             const target = isMapZoomed(viewport.zoom) ? this.levels.zoomed : this.levels.overview;
@@ -172,11 +239,18 @@ export class MapTileController {
         this.scheduleRender();
     }
 
+    /**
+     * Makes teardown terminal for active fetches, queued fetches, animation
+     * frames, and owned DOM. This matters when project type changes while
+     * initialization or tile decoding is still in flight.
+     */
     dispose() {
         this.disposed = true;
         this.generation += 1;
         this.abortController.abort();
         const abortError = new DOMException('Map tile controller disposed', 'AbortError');
+
+        // AbortController only rejects requests that already started; queued tasks need an explicit terminal result.
         for (const entry of this.fetchQueue.splice(0)) entry.reject(abortError);
         if (this.renderFrame !== undefined) cancelAnimationFrame(this.renderFrame);
         if (this.mountFrame !== undefined) cancelAnimationFrame(this.mountFrame);
@@ -191,6 +265,11 @@ export class MapTileController {
         this.options.root.replaceChildren();
     }
 
+    /**
+     * Cross-checks separately published indexes before combining them. A level
+     * must never use availability or bundle coordinates generated for another
+     * name or zoom, even if each file is valid by itself.
+     */
     private async loadLevel(level: MapLevelManifest, manifestUrl: URL): Promise<MapLevel> {
         const [availabilityIndex, bundleIndex] = await Promise.all([
             this.fetchArrayBuffer(new URL(level.availability, manifestUrl)).then(parseAvailability),
@@ -211,6 +290,7 @@ export class MapTileController {
         }
         const bundles = new Map<string, BundleIndexEntry>();
         for (const entry of bundleIndex.bundles) {
+            // Accept only bundle shapes the resolver knows how to address; silently accepting another size loses tiles.
             if (
                 !(MAP_BUNDLE_SIDES as readonly number[]).includes(entry.side) ||
                 !Number.isInteger(entry.x) ||
@@ -225,14 +305,21 @@ export class MapTileController {
         return { ...level, availabilityIndex, bundles };
     }
 
+    /** Coalesces high-frequency viewport changes before doing visibility math. */
     private scheduleRender() {
         if (!this.levels || !this.viewport || this.renderFrame !== undefined || this.disposed) return;
+
+        // Pan events can outpace paint; coalescing them avoids calculating visibility for viewports never shown.
         this.renderFrame = requestAnimationFrame(() => {
             this.renderFrame = undefined;
             this.render();
         });
     }
 
+    /**
+     * Re-evaluates the level inside the scheduled frame because the viewport may
+     * have crossed the threshold after that frame was requested.
+     */
     private render() {
         if (!this.levels || !this.viewport || this.disposed) return;
         const target = isMapZoomed(this.viewport.zoom) ? this.levels.zoomed : this.levels.overview;
@@ -240,7 +327,9 @@ export class MapTileController {
         this.syncVisibleTiles(target, this.viewport);
     }
 
+    /** Invalidates all level-specific async and DOM state before accepting tiles from a new source level. */
     private switchLevel(level: MapLevel) {
+        // Overlapping coordinates still refer to different source geometry, so nodes cannot be reused across levels.
         this.generation += 1;
         this.activeLevel = level;
         this.nodes.clear();
@@ -253,6 +342,11 @@ export class MapTileController {
         this.setLoading(true);
     }
 
+    /**
+     * Reconciles against existing nodes rather than rebuilding every visible
+     * tile on a pan. Retaining overlap reduces DOM churn and prevents avoidable
+     * flashes while only the newly exposed edge is loading.
+     */
     private syncVisibleTiles(level: MapLevel, viewport: LiveViewport) {
         const nextDesired = this.getVisibleTiles(level, viewport);
         this.desired = nextDesired;
@@ -272,6 +366,10 @@ export class MapTileController {
         this.maybeFinishSwitch();
     }
 
+    /**
+     * Computes coverage in the common world-pixel space so overview and detailed
+     * levels select the same geographic area despite using different source zooms.
+     */
     private getVisibleTiles(level: MapLevel, viewport: LiveViewport) {
         const size = this.options.getViewportSize();
         const graphMax = {
@@ -280,6 +378,8 @@ export class MapTileController {
         };
         const worldMin = graphToWorldPixel(viewport);
         const worldMax = graphToWorldPixel(graphMax);
+
+        // Level tiles are scaled into the common zoom before converting back to graph units.
         const factor = 2 ** (MAP_COMMON_ZOOM - level.zoom);
         const commonTileSize = MAP_TILE_SIZE * factor;
         const bounds = level.tileBounds;
@@ -303,7 +403,12 @@ export class MapTileController {
         return desired;
     }
 
+    /**
+     * Resolves only bundles declared by the index; deriving a plausible URL is
+     * not enough at sparse dataset boundaries where that file may not exist.
+     */
     private resolveBundle(level: MapLevel, x: number, y: number) {
+        // `MAP_BUNDLE_SIDES` is largest-first so dense areas are served with fewer requests.
         for (const side of MAP_BUNDLE_SIDES) {
             const address = { zoom: level.zoom, side, x: Math.floor(x / side), y: Math.floor(y / side) };
             if (!level.bundles.has(bundleAddressKey(address))) continue;
@@ -316,6 +421,10 @@ export class MapTileController {
         return undefined;
     }
 
+    /**
+     * Separates async decode from frame-batched mounting and captures the current
+     * level generation so a late completion cannot reintroduce stale geometry.
+     */
     private requestTile(request: TileRequest) {
         const generation = this.generation;
         this.pending.add(request.key);
@@ -326,6 +435,8 @@ export class MapTileController {
                     this.pending.delete(request.key);
                     return;
                 }
+
+                // The cache retains an unmounted template; every appearance gets an independent DOM node.
                 const tile = template.cloneNode(true) as SVGSVGElement;
                 this.positionTile(tile, request);
                 this.mountQueue.push({ generation, request, tile });
@@ -335,15 +446,20 @@ export class MapTileController {
                 if (this.disposed || generation !== this.generation) return;
                 console.error(`Map tile failed: ${request.key}`, error);
                 this.pending.delete(request.key);
+
+                // A failed desired tile is terminal for this switch; otherwise the loading state could remain forever.
                 if (this.desired.has(request.key)) this.settled.add(request.key);
                 this.maybeFinishSwitch();
             });
     }
 
+    /** Batches decoded tiles into a single live-DOM mutation and rechecks relevance at the last possible moment. */
     private scheduleMount() {
         if (this.mountFrame !== undefined) return;
         this.mountFrame = requestAnimationFrame(() => {
             this.mountFrame = undefined;
+
+            // A fragment turns a burst of completed requests into one mutation of the live SVG tree.
             const fragment = document.createDocumentFragment();
             for (const item of this.mountQueue.splice(0)) {
                 const { generation, request, tile } = item;
@@ -364,8 +480,15 @@ export class MapTileController {
         });
     }
 
+    /**
+     * Ends level-switch loading only after the current viewport has a terminal
+     * result for every desired tile. The desired set may change during a pan, so
+     * this cannot rely on a fixed request counter.
+     */
     private maybeFinishSwitch() {
         if (!this.switching) return;
+
+        // "Finished" means every currently visible tile either mounted or failed, not that every request succeeded.
         for (const key of this.desired.keys()) {
             if (!this.settled.has(key)) return;
         }
@@ -373,6 +496,10 @@ export class MapTileController {
         this.setLoading(false);
     }
 
+    /**
+     * Caches parsed, unmounted SVG templates and deduplicates concurrent requests
+     * for the same tile. Keeping templates detached makes later cloning safe.
+     */
     private loadTileTemplate(request: TileRequest): Promise<SVGSVGElement> {
         const cached = this.tileCache.get(request.key);
         if (cached) return Promise.resolve(cached);
@@ -395,6 +522,11 @@ export class MapTileController {
         return promise;
     }
 
+    /**
+     * Shares a bundle download among all contained tile requests. Address
+     * validation still runs for cache hits and joined promises because URL
+     * identity alone cannot prove the server published the expected content.
+     */
     private loadBundle(url: string, expectedAddress: BundleAddress): Promise<ParsedBundle> {
         const cached = this.bundleCache.get(url);
         if (cached) {
@@ -411,12 +543,14 @@ export class MapTileController {
             inFlight.then(clearRequest, clearRequest);
         }
         return inFlight.then(bundle => {
+            // URLs are cache keys, but embedded coordinates remain the authority for detecting a mispublished bundle.
             this.assertBundleAddress(bundle, expectedAddress, url);
             this.bundleCache.set(url, bundle, bundle.bytes.byteLength);
             return bundle;
         });
     }
 
+    /** Evicts mismatched cached data so a bad response cannot remain a reusable success. */
     private assertBundleAddress(bundle: ParsedBundle, expected: BundleAddress, url: string) {
         const actual = bundle.address;
         if (
@@ -430,11 +564,18 @@ export class MapTileController {
         }
     }
 
+    /**
+     * Verifies embedded tile coordinates before importing the SVG into this
+     * document. Correct metadata is required because placement uses the requested
+     * key, not coordinates inferred from arbitrary SVG content.
+     */
     private parseTileTemplate(source: string, tileKey: string, url: string) {
         const parsed = new DOMParser().parseFromString(source, 'image/svg+xml');
         if (parsed.querySelector('parsererror')) throw new Error(`Invalid SVG in ${url}`);
         const root = parsed.documentElement;
         const [zoom, x, y] = tileKey.split('/');
+
+        // Reject coordinate mismatches before positioning; displaying a valid SVG in the wrong tile is harder to diagnose.
         if (
             root.namespaceURI !== SVG_NAMESPACE ||
             root.localName !== 'svg' ||
@@ -447,7 +588,9 @@ export class MapTileController {
         return document.importNode(root, true) as unknown as SVGSVGElement;
     }
 
+    /** Converts source-level tile coordinates to graph geometry through the shared reference zoom. */
     private positionTile(tile: SVGSVGElement, request: TileRequest) {
+        // Normalize every source level through the common zoom so switching detail never shifts geographic features.
         const factor = 2 ** (MAP_COMMON_ZOOM - request.level.zoom);
         const commonTileSize = MAP_TILE_SIZE * factor;
         const graphPosition = worldPixelToGraph({ x: request.x * commonTileSize, y: request.y * commonTileSize });
@@ -462,18 +605,27 @@ export class MapTileController {
         tile.dataset.tileKey = request.key;
     }
 
+    /** Keeps attribution at a constant visual inset and size in the interactive viewport. */
     private positionAttribution(viewport: LiveViewport) {
         const { width, height } = this.options.getViewportSize();
+
+        /**
+         * SVG text uses graph units inside the transformed viewport. Scaling the
+         * inset and font by the inverse screen transform keeps both visually
+         * constant while panning and zooming.
+         */
         const unit = viewport.zoom / 100;
         this.attribution.setAttribute('x', String(viewport.x + 8 * unit));
         this.attribution.setAttribute('y', String(viewport.y + height * unit - 8 * unit));
         this.attribution.setAttribute('font-size', String(10 * unit));
     }
 
+    /** Keeps loading presentation optional so tile lifecycle does not depend on a particular React alert component. */
     private setLoading(loading: boolean) {
         this.options.onLoadingChange?.(loading);
     }
 
+    /** Routes every deferred fetch through one concurrency budget, regardless of which tile requested it. */
     private enqueueFetch<T>(task: () => Promise<T>): Promise<T> {
         return new Promise<T>((resolve, reject) => {
             this.fetchQueue.push({ task, resolve: resolve as (value: unknown) => void, reject });
@@ -481,7 +633,9 @@ export class MapTileController {
         });
     }
 
+    /** Starts queued work until the shared network cap is reached. */
     private drainFetchQueue() {
+        // Starting the next queued task in `finally` preserves the cap for successes, failures, and aborts alike.
         while (this.activeFetches < MAP_MAX_FETCHES && this.fetchQueue.length > 0) {
             const entry = this.fetchQueue.shift()!;
             this.activeFetches += 1;
@@ -495,12 +649,14 @@ export class MapTileController {
         }
     }
 
+    /** Applies the controller-wide abort signal so project changes terminate manifest and index requests too. */
     private async fetchJson<T>(url: URL): Promise<T> {
         const response = await this.fetcher(url, { signal: this.abortController.signal });
         if (!response.ok) throw new Error(`HTTP ${response.status} for ${url.href}`);
         return response.json() as Promise<T>;
     }
 
+    /** Binary fetches share the same lifetime and HTTP failure semantics as manifest requests. */
     private async fetchArrayBuffer(url: URL) {
         const response = await this.fetcher(url, { signal: this.abortController.signal });
         if (!response.ok) throw new Error(`HTTP ${response.status} for ${url.href}`);

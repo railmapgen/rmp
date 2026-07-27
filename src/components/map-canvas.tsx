@@ -11,6 +11,11 @@ import { useWindowSize } from '../util/hooks';
 import { sendErrorNotification } from '../util/notifications';
 
 export interface MapCanvasHandle {
+    /**
+     * The pan/zoom hot path does not publish every intermediate viewport to
+     * Redux. This handle lets the SVG viewport controller forward those frames
+     * without coupling generic viewport code to map rendering.
+     */
     updateViewport: (viewport: LiveViewport) => void;
 }
 
@@ -33,12 +38,22 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
     const { height, width } = getCanvasSize(size);
     const mapLayerRef = React.useRef<SVGGElement>(null);
     const mapControllerRef = React.useRef<MapTileController | undefined>(undefined);
+
+    // A viewport may arrive before manifests finish loading; retaining it lets the controller start at the latest frame.
     const latestViewportRef = React.useRef<LiveViewport>({
         x: svgViewBoxMin.x,
         y: svgViewBoxMin.y,
         zoom: svgViewBoxZoom,
     });
+
+    // Overview changes affect React content, but identical viewport frames should not repeatedly rerender SvgCanvas.
     const isOverviewRef = React.useRef(false);
+
+    /**
+     * The controller asks for size lazily while calculating visible tiles. A ref
+     * gives that long-lived controller fresh dimensions without recreating it
+     * and discarding its manifests, requests, and caches on every resize.
+     */
     const viewportSizeRef = React.useRef({ height, width });
     const mapStyleCss = React.useMemo(() => compileMapStyleCss(mapStyle), [mapStyle]);
     const emitOverviewChange = useEvent(onOverviewChange);
@@ -66,6 +81,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
 
     React.useEffect(() => {
         if (projectType !== 'map' || !mapLayerRef.current) {
+            // Also clear a previously reported overview state when switching back to a diagram.
             updateViewport(latestViewportRef.current);
             return;
         }
@@ -77,6 +93,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
             getViewportSize: () => {
                 const svg = mapLayer.ownerSVGElement;
                 return {
+                    // Prefer the actual rendered SVG; hook-derived dimensions are only a fallback during layout.
                     width: svg?.clientWidth || viewportSizeRef.current.width,
                     height: svg?.clientHeight || viewportSizeRef.current.height,
                 };
@@ -100,7 +117,12 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
     viewportSizeRef.current = { height, width };
 
     React.useEffect(() => {
-        // The viewport coordinates stay the same after a resize, but the visible tile range does not.
+        /**
+         * The viewport coordinates stay the same after a resize, but its visible
+         * tile range does not. Reusing the controller preserves warmed caches and
+         * avoids aborting and refetching both map levels merely because the window
+         * changed size.
+         */
         mapControllerRef.current?.updateViewport(latestViewportRef.current);
     }, [height, width]);
 

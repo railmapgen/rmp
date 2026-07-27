@@ -121,6 +121,7 @@ export const initStore = async (store: RootStore) => {
             return (
                 currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
                 currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
+                // Map style has no graph refresh thunk, so it must independently trigger save persistence.
                 currentState.param.mapStyle !== previousState.param.mapStyle
             );
         },

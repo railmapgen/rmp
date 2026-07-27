@@ -1,5 +1,6 @@
 import { MAP_BUNDLE_SIDES } from './map-config';
 
+/** Parsed sparse coverage metadata used to reject unavailable tiles before any bundle request. */
 export interface AvailabilityIndex {
     zoom: number;
     minX: number;
@@ -10,6 +11,7 @@ export interface AvailabilityIndex {
     bits: Uint8Array;
 }
 
+/** Identifies the bundle grid cell containing one or more tiles at a source zoom. */
 export interface BundleAddress {
     zoom: number;
     side: number;
@@ -17,20 +19,30 @@ export interface BundleAddress {
     y: number;
 }
 
+/** Zero-copy byte span for one SVG payload within a parsed bundle. */
 export interface BundleEntry {
     start: number;
     length: number;
 }
 
+/** Bundle metadata retains the source bytes so entry spans remain valid without copying every tile. */
 export interface ParsedBundle {
     address: BundleAddress;
     bytes: Uint8Array;
     entries: Map<string, BundleEntry>;
 }
 
+/** Reads fixed ASCII markers without invoking a text decoder for the rest of a binary payload. */
 const ascii = (bytes: Uint8Array, start: number, length: number) =>
     String.fromCharCode(...bytes.subarray(start, start + length));
 
+/**
+ * Validates and parses the compact tile-availability bitmap.
+ *
+ * These files control later array indexing and request selection, so rejecting
+ * non-canonical bounds, padding, and counts here is preferable to turning a
+ * corrupted index into missing tiles or arbitrary bundle requests downstream.
+ */
 export const parseAvailability = (buffer: ArrayBuffer): AvailabilityIndex => {
     const bytes = new Uint8Array(buffer);
     if (bytes.length < 28 || ascii(bytes, 0, 4) !== 'RMPT') throw new Error('Invalid availability magic');
@@ -61,6 +73,8 @@ export const parseAvailability = (buffer: ArrayBuffer): AvailabilityIndex => {
     const requiredBytes = Math.ceil(area / 8);
     if (index.bits.length !== requiredBytes) throw new Error('Invalid availability bitmap length');
     let availableTiles = 0;
+
+    // Unused bits in the final byte must be zero so one logical index has only one valid encoding.
     for (let bit = 0; bit < index.bits.length * 8; bit += 1) {
         const isSet = (index.bits[bit >> 3] & (1 << (bit & 7))) !== 0;
         if (bit >= area && isSet) throw new Error('Invalid availability padding bits');
@@ -70,6 +84,7 @@ export const parseAvailability = (buffer: ArrayBuffer): AvailabilityIndex => {
     return index;
 };
 
+/** Performs the sparse bitmap lookup without allocating keys or requesting absent tiles. */
 export const hasAvailableTile = (index: AvailabilityIndex, x: number, y: number) => {
     const localX = x - index.minX;
     const localY = y - index.minY;
@@ -78,6 +93,14 @@ export const hasAvailableTile = (index: AvailabilityIndex, x: number, y: number)
     return (index.bits[bit >> 3] & (1 << (bit & 7))) !== 0;
 };
 
+/**
+ * Parses an RMP bundle into zero-copy spans over its original byte buffer.
+ *
+ * Entries must be unique, ordered, contiguous, and consume the full payload.
+ * Requiring this canonical layout keeps offsets trustworthy when the controller
+ * later decodes an individual SVG and prevents ignored bytes from hiding a
+ * malformed producer output.
+ */
 export const parseBundle = (buffer: ArrayBuffer): ParsedBundle => {
     const bytes = new Uint8Array(buffer);
     if (bytes.length < 20 || ascii(bytes, 0, 4) !== 'RMPB') throw new Error('Invalid RMPB magic');
@@ -112,11 +135,15 @@ export const parseBundle = (buffer: ArrayBuffer): ParsedBundle => {
         const localKey = `${localX}/${localY}`;
         if (localCoordinates.has(localKey)) throw new Error('Duplicate RMPB local coordinate');
         localCoordinates.add(localKey);
+
+        // Stable Y/X ordering makes duplicate or ambiguous indexes fail consistently across producers.
         if (localY < previousLocalY || (localY === previousLocalY && localX <= previousLocalX)) {
             throw new Error('RMPB entries are not in Y/X order');
         }
         const relativeOffset = view.getUint32(offset + 4, true);
         const length = view.getUint32(offset + 8, true);
+
+        // Contiguous spans rule out overlaps, gaps, and multiple byte layouts for the same logical bundle.
         if (relativeOffset !== expectedRelativeOffset || length < 1) throw new Error('Invalid RMPB payload span');
         const end = relativeOffset + length;
         if (end > bytes.length - payloadOffset) throw new Error('RMPB payload span is out of range');

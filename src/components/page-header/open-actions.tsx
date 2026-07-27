@@ -55,6 +55,11 @@ export default function OpenActions() {
         dispatch(clearSelected());
         graph.current.clear();
         if (type === 'map') {
+            /**
+             * A map project has a fixed geographic graph origin. Center it using
+             * the current canvas dimensions and reset styling so a new project
+             * cannot inherit unrelated map presentation from the previous file.
+             */
             const viewport = getMapInitialViewport(width, height);
             dispatch(setSvgViewBoxZoom(viewport.zoom));
             dispatch(setSvgViewBoxMin({ x: viewport.x, y: viewport.y }));

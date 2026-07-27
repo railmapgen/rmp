@@ -1037,6 +1037,12 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
+    /**
+     * Project type and map style are one compatibility boundary. The entire map
+     * feature ships at once, so no released version can legitimately contain one
+     * without the other. Migrating them together also keeps old saves on diagram
+     * behavior instead of inferring a map from graph data.
+     */
     77: param =>
         JSON.stringify({
             ...JSON.parse(param),

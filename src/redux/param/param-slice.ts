@@ -85,9 +85,15 @@ const paramSlice = createSlice({
         ) => {
             state.future = [];
             if (state.type === action.payload.type) {
+                // Within one project type, replacing the graph is still a meaningful undoable edit.
                 state.past.push(state.present);
                 if (state.past.length > MAX_UNDO_SIZE) state.past.shift();
             } else {
+                /**
+                 * Graph snapshots do not include project type, viewport, style,
+                 * or tool constraints. Retaining them across a type change would
+                 * offer an "undo" that restores only half of the prior project.
+                 */
                 state.past = [];
             }
             state.type = action.payload.type;

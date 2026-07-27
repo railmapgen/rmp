@@ -1,6 +1,7 @@
 export type MapRoadKind = 'path' | 'local' | 'collector' | 'arterial';
 export type MapRailKind = 'metro' | 'national';
 
+/** User-adjustable appearance shared by all road features in one generated category. */
 export interface MapRoadStyle {
     enabled: boolean;
     casingColor: string;
@@ -8,12 +9,17 @@ export interface MapRoadStyle {
     widthScale: number;
 }
 
+/** Rails have a fixed inner detail color, so only their casing color is configurable. */
 export interface MapRailStyle {
     enabled: boolean;
     color: string;
     widthScale: number;
 }
 
+/**
+ * This shape is persisted in RMP saves. New adjustable categories therefore
+ * need a default and a save migration rather than being added only to the UI.
+ */
 export interface MapStyle {
     roads: Record<MapRoadKind, MapRoadStyle>;
     rails: Record<MapRailKind, MapRailStyle>;
@@ -23,6 +29,7 @@ export interface MapStyle {
     };
 }
 
+/** Defaults are cloned when assigned because nested style objects are mutable Redux state. */
 export const DEFAULT_MAP_STYLE: MapStyle = {
     roads: {
         path: { enabled: true, casingColor: '#dedbd4', color: '#dedbd4', widthScale: 1 },
@@ -40,8 +47,13 @@ export const DEFAULT_MAP_STYLE: MapStyle = {
     },
 };
 
+/**
+ * Limits generated CSS precision so slider arithmetic does not create noisy,
+ * unstable style text or unnecessarily different exported SVG snapshots.
+ */
 const formatNumber = (value: number) => Number(value.toFixed(4)).toString();
 
+/** Keeps every width calculation on the same formatting boundary. */
 const scaled = (base: number, scale: number) => formatNumber(base * scale);
 
 /**
@@ -54,6 +66,7 @@ export const compileMapStyleCss = (style: MapStyle) => {
     const display = (enabled: boolean) => (enabled ? 'inline' : 'none');
     const labelDisplay = style.labels.enabled ? 'inline' : 'none';
 
+    // Filled road polygons are generated as part of the local-road layer and must share its visibility and color.
     return `
 [data-map-layer] .rmp-map-tile .road-path { display: ${display(path.enabled)}; }
 [data-map-layer] .rmp-map-tile .road-local { display: ${display(local.enabled)}; }

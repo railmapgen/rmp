@@ -92,6 +92,11 @@ const SvgWrapper = () => {
     const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
     const [isMapOverview, setIsMapOverview] = React.useState(false);
 
+    /**
+     * Intermediate pan/zoom frames bypass Redux for interaction performance.
+     * This narrow bridge keeps the sibling map layer synchronized without
+     * teaching the reusable viewport controller about maps or tile loading.
+     */
     const handleViewportChange = React.useCallback(
         (viewport: { x: number; y: number; zoom: number }) => mapCanvasRef.current?.updateViewport(viewport),
         []
@@ -491,7 +496,15 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
+                    {/*
+                     * MapCanvas is a sibling of the editor content so it can own and clear its
+                     * imperative tile root without taking ownership of SvgCanvas's React tree.
+                     */}
                     <MapCanvas ref={mapCanvasRef} onOverviewChange={setIsMapOverview} />
+                    {/*
+                     * At geographic overview scale, editor geometry is too dense to be useful.
+                     * Keep it mounted to preserve editor state, but exclude it from rendering.
+                     */}
                     <g data-editor-layer="" display={isMapOverview ? 'none' : undefined}>
                         {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
                         {isTouchClient() && mode === 'free' && <TouchOverlay />}

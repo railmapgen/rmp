@@ -341,6 +341,12 @@ const runtimeSlice = createSlice({
                 state.refresh.edges = Date.now();
             })
             .addCase(replaceGraph, state => {
+                /**
+                 * Available tools differ between diagram and map projects.
+                 * Resetting the transient interaction state is safer than trying
+                 * to validate every tool-specific payload retained by `lastTool`;
+                 * graph content itself is handled by the param slice.
+                 */
                 state.mode = 'free';
                 state.lastTool = undefined;
                 state.isDetailsOpen = getIsDetailsOpen(state);

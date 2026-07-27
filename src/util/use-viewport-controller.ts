@@ -105,6 +105,14 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
      * every high-frequency interaction event.
      */
     const viewportRef = React.useRef<SVGGElement>(null);
+
+    /**
+     * `updateViewportTransform` is shared by the frame scheduler and must remain
+     * stable, while its observer may change when a consumer closes over current
+     * project state or an imperative component handle. Reading the observer from
+     * a ref gives every frame the latest callback without rebuilding the generic
+     * viewport scheduler or moving map-specific behavior into this hook.
+     */
     const viewportObserverRef = React.useRef(onViewportChange);
     viewportObserverRef.current = onViewportChange;
 

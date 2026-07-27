@@ -127,6 +127,16 @@ export const makeRenderReadySVGElement = async (
     return { elem, width, height };
 };
 
+/**
+ * Reanchors map attribution after export changes the cloned SVG's viewBox.
+ *
+ * The live map keeps this text in the current viewport's graph coordinates and
+ * counter-scales its font to a stable screen size. Those values are no longer
+ * meaningful once export replaces the viewport with graph bounds: reusing them
+ * could put the attribution outside the file or give it an unexpected size.
+ * This only mutates the export clone; the interactive canvas keeps its own
+ * viewport-relative placement.
+ */
 export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xMin: number; yMax: number }) => {
     const mapAttribution = svg.querySelector<SVGTextElement>('[data-map-attribution]');
     if (!mapAttribution) return;
