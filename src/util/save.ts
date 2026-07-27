@@ -60,7 +60,7 @@ export interface RMPSave {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 79;
+export const CURRENT_VERSION = 78;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1042,11 +1042,6 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             ...JSON.parse(param),
             version: 78,
             type: 'diagram',
-        }),
-    78: param =>
-        JSON.stringify({
-            ...JSON.parse(param),
-            version: 79,
             mapStyle: DEFAULT_MAP_STYLE,
         }),
 };
