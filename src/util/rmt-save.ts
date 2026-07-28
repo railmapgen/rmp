@@ -1,5 +1,6 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { LocalStorageKey } from '../constants/constants';
+import { GlobalAlertId } from '../constants/global-alerts';
 import { subscription_endpoint } from '../constants/server';
 import { createStore, RootDispatch } from '../redux';
 import {
@@ -9,6 +10,7 @@ import {
     setState,
     setToken,
 } from '../redux/account/account-slice';
+import { closeGlobalAlert } from '../redux/runtime/runtime-slice';
 
 export const SAVE_MANAGER_CHANNEL_NAME = 'rmt-save-manager';
 export enum SaveManagerEventType {
@@ -70,6 +72,9 @@ export const fetchLoginStateAndSubscriptions = async (dispatch: RootDispatch, to
         }
     }
     dispatch(setActiveSubscriptions(activeSubscriptions));
+    if (activeSubscriptions.RMP_CLOUD) {
+        dispatch(closeGlobalAlert(GlobalAlertId.MasterNodeLimitExceeded));
+    }
     logger.debug(`Token is valid, setting active subscriptions: ${JSON.stringify(activeSubscriptions)}`);
 };
 
