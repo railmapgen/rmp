@@ -37,18 +37,13 @@ const mockSubscriptions = (subscriptions: APISubscription[]) => {
 };
 
 describe('fetchLoginStateAndSubscriptions', () => {
-    it('closes only the master limit alert when RMP Cloud is active', async () => {
+    it('closes all RMP Cloud limit alerts when RMP Cloud is active', async () => {
         mockSubscriptions([{ type: 'RMP_CLOUD', expires: '2099-01-01T00:00:00Z' }]);
         const store = createStoreWithLimitAlerts();
 
         await fetchLoginStateAndSubscriptions(store.dispatch, 'token');
 
-        expect(store.getState().runtime.globalAlerts).toEqual({
-            [GlobalAlertId.ParallelLineLimitExceeded]: {
-                status: 'warning',
-                message: 'Parallel limit exceeded',
-            },
-        });
+        expect(store.getState().runtime.globalAlerts).toEqual({});
     });
 
     it('does not close the master limit alert for an unrelated subscription', async () => {
@@ -58,5 +53,6 @@ describe('fetchLoginStateAndSubscriptions', () => {
         await fetchLoginStateAndSubscriptions(store.dispatch, 'token');
 
         expect(store.getState().runtime.globalAlerts).toHaveProperty(GlobalAlertId.MasterNodeLimitExceeded);
+        expect(store.getState().runtime.globalAlerts).toHaveProperty(GlobalAlertId.ParallelLineLimitExceeded);
     });
 });
