@@ -4,6 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdMap, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { getMapInitialViewport } from '../../map/map-config';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { useRootDispatch } from '../../redux';
@@ -124,7 +125,13 @@ export default function OpenActions() {
         logger.debug('OpenActions.handleUpload():: received file', file);
 
         if (file?.type !== 'application/json') {
-            dispatch(setGlobalAlert({ status: 'error', message: t('header.open.invalidType') }));
+            dispatch(
+                setGlobalAlert({
+                    id: GlobalAlertId.OpenInvalidFileType,
+                    status: 'error',
+                    message: t('header.open.invalidType'),
+                })
+            );
             logger.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
@@ -134,7 +141,13 @@ export default function OpenActions() {
                 setVersionToLoad(version);
                 onConfirmOpen();
             } catch (err) {
-                dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
+                dispatch(
+                    setGlobalAlert({
+                        id: GlobalAlertId.OpenFileFailed,
+                        status: 'error',
+                        message: t('header.open.unknownError'),
+                    })
+                );
                 logger.error(
                     'OpenActions.handleUpload():: Unknown error occurred while parsing the uploaded file',
                     err
