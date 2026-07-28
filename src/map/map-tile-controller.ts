@@ -91,8 +91,18 @@ export interface MapTileControllerOptions {
     root: SVGGElement;
     baseUrl: string;
     getViewportSize: () => { width: number; height: number };
-    onLoadingChange?: (loading: boolean) => void;
+    onLoadingChange?: (loading: boolean, progress?: MapLoadingProgress) => void;
     fetch?: typeof globalThis.fetch;
+}
+
+/**
+ * Counts visible tile outcomes instead of bundle downloads. A bundle can serve
+ * several tiles or come from cache, so network request counts do not describe
+ * how much of the current viewport is ready to display.
+ */
+export interface MapLoadingProgress {
+    completed: number;
+    total: number;
 }
 
 /**
@@ -498,8 +508,14 @@ export class MapTileController {
         if (!this.switching) return;
 
         // "Finished" means every currently visible tile either mounted or failed, not that every request succeeded.
+        let completed = 0;
         for (const key of this.desired.keys()) {
-            if (!this.settled.has(key)) return;
+            if (this.settled.has(key)) completed += 1;
+        }
+        if (completed < this.desired.size) {
+            // The desired range may change while panning, so progress always describes the latest viewport.
+            this.setLoading(true, { completed, total: this.desired.size });
+            return;
         }
         this.switching = false;
         this.setLoading(false);
@@ -630,8 +646,8 @@ export class MapTileController {
     }
 
     /** Keeps loading presentation optional so tile lifecycle does not depend on a particular React alert component. */
-    private setLoading(loading: boolean) {
-        this.options.onLoadingChange?.(loading);
+    private setLoading(loading: boolean, progress?: MapLoadingProgress) {
+        this.options.onLoadingChange?.(loading, progress);
     }
 
     /** Routes every deferred fetch through one concurrency budget, regardless of which tile requested it. */

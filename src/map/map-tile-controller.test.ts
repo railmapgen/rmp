@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getMapInitialViewport, MAP_ZOOMED_SWITCH_THRESHOLD } from './map-config';
-import { MapTileController } from './map-tile-controller';
+import { MapTileController, type MapLoadingProgress } from './map-tile-controller';
 
 const availability = (zoom: number, x: number, y: number) => {
     const buffer = new ArrayBuffer(29);
@@ -120,13 +120,13 @@ describe('MapTileController', () => {
             return new Response(body, { status: 200 });
         });
         const fetcher = fetcherMock as typeof fetch;
-        const loading: boolean[] = [];
+        const loading: Array<[boolean, MapLoadingProgress | undefined]> = [];
         const root = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const controller = new MapTileController({
             root,
             baseUrl: 'https://tiles.example/',
             getViewportSize: () => ({ width: 100, height: 100 }),
-            onLoadingChange: value => loading.push(value),
+            onLoadingChange: (value, progress) => loading.push([value, progress]),
             fetch: fetcher,
         });
         const initialViewport = getMapInitialViewport(100, 100);
@@ -153,7 +153,9 @@ describe('MapTileController', () => {
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="8/214/104"]')).toBeNull());
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="13/6860/3347"]')).not.toBeNull());
         expect(root.querySelector<SVGSVGElement>('[data-tile-key="13/6860/3347"]')!.dataset.level).toBe('zoomed');
-        expect(loading).toEqual([true, true, false, true, false]);
+        expect(loading[0]).toEqual([true, undefined]);
+        expect(loading).toContainEqual([true, { completed: 0, total: 1 }]);
+        expect(loading.at(-1)).toEqual([false, undefined]);
         controller.dispose();
         expect((fetcherMock.mock.calls[0][1] as RequestInit).signal?.aborted).toBe(true);
     });

@@ -1,10 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
+import { GlobalAlertId } from '../constants/global-alerts';
 import { isMapZoomed, MAP_TILE_BASE_URL } from '../map/map-config';
 import { compileMapStyleCss } from '../map/map-style';
-import { MapTileController } from '../map/map-tile-controller';
-import { useRootSelector } from '../redux';
+import { MapTileController, type MapLoadingProgress } from '../map/map-tile-controller';
+import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
+import { closeGlobalAlert, setGlobalAlert } from '../redux/runtime/runtime-slice';
 import type { LiveViewport } from '../redux/viewport/viewport-slice';
 import { getCanvasSize } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
@@ -33,11 +35,14 @@ interface MapCanvasProps {
  */
 const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOverviewChange }, ref) => {
     const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+    const store = useRootStore();
     const { type: projectType, mapStyle, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const mapLayerRef = React.useRef<SVGGElement>(null);
     const mapControllerRef = React.useRef<MapTileController | undefined>(undefined);
+    const isLoadingSessionRef = React.useRef(false);
 
     // A viewport may arrive before manifests finish loading; retaining it lets the controller start at the latest frame.
     const latestViewportRef = React.useRef<LiveViewport>({
@@ -61,6 +66,31 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
         console.error('Failed to initialize map tiles', error);
         sendErrorNotification(t('error'), t('map.loadError'));
     });
+    const updateLoadingAlert = useEvent((loading: boolean, progress?: MapLoadingProgress) => {
+        if (!loading) {
+            // Closing an absent ID is intentionally safe across errors, project changes, and unmounts.
+            isLoadingSessionRef.current = false;
+            dispatch(closeGlobalAlert(GlobalAlertId.MapLoading));
+            return;
+        }
+
+        // A manual dismissal suppresses later progress updates until the controller starts a new loading session.
+        if (
+            isLoadingSessionRef.current &&
+            store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading] === undefined
+        ) {
+            return;
+        }
+        isLoadingSessionRef.current = true;
+        const progressText = progress ? ` (${progress.completed} / ${progress.total})` : '';
+        dispatch(
+            setGlobalAlert({
+                id: GlobalAlertId.MapLoading,
+                status: 'loading',
+                message: `${t('map.loading')}${progressText}`,
+            })
+        );
+    });
 
     const updateViewport = React.useCallback(
         (viewport: LiveViewport) => {
@@ -83,6 +113,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
         if (projectType !== 'map' || !mapLayerRef.current) {
             // Also clear a previously reported overview state when switching back to a diagram.
             updateViewport(latestViewportRef.current);
+            updateLoadingAlert(false);
             return;
         }
 
@@ -98,6 +129,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
                     height: svg?.clientHeight || viewportSizeRef.current.height,
                 };
             },
+            onLoadingChange: updateLoadingAlert,
         });
         mapControllerRef.current = controller;
         updateViewport(latestViewportRef.current);
@@ -105,14 +137,16 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
         void controller.initialize().catch(error => {
             // A project-type change may dispose this controller while its manifest is loading.
             if (mapControllerRef.current !== controller) return;
+            updateLoadingAlert(false);
             notifyLoadError(error);
         });
 
         return () => {
+            updateLoadingAlert(false);
             controller.dispose();
             if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
         };
-    }, [notifyLoadError, projectType, updateViewport]);
+    }, [notifyLoadError, projectType, updateLoadingAlert, updateViewport]);
 
     viewportSizeRef.current = { height, width };
 

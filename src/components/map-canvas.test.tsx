@@ -1,9 +1,11 @@
 import { act } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { GlobalAlertId } from '../constants/global-alerts';
 import type { MapTileControllerOptions } from '../map/map-tile-controller';
 import { createStore } from '../redux';
 import { replaceGraph } from '../redux/param/param-slice';
+import { closeGlobalAlert } from '../redux/runtime/runtime-slice';
 import { render } from '../test-utils';
 import MapCanvas, { MapCanvasHandle } from './map-canvas';
 
@@ -87,11 +89,41 @@ describe('MapCanvas', () => {
         expect(onOverviewChange).toHaveBeenLastCalledWith(false);
     });
 
+    it('reports visible tile progress through one replaceable global alert', () => {
+        const { store } = renderMapCanvas();
+        const onLoadingChange = mockControllers[0].options.onLoadingChange!;
+
+        act(() => onLoadingChange(true));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toMatchObject({
+            status: 'loading',
+            message: 'Loading map',
+        });
+
+        act(() => onLoadingChange(true, { completed: 2, total: 5 }));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toMatchObject({
+            status: 'loading',
+            message: 'Loading map (2 / 5)',
+        });
+
+        act(() => store.dispatch(closeGlobalAlert(GlobalAlertId.MapLoading)));
+        act(() => onLoadingChange(true, { completed: 3, total: 5 }));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toBeUndefined();
+
+        act(() => onLoadingChange(false));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toBeUndefined();
+
+        act(() => onLoadingChange(true, { completed: 0, total: 2 }));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toMatchObject({
+            message: 'Loading map (0 / 2)',
+        });
+    });
+
     it('removes the map layer and restores the editor when switching to a diagram', () => {
         const { container, onOverviewChange, ref, store } = renderMapCanvas();
         const controller = mockControllers[0];
 
         act(() => ref.current?.updateViewport({ x: 0, y: 0, zoom: 300 }));
+        act(() => controller.options.onLoadingChange?.(true, { completed: 0, total: 1 }));
         act(() => {
             store.dispatch(replaceGraph({ type: 'diagram', graph: store.getState().param.present }));
         });
@@ -100,5 +132,6 @@ describe('MapCanvas', () => {
         expect(container.querySelector('[data-map-style]')).toBeNull();
         expect(controller.dispose).toHaveBeenCalledOnce();
         expect(onOverviewChange).toHaveBeenLastCalledWith(false);
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toBeUndefined();
     });
 });
