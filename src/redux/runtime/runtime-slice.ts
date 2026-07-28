@@ -163,6 +163,9 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
                 message: `${i18n.t('header.settings.proLimitExceed.master')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
+    } else {
+        // The warning describes current graph validity, so it must not outlive the condition that created it.
+        dispatch(closeGlobalAlert(GlobalAlertId.MasterNodeLimitExceeded));
     }
 
     const existsNodeTypes = Object.keys(existsNodeTypesCount) as NodeType[];
@@ -197,6 +200,9 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
                 message: `${i18n.t('header.settings.proLimitExceed.parallel')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
+    } else {
+        // A stable ID lets this refresh clear only its own recovered limit without touching other warnings.
+        dispatch(closeGlobalAlert(GlobalAlertId.ParallelLineLimitExceeded));
     }
 });
 

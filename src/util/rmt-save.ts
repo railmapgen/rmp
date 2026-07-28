@@ -74,6 +74,7 @@ export const fetchLoginStateAndSubscriptions = async (dispatch: RootDispatch, to
     dispatch(setActiveSubscriptions(activeSubscriptions));
     if (activeSubscriptions.RMP_CLOUD) {
         dispatch(closeGlobalAlert(GlobalAlertId.MasterNodeLimitExceeded));
+        dispatch(closeGlobalAlert(GlobalAlertId.ParallelLineLimitExceeded));
     }
     logger.debug(`Token is valid, setting active subscriptions: ${JSON.stringify(activeSubscriptions)}`);
 };

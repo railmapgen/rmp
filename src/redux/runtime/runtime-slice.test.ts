@@ -1,9 +1,20 @@
+import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
 import { LinePathType, LineStyleType } from '../../constants/lines';
-import store from '../index';
+import { MAX_MASTER_NODE_FREE } from '../../constants/master';
+import { MiscNodeType } from '../../constants/nodes';
+import { MAX_PARALLEL_LINES_FREE } from '../../util/parallel';
+import store, { createStore } from '../index';
 import { redoAction, replaceGraph, undoAction } from '../param/param-slice';
-import appReducer, { closeGlobalAlert, setGlobalAlert, setMode } from './runtime-slice';
+import appReducer, {
+    closeGlobalAlert,
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    setGlobalAlert,
+    setMode,
+} from './runtime-slice';
 
 const realStore = store.getState();
 
@@ -37,6 +48,44 @@ describe('ParamSlice', () => {
 });
 
 describe('global alerts', () => {
+    it('clears the master limit warning after the graph returns within the free limit', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        for (let index = 0; index <= MAX_MASTER_NODE_FREE; index += 1) {
+            graph.addNode(`misc_node_master_${index}`, { type: MiscNodeType.Master } as NodeAttributes);
+        }
+        window.graph = graph;
+        const testStore = createStore();
+
+        await testStore.dispatch(refreshNodesThunk());
+        expect(testStore.getState().runtime.globalAlerts).toHaveProperty(GlobalAlertId.MasterNodeLimitExceeded);
+
+        graph.dropNode('misc_node_master_0');
+        await testStore.dispatch(refreshNodesThunk());
+        expect(testStore.getState().runtime.globalAlerts).not.toHaveProperty(GlobalAlertId.MasterNodeLimitExceeded);
+    });
+
+    it('clears the parallel limit warning after the graph returns within the free limit', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const nodeAttributes = { type: MiscNodeType.Virtual } as NodeAttributes;
+        graph.addNode('misc_node_from', nodeAttributes);
+        graph.addNode('misc_node_to', nodeAttributes);
+        for (let index = 0; index <= MAX_PARALLEL_LINES_FREE; index += 1) {
+            graph.addDirectedEdgeWithKey(`line_parallel_${index}`, 'misc_node_from', 'misc_node_to', {
+                type: LinePathType.Diagonal,
+                parallelIndex: index,
+            } as EdgeAttributes);
+        }
+        window.graph = graph;
+        const testStore = createStore();
+
+        await testStore.dispatch(refreshEdgesThunk());
+        expect(testStore.getState().runtime.globalAlerts).toHaveProperty(GlobalAlertId.ParallelLineLimitExceeded);
+
+        graph.dropEdge('line_parallel_0');
+        await testStore.dispatch(refreshEdgesThunk());
+        expect(testStore.getState().runtime.globalAlerts).not.toHaveProperty(GlobalAlertId.ParallelLineLimitExceeded);
+    });
+
     it('keeps alerts from different businesses even when their statuses match', () => {
         const withMasterAlert = appReducer(
             realStore.runtime,
