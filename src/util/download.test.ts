@@ -51,9 +51,31 @@ describe('map export attribution', () => {
         document.body.append(canvas);
 
         try {
-            const { elem } = await makeRenderReadySVGElement(new MultiDirectedGraph(), true, true, [], false, 2);
+            const { elem } = await makeRenderReadySVGElement(
+                new MultiDirectedGraph(),
+                'diagram',
+                true,
+                true,
+                [],
+                false,
+                2
+            );
 
             expect(elem.querySelector('[data-map-style]')?.textContent).toContain('#123456');
+        } finally {
+            canvas.remove();
+        }
+    });
+
+    it('rejects a map export when its required map layer is missing', async () => {
+        const canvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        canvas.id = 'canvas';
+        document.body.append(canvas);
+
+        try {
+            await expect(
+                makeRenderReadySVGElement(new MultiDirectedGraph(), 'map', true, true, [], false, 2)
+            ).rejects.toThrow('Map layer is missing during export');
         } finally {
             canvas.remove();
         }

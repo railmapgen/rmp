@@ -189,6 +189,7 @@ export default function DownloadActions() {
 
         const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
+            param.type,
             isAttachSelected,
             isSystemFontsOnly,
             languages,

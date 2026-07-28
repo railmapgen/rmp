@@ -105,6 +105,14 @@ export interface MapLoadingProgress {
     total: number;
 }
 
+/** Graph-coordinate bounds used when the export viewport is larger than the live editor viewport. */
+export interface MapRenderBounds {
+    xMin: number;
+    yMin: number;
+    xMax: number;
+    yMax: number;
+}
+
 /**
  * Bundle maps are already scoped to one level, so zoom is intentionally omitted
  * from this key. Using the same encoding for index creation and lookup prevents
@@ -135,6 +143,31 @@ const requireLevel = (manifest: MapManifest, name: MapLevelName): MapLevelManife
         throw new Error(`Invalid ${name} tile bounds`);
     }
     return level;
+};
+
+/**
+ * Connects an exported clone back to the controller that owns its live source
+ * layer. DOM cloning cannot copy controller state, while rebuilding a second
+ * controller would discard warmed indexes, in-flight requests, and parsed tile
+ * caches precisely when a potentially large export needs them most.
+ */
+const controllersByRoot = new WeakMap<SVGGElement, MapTileController>();
+
+/**
+ * Replaces the map content in an export clone with tiles covering its full bounds.
+ *
+ * The source identifies the live controller; the target remains detached from
+ * that controller's normal reconciliation, so preparing an export cannot pan the
+ * editor or retain off-screen tiles in the interactive canvas.
+ */
+export const renderMapLayerForExport = (
+    source: SVGGElement,
+    target: SVGGElement,
+    bounds: MapRenderBounds
+): Promise<void> => {
+    const controller = controllersByRoot.get(source);
+    if (!controller) throw new Error('Map tile controller is not available for export');
+    return controller.renderForExport(target, bounds);
 };
 
 /**
@@ -194,6 +227,7 @@ export class MapTileController {
     private mountQueue: Array<{ generation: number; request: TileRequest; tile: SVGSVGElement }> = [];
     private disposed = false;
     private switching = false;
+    private initialization: Promise<void> | undefined;
 
     constructor(private readonly options: MapTileControllerOptions) {
         this.fetcher = options.fetch ?? globalThis.fetch.bind(globalThis);
@@ -208,14 +242,25 @@ export class MapTileController {
         // The basemap is visual context; editor gestures must continue to target the SVG interaction layer above it.
         options.root.style.pointerEvents = 'none';
         options.root.append(this.tileRoot, this.attribution);
+        controllersByRoot.set(options.root, this);
     }
 
     /**
      * Loads both levels before rendering so crossing the zoom threshold never
      * has to reinterpret partially initialized metadata. `updateViewport` may
      * safely run first; its latest value is rendered once initialization ends.
+     *
+     * Export preparation may join initialization while the live canvas is still
+     * starting. Retaining one promise prevents that second consumer from loading
+     * and parsing the same manifest and indexes again.
      */
-    async initialize() {
+    initialize() {
+        this.initialization ??= this.initializeOnce();
+        return this.initialization;
+    }
+
+    /** Performs the one controller-wide metadata load shared by live rendering and export. */
+    private async initializeOnce() {
         const baseUrl = this.options.baseUrl.trim();
         if (!baseUrl) throw new Error('Map tile base URL is not configured');
         this.setLoading(true);
@@ -259,6 +304,58 @@ export class MapTileController {
     }
 
     /**
+     * Populates a detached export layer without changing the live desired set.
+     *
+     * Export expands the cloned SVG to graph bounds that are commonly much
+     * larger than the editor viewport. Loading those tiles through the normal
+     * viewport path would visibly pan the editor and then require another load
+     * to restore it. A detached target can instead reuse the same metadata and
+     * caches while keeping its DOM lifecycle independent.
+     */
+    async renderForExport(target: SVGGElement, bounds: MapRenderBounds) {
+        if (![bounds.xMin, bounds.yMin, bounds.xMax, bounds.yMax].every(Number.isFinite)) {
+            throw new Error('Invalid map export bounds');
+        }
+        if (bounds.xMax <= bounds.xMin || bounds.yMax <= bounds.yMin) {
+            throw new Error('Map export bounds must have positive dimensions');
+        }
+
+        await this.initialize();
+        if (this.disposed || !this.levels) return;
+
+        /**
+         * A single export must not mix overview and detailed geometry. The
+         * freshest viewport chooses the same level the live renderer is about
+         * to show, even if its coalesced animation frame has not run yet.
+         */
+        const level = this.viewport && isMapZoomed(this.viewport.zoom) ? this.levels.zoomed : this.levels.overview;
+        const requests = this.getTilesForBounds(level, bounds, 0);
+        const tiles = await Promise.all(
+            [...requests.values()].map(async request => {
+                try {
+                    const template = await this.loadTileTemplate(request);
+                    const tile = template.cloneNode(true) as SVGSVGElement;
+                    this.positionTile(tile, request);
+                    return tile;
+                } catch (error) {
+                    // One unavailable/corrupt tile should match live rendering semantics rather than cancel the whole export.
+                    console.error(`Map export tile failed: ${request.key}`, error);
+                    return undefined;
+                }
+            })
+        );
+        if (this.disposed) return;
+
+        const tileRoot = document.createElementNS(SVG_NAMESPACE, 'g');
+        tileRoot.dataset.mapTiles = '';
+        tileRoot.append(...tiles.filter((tile): tile is SVGSVGElement => tile !== undefined));
+
+        // Clone attribution only after initialization has supplied the manifest text.
+        const attribution = this.attribution.cloneNode(true) as SVGTextElement;
+        target.replaceChildren(tileRoot, attribution);
+    }
+
+    /**
      * Makes teardown terminal for active fetches, queued fetches, animation
      * frames, and owned DOM. This matters when project type changes while
      * initialization or tile decoding is still in flight.
@@ -282,6 +379,7 @@ export class MapTileController {
         this.bundleCache.clear();
         this.tileCache.clear();
         this.options.root.replaceChildren();
+        if (controllersByRoot.get(this.options.root) === this) controllersByRoot.delete(this.options.root);
     }
 
     /**
@@ -391,21 +489,37 @@ export class MapTileController {
      */
     private getVisibleTiles(level: MapLevel, viewport: LiveViewport) {
         const size = this.options.getViewportSize();
-        const graphMax = {
-            x: viewport.x + (size.width * viewport.zoom) / 100,
-            y: viewport.y + (size.height * viewport.zoom) / 100,
-        };
-        const worldMin = graphToWorldPixel(viewport);
-        const worldMax = graphToWorldPixel(graphMax);
+        return this.getTilesForBounds(
+            level,
+            {
+                xMin: viewport.x,
+                yMin: viewport.y,
+                xMax: viewport.x + (size.width * viewport.zoom) / 100,
+                yMax: viewport.y + (size.height * viewport.zoom) / 100,
+            },
+            MAP_TILE_BUFFER
+        );
+    }
+
+    /**
+     * Resolves available tiles for either the live viewport or an export clone.
+     *
+     * The buffer belongs to interactive panning, where one off-screen tile hides
+     * frame latency. Export bounds are stable and clipped by the final viewBox,
+     * so their caller passes zero to avoid fetching invisible border tiles.
+     */
+    private getTilesForBounds(level: MapLevel, graphBounds: MapRenderBounds, buffer: number) {
+        const worldMin = graphToWorldPixel({ x: graphBounds.xMin, y: graphBounds.yMin });
+        const worldMax = graphToWorldPixel({ x: graphBounds.xMax, y: graphBounds.yMax });
 
         // Level tiles are scaled into the common zoom before converting back to graph units.
         const factor = 2 ** (MAP_COMMON_ZOOM - level.zoom);
         const commonTileSize = MAP_TILE_SIZE * factor;
         const bounds = level.tileBounds;
-        const minX = Math.max(bounds.minX, Math.floor(worldMin.x / commonTileSize) - MAP_TILE_BUFFER);
-        const maxX = Math.min(bounds.maxX, Math.floor(worldMax.x / commonTileSize) + MAP_TILE_BUFFER);
-        const minY = Math.max(bounds.minY, Math.floor(worldMin.y / commonTileSize) - MAP_TILE_BUFFER);
-        const maxY = Math.min(bounds.maxY, Math.floor(worldMax.y / commonTileSize) + MAP_TILE_BUFFER);
+        const minX = Math.max(bounds.minX, Math.floor(worldMin.x / commonTileSize) - buffer);
+        const maxX = Math.min(bounds.maxX, Math.floor(worldMax.x / commonTileSize) + buffer);
+        const minY = Math.max(bounds.minY, Math.floor(worldMin.y / commonTileSize) - buffer);
+        const maxY = Math.min(bounds.maxY, Math.floor(worldMax.y / commonTileSize) + buffer);
         const desired = new Map<string, TileRequest>();
         for (let y = minY; y <= maxY; y += 1) {
             for (let x = minX; x <= maxX; x += 1) {

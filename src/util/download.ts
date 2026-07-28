@@ -4,6 +4,8 @@ import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import i18n from '../i18n/config';
+import { renderMapLayerForExport } from '../map/map-tile-controller';
+import type { ProjectType } from '../redux/param/param-slice';
 import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize, transformedBoundingBox } from './helpers';
@@ -30,6 +32,7 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * Clone the svg element and add fonts & missing external svg to it.
  * The returned svg should be opened and displayed correctly in any svg viewer.
  * @param graph The graph.
+ * @param projectType The project kind whose canvas is being exported.
  * @param isShareInfoAttached Whether the user confirmed they will attach RMP info when sharing the image.
  * @param isSystemFontsOnly Whether to add font-family to elements with fonts classes.
  * @param forceRMPInfo Whether RMP info must be embedded regardless of the user's confirmation.
@@ -37,6 +40,7 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  */
 export const makeRenderReadySVGElement = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    projectType: ProjectType,
     isShareInfoAttached: boolean,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
@@ -47,7 +51,8 @@ export const makeRenderReadySVGElement = async (
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
     const [width, height] = [xMax - xMin, yMax - yMin];
 
-    const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
+    const canvas = document.getElementById('canvas')!;
+    const elem = canvas.cloneNode(true) as SVGSVGElement;
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -103,6 +108,26 @@ export const makeRenderReadySVGElement = async (
     });
     // remove transform set by updateViewportTransform for dragging performance
     elem.querySelector('g')?.removeAttribute('transform');
+
+    if (projectType === 'map') {
+        const sourceMapLayer = canvas.querySelector<SVGGElement>('[data-map-layer]');
+        const exportMapLayer = elem.querySelector<SVGGElement>('[data-map-layer]');
+        if (!sourceMapLayer || !exportMapLayer) {
+            /**
+             * MapCanvas always owns this layer, and a deep clone must preserve
+             * it. Continuing would turn a broken render lifecycle into a
+             * seemingly successful image with a silently missing basemap.
+             */
+            throw new Error('Map layer is missing during export');
+        }
+
+        /**
+         * The live map intentionally retains only viewport tiles. Cloning that
+         * optimization into a graph-bounds export would leave every off-screen
+         * part blank, so populate the detached clone before it is serialized.
+         */
+        await renderMapLayerForExport(sourceMapLayer, exportMapLayer, { xMin, yMin, xMax, yMax });
+    }
     positionMapAttributionForExport(elem, { xMin, yMax });
 
     if (!isSystemFontsOnly) {

@@ -1,9 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getMapInitialViewport, MAP_ZOOMED_SWITCH_THRESHOLD } from './map-config';
-import { MapTileController, type MapLoadingProgress } from './map-tile-controller';
+import {
+    getMapInitialViewport,
+    MAP_COMMON_ZOOM,
+    MAP_TILE_SIZE,
+    MAP_ZOOMED_SWITCH_THRESHOLD,
+    worldPixelToGraph,
+} from './map-config';
+import { MapTileController, type MapLoadingProgress, renderMapLayerForExport } from './map-tile-controller';
 
-const availability = (zoom: number, x: number, y: number) => {
-    const buffer = new ArrayBuffer(29);
+const availability = (zoom: number, x: number, y: number, width = 1, bits = 1) => {
+    const buffer = new ArrayBuffer(28 + Math.ceil(width / 8));
     const bytes = new Uint8Array(buffer);
     bytes.set([...'RMPT'].map(char => char.charCodeAt(0)));
     bytes[4] = 1;
@@ -11,10 +17,10 @@ const availability = (zoom: number, x: number, y: number) => {
     const view = new DataView(buffer);
     view.setUint32(8, x, true);
     view.setUint32(12, y, true);
-    view.setUint32(16, 1, true);
+    view.setUint32(16, width, true);
     view.setUint32(20, 1, true);
-    view.setUint32(24, 1, true);
-    bytes[28] = 1;
+    view.setUint32(24, bits.toString(2).replaceAll('0', '').length, true);
+    bytes[28] = bits;
     return buffer;
 };
 
@@ -50,6 +56,7 @@ describe('MapTileController', () => {
         vi.stubGlobal('cancelAnimationFrame', vi.fn());
 
         const overview = { zoom: 8, x: 214, y: 104 };
+        const exportOnlyOverviewX = overview.x + 3;
         const zoomed = { zoom: 13, x: 6860, y: 3347 };
         const manifest = {
             formatVersion: 3,
@@ -63,7 +70,12 @@ describe('MapTileController', () => {
                     bundleIndex: 'bundle-index/z8.json',
                     bundleTemplate: 'bundles/overview/8/{side}/{x}/{y}.rmpb',
                     availability: 'availability/z8.bin',
-                    tileBounds: { minX: overview.x, minY: overview.y, maxX: overview.x, maxY: overview.y },
+                    tileBounds: {
+                        minX: overview.x,
+                        minY: overview.y,
+                        maxX: exportOnlyOverviewX,
+                        maxY: overview.y,
+                    },
                 },
                 {
                     name: 'zoomed',
@@ -78,7 +90,10 @@ describe('MapTileController', () => {
         };
         const responses = new Map<string, BodyInit>([
             ['https://tiles.example/manifest.json', JSON.stringify(manifest)],
-            ['https://tiles.example/availability/z8.bin', availability(overview.zoom, overview.x, overview.y)],
+            [
+                'https://tiles.example/availability/z8.bin',
+                availability(overview.zoom, overview.x, overview.y, 4, 0b1001),
+            ],
             ['https://tiles.example/availability/z13.bin', availability(zoomed.zoom, zoomed.x, zoomed.y)],
             [
                 'https://tiles.example/bundle-index/z8.json',
@@ -86,7 +101,10 @@ describe('MapTileController', () => {
                     formatVersion: 1,
                     level: 'overview',
                     zoom: overview.zoom,
-                    bundles: [{ side: 1, x: overview.x, y: overview.y }],
+                    bundles: [
+                        { side: 1, x: overview.x, y: overview.y },
+                        { side: 1, x: exportOnlyOverviewX, y: overview.y },
+                    ],
                 }),
             ],
             [
@@ -101,6 +119,10 @@ describe('MapTileController', () => {
             [
                 `https://tiles.example/bundles/overview/8/1/${overview.x}/${overview.y}.rmpb`,
                 bundle(overview.zoom, overview.x, overview.y),
+            ],
+            [
+                `https://tiles.example/bundles/overview/8/1/${exportOnlyOverviewX}/${overview.y}.rmpb`,
+                bundle(overview.zoom, exportOnlyOverviewX, overview.y),
             ],
             [
                 `https://tiles.example/bundles/zoomed/13/1/${zoomed.x}/${zoomed.y}.rmpb`,
@@ -148,6 +170,27 @@ describe('MapTileController', () => {
         expect(overviewTile.classList.contains('rmp-map-tile')).toBe(true);
         expect(overviewTile.dataset.level).toBe('overview');
         expect(root.querySelector('[data-map-attribution]')?.textContent).toContain('OpenStreetMap');
+
+        const commonOverviewTileSize = MAP_TILE_SIZE * 2 ** (MAP_COMMON_ZOOM - overview.zoom);
+        const exportMin = worldPixelToGraph({
+            x: exportOnlyOverviewX * commonOverviewTileSize,
+            y: overview.y * commonOverviewTileSize,
+        });
+        const exportRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        await renderMapLayerForExport(root, exportRoot, {
+            xMin: exportMin.x,
+            yMin: exportMin.y,
+            xMax: exportMin.x + commonOverviewTileSize - 1,
+            yMax: exportMin.y + commonOverviewTileSize - 1,
+        });
+
+        // Export fills graph bounds that were never mounted into the current viewport.
+        expect(exportRoot.querySelector(`[data-tile-key="8/${exportOnlyOverviewX}/104"]`)).not.toBeNull();
+        expect(root.querySelector(`[data-tile-key="8/${exportOnlyOverviewX}/104"]`)).toBeNull();
+        expect(exportRoot.querySelector('[data-map-attribution]')?.textContent).toContain('OpenStreetMap');
+        expect(
+            fetcherMock.mock.calls.filter(([input]) => String(input) === 'https://tiles.example/manifest.json')
+        ).toHaveLength(1);
 
         controller.updateViewport({ ...initialViewport, zoom: MAP_ZOOMED_SWITCH_THRESHOLD });
         await vi.waitFor(() => expect(root.querySelector('[data-tile-key="8/214/104"]')).toBeNull());
