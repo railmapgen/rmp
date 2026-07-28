@@ -31,6 +31,7 @@ import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
 import { Events } from '../../constants/constants';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
@@ -246,7 +247,13 @@ export default function DownloadActions() {
                         setIsDownloadRunning(false);
                         if (!blob) {
                             // The canvas size is bigger than the current browser can support.
-                            dispatch(setGlobalAlert({ status: 'error', message: t('header.download.imageTooBig') }));
+                            dispatch(
+                                setGlobalAlert({
+                                    id: GlobalAlertId.DownloadImageTooBig,
+                                    status: 'error',
+                                    message: t('header.download.imageTooBig'),
+                                })
+                            );
                             return;
                         }
                         downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!);
