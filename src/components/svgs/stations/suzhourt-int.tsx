@@ -22,6 +22,7 @@ import {
 } from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { RotateField } from '../../panels/details/rotate-field';
 
 const ICON_SIZE = 6;
 
@@ -273,15 +274,11 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'custom',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate ?? defaultSuzhouRTIntStationAttributes.rotate,
-            hidden: (attrs?.transfer?.flat()?.length ?? 0) === 0,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-            onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                handleAttrsUpdate(id, attrs);
-            },
+            component: (
+                <RotateField type={StationType.SuzhouRTInt} defaultAttributes={defaultSuzhouRTIntStationAttributes} />
+            ),
             minW: 'full',
         },
     ];
