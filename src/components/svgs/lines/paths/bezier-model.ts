@@ -17,3 +17,11 @@ export const defaultBezierPathAttributes: BezierPathAttributes = {
     along: 0.5,
     normal: -0.35,
 };
+
+/**
+ * Identify the one collinear control range whose visible geometry is exactly
+ * the endpoint segment. Collinear controls outside this range overshoot an
+ * endpoint and turn back, so they must remain Bezier paths.
+ */
+export const isStraightBezierPathAttributes = ({ along, normal }: BezierPathAttributes): boolean =>
+    normal === 0 && Number.isFinite(along) && along >= 0 && along <= 1;

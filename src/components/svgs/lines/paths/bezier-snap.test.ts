@@ -4,7 +4,13 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../../con
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { MiscNodeType } from '../../../../constants/nodes';
 import { makePoint } from '../../../../constants/path';
-import { BezierTangentCandidate, getBezierTangentCandidates, getBezierTangentSnap } from './bezier-snap';
+import {
+    BezierTangentCandidate,
+    getBezierDragSnap,
+    getBezierStraightSnap,
+    getBezierTangentCandidates,
+    getBezierTangentSnap,
+} from './bezier-snap';
 
 const candidate = (
     endpoint: BezierTangentCandidate['endpoint'],
@@ -66,6 +72,36 @@ describe('Bezier tangent snapping', () => {
         const candidates = [candidate('source', [0, 0], [10, 0])];
 
         expect(getBezierTangentSnap(makePoint(5, 7), candidates, 6)).toBeUndefined();
+    });
+
+    it('snaps a nearby control point onto the finite endpoint chord', () => {
+        expect(getBezierStraightSnap(makePoint(5, 1), makePoint(0, 0), makePoint(10, 0), 2)).toEqual({
+            kind: 'straight',
+            point: makePoint(5, 0),
+            endpoints: ['source', 'target'],
+        });
+    });
+
+    it('does not treat the endpoint chord extension as a straight segment', () => {
+        expect(getBezierStraightSnap(makePoint(-1, 0.1), makePoint(0, 0), makePoint(10, 0), 2)).toBeUndefined();
+    });
+
+    it('chooses the closest single snap candidate', () => {
+        const candidates = [candidate('source', [0, 0], [0, 10])];
+
+        expect(getBezierDragSnap(makePoint(5, 1), makePoint(0, 0), makePoint(10, 0), candidates, 6)?.kind).toBe(
+            'straight'
+        );
+    });
+
+    it('keeps a two-ended tangent intersection ahead of a closer straight snap', () => {
+        const candidates = [candidate('source', [5, -10], [5, 10]), candidate('target', [0, 0], [10, 0])];
+
+        expect(getBezierDragSnap(makePoint(4.9, 0.1), makePoint(0, 0), makePoint(10, 0), candidates, 1)).toEqual({
+            kind: 'tangent',
+            point: makePoint(5, 0),
+            endpoints: ['source', 'target'],
+        });
     });
 
     it('collects only other Bezier edges connected to the edited edge endpoints', () => {

@@ -8,8 +8,13 @@ import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { pointerPosToSVGCoord } from '../../../../util/helpers';
 import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
-import { defaultBezierPathAttributes } from './bezier-model';
-import { type BezierEndpoint, getBezierTangentCandidates, getBezierTangentSnap } from './bezier-snap';
+import { defaultBezierPathAttributes, isStraightBezierPathAttributes } from './bezier-model';
+import {
+    type BezierEndpoint,
+    getBezierDragSnap,
+    getBezierTangentCandidates,
+    getBezierTangentSnap,
+} from './bezier-snap';
 import type { BezierPathAttributes } from './bezier-model';
 
 interface BezierEditable {
@@ -21,10 +26,10 @@ interface BezierEditable {
 // Drag snapping should feel like a screen-space affordance, so it scales with
 // zoom. Already-aligned highlighting uses a much smaller geometry tolerance
 // below so nearby-but-not-aligned curves do not look snapped when selected.
-const BEZIER_TANGENT_SNAP_DISTANCE = 12;
-const BEZIER_TANGENT_ALIGNMENT_DISTANCE = 0.01;
+const BEZIER_SNAP_DISTANCE = 12;
+const BEZIER_ALIGNMENT_DISTANCE = 0.01;
 const BEZIER_OVERLAY_STROKE = '#3182CE';
-// Match the existing snap-point guide color so tangent snap feedback reads as
+// Match the existing snap-point guide color so Bezier snap feedback reads as
 // part of the same alignment system.
 const BEZIER_OVERLAY_SNAP_STROKE = '#FC8181';
 
@@ -42,20 +47,25 @@ const getBezierSnapEndpoints = (endpoints: BezierEndpoint[]): BezierSnapEndpoint
 });
 
 /**
- * Detect which side of an already-selected Bezier is exactly tangent-aligned.
+ * Restore snap feedback for an already-selected Bezier.
  *
- * This is separate from drag snapping because selection feedback should only
- * show true persisted alignment, not every nearby tangent within the larger
- * drag-assist radius.
+ * An exactly straight saved curve owns both guides. Connected-tangent
+ * alignment still uses a tiny geometry tolerance because its saved control
+ * point is reconstructed through several coordinate transforms.
  */
-const getAlignedBezierSnapEndpoints = (id: LineId, control: PathPoint, snapLines: boolean): BezierSnapEndpoints => {
+const getAlignedBezierSnapEndpoints = (
+    id: LineId,
+    attrs: BezierPathAttributes,
+    control: PathPoint,
+    snapLines: boolean
+): BezierSnapEndpoints => {
     if (!snapLines) return INACTIVE_BEZIER_SNAP_ENDPOINTS;
 
-    const snap = getBezierTangentSnap(
-        control,
-        getBezierTangentCandidates(window.graph, id),
-        BEZIER_TANGENT_ALIGNMENT_DISTANCE
-    );
+    // Straight rendering is intentionally exact: only a deliberate snap (or
+    // an explicit zero entered by the user) should claim both endpoint guides.
+    if (isStraightBezierPathAttributes(attrs)) return { source: true, target: true };
+
+    const snap = getBezierTangentSnap(control, getBezierTangentCandidates(window.graph, id), BEZIER_ALIGNMENT_DISTANCE);
     return snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS;
 };
 
@@ -115,8 +125,8 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         // alignment so a perfectly aligned handle does not flicker blue before
         // the first pointer move.
         setSnapEndpoints(
-            currentControl
-                ? getAlignedBezierSnapEndpoints(id, currentControl, snapLines)
+            current && currentControl
+                ? getAlignedBezierSnapEndpoints(id, current.attrs, currentControl, snapLines)
                 : INACTIVE_BEZIER_SNAP_ENDPOINTS
         );
         setDragging(true);
@@ -131,14 +141,24 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         event.stopPropagation();
         // Scale the snap radius by viewBox zoom so users feel roughly the same
         // pixel-distance snap threshold at different zoom levels.
-        const snapDistance = BEZIER_TANGENT_SNAP_DISTANCE * (svgViewBoxZoom / 100);
+        const snapDistance = BEZIER_SNAP_DISTANCE * (svgViewBoxZoom / 100);
         const snap = snapLines
-            ? getBezierTangentSnap(pointer, getBezierTangentCandidates(window.graph, id), snapDistance)
+            ? getBezierDragSnap(
+                  pointer,
+                  current.source,
+                  current.target,
+                  getBezierTangentCandidates(window.graph, id),
+                  snapDistance
+              )
             : undefined;
         setSnapEndpoints(snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS);
         // Save local chord coordinates rather than absolute control coordinates
         // so subsequent node movement preserves the intended curve shape.
         const attrs = getBezierLocalCoordinates(current.source, current.target, snap?.point ?? pointer);
+        // Projection arithmetic can leave a tiny residual. Persist exact zero
+        // so the render pipeline can distinguish authored curves from a
+        // deliberate straight snap without applying its own fuzzy threshold.
+        if (snap?.kind === 'straight') attrs.normal = 0;
         window.graph.mergeEdgeAttributes(id, { [LinePathType.Bezier]: attrs });
         dispatch(refreshEdgesThunk());
     });
@@ -162,7 +182,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
     const control = getBezierControlPoint(editable.source, editable.target, editable.attrs);
     // Selection state should show persisted alignment. Drag state should show
     // the active snap target even before the graph refresh catches up.
-    const alignedSnapEndpoints = getAlignedBezierSnapEndpoints(id, control, snapLines);
+    const alignedSnapEndpoints = getAlignedBezierSnapEndpoints(id, editable.attrs, control, snapLines);
     const visibleSnapEndpoints = dragging ? snapEndpoints : alignedSnapEndpoints;
     const screenToSvgScale = svgViewBoxZoom / 100;
     const guideStrokeWidth = 1.5 * screenToSvgScale;

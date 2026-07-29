@@ -52,17 +52,18 @@ const renderOverlay = (snapLines: boolean, editedAttrs?: BezierPathAttributes) =
     );
 };
 
-const dragOverlayTo = (snapLines: boolean) => {
+const dragOverlayTo = (snapLines: boolean, pointer = makePoint(20, 8)) => {
     const { container } = renderOverlay(snapLines);
     const group = container.querySelector('g')!;
     const handle = container.querySelector('circle')!;
     handle.setPointerCapture = vi.fn();
 
     fireEvent.pointerDown(handle, { button: 0, pointerId: 1 });
-    fireEvent.pointerMove(group, { clientX: 20, clientY: 8, pointerId: 1 });
+    fireEvent.pointerMove(group, { clientX: pointer.x, clientY: pointer.y, pointerId: 1 });
 
     const attrs = window.graph.getEdgeAttribute('line_edited', LinePathType.Bezier)!;
     return {
+        attrs,
         container,
         control: getBezierControlPoint(makePoint(0, 0), makePoint(100, 100), attrs),
     };
@@ -95,6 +96,16 @@ describe('BezierLineOverlay tangent snapping', () => {
         expect(guides.map(guide => guide.getAttribute('stroke'))).toEqual(['#FC8181', '#3182CE']);
     });
 
+    it('stores an exact zero normal and highlights both guides when snapping straight', () => {
+        const { attrs, container, control } = dragOverlayTo(true, makePoint(20, 22));
+        const guides = Array.from(container.querySelectorAll('line'));
+
+        expect(attrs.normal).toBe(0);
+        expect(control.x).toBeCloseTo(21);
+        expect(control.y).toBeCloseTo(21);
+        expect(guides.map(guide => guide.getAttribute('stroke'))).toEqual(['#FC8181', '#FC8181']);
+    });
+
     it('highlights an already aligned overlay guide line when selected', () => {
         const { container } = renderOverlay(true, getEditedAttrsForControl(20, 0));
         const guides = Array.from(container.querySelectorAll('line'));
@@ -104,6 +115,20 @@ describe('BezierLineOverlay tangent snapping', () => {
 
     it('does not highlight a merely nearby overlay guide line when selected', () => {
         const { container } = renderOverlay(true, getEditedAttrsForControl(20, 0.02));
+        const guides = Array.from(container.querySelectorAll('line'));
+
+        expect(guides.map(guide => guide.getAttribute('stroke'))).toEqual(['#3182CE', '#3182CE']);
+    });
+
+    it('highlights both guides for a persisted straight Bezier', () => {
+        const { container } = renderOverlay(true, { along: 0.5, normal: 0 });
+        const guides = Array.from(container.querySelectorAll('line'));
+
+        expect(guides.map(guide => guide.getAttribute('stroke'))).toEqual(['#FC8181', '#FC8181']);
+    });
+
+    it('does not report a shallow unsnapped curve as straight', () => {
+        const { container } = renderOverlay(true, { along: 0.5, normal: Number.EPSILON });
         const guides = Array.from(container.querySelectorAll('line'));
 
         expect(guides.map(guide => guide.getAttribute('stroke'))).toEqual(['#3182CE', '#3182CE']);

@@ -30,6 +30,11 @@ export interface BezierTangentSnap {
     endpoints: BezierEndpoint[];
 }
 
+/** A drag snap identifies whether the handle followed another tangent or collapsed onto its own chord. */
+export interface BezierDragSnap extends BezierTangentSnap {
+    kind: 'tangent' | 'straight';
+}
+
 /** Projection data is cached per candidate so intersection and nearest-line logic can share the same distance check. */
 interface ProjectedBezierTangent extends BezierTangentCandidate {
     direction: PathPoint;
@@ -162,4 +167,58 @@ export const getBezierTangentSnap = (
         undefined
     );
     return nearest ? { point: nearest.projection, endpoints: [nearest.endpoint] } : undefined;
+};
+
+/**
+ * Project the handle onto its own endpoint chord when the pointer is close
+ * enough to the finite segment.
+ *
+ * Restricting the projection to the segment matters: a collinear control point
+ * beyond either endpoint makes a quadratic Bezier overshoot and turn back, so
+ * it is not visually equivalent to a simple line.
+ */
+export const getBezierStraightSnap = (
+    pointer: PathPoint,
+    source: PathPoint,
+    target: PathPoint,
+    snapDistance: number
+): BezierDragSnap | undefined => {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const lengthSquared = dx * dx + dy * dy;
+    if (lengthSquared < TANGENT_LENGTH_EPSILON * TANGENT_LENGTH_EPSILON) return undefined;
+
+    const pointerDx = pointer.x - source.x;
+    const pointerDy = pointer.y - source.y;
+    const along = (pointerDx * dx + pointerDy * dy) / lengthSquared;
+    if (along < 0 || along > 1) return undefined;
+
+    const point = makePoint(source.x + along * dx, source.y + along * dy);
+    if (Math.hypot(pointer.x - point.x, pointer.y - point.y) > snapDistance) return undefined;
+    return { kind: 'straight', point, endpoints: ['source', 'target'] };
+};
+
+/**
+ * Resolve competing drag affordances without making a nearby one-sided
+ * tangent prevent an easier straight-line snap.
+ *
+ * A two-ended tangent intersection remains the strongest constraint. For all
+ * other candidates, pointer distance is the most predictable tie-breaker.
+ */
+export const getBezierDragSnap = (
+    pointer: PathPoint,
+    source: PathPoint,
+    target: PathPoint,
+    candidates: BezierTangentCandidate[],
+    snapDistance: number
+): BezierDragSnap | undefined => {
+    const tangent = getBezierTangentSnap(pointer, candidates, snapDistance);
+    const straight = getBezierStraightSnap(pointer, source, target, snapDistance);
+    if (tangent?.endpoints.length === 2) return { ...tangent, kind: 'tangent' };
+    if (!tangent) return straight;
+    if (!straight) return { ...tangent, kind: 'tangent' };
+
+    const tangentDistance = Math.hypot(pointer.x - tangent.point.x, pointer.y - tangent.point.y);
+    const straightDistance = Math.hypot(pointer.x - straight.point.x, pointer.y - straight.point.y);
+    return straightDistance < tangentDistance ? straight : { ...tangent, kind: 'tangent' };
 };
