@@ -1,7 +1,15 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { LinePath, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
+import { LineId } from '../../../../constants/constants';
+import {
+    LinePath,
+    LinePathAttrsProps,
+    LinePathNewEdgeAttrsInitializer,
+    LinePathType,
+    PathGenerator,
+} from '../../../../constants/lines';
 import { makePoint, PathPoint } from '../../../../constants/path';
+import { areSameLineStyles } from '../../../../util/same-style';
 import { makeBezierPath } from './bezier-geometry';
 import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
@@ -17,6 +25,37 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     const source = makePoint(x1, y1);
     const target = makePoint(x2, y2);
     return makeBezierPath(source, target, attrs);
+};
+
+export const initializeNewBezierEdgeAttrs: LinePathNewEdgeAttrsInitializer<BezierPathAttributes> = (
+    graph,
+    source,
+    target,
+    edgeAttrs
+) => {
+    const getExistingOffset = (node: typeof source): PathPoint | undefined => {
+        for (const edgeId of graph.edges(node) as LineId[]) {
+            const existingEdgeAttrs = graph.getEdgeAttributes(edgeId);
+            if (existingEdgeAttrs.type !== LinePathType.Bezier || !areSameLineStyles(edgeAttrs, existingEdgeAttrs)) {
+                continue;
+            }
+
+            const existingPathAttrs = existingEdgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
+            const offset =
+                graph.source(edgeId) === node
+                    ? (existingPathAttrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset)
+                    : (existingPathAttrs.targetOffset ?? defaultBezierPathAttributes.targetOffset);
+            return { ...offset };
+        }
+        return undefined;
+    };
+
+    const attrs = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
+    return {
+        ...attrs,
+        sourceOffset: getExistingOffset(source) ?? { ...defaultBezierPathAttributes.sourceOffset },
+        targetOffset: getExistingOffset(target) ?? { ...defaultBezierPathAttributes.targetOffset },
+    };
 };
 
 const attrsComponent = ({
@@ -105,6 +144,7 @@ const bezierPath: LinePath<BezierPathAttributes> = {
     icon: bezierIcon,
     defaultAttrs: defaultBezierPathAttributes,
     attrsComponent,
+    initializeNewEdgeAttrs: initializeNewBezierEdgeAttrs,
     metadata: { displayName: 'panel.details.lines.bezier.displayName' },
 };
 

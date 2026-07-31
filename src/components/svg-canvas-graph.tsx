@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
-import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
+import { EdgeAttributes, Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
@@ -47,7 +47,7 @@ import SnapPointGuideLines from './snap-point-guide-lines';
 import { StationOverlayLayer } from './station-overlay-layer';
 import SvgLayer from './svg-layer';
 import { LinePathOverlayLayer } from './line-path-overlay-layer';
-import { linePaths, lineStyles } from './svgs/lines/lines';
+import { initializeNewEdgeAttributes, linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -421,7 +421,7 @@ const SvgCanvas = () => {
                         autoParallel && supportsParallelLinePath(type)
                             ? makeParallelIndex(graph.current, type, source, target, 'from')
                             : -1;
-                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
+                    const edgeAttrs = {
                         visible: true,
                         zIndex: 0,
                         type,
@@ -430,7 +430,13 @@ const SvgCanvas = () => {
                         [style]: styleAttr,
                         reconcileId: '',
                         parallelIndex,
-                    });
+                    } as EdgeAttributes;
+                    graph.current.addDirectedEdgeWithKey(
+                        newLineId,
+                        source,
+                        target,
+                        initializeNewEdgeAttributes(graph.current, source, target, edgeAttrs)
+                    );
 
                     if (autoChangeStationType && source.startsWith('stn')) {
                         checkAndChangeStationIntType(graph.current, source as StnId);
@@ -521,30 +527,29 @@ const SvgCanvas = () => {
             const { zIndex, type: linePathType, style: lineStyleType } = edgeAttrs;
             const typeAttr = edgeAttrs[linePathType];
             const styleAttr = edgeAttrs[lineStyleType];
-            // TODO: Splitting a Bezier copies its endpoint offsets to both new edges, which can displace them at the inserted station.
-            const [source, target] = graph.current.extremities(edge);
+            const [source, target] = graph.current.extremities(edge) as [NodeId, NodeId];
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
             const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
-            graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
-                visible: true,
-                zIndex,
-                type: linePathType,
-                [linePathType]: structuredClone(typeAttr),
-                style: lineStyleType,
-                [lineStyleType]: structuredClone(styleAttr),
-                reconcileId: '',
-                parallelIndex,
-            });
-            graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, id, target, {
-                visible: true,
-                zIndex,
-                type: linePathType,
-                [linePathType]: structuredClone(typeAttr),
-                style: lineStyleType,
-                [lineStyleType]: structuredClone(styleAttr),
-                reconcileId: '',
-                parallelIndex,
-            });
+            const addSplitEdge = (splitSource: NodeId, splitTarget: NodeId) => {
+                const splitEdgeAttrs = {
+                    visible: true,
+                    zIndex,
+                    type: linePathType,
+                    [linePathType]: structuredClone(typeAttr),
+                    style: lineStyleType,
+                    [lineStyleType]: structuredClone(styleAttr),
+                    reconcileId: '',
+                    parallelIndex,
+                } as EdgeAttributes;
+                graph.current.addDirectedEdgeWithKey(
+                    `line_${nanoid(10)}`,
+                    splitSource,
+                    splitTarget,
+                    initializeNewEdgeAttributes(graph.current, splitSource, splitTarget, splitEdgeAttrs)
+                );
+            };
+            addSplitEdge(source, id);
+            addSplitEdge(id, target);
             graph.current.dropEdge(edge);
             refreshAndSave();
             if (isAllowProjectTelemetry) {

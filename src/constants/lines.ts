@@ -1,6 +1,7 @@
 /* eslint-disable import/order */
+import type { MultiDirectedGraph } from 'graphology';
 import React from 'react';
-import { AttrsProps, LineId } from './constants';
+import { AttrsProps, EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from './constants';
 import type { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
@@ -271,6 +272,14 @@ export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
     createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
 }
 
+/** Initialize path-owned attributes immediately before a newly constructed edge is added to the graph. */
+export type LinePathNewEdgeAttrsInitializer<T extends LinePathAttributes> = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    source: NodeId,
+    target: NodeId,
+    edgeAttrs: EdgeAttributes
+) => T;
+
 /**
  * The type a line path should export.
  */
@@ -307,6 +316,14 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * paths. Implementations may return `undefined` from `createAttrs` to reject an invalid gesture.
      */
     drawingBehavior?: LinePathDrawingBehavior<T>;
+    /**
+     * Optional initializer for path-owned attributes of a newly constructed edge.
+     *
+     * It runs before the edge is added, so it can inspect existing adjacent edges without matching the candidate
+     * itself. Call it immediately before every semantic edge creation, and add split edges sequentially so later
+     * pieces can observe earlier ones. Loading and copying existing data should not invoke it.
+     */
+    initializeNewEdgeAttrs?: LinePathNewEdgeAttrsInitializer<T>;
     /**
      * Metadata for this line path.
      */

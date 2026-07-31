@@ -1,4 +1,11 @@
-import { LineStyleType, LinePathType } from '../../../constants/lines';
+import type { MultiDirectedGraph } from 'graphology';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeId } from '../../../constants/constants';
+import {
+    LinePathAttributes,
+    LinePathNewEdgeAttrsInitializer,
+    LineStyleType,
+    LinePathType,
+} from '../../../constants/lines';
 import simplePath from './paths/simple';
 import diagonalPath from './paths/diagonal';
 import perpendicularPath from './paths/perpendicular';
@@ -50,6 +57,23 @@ export const linePaths = {
     [LinePathType.Simple]: simplePath,
     [LinePathType.Bezier]: bezierPath,
     [LinePathType.Freeform]: freeformPath,
+};
+
+export const initializeNewEdgeAttributes = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    source: NodeId,
+    target: NodeId,
+    edgeAttrs: EdgeAttributes
+): EdgeAttributes => {
+    const initialize = linePaths[edgeAttrs.type].initializeNewEdgeAttrs as
+        | LinePathNewEdgeAttrsInitializer<LinePathAttributes>
+        | undefined;
+    return initialize
+        ? ({
+              ...edgeAttrs,
+              [edgeAttrs.type]: initialize(graph, source, target, edgeAttrs),
+          } as EdgeAttributes)
+        : edgeAttrs;
 };
 
 export const lineStyles = {
