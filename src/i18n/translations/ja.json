@@ -604,7 +604,11 @@
                 "bezier": {
                     "displayName": "ベジェ曲線",
                     "along": "線方向の位置",
-                    "normal": "法線オフセット"
+                    "normal": "法線オフセット",
+                    "sourceOffsetX": "始点 X オフセット",
+                    "sourceOffsetY": "始点 Y オフセット",
+                    "targetOffsetX": "終点 X オフセット",
+                    "targetOffsetY": "終点 Y オフセット"
                 },
                 "freeform": {
                     "displayName": "フリーフォーム経路",

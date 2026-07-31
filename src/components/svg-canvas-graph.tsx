@@ -44,9 +44,11 @@ import {
     makeSnapLinesPath,
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
+import { StationOverlayLayer } from './station-overlay-layer';
 import SvgLayer from './svg-layer';
 import { LinePathOverlayLayer } from './line-path-overlay-layer';
 import { linePaths, lineStyles } from './svgs/lines/lines';
+import { BezierPathAttributes, defaultBezierPathAttributes } from './svgs/lines/paths/bezier-model';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -520,6 +522,19 @@ const SvgCanvas = () => {
             const { zIndex, type: linePathType, style: lineStyleType } = edgeAttrs;
             const typeAttr = edgeAttrs[linePathType];
             const styleAttr = edgeAttrs[lineStyleType];
+            let sourceTypeAttr = structuredClone(typeAttr);
+            let targetTypeAttr = structuredClone(typeAttr);
+            if (linePathType === LinePathType.Bezier) {
+                const bezierTypeAttr = (typeAttr ?? defaultBezierPathAttributes) as BezierPathAttributes;
+                sourceTypeAttr = {
+                    ...structuredClone(bezierTypeAttr),
+                    targetOffset: { x: 0, y: 0 },
+                };
+                targetTypeAttr = {
+                    ...structuredClone(bezierTypeAttr),
+                    sourceOffset: { x: 0, y: 0 },
+                };
+            }
             const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
             const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
@@ -527,7 +542,7 @@ const SvgCanvas = () => {
                 visible: true,
                 zIndex,
                 type: linePathType,
-                [linePathType]: structuredClone(typeAttr),
+                [linePathType]: sourceTypeAttr,
                 style: lineStyleType,
                 [lineStyleType]: structuredClone(styleAttr),
                 reconcileId: '',
@@ -537,7 +552,7 @@ const SvgCanvas = () => {
                 visible: true,
                 zIndex,
                 type: linePathType,
-                [linePathType]: structuredClone(typeAttr),
+                [linePathType]: targetTypeAttr,
                 style: lineStyleType,
                 [lineStyleType]: structuredClone(styleAttr),
                 reconcileId: '',
@@ -620,6 +635,7 @@ const SvgCanvas = () => {
                     />
                 ))}
             <LinePathOverlayLayer />
+            <StationOverlayLayer />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path

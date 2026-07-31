@@ -32,6 +32,28 @@ describe('bezier line path', () => {
         expect(curve.to).toEqual({ x: 100, y: 0 });
     });
 
+    it('applies source and target XY offsets before constructing the Bezier chord', () => {
+        const path = generateBezierPath(0, 100, 0, 0, {
+            ...defaultBezierPathAttributes,
+            sourceOffset: { x: 10, y: 5 },
+            targetOffset: { x: -20, y: 15 },
+        });
+
+        expect(path.kind).toBe('mc');
+        if (path.kind !== 'mc') throw new Error('Expected one cubic path.');
+        expect(path.commands[0]).toEqual({ cmd: 'M', to: { x: 10, y: 5 } });
+        expect(path.commands[1].to).toEqual({ x: 80, y: 15 });
+    });
+
+    it('treats missing endpoint offsets from older saves as zero', () => {
+        const path = generateBezierPath(0, 100, 0, 0, { along: 0.5, normal: 0 });
+
+        expect(path.kind).toBe('mc');
+        if (path.kind !== 'mc') throw new Error('Expected one cubic path.');
+        expect(path.commands[0]).toEqual({ cmd: 'M', to: { x: 0, y: 0 } });
+        expect(path.commands[1].to).toEqual({ x: 100, y: 0 });
+    });
+
     it('round-trips a dragged control point in chord-local coordinates', () => {
         const source = { x: 20, y: -10 };
         const target = { x: 80, y: 70 };

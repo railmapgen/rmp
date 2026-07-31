@@ -22,6 +22,8 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
 const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
     const { t } = useTranslation();
     const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...attrs, ...patch });
+    const sourceOffset = attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset;
+    const targetOffset = attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset;
 
     const fields: RmgFieldsField[] = [
         {
@@ -38,6 +40,38 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
             value: attrs.normal.toString(),
             variant: 'number',
             onChange: val => update({ normal: Number(val) || 0 }),
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.bezier.sourceOffsetX'),
+            value: sourceOffset.x.toString(),
+            variant: 'number',
+            onChange: val => update({ sourceOffset: { ...sourceOffset, x: Number(val) || 0 } }),
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.bezier.sourceOffsetY'),
+            value: sourceOffset.y.toString(),
+            variant: 'number',
+            onChange: val => update({ sourceOffset: { ...sourceOffset, y: Number(val) || 0 } }),
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.bezier.targetOffsetX'),
+            value: targetOffset.x.toString(),
+            variant: 'number',
+            onChange: val => update({ targetOffset: { ...targetOffset, x: Number(val) || 0 } }),
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.lines.bezier.targetOffsetY'),
+            value: targetOffset.y.toString(),
+            variant: 'number',
+            onChange: val => update({ targetOffset: { ...targetOffset, y: Number(val) || 0 } }),
             minW: 'full',
         },
     ];

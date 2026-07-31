@@ -1,5 +1,7 @@
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
 import { type BezierPathAttributes, isStraightBezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
+import { getBezierEffectiveEndpoints } from '../components/svgs/lines/paths/bezier-geometry';
+import { makePoint } from '../constants/path';
 
 /**
  * Use simple render geometry when an authored path is exactly equivalent to a
@@ -23,8 +25,16 @@ export const checkSimplePathAvailability = (
     attrs: NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>
 ): { x1: number; y1: number; x2: number; y2: number; offset: number } | undefined => {
     if (type === LinePathType.Bezier) {
-        if (isStraightBezierPathAttributes(attrs as BezierPathAttributes)) {
-            return { x1, y1, x2, y2, offset: 0 };
+        const bezierAttrs = attrs as BezierPathAttributes;
+        if (isStraightBezierPathAttributes(bezierAttrs)) {
+            const effective = getBezierEffectiveEndpoints(makePoint(x1, y1), makePoint(x2, y2), bezierAttrs);
+            return {
+                x1: effective.source.x,
+                y1: effective.source.y,
+                x2: effective.target.x,
+                y2: effective.target.y,
+                offset: 0,
+            };
         }
         return;
     }

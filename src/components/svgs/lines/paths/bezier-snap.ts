@@ -2,7 +2,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../../../../constants/constants';
 import { LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
-import { getBezierControlPoint } from './bezier-geometry';
+import { getBezierControlPoint, getBezierEffectiveEndpoints } from './bezier-geometry';
 import { defaultBezierPathAttributes } from './bezier-model';
 
 /** Which endpoint of the edited Bezier receives the tangent alignment feedback. */
@@ -71,7 +71,6 @@ export const getBezierTangentCandidates = (
             ['target', targetId],
         ] as const
     ).flatMap(([endpoint, nodeId]) => {
-        const node = getNodePoint(graph, nodeId);
         const candidateIds = graph.edges(nodeId) as LineId[];
 
         // The dragged line already defines the tangent being edited, so it must
@@ -86,8 +85,16 @@ export const getBezierTangentCandidates = (
                 const source = getNodePoint(graph, candidateSourceId);
                 const target = getNodePoint(graph, candidateTargetId);
                 const attrs = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
+                const effective = getBezierEffectiveEndpoints(source, target, attrs);
+                const node = candidateSourceId === nodeId ? effective.source : effective.target;
 
-                return [{ endpoint, node, control: getBezierControlPoint(source, target, attrs) }];
+                return [
+                    {
+                        endpoint,
+                        node,
+                        control: getBezierControlPoint(effective.source, effective.target, attrs),
+                    },
+                ];
             });
     });
 };

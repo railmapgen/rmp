@@ -11,6 +11,7 @@ import {
     getBezierTangentCandidates,
     getBezierTangentSnap,
 } from './bezier-snap';
+import { BezierPathAttributes } from './bezier-model';
 
 const candidate = (
     endpoint: BezierTangentCandidate['endpoint'],
@@ -112,7 +113,8 @@ describe('Bezier tangent snapping', () => {
             id: `line_${string}`,
             source: `misc_node_${string}`,
             target: `misc_node_${string}`,
-            type: LinePathType
+            type: LinePathType,
+            attrs: BezierPathAttributes = { along: 0.25, normal: -0.5 }
         ) =>
             graph.addDirectedEdgeWithKey(id, source, target, {
                 visible: true,
@@ -121,7 +123,7 @@ describe('Bezier tangent snapping', () => {
                 style: LineStyleType.SingleColor,
                 reconcileId: '',
                 parallelIndex: -1,
-                [LinePathType.Bezier]: { along: 0.25, normal: -0.5 },
+                [LinePathType.Bezier]: attrs,
             });
 
         addNode('misc_node_a', 0, 0);
@@ -129,9 +131,14 @@ describe('Bezier tangent snapping', () => {
         addNode('misc_node_c', 0, 100);
         addNode('misc_node_d', 100, 100);
         addEdge('line_edited', 'misc_node_a', 'misc_node_b', LinePathType.Bezier);
-        addEdge('line_neighbor', 'misc_node_a', 'misc_node_c', LinePathType.Bezier);
+        addEdge('line_neighbor', 'misc_node_a', 'misc_node_c', LinePathType.Bezier, {
+            along: 0.25,
+            normal: -0.5,
+            sourceOffset: { x: 5, y: 10 },
+            targetOffset: { x: 0, y: 0 },
+        });
         addEdge('line_non_bezier', 'misc_node_b', 'misc_node_d', LinePathType.Simple);
 
-        expect(getBezierTangentCandidates(graph, 'line_edited')).toEqual([candidate('source', [0, 0], [50, 25])]);
+        expect(getBezierTangentCandidates(graph, 'line_edited')).toEqual([candidate('source', [5, 10], [48.75, 35])]);
     });
 });

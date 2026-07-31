@@ -601,7 +601,11 @@
                 "bezier": {
                     "displayName": "貝塞爾曲線",
                     "along": "沿線位置",
-                    "normal": "法向偏移"
+                    "normal": "法向偏移",
+                    "sourceOffsetX": "起點 X 偏移",
+                    "sourceOffsetY": "起點 Y 偏移",
+                    "targetOffsetX": "終點 X 偏移",
+                    "targetOffsetY": "終點 Y 偏移"
                 },
                 "freeform": {
                     "displayName": "自由繪製線段",
