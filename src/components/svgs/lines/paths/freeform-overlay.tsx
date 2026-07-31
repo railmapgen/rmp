@@ -46,7 +46,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
         const canvas = document.getElementById('canvas');
         const bbox = canvas?.getBoundingClientRect();
         if (!bbox || !selectedFreeform) return makePoint(0, 0);
-        // Pointer helpers work in canvas coordinates; freeform attrs store points relative to the source node.
+        // The editor resolves persisted percentages into source-local SVG coordinates before handling pointer input.
         const point = pointerPosToSVGCoord(
             event.clientX - bbox.left,
             event.clientY - bbox.top,
@@ -225,7 +225,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LineP
                 strokeDasharray={handleSize.dashArray}
                 pointerEvents="none"
             />
-            {/* Control points are rendered in source-local coordinates to match the stored freeform attributes. */}
+            {/* Persisted percentages are resolved into source-local coordinates by the editor controller. */}
             {points.map((point, index) => {
                 const isEndpoint = index === 0 || index === points.length - 1;
                 const isSelected =

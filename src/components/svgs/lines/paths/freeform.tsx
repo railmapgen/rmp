@@ -5,7 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttrsProps, LinePathDrawingBehavior, PathGenerator } from '../../../../constants/lines';
 import { makeEmptyOpenPath, makePoint } from '../../../../constants/path';
 import { createFreeformPathAttributes, makeFreeformAreaPath } from './freeform-geometry';
-import { defaultFreeformPathAttributes, normalizeFreeformPathAttributes } from './freeform-model';
+import {
+    defaultFreeformPathAttributes,
+    normalizeFreeformPathAttributes,
+    resolveFreeformPathAttributes,
+} from './freeform-model';
 import type { FreeformPathAttributes } from './freeform-model';
 import { FreeformLineOverlay } from './freeform-overlay';
 
@@ -14,8 +18,8 @@ export type { FreeformPathAttributes } from './freeform-model';
 /**
  * Generate the filled-area representation for a freeform edge.
  *
- * The generator is the only rendering boundary that accepts possibly stale attrs; it normalizes with the current graph
- * endpoints before delegating to geometry, which keeps geometry functions free of graph-position repair logic.
+ * The generator is the rendering boundary that resolves persisted chord-relative points against the current graph
+ * endpoints before delegating to SVG-unit geometry.
  */
 export const generateFreeformPath: PathGenerator<FreeformPathAttributes> = (
     x1: number,
@@ -25,7 +29,7 @@ export const generateFreeformPath: PathGenerator<FreeformPathAttributes> = (
     attrs: FreeformPathAttributes = defaultFreeformPathAttributes
 ) => {
     const targetRelative = makePoint(x2 - x1, y2 - y1);
-    const safeAttrs = normalizeFreeformPathAttributes(attrs, targetRelative);
+    const safeAttrs = resolveFreeformPathAttributes(attrs, targetRelative);
     return safeAttrs ? makeFreeformAreaPath(safeAttrs, makePoint(x1, y1)) : makeEmptyOpenPath();
 };
 

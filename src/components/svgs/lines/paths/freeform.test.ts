@@ -48,9 +48,9 @@ describe('freeform line path registration', () => {
 
         const attrs = session.createAttrs({ x: 100, y: 0 }, { x: 80, y: 20 });
         expect(attrs?.points.length).toBeGreaterThan(2);
-        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 10, y: 10 })]));
-        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 80, y: 20 })]));
-        expect(attrs?.points.at(-1)).toMatchObject({ x: 100, y: 0 });
+        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 0.1, y: 0.1 })]));
+        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 0.8, y: 0.2 })]));
+        expect(attrs?.points.at(-1)).toMatchObject({ x: 1, y: 0 });
     });
 
     it('rejects drawing gestures that are too short to form a useful path', () => {
@@ -92,8 +92,8 @@ describe('freeform line path registration', () => {
                 version: 1,
                 points: [
                     { id: 'start', x: 0, y: 0 },
-                    { id: 'mid', x: 40, y: 20 },
-                    { id: 'end', x: 100, y: 0 },
+                    { id: 'mid', x: 0.4, y: 0.2 },
+                    { id: 'end', x: 1, y: 0 },
                 ],
                 widthStops: [{ id: 'w', t: 0.5, width: 5 }],
                 smoothing: 0.5,

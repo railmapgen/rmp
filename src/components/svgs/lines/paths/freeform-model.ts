@@ -6,17 +6,17 @@ export type FreeformStartCap = 'round' | 'flat';
 export type FreeformEndCap = 'round' | 'flat' | 'arrow';
 
 /**
- * A control point in the source node's local coordinate system.
+ * A persisted control point in the source-to-target chord coordinate system.
  *
- * The first and last points are connection anchors rather than freely editable handles. Normalisation pins them to
- * `(0, 0)` and the current target position so moving either connected node cannot detach the stored shape.
+ * `x` follows the chord and `y` follows its perpendicular. Both are normalized by the chord length, so `(0, 0)` is
+ * the source and `(1, 0)` is the target regardless of SVG user units.
  */
 export interface FreeformPoint {
     /** Stable identity used to preserve handle selection when points are inserted or removed. */
     id: string;
-    /** Horizontal offset from the source node, in SVG user units. */
+    /** Offset along the source-to-target chord, as a proportion of chord length. */
     x: number;
-    /** Vertical offset from the source node, in SVG user units. */
+    /** Signed perpendicular offset, as a proportion of chord length. */
     y: number;
 }
 
@@ -38,13 +38,13 @@ export interface FreeformWidthStop {
 /**
  * Persisted path-specific state for a freeform edge.
  *
- * Consumers should normalise this value before generating geometry because node moves and imported saves can leave
- * endpoints or optional values out of date.
+ * Consumers should normalize persisted values, then resolve their point percentages against the current graph
+ * endpoints before generating geometry.
  */
 export interface FreeformPathAttributes {
     /** Schema version for future changes to the persisted freeform representation. */
     version: 1;
-    /** Source-relative control points, including the two node-owned endpoints. */
+    /** Chord-relative control points, including the two node-owned endpoints. */
     points: FreeformPoint[];
     /** Width samples interpolated by arc length along the generated centerline. */
     widthStops: FreeformWidthStop[];
@@ -63,19 +63,22 @@ export interface FreeformPathAttributes {
     };
 }
 
+/**
+ * Runtime-only freeform geometry after persisted percentages have been resolved into source-local SVG coordinates.
+ */
+export type ResolvedFreeformPathAttributes = FreeformPathAttributes;
+
 export const MIN_FREEFORM_PATH_LENGTH = 4;
 export const MIN_FREEFORM_WIDTH = 0.5;
 export const DEFAULT_FREEFORM_WIDTH = 5;
 export const DEFAULT_FREEFORM_SMOOTHING = 0.65;
 export const FREEFORM_EPSILON = 1e-6;
 
-const DEFAULT_TARGET_RELATIVE: PathPoint = { x: 100, y: 0 };
-
 export const defaultFreeformPathAttributes: FreeformPathAttributes = {
     version: 1,
     points: [
         { id: 'point_start', x: 0, y: 0 },
-        { id: 'point_end', x: DEFAULT_TARGET_RELATIVE.x, y: DEFAULT_TARGET_RELATIVE.y },
+        { id: 'point_end', x: 1, y: 0 },
     ],
     widthStops: [
         { id: 'width_start', t: 0, width: DEFAULT_FREEFORM_WIDTH },
@@ -112,32 +115,12 @@ export const normalizeFreeformWidthStops = (
 };
 
 /**
- * Choose the target endpoint used while normalising source-relative points.
- *
- * The live node positions win because dragging either connected node should update the endpoint immediately; the
- * persisted last point is only a fallback for defaults or tests that do not know the current graph edge.
- */
-const resolveTargetRelative = (points: FreeformPoint[], targetRelative?: PathPoint): PathPoint => {
-    if (targetRelative && isFiniteNumber(targetRelative.x) && isFiniteNumber(targetRelative.y)) {
-        return targetRelative;
-    }
-    const lastPoint = points.at(-1);
-    if (lastPoint && isFiniteNumber(lastPoint.x) && isFiniteNumber(lastPoint.y)) {
-        return { x: lastPoint.x, y: lastPoint.y };
-    }
-    return DEFAULT_TARGET_RELATIVE;
-};
-
-/**
- * Convert unknown persisted data into the canonical freeform shape used by rendering and editing.
+ * Convert unknown persisted data into the canonical chord-relative shape stored on graph edges.
  *
  * The canonical form deliberately pins the first and last control points to the connected nodes, because those points
  * describe graph connectivity rather than user-owned handles.
  */
-export const normalizeFreeformPathAttributes = (
-    value: unknown,
-    targetRelative?: PathPoint
-): FreeformPathAttributes | undefined => {
+export const normalizeFreeformPathAttributes = (value: unknown): FreeformPathAttributes | undefined => {
     if (!value || typeof value !== 'object') return undefined;
     const candidate = value as Partial<FreeformPathAttributes>;
     const inputPoints = Array.isArray(candidate.points)
@@ -149,16 +132,13 @@ export const normalizeFreeformPathAttributes = (
                   y: point.y,
               }))
         : [];
-    const target = resolveTargetRelative(inputPoints, targetRelative);
-
-    // A freeform edge cannot produce a useful outline when both graph endpoints collapse to the same point.
-    if (distance({ x: 0, y: 0 }, target) < FREEFORM_EPSILON) return undefined;
 
     // Middle points that coincide with either endpoint would create zero-length handles and unstable normals.
     const middlePoints = inputPoints
         .slice(1, -1)
         .filter(
-            point => distance(point, { x: 0, y: 0 }) > FREEFORM_EPSILON && distance(point, target) > FREEFORM_EPSILON
+            point =>
+                distance(point, { x: 0, y: 0 }) > FREEFORM_EPSILON && distance(point, { x: 1, y: 0 }) > FREEFORM_EPSILON
         );
     const startId = inputPoints[0]?.id || 'point_start';
     const endId = inputPoints.at(-1)?.id || 'point_end';
@@ -177,7 +157,7 @@ export const normalizeFreeformPathAttributes = (
     return {
         version: 1,
         // Preserve endpoint ids when possible so active overlay selections do not flicker after normalisation.
-        points: [{ id: startId, x: 0, y: 0 }, ...middlePoints, { id: endId, x: target.x, y: target.y }],
+        points: [{ id: startId, x: 0, y: 0 }, ...middlePoints, { id: endId, x: 1, y: 0 }],
         widthStops,
         smoothing,
         startCap,
@@ -187,4 +167,59 @@ export const normalizeFreeformPathAttributes = (
             width: Math.max(MIN_FREEFORM_WIDTH, candidate.arrow?.width ?? endWidth * 2),
         },
     };
+};
+
+/**
+ * Resolve one persisted percentage point into source-local SVG coordinates.
+ *
+ * The source-to-target vector is the local x basis and its 90-degree rotation is the local y basis. Because both
+ * basis vectors have the chord length, persisted coordinates scale and rotate with the connected endpoints.
+ */
+export const resolveFreeformPoint = (point: PathPoint, targetRelative: PathPoint): PathPoint => ({
+    x: point.x * targetRelative.x - point.y * targetRelative.y,
+    y: point.x * targetRelative.y + point.y * targetRelative.x,
+});
+
+/** Convert one source-local SVG point back into the persisted chord-relative percentage coordinate system. */
+export const persistFreeformPoint = (point: PathPoint, targetRelative: PathPoint): PathPoint | undefined => {
+    const lengthSquared = targetRelative.x * targetRelative.x + targetRelative.y * targetRelative.y;
+    if (lengthSquared < FREEFORM_EPSILON * FREEFORM_EPSILON) return undefined;
+
+    return {
+        x: (point.x * targetRelative.x + point.y * targetRelative.y) / lengthSquared,
+        y: (-point.x * targetRelative.y + point.y * targetRelative.x) / lengthSquared,
+    };
+};
+
+/**
+ * Resolve persisted freeform attributes into source-local SVG geometry.
+ *
+ * This is intentionally separate from persisted-data normalization so graph attributes never need to contain SVG-unit
+ * control points.
+ */
+export const resolveFreeformPathAttributes = (
+    value: unknown,
+    targetRelative: PathPoint
+): ResolvedFreeformPathAttributes | undefined => {
+    const attrs = normalizeFreeformPathAttributes(value);
+    if (!attrs || distance({ x: 0, y: 0 }, targetRelative) < FREEFORM_EPSILON) return undefined;
+
+    return {
+        ...attrs,
+        points: attrs.points.map(point => ({ ...point, ...resolveFreeformPoint(point, targetRelative) })),
+    };
+};
+
+/** Convert source-local editable geometry back into the chord-relative representation stored on the graph edge. */
+export const persistFreeformPathAttributes = (
+    attrs: ResolvedFreeformPathAttributes,
+    targetRelative: PathPoint
+): FreeformPathAttributes | undefined => {
+    const points = attrs.points.map(point => {
+        const persisted = persistFreeformPoint(point, targetRelative);
+        return persisted ? { ...point, ...persisted } : undefined;
+    });
+    if (points.some(point => !point)) return undefined;
+
+    return normalizeFreeformPathAttributes({ ...attrs, points });
 };

@@ -30,8 +30,8 @@ const makeGraph = () => {
             version: 1,
             points: [
                 { id: 'start', x: 0, y: 0 },
-                { id: 'mid', x: 40, y: 20 },
-                { id: 'end', x: 100, y: 0 },
+                { id: 'mid', x: 0.4, y: 0.2 },
+                { id: 'end', x: 1, y: 0 },
             ],
             widthStops: [{ id: 'w', t: 0.5, width: 5 }],
             smoothing: 0.5,
@@ -60,10 +60,14 @@ describe('FreeformLineEditorController', () => {
 
         expect(controller.moveControlPoint('line_freeform', 'start', { x: 5, y: 5 })).toBe(false);
         expect(controller.moveControlPoint('line_freeform', 'mid', { x: 50, y: 25 })).toBe(true);
-        expect(getAttrs(graph).points[1]).toMatchObject({ id: 'mid', x: 50, y: 25 });
+        expect(getAttrs(graph).points[1]).toMatchObject({ id: 'mid', x: 0.5, y: 0.25 });
 
         expect(controller.insertControlPoint('line_freeform', { x: 75, y: 10 }, 'inserted')).toBe(true);
         expect(getAttrs(graph).points.map((point: { id: string }) => point.id)).toContain('inserted');
+        expect(getAttrs(graph).points.find((point: { id: string }) => point.id === 'inserted')).toMatchObject({
+            x: 0.75,
+            y: 0.1,
+        });
 
         expect(controller.removeControlPoint('line_freeform', 'mid')).toBe(true);
         expect(getAttrs(graph).points.map((point: { id: string }) => point.id)).not.toContain('mid');
