@@ -3,8 +3,17 @@ import { MultiDirectedGraph } from 'graphology';
 import { Provider } from 'react-redux';
 import { render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { CityCode, EdgeAttributes, GraphAttributes, Id, NodeAttributes, Theme } from '../constants/constants';
-import { LinePathOverlayProps, LinePathType, LineStyleType } from '../constants/lines';
+import {
+    CityCode,
+    EdgeAttributes,
+    GraphAttributes,
+    Id,
+    LineId,
+    NodeAttributes,
+    OverlayProps,
+    Theme,
+} from '../constants/constants';
+import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { makePoint } from '../constants/path';
 import { StationType } from '../constants/stations';
@@ -126,7 +135,7 @@ describe('Overlay', () => {
 
         it('passes viewport state to the selected path overlay', () => {
             addLine('line_freeform', LinePathType.Freeform);
-            linePaths[LinePathType.Freeform].overlayComponent = (props: LinePathOverlayProps) => (
+            linePaths[LinePathType.Freeform].overlayComponent = (props: OverlayProps<LineId>) => (
                 <g
                     data-testid="path-overlay"
                     data-edge-id={props.id}

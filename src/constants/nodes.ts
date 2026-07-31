@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 import React from 'react';
-import { AttrsProps, MiscNodeId, NodeOverlayProps } from './constants';
+import { AttrsProps, MiscNodeId, OverlayProps } from './constants';
 import type { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import type { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import type { TextAttributes } from '../components/svgs/nodes/text';
@@ -137,7 +137,7 @@ export interface Node<T> {
      * Node implementations may register a shared overlay or provide node-specific controls. Overlays are editor UI
      * only and must explicitly save and refresh graph mutations.
      */
-    overlayComponent?: React.FC<NodeOverlayProps<MiscNodeId>>;
+    overlayComponent?: React.FC<OverlayProps<MiscNodeId>>;
     /**
      * The icon displayed in the tools panel.
      */

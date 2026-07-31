@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LinePathOverlayProps } from '../../../../constants/lines';
+import { LineId, OverlayProps } from '../../../../constants/constants';
 import { makePoint } from '../../../../constants/path';
 import { useRootDispatch } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
@@ -16,7 +16,7 @@ import { getFreeformCenterlineD, getFreeformWidthStopGeometry } from './freeform
  * The overlay owns pointer/keyboard interaction only; graph mutation and geometry calculations stay in the controller
  * and geometry modules so this component can be treated as a thin SVG interaction layer.
  */
-export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
+export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: OverlayProps<LineId>) => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const [freeformDrag, setFreeformDrag] = React.useState<FreeformDrag>();

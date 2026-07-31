@@ -1,6 +1,6 @@
 import React from 'react';
-import { LineId, NodeId, NodeOverlayProps } from '../constants/constants';
-import { LinePathOverlayProps, LinePathType } from '../constants/lines';
+import { LineId, NodeId, OverlayProps } from '../constants/constants';
+import { LinePathType } from '../constants/lines';
 import { useRootSelector } from '../redux';
 import { linePaths } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -21,7 +21,7 @@ export const Overlay = () => {
     if (window.graph.hasEdge(selectedId)) {
         const id = selectedId as LineId;
         const type = window.graph.getEdgeAttribute(id, 'type') as LinePathType;
-        const OverlayComponent = linePaths[type]?.overlayComponent as React.FC<LinePathOverlayProps> | undefined;
+        const OverlayComponent = linePaths[type]?.overlayComponent as React.FC<OverlayProps<LineId>> | undefined;
         if (!OverlayComponent) return null;
 
         return <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />;
@@ -31,7 +31,7 @@ export const Overlay = () => {
         const id = selectedId as NodeId;
         const type = window.graph.getNodeAttribute(id, 'type');
         const definition = nodeDefinitions[type as keyof typeof nodeDefinitions] as
-            | { overlayComponent?: React.FC<NodeOverlayProps> }
+            | { overlayComponent?: React.FC<OverlayProps<NodeId>> }
             | undefined;
         const OverlayComponent = definition?.overlayComponent;
         if (!OverlayComponent) return null;

@@ -1,7 +1,7 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LineId } from '../../../../constants/constants';
-import { LinePathOverlayProps, LinePathType } from '../../../../constants/lines';
+import { LineId, OverlayProps } from '../../../../constants/constants';
+import { LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
@@ -96,7 +96,7 @@ const getBezierEditable = (id: LineId): BezierEditable | undefined => {
  * handle. The graph is refreshed during dragging for live feedback, but the
  * undoable save entry is written only when the drag finishes.
  */
-export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
+export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: OverlayProps<LineId>) => {
     const dispatch = useRootDispatch();
     const snapLines = useRootSelector(state => state.app.preference.snapLines);
     const [dragging, setDragging] = React.useState(false);

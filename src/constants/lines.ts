@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import type { MultiDirectedGraph } from 'graphology';
 import React from 'react';
-import { AttrsProps, EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from './constants';
+import { AttrsProps, EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, OverlayProps } from './constants';
 import type { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
@@ -232,16 +232,6 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
 
 export interface LinePathAttributes {}
 
-/** Viewport context supplied to a path-owned editor overlay. */
-export interface LinePathOverlayProps {
-    /** The single selected edge whose path-specific geometry is being edited. */
-    id: LineId;
-    /** Used to keep handles visually usable instead of shrinking or growing with the canvas. */
-    svgViewBoxZoom: number;
-    /** Used to convert pointer positions from the screen into the edge's SVG coordinate system. */
-    svgViewBoxMin: PathPoint;
-}
-
 /** Mutable, gesture-scoped state owned by a path with a custom drawing lifecycle. */
 export interface LinePathDrawingSession<T extends LinePathAttributes> {
     /** Receives each pointer move forwarded by the canvas in absolute SVG coordinates. */
@@ -298,7 +288,7 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * line layer. An overlay should therefore render transient controls rather than another source-of-truth line,
      * stop pointer events that must not reach canvas selection, and explicitly save/refresh any graph mutations.
      */
-    overlayComponent?: React.FC<LinePathOverlayProps>;
+    overlayComponent?: React.FC<OverlayProps<LineId>>;
     /**
      * Optional drawing lifecycle for paths whose attributes depend on the full pointer trajectory rather than only
      * the source and target nodes.

@@ -1,6 +1,6 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { EdgeAttributes, LineId, NodeOverlayProps } from '../../../constants/constants';
+import { EdgeAttributes, LineId, NodeId, OverlayProps } from '../../../constants/constants';
 import { LinePathType } from '../../../constants/lines';
 import { PathPoint, makePoint } from '../../../constants/path';
 import { useRootDispatch } from '../../../redux';
@@ -21,7 +21,7 @@ interface DraggingEndpointGroup {
     point: PathPoint;
 }
 
-const getEndpointOffset = (nodeId: NodeOverlayProps['id'], edgeId: LineId): PathPoint => {
+const getEndpointOffset = (nodeId: NodeId, edgeId: LineId): PathPoint => {
     const attrs = window.graph.getEdgeAttribute(edgeId, LinePathType.Bezier) ?? defaultBezierPathAttributes;
     return window.graph.source(edgeId) === nodeId
         ? (attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset)
@@ -29,7 +29,7 @@ const getEndpointOffset = (nodeId: NodeOverlayProps['id'], edgeId: LineId): Path
 };
 
 /** Group all of the selected node's directly linked Bezier edges. */
-const getEndpointGroups = (nodeId: NodeOverlayProps['id']): EndpointGroup[] => {
+const getEndpointGroups = (nodeId: NodeId): EndpointGroup[] => {
     if (!window.graph.hasNode(nodeId)) return [];
     const node = window.graph.getNodeAttributes(nodeId);
     const groups: EndpointGroup[] = [];
@@ -61,7 +61,7 @@ const getEndpointGroups = (nodeId: NodeOverlayProps['id']): EndpointGroup[] => {
  * The handle is transient editor UI. Dragging persists the same node-relative endpoint offset on every edge in
  * the group, restoring a single visual junction even if imported or manually edited attributes had diverged.
  */
-export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: NodeOverlayProps) => {
+export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: OverlayProps<NodeId>) => {
     const dispatch = useRootDispatch();
     const [dragging, setDragging] = React.useState<DraggingEndpointGroup>();
     const groups = getEndpointGroups(id);

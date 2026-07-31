@@ -69,18 +69,17 @@ export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
 export type NodeId = StnId | MiscNodeId;
+export type Id = NodeId | LineId;
 
-/** Viewport context supplied to a node-owned editor overlay. */
-export interface NodeOverlayProps<T extends NodeId = NodeId> {
-    /** The single selected node whose direct-manipulation UI is being shown. */
+/** Viewport context supplied to an editor overlay. */
+export interface OverlayProps<T extends Id> {
+    /** The single selected graph element whose direct-manipulation UI is being shown. */
     id: T;
     /** Used to keep handles visually usable instead of shrinking or growing with the canvas. */
     svgViewBoxZoom: number;
     /** Used to convert screen pointer positions into SVG coordinates. */
     svgViewBoxMin: PathPoint;
 }
-
-export type Id = NodeId | LineId;
 
 /**
  * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)
