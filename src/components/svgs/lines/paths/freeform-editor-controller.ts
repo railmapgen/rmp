@@ -8,7 +8,11 @@ import {
     getFreeformWidthStopGeometry,
     getWidthAtT,
 } from './freeform-geometry';
-import { FreeformPathAttributes, normalizeFreeformPathAttributes } from './freeform-model';
+import {
+    ResolvedFreeformPathAttributes,
+    persistFreeformPathAttributes,
+    resolveFreeformPathAttributes,
+} from './freeform-model';
 
 export type FreeformHandleSelection =
     | { edgeId: LineId; kind: 'point'; id: string }
@@ -23,7 +27,7 @@ export type FreeformDrag =
 
 export interface FreeformEditable {
     edgeId: LineId;
-    attrs: FreeformPathAttributes;
+    attrs: ResolvedFreeformPathAttributes;
     source: PathPoint;
     target: PathPoint;
     targetRelative: PathPoint;
@@ -78,8 +82,8 @@ export class FreeformLineEditorController {
         const source = makePoint(sourceAttrs.x, sourceAttrs.y);
         const target = makePoint(targetAttrs.x, targetAttrs.y);
         const targetRelative = makePoint(target.x - source.x, target.y - source.y);
-        // The graph's current node positions own the endpoints, so stale persisted endpoints are repaired on read.
-        const attrs = normalizeFreeformPathAttributes(edgeAttrs[LinePathType.Freeform], targetRelative);
+        // Editing uses source-local SVG coordinates, resolved from the percentages stored on the graph edge.
+        const attrs = resolveFreeformPathAttributes(edgeAttrs[LinePathType.Freeform], targetRelative);
         if (!attrs) return undefined;
 
         return { edgeId, attrs, source, target, targetRelative };
@@ -118,13 +122,13 @@ export class FreeformLineEditorController {
     /** Apply a mutation to canonical attrs and write the repaired result back to the graph. */
     updateAttrs(
         edgeId: LineId,
-        updater: (attrs: FreeformPathAttributes, editable: FreeformEditable) => FreeformPathAttributes
+        updater: (attrs: ResolvedFreeformPathAttributes, editable: FreeformEditable) => ResolvedFreeformPathAttributes
     ): boolean {
         const editable = this.getFreeformEditableById(edgeId);
         if (!editable) return false;
 
-        // Re-normalize after every edit because moving/removing points can create stale endpoints or invalid width stops.
-        const nextAttrs = normalizeFreeformPathAttributes(updater(editable.attrs, editable), editable.targetRelative);
+        // Convert edited SVG geometry back to percentages before writing it to the graph and undo snapshots.
+        const nextAttrs = persistFreeformPathAttributes(updater(editable.attrs, editable), editable.targetRelative);
         if (!nextAttrs) return false;
 
         this.graph.mergeEdgeAttributes(edgeId, { [LinePathType.Freeform]: nextAttrs });

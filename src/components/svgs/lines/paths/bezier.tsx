@@ -61,7 +61,10 @@ const bezierPath: LinePath<BezierPathAttributes> = {
     icon: bezierIcon,
     defaultAttrs: defaultBezierPathAttributes,
     attrsComponent,
-    metadata: { displayName: 'panel.details.lines.bezier.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.bezier.displayName',
+        supportsReconcile: false,
+    },
 };
 
 export default bezierPath;
