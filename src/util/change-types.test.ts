@@ -3,13 +3,54 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
+import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import {
     autoPopulateTransfer,
     autoUpdateStationType,
+    changeLinePathType,
     changeStationType,
     checkAndChangeStationIntType,
 } from './change-types';
+
+describe('changeLinePathType', () => {
+    it('clears a reconcile group when the new path does not support reconcile', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_a', {
+            x: 0,
+            y: 0,
+            type: MiscNodeType.Virtual,
+            zIndex: 0,
+            visible: true,
+            [MiscNodeType.Virtual]: {},
+        });
+        graph.addNode('misc_node_b', {
+            x: 100,
+            y: 0,
+            type: MiscNodeType.Virtual,
+            zIndex: 0,
+            visible: true,
+            [MiscNodeType.Virtual]: {},
+        });
+        graph.addDirectedEdgeWithKey('line_selected', 'misc_node_a', 'misc_node_b', {
+            type: LinePathType.Simple,
+            style: LineStyleType.SingleColor,
+            zIndex: 0,
+            reconcileId: 'reconcile_group',
+            visible: true,
+            parallelIndex: -1,
+            [LinePathType.Simple]: { offset: 0 },
+            [LineStyleType.SingleColor]: {
+                color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+            },
+        });
+
+        changeLinePathType(graph, 'line_selected', LinePathType.Freeform, false);
+
+        expect(graph.getEdgeAttribute('line_selected', 'type')).toBe(LinePathType.Freeform);
+        expect(graph.getEdgeAttribute('line_selected', 'reconcileId')).toBe('');
+    });
+});
 
 describe('changeStationType', () => {
     it('should deep clone nested default attrs when changing to JR East basic stations', () => {

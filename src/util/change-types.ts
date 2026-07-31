@@ -23,6 +23,7 @@ import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
+import { canReconcileLine } from './reconcile-ui';
 
 const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
@@ -161,6 +162,9 @@ export const changeLinePathType = (
 
         graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
+        if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
+            graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
+        }
     }
 };
 
