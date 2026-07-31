@@ -219,7 +219,10 @@ const rotatePerpendicularPath: LinePath<RotatePerpendicularPathAttributes> = {
     icon: rotatePerpendicularIcon,
     defaultAttrs: defaultRotatePerpendicularPathAttributes,
     attrsComponent,
-    metadata: { displayName: 'panel.details.lines.rotatePerpendicular.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.rotatePerpendicular.displayName',
+        supportsReconcile: true,
+    },
 };
 
 export default rotatePerpendicularPath;

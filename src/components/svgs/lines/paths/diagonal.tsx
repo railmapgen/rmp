@@ -212,7 +212,10 @@ const diagonalPath: LinePath<DiagonalPathAttributes> = {
     icon: diagonalIcon,
     defaultAttrs: defaultDiagonalPathAttributes,
     attrsComponent,
-    metadata: { displayName: 'panel.details.lines.diagonal.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.diagonal.displayName',
+        supportsReconcile: true,
+    },
 };
 
 export default diagonalPath;

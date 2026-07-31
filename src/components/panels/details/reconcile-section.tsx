@@ -9,7 +9,7 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { addSelected, clearSelected, refreshEdgesThunk, setMode } from '../../../redux/runtime/runtime-slice';
 import { getAllLinesNeedToReconcile, reconcileLines } from '../../../util/reconcile';
-import { lineStyles } from '../../svgs/lines/lines';
+import { canReconcileLine } from '../../../util/reconcile-ui';
 
 export default function ReconcileSection() {
     const { t } = useTranslation();
@@ -20,9 +20,8 @@ export default function ReconcileSection() {
 
     if (selected.size !== 1 || !selectedFirst || !graph.current.hasEdge(selectedFirst)) return null;
 
-    const { style, reconcileId } = graph.current.getEdgeAttributes(selectedFirst);
-    const supportsReconcile = lineStyles[style]?.metadata.supportsReconcile;
-    if (!supportsReconcile) return null;
+    const { type, style, reconcileId } = graph.current.getEdgeAttributes(selectedFirst);
+    if (!canReconcileLine(type, style)) return null;
 
     const isReconcileEnabled = reconcileId !== '';
     const isInReconcileMode = mode.startsWith('reconcile-');

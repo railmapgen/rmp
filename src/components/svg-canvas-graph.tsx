@@ -33,6 +33,7 @@ import {
 import { useWindowSize } from '../util/hooks';
 import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
+import { canReconcileLine } from '../util/reconcile-ui';
 import { findConnectedSameStyleEdges } from '../util/same-style';
 import { getLines, getNodes } from '../util/process-elements';
 import {
@@ -473,8 +474,8 @@ const SvgCanvas = () => {
         // Reconcile assign mode: clicking a line sets its reconcileId
         if (mode.startsWith('reconcile-')) {
             const reconcileId = mode.slice('reconcile-'.length);
-            const style = graph.current.getEdgeAttribute(edge, 'style');
-            if (lineStyles[style].metadata.supportsReconcile) {
+            const { type, style } = graph.current.getEdgeAttributes(edge);
+            if (canReconcileLine(type, style)) {
                 graph.current.setEdgeAttribute(edge, 'reconcileId', reconcileId);
                 dispatch(saveGraph(graph.current.export()));
                 dispatch(refreshEdgesThunk());

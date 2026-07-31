@@ -8,6 +8,7 @@ import { checkSimplePathAvailability, reconcileSimplePathWithParallel } from './
 import { classifyParallelLines, getBaseParallelLineID, makeParallelPaths, supportsParallelLinePath } from './parallel';
 import { isOpenPath } from './path';
 import { makeReconciledPath, reconcileLines } from './reconcile';
+import { canReconcileLine } from './reconcile-ui';
 
 /**
  * This file contains helper methods to extract stations/miscNodes/lines
@@ -68,7 +69,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         const lineID = lineEntry.edge as LineId;
         let simplePathAvailability = cachedSimplePathAvailability[lineID];
 
-        const { parallelIndex, type } = lineEntry.attributes;
+        const { parallelIndex, type, style } = lineEntry.attributes;
         const generatedPath = cachedGeneratedPaths[lineID];
         if (generatedPath && !isOpenPath(generatedPath)) {
             // parallel, reconcile, and auto-simple operations cannot handle area path geometry
@@ -91,7 +92,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
                 simplePathAvailability = reconcileSimplePathWithParallel(x1, y1, x2, y2, offset, parallelIndex);
             }
         }
-        if (lineEntry.attributes.reconcileId !== '') {
+        if (lineEntry.attributes.reconcileId !== '' && canReconcileLine(type, style)) {
             const reconcileId = lineEntry.attributes.reconcileId;
             if (reconcileId in lineGroupsToReconcile) lineGroupsToReconcile[reconcileId].push(lineEntry);
             else lineGroupsToReconcile[reconcileId] = [lineEntry];

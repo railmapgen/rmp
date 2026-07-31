@@ -261,7 +261,10 @@ const freeformPath: LinePath<FreeformPathAttributes> = {
     icon: freeformIcon,
     defaultAttrs: defaultFreeformPathAttributes,
     attrsComponent,
-    metadata: { displayName: 'panel.details.lines.freeform.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.freeform.displayName',
+        supportsReconcile: false,
+    },
 };
 
 export default freeformPath;
