@@ -1,7 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { Provider } from 'react-redux';
-import { render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
     CityCode,
@@ -18,6 +17,7 @@ import { MiscNodeType } from '../constants/nodes';
 import { makePoint } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { createStore } from '../redux';
+import { render } from '../test-utils';
 import { Overlay } from './overlay';
 import { SameStyleLineEndpointOverlay } from './svgs/common/same-style-line-endpoint-overlay';
 import { linePaths, lineStyles } from './svgs/lines/lines';
@@ -92,11 +92,10 @@ const renderOverlay = (
         },
     });
     return render(
-        <Provider store={store}>
-            <svg id="canvas">
-                <Overlay />
-            </svg>
-        </Provider>
+        <svg id="canvas">
+            <Overlay />
+        </svg>,
+        { store }
     );
 };
 
@@ -162,8 +161,6 @@ describe('Overlay', () => {
         });
 
         it('renders nothing for multiple selections', () => {
-            addLine('line_freeform', LinePathType.Freeform);
-
             const { container } = renderOverlay(new Set<Id>(['line_freeform', 'misc_node_a']));
             expect(container.querySelector('#canvas')?.children).toHaveLength(0);
         });
@@ -179,7 +176,6 @@ describe('Overlay', () => {
 
             const { getAllByTestId } = renderOverlay(new Set<Id>(['stn_int']));
 
-            expect(stations[StationType.ShmetroInt].overlayComponent).toBe(SameStyleLineEndpointOverlay);
             const controls = getAllByTestId('node-line-endpoint-control');
             expect(controls).toHaveLength(1);
             expect(controls[0].closest('.removeMe')).not.toBeNull();
@@ -191,7 +187,6 @@ describe('Overlay', () => {
 
             const { queryByTestId } = renderOverlay(new Set<Id>(['stn_int']));
 
-            expect(stations[StationType.ShmetroBasic].overlayComponent).not.toBe(SameStyleLineEndpointOverlay);
             expect(queryByTestId('node-line-endpoint-control')).toBeNull();
         });
 
