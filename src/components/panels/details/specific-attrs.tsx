@@ -68,6 +68,7 @@ export const LineSpecificAttributes = () => {
         dispatch(saveGraph(window.graph.export()));
         dispatch(refreshEdgesThunk());
     };
+
     const handleStyleAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [style]: attrs });
         dispatch(saveGraph(window.graph.export()));
