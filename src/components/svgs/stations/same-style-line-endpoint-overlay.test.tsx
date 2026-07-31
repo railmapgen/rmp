@@ -41,10 +41,11 @@ const addBezier = (
     target: NodeId,
     color: Theme,
     sourceOffset = makePoint(0, 0),
-    targetOffset = makePoint(0, 0)
+    targetOffset = makePoint(0, 0),
+    visible = true
 ) => {
     graph.addDirectedEdgeWithKey(id, source, target, {
-        visible: true,
+        visible,
         zIndex: 0,
         type: LinePathType.Bezier,
         [LinePathType.Bezier]: {
@@ -66,11 +67,13 @@ const createGraph = () => {
     addNode(graph, 'misc_node_left', -100, 20);
     addNode(graph, 'misc_node_right', 100, 20);
     addNode(graph, 'misc_node_bottom', 10, 120);
+    addNode(graph, 'misc_node_hidden', 10, 160);
     addNode(graph, 'misc_node_simple', 10, -100);
     addNode(graph, 'misc_node_other_style', 120, 120);
 
     addBezier(graph, 'line_red_out', 'stn_center', 'misc_node_right', RED, makePoint(1, 2));
     addBezier(graph, 'line_red_in', 'misc_node_left', 'stn_center', RED, makePoint(9, 9), makePoint(3, 4));
+    addBezier(graph, 'line_red_hidden', 'stn_center', 'misc_node_hidden', RED, makePoint(7, 8), makePoint(0, 0), false);
     addBezier(graph, 'line_blue', 'stn_center', 'misc_node_bottom', BLUE);
     graph.addDirectedEdgeWithKey('line_simple', 'stn_center', 'misc_node_simple', {
         visible: true,
@@ -131,7 +134,7 @@ describe('SameStyleLineEndpointOverlay', () => {
         expect(controls).toHaveLength(3);
         expect(
             controls.map(control => control.dataset.edgeIds?.split(',').sort()).sort((a, b) => a!.length - b!.length)
-        ).toEqual([['line_blue'], ['line_red_other_style'], ['line_red_in', 'line_red_out']]);
+        ).toEqual([['line_blue'], ['line_red_other_style'], ['line_red_hidden', 'line_red_in', 'line_red_out']]);
     });
 
     it('sets every endpoint in the dragged group to the same absolute control position', () => {
@@ -153,6 +156,10 @@ describe('SameStyleLineEndpointOverlay', () => {
         expect(window.graph.getEdgeAttribute('line_red_in', LinePathType.Bezier)).toMatchObject({
             sourceOffset: { x: 9, y: 9 },
             targetOffset: { x: 40, y: 50 },
+        });
+        expect(window.graph.getEdgeAttribute('line_red_hidden', LinePathType.Bezier)).toMatchObject({
+            sourceOffset: { x: 40, y: 50 },
+            targetOffset: { x: 0, y: 0 },
         });
         expect(window.graph.getEdgeAttribute('line_blue', LinePathType.Bezier)).toMatchObject({
             sourceOffset: { x: 0, y: 0 },

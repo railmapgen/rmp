@@ -29,7 +29,7 @@ const getEndpointOffset = (stationId: StationOverlayProps['id'], edgeId: LineId)
         : (attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset);
 };
 
-/** Group only the selected station's directly linked, visible Bezier edges. */
+/** Group all of the selected station's directly linked Bezier edges. */
 const getEndpointGroups = (stationId: StationOverlayProps['id']): EndpointGroup[] => {
     if (!window.graph.hasNode(stationId)) return [];
     const station = window.graph.getNodeAttributes(stationId);
@@ -37,7 +37,7 @@ const getEndpointGroups = (stationId: StationOverlayProps['id']): EndpointGroup[
 
     for (const edgeId of window.graph.edges(stationId) as LineId[]) {
         const edgeAttrs = window.graph.getEdgeAttributes(edgeId);
-        if (!edgeAttrs.visible || edgeAttrs.type !== LinePathType.Bezier) continue;
+        if (edgeAttrs.type !== LinePathType.Bezier) continue;
 
         const existing = groups.find(group => areSameLineStyles(group.representativeAttrs, edgeAttrs));
         if (existing) {
