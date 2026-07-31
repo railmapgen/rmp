@@ -1,7 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
-import { makePoint } from '../../../../constants/path';
+import { makePoint, PathPoint } from '../../../../constants/path';
 import { makeBezierPath } from './bezier-geometry';
 import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
@@ -19,9 +19,19 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     return makeBezierPath(source, target, attrs);
 };
 
-const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
+const attrsComponent = ({
+    id,
+    attrs,
+    handleAttrsUpdate,
+    syncSameStyleEndpointOffset,
+}: LinePathAttrsProps<BezierPathAttributes>) => {
     const { t } = useTranslation();
     const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...attrs, ...patch });
+    const updateEndpointOffset = (endpoint: 'source' | 'target', offset: PathPoint) => {
+        syncSameStyleEndpointOffset?.(id, endpoint, offset);
+        if (endpoint === 'source') update({ sourceOffset: offset });
+        else update({ targetOffset: offset });
+    };
     const sourceOffset = attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset;
     const targetOffset = attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset;
 
@@ -47,7 +57,7 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
             label: t('panel.details.lines.bezier.sourceOffsetX'),
             value: sourceOffset.x.toString(),
             variant: 'number',
-            onChange: val => update({ sourceOffset: { ...sourceOffset, x: Number(val) || 0 } }),
+            onChange: val => updateEndpointOffset('source', { ...sourceOffset, x: Number(val) || 0 }),
             minW: 'full',
         },
         {
@@ -55,7 +65,7 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
             label: t('panel.details.lines.bezier.sourceOffsetY'),
             value: sourceOffset.y.toString(),
             variant: 'number',
-            onChange: val => update({ sourceOffset: { ...sourceOffset, y: Number(val) || 0 } }),
+            onChange: val => updateEndpointOffset('source', { ...sourceOffset, y: Number(val) || 0 }),
             minW: 'full',
         },
         {
@@ -63,7 +73,7 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
             label: t('panel.details.lines.bezier.targetOffsetX'),
             value: targetOffset.x.toString(),
             variant: 'number',
-            onChange: val => update({ targetOffset: { ...targetOffset, x: Number(val) || 0 } }),
+            onChange: val => updateEndpointOffset('target', { ...targetOffset, x: Number(val) || 0 }),
             minW: 'full',
         },
         {
@@ -71,7 +81,7 @@ const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<Bez
             label: t('panel.details.lines.bezier.targetOffsetY'),
             value: targetOffset.y.toString(),
             variant: 'number',
-            onChange: val => update({ targetOffset: { ...targetOffset, y: Number(val) || 0 } }),
+            onChange: val => updateEndpointOffset('target', { ...targetOffset, y: Number(val) || 0 }),
             minW: 'full',
         },
     ];
