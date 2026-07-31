@@ -24,6 +24,7 @@ import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
+import { canReconcileLine } from './reconcile-ui';
 import { areSameLineStyles } from './same-style';
 
 const stationsWithoutNameOffset = [
@@ -208,6 +209,9 @@ export const changeLinePathType = (
         graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
         alignBezierEndpointOffsetsToSameStylePeers(graph, selectedFirst);
+        if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
+            graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
+        }
     }
 };
 
