@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LinePathType } from '../../../../constants/lines';
+import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { supportsParallelLinePath } from '../../../../util/parallel';
 import { linePaths, lineStyles } from '../lines';
 import { generateBezierPath } from './bezier';
@@ -7,14 +7,18 @@ import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geome
 import { defaultBezierPathAttributes } from './bezier-model';
 
 describe('bezier line path', () => {
-    it('registers its overlay and is supported by every line style', () => {
+    it('registers its overlay and is supported by compatible line styles', () => {
         expect(linePaths[LinePathType.Bezier]).toBeDefined();
         expect(linePaths[LinePathType.Bezier].overlayComponent).toBeDefined();
         expect(linePaths[LinePathType.Bezier].drawingBehavior).toBeUndefined();
 
-        Object.values(lineStyles).forEach(lineStyle =>
-            expect(lineStyle.metadata.supportLinePathType).toContain(LinePathType.Bezier)
-        );
+        Object.entries(lineStyles).forEach(([type, lineStyle]) => {
+            if (type === LineStyleType.MRTTapeOut) {
+                expect(lineStyle.metadata.supportLinePathType).not.toContain(LinePathType.Bezier);
+            } else {
+                expect(lineStyle.metadata.supportLinePathType).toContain(LinePathType.Bezier);
+            }
+        });
     });
 
     it('builds one cubic segment through the tangent intersection model', () => {
