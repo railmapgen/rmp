@@ -24,7 +24,11 @@ export const Overlay = () => {
         const OverlayComponent = linePaths[type]?.overlayComponent as React.FC<OverlayProps<LineId>> | undefined;
         if (!OverlayComponent) return null;
 
-        return <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />;
+        return (
+            <g className="removeMe">
+                <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+            </g>
+        );
     }
 
     if (window.graph.hasNode(selectedId)) {
@@ -36,7 +40,11 @@ export const Overlay = () => {
         const OverlayComponent = definition?.overlayComponent;
         if (!OverlayComponent) return null;
 
-        return <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />;
+        return (
+            <g className="removeMe">
+                <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+            </g>
+        );
     }
 
     return null;

@@ -151,6 +151,7 @@ describe('Overlay', () => {
             const overlay = getByTestId('path-overlay');
 
             expect(overlay.dataset).toMatchObject({ edgeId: 'line_freeform', zoom: '125', min: '10,20' });
+            expect(overlay.closest('.removeMe')).not.toBeNull();
         });
 
         it('renders nothing when the selected path has no registered overlay', () => {
@@ -179,7 +180,9 @@ describe('Overlay', () => {
             const { getAllByTestId } = renderOverlay(new Set<Id>(['stn_int']));
 
             expect(stations[StationType.ShmetroInt].overlayComponent).toBe(SameStyleLineEndpointOverlay);
-            expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
+            const controls = getAllByTestId('node-line-endpoint-control');
+            expect(controls).toHaveLength(1);
+            expect(controls[0].closest('.removeMe')).not.toBeNull();
         });
 
         it('does not provide the generic overlay as a fallback for other stations', () => {
