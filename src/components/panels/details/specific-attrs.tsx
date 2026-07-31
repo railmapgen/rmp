@@ -1,13 +1,11 @@
 import { Alert, AlertDescription, AlertIcon, Box, Button, Text } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, LineId, NodeId } from '../../../constants/constants';
-import { PathPoint } from '../../../constants/path';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { makeParallelIndex } from '../../../util/parallel';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { areSameLineStyles } from '../../../util/same-style';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -70,28 +68,6 @@ export const LineSpecificAttributes = () => {
         dispatch(saveGraph(window.graph.export()));
         dispatch(refreshEdgesThunk());
     };
-    const syncSameStyleEndpointOffset = (id: string, endpoint: 'source' | 'target', offset: PathPoint): void => {
-        if (!window.graph.hasEdge(id)) return;
-
-        const referenceAttrs = window.graph.getEdgeAttributes(id);
-        const stationId = endpoint === 'source' ? window.graph.source(id) : window.graph.target(id);
-        if (!stationId.startsWith('stn_')) return;
-
-        for (const edgeId of window.graph.edges(stationId) as LineId[]) {
-            const edgeAttrs = window.graph.getEdgeAttributes(edgeId);
-            if (edgeAttrs.type !== referenceAttrs.type || !areSameLineStyles(referenceAttrs, edgeAttrs)) continue;
-
-            const pathAttrs = edgeAttrs[edgeAttrs.type] ?? structuredClone(linePaths[edgeAttrs.type].defaultAttrs);
-            const offsetKey = window.graph.source(edgeId) === stationId ? 'sourceOffset' : 'targetOffset';
-            window.graph.mergeEdgeAttributes(edgeId, {
-                [edgeAttrs.type]: {
-                    ...pathAttrs,
-                    [offsetKey]: { ...offset },
-                },
-            });
-        }
-    };
-
     const handleStyleAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [style]: attrs });
         dispatch(saveGraph(window.graph.export()));
@@ -106,7 +82,6 @@ export const LineSpecificAttributes = () => {
                     attrs={attrs}
                     recalculateParallelIndex={recalculateParallelIndex}
                     handleAttrsUpdate={handlePathAttrsUpdate}
-                    syncSameStyleEndpointOffset={syncSameStyleEndpointOffset}
                     parallelIndex={parallelIndex}
                 />
             ) : (

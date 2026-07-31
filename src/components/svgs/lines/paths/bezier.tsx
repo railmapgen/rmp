@@ -1,5 +1,7 @@
+import { HStack, IconButton, Input, InputGroup, InputLeftAddon } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
+import { MdLink } from 'react-icons/md';
 import { LineId } from '../../../../constants/constants';
 import {
     LinePath,
@@ -58,21 +60,39 @@ export const initializeNewBezierEdgeAttrs: LinePathNewEdgeAttrsInitializer<Bezie
     };
 };
 
-const attrsComponent = ({
-    id,
-    attrs,
-    handleAttrsUpdate,
-    syncSameStyleEndpointOffset,
-}: LinePathAttrsProps<BezierPathAttributes>) => {
+const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
     const { t } = useTranslation();
     const update = (patch: Partial<BezierPathAttributes>) => handleAttrsUpdate(id, { ...attrs, ...patch });
-    const updateEndpointOffset = (endpoint: 'source' | 'target', offset: PathPoint) => {
-        syncSameStyleEndpointOffset?.(id, endpoint, offset);
-        if (endpoint === 'source') update({ sourceOffset: offset });
-        else update({ targetOffset: offset });
-    };
     const sourceOffset = attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset;
     const targetOffset = attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset;
+    const endpointOffsetField = (endpoint: 'source' | 'target', offset: PathPoint, label: string): RmgFieldsField => ({
+        type: 'custom',
+        label,
+        component: (
+            <HStack width="100%" spacing={2} data-testid={`bezier-${endpoint}-offset`}>
+                {(['x', 'y'] as const).map(axis => (
+                    <InputGroup key={axis} size="sm" minW={0} flex={1}>
+                        <InputLeftAddon px={2}>{axis.toUpperCase()}</InputLeftAddon>
+                        <Input
+                            aria-label={t(`panel.details.lines.bezier.${endpoint}Offset${axis.toUpperCase()}`)}
+                            type="number"
+                            value={offset[axis]}
+                            isReadOnly
+                        />
+                    </InputGroup>
+                ))}
+                <IconButton
+                    aria-label={t('panel.details.lines.bezier.linkedOffset')}
+                    icon={<MdLink />}
+                    size="sm"
+                    variant="ghost"
+                    isDisabled
+                    flexShrink={0}
+                />
+            </HStack>
+        ),
+        minW: 'full',
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -91,38 +111,8 @@ const attrsComponent = ({
             onChange: val => update({ normal: Number(val) || 0 }),
             minW: 'full',
         },
-        {
-            type: 'input',
-            label: t('panel.details.lines.bezier.sourceOffsetX'),
-            value: sourceOffset.x.toString(),
-            variant: 'number',
-            onChange: val => updateEndpointOffset('source', { ...sourceOffset, x: Number(val) || 0 }),
-            minW: 'full',
-        },
-        {
-            type: 'input',
-            label: t('panel.details.lines.bezier.sourceOffsetY'),
-            value: sourceOffset.y.toString(),
-            variant: 'number',
-            onChange: val => updateEndpointOffset('source', { ...sourceOffset, y: Number(val) || 0 }),
-            minW: 'full',
-        },
-        {
-            type: 'input',
-            label: t('panel.details.lines.bezier.targetOffsetX'),
-            value: targetOffset.x.toString(),
-            variant: 'number',
-            onChange: val => updateEndpointOffset('target', { ...targetOffset, x: Number(val) || 0 }),
-            minW: 'full',
-        },
-        {
-            type: 'input',
-            label: t('panel.details.lines.bezier.targetOffsetY'),
-            value: targetOffset.y.toString(),
-            variant: 'number',
-            onChange: val => updateEndpointOffset('target', { ...targetOffset, y: Number(val) || 0 }),
-            minW: 'full',
-        },
+        endpointOffsetField('source', sourceOffset, t('panel.details.lines.bezier.sourceOffset')),
+        endpointOffsetField('target', targetOffset, t('panel.details.lines.bezier.targetOffset')),
     ];
 
     return <RmgFields fields={fields} />;
