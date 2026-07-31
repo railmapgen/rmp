@@ -114,8 +114,8 @@ describe('imperative DOM helpers', () => {
                 version: 1,
                 points: [
                     { id: 'start', x: 0, y: 0 },
-                    { id: 'mid', x: 40, y: 20 },
-                    { id: 'end', x: 100, y: 0 },
+                    { id: 'mid', x: 0.4, y: 0.2 },
+                    { id: 'end', x: 1, y: 0 },
                 ],
                 widthStops: [{ id: 'w', t: 0.5, width: 6 }],
                 smoothing: 0.5,

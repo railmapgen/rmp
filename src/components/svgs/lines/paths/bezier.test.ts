@@ -53,15 +53,19 @@ const makeBezierEdgeAttrs = (
 });
 
 describe('bezier line path', () => {
-    it('registers its overlay and is supported by every line style', () => {
+    it('registers its overlay and is supported by compatible line styles', () => {
         expect(linePaths[LinePathType.Bezier]).toBeDefined();
         expect(linePaths[LinePathType.Bezier].overlayComponent).toBeDefined();
         expect(linePaths[LinePathType.Bezier].initializeNewEdgeAttrs).toBeDefined();
         expect(linePaths[LinePathType.Bezier].drawingBehavior).toBeUndefined();
 
-        Object.values(lineStyles).forEach(lineStyle =>
-            expect(lineStyle.metadata.supportLinePathType).toContain(LinePathType.Bezier)
-        );
+        Object.entries(lineStyles).forEach(([type, lineStyle]) => {
+            if (type === LineStyleType.MRTTapeOut) {
+                expect(lineStyle.metadata.supportLinePathType).not.toContain(LinePathType.Bezier);
+            } else {
+                expect(lineStyle.metadata.supportLinePathType).toContain(LinePathType.Bezier);
+            }
+        });
     });
 
     it('builds one cubic segment through the tangent intersection model', () => {

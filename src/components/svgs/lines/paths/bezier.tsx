@@ -145,7 +145,10 @@ const bezierPath: LinePath<BezierPathAttributes> = {
     defaultAttrs: defaultBezierPathAttributes,
     attrsComponent,
     initializeNewEdgeAttrs: initializeNewBezierEdgeAttrs,
-    metadata: { displayName: 'panel.details.lines.bezier.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.bezier.displayName',
+        supportsReconcile: false,
+    },
 };
 
 export default bezierPath;

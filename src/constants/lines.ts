@@ -332,6 +332,12 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
          * The name displayed in the tools and details panels. In react-i18next index format.
          */
         displayName: string;
+        /**
+         * Whether this path geometry can participate in a reconciled line.
+         *
+         * A line is eligible only when both its path and style support reconcile.
+         */
+        supportsReconcile: boolean;
     };
 }
 

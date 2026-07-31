@@ -29,6 +29,8 @@ import {
     FreeformPathAttributes,
     MIN_FREEFORM_PATH_LENGTH,
     MIN_FREEFORM_WIDTH,
+    ResolvedFreeformPathAttributes,
+    persistFreeformPoint,
 } from './freeform-model';
 
 /**
@@ -85,7 +87,7 @@ const rdpSimplify = (points: PathPoint[], tolerance: number): PathPoint[] => {
  * Turn a raw pointer stream into a finite, minimum-length polyline ready to persist.
  *
  * This is intentionally separate from persisted-attribute normalisation: drawing starts with absolute canvas samples,
- * while persisted attributes are source-relative and already know their endpoints.
+ * while persisted attributes are chord-relative and already know their endpoints.
  */
 const normalizeInputPoints = (
     points: PathPoint[],
@@ -138,16 +140,21 @@ export const createFreeformPathAttributes = (
     normalized[0] = source;
     normalized[normalized.length - 1] = target;
     const targetRelative = subtract(target, source);
+    if (distance(source, target) < FREEFORM_EPSILON) return undefined;
     const requestedWidth = options.defaultWidth ?? DEFAULT_FREEFORM_WIDTH;
     const defaultWidth = Number.isFinite(requestedWidth)
         ? Math.max(MIN_FREEFORM_WIDTH, requestedWidth)
         : DEFAULT_FREEFORM_WIDTH;
-    // Persist points source-relative so moving the source node carries the authored shape with it.
-    const points = normalized.map((point, index) => ({
-        id: createId() || `point_${index}`,
-        x: index === 0 ? 0 : index === normalized.length - 1 ? targetRelative.x : point.x - source.x,
-        y: index === 0 ? 0 : index === normalized.length - 1 ? targetRelative.y : point.y - source.y,
-    }));
+    // Persist each source-local sample in the normalized chord basis so later endpoint moves rotate and scale the shape.
+    const points = normalized.map((point, index) => {
+        const persisted =
+            index === 0
+                ? { x: 0, y: 0 }
+                : index === normalized.length - 1
+                  ? { x: 1, y: 0 }
+                  : persistFreeformPoint(subtract(point, source), targetRelative)!;
+        return { id: createId() || `point_${index}`, ...persisted };
+    });
 
     return {
         version: 1,
@@ -189,7 +196,7 @@ const catmullRomPoint = (p0: PathPoint, p1: PathPoint, p2: PathPoint, p3: PathPo
  * Geometry functions receive canonical attributes from the generator or editor boundary.
  * Keeping normalisation out of this layer prevents nested geometry calls from repeatedly repairing the same value.
  */
-export const getFreeformCenterline = (attrs: FreeformPathAttributes): PathPoint[] => {
+export const getFreeformCenterline = (attrs: ResolvedFreeformPathAttributes): PathPoint[] => {
     const { points, smoothing } = attrs;
     const output: PathPoint[] = [];
 
@@ -277,7 +284,7 @@ const trimPolylineAtDistance = (points: PathPoint[], targetDistance: number): Pa
  *
  * Width stops use this value so dragging a stop follows the rendered curve rather than the raw control polygon.
  */
-export const getNearestFreeformCenterlineT = (attrs: FreeformPathAttributes, point: PathPoint): number => {
+export const getNearestFreeformCenterlineT = (attrs: ResolvedFreeformPathAttributes, point: PathPoint): number => {
     const centerline = getFreeformCenterline(attrs);
     const metrics = getPolylineMetrics(centerline);
     if (metrics.total === 0) return 0;
@@ -298,7 +305,10 @@ export const getNearestFreeformCenterlineT = (attrs: FreeformPathAttributes, poi
 };
 
 /** Pick the control-polygon segment that should receive an inserted editable point. */
-export const getNearestFreeformControlSegmentIndex = (attrs: FreeformPathAttributes, point: PathPoint): number => {
+export const getNearestFreeformControlSegmentIndex = (
+    attrs: ResolvedFreeformPathAttributes,
+    point: PathPoint
+): number => {
     const points = attrs.points;
     let bestDistance = Number.POSITIVE_INFINITY;
     let insertIndex = 1;
@@ -315,7 +325,7 @@ export const getNearestFreeformControlSegmentIndex = (attrs: FreeformPathAttribu
 };
 
 /** Build an SVG `d` string for the editable centerline overlay. */
-export const getFreeformCenterlineD = (attrs: FreeformPathAttributes): string => {
+export const getFreeformCenterlineD = (attrs: ResolvedFreeformPathAttributes): string => {
     const centerline = getFreeformCenterline(attrs);
     if (centerline.length < 2) return '';
     return centerline
@@ -324,7 +334,7 @@ export const getFreeformCenterlineD = (attrs: FreeformPathAttributes): string =>
 };
 
 /** Interpolate the rendered outline width at a normalized centerline position. */
-export const getWidthAtT = (attrs: FreeformPathAttributes, t: number): number => {
+export const getWidthAtT = (attrs: ResolvedFreeformPathAttributes, t: number): number => {
     const stops = attrs.widthStops;
     const safeT = clamp(t, 0, 1);
     if (safeT <= stops[0].t) return stops[0].width;
@@ -344,7 +354,7 @@ export const getWidthAtT = (attrs: FreeformPathAttributes, t: number): number =>
 };
 
 /** Compute the center and side handles used by the width-stop overlay controls. */
-export const getFreeformWidthStopGeometry = (attrs: FreeformPathAttributes, stopId: string) => {
+export const getFreeformWidthStopGeometry = (attrs: ResolvedFreeformPathAttributes, stopId: string) => {
     const stop = attrs.widthStops.find(item => item.id === stopId);
     if (!stop) return undefined;
 
@@ -372,7 +382,7 @@ export const getFreeformWidthStopGeometry = (attrs: FreeformPathAttributes, stop
  * layer can then fill that area exactly like other closed path outputs.
  */
 export const makeFreeformAreaPath = (
-    attrs: FreeformPathAttributes,
+    attrs: ResolvedFreeformPathAttributes,
     origin: PathPoint = { x: 0, y: 0 }
 ): ClosedAreaPath | EmptyOpenPath => {
     const centerline = getFreeformCenterline(attrs);

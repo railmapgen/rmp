@@ -7,6 +7,7 @@ import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { checkSimplePathAvailability } from './auto-simple';
 import { reverseEdgePathAttrs } from './edge-path-attrs';
 import { concatOpenPaths, isOpenPath } from './path';
+import { canReconcileLine } from './reconcile-ui';
 
 /**
  * A reconciled line entry with its traversal direction.
@@ -27,8 +28,8 @@ export const getAllLinesNeedToReconcile = (
 ) => {
     const lineGroupsToReconcile: { [reconcileId: string]: EdgeEntry<NodeAttributes, EdgeAttributes>[] } = {};
     for (const lineEntry of graph.edgeEntries()) {
-        if (lineEntry.edge.startsWith('line') && lineEntry.attributes.reconcileId !== '') {
-            const reconcileId = lineEntry.attributes.reconcileId;
+        const { type, style, reconcileId } = lineEntry.attributes;
+        if (lineEntry.edge.startsWith('line') && reconcileId !== '' && canReconcileLine(type, style)) {
             if (reconcileId in lineGroupsToReconcile) lineGroupsToReconcile[reconcileId].push(lineEntry);
             else lineGroupsToReconcile[reconcileId] = [lineEntry];
         }
