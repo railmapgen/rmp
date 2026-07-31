@@ -2,17 +2,20 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { Provider } from 'react-redux';
 import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, Id, NodeAttributes, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { createStore } from '../redux';
-import { SameStyleLineEndpointOverlay } from './svgs/stations/same-style-line-endpoint-overlay';
+import { NodeOverlayLayer } from './node-overlay-layer';
+import { SameStyleLineEndpointOverlay } from './svgs/common/same-style-line-endpoint-overlay';
+import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
-import { StationOverlayLayer } from './station-overlay-layer';
 
 const RED: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
+const virtualNode = miscNodes[MiscNodeType.Virtual];
+const defaultVirtualOverlay = virtualNode.overlayComponent;
 
 const createGraph = () => {
     const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
@@ -58,20 +61,24 @@ const renderLayer = (selected: Set<Id>) => {
     return render(
         <Provider store={store}>
             <svg id="canvas">
-                <StationOverlayLayer />
+                <NodeOverlayLayer />
             </svg>
         </Provider>
     );
 };
 
-describe('StationOverlayLayer', () => {
+describe('NodeOverlayLayer', () => {
+    afterEach(() => {
+        virtualNode.overlayComponent = defaultVirtualOverlay;
+    });
+
     it('mounts the generic endpoint overlay registered by ShmetroIntStation', () => {
         window.graph = createGraph();
 
         const { getAllByTestId } = renderLayer(new Set<Id>(['stn_int']));
 
         expect(stations[StationType.ShmetroInt].overlayComponent).toBe(SameStyleLineEndpointOverlay);
-        expect(getAllByTestId('station-line-endpoint-control')).toHaveLength(1);
+        expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
     });
 
     it('does not provide the generic overlay as a fallback for other stations', () => {
@@ -81,14 +88,23 @@ describe('StationOverlayLayer', () => {
         const { queryByTestId } = renderLayer(new Set<Id>(['stn_int']));
 
         expect(stations[StationType.ShmetroBasic].overlayComponent).not.toBe(SameStyleLineEndpointOverlay);
-        expect(queryByTestId('station-line-endpoint-control')).toBeNull();
+        expect(queryByTestId('node-line-endpoint-control')).toBeNull();
     });
 
-    it('renders no station overlay for multiple selections', () => {
+    it('mounts an overlay registered by a miscellaneous node', () => {
+        window.graph = createGraph();
+        virtualNode.overlayComponent = SameStyleLineEndpointOverlay;
+
+        const { getAllByTestId } = renderLayer(new Set<Id>(['misc_node_other']));
+
+        expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
+    });
+
+    it('renders no node overlay for multiple selections', () => {
         window.graph = createGraph();
 
         const { queryByTestId } = renderLayer(new Set<Id>(['stn_int', 'line_red']));
 
-        expect(queryByTestId('station-line-endpoint-control')).toBeNull();
+        expect(queryByTestId('node-line-endpoint-control')).toBeNull();
     });
 });

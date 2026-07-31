@@ -130,7 +130,7 @@ describe('SameStyleLineEndpointOverlay', () => {
     it('renders one control per Bezier LineStyleType + isSameStyle group', () => {
         const { getAllByTestId } = renderOverlay();
 
-        const controls = getAllByTestId('station-line-endpoint-control');
+        const controls = getAllByTestId('node-line-endpoint-control');
         expect(controls).toHaveLength(3);
         expect(
             controls.map(control => control.dataset.edgeIds?.split(',').sort()).sort((a, b) => a!.length - b!.length)
@@ -139,7 +139,7 @@ describe('SameStyleLineEndpointOverlay', () => {
 
     it('sets every endpoint in the dragged group to the same absolute control position', () => {
         const { getAllByTestId, store } = renderOverlay();
-        const redControl = getAllByTestId('station-line-endpoint-control').find(control =>
+        const redControl = getAllByTestId('node-line-endpoint-control').find(control =>
             control.dataset.edgeIds?.includes('line_red_out')
         )!;
         redControl.setPointerCapture = vi.fn();

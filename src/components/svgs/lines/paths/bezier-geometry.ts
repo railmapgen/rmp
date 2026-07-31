@@ -4,7 +4,7 @@ import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-mode
 /**
  * Resolve graph-node coordinates into the visual endpoints persisted by a Bezier.
  *
- * Offsets are station-relative and optional at runtime so Beziers from older saves remain valid.
+ * Offsets are node-relative and optional at runtime so Beziers from older saves remain valid.
  */
 export const getBezierEffectiveEndpoints = (
     source: PathPoint,

@@ -20,7 +20,7 @@ import {
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
-import { SameStyleLineEndpointOverlay } from './same-style-line-endpoint-overlay';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 
 const NAME_DY_SH_INT = {
     top: {

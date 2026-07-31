@@ -45,7 +45,7 @@ import {
     makeSnapLinesPath,
 } from '../util/snap-lines';
 import SnapPointGuideLines from './snap-point-guide-lines';
-import { StationOverlayLayer } from './station-overlay-layer';
+import { NodeOverlayLayer } from './node-overlay-layer';
 import SvgLayer from './svg-layer';
 import { LinePathOverlayLayer } from './line-path-overlay-layer';
 import { initializeNewEdgeAttributes, linePaths, lineStyles } from './svgs/lines/lines';
@@ -628,7 +628,7 @@ const SvgCanvas = () => {
                     />
                 ))}
             <LinePathOverlayLayer />
-            <StationOverlayLayer />
+            <NodeOverlayLayer />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path

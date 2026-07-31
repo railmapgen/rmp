@@ -1,7 +1,6 @@
 /* eslint-disable import/order */
 import React from 'react';
-import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId } from './constants';
-import { PathPoint } from './path';
+import { AttrsProps, CanvasType, CategoriesType, CityCode, NodeOverlayProps, StnId } from './constants';
 import type { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import type { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import type { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
@@ -143,16 +142,6 @@ export interface StationComponentProps {
     handlePointerUp: (node: StnId, e: React.PointerEvent<SVGElement>) => void;
 }
 
-/** Viewport context supplied to a station-owned editor overlay. */
-export interface StationOverlayProps {
-    /** The single selected station whose direct-manipulation UI is being shown. */
-    id: StnId;
-    /** Used to keep handles visually usable instead of shrinking or growing with the canvas. */
-    svgViewBoxZoom: number;
-    /** Used to convert screen pointer positions into SVG coordinates. */
-    svgViewBoxMin: PathPoint;
-}
-
 export interface StationAttributes {
     /**
      * The names (in different languages) of this station.
@@ -200,7 +189,7 @@ export interface Station<T extends StationAttributes> {
      * Station implementations may register a shared overlay or provide station-specific controls. Overlays are editor
      * UI only and must explicitly save and refresh graph mutations.
      */
-    overlayComponent?: React.FC<StationOverlayProps>;
+    overlayComponent?: React.FC<NodeOverlayProps<StnId>>;
     /**
      * The icon displayed in the tools panel.
      */

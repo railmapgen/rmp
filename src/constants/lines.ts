@@ -208,7 +208,7 @@ interface LineBase<T extends LinePathAttributes> {
 
 export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsProps<T> {
     /**
-     * Synchronize a station-relative endpoint offset to directly linked paths with the same path and line style.
+     * Synchronize a node-relative endpoint offset to directly linked paths with the same path and line style.
      *
      * Paths that expose endpoint offsets should call this immediately before `handleAttrsUpdate`, so the selected path
      * and its peers are persisted by the same save/refresh operation.

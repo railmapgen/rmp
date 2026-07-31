@@ -1,9 +1,8 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { EdgeAttributes, LineId } from '../../../constants/constants';
+import { EdgeAttributes, LineId, NodeOverlayProps } from '../../../constants/constants';
 import { LinePathType } from '../../../constants/lines';
 import { PathPoint, makePoint } from '../../../constants/path';
-import { StationOverlayProps } from '../../../constants/stations';
 import { useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
@@ -22,20 +21,20 @@ interface DraggingEndpointGroup {
     point: PathPoint;
 }
 
-const getEndpointOffset = (stationId: StationOverlayProps['id'], edgeId: LineId): PathPoint => {
+const getEndpointOffset = (nodeId: NodeOverlayProps['id'], edgeId: LineId): PathPoint => {
     const attrs = window.graph.getEdgeAttribute(edgeId, LinePathType.Bezier) ?? defaultBezierPathAttributes;
-    return window.graph.source(edgeId) === stationId
+    return window.graph.source(edgeId) === nodeId
         ? (attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset)
         : (attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset);
 };
 
-/** Group all of the selected station's directly linked Bezier edges. */
-const getEndpointGroups = (stationId: StationOverlayProps['id']): EndpointGroup[] => {
-    if (!window.graph.hasNode(stationId)) return [];
-    const station = window.graph.getNodeAttributes(stationId);
+/** Group all of the selected node's directly linked Bezier edges. */
+const getEndpointGroups = (nodeId: NodeOverlayProps['id']): EndpointGroup[] => {
+    if (!window.graph.hasNode(nodeId)) return [];
+    const node = window.graph.getNodeAttributes(nodeId);
     const groups: EndpointGroup[] = [];
 
-    for (const edgeId of window.graph.edges(stationId) as LineId[]) {
+    for (const edgeId of window.graph.edges(nodeId) as LineId[]) {
         const edgeAttrs = window.graph.getEdgeAttributes(edgeId);
         if (edgeAttrs.type !== LinePathType.Bezier) continue;
 
@@ -45,11 +44,11 @@ const getEndpointGroups = (stationId: StationOverlayProps['id']): EndpointGroup[
             continue;
         }
 
-        const offset = getEndpointOffset(stationId, edgeId);
+        const offset = getEndpointOffset(nodeId, edgeId);
         groups.push({
             edgeIds: [edgeId],
             representativeAttrs: edgeAttrs,
-            point: makePoint(station.x + offset.x, station.y + offset.y),
+            point: makePoint(node.x + offset.x, node.y + offset.y),
         });
     }
 
@@ -57,12 +56,12 @@ const getEndpointGroups = (stationId: StationOverlayProps['id']): EndpointGroup[
 };
 
 /**
- * Shared station overlay that exposes one virtual endpoint per same-style Bezier group.
+ * Shared node overlay that exposes one virtual endpoint per same-style Bezier group.
  *
- * The handle is transient editor UI. Dragging persists the same station-relative endpoint offset on every edge in
+ * The handle is transient editor UI. Dragging persists the same node-relative endpoint offset on every edge in
  * the group, restoring a single visual junction even if imported or manually edited attributes had diverged.
  */
-export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: StationOverlayProps) => {
+export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: NodeOverlayProps) => {
     const dispatch = useRootDispatch();
     const [dragging, setDragging] = React.useState<DraggingEndpointGroup>();
     const groups = getEndpointGroups(id);
@@ -93,11 +92,8 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
         if (!pointer) return;
 
         event.stopPropagation();
-        const station = window.graph.getNodeAttributes(id);
-        const offset = makePoint(
-            roundToMultiple(pointer.x - station.x, 0.01),
-            roundToMultiple(pointer.y - station.y, 0.01)
-        );
+        const node = window.graph.getNodeAttributes(id);
+        const offset = makePoint(roundToMultiple(pointer.x - node.x, 0.01), roundToMultiple(pointer.y - node.y, 0.01));
 
         for (const edgeId of dragging.edgeIds) {
             if (!window.graph.hasEdge(edgeId)) continue;
@@ -168,7 +164,7 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
                             pointerEvents="none"
                         />
                         <circle
-                            data-testid="station-line-endpoint-control"
+                            data-testid="node-line-endpoint-control"
                             data-edge-ids={group.edgeIds.join(',')}
                             r={radius}
                             stroke="black"
