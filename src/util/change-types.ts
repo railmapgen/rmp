@@ -1,7 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
 import { InterchangeInfo, StationAttributesWithInterchange } from '../components/panels/details/interchange-field';
-import { defaultBezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/london-tube-basic';
 import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
@@ -25,7 +24,6 @@ import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 import { canReconcileLine } from './reconcile-ui';
-import { areSameLineStyles } from './same-style';
 
 const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
@@ -136,54 +134,11 @@ export const changeStationsTypeInBatch = (
         });
 
 /**
- * When a change moves an existing Bezier into a same-style endpoint group, keep the established group position.
- */
-const alignBezierEndpointOffsetsToSameStylePeers = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    edgeId: string
-) => {
-    const edgeAttrs = graph.getEdgeAttributes(edgeId);
-    if (edgeAttrs.type !== LinePathType.Bezier) return;
-
-    const current = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
-    const next = {
-        ...current,
-        sourceOffset: { ...(current.sourceOffset ?? defaultBezierPathAttributes.sourceOffset) },
-        targetOffset: { ...(current.targetOffset ?? defaultBezierPathAttributes.targetOffset) },
-    };
-    const [source, target] = graph.extremities(edgeId) as [NodeId, NodeId];
-    let changed = false;
-
-    const alignEndpoint = (node: NodeId, endpoint: 'sourceOffset' | 'targetOffset') => {
-        for (const peerId of graph.edges(node) as LineId[]) {
-            if (peerId === edgeId) continue;
-            const peerAttrs = graph.getEdgeAttributes(peerId);
-            if (peerAttrs.type !== LinePathType.Bezier || !areSameLineStyles(edgeAttrs, peerAttrs)) continue;
-
-            const peerPathAttrs = peerAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
-            const peerOffset =
-                graph.source(peerId) === node
-                    ? (peerPathAttrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset)
-                    : (peerPathAttrs.targetOffset ?? defaultBezierPathAttributes.targetOffset);
-            next[endpoint] = { ...peerOffset };
-            changed = true;
-            break;
-        }
-    };
-
-    alignEndpoint(source, 'sourceOffset');
-    alignEndpoint(target, 'targetOffset');
-    if (changed) graph.setEdgeAttribute(edgeId, LinePathType.Bezier, next);
-};
-
-// TODO: Direct style-attribute edits, including ColorField, bypass change-types and can merge Bezier endpoint groups
-// without realigning their offsets.
-
-/**
  * Change a line's path type.
  * @param graph Graph.
  * @param selectedFirst Current line's id.
  * @param newLinePathType New line's path type.
+ * @returns Whether the edge was changed.
  */
 export const changeLinePathType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -208,11 +163,12 @@ export const changeLinePathType = (
 
         graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
-        alignBezierEndpointOffsetsToSameStylePeers(graph, selectedFirst);
         if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
             graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
         }
+        return true;
     }
+    return false;
 };
 
 /**
@@ -221,7 +177,7 @@ export const changeLinePathType = (
  * @param currentLinePathType Current lines' path type.
  * @param newLinePathType New lines' path type.
  * @param lines Selected lines. (undefined for all)
- * @returns Nothing.
+ * @returns Changed edge IDs.
  */
 export const changeLinePathTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -232,9 +188,7 @@ export const changeLinePathTypeInBatch = (
 ) =>
     lines
         .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
-        .forEach(edgeId => {
-            changeLinePathType(graph, edgeId, newLinePathType, autoParallel);
-        });
+        .filter(edgeId => changeLinePathType(graph, edgeId, newLinePathType, autoParallel));
 
 /**
  * Change a line's style type.
@@ -242,6 +196,7 @@ export const changeLinePathTypeInBatch = (
  * @param selectedFirst Current line's id.
  * @param newLineStyleType New line's style type.
  * @param theme A handy helper to override color to current theme.
+ * @returns Whether the edge was changed.
  */
 export const changeLineStyleType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -271,10 +226,11 @@ export const changeLineStyleType = (
         }
 
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
-        alignBezierEndpointOffsetsToSameStylePeers(graph, selectedFirst);
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
+        return true;
     }
+    return false;
 };
 
 /**
@@ -284,7 +240,7 @@ export const changeLineStyleType = (
  * @param newLineStyleType New lines' type.
  * @param theme New theme.
  * @param lines Selected lines. (undefined for all)
- * @returns Nothing.
+ * @returns Changed edge IDs.
  */
 export const changeLineStyleTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -297,9 +253,7 @@ export const changeLineStyleTypeInBatch = (
         .filter(
             edge => currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType
         )
-        .forEach(edgeId => {
-            changeLineStyleType(graph, edgeId, newLineStyleType, theme);
-        });
+        .filter(edgeId => changeLineStyleType(graph, edgeId, newLineStyleType, theme));
 
 /**
  * Change lines' color from currentLineColor to newLineColor in batch
@@ -307,14 +261,15 @@ export const changeLineStyleTypeInBatch = (
  * @param currentLineColor current theme.
  * @param newLineColor new theme.
  * @param lines selected lines.
- * @returns Nothing.
+ * @returns Changed edge IDs.
  */
 export const changeLinesColorInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentLineColor: Theme | 'any',
     newLineColor: Theme,
     lines: LineId[]
-) =>
+) => {
+    const changed: LineId[] = [];
     lines
         .filter(edge => dynamicColorInjection.has(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
@@ -328,9 +283,11 @@ export const changeLinesColorInBatch = (
                     color[3] == currentLineColor[3])
             ) {
                 graph.mergeEdgeAttributes(edge, { [attr.style]: { color: newLineColor } });
-                alignBezierEndpointOffsetsToSameStylePeers(graph, edge);
+                changed.push(edge);
             }
         });
+    return changed;
+};
 
 /**
  * Change lines' color from currentLineColor to newLineColor in batch

@@ -1,10 +1,10 @@
 import type { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeId } from '../../../constants/constants';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../../../constants/constants';
 import {
-    LinePathAttributes,
-    LinePathNewEdgeAttrsInitializer,
-    LineStyleType,
+    LinePathEdgeAttrsNormalizationMode,
+    LinePathEdgeAttrsNormalizer,
     LinePathType,
+    LineStyleType,
 } from '../../../constants/lines';
 import simplePath from './paths/simple';
 import diagonalPath from './paths/diagonal';
@@ -59,21 +59,23 @@ export const linePaths = {
     [LinePathType.Freeform]: freeformPath,
 };
 
-export const initializeNewEdgeAttributes = (
+/** Normalize changed edges in input order so an earlier edge anchors later edges from the same change set. */
+export const normalizeEdgeAttributes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    source: NodeId,
-    target: NodeId,
-    edgeAttrs: EdgeAttributes
-): EdgeAttributes => {
-    const initialize = linePaths[edgeAttrs.type].initializeNewEdgeAttrs as
-        | LinePathNewEdgeAttrsInitializer<LinePathAttributes>
-        | undefined;
-    return initialize
-        ? ({
-              ...edgeAttrs,
-              [edgeAttrs.type]: initialize(graph, source, target, edgeAttrs),
-          } as EdgeAttributes)
-        : edgeAttrs;
+    edgeIds: Iterable<LineId>,
+    mode: LinePathEdgeAttrsNormalizationMode = 'updated'
+) => {
+    const pending = new Set<LineId>();
+    for (const edgeId of edgeIds) {
+        if (graph.hasEdge(edgeId)) pending.add(edgeId);
+    }
+
+    for (const edgeId of pending) {
+        const type = graph.getEdgeAttribute(edgeId, 'type');
+        const normalize = linePaths[type].normalizeEdgeAttrs as LinePathEdgeAttrsNormalizer | undefined;
+        normalize?.(graph, edgeId, { mode, ignoredEdgeIds: pending });
+        pending.delete(edgeId);
+    }
 };
 
 export const lineStyles = {

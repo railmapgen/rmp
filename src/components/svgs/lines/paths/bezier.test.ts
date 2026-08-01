@@ -12,7 +12,7 @@ import {
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { StationType } from '../../../../constants/stations';
 import { supportsParallelLinePath } from '../../../../util/parallel';
-import { initializeNewEdgeAttributes, linePaths, lineStyles } from '../lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from '../lines';
 import { generateBezierPath } from './bezier';
 import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
 import { defaultBezierPathAttributes } from './bezier-model';
@@ -56,7 +56,7 @@ describe('bezier line path', () => {
     it('registers its overlay and is supported by compatible line styles', () => {
         expect(linePaths[LinePathType.Bezier]).toBeDefined();
         expect(linePaths[LinePathType.Bezier].overlayComponent).toBeDefined();
-        expect(linePaths[LinePathType.Bezier].initializeNewEdgeAttrs).toBeDefined();
+        expect(linePaths[LinePathType.Bezier].normalizeEdgeAttrs).toBeDefined();
         expect(linePaths[LinePathType.Bezier].drawingBehavior).toBeUndefined();
 
         Object.entries(lineStyles).forEach(([type, lineStyle]) => {
@@ -119,7 +119,7 @@ describe('bezier line path', () => {
         expect(supportsParallelLinePath(LinePathType.Bezier)).toBe(false);
     });
 
-    it('initializes a new endpoint from hidden directly linked paths with the same style', () => {
+    it('normalizes a newly added endpoint from hidden directly linked paths with the same style', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         addNode(graph, 'stn_center', 0);
         addNode(graph, 'misc_node_red', -100);
@@ -139,19 +139,20 @@ describe('bezier line path', () => {
             makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 12, y: 13 }, false)
         );
 
-        const edgeAttrs = initializeNewEdgeAttributes(
-            graph,
+        graph.addDirectedEdgeWithKey(
+            'line_new',
             'stn_center',
             'misc_node_target',
             makeBezierEdgeAttrs(RED, { x: 1, y: 2 }, { x: 3, y: 4 })
         );
-        const attrs = edgeAttrs[LinePathType.Bezier];
+        normalizeEdgeAttributes(graph, ['line_new'], 'created');
+        const attrs = graph.getEdgeAttribute('line_new', LinePathType.Bezier);
 
         expect(attrs?.sourceOffset).toEqual({ x: 12, y: 13 });
         expect(attrs?.targetOffset).toEqual({ x: 0, y: 0 });
     });
 
-    it('initializes split edges sequentially with preserved outer endpoints and a zero inserted endpoint', () => {
+    it('normalizes split edges with preserved outer endpoints and a zero inserted endpoint', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         addNode(graph, 'stn_source', 0);
         addNode(graph, 'stn_inserted', 50);
@@ -160,21 +161,9 @@ describe('bezier line path', () => {
         const originalAttrs = makeBezierEdgeAttrs(RED, { x: 5, y: 6 }, { x: 7, y: 8 });
         graph.addDirectedEdgeWithKey('line_original', 'stn_source', 'stn_target', originalAttrs);
 
-        const firstEdgeAttrs = initializeNewEdgeAttributes(
-            graph,
-            'stn_source',
-            'stn_inserted',
-            structuredClone(originalAttrs)
-        );
-        graph.addDirectedEdgeWithKey('line_first', 'stn_source', 'stn_inserted', firstEdgeAttrs);
-
-        const secondEdgeAttrs = initializeNewEdgeAttributes(
-            graph,
-            'stn_inserted',
-            'stn_target',
-            structuredClone(originalAttrs)
-        );
-        graph.addDirectedEdgeWithKey('line_second', 'stn_inserted', 'stn_target', secondEdgeAttrs);
+        graph.addDirectedEdgeWithKey('line_first', 'stn_source', 'stn_inserted', structuredClone(originalAttrs));
+        graph.addDirectedEdgeWithKey('line_second', 'stn_inserted', 'stn_target', structuredClone(originalAttrs));
+        normalizeEdgeAttributes(graph, ['line_first', 'line_second'], 'created');
 
         expect(graph.getEdgeAttribute('line_first', LinePathType.Bezier)).toMatchObject({
             sourceOffset: { x: 5, y: 6 },

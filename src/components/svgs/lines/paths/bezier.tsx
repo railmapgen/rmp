@@ -2,16 +2,17 @@ import { HStack, IconButton, Input, InputGroup, InputLeftAddon } from '@chakra-u
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { MdLink } from 'react-icons/md';
-import { LineId } from '../../../../constants/constants';
+import { LineId, NodeId } from '../../../../constants/constants';
 import {
     LinePath,
     LinePathAttrsProps,
-    LinePathNewEdgeAttrsInitializer,
+    LinePathEdgeAttrsNormalizer,
     LinePathType,
     PathGenerator,
 } from '../../../../constants/lines';
 import { makePoint, PathPoint } from '../../../../constants/path';
 import { areSameLineStyles } from '../../../../util/same-style';
+import { getBezierEndpointOffset } from './bezier-endpoint';
 import { makeBezierPath } from './bezier-geometry';
 import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
@@ -29,35 +30,34 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     return makeBezierPath(source, target, attrs);
 };
 
-export const initializeNewBezierEdgeAttrs: LinePathNewEdgeAttrsInitializer<BezierPathAttributes> = (
-    graph,
-    source,
-    target,
-    edgeAttrs
-) => {
-    const getExistingOffset = (node: typeof source): PathPoint | undefined => {
-        for (const edgeId of graph.edges(node) as LineId[]) {
-            const existingEdgeAttrs = graph.getEdgeAttributes(edgeId);
+const normalizeBezierEdgeAttrs: LinePathEdgeAttrsNormalizer = (graph, edgeId, { mode, ignoredEdgeIds }) => {
+    const edgeAttrs = graph.getEdgeAttributes(edgeId);
+
+    const getExistingOffset = (node: NodeId): PathPoint | undefined => {
+        for (const peerId of graph.edges(node) as LineId[]) {
+            if (ignoredEdgeIds.has(peerId)) continue;
+            const existingEdgeAttrs = graph.getEdgeAttributes(peerId);
             if (existingEdgeAttrs.type !== LinePathType.Bezier || !areSameLineStyles(edgeAttrs, existingEdgeAttrs)) {
                 continue;
             }
 
-            const existingPathAttrs = existingEdgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
-            const offset =
-                graph.source(edgeId) === node
-                    ? (existingPathAttrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset)
-                    : (existingPathAttrs.targetOffset ?? defaultBezierPathAttributes.targetOffset);
-            return { ...offset };
+            return getBezierEndpointOffset(graph, node, peerId);
         }
         return undefined;
     };
 
-    const attrs = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
-    return {
-        ...attrs,
-        sourceOffset: getExistingOffset(source) ?? { ...defaultBezierPathAttributes.sourceOffset },
-        targetOffset: getExistingOffset(target) ?? { ...defaultBezierPathAttributes.targetOffset },
-    };
+    const current = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
+    const [source, target] = graph.extremities(edgeId) as [NodeId, NodeId];
+    const fallback = mode === 'created' ? defaultBezierPathAttributes : current;
+    graph.setEdgeAttribute(edgeId, LinePathType.Bezier, {
+        ...current,
+        sourceOffset: getExistingOffset(source) ?? {
+            ...(fallback.sourceOffset ?? defaultBezierPathAttributes.sourceOffset),
+        },
+        targetOffset: getExistingOffset(target) ?? {
+            ...(fallback.targetOffset ?? defaultBezierPathAttributes.targetOffset),
+        },
+    });
 };
 
 const attrsComponent = ({ id, attrs, handleAttrsUpdate }: LinePathAttrsProps<BezierPathAttributes>) => {
@@ -134,7 +134,7 @@ const bezierPath: LinePath<BezierPathAttributes> = {
     icon: bezierIcon,
     defaultAttrs: defaultBezierPathAttributes,
     attrsComponent,
-    initializeNewEdgeAttrs: initializeNewBezierEdgeAttrs,
+    normalizeEdgeAttrs: normalizeBezierEdgeAttrs,
     metadata: {
         displayName: 'panel.details.lines.bezier.displayName',
         supportsReconcile: false,

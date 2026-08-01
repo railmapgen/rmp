@@ -255,13 +255,24 @@ export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
     createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
 }
 
-/** Initialize path-owned attributes immediately before a newly constructed edge is added to the graph. */
-export type LinePathNewEdgeAttrsInitializer<T extends LinePathAttributes> = (
+export type LinePathEdgeAttrsNormalizationMode = 'created' | 'updated';
+
+export interface LinePathEdgeAttrsNormalizationContext {
+    /**
+     * Newly created edges may initialize path-owned attributes from adjacent peers. Updated edges preserve their
+     * current attributes when no matching peer exists.
+     */
+    mode: LinePathEdgeAttrsNormalizationMode;
+    /** The current and later edges in the same change set must not become an accidental anchor. */
+    ignoredEdgeIds: ReadonlySet<LineId>;
+}
+
+/** Normalize path-owned attributes after an edge has been added to or changed in the graph. */
+export type LinePathEdgeAttrsNormalizer = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    source: NodeId,
-    target: NodeId,
-    edgeAttrs: EdgeAttributes
-) => T;
+    edgeId: LineId,
+    context: LinePathEdgeAttrsNormalizationContext
+) => void;
 
 /**
  * The type a line path should export.
@@ -300,13 +311,12 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      */
     drawingBehavior?: LinePathDrawingBehavior<T>;
     /**
-     * Optional initializer for path-owned attributes of a newly constructed edge.
+     * Optional normalization for path-owned attributes after semantic edge creation or mutation.
      *
-     * It runs before the edge is added, so it can inspect existing adjacent edges without matching the candidate
-     * itself. Call it immediately before every semantic edge creation, and add split edges sequentially so later
-     * pieces can observe earlier ones. Loading and copying existing data should not invoke it.
+     * Loading and copying existing data should not invoke it. Generic graph-editing code calls the registered hook
+     * without knowing the path-specific attributes it maintains.
      */
-    initializeNewEdgeAttrs?: LinePathNewEdgeAttrsInitializer<T>;
+    normalizeEdgeAttrs?: LinePathEdgeAttrsNormalizer;
     /**
      * Metadata for this line path.
      */

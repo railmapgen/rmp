@@ -9,6 +9,7 @@ import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
+import { commitEdgesThunk } from '../redux/param/commit-edges-thunk';
 import { saveGraph } from '../redux/param/param-slice';
 import {
     addSelected,
@@ -47,7 +48,7 @@ import {
 import { Overlay } from './overlay';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { initializeNewEdgeAttributes, linePaths, lineStyles } from './svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -431,12 +432,7 @@ const SvgCanvas = () => {
                         reconcileId: '',
                         parallelIndex,
                     } as EdgeAttributes;
-                    graph.current.addDirectedEdgeWithKey(
-                        newLineId,
-                        source,
-                        target,
-                        initializeNewEdgeAttributes(graph.current, source, target, edgeAttrs)
-                    );
+                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, edgeAttrs);
 
                     if (autoChangeStationType && source.startsWith('stn')) {
                         checkAndChangeStationIntType(graph.current, source as StnId);
@@ -447,8 +443,7 @@ const SvgCanvas = () => {
 
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
-                    dispatch(saveGraph(graph.current.export()));
-                    dispatch(refreshEdgesThunk());
+                    dispatch(commitEdgesThunk({ edgeIds: [newLineId], mode: 'created' }));
                 }
             }
         } else if (mode === 'free' && !gesture) {
@@ -530,7 +525,9 @@ const SvgCanvas = () => {
             const [source, target] = graph.current.extremities(edge) as [NodeId, NodeId];
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
             const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
+            const splitEdgeIds: LineId[] = [];
             const addSplitEdge = (splitSource: NodeId, splitTarget: NodeId) => {
+                const splitEdgeId = `line_${nanoid(10)}` as LineId;
                 const splitEdgeAttrs = {
                     visible: true,
                     zIndex,
@@ -541,15 +538,12 @@ const SvgCanvas = () => {
                     reconcileId: '',
                     parallelIndex,
                 } as EdgeAttributes;
-                graph.current.addDirectedEdgeWithKey(
-                    `line_${nanoid(10)}`,
-                    splitSource,
-                    splitTarget,
-                    initializeNewEdgeAttributes(graph.current, splitSource, splitTarget, splitEdgeAttrs)
-                );
+                graph.current.addDirectedEdgeWithKey(splitEdgeId, splitSource, splitTarget, splitEdgeAttrs);
+                splitEdgeIds.push(splitEdgeId);
             };
             addSplitEdge(source, id);
             addSplitEdge(id, target);
+            normalizeEdgeAttributes(graph.current, splitEdgeIds, 'created');
             graph.current.dropEdge(edge);
             refreshAndSave();
             if (isAllowProjectTelemetry) {

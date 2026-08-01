@@ -7,6 +7,7 @@ import { Id, LineId, NodeId, StnId } from '../../../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
+import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
 import { saveGraph } from '../../../redux/param/param-slice';
 import {
     clearSelected,
@@ -163,7 +164,7 @@ const DetailsPanel = () => {
             return;
         }
 
-        hardRefresh();
+        dispatch(commitEdgesThunk({ edgeIds: [...selected] as LineId[] }));
     };
 
     const handleReconcile = () => {

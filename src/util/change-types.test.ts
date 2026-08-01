@@ -6,6 +6,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { defaultBezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
+import { normalizeEdgeAttributes } from '../components/svgs/lines/lines';
 import {
     autoPopulateTransfer,
     autoUpdateStationType,
@@ -584,7 +585,8 @@ describe('Bezier endpoint alignment after line type changes', () => {
         );
         graph.addDirectedEdgeWithKey('line_selected', 'stn_source', 'stn_target', makeDiagonalEdgeAttrs(RED));
 
-        changeLinePathType(graph, 'line_selected', LinePathType.Bezier, false);
+        expect(changeLinePathType(graph, 'line_selected', LinePathType.Bezier, false)).toBe(true);
+        normalizeEdgeAttributes(graph, ['line_selected']);
 
         expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
             sourceOffset: { x: 11, y: 12 },
@@ -611,7 +613,8 @@ describe('Bezier endpoint alignment after line type changes', () => {
             makeBezierEdgeAttrs(RED, { x: 1, y: 2 }, { x: 3, y: 4 }, true, LineStyleType.Unknown)
         );
 
-        changeLineStyleType(graph, 'line_selected', LineStyleType.SingleColor, RED);
+        expect(changeLineStyleType(graph, 'line_selected', LineStyleType.SingleColor, RED)).toBe(true);
+        normalizeEdgeAttributes(graph, ['line_selected']);
 
         expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
             sourceOffset: { x: 31, y: 32 },
@@ -638,7 +641,8 @@ describe('Bezier endpoint alignment after line type changes', () => {
             makeBezierEdgeAttrs(BLUE, { x: 5, y: 6 }, { x: 7, y: 8 })
         );
 
-        changeLinesColorInBatch(graph, BLUE, RED, ['line_selected']);
+        expect(changeLinesColorInBatch(graph, BLUE, RED, ['line_peer', 'line_selected'])).toEqual(['line_selected']);
+        normalizeEdgeAttributes(graph, ['line_selected']);
 
         expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
             sourceOffset: { x: 41, y: 42 },

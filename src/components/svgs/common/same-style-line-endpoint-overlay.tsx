@@ -8,6 +8,7 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../redux/runtime/runtime-slice';
 import { pointerPosToSVGCoord, roundToMultiple } from '../../../util/helpers';
 import { areSameLineStyles } from '../../../util/same-style';
+import { getBezierEndpointOffset } from '../lines/paths/bezier-endpoint';
 import { defaultBezierPathAttributes } from '../lines/paths/bezier-model';
 
 interface EndpointGroup {
@@ -20,13 +21,6 @@ interface DraggingEndpointGroup {
     edgeIds: LineId[];
     point: PathPoint;
 }
-
-const getEndpointOffset = (nodeId: NodeId, edgeId: LineId): PathPoint => {
-    const attrs = window.graph.getEdgeAttribute(edgeId, LinePathType.Bezier) ?? defaultBezierPathAttributes;
-    return window.graph.source(edgeId) === nodeId
-        ? (attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset)
-        : (attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset);
-};
 
 /** Group all of the selected node's directly linked Bezier edges. */
 const getEndpointGroups = (nodeId: NodeId): EndpointGroup[] => {
@@ -44,7 +38,7 @@ const getEndpointGroups = (nodeId: NodeId): EndpointGroup[] => {
             continue;
         }
 
-        const offset = getEndpointOffset(nodeId, edgeId);
+        const offset = getBezierEndpointOffset(window.graph, nodeId, edgeId);
         groups.push({
             edgeIds: [edgeId],
             representativeAttrs: edgeAttrs,

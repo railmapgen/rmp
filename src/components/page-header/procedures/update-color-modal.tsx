@@ -15,10 +15,10 @@ import { logger } from '@railmapgen/rmg-runtime';
 import { SerializedGraph } from 'graphology-types';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../../../constants/constants';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, Theme } from '../../../constants/constants';
 import { useRootDispatch } from '../../../redux';
-import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
+import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { isTheme } from '../../../util/color';
 
 export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
@@ -37,9 +37,8 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
             const updatedParam = await updateColors(param);
             graph.current.clear();
             graph.current.import(updatedParam);
-            dispatch(saveGraph(graph.current.export()));
+            await dispatch(commitEdgesThunk({ edgeIds: graph.current.edges() as LineId[] }));
             dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
             toast({
                 title: t('header.settings.procedures.updateColor.success'),
                 status: 'success' as const,

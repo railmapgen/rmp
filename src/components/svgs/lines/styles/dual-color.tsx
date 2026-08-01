@@ -13,9 +13,6 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { useRootDispatch, useRootSelector } from '../../../../redux';
-import { saveGraph } from '../../../../redux/param/param-slice';
-import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeOpenPathParallel } from '../../../../util/bezier-parallel';
 import { Path, makeEmptyOpenPath } from '../../../../constants/path';
 import { isOpenPath } from '../../../../util/path';
@@ -83,30 +80,15 @@ const defaultDualColorAttributes: DualColorAttributes = {
     colorB: [CityCode.Shanghai, 'maglevB', '#F5A74E', MonoColour.white],
 };
 
-const DualColorSwitch = () => {
+const DualColorSwitch = ({ id, attrs, handleAttrsUpdate }: AttrsProps<DualColorAttributes>) => {
     const { t } = useTranslation();
-    const dispatch = useRootDispatch();
-
-    const { selected } = useRootSelector(state => state.runtime);
-    const [selectedFirst] = selected;
-    const graph = React.useRef(window.graph);
 
     return (
         <IconButton
             aria-label={t('panel.details.lines.dualColor.swap')}
             icon={<MdOutlineSwapVert />}
             size="sm"
-            onClick={() => {
-                const attrs =
-                    graph.current.getEdgeAttribute(selectedFirst, LineStyleType.DualColor) ??
-                    defaultDualColorAttributes;
-                const tmp = attrs.colorA;
-                attrs.colorA = attrs.colorB;
-                attrs.colorB = tmp;
-                graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.DualColor]: attrs });
-                dispatch(saveGraph(graph.current.export()));
-                dispatch(refreshEdgesThunk());
-            }}
+            onClick={() => handleAttrsUpdate(id, { ...attrs, colorA: attrs.colorB, colorB: attrs.colorA })}
         />
     );
 };
@@ -118,7 +100,7 @@ const dualColorAttrsComponent = (props: AttrsProps<DualColorAttributes>) => {
         {
             type: 'custom',
             label: t('panel.details.lines.dualColor.swap'),
-            component: <DualColorSwitch />,
+            component: <DualColorSwitch {...props} />,
             minW: 'full',
         },
         {

@@ -24,8 +24,8 @@ import { CityCode, LineId, MiscNodeId, NodeId, StnId, Theme } from '../../../con
 import { LinePathType, LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
+import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import {
     changeLinePathTypeInBatch,
     changeLineStyleTypeInBatch,
@@ -71,11 +71,6 @@ export const ChangeTypeModal = (props: {
     } = useRootSelector(state => state.app);
     const { activeSubscriptions } = useRootSelector(state => state.account);
 
-    const hardRefresh = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const availableLinePathOptions = {
@@ -277,7 +272,7 @@ export const ChangeTypeModal = (props: {
         }
     }, [isOpen]);
 
-    const handleChange = () => {
+    const handleChange = async () => {
         const stations = filter?.includes('station')
             ? ([...selected].filter(node => node.startsWith('stn')) as StnId[])
             : isSelect
@@ -291,24 +286,32 @@ export const ChangeTypeModal = (props: {
         const lines = isSelect
             ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[])
             : (graph.current.edges() as LineId[]);
+        const changedLines: LineId[] = [];
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
             changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);
             if (autoChangeStationType) stations.forEach(s => checkAndChangeStationIntType(graph.current, s as StnId));
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
-            changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines);
+            changedLines.push(
+                ...changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines)
+            );
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
-            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel);
+            changedLines.push(
+                ...changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel)
+            );
         }
         if (isColorSwitch) {
-            if (!filter || filter.includes('line'))
-                changeLinesColorInBatch(
-                    graph.current,
-                    selectedColor.id === 'any' ? 'any' : selectedColor.theme,
-                    newTheme,
-                    lines
+            if (!filter || filter.includes('line')) {
+                changedLines.push(
+                    ...changeLinesColorInBatch(
+                        graph.current,
+                        selectedColor.id === 'any' ? 'any' : selectedColor.theme,
+                        newTheme,
+                        lines
+                    )
                 );
+            }
             if (!filter || filter.includes('misc-node') || filter.includes('station'))
                 changeNodesColorInBatch(
                     graph.current,
@@ -327,7 +330,8 @@ export const ChangeTypeModal = (props: {
                 zIndex
             );
         }
-        hardRefresh();
+        await dispatch(commitEdgesThunk({ edgeIds: changedLines }));
+        dispatch(refreshNodesThunk());
         onClose();
     };
 
