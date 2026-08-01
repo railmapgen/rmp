@@ -4,6 +4,7 @@ import { nanoid } from 'nanoid';
 import { useTranslation } from 'react-i18next';
 import { LinePath, LinePathAttrsProps, LinePathDrawingBehavior, PathGenerator } from '../../../../constants/lines';
 import { makeEmptyOpenPath, makePoint } from '../../../../constants/path';
+import { clamp } from '../../../../util/number';
 import { createFreeformPathAttributes, makeFreeformAreaPath } from './freeform-geometry';
 import {
     defaultFreeformPathAttributes,
@@ -149,7 +150,7 @@ const attrsComponent = (props: LinePathAttrsProps<FreeformPathAttributes>) => {
                                             if (!Number.isFinite(value)) return;
                                             // The UI shows percentages, while the model stores normalized distance.
                                             updateWidthStop(stop.id, {
-                                                t: Math.min(1, Math.max(0, value / 100)),
+                                                t: clamp(value / 100, 0, 1),
                                             });
                                         }}
                                     />
