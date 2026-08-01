@@ -11,18 +11,30 @@ import { areSameLineStyles } from '../../../util/same-style';
 import { getBezierEndpointOffset } from '../lines/paths/bezier-endpoint';
 import { defaultBezierPathAttributes } from '../lines/paths/bezier-model';
 
+/**
+ * Render-time representation of one `(LinePathType.Bezier, same LineStyle)` endpoint group at the selected node.
+ *
+ * `representativeAttrs` is used only for grouping subsequent edges; `point` is the shared absolute SVG position
+ * displayed by the virtual handle. Every edge remains the source of its own persisted node-relative offset.
+ */
 interface EndpointGroup {
     edgeIds: LineId[];
     representativeAttrs: EdgeAttributes;
     point: PathPoint;
 }
 
+/** Minimal drag snapshot retained while graph refreshes rebuild the render-time endpoint groups. */
 interface DraggingEndpointGroup {
     edgeIds: LineId[];
     point: PathPoint;
 }
 
-/** Group all of the selected node's directly linked Bezier edges. */
+/**
+ * Groups every directly linked Bezier edge, including hidden edges, using the same style identity as line rendering.
+ *
+ * One absolute handle position is taken from the first edge in each group. Persisted inconsistencies are tolerated;
+ * dragging the handle rewrites every group member to the chosen position.
+ */
 const getEndpointGroups = (nodeId: NodeId): EndpointGroup[] => {
     if (!window.graph.hasNode(nodeId)) return [];
     const node = window.graph.getNodeAttributes(nodeId);

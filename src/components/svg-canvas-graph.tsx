@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
-import { EdgeAttributes, Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
+import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
@@ -422,7 +422,7 @@ const SvgCanvas = () => {
                         autoParallel && supportsParallelLinePath(type)
                             ? makeParallelIndex(graph.current, type, source, target, 'from')
                             : -1;
-                    const edgeAttrs = {
+                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
                         visible: true,
                         zIndex: 0,
                         type,
@@ -431,8 +431,7 @@ const SvgCanvas = () => {
                         [style]: styleAttr,
                         reconcileId: '',
                         parallelIndex,
-                    } as EdgeAttributes;
-                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, edgeAttrs);
+                    });
 
                     if (autoChangeStationType && source.startsWith('stn')) {
                         checkAndChangeStationIntType(graph.current, source as StnId);
@@ -522,28 +521,32 @@ const SvgCanvas = () => {
             const { zIndex, type: linePathType, style: lineStyleType } = edgeAttrs;
             const typeAttr = edgeAttrs[linePathType];
             const styleAttr = edgeAttrs[lineStyleType];
-            const [source, target] = graph.current.extremities(edge) as [NodeId, NodeId];
+            const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
             const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
-            const splitEdgeIds: LineId[] = [];
-            const addSplitEdge = (splitSource: NodeId, splitTarget: NodeId) => {
-                const splitEdgeId = `line_${nanoid(10)}` as LineId;
-                const splitEdgeAttrs = {
-                    visible: true,
-                    zIndex,
-                    type: linePathType,
-                    [linePathType]: structuredClone(typeAttr),
-                    style: lineStyleType,
-                    [lineStyleType]: structuredClone(styleAttr),
-                    reconcileId: '',
-                    parallelIndex,
-                } as EdgeAttributes;
-                graph.current.addDirectedEdgeWithKey(splitEdgeId, splitSource, splitTarget, splitEdgeAttrs);
-                splitEdgeIds.push(splitEdgeId);
-            };
-            addSplitEdge(source, id);
-            addSplitEdge(id, target);
-            normalizeEdgeAttributes(graph.current, splitEdgeIds, 'created');
+            const firstSplitEdgeId = `line_${nanoid(10)}` as LineId;
+            const secondSplitEdgeId = `line_${nanoid(10)}` as LineId;
+            graph.current.addDirectedEdgeWithKey(firstSplitEdgeId, source, id, {
+                visible: true,
+                zIndex,
+                type: linePathType,
+                [linePathType]: structuredClone(typeAttr),
+                style: lineStyleType,
+                [lineStyleType]: structuredClone(styleAttr),
+                reconcileId: '',
+                parallelIndex,
+            });
+            graph.current.addDirectedEdgeWithKey(secondSplitEdgeId, id, target, {
+                visible: true,
+                zIndex,
+                type: linePathType,
+                [linePathType]: structuredClone(typeAttr),
+                style: lineStyleType,
+                [lineStyleType]: structuredClone(styleAttr),
+                reconcileId: '',
+                parallelIndex,
+            });
+            normalizeEdgeAttributes(graph.current, [firstSplitEdgeId, secondSplitEdgeId], 'created');
             graph.current.dropEdge(edge);
             refreshAndSave();
             if (isAllowProjectTelemetry) {

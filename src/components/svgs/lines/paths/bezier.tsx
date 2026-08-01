@@ -30,6 +30,13 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
     return makeBezierPath(source, target, attrs);
 };
 
+/**
+ * Keeps each endpoint of a Bezier edge on the shared virtual endpoint of its directly linked same-style group.
+ *
+ * Hidden peers participate because visibility does not change group identity. A created endpoint with no established
+ * peer starts at the path default, while an updated endpoint retains its current offset. Pending edges from the same
+ * transaction are ignored so only stable or already-normalized peers can define the shared position.
+ */
 const normalizeBezierEdgeAttrs: LinePathEdgeAttrsNormalizer = (graph, edgeId, { mode, ignoredEdgeIds }) => {
     const edgeAttrs = graph.getEdgeAttributes(edgeId);
 

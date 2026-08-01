@@ -106,19 +106,39 @@ export type AttributesWithColor = Exclude<
     undefined
 >;
 
+/**
+ * Bridges a reusable `ColorField` nested inside an arbitrary attributes component to the details panel that owns
+ * the selected entity.
+ *
+ * `NodeSpecificAttributes` and `LineSpecificAttributes` provide the complete current attribute object and a
+ * submission callback. This lets `ColorField` remain a presentation component: it does not inspect the selection,
+ * mutate `window.graph`, or decide how node/edge changes are normalized, saved, and refreshed.
+ *
+ * The callback accepts a complete replacement for the type-specific attributes, not a partial patch. The `type`
+ * guards against accidentally consuming a provider belonging to a different node or line-style component. This
+ * context is an update boundary, not an independent state store; consumers should not mutate `attrs` in place.
+ */
 interface ColorFieldContextValue {
     type: NodeType | LineStyleType;
     attrs: Record<string, any>;
     handleAttrsUpdate: (attrs: Record<string, any>) => void;
 }
 
+/**
+ * Internal details-panel context used by `ColorField`.
+ *
+ * Attribute components normally render `ColorField` rather than consuming this context directly. When no matching
+ * provider exists, a color field displays its `defaultTheme` and does not submit changes.
+ */
 export const ColorFieldContext = React.createContext<ColorFieldContextValue | undefined>(undefined);
 
 /**
- * This component provides an easy way to have a color input in the details panel.
+ * Renders a palette-backed color control for a type-specific attribute object.
  *
- * Make sure your component has a colorKey field in the attributes.
- * You may extend ColorAttribute interface so you do not need to pass the colorKey parameter.
+ * Use it inside a registered node or line-style attributes component, where the details panel supplies
+ * `ColorFieldContext`. Pass the same component `type` and, for multi-color attributes, the desired `colorKey`.
+ * Selecting a theme submits a new complete attributes object through the provider so the owner can apply the
+ * appropriate graph transaction. `defaultTheme` is only a safe display fallback when the key or provider is absent.
  */
 export const ColorField = (props: { type: NodeType | LineStyleType; colorKey?: string; defaultTheme: Theme }) => {
     const { type, colorKey = 'color', defaultTheme } = props;

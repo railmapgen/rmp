@@ -4,6 +4,21 @@
 >
 > The working API names are illustrative and may change during implementation.
 
+## Implementation reminder
+
+Start the implementation by moving `normalizeEdgeAttributes()` out of
+`src/components/svgs/lines/lines.ts`.
+
+Its current location is transitional: that module owns the complete React
+LinePath/component registry, so a graph-operation thunk importing it would
+reintroduce a Redux-to-component dependency cycle. Create the dependency-light
+normalizer registry described below first, let `linePaths` register their optional
+hooks, and make the unified thunk depend only on that registry.
+
+Do not begin migrating component callers to the unified thunk while
+`normalizeEdgeAttributes()` still requires importing the complete `linePaths`
+object. The matching source TODO intentionally points back to this document.
+
 ## Background
 
 Most graph edits currently follow some variation of this pattern inside a component:
@@ -359,6 +374,10 @@ registerLinePathNormalizer(type, normalizer);
 normalizeEdgeAttributes(graph, edgeChanges);
 ```
 
+This new registry becomes the permanent home of `normalizeEdgeAttributes()`.
+`src/components/svgs/lines/lines.ts` should retain only assembly and registration
+of LinePath definitions; it should no longer own the transaction coordinator.
+
 When `linePaths` is assembled, it registers every optional
 `LinePath.normalizeEdgeAttrs` implementation. The graph thunk only imports the
 dependency-light registry.
@@ -612,7 +631,9 @@ The graph-operation thunk must not import React components or the complete
 
 Implement incrementally while keeping behavior testable:
 
-1. Add the dependency-light LinePath normalizer registry and tests.
+1. Move `normalizeEdgeAttributes()` from
+   `src/components/svgs/lines/lines.ts` into the dependency-light LinePath
+   normalizer registry, register the existing Bezier hook, and add registry tests.
 2. Add operation types, factories, and the unified thunk with no production
    callers.
 3. Extract node/edge derived-state reconciliation from the existing refresh

@@ -59,7 +59,21 @@ export const linePaths = {
     [LinePathType.Freeform]: freeformPath,
 };
 
-/** Normalize changed edges in input order so an earlier edge anchors later edges from the same change set. */
+/**
+ * Runs the registered LinePath normalizer for a complete semantic edge change set.
+ *
+ * Call this after all listed edges exist with their new attributes and before saving the graph. Supply only edges
+ * changed by the current transaction, in deterministic priority order. Missing/deleted edges and path types without
+ * a normalizer are ignored. Importing or copying serialized edges should bypass this function so saved path
+ * attributes are not rewritten.
+ *
+ * The pending set is also passed to each hook as `ignoredEdgeIds`: the current and later edges cannot act as anchors.
+ * Once an edge is normalized it becomes eligible to anchor later edges, making a batch converge without depending on
+ * partially updated values. The function mutates `graph` in place and does not save or refresh it.
+ */
+// TODO: Move this coordinator out of the React `linePaths` registry when implementing the unified graph-operation
+// pipeline in `docs/graph-mutation-pipeline-design.md`. LinePaths should register their optional normalizers in a
+// dependency-light registry, and the graph thunk should call that registry without importing component definitions.
 export const normalizeEdgeAttributes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeIds: Iterable<LineId>,

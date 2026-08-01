@@ -286,6 +286,8 @@ export const ChangeTypeModal = (props: {
         const lines = isSelect
             ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[])
             : (graph.current.edges() as LineId[]);
+        // Only edges actually mutated by this operation enter normalization. Unchanged same-style neighbours must
+        // remain eligible as established anchors rather than being treated as pending members of the change set.
         const changedLines: LineId[] = [];
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
             changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);

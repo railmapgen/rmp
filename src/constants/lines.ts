@@ -255,8 +255,22 @@ export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
     createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
 }
 
+/**
+ * Describes why an edge is entering path-owned normalization.
+ *
+ * A newly authored edge may need path defaults when no compatible neighbour exists, while an existing edge update
+ * must preserve its authored path attributes in that situation. Import/load flows do not use either mode because
+ * serialized attributes must be preserved verbatim.
+ */
 export type LinePathEdgeAttrsNormalizationMode = 'created' | 'updated';
 
+/**
+ * Transaction context supplied to one LinePath normalizer.
+ *
+ * The coordinator processes a complete semantic change set in a stable order. `ignoredEdgeIds` contains the current
+ * edge and every changed edge that has not been normalized yet, preventing partially updated data from becoming an
+ * anchor. An earlier normalized edge is removed from the set and may then anchor a later edge.
+ */
 export interface LinePathEdgeAttrsNormalizationContext {
     /**
      * Newly created edges may initialize path-owned attributes from adjacent peers. Updated edges preserve their
@@ -267,7 +281,13 @@ export interface LinePathEdgeAttrsNormalizationContext {
     ignoredEdgeIds: ReadonlySet<LineId>;
 }
 
-/** Normalize path-owned attributes after an edge has been added to or changed in the graph. */
+/**
+ * Maintains a LinePath-specific invariant after an edge exists in the graph but before that change is persisted.
+ *
+ * Implementations are synchronous and mutate only the current edge's path-owned attributes. They must not dispatch,
+ * save the graph, refresh the UI, or rewrite peer edges; the transaction coordinator owns those steps. Looking up
+ * adjacent peers is allowed, but peers in `context.ignoredEdgeIds` must not be used as source-of-truth data.
+ */
 export type LinePathEdgeAttrsNormalizer = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeId: LineId,
@@ -314,7 +334,8 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * Optional normalization for path-owned attributes after semantic edge creation or mutation.
      *
      * Loading and copying existing data should not invoke it. Generic graph-editing code calls the registered hook
-     * without knowing the path-specific attributes it maintains.
+     * without knowing the path-specific attributes it maintains. The hook runs in place before the graph is saved;
+     * it should only maintain invariants owned by this LinePath and must not perform persistence or UI work.
      */
     normalizeEdgeAttrs?: LinePathEdgeAttrsNormalizer;
     /**

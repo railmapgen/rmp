@@ -4,7 +4,13 @@ import { LinePathType } from '../../../../constants/lines';
 import { PathPoint } from '../../../../constants/path';
 import { defaultBezierPathAttributes } from './bezier-model';
 
-/** Resolve the saved Bezier offset attached to an edge at the given graph node. */
+/**
+ * Resolves the node-relative Bezier endpoint offset regardless of the edge's direction.
+ *
+ * Both the node overlay and normalization logic use this helper so source/target orientation cannot drift between
+ * reading and writing paths. The caller must pass an incident Bezier edge. A cloned point is returned and may be
+ * safely modified without mutating saved attributes.
+ */
 export const getBezierEndpointOffset = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     nodeId: NodeId,
