@@ -29,7 +29,6 @@ export interface FreeformEditable {
     edgeId: LineId;
     attrs: ResolvedFreeformPathAttributes;
     source: PathPoint;
-    target: PathPoint;
     targetRelative: PathPoint;
 }
 
@@ -80,13 +79,12 @@ export class FreeformLineEditorController {
         const sourceAttrs = this.graph.getNodeAttributes(sourceId);
         const targetAttrs = this.graph.getNodeAttributes(targetId);
         const source = makePoint(sourceAttrs.x, sourceAttrs.y);
-        const target = makePoint(targetAttrs.x, targetAttrs.y);
-        const targetRelative = makePoint(target.x - source.x, target.y - source.y);
+        const targetRelative = makePoint(targetAttrs.x - source.x, targetAttrs.y - source.y);
         // Editing uses source-local SVG coordinates, resolved from the percentages stored on the graph edge.
         const attrs = resolveFreeformPathAttributes(edgeAttrs[LinePathType.Freeform], targetRelative);
         if (!attrs) return undefined;
 
-        return { edgeId, attrs, source, target, targetRelative };
+        return { edgeId, attrs, source, targetRelative };
     }
 
     /** Return the editable only when a single selected item is a freeform edge. */
