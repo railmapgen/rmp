@@ -34,6 +34,6 @@ export const commitEdgesThunk = createAsyncThunk(
     async ({ edgeIds, mode = 'updated' }: CommitEdgesPayload, { dispatch }) => {
         normalizeEdgeAttributes(window.graph, edgeIds, mode);
         dispatch(saveGraph(window.graph.export()));
-        await dispatch(refreshEdgesThunk());
+        await dispatch(refreshEdgesThunk()).unwrap();
     }
 );

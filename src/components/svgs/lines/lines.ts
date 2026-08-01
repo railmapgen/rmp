@@ -1,11 +1,6 @@
 import type { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../../../constants/constants';
-import {
-    LinePathEdgeAttrsNormalizationMode,
-    LinePathEdgeAttrsNormalizer,
-    LinePathType,
-    LineStyleType,
-} from '../../../constants/lines';
+import { LinePathEdgeAttrsNormalizationMode, LinePathType, LineStyleType } from '../../../constants/lines';
 import simplePath from './paths/simple';
 import diagonalPath from './paths/diagonal';
 import perpendicularPath from './paths/perpendicular';
@@ -86,8 +81,7 @@ export const normalizeEdgeAttributes = (
 
     for (const edgeId of pending) {
         const type = graph.getEdgeAttribute(edgeId, 'type');
-        const normalize = linePaths[type].normalizeEdgeAttrs as LinePathEdgeAttrsNormalizer | undefined;
-        normalize?.(graph, edgeId, mode, pending);
+        linePaths[type]?.normalizeEdgeAttrs?.(graph, edgeId, mode, pending);
         pending.delete(edgeId);
     }
 };

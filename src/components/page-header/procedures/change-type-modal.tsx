@@ -332,8 +332,8 @@ export const ChangeTypeModal = (props: {
                 zIndex
             );
         }
-        await dispatch(commitEdgesThunk({ edgeIds: changedLines }));
-        dispatch(refreshNodesThunk());
+        await dispatch(commitEdgesThunk({ edgeIds: changedLines })).unwrap();
+        await dispatch(refreshNodesThunk()).unwrap();
         onClose();
     };
 
