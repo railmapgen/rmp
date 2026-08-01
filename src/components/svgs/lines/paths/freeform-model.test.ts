@@ -50,6 +50,8 @@ describe('freeform path model', () => {
             x: 0.4,
             y: 0.2,
         });
+        expect(resolveFreeformPathAttributes(persisted, { x: 0, y: 0 })).toBeUndefined();
+        expect(persistFreeformPathAttributes(horizontal, { x: 0, y: 0 })).toBeUndefined();
     });
 
     it('clamps and sorts width stops while preserving at least one usable stop', () => {

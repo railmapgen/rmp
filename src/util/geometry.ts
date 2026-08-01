@@ -35,6 +35,33 @@ export const normalizeVector = (point: PathPoint): PathPoint => {
 /** Rotate a tangent 90 degrees counter-clockwise to get its left-hand normal. */
 export const normalForTangent = (tangent: PathPoint): PathPoint => makePoint(-tangent.y, tangent.x);
 
+/**
+ * Resolve normalized chord coordinates into SVG coordinates.
+ *
+ * `coordinates.x` follows the source-to-target chord, while `coordinates.y` follows its 90-degree rotation. Both
+ * basis vectors retain the chord length so the coordinates scale and rotate with their endpoints.
+ */
+export const fromChordCoordinates = (coordinates: PathPoint, source: PathPoint, target: PathPoint): PathPoint => {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    return makePoint(
+        source.x + coordinates.x * dx - coordinates.y * dy,
+        source.y + coordinates.x * dy + coordinates.y * dx
+    );
+};
+
+/** Convert an SVG point back into normalized coordinates relative to the source-to-target chord. */
+export const toChordCoordinates = (point: PathPoint, source: PathPoint, target: PathPoint): PathPoint | undefined => {
+    const dx = target.x - source.x;
+    const dy = target.y - source.y;
+    const lengthSquared = dx * dx + dy * dy;
+    if (lengthSquared === 0) return undefined;
+
+    const qx = point.x - source.x;
+    const qy = point.y - source.y;
+    return makePoint((qx * dx + qy * dy) / lengthSquared, (-qx * dy + qy * dx) / lengthSquared);
+};
+
 export interface DistanceToSegmentResult {
     distance: number;
     point: PathPoint;
