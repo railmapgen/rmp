@@ -115,6 +115,13 @@ describe('bezier line path', () => {
         expect(getBezierLocalCoordinates(source, target, control).normal).toBeCloseTo(attrs.normal);
     });
 
+    it('falls back to default control attributes when the endpoint chord has zero length', () => {
+        expect(getBezierLocalCoordinates({ x: 20, y: -10 }, { x: 20, y: -10 }, { x: 50, y: 40 })).toEqual({
+            along: defaultBezierPathAttributes.along,
+            normal: defaultBezierPathAttributes.normal,
+        });
+    });
+
     it('does not enter the parallel-line pipeline', () => {
         expect(supportsParallelLinePath(LinePathType.Bezier)).toBe(false);
     });

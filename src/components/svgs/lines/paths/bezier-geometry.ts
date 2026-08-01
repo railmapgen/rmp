@@ -1,4 +1,5 @@
 import { OpenPath, PathPoint, makeCubicPath, makePoint } from '../../../../constants/path';
+import { fromChordCoordinates, toChordCoordinates } from '../../../../util/geometry';
 import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 
 /**
@@ -28,15 +29,7 @@ export const getBezierControlPoint = (
     source: PathPoint,
     target: PathPoint,
     attrs: BezierPathAttributes = defaultBezierPathAttributes
-): PathPoint => {
-    const dx = target.x - source.x;
-    const dy = target.y - source.y;
-
-    // Rotate the chord vector 90 degrees for the normal axis, then scale both
-    // axes by the same chord length implicit in dx/dy so attributes stay
-    // normalized instead of depending on absolute canvas coordinates.
-    return makePoint(source.x + attrs.along * dx - attrs.normal * dy, source.y + attrs.along * dy + attrs.normal * dx);
-};
+): PathPoint => fromChordCoordinates(makePoint(attrs.along, attrs.normal), source, target);
 
 /**
  * Convert the dragged absolute tangent intersection into save attributes.
@@ -49,25 +42,19 @@ export const getBezierLocalCoordinates = (
     target: PathPoint,
     control: PathPoint
 ): Pick<BezierPathAttributes, 'along' | 'normal'> => {
-    const dx = target.x - source.x;
-    const dy = target.y - source.y;
-    const lengthSquared = dx * dx + dy * dy;
+    const coordinates = toChordCoordinates(control, source, target);
     // A zero-length edge has no stable chord basis. Falling back prevents NaN
     // attributes from being saved if two connected nodes temporarily overlap.
-    if (lengthSquared === 0) {
+    if (!coordinates) {
         return {
             along: defaultBezierPathAttributes.along,
             normal: defaultBezierPathAttributes.normal,
         };
     }
 
-    const qx = control.x - source.x;
-    const qy = control.y - source.y;
     return {
-        // Projection onto the chord gives the along component.
-        along: (qx * dx + qy * dy) / lengthSquared,
-        // Projection onto the rotated chord gives the signed perpendicular side.
-        normal: (-qx * dy + qy * dx) / lengthSquared,
+        along: coordinates.x,
+        normal: coordinates.y,
     };
 };
 
