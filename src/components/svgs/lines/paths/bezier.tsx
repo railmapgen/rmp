@@ -37,7 +37,7 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
  * peer starts at the path default, while an updated endpoint retains its current offset. Pending edges from the same
  * transaction are ignored so only stable or already-normalized peers can define the shared position.
  */
-const normalizeBezierEdgeAttrs: LinePathEdgeAttrsNormalizer = (graph, edgeId, { mode, ignoredEdgeIds }) => {
+const normalizeBezierEdgeAttrs: LinePathEdgeAttrsNormalizer = (graph, edgeId, mode, ignoredEdgeIds) => {
     const edgeAttrs = graph.getEdgeAttributes(edgeId);
 
     const getExistingOffset = (node: NodeId): PathPoint | undefined => {

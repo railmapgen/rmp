@@ -87,7 +87,7 @@ export const normalizeEdgeAttributes = (
     for (const edgeId of pending) {
         const type = graph.getEdgeAttribute(edgeId, 'type');
         const normalize = linePaths[type].normalizeEdgeAttrs as LinePathEdgeAttrsNormalizer | undefined;
-        normalize?.(graph, edgeId, { mode, ignoredEdgeIds: pending });
+        normalize?.(graph, edgeId, mode, pending);
         pending.delete(edgeId);
     }
 };

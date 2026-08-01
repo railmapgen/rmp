@@ -265,33 +265,23 @@ export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
 export type LinePathEdgeAttrsNormalizationMode = 'created' | 'updated';
 
 /**
- * Transaction context supplied to one LinePath normalizer.
- *
- * The coordinator processes a complete semantic change set in a stable order. `ignoredEdgeIds` contains the current
- * edge and every changed edge that has not been normalized yet, preventing partially updated data from becoming an
- * anchor. An earlier normalized edge is removed from the set and may then anchor a later edge.
- */
-export interface LinePathEdgeAttrsNormalizationContext {
-    /**
-     * Newly created edges may initialize path-owned attributes from adjacent peers. Updated edges preserve their
-     * current attributes when no matching peer exists.
-     */
-    mode: LinePathEdgeAttrsNormalizationMode;
-    /** The current and later edges in the same change set must not become an accidental anchor. */
-    ignoredEdgeIds: ReadonlySet<LineId>;
-}
-
-/**
  * Maintains a LinePath-specific invariant after an edge exists in the graph but before that change is persisted.
  *
  * Implementations are synchronous and mutate only the current edge's path-owned attributes. They must not dispatch,
  * save the graph, refresh the UI, or rewrite peer edges; the transaction coordinator owns those steps. Looking up
- * adjacent peers is allowed, but peers in `context.ignoredEdgeIds` must not be used as source-of-truth data.
+ * adjacent peers is allowed, but peers in `ignoredEdgeIds` must not be used as source-of-truth data.
+ *
+ * The coordinator processes a complete semantic change set in a stable order. `ignoredEdgeIds` contains the current
+ * edge and every changed edge that has not been normalized yet, preventing partially updated data from becoming an
+ * anchor. An earlier normalized edge is removed from the set and may then anchor a later edge. Newly created edges may
+ * initialize path-owned attributes from adjacent peers; updated edges preserve their current attributes when no
+ * matching peer exists.
  */
 export type LinePathEdgeAttrsNormalizer = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeId: LineId,
-    context: LinePathEdgeAttrsNormalizationContext
+    mode: LinePathEdgeAttrsNormalizationMode,
+    ignoredEdgeIds: ReadonlySet<LineId>
 ) => void;
 
 /**
