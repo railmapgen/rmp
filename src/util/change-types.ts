@@ -282,7 +282,10 @@ export const changeLinesColorInBatch = (
                     color[2] == currentLineColor[2] &&
                     color[3] == currentLineColor[3])
             ) {
-                graph.mergeEdgeAttributes(edge, { [attr.style]: { color: newLineColor } });
+                graph.setEdgeAttribute(edge, attr.style, {
+                    ...(attr[attr.style] as AttributesWithColor),
+                    color: structuredClone(newLineColor),
+                });
                 changed.push(edge);
             }
         });
@@ -533,11 +536,13 @@ export const autoPopulateTransfer = (
  *
  * @param graph Graph instance
  * @param station Station ID
+ * @returns Whether the station type or transfer attributes changed.
  */
 export const checkAndChangeStationIntType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId
 ) => {
-    autoUpdateStationType(graph, station);
-    autoPopulateTransfer(graph, station);
+    const typeChanged = autoUpdateStationType(graph, station);
+    const transferChanged = autoPopulateTransfer(graph, station);
+    return typeChanged || transferChanged;
 };

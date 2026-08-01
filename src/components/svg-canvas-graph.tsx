@@ -433,16 +433,18 @@ const SvgCanvas = () => {
                         parallelIndex,
                     });
 
+                    let nodesChanged = false;
                     if (autoChangeStationType && source.startsWith('stn')) {
-                        checkAndChangeStationIntType(graph.current, source as StnId);
+                        nodesChanged = checkAndChangeStationIntType(graph.current, source as StnId) || nodesChanged;
                     }
                     if (autoChangeStationType && target.startsWith('stn')) {
-                        checkAndChangeStationIntType(graph.current, target as StnId);
+                        nodesChanged = checkAndChangeStationIntType(graph.current, target as StnId) || nodesChanged;
                     }
 
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
                     dispatch(commitEdgesThunk({ edgeIds: [newLineId], mode: 'created' }));
+                    if (nodesChanged) dispatch(refreshNodesThunk());
                 }
             }
         } else if (mode === 'free' && !gesture) {
