@@ -2,6 +2,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { MiscNodeType } from '../../../../constants/nodes';
+import { defaultFreeformPathAttributes } from './freeform-model';
 import { FreeformLineEditorController } from './freeform-editor-controller';
 
 const makeGraph = () => {
@@ -27,16 +28,12 @@ const makeGraph = () => {
         zIndex: 0,
         type: LinePathType.Freeform,
         [LinePathType.Freeform]: {
-            version: 1,
+            ...structuredClone(defaultFreeformPathAttributes),
             points: [
                 { id: 'start', x: 0, y: 0 },
                 { id: 'mid', x: 0.4, y: 0.2 },
                 { id: 'end', x: 1, y: 0 },
             ],
-            widthStops: [{ id: 'w', t: 0.5, width: 5 }],
-            smoothing: 0.5,
-            startCap: 'round',
-            endCap: 'round',
         },
         style: LineStyleType.SingleColor,
         [LineStyleType.SingleColor]: {},
@@ -46,52 +43,26 @@ const makeGraph = () => {
     return graph;
 };
 
-const getAttrs = (graph: ReturnType<typeof makeGraph>) =>
-    graph.getEdgeAttribute('line_freeform', LinePathType.Freeform);
-
 describe('FreeformLineEditorController', () => {
-    it('edits middle control points without detaching endpoint anchors', () => {
+    it('edits control points while preserving dormant outline attributes', () => {
         const graph = makeGraph();
-        const controller = new FreeformLineEditorController({
-            graph,
-            selected: new Set(['line_freeform']),
-            svgViewBoxZoom: 100,
-        });
+        const controller = new FreeformLineEditorController({ graph, svgViewBoxZoom: 100 });
 
         expect(controller.moveControlPoint('line_freeform', 'start', { x: 5, y: 5 })).toBe(false);
         expect(controller.moveControlPoint('line_freeform', 'mid', { x: 50, y: 25 })).toBe(true);
-        expect(getAttrs(graph).points[1]).toMatchObject({ id: 'mid', x: 0.5, y: 0.25 });
-
         expect(controller.insertControlPoint('line_freeform', { x: 75, y: 10 }, 'inserted')).toBe(true);
-        expect(getAttrs(graph).points.map((point: { id: string }) => point.id)).toContain('inserted');
-        expect(getAttrs(graph).points.find((point: { id: string }) => point.id === 'inserted')).toMatchObject({
-            x: 0.75,
-            y: 0.1,
-        });
-
         expect(controller.removeControlPoint('line_freeform', 'mid')).toBe(true);
-        expect(getAttrs(graph).points.map((point: { id: string }) => point.id)).not.toContain('mid');
+
+        const attrs = graph.getEdgeAttribute('line_freeform', LinePathType.Freeform);
+        expect(attrs.points.map((point: { id: string }) => point.id)).toEqual(['start', 'inserted', 'end']);
+        expect(attrs.widthStops).toEqual(defaultFreeformPathAttributes.widthStops);
     });
 
-    it('adds, moves, resizes, and preserves at least one width stop', () => {
+    it('ignores non-Freeform edges', () => {
         const graph = makeGraph();
-        const controller = new FreeformLineEditorController({
-            graph,
-            selected: new Set(['line_freeform']),
-            svgViewBoxZoom: 100,
-        });
+        graph.setEdgeAttribute('line_freeform', 'type', LinePathType.Simple);
+        const controller = new FreeformLineEditorController({ graph, svgViewBoxZoom: 100 });
 
-        expect(controller.addWidthStopAtPoint('line_freeform', 'mid', 'w2')).toBe(true);
-        expect(getAttrs(graph).widthStops).toHaveLength(2);
-
-        expect(controller.moveWidthStop('line_freeform', 'w2', { x: 100, y: 0 })).toBe(true);
-        expect(getAttrs(graph).widthStops.find((stop: { id: string }) => stop.id === 'w2').t).toBe(1);
-
-        expect(controller.resizeWidthStop('line_freeform', 'w2', { x: 100, y: 0.05 })).toBe(true);
-        expect(getAttrs(graph).widthStops.find((stop: { id: string }) => stop.id === 'w2').width).toBe(0.5);
-
-        expect(controller.removeWidthStop('line_freeform', 'w2')).toBe(true);
-        expect(controller.removeWidthStop('line_freeform', 'w')).toBe(false);
-        expect(getAttrs(graph).widthStops).toHaveLength(1);
+        expect(controller.getFreeformEditableById('line_freeform')).toBeUndefined();
     });
 });

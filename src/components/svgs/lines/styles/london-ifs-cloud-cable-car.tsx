@@ -71,6 +71,7 @@ const londonIFSCloudCableCar: LineStyle<LondonIFSCloudCableCarAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonIFSCloudCableCar.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

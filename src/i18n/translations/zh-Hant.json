@@ -612,6 +612,8 @@
                 },
                 "freeform": {
                     "displayName": "自由繪製線段",
+                    "outlineSettingsUnavailable": "可變寬度與兩端端頭設定暫未開放。",
+                    "controlPointHint": "拖動藍色控制點可調整線路走向；雙擊線路可在對應位置新增控制點，右擊藍色控制點可將其刪除。",
                     "widthStops": "寬度點",
                     "widthStopIndex": "#",
                     "widthStopPosition": "位置 (%)",

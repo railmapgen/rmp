@@ -126,6 +126,7 @@ const jrEastSingleColor: LineStyle<JREastSingleColorAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.jrEastSingleColor.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

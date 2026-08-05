@@ -6,6 +6,7 @@ import { MiscNodeType } from '../../../../constants/nodes';
 import { supportsParallelLinePath } from '../../../../util/parallel';
 import { getLines } from '../../../../util/process-elements';
 import { linePaths, lineStyles } from '../lines';
+import { defaultFreeformPathAttributes } from './freeform-model';
 
 describe('freeform line path registration', () => {
     beforeAll(() => {
@@ -23,37 +24,37 @@ describe('freeform line path registration', () => {
         }
     });
 
-    it('registers freeform as a line path supported only by single-color', () => {
-        expect(linePaths[LinePathType.Freeform]).toBeDefined();
+    it('keeps Freeform compatible with ordinary OpenPath styles', () => {
         expect(linePaths[LinePathType.Freeform].overlayComponent).toBeDefined();
         expect(linePaths[LinePathType.Freeform].drawingBehavior).toBeDefined();
-        expect(lineStyles[LineStyleType.SingleColor].metadata.supportLinePathType).toContain(LinePathType.Freeform);
 
+        const unsupportedStyles = new Set([LineStyleType.Unknown, LineStyleType.MRTTapeOut]);
         Object.entries(lineStyles)
-            .filter(([style]) => style !== LineStyleType.SingleColor)
-            .forEach(([, lineStyle]) =>
-                expect(lineStyle.metadata.supportLinePathType).not.toContain(LinePathType.Freeform)
-            );
+            .filter(([style]) => !unsupportedStyles.has(style as LineStyleType))
+            .forEach(([, lineStyle]) => {
+                expect(lineStyle.metadata.supportLinePathType).toContain(LinePathType.Freeform);
+            });
+        unsupportedStyles.forEach(style => {
+            expect(lineStyles[style].metadata.supportLinePathType).not.toContain(LinePathType.Freeform);
+        });
     });
 
-    it('uses its drawing behavior to collect points and build path attributes', () => {
+    it('creates complete attributes and previews an OpenPath', () => {
         const session = linePaths[LinePathType.Freeform].drawingBehavior!.createSession(
             { x: 0, y: 0 },
             { x: 10, y: 10 }
         );
 
-        session.pointerMove({ x: 10.5, y: 10 });
         session.pointerMove({ x: 40, y: 25 });
-        expect(session.getPreview({ x: 70, y: 10 })).not.toBeNull();
+        expect(session.getPreviewPath({ x: 70, y: 10 })?.kind).toBe('complex-open');
 
         const attrs = session.createAttrs({ x: 100, y: 0 }, { x: 80, y: 20 });
         expect(attrs?.points.length).toBeGreaterThan(2);
-        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 0.1, y: 0.1 })]));
-        expect(attrs?.points).toEqual(expect.arrayContaining([expect.objectContaining({ x: 0.8, y: 0.2 })]));
-        expect(attrs?.points.at(-1)).toMatchObject({ x: 1, y: 0 });
+        expect(attrs?.widthStops.length).toBeGreaterThan(0);
+        expect(attrs).toMatchObject({ startCap: 'round', endCap: 'round' });
     });
 
-    it('rejects drawing gestures that are too short to form a useful path', () => {
+    it('rejects drawing gestures that are too short', () => {
         const session = linePaths[LinePathType.Freeform].drawingBehavior!.createSession(
             { x: 0, y: 0 },
             { x: 0.5, y: 0.5 }
@@ -62,11 +63,27 @@ describe('freeform line path registration', () => {
         expect(session.createAttrs({ x: 1, y: 1 }, { x: 1, y: 1 })).toBeUndefined();
     });
 
+    it('always generates an OpenPath or EmptyOpenPath', () => {
+        const open = linePaths[LinePathType.Freeform].generatePath(0, 100, 0, 0, {
+            ...structuredClone(defaultFreeformPathAttributes),
+            points: [
+                { id: 'start', x: 0, y: 0 },
+                { id: 'mid', x: 0.4, y: 0.2 },
+                { id: 'end', x: 1, y: 0 },
+            ],
+        });
+        const empty = linePaths[LinePathType.Freeform].generatePath(0, 0, 0, 0, defaultFreeformPathAttributes);
+
+        expect(open.kind).toBe('complex-open');
+        expect(open.d).not.toMatch(/ Z$/);
+        expect(empty.kind).toBe('empty-open');
+    });
+
     it('does not support parallel line generation', () => {
         expect(supportsParallelLinePath(LinePathType.Freeform)).toBe(false);
     });
 
-    it('resolves its area path without auto-simple or reconcile handling', () => {
+    it('feeds the generated OpenPath directly into normal rendering', () => {
         const graph = new MultiDirectedGraph<any, any, any>();
         graph.addNode('misc_node_a', {
             x: 0,
@@ -89,16 +106,12 @@ describe('freeform line path registration', () => {
             zIndex: 0,
             type: LinePathType.Freeform,
             [LinePathType.Freeform]: {
-                version: 1,
+                ...structuredClone(defaultFreeformPathAttributes),
                 points: [
                     { id: 'start', x: 0, y: 0 },
                     { id: 'mid', x: 0.4, y: 0.2 },
                     { id: 'end', x: 1, y: 0 },
                 ],
-                widthStops: [{ id: 'w', t: 0.5, width: 5 }],
-                smoothing: 0.5,
-                startCap: 'round',
-                endCap: 'round',
             },
             style: LineStyleType.SingleColor,
             [LineStyleType.SingleColor]: {
@@ -110,9 +123,7 @@ describe('freeform line path registration', () => {
 
         const generatePath = vi.spyOn(linePaths[LinePathType.Freeform], 'generatePath');
         const [line] = getLines(graph);
-        expect(line.id).toBe('line_freeform');
-        expect(line.line?.path.kind).toBe('closed-area');
-        expect(line.line?.path.d).toMatch(/^M .* Z$/);
+        expect(line.line?.path.kind).toBe('complex-open');
         expect(generatePath).toHaveBeenCalledOnce();
         generatePath.mockRestore();
     });

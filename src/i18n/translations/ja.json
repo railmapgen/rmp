@@ -615,6 +615,8 @@
                 },
                 "freeform": {
                     "displayName": "フリーフォーム経路",
+                    "outlineSettingsUnavailable": "可変幅および両端のキャップ設定は、現在まだ利用できません。",
+                    "controlPointHint": "青いコントロールポイントをドラッグして経路を調整できます。経路をダブルクリックするとその位置にポイントを追加でき、青いポイントを右クリックすると削除できます。",
                     "widthStops": "幅ポイント",
                     "widthStopIndex": "#",
                     "widthStopPosition": "位置 (%)",

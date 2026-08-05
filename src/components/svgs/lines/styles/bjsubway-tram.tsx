@@ -67,6 +67,7 @@ const bjsubwayTram: LineStyle<BjsubwayTramAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.bjsubwayTram.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

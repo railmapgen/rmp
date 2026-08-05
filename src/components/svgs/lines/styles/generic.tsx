@@ -340,6 +340,7 @@ const generic: LineStyle<GenericAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.generic.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,

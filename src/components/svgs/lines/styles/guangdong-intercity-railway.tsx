@@ -84,6 +84,7 @@ const guangdongIntercityRailway: LineStyle<GuangdongIntercityRailwayAttributes> 
     metadata: {
         displayName: 'panel.details.lines.guangdongIntercityRailway.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
