@@ -22,7 +22,7 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth="2.157"
@@ -70,6 +70,7 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

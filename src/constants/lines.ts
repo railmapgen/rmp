@@ -8,6 +8,7 @@ import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
+import type { UnknownLineAttributes } from '../components/svgs/lines/styles/unknown';
 import type { ShmetroVirtualIntAttributes } from '../components/svgs/lines/styles/shmetro-virtual-int';
 import type { ShanghaiSuburbanRailwayAttributes } from '../components/svgs/lines/styles/shanghai-suburban-railway';
 import type { GzmtrVirtualIntAttributes } from '../components/svgs/lines/styles/gzmtr-virtual-int';
@@ -39,6 +40,8 @@ import type { GZMTRLoopAttributes } from '../components/svgs/lines/styles/gzmtr-
 import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/chongqingrt-loop';
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
+import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
+import type { OpenPath, Path } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -59,6 +62,7 @@ export interface ExternalLinePathAttributes {
 export enum LineStyleType {
     SingleColor = 'single-color',
     Generic = 'generic',
+    Unknown = 'unknown',
     ShanghaiSuburbanRailway = 'sh-sub-rwy',
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
@@ -90,11 +94,15 @@ export enum LineStyleType {
     ChongqingRTLoop = 'chongqingrt-loop',
     ChongqingRTLineBadge = 'chongqingrt-line-badge',
     ChengduRTOutsideFareGates = 'chengdurt-outside-fare-gates',
+    Shinkansen = 'shinkansen',
 }
+
+export const isVisibleLineStyle = (style: LineStyleType): boolean => style !== LineStyleType.Unknown;
 
 export interface ExternalLineStyleAttributes {
     [LineStyleType.SingleColor]?: SingleColorAttributes;
     [LineStyleType.Generic]?: GenericAttributes;
+    [LineStyleType.Unknown]?: UnknownLineAttributes;
     [LineStyleType.ShmetroVirtualInt]?: ShmetroVirtualIntAttributes;
     [LineStyleType.ShanghaiSuburbanRailway]?: ShanghaiSuburbanRailwayAttributes;
     [LineStyleType.GzmtrVirtualInt]?: GzmtrVirtualIntAttributes;
@@ -126,13 +134,10 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChongqingRTLoop]?: ChongqingRTLoopAttributes;
     [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
+    [LineStyleType.Shinkansen]?: ShinkansenAttributes;
 }
 
-/* ----- Below are core types for all lines, DO NOT TOUCH. ----- */
-
 export const LINE_WIDTH = 5;
-
-export type Path = `M${string}`;
 
 export interface LineWrapperComponentProps {
     id: LineId;
@@ -162,7 +167,7 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: Path;
+    path: OpenPath;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -298,17 +303,21 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
          * Indicate which LinePathType will this style support.
          */
         supportLinePathType: LinePathType[];
+        /**
+         * Indicate whether this style supports the reconcile feature.
+         */
+        supportsReconcile: boolean;
     };
 }
 
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => OpenPath;
 
 /**
  * The generator type of a line style.
  * This is used when a line style needs to generate complex paths based on the original path.
  * It takes the original path and return a record of paths with different keys.
  */
-export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;
+export type StylePathGenerator<T> = (path: OpenPath, type: LinePathType, attrs: T) => Record<string, Path>;

@@ -112,7 +112,14 @@ const TaipeiMetroTextLineBadgeAttrsComponent = (props: AttrsProps<TaipeiMetroLin
 const taipeiMetroLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="6" y="6" width="12" height="12" rx="2" ry="2" />
-        <text x="12" y="12" fontSize="6" fill="white" textAnchor="middle" dominantBaseline="central">
+        <text
+            x="12"
+            y="12"
+            fontSize="6"
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+            dominantBaseline="central"
+        >
             BR
         </text>
     </svg>

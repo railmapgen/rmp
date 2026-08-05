@@ -123,10 +123,10 @@ const ChongqingRTTextLineBadgeAttrsComponent = (props: AttrsProps<ChongqingRTTex
 const chongqingRTTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
-        <text x="4.5" y="12.5" fill="white" fontSize="5">
+        <text x="4.5" y="12.5" fill="var(--chakra-colors-chakra-body-bg)" fontSize="5">
             空港线
         </text>
-        <text x="4.5" y="15" fill="white" fontSize="2">
+        <text x="4.5" y="15" fill="var(--chakra-colors-chakra-body-bg)" fontSize="2">
             Konggang Line
         </text>
     </svg>

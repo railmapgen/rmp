@@ -4,6 +4,7 @@ import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fme
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -15,8 +16,14 @@ import {
     defaultStationAttributes,
 } from '../../../constants/stations';
 import { TextLanguage, getLangStyle } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
+import { SecondaryNameText } from './secondary-name';
 
 const CODE_POS = [
     [[0, 0]],
@@ -42,6 +49,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultGzmtrIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultGzmtrIntStationAttributes.nameOffsetY,
         transfer = defaultGzmtrIntStationAttributes.transfer,
@@ -135,6 +143,18 @@ const GzmtrIntStation = (props: StationComponentProps) => {
         // when nameOffsetX === 'middle' and no secondaryNames, no dx is needed
         (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : secondaryTextWidth !== 0 ? 1 : 0);
     const underConstructionTextAnchor = nameOffsetX === 'middle' ? 'start' : textAnchor;
+
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.GzmtrInt,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -315,7 +335,14 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                 />
             </g>
 
-            <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                ref={textRef}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE.zh}
@@ -351,14 +378,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     >
                         ）
                     </text>
-                    <g ref={secondaryTextRef}>
-                        <text fontSize="10" dy="-2" dominantBaseline="auto" {...getLangStyle(TextLanguage.zh)}>
-                            {secondaryNames[0]}
-                        </text>
-                        <text fontSize="5.42" dy="2" dominantBaseline="hanging" {...getLangStyle(TextLanguage.en)}>
-                            {secondaryNames[1]}
-                        </text>
-                    </g>
+                    <SecondaryNameText ref={secondaryTextRef} names={secondaryNames} />
                 </g>
             )}
             {!open && (
@@ -406,6 +426,30 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -428,17 +472,20 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
-                attrs.nameOffsetX = val as Exclude<NameOffsetX, 'middle'>;
+                attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -446,15 +493,12 @@ const gzmtrIntStationAttrsComponents = (props: AttrsProps<GzmtrIntStationAttribu
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
-                attrs.nameOffsetY = val as Exclude<NameOffsetY, 'middle'>;
+                attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

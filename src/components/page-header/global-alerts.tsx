@@ -1,5 +1,6 @@
-import { Alert, AlertIcon, AlertStatus, CloseButton, Link } from '@chakra-ui/react';
+import { Alert, AlertIcon, CloseButton, Link } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { closeGlobalAlert } from '../../redux/runtime/runtime-slice';
 
@@ -18,17 +19,8 @@ export default function GlobalAlerts() {
 
     return (
         <>
-            {Object.entries(globalAlerts).map(([status, { message, url, linkedApp }]) => (
-                <Alert
-                    key={status}
-                    status={status as AlertStatus}
-                    variant="solid"
-                    size="xs"
-                    pl={3}
-                    pr={1}
-                    py={0}
-                    zIndex="1"
-                >
+            {Object.entries(globalAlerts).map(([id, { status, message, url, linkedApp }]) => (
+                <Alert key={id} status={status} variant="solid" size="xs" pl={3} pr={1} py={0} zIndex="1">
                     <AlertIcon />
                     {linkedApp ? (
                         <Link onClick={() => handleAppOpen(linkedApp)}>{message}</Link>
@@ -39,7 +31,7 @@ export default function GlobalAlerts() {
                     ) : (
                         message
                     )}
-                    <CloseButton ml="auto" onClick={() => dispatch(closeGlobalAlert(status as AlertStatus))} />
+                    <CloseButton ml="auto" onClick={() => dispatch(closeGlobalAlert(id as GlobalAlertId))} />
                 </Alert>
             ))}
         </>

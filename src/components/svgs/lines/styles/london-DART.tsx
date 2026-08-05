@@ -29,9 +29,9 @@ const LondonLutonAirportDART = (props: LineStyleComponentProps<LondonLutonAirpor
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
             <path
-                d={path}
+                d={path.d}
                 fill="none"
                 stroke={color[3]}
                 strokeWidth="3"
@@ -83,6 +83,7 @@ const londonLutonAirportDART: LineStyle<LondonLutonAirportDARTAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

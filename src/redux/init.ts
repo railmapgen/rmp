@@ -1,6 +1,7 @@
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { GlobalAlertId } from '../constants/global-alerts';
 import { createEmptyTimelineDocument } from '../constants/timeline';
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
@@ -17,6 +18,7 @@ import {
     setRandomStationsNames,
     setShowOnlyFavorites,
     setSnapLines,
+    setStationNameTranslationMode,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
@@ -26,7 +28,7 @@ import {
 } from './app/app-slice';
 import { ParamState, setFullState } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
-import { normalizeRandomStationsNames } from './state-migration';
+import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 import { setFullState as setTimelineFullState } from './timeline/timeline-slice';
 
 export const initStore = async (store: RootStore) => {
@@ -52,6 +54,12 @@ export const initStore = async (store: RootStore) => {
         if ('randomStationsNames' in appState.preference)
             store.dispatch(
                 setRandomStationsNames(normalizeRandomStationsNames(appState.preference.randomStationsNames))
+            );
+        if ('stationNameTranslationMode' in appState.preference)
+            store.dispatch(
+                setStationNameTranslationMode(
+                    normalizeStationNameTranslationMode(appState.preference.stationNameTranslationMode)
+                )
             );
         if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
@@ -135,7 +143,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },
@@ -152,7 +162,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },
@@ -169,7 +181,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },

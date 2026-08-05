@@ -23,7 +23,7 @@ const ChongqingRTLoop = (props: LineStyleComponentProps<ChongqingRTLoopAttribute
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth="8"
@@ -76,6 +76,7 @@ const chongqingRTLoop: LineStyle<ChongqingRTLoopAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

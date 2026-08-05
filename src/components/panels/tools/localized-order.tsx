@@ -7,7 +7,7 @@
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import { StationType } from '../../../constants/stations';
 import { MiscNodeType } from '../../../constants/nodes';
-import { LineStyleType } from '../../../constants/lines';
+import { LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 
 /* ------- Station types ------ */
 
@@ -81,7 +81,7 @@ export const localizedMiscNodes: { [k in LanguageCode]?: MiscNodeType[] } = {
 
 /* ------- Line styles ------ */
 
-const defaultLineStyle = Object.values(LineStyleType);
+const defaultLineStyle = Object.values(LineStyleType).filter(isVisibleLineStyle);
 const alwaysFrontLineStyle = [LineStyleType.SingleColor, LineStyleType.Generic];
 const enLineStyle = [
     LineStyleType.LondonTubeTerminal,

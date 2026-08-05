@@ -31,8 +31,8 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeDasharray="2 2" />
-            <path d={path} fill="none" stroke={bgColor} strokeWidth="3.4" />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeDasharray="2 2" />
+            <path d={path.d} fill="none" stroke={bgColor} strokeWidth="3.4" />
         </g>
     );
 };
@@ -76,6 +76,7 @@ const bjsubwayDotted: LineStyle<BjsubwayDottedAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
         ],
+        supportsReconcile: true,
     },
 };
 

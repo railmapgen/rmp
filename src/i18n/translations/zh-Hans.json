@@ -39,8 +39,13 @@
                 "linePathType": "线段路径类型",
                 "lineStyleType": "线段样式类型",
                 "type": "类型",
+                "visible": "导出时可见",
                 "parallel": "平行线段",
-                "parallelIndex": "平行线段索引"
+                "parallelIndex": "平行线段索引",
+                "reconcile": "合并线段",
+                "reconcileId": "合并线段唯一识别符",
+                "reconcileAssign": "指派",
+                "reconcileMembers": "合并线段成员"
             },
             "multipleSelection": {
                 "title": "多重选取",
@@ -156,6 +161,15 @@
                     "sandwich": "三明治",
                     "tube": "地铁"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "伦敦地铁线路标牌",
+                    "lineName": "线路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目标",
+                    "distance": "距离",
+                    "addItem": "添加标牌",
+                    "noItems": "暂无标牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都轨道交通线路标识",
                     "badgeType": {
@@ -169,6 +183,9 @@
                     "displayName": "台北捷运线路标志",
                     "tram": "轻轨"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武汉轨道交通线路标识"
+                },
                 "image": {
                     "displayName": "图像",
                     "label": "标签",
@@ -180,7 +197,8 @@
                 "master": {
                     "displayName": "大师节点",
                     "type": "大师节点类型",
-                    "undefined": "未定义"
+                    "undefined": "未定义",
+                    "attrBindingError": "大师属性绑定错误"
                 },
                 "facilities": {
                     "displayName": "设施",
@@ -228,7 +246,12 @@
                     "airport_chengdu": "成都机场",
                     "railway_chengdu": "成都火车站",
                     "railway_taiwan": "台湾铁路",
-                    "hsr_taiwan": "台湾高铁"
+                    "hsr_taiwan": "台湾高铁",
+                    "railway_shenzhen": "深圳火车站",
+                    "intercity_shenzhen": "深圳城际铁路",
+                    "ferry_shenzhen": "深圳轮渡",
+                    "tram_shenzhen": "深圳有轨电车",
+                    "airport_shenzhen": "深圳机场"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -287,7 +310,12 @@
                     "middle": "中间",
                     "right": "右",
                     "top": "顶部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自定义",
+                    "translateName": "翻译站名到英文",
+                    "translateNameEmpty": "请先填写中文名称。",
+                    "translateNameNotSubscribed": "意译需要 RMP Cloud 订阅。",
+                    "translateNameFailed": "车站名称翻译失败。"
                 },
                 "interchange": {
                     "title": "换乘",
@@ -453,7 +481,9 @@
                     "displayName": "伦敦河流服务换乘站"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "广东城际铁路车站"
+                    "displayName": "广东城际铁路车站",
+                    "secondaryNameZh": "中文第二名称",
+                    "secondaryNameEn": "英文第二名称"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重庆轨道交通基本车站",
@@ -523,7 +553,8 @@
                     "displayName": "长沙轨道交通基本车站"
                 },
                 "csmetroInt": {
-                    "displayName": "长沙轨道交通换乘车站"
+                    "displayName": "长沙轨道交通换乘车站",
+                    "flipColor": "翻转颜色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地铁基本车站",
@@ -547,7 +578,9 @@
                     "from": "从",
                     "to": "到",
                     "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
-                    "changeInBaseLine": "在基准线段中更改它们："
+                    "changeInBaseLine": "在基准线段中更改它们：",
+                    "reconcileDisabled": "此线段属于合并线段链，偏移已禁用。整条链作为一条合并路径渲染。",
+                    "reconcileStyleDisabled": "此线段属于合并线段链，样式属性已禁用。最终渲染样式由基准线段控制。"
                 },
                 "simple": {
                     "displayName": "基本线段",
@@ -669,7 +702,10 @@
                     "displayName": "伦敦IFS云缆车样式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "广东城际铁路样式"
+                    "displayName": "广东城际铁路样式",
+                    "color": "颜色",
+                    "blue": "蓝色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重庆轨道交通线路标识连接线样式"
@@ -679,6 +715,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都轨道交通出闸换乘样式"
+                },
+                "shinkansen": {
+                    "displayName": "新干线样式"
                 },
                 "generic": {
                     "displayName": "通用样式",
@@ -692,6 +731,7 @@
                     "linecapSquare": "方头",
                     "dash": "虚线长度",
                     "gap": "间隔长度",
+                    "layerLimitWarning": "订阅可解锁额外线层。",
                     "addLayer": "添加线层",
                     "copyLayer": "复制线层",
                     "moveLayerUp": "上移线层",
@@ -865,6 +905,13 @@
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
+                "stationNameTranslationMode": {
+                    "title": "站名翻译方式",
+                    "pinyinSpaced": "音译-单字大写有空格",
+                    "pinyinCompact": "音译-首字大写无空格",
+                    "pinyinUppercase": "音译-全大写",
+                    "semantic": "意译"
+                },
                 "gridline": "显示网格参考线",
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
@@ -1004,7 +1051,8 @@
         "flipVertical": "垂直翻转",
         "flipHorizontal": "水平翻转",
         "flipDiagonal45": "沿45°线翻转",
-        "flipDiagonal135": "沿135°线翻转"
+        "flipDiagonal135": "沿135°线翻转",
+        "reconcile": "合并线段"
     },
 
     "clipboard": {

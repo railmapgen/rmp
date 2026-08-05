@@ -61,6 +61,7 @@ const dynamicColorInjectionMiscNodeKeys = [
     MiscNodeType.LondonArrow,
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.TaiPeiMetroLineBadege,
+    MiscNodeType.WuhanRTLineBadge,
 ] as const;
 const dynamicColorInjectionLineStyleKeys = [
     LineStyleType.SingleColor,
@@ -80,6 +81,7 @@ const dynamicColorInjectionLineStyleKeys = [
     LineStyleType.GZMTRLoop,
     LineStyleType.ChongqingRTLoop,
     LineStyleType.ChongqingRTLineBadge,
+    LineStyleType.Shinkansen,
 ] as const;
 type DynamicColorInjectionStationKeys = (typeof dynamicColorInjectionStationKeys)[number];
 type DynamicColorInjectionMiscNodeKeys = (typeof dynamicColorInjectionMiscNodeKeys)[number];

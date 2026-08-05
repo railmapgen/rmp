@@ -39,8 +39,13 @@
                 "linePathType": "線段路徑類型",
                 "lineStyleType": "線段樣式類型",
                 "type": "類型",
+                "visible": "匯出時可見",
                 "parallel": "平行線段",
-                "parallelIndex": "平行線段索引"
+                "parallelIndex": "平行線段索引",
+                "reconcile": "合併線段",
+                "reconcileId": "合併線段唯一識別符",
+                "reconcileAssign": "指派",
+                "reconcileMembers": "合併線段成員"
             },
             "multipleSelection": {
                 "title": "多重選取",
@@ -156,6 +161,15 @@
                     "sandwich": "三明治",
                     "tube": "地鐵"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "倫敦地鐵線路標牌",
+                    "lineName": "線路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目標",
+                    "distance": "距離",
+                    "addItem": "新增標牌",
+                    "noItems": "暫無標牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都軌道交通線路標識",
                     "badgeType": {
@@ -169,6 +183,9 @@
                     "displayName": "台北捷運線路標識",
                     "tram": "輕軌"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通線路標識"
+                },
                 "image": {
                     "displayName": "影像",
                     "label": "標籤",
@@ -180,7 +197,8 @@
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
-                    "undefined": "未定義"
+                    "undefined": "未定義",
+                    "attrBindingError": "大師屬性綁定錯誤"
                 },
                 "facilities": {
                     "displayName": "設施",
@@ -228,7 +246,12 @@
                     "airport_chengdu": "成都機場",
                     "railway_chengdu": "成都火車站",
                     "railway_taiwan": "臺灣鐵路",
-                    "hsr_taiwan": "台灣高鐵"
+                    "hsr_taiwan": "台灣高鐵",
+                    "railway_shenzhen": "深圳火車站",
+                    "intercity_shenzhen": "深圳城際鐵路",
+                    "ferry_shenzhen": "深圳渡輪",
+                    "tram_shenzhen": "深圳有軌電車",
+                    "airport_shenzhen": "深圳機場"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -287,7 +310,12 @@
                     "middle": "中間",
                     "right": "右",
                     "top": "頂部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自訂",
+                    "translateName": "翻譯站名到英文",
+                    "translateNameEmpty": "請先填寫中文名稱。",
+                    "translateNameNotSubscribed": "意譯需要 RMP Cloud 訂閱。",
+                    "translateNameFailed": "車站名稱翻譯失敗。"
                 },
                 "interchange": {
                     "title": "換乘",
@@ -453,7 +481,9 @@
                     "displayName": "倫敦河流服務換乘站"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路車站"
+                    "displayName": "廣東城際鐵路車站",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重慶軌道交通基本車站",
@@ -523,7 +553,8 @@
                     "displayName": "長沙軌道交通基本車站"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙軌道交通換乘車站"
+                    "displayName": "長沙軌道交通換乘車站",
+                    "flipColor": "翻轉顏色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地鐵基本車站",
@@ -547,7 +578,9 @@
                     "from": "從",
                     "to": "到",
                     "parallelDisabled": "由於此線段是平行的，因此某些屬性已被禁用。",
-                    "changeInBaseLine": "在基準線段中更改它們："
+                    "changeInBaseLine": "在基準線段中更改它們：",
+                    "reconcileDisabled": "此線段屬於合併線段鏈，偏移已停用。整條鏈作為一條合併路徑渲染。",
+                    "reconcileStyleDisabled": "此線段屬於合併線段鏈，樣式屬性已停用。最終渲染樣式由基準線段控制。"
                 },
                 "simple": {
                     "displayName": "基本線段",
@@ -669,7 +702,10 @@
                     "displayName": "倫敦IFS雲纜車樣式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路樣式"
+                    "displayName": "廣東城際鐵路樣式",
+                    "color": "顏色",
+                    "blue": "藍色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶軌道交通線路標識連接線樣式"
@@ -679,6 +715,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都軌道交通出閘換乘樣式"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線樣式"
                 },
                 "generic": {
                     "displayName": "通用樣式",
@@ -692,6 +731,7 @@
                     "linecapSquare": "方頭",
                     "dash": "虛線長度",
                     "gap": "間隔長度",
+                    "layerLimitWarning": "訂閱可解鎖額外線層。",
                     "addLayer": "添加線層",
                     "copyLayer": "複製線層",
                     "moveLayerUp": "上移線層",
@@ -865,6 +905,13 @@
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
+                "stationNameTranslationMode": {
+                    "title": "站名翻譯方式",
+                    "pinyinSpaced": "音譯-單字大寫有空格",
+                    "pinyinCompact": "音譯-首字大寫無空格",
+                    "pinyinUppercase": "音譯-全大寫",
+                    "semantic": "意譯"
+                },
                 "gridline": "顯示網格參考線",
                 "snapline": "磁性吸附到參考線",
                 "predictNextNode": "當選擇一個節點時預測下一個節點",
@@ -1004,7 +1051,8 @@
         "flipVertical": "垂直翻轉",
         "flipHorizontal": "水平翻轉",
         "flipDiagonal45": "沿45°線翻轉",
-        "flipDiagonal135": "沿135°線翻轉"
+        "flipDiagonal135": "沿135°線翻轉",
+        "reconcile": "合併線段"
     },
 
     "clipboard": {

@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -12,15 +13,23 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
+import { SecondaryNameText } from './secondary-name';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
 const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultGuangdongIntercityRailwayStationAttributes.nameOffsetX,
         nameOffsetY = defaultGuangdongIntercityRailwayStationAttributes.nameOffsetY,
+        secondaryNames = defaultGuangdongIntercityRailwayStationAttributes.secondaryNames,
         interchange = defaultGuangdongIntercityRailwayStationAttributes.interchange,
     } = attrs[StationType.GuangdongIntercityRailway] ?? defaultGuangdongIntercityRailwayStationAttributes;
 
@@ -44,6 +53,32 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
         NAME_DY[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
 
+    const secondaryTextRef = React.useRef<SVGGElement | null>(null);
+    const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
+    React.useEffect(() => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0), [...secondaryNames]);
+
+    const textRef = React.useRef<SVGGElement | null>(null);
+    const [textWidth, setTextWidth] = React.useState(0);
+    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names, nameOffsetX]);
+
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.GuangdongIntercityRailway,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+    const secondaryWidth = secondaryTextWidth + 12 * 2;
+    const secondaryDirection = nameLayout.anchor === 'end' ? -1 : 1;
+    const secondaryDx =
+        nameLayout.anchor === 'middle'
+            ? textWidth / 2 + secondaryWidth / 2
+            : (textWidth + secondaryWidth / 2) * secondaryDirection;
+
     return (
         <g>
             <circle r={5} stroke="#2559a8" strokeWidth="1.5" fill="white" />
@@ -62,10 +97,14 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                 className="removeMe"
             />
             <g
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
+                ref={textRef}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="1"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -85,6 +124,34 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
                     {...getLangStyle(TextLanguage.en)}
                 />
             </g>
+            {secondaryNames.join('') !== '' && (
+                <g
+                    transform={`translate(${nameLayout.x + secondaryDx}, ${nameLayout.y})`}
+                    textAnchor="middle"
+                    className="rmp-name-outline"
+                    strokeWidth="1"
+                >
+                    <text
+                        fontSize="13.13"
+                        dx={-(secondaryTextWidth + 5) / 2}
+                        textAnchor="end"
+                        dominantBaseline="middle"
+                        {...getLangStyle(TextLanguage.zh)}
+                    >
+                        （
+                    </text>
+                    <text
+                        fontSize="13.13"
+                        dx={(secondaryTextWidth + 5) / 2}
+                        textAnchor="start"
+                        dominantBaseline="middle"
+                        {...getLangStyle(TextLanguage.zh)}
+                    >
+                        ）
+                    </text>
+                    <SecondaryNameText ref={secondaryTextRef} names={secondaryNames} />
+                </g>
+            )}
         </g>
     );
 };
@@ -95,6 +162,7 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
 export interface GuangdongIntercityRailwayStationAttributes extends StationAttributes {
     nameOffsetX: NameOffsetX;
     nameOffsetY: NameOffsetY;
+    secondaryNames: [string, string];
     interchange: boolean;
 }
 
@@ -102,12 +170,37 @@ const defaultGuangdongIntercityRailwayStationAttributes: GuangdongIntercityRailw
     ...defaultStationAttributes,
     nameOffsetX: 'right',
     nameOffsetY: 'top',
+    secondaryNames: ['', ''],
     interchange: false,
 };
 
 const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongIntercityRailwayStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -131,17 +224,20 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -149,15 +245,12 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -173,6 +266,26 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
             },
             minW: 'full',
         },
+        {
+            type: 'input',
+            label: t('panel.details.stations.guangdongIntercityRailway.secondaryNameZh'),
+            value: attrs.secondaryNames[0],
+            onChange: val => {
+                attrs.secondaryNames[0] = val.toString();
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
+        {
+            type: 'input',
+            label: t('panel.details.stations.guangdongIntercityRailway.secondaryNameEn'),
+            value: attrs.secondaryNames[1],
+            onChange: val => {
+                attrs.secondaryNames[1] = val.toString();
+                handleAttrsUpdate(id, attrs);
+            },
+            minW: 'full',
+        },
     ];
 
     return <RmgFields fields={fields} />;
@@ -180,8 +293,22 @@ const guangdongIntercityRailwayAttrsComponent = (props: AttrsProps<GuangdongInte
 
 const guangdongIntercityRailwayStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
-        <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2.25" fill="white" />
-        <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" fill="white" />
+        <circle
+            cx="12"
+            cy="12"
+            r="8"
+            stroke="currentColor"
+            strokeWidth="2.25"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
+        <circle
+            cx="12"
+            cy="12"
+            r="4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            fill="var(--chakra-colors-chakra-body-bg)"
+        />
     </svg>
 );
 

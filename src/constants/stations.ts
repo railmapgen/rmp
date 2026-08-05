@@ -148,6 +148,11 @@ export interface StationAttributes {
      * If you need to break the line, use `\n` and display it with component MultilineText.
      */
     names: [string, ...string[]];
+    preciseNameOffsets?: {
+        x: number;
+        y: number;
+        anchor: 'start' | 'middle' | 'end';
+    };
 }
 // handy types for nameOffset
 export type NameOffsetX = 'left' | 'middle' | 'right';

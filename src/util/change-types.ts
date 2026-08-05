@@ -51,7 +51,11 @@ const supportsTransferProperty = (
 ): boolean => {
     const stationType = graph.getNodeAttribute(station, 'type') as StationType;
     const attrs = graph.getNodeAttribute(station, stationType);
-    return !!(attrs && 'transfer' in attrs);
+    const defaultAttrs = stations[stationType]?.defaultAttrs;
+    if (!defaultAttrs) {
+        return false;
+    }
+    return !!((attrs && 'transfer' in attrs) || 'transfer' in defaultAttrs);
 };
 
 /**
@@ -74,7 +78,8 @@ export const changeStationType = (
             names.pop();
         }
     }
-    const newAttrs = { ...stations[newStnType].defaultAttrs, names };
+    const newAttrs = structuredClone(stations[newStnType].defaultAttrs);
+    newAttrs.names = names;
     if (
         !Object.values(stationsWithoutNameOffset).includes(currentStnType) ||
         !Object.values(stationsWithoutNameOffset).includes(newStnType)
