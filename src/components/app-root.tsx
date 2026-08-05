@@ -1,16 +1,16 @@
-import { Alert, AlertIcon, Flex, Link, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Link, Text } from '@chakra-ui/react';
 import { RmgErrorBoundary, RmgThemeProvider, RmgWindow } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { LocalStorageKey } from '../constants/constants';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runtime-slice';
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
-const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
-const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
-const DetailsPanel = React.lazy(() => import('./panels/details/details'));
+const EditorPage = React.lazy(() => import('./pages/editor-page'));
+const TimelinePage = React.lazy(() => import('./pages/timeline-page'));
 const RmgPaletteAppClip = React.lazy(() => import('./panels/rmg-palette-app-clip'));
 
 export default function AppRoot() {
@@ -44,55 +44,51 @@ export default function AppRoot() {
     return (
         <RmgThemeProvider>
             <RmgWindow>
-                <React.Suspense fallback={loadingFallback}>
-                    <PageHeader />
-                </React.Suspense>
+                <BrowserRouter basename={import.meta.env.BASE_URL}>
+                    <React.Suspense fallback={loadingFallback}>
+                        <PageHeader />
+                    </React.Suspense>
 
-                {isShowRMTMessage && (
-                    <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
-                        <AlertIcon />
-                        <Text>
-                            <Link href="/?app=rmp" isExternal fontWeight="bold">
-                                {t('rmtPromotion')}
-                            </Link>{' '}
-                            <Link
-                                as="button"
-                                ml="auto"
-                                textDecoration="underline"
-                                onClick={() => setIsShowRMTMessage(false)}
-                            >
-                                {t('close')}
-                            </Link>
-                            {' | '}
-                            <Link
-                                as="button"
-                                textDecoration="underline"
-                                onClick={() => {
-                                    setIsShowRMTMessage(false);
-                                    window.localStorage.setItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG, 'true');
-                                }}
-                            >
-                                {t('noShowAgain')}
-                            </Link>
-                        </Text>
-                    </Alert>
-                )}
+                    {isShowRMTMessage && (
+                        <Alert status="info" variant="solid" size="xs" pl={3} pr={1} py={1} zIndex="1">
+                            <AlertIcon />
+                            <Text>
+                                <Link href="/?app=rmp" isExternal fontWeight="bold">
+                                    {t('rmtPromotion')}
+                                </Link>{' '}
+                                <Link
+                                    as="button"
+                                    ml="auto"
+                                    textDecoration="underline"
+                                    onClick={() => setIsShowRMTMessage(false)}
+                                >
+                                    {t('close')}
+                                </Link>
+                                {' | '}
+                                <Link
+                                    as="button"
+                                    textDecoration="underline"
+                                    onClick={() => {
+                                        setIsShowRMTMessage(false);
+                                        window.localStorage.setItem(LocalStorageKey.DO_NOT_SHOW_RMT_MSG, 'true');
+                                    }}
+                                >
+                                    {t('noShowAgain')}
+                                </Link>
+                            </Text>
+                        </Alert>
+                    )}
 
-                <RmgErrorBoundary allowReset>
-                    <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
-                        {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
-                        have the right parent container for its `position: 'absolute'` calculation. */}
-                        <React.Suspense fallback={null}>
-                            <ToolsPanel />
-                        </React.Suspense>
+                    <RmgErrorBoundary allowReset>
                         <React.Suspense fallback={loadingFallback}>
-                            <SvgWrapper />
+                            <Routes>
+                                <Route path="/" element={<EditorPage />} />
+                                <Route path="/timeline" element={<TimelinePage />} />
+                                <Route path="*" element={<Navigate to="/" replace />} />
+                            </Routes>
                         </React.Suspense>
-                        <React.Suspense fallback={null}>
-                            <DetailsPanel />
-                        </React.Suspense>
-                    </Flex>
-                </RmgErrorBoundary>
+                    </RmgErrorBoundary>
+                </BrowserRouter>
 
                 <React.Suspense fallback={null}>
                     <RmgPaletteAppClip

@@ -15,14 +15,16 @@
         "@railmapgen/rmg-palette-resources": "^3.0.0",
         "@railmapgen/rmg-runtime": "^12.0.3",
         "@railmapgen/rmg-translate": "^3.4.3",
-        "@railmapgen/svg-assets": "^8.0.4",
+        "@railmapgen/svg-assets": "^8.0.6",
         "@reduxjs/toolkit": "^2.9.0",
         "bezier-js": "^6.1.4",
         "canvas-size": "^2.0.0",
+        "expr-eval": "^2.0.2",
         "graphology": "^0.26.0",
         "graphology-utils": "^2.5.2",
         "mime-types": "^3.0.1",
         "nanoid": "^5.0.9",
+        "pinyin-pro": "^3.28.1",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
         "react-i18next": "^15.7.3",
@@ -30,7 +32,7 @@
         "react-redux": "^9.2.0",
         "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
-        "rollup": "^4.60.0",
+        "rollup": "^4.62.3",
         "vite-plugin-svgr": "^4.5.0",
         "webm-writer": "^1.0.0"
     },
@@ -74,5 +76,5 @@
         "lint:fix": "eslint ./src --fix",
         "preview": "vite preview"
     },
-    "version": "5.5.24"
+    "version": "6.0.13"
 }

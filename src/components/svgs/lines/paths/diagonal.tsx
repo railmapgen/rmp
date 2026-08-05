@@ -1,4 +1,4 @@
-import { Button } from '@chakra-ui/react';
+import { Alert, AlertDescription, AlertIcon, Box, Button } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { LineId } from '../../../../constants/constants';
@@ -13,6 +13,9 @@ import { useRootDispatch } from '../../../../redux';
 import { setSelected } from '../../../../redux/runtime/runtime-slice';
 import { getBaseParallelLineID } from '../../../../util/parallel';
 import { roundPathCorners } from '../../../../util/pathRounding';
+import { makePoint, makeSharpTurnPath } from '../../../../constants/path';
+import { parseRoundedTurnPath } from '../../../../util/path';
+import { isInReconcileChain } from '../../../../util/reconcile';
 
 const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
     propsx1: number,
@@ -56,9 +59,9 @@ const generateDiagonalPath: PathGenerator<DiagonalPathAttributes> = (
     const [x1, y1, x2, y2] = startFrom === 'from' ? [x1b, y1b, x2b, y2b] : [x2b, y2b, x1b, y1b];
 
     // Round the path with corners.
-    const path = roundPathCorners(`M ${x1} ${y1} L ${x} ${y} L ${x2} ${y2}`, roundCornerFactor, false) as `M ${string}`;
+    const path = makeSharpTurnPath(makePoint(x1, y1), makePoint(x, y), makePoint(x2, y2));
 
-    return path;
+    return roundCornerFactor === 0 ? path : parseRoundedTurnPath(roundPathCorners(path.d, roundCornerFactor, false));
 };
 
 /**
@@ -97,6 +100,10 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
     const baseParallelLineID = getBaseParallelLineID(window.graph, LinePathType.Diagonal, id as LineId);
     const isParallelDisabled = parallelIndex >= 0 && baseParallelLineID !== id;
 
+    const inReconcileChain = isInReconcileChain(window.graph, id as LineId);
+    const isOffsetFromDisabled = isParallelDisabled || inReconcileChain;
+    const isOffsetToDisabled = isParallelDisabled || inReconcileChain;
+
     const fields: RmgFieldsField[] = [
         {
             type: 'select',
@@ -120,7 +127,7 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
                 attrs.offsetFrom = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
-            isDisabled: isParallelDisabled,
+            isDisabled: isOffsetFromDisabled,
             minW: 'full',
         },
         {
@@ -133,7 +140,7 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
                 attrs.offsetTo = Number(val);
                 handleAttrsUpdate(id, attrs);
             },
-            isDisabled: isParallelDisabled,
+            isDisabled: isOffsetToDisabled,
             minW: 'full',
         },
         {
@@ -154,12 +161,40 @@ const attrsComponent = (props: LinePathAttrsProps<DiagonalPathAttributes>) => {
     if (isParallelDisabled) {
         fields.unshift({
             type: 'custom',
-            label: t('panel.details.lines.common.parallelDisabled'),
+            label: '',
             component: (
-                <Button size="sm" variant="link" onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}>
-                    {t('panel.details.lines.common.changeInBaseLine')} {baseParallelLineID}
-                </Button>
+                <Alert status="info" fontSize="xs" borderRadius="md" py={1.5} px={2}>
+                    <AlertIcon boxSize={4} />
+                    <Box>
+                        <AlertDescription whiteSpace="normal" lineHeight="short" display="block">
+                            {t('panel.details.lines.common.parallelDisabled')}
+                        </AlertDescription>
+                        <Button
+                            size="xs"
+                            variant="link"
+                            mt={0.5}
+                            onClick={() => dispatch(setSelected(new Set([baseParallelLineID])))}
+                        >
+                            {t('panel.details.lines.common.changeInBaseLine')} {baseParallelLineID}
+                        </Button>
+                    </Box>
+                </Alert>
             ),
+            minW: 'full',
+        });
+    } else if (inReconcileChain) {
+        fields.unshift({
+            type: 'custom',
+            label: '',
+            component: (
+                <Alert status="info" fontSize="xs" borderRadius="md" py={1.5} px={2}>
+                    <AlertIcon boxSize={4} />
+                    <AlertDescription whiteSpace="normal" lineHeight="short">
+                        {t('panel.details.lines.common.reconcileDisabled')}
+                    </AlertDescription>
+                </Alert>
+            ),
+            minW: 'full',
         });
     }
 

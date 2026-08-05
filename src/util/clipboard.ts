@@ -13,6 +13,7 @@ import {
 import { ExternalLineStyleAttributes, LineStyleType } from '../constants/lines';
 import { MiscNodeAttributes, MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, STATION_TYPE_VALUES, StationType } from '../constants/stations';
+import { GenericLineStyleAttrs, MAX_GENERIC_LAYERS_FREE } from '../components/svgs/lines/styles/generic';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 import { CURRENT_VERSION } from './save';
 
@@ -46,6 +47,18 @@ export type ClipboardType = 'elements' | NodeType | LineStyleType;
  * Current clipboard format version. Increment this when clipboard data structure changes.
  */
 export const CLIPBOARD_VERSION = 2;
+
+const clampGenericStyleAttrs = (styleAttrs: GenericLineStyleAttrs): GenericLineStyleAttrs => {
+    const attrs = styleAttrs;
+    if (attrs.layers.length <= MAX_GENERIC_LAYERS_FREE) {
+        return styleAttrs;
+    }
+
+    return {
+        ...attrs,
+        layers: attrs.layers.slice(0, MAX_GENERIC_LAYERS_FREE),
+    };
+};
 
 interface ClipboardData {
     app: 'rmp';
@@ -145,6 +158,7 @@ export const importSelectedNodesAndEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     isMasterDisabled: boolean,
     isParallelDisabled: boolean,
+    isGenericLineStyleLayerLimited: boolean,
     x: number,
     y: number
 ) => {
@@ -197,25 +211,30 @@ export const importSelectedNodesAndEdges = (
         graph.addNode(node, attr);
     });
     Object.entries(filteredEdges).forEach(([edge, { attr, source, target }]) => {
+        const nextAttr = structuredClone(attr) as EdgeAttributes;
+        if (nextAttr.style === LineStyleType.Generic && isGenericLineStyleLayerLimited) {
+            nextAttr[nextAttr.style] = clampGenericStyleAttrs(nextAttr[nextAttr.style] as GenericLineStyleAttrs);
+        }
+
         // tweak parallel index
         if (isParallelDisabled) {
             // Set parallelIndex to -1 (disable) if not enabled.
             // Note users might exceed the current limit (5) if copy and paste 1...4 parallel lines.
             // This will result in a at max 8 parallel lines situation. A finer solution may be implemented.
-            attr.parallelIndex = -1;
+            nextAttr.parallelIndex = -1;
         } else {
-            const { type } = attr;
+            const { type } = nextAttr;
             if (!supportsParallelLinePath(type)) {
-                attr.parallelIndex = -1;
+                nextAttr.parallelIndex = -1;
             } else if (!(source in renamedMap || target in renamedMap)) {
                 // When the user only copy the lines, not the nodes, from the current graph and paste back,
                 // we should recalculate the parallel index to avoid overlap.
-                const { startFrom } = attr[type] as ParallelLinePathAttributes;
-                attr.parallelIndex = makeParallelIndex(graph, type, source, target, startFrom);
+                const { startFrom } = nextAttr[type] as ParallelLinePathAttributes;
+                nextAttr.parallelIndex = makeParallelIndex(graph, type, source, target, startFrom);
             }
         }
 
-        graph.addDirectedEdgeWithKey(edge, source, target, attr);
+        graph.addDirectedEdgeWithKey(edge, source, target, nextAttr);
     });
 
     return {
@@ -380,7 +399,8 @@ export const importNodeSpecificAttrs = (
 export const importEdgeSpecificAttrs = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selected: Iterable<Id>,
-    data: EdgeSpecificAttrsClipboardData
+    data: EdgeSpecificAttrsClipboardData,
+    isGenericLineStyleLayerLimited: boolean
 ): boolean => {
     let success = false;
     for (const id of selected) {
@@ -393,7 +413,13 @@ export const importEdgeSpecificAttrs = (
         const targetStyleType = graph.getEdgeAttribute(edgeId, 'style');
 
         if (targetStyleType === data.type) {
-            graph.mergeEdgeAttributes(edgeId, { [targetStyleType]: data.styleAttrs });
+            let nextStyleAttrs = structuredClone(data.styleAttrs) as LineStyleSpecificAttributes;
+            if (targetStyleType === LineStyleType.Generic && isGenericLineStyleLayerLimited) {
+                nextStyleAttrs = clampGenericStyleAttrs(nextStyleAttrs as GenericLineStyleAttrs);
+            }
+            graph.mergeEdgeAttributes(edgeId, {
+                [targetStyleType]: nextStyleAttrs,
+            });
             success = true;
 
             // Apply roundCornerFactor if clipboard has it AND target path supports this attribute

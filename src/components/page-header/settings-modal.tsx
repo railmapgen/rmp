@@ -41,9 +41,10 @@ import {
     setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
+    setStationNameTranslationMode,
     setTelemetryProject,
 } from '../../redux/app/app-slice';
-import type { RandomStationsNamesValue } from '../../redux/app/app-slice';
+import type { RandomStationsNamesValue, StationNameTranslationMode } from '../../redux/app/app-slice';
 import { normalizeRandomStationsNames } from '../../redux/state-migration';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
@@ -73,6 +74,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
         preference: {
             autoParallel,
             randomStationsNames,
+            stationNameTranslationMode,
             gridLines,
             snapLines,
             predictNextNode,
@@ -106,6 +108,9 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
     const handleRandomStationNamesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setRandomStationsNames(normalizeRandomStationsNames(event.target.value as RandomStationsNamesValue)));
+    };
+    const handleStationNameTranslationModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        dispatch(setStationNameTranslationMode(event.target.value as StationNameTranslationMode));
     };
 
     return (
@@ -189,6 +194,40 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                             disabled={isCloudRandomStationNamesDisabled}
                                         >
                                             {t(`header.settings.preference.randomStationNames.${StationCity.Bjsubway}`)}
+                                        </option>
+                                    </Select>
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">
+                                        {t('header.settings.preference.stationNameTranslationMode.title')}
+                                    </Text>
+                                    <Tooltip label={t('header.settings.pro')}>
+                                        <Badge
+                                            color="gray.50"
+                                            ml="1"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
+                                    <Select
+                                        size="xs"
+                                        width="auto"
+                                        ml="1"
+                                        value={stationNameTranslationMode}
+                                        onChange={handleStationNameTranslationModeChange}
+                                    >
+                                        <option value="pinyin-spaced">
+                                            {t('header.settings.preference.stationNameTranslationMode.pinyinSpaced')}
+                                        </option>
+                                        <option value="pinyin-compact">
+                                            {t('header.settings.preference.stationNameTranslationMode.pinyinCompact')}
+                                        </option>
+                                        <option value="pinyin-uppercase">
+                                            {t('header.settings.preference.stationNameTranslationMode.pinyinUppercase')}
+                                        </option>
+                                        <option value="semantic">
+                                            {t('header.settings.preference.stationNameTranslationMode.semantic')}
                                         </option>
                                     </Select>
                                 </HStack>

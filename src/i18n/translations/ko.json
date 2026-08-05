@@ -11,6 +11,7 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
+
     "panel": {
         "tools": {
             "showLess": "적게 표시",
@@ -38,8 +39,13 @@
                 "linePathType": "선분 경로 유형",
                 "lineStyleType": "선분 스타일 유형",
                 "type": "유형",
+                "visible": "내보낼 때 표시",
                 "parallel": "평행선",
-                "parallelIndex": "평행 인덱스"
+                "parallelIndex": "평행 인덱스",
+                "reconcile": "통합",
+                "reconcileId": "통합 고유 식별자",
+                "reconcileAssign": "할당",
+                "reconcileMembers": "통합 구성원"
             },
             "multipleSelection": {
                 "title": "다중 선택",
@@ -155,6 +161,15 @@
                     "sandwich": "샌드위치",
                     "tube": "튜브"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "런던 지하철 노선 배지",
+                    "lineName": "노선명",
+                    "walking": "도보",
+                    "walkingTarget": "도보 목적지",
+                    "distance": "거리",
+                    "addItem": "배지 추가",
+                    "noItems": "배지가 없습니다"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "청두 도시철도 노선 표식",
                     "badgeType": {
@@ -168,6 +183,9 @@
                     "displayName": "타이페이 지하철 노선 뱃지",
                     "tram": "트램"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "우한 도시철도 노선 표식"
+                },
                 "image": {
                     "displayName": "이미지",
                     "label": "라벨",
@@ -179,7 +197,8 @@
                 "master": {
                     "displayName": "마스터 노드",
                     "type": "마스터 노드 유형",
-                    "undefined": "정의되지 않음"
+                    "undefined": "정의되지 않음",
+                    "attrBindingError": "마스터 속성 바인딩 오류"
                 },
                 "facilities": {
                     "displayName": "시설",
@@ -227,7 +246,12 @@
                     "airport_chengdu": "청두 공항",
                     "railway_chengdu": "청두 기차역",
                     "railway_taiwan": "대만 철도",
-                    "hsr_taiwan": "대만 고속철도 (HSR)"
+                    "hsr_taiwan": "대만 고속철도 (HSR)",
+                    "railway_shenzhen": "선전 기차역",
+                    "intercity_shenzhen": "선전 시외 철도",
+                    "ferry_shenzhen": "선전 페리",
+                    "tram_shenzhen": "선전 트램",
+                    "airport_shenzhen": "선전 공항"
                 },
                 "text": {
                     "displayName": "임의 글자",
@@ -286,7 +310,12 @@
                     "middle": "가운데",
                     "right": "오른쪽",
                     "top": "위",
-                    "bottom": "아래"
+                    "bottom": "아래",
+                    "custom": "사용자 지정",
+                    "translateName": "역명을 영어로 번역",
+                    "translateNameEmpty": "중국어 이름을 먼저 입력하세요.",
+                    "translateNameNotSubscribed": "의역에는 RMP Cloud가 필요합니다.",
+                    "translateNameFailed": "역 이름을 번역하지 못했습니다."
                 },
                 "interchange": {
                     "title": "환승",
@@ -452,7 +481,9 @@
                     "displayName": "런던 강 서비스 환승역"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "광둥 시외 기차역"
+                    "displayName": "광둥 시외 기차역",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭"
                 },
                 "chongqingRTBasic": {
                     "displayName": "충칭 궤도교통 기본역",
@@ -522,7 +553,8 @@
                     "displayName": "창사 지하철 기본역"
                 },
                 "csmetroInt": {
-                    "displayName": "창사 지하철 환승역"
+                    "displayName": "창사 지하철 환승역",
+                    "flipColor": "색상 반전"
                 },
                 "hzmetroBasic": {
                     "displayName": "항저우 지하철 기본역",
@@ -546,7 +578,9 @@
                     "from": "에서",
                     "to": "까지",
                     "parallelDisabled": "이 선이 평행하기 때문에 일부 속성이 비활성화되었습니다.",
-                    "changeInBaseLine": "기본선에서 변경하십시오:"
+                    "changeInBaseLine": "기본선에서 변경하십시오:",
+                    "reconcileDisabled": "이 선분은 통합 체인에 포함되어 있어 오프셋이 비활성화되었습니다. 체인 전체가 하나의 결합된 경로로 렌더링됩니다.",
+                    "reconcileStyleDisabled": "이 선분은 통합 체인에 포함되어 있어 스타일 속성이 비활성화되었습니다. 렌더링되는 스타일은 기본선에서 제어됩니다."
                 },
                 "simple": {
                     "displayName": "기본 선분",
@@ -624,7 +658,18 @@
                     "displayName": "싱가포르 MRT 환승을 위한 탭 아웃 스타일"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR 동일본 단색 스타일"
+                    "displayName": "JR 동일본 단색 스타일",
+                    "decoration": {
+                        "displayName": "종단 표시",
+                        "none": "없음",
+                        "thinTail": "다른 선구간",
+                        "blackBlock": "종점"
+                    },
+                    "decorationAt": {
+                        "displayName": "표시 위치",
+                        "from": "시점",
+                        "to": "종점"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR 동일본 단색 크로스해치 패턴 스타일"
@@ -657,7 +702,10 @@
                     "displayName": "런던 IFS 클라우드 케이블카 스타일"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "광동성 도시간 철도 스타일"
+                    "displayName": "광동성 도시간 철도 스타일",
+                    "color": "색상",
+                    "blue": "파란색",
+                    "gray": "회색"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "충칭 궤도교통 노선 표지 연결선 스타일"
@@ -667,6 +715,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "청두 도시철도 개찰구 환승 방식"
+                },
+                "shinkansen": {
+                    "displayName": "신칸센 스타일"
                 },
                 "generic": {
                     "displayName": "일반 스타일",
@@ -680,6 +731,7 @@
                     "linecapSquare": "스퀘어",
                     "dash": "대시 길이",
                     "gap": "간격 길이",
+                    "layerLimitWarning": "구독하면 추가 선 레이어를 사용할 수 있습니다.",
                     "addLayer": "레이어 추가",
                     "copyLayer": "레이어 복제",
                     "moveLayerUp": "레이어 위로 이동",
@@ -702,10 +754,31 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
         "search": "방송국 검색",
+        "timelinePage": {
+            "open": "타임라인 열기",
+            "backToEditor": "편집기로 돌아가기",
+            "trackTitle": "타임라인 트랙",
+            "selectHint": "위에서 노드 또는 선분 하나를 선택한 뒤 트랙에 추가하세요.",
+            "alreadyAdded": "이미 추가됨",
+            "addSelected": "선택 항목 추가",
+            "addPathFromHere": "여기서 경로 추가",
+            "addPathByColor": "색상으로 경로 추가:",
+            "selectLineColor": "선 색상 선택",
+            "selectDestNode": "캔버스에서 종착역 선택",
+            "noPathFound": "선택한 색상의 경로를 찾을 수 없습니다.",
+            "pathAdded": "트랙에 {{count}}개의 요소를 성공적으로 추가했습니다.",
+            "pathAlreadyAdded": "이 경로의 모든 요소가 이미 추가되었습니다.",
+            "empty": "트랙이 비어 있습니다. 위에서 요소를 선택해 타임라인을 시작하세요.",
+            "missingCoverage": "{{nodeCount}}개 노드와 {{edgeCount}}개 선분이 타임라인에 아직 추가되지 않았습니다.",
+            "highlightMissing": "누락 항목 강조",
+            "clearMissingHighlight": "강조 해제",
+            "coverageComplete": "모든 노드와 선분이 타임라인에 추가되었습니다."
+        },
         "open": {
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",
@@ -751,6 +824,20 @@
             "config": "프로젝트 내보내기",
             "image": "사진 내보내기",
             "video": "비디오 내보내기",
+            "videoExport": {
+                "title": "비디오 내보내기",
+                "fps": "프레임 속도 (FPS)",
+                "duration": "길이 (초)",
+                "quality": "비디오 품질",
+                "generating": "비디오를 생성하는 중...",
+                "progress": "진행률: {{progress}}%",
+                "description": "이 기능은 노드와 선이 순서대로 그려지는 애니메이션 비디오를 내보냅니다.",
+                "shareInfo1": "이 동영상을 공유할 때",
+                "shareInfo2": "와(과) 해당 링크를 첨부합니다.",
+                "format": "WebM 형식",
+                "error": "비디오 내보내기에 실패했습니다. 다시 시도해 주세요.",
+                "noNodes": "비디오를 내보낼 수 없습니다: 그래프에 노드가 없습니다."
+            },
             "2rmg": {
                 "title": "RMG 프로젝트로 내보내기",
                 "type": {
@@ -787,33 +874,7 @@
             "termsAndConditionsInfo": "동의",
             "period": ".",
             "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
-            "confirm": "다운로드",
-            "videoExport": {
-                "title": "비디오 내보내기",
-                "fps": "프레임 속도 (FPS)",
-                "duration": "길이 (초)",
-                "quality": "비디오 품질",
-                "generating": "비디오를 생성하는 중...",
-                "progress": "진행률: {{progress}}%",
-                "description": "이 기능은 노드와 선이 순서대로 그려지는 애니메이션 비디오를 내보냅니다.",
-                "shareInfo1": "이 동영상을 공유할 때",
-                "shareInfo2": "와(과) 해당 링크를 첨부합니다.",
-                "format": "WebM 형식",
-                "error": "비디오 내보내기에 실패했습니다. 다시 시도해 주세요.",
-                "noNodes": "비디오를 내보낼 수 없습니다: 그래프에 노드가 없습니다."
-            }
-        },
-        "timeline": {
-            "title": "애니메이션 타임라인",
-            "empty": "타임라인이 없습니다. \"노드 추가\"를 클릭하여 시작하세요.",
-            "addSegment": "노드 추가",
-            "clearAll": "모두 지우기",
-            "pickStart": "캔버스에서 노드를 클릭하여 시작점 선택...",
-            "pickEnd": "캔버스에서 노드를 클릭하여 종점 선택...",
-            "selectTheme": "노선 색상 선택:",
-            "noPath": "선택한 노드 사이의 경로를 찾을 수 없습니다.",
-            "unadded": "{{count}}개 노드가 타임라인에 미추가",
-            "addStationOnly": "이 노드만 추가"
+            "confirm": "다운로드"
         },
         "donation": {
             "title": "기부",
@@ -858,6 +919,13 @@
                     "empty": "빈 문자열",
                     "shmetro": "상하이",
                     "bjsubway": "베이징"
+                },
+                "stationNameTranslationMode": {
+                    "title": "역명 번역 방식",
+                    "pinyinSpaced": "병음-글자별 대문자+공백",
+                    "pinyinCompact": "병음-첫 글자 대문자+공백 없음",
+                    "pinyinUppercase": "병음-전체 대문자",
+                    "semantic": "의역"
                 },
                 "gridline": "격자 가이드 라인 표시",
                 "snapline": "가이드 라인과 포인트에 자동 스냅",
@@ -982,6 +1050,7 @@
             "slackContent": "이 슬랙 채널에서 채팅해요!"
         }
     },
+
     "contextMenu": {
         "refresh": "새로 고침",
         "cut": "잘라내기",
@@ -997,8 +1066,10 @@
         "flipVertical": "수직 뒤집기",
         "flipHorizontal": "수평 뒤집기",
         "flipDiagonal45": "45° 선을 기준으로 뒤집기",
-        "flipDiagonal135": "135° 선을 기준으로 뒤집기"
+        "flipDiagonal135": "135° 선을 기준으로 뒤집기",
+        "reconcile": "통합"
     },
+
     "clipboard": {
         "errors": {
             "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
@@ -1006,5 +1077,6 @@
             "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
         }
     },
+
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
 }

@@ -67,14 +67,8 @@ export type NodeId = StnId | MiscNodeId;
 
 export type Id = NodeId | LineId;
 
-export interface TimelineEntry {
-    id: Id;
-    reverse?: boolean;
-}
-
 export type GraphAttributes = {
     name?: string;
-    timeline?: Array<Id | TimelineEntry>;
 };
 
 /**
@@ -90,7 +84,8 @@ export type RuntimeMode =
     | 'select'
     | `line-${LinePathType}/${LineStyleType}`
     | `station-${StationType}`
-    | `misc-node-${MiscNodeType}`;
+    | `misc-node-${MiscNodeType}`
+    | `reconcile-${string}`;
 
 /**
  * Helper function to extract path and style from mode

@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -13,6 +14,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -28,6 +34,7 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultChongqingRTIntStation2021Attributes.nameOffsetX,
         nameOffsetY = defaultChongqingRTIntStation2021Attributes.nameOffsetY,
         isRapid = defaultChongqingRTIntStation2021Attributes.isRapid,
@@ -120,6 +127,18 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
     const height = isWide ? (wideDirection == 'horizontal' ? 12 : 40) : 20;
     const fgColor = color[3];
 
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.ChongqingRTInt2021,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g textAnchor="middle">
             <rect
@@ -197,7 +216,13 @@ const ChongqingRTIntStation2021 = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
+            >
                 <MultilineText
                     text={names[1].split('\n')}
                     fontSize={LINE_HEIGHT.en}
@@ -235,6 +260,30 @@ const defaultChongqingRTIntStation2021Attributes: ChongqingRTIntStation2021Attri
 const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStation2021Attributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
@@ -257,13 +306,20 @@ const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStatio
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: (attrs ?? defaultChongqingRTIntStation2021Attributes).nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
-            disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -271,11 +327,12 @@ const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStatio
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: (attrs ?? defaultChongqingRTIntStation2021Attributes).nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -335,11 +392,21 @@ const ChongqingRTInt2021AttrsComponent = (props: AttrsProps<ChongqingRTIntStatio
 const chongqingRTIntStation2021Icon = (
     <svg viewBox="-1 -1 22 22" height={40} width={40} focusable={false} style={{ padding: 5 }}>
         <g textAnchor="middle">
-            <rect x={0} y={0} width={20} height={20} stroke="black" strokeWidth={2} rx={2.5} ry={2.5} fill="white" />
-            <text fontSize={8} textAnchor="middle" x={10} y={9} fill="black">
+            <rect
+                x={0}
+                y={0}
+                width={20}
+                height={20}
+                stroke="currentColor"
+                strokeWidth={2}
+                rx={2.5}
+                ry={2.5}
+                fill="var(--chakra-colors-chakra-body-bg)"
+            />
+            <text fontSize={8} textAnchor="middle" x={10} y={9} fill="currentColor">
                 两路
             </text>
-            <text fontSize={8} textAnchor="middle" x={10} y={17} fill="black">
+            <text fontSize={8} textAnchor="middle" x={10} y={17} fill="currentColor">
                 口
             </text>
         </g>

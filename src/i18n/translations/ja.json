@@ -13,6 +13,7 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
+
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -40,8 +41,13 @@
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
                 "type": "種類",
+                "visible": "エクスポート時に表示",
                 "parallel": "並列路線",
-                "parallelIndex": "並列路線索引"
+                "parallelIndex": "並列路線索引",
+                "reconcile": "統合",
+                "reconcileId": "統合一意識別子",
+                "reconcileAssign": "割当",
+                "reconcileMembers": "統合メンバー"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -157,6 +163,15 @@
                     "sandwich": "サンドイッチ",
                     "tube": "地下鉄"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "ロンドン地下鉄路線バッジ",
+                    "lineName": "路線名",
+                    "walking": "徒歩",
+                    "walkingTarget": "徒歩先",
+                    "distance": "距離",
+                    "addItem": "バッジを追加",
+                    "noItems": "バッジはありません"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都鉄道交通路線記号",
                     "badgeType": {
@@ -170,6 +185,9 @@
                     "displayName": "台北地下鉄路線記号",
                     "tram": "路面電車"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通路線記号"
+                },
                 "image": {
                     "displayName": "画像",
                     "label": "ラベル",
@@ -181,7 +199,8 @@
                 "master": {
                     "displayName": "大師節点",
                     "type": "大師節点種類",
-                    "undefined": "未定義"
+                    "undefined": "未定義",
+                    "attrBindingError": "大師属性バインディングエラー"
                 },
                 "facilities": {
                     "displayName": "施設",
@@ -229,7 +248,12 @@
                     "airport_chengdu": "成都空港",
                     "railway_chengdu": "成都鉄道駅",
                     "railway_taiwan": "台湾鉄道",
-                    "hsr_taiwan": "台湾高速鉄道"
+                    "hsr_taiwan": "台湾高速鉄道",
+                    "railway_shenzhen": "深圳鉄道駅",
+                    "intercity_shenzhen": "深圳都市間鉄道",
+                    "ferry_shenzhen": "深圳フェリー",
+                    "tram_shenzhen": "深圳トラム",
+                    "airport_shenzhen": "深圳空港"
                 },
                 "text": {
                     "displayName": "任意の文字",
@@ -288,7 +312,12 @@
                     "middle": "中央",
                     "right": "右",
                     "top": "上",
-                    "bottom": "下"
+                    "bottom": "下",
+                    "custom": "カスタム",
+                    "translateName": "駅名を英語に翻訳",
+                    "translateNameEmpty": "中国語名を入力してください。",
+                    "translateNameNotSubscribed": "意味翻訳には RMP Cloud が必要です。",
+                    "translateNameFailed": "駅名を翻訳できませんでした。"
                 },
                 "interchange": {
                     "title": "乗り換え",
@@ -455,7 +484,9 @@
                     "displayName": "ロンドン川サービス乗換駅"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道駅"
+                    "displayName": "広東省都市間鉄道駅",
+                    "secondaryNameZh": "中国語の補助駅名",
+                    "secondaryNameEn": "英語の補助駅名"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重慶鉄道交通基本駅",
@@ -525,7 +556,8 @@
                     "displayName": "長沙メトロ基本駅"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙メトロ乗り換え駅"
+                    "displayName": "長沙メトロ乗り換え駅",
+                    "flipColor": "色を反転"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州メトロ基本駅",
@@ -549,7 +581,9 @@
                     "from": "から",
                     "to": "まで",
                     "parallelDisabled": "この路線が並列であるため、一部の属性が無効になっています。",
-                    "changeInBaseLine": "基準線で変更してください："
+                    "changeInBaseLine": "基準線で変更してください：",
+                    "reconcileDisabled": "この路線は統合チェーンに含まれるため、オフセットは無効です。チェーン全体が結合された一本のパスとして描画されます。",
+                    "reconcileStyleDisabled": "この路線は統合チェーンに含まれるため、スタイル属性は無効です。描画されるスタイルは基準線によって制御されます。"
                 },
                 "simple": {
                     "displayName": "簡単な経路",
@@ -627,7 +661,18 @@
                     "displayName": "シンガポールMRT改札外乗り換え風格"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR東日本単色風格"
+                    "displayName": "JR東日本単色風格",
+                    "decoration": {
+                        "displayName": "終端表示",
+                        "none": "なし",
+                        "thinTail": "他線区",
+                        "blackBlock": "終端"
+                    },
+                    "decorationAt": {
+                        "displayName": "表示位置",
+                        "from": "始点",
+                        "to": "終点"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本単色網目模様風格"
@@ -660,7 +705,10 @@
                     "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道風格"
+                    "displayName": "広東省都市間鉄道風格",
+                    "color": "色",
+                    "blue": "青色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶鉄道交通路線標識接続線風格"
@@ -670,6 +718,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都鉄道交通改札乗換風格"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線風格"
                 },
                 "generic": {
                     "displayName": "汎用スタイル",
@@ -683,6 +734,7 @@
                     "linecapSquare": "スクエア",
                     "dash": "ダッシュ長",
                     "gap": "間隔長",
+                    "layerLimitWarning": "サブスクリプションで追加の線レイヤーを利用できます。",
                     "addLayer": "レイヤーを追加",
                     "copyLayer": "レイヤーを複製",
                     "moveLayerUp": "レイヤーを上へ移動",
@@ -705,10 +757,31 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "timelinePage": {
+            "open": "タイムラインを開く",
+            "backToEditor": "エディターに戻る",
+            "trackTitle": "タイムライントラック",
+            "selectHint": "上でノードまたはエッジを 1 つ選択して、トラックに追加します。",
+            "alreadyAdded": "追加済み",
+            "addSelected": "選択項目を追加",
+            "addPathFromHere": "ここからパスを追加",
+            "addPathByColor": "色でパスを追加：",
+            "selectLineColor": "線の色を選択",
+            "selectDestNode": "キャンバスで終点駅を選択",
+            "noPathFound": "選択した色のパスが見つかりません。",
+            "pathAdded": "トラックに {{count}} 個の要素を追加しました。",
+            "pathAlreadyAdded": "このパスのすべての要素はすでに追加されています。",
+            "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。",
+            "missingCoverage": "{{nodeCount}} 個のノードと {{edgeCount}} 本の線分がタイムラインに未追加です。",
+            "highlightMissing": "未追加を強調",
+            "clearMissingHighlight": "強調を解除",
+            "coverageComplete": "すべてのノードと線分がタイムラインに追加されています。"
+        },
         "open": {
             "new": "新しい作品",
             "config": "作品をインポート",
@@ -754,6 +827,20 @@
             "config": "作品をエクスポート",
             "image": "画像をエクスポート",
             "video": "ビデオをエクスポート",
+            "videoExport": {
+                "title": "ビデオをエクスポート",
+                "fps": "フレームレート（FPS）",
+                "duration": "長さ（秒）",
+                "quality": "ビデオ品質",
+                "generating": "ビデオを生成しています...",
+                "progress": "進捗: {{progress}}%",
+                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "shareInfo1": "この動画を共有する際には",
+                "shareInfo2": "とそのリンクを添付します。",
+                "format": "WebM形式",
+                "error": "ビデオの書き出しに失敗しました。もう一度お試しください。",
+                "noNodes": "ビデオを書き出せません: グラフにノードがありません。"
+            },
             "2rmg": {
                 "title": "RMG作品へエクスポート",
                 "type": {
@@ -790,36 +877,7 @@
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
             "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
-            "confirm": "ダウンロード",
-            "videoExport": {
-                "title": "ビデオをエクスポート",
-                "fps": "フレームレート（FPS）",
-                "duration": "長さ（秒）",
-                "quality": "ビデオ品質",
-                "generating": "ビデオを生成しています...",
-                "progress": "進捗: {{progress}}%",
-                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
-                "shareInfo1": "この動画を共有する際には",
-                "shareInfo2": "とそのリンクを添付します。",
-                "format": "WebM形式",
-                "error": "ビデオの書き出しに失敗しました。もう一度お試しください。",
-                "noNodes": "ビデオを書き出せません: グラフにノードがありません。"
-            }
-        },
-        "timeline": {
-            "title": "アニメーションタイムライン",
-            "empty": "タイムラインがありません。「ノード追加」をクリックして開始します。",
-            "addSegment": "ノード追加",
-            "clearAll": "すべてクリア",
-            "pickStart": "キャンバス上のノードをクリックして始点を選択...",
-            "pickEnd": "キャンバス上のノードをクリックして終点を選択...",
-            "selectTheme": "路線の色を選択：",
-            "noPath": "選択したノード間のルートが見つかりません。",
-            "unadded": "{{count}}個のノードがタイムラインに未追加",
-            "addStationOnly": "このノードのみ追加",
-            "reverse": "反転",
-            "reverseSelected": "選択した線を反転",
-            "reversed": "反転済み"
+            "confirm": "ダウンロード"
         },
         "donation": {
             "title": "寄付",
@@ -864,6 +922,13 @@
                     "empty": "空欄",
                     "shmetro": "上海",
                     "bjsubway": "北京"
+                },
+                "stationNameTranslationMode": {
+                    "title": "駅名翻訳方式",
+                    "pinyinSpaced": "ピンイン-1字ずつ大文字・空白あり",
+                    "pinyinCompact": "ピンイン-先頭大文字・空白なし",
+                    "pinyinUppercase": "ピンイン-すべて大文字",
+                    "semantic": "意味翻訳"
                 },
                 "gridline": "グリッドガイドラインを表示",
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
@@ -987,6 +1052,7 @@
             "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     },
+
     "contextMenu": {
         "refresh": "更新",
         "cut": "切り取り",
@@ -1002,8 +1068,10 @@
         "flipVertical": "垂直に反転",
         "flipHorizontal": "水平に反転",
         "flipDiagonal45": "45° 線で反転",
-        "flipDiagonal135": "135° 線で反転"
+        "flipDiagonal135": "135° 線で反転",
+        "reconcile": "統合"
     },
+
     "clipboard": {
         "errors": {
             "readText": "クリップボードを読み取れませんでした。ブラウザーの権限を確認して再試行してください。",
@@ -1011,5 +1079,6 @@
             "cannotPasteSpecificAttrs": "独自属性を貼り付けできません。互換性のある対象を選択し、クリップボードに有効な独自属性データがあることを確認してください。"
         }
     },
+
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }

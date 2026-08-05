@@ -43,6 +43,7 @@ import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
 import FavoriteButton from './favorite-button';
 import { localizedLineStyles, localizedMiscNodes, localizedStations } from './localized-order';
+import { LineStyleLeftIcon } from './line-style-left-icon';
 
 const buttonStyle: SystemStyleObject = {
     borderRadius: 0,
@@ -157,10 +158,7 @@ const ToolsPanel = () => {
     }, [showOnlyFavorites, favorites.stations, i18n.language]);
 
     const getFilteredMiscNodes = React.useCallback(() => {
-        const allMiscNodes =
-            localizedMiscNodes[i18n.language as LanguageCode]?.filter(
-                type => type !== MiscNodeType.Virtual && type !== MiscNodeType.I18nText && type !== MiscNodeType.Master
-            ) || [];
+        const allMiscNodes = localizedMiscNodes[i18n.language as LanguageCode] || [];
         if (!showOnlyFavorites) return allMiscNodes;
         return allMiscNodes.filter(type => favorites.miscNodes.includes(type));
     }, [showOnlyFavorites, favorites.miscNodes, i18n.language]);
@@ -264,7 +262,7 @@ const ToolsPanel = () => {
                                             >
                                                 {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                                 {isTextShown && isProLinePath ? (
-                                                    <Tooltip label={t('header.settings.proWithTrial')}>
+                                                    <Tooltip label={t('header.settings.pro')}>
                                                         <Badge
                                                             ml="1"
                                                             color="gray.50"
@@ -322,7 +320,7 @@ const ToolsPanel = () => {
                                     />
                                     <Button
                                         aria-label={styleType}
-                                        leftIcon={<Box boxSize="40px" />}
+                                        leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
                                         isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
@@ -331,7 +329,7 @@ const ToolsPanel = () => {
                                     >
                                         {isTextShown ? t(lineStyles[styleType].metadata.displayName) : undefined}
                                         {isTextShown && !!lineStyles[styleType].isPro ? (
-                                            <Tooltip label={t('header.settings.proWithTrial')}>
+                                            <Tooltip label={t('header.settings.pro')}>
                                                 <Badge
                                                     ml="1"
                                                     color="gray.50"
@@ -413,41 +411,6 @@ const ToolsPanel = () => {
                             <AccordionIcon />
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
-                            <Flex w="100%" align="stretch">
-                                <Box
-                                    w="4px"
-                                    bg={mode === `misc-node-${MiscNodeType.Master}` ? 'blue.500' : 'transparent'}
-                                    transition="background-color 0.2s"
-                                />
-                                <Button
-                                    aria-label={MiscNodeType.Master}
-                                    leftIcon={miscNodes[MiscNodeType.Master].icon}
-                                    onClick={() => handleMiscNode(MiscNodeType.Master)}
-                                    variant="ghost"
-                                    isDisabled={isMasterDisabled}
-                                    sx={buttonStyle}
-                                    flex={1}
-                                >
-                                    {isTextShown ? t(miscNodes[MiscNodeType.Master].metadata.displayName) : undefined}
-                                    {isTextShown ? (
-                                        <>
-                                            <Badge ml="1" colorScheme="green">
-                                                New
-                                            </Badge>
-                                            <Tooltip label={t('header.settings.proWithTrial')}>
-                                                <Badge
-                                                    ml="1"
-                                                    color="gray.50"
-                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                    mr="auto"
-                                                >
-                                                    PRO
-                                                </Badge>
-                                            </Tooltip>
-                                        </>
-                                    ) : undefined}
-                                </Button>
-                            </Flex>
                             {getFilteredMiscNodes().map(type => (
                                 <Flex key={type} w="100%" align="stretch">
                                     <Box
@@ -464,6 +427,18 @@ const ToolsPanel = () => {
                                         flex={1}
                                     >
                                         {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
+                                        {isTextShown && type === MiscNodeType.Master && (
+                                            <Tooltip label={t('header.settings.proWithTrial')}>
+                                                <Badge
+                                                    ml="1"
+                                                    color="gray.50"
+                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                    mr="auto"
+                                                >
+                                                    PRO
+                                                </Badge>
+                                            </Tooltip>
+                                        )}
                                     </Button>
                                     {isTextShown && (
                                         <FavoriteButton

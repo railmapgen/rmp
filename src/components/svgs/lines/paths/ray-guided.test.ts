@@ -16,7 +16,8 @@ describe('ray-guided path', () => {
             roundCornerFactor: 0,
         });
 
-        expect(path).toBe('M 0 0 L 100 0 L 100 100');
+        expect(path.kind).toBe('mll');
+        expect(path.d).toBe('M 0 0 L 100 0 L 100 100');
     });
 
     it('should fall back to a direct line when the guide lines are parallel', () => {
@@ -28,7 +29,8 @@ describe('ray-guided path', () => {
             roundCornerFactor: 10,
         });
 
-        expect(path).toBe('M 0 0 L 100 100');
+        expect(path.kind).toBe('ml');
+        expect(path.d).toBe('M 0 0 L 100 100');
     });
 
     it('should apply offsets along each guide ray clockwise normal', () => {
@@ -40,7 +42,8 @@ describe('ray-guided path', () => {
             roundCornerFactor: 0,
         });
 
-        expect(path).toBe('M 10 0 L 10 120 L 100 120');
+        expect(path.kind).toBe('mll');
+        expect(path.d).toBe('M 10 0 L 10 120 L 100 120');
     });
 
     it('should use fixed orthogonal default attributes', () => {

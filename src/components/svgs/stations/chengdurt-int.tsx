@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -12,6 +13,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
 
@@ -27,6 +33,7 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultChengduRTIntStationAttributes.nameOffsetX,
         nameOffsetY = defaultChengduRTIntStationAttributes.nameOffsetY,
         direction = defaultChengduRTIntStationAttributes.direction,
@@ -104,6 +111,18 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
                 ? 'start'
                 : 'middle';
 
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.ChengduRTInt,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g textAnchor="middle">
             <rect
@@ -146,7 +165,14 @@ const ChengduRTIntStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor} className="rmp-name-outline">
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
+                className="rmp-name-outline"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
+            >
                 {direction == 'horizontal' ? (
                     <MultilineText
                         grow="down"
@@ -190,6 +216,30 @@ const defaultChengduRTIntStationAttributes: ChengduRTIntStationAttributes = {
 const ChengduRTIntAttrsComponent = (props: AttrsProps<ChengduRTIntStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'input',
@@ -212,13 +262,20 @@ const ChengduRTIntAttrsComponent = (props: AttrsProps<ChengduRTIntStationAttribu
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultChengduRTIntStationAttributes.nameOffsetX,
-            options: { left: 'left', middle: 'middle', right: 'right' },
-            disabledOptions: attrs?.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -226,11 +283,12 @@ const ChengduRTIntAttrsComponent = (props: AttrsProps<ChengduRTIntStationAttribu
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultChengduRTIntStationAttributes.nameOffsetY,
-            options: { top: 'top', middle: 'middle', bottom: 'bottom' },
-            disabledOptions: attrs?.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -252,8 +310,18 @@ const ChengduRTIntAttrsComponent = (props: AttrsProps<ChengduRTIntStationAttribu
 const chengduRTIntStationIcon = (
     <svg viewBox="-1 -1 61 16" height={40} width={40} focusable={false} style={{ padding: 5 }}>
         <g textAnchor="middle">
-            <rect x={0} y={-5} width={60} height={30} stroke={'black'} strokeWidth={2} rx={15} ry={15} fill={'white'} />
-            <text fontSize={16} textAnchor="middle" x={30} y={15} fill={'black'} fontWeight={800}>
+            <rect
+                x={0}
+                y={-5}
+                width={60}
+                height={30}
+                stroke="currentColor"
+                strokeWidth={2}
+                rx={15}
+                ry={15}
+                fill="var(--chakra-colors-chakra-body-bg)"
+            />
+            <text fontSize={16} textAnchor="middle" x={30} y={15} fill="currentColor" fontWeight={800}>
                 孵化园
             </text>
         </g>

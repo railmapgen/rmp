@@ -25,6 +25,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdOpenInNew } from 'react-icons/md';
 import { Events } from '../../constants/constants';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadBlobAs } from '../../util/download';
@@ -43,7 +44,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         telemetry: { project: isAllowProjectTelemetry },
     } = useRootSelector(state => state.app);
     const { languages } = useRootSelector(state => state.fonts);
-    const { existsNodeTypes } = useRootSelector(state => state.runtime);
+    const timeline = useRootSelector(state => state.timeline.present);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
 
@@ -106,14 +107,20 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 hideWatermark: isAttachSelected,
             };
 
-            const blob = await exportVideo(graph.current, languages, existsNodeTypes, options, bgColor, progress =>
+            const blob = await exportVideo(graph.current, timeline, languages, options, bgColor, progress =>
                 setVideoProgress(Math.floor(progress * 100))
             );
 
             downloadBlobAs(`RMP_${new Date().valueOf()}.webm`, blob);
         } catch (error) {
             console.error('Video export failed:', error);
-            dispatch(setGlobalAlert({ status: 'error', message: 'Video export failed. Please try again.' }));
+            dispatch(
+                setGlobalAlert({
+                    id: GlobalAlertId.VideoExportFailed,
+                    status: 'error',
+                    message: t('header.download.videoExport.error'),
+                })
+            );
         } finally {
             setIsVideoGenerating(false);
             setVideoProgress(0);

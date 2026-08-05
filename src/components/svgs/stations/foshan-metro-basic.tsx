@@ -3,6 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber } from '@railmapgen/svg-assets/fmetro';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -14,6 +15,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
@@ -21,6 +27,7 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultFoshanMetroBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultFoshanMetroBasicStationAttributes.nameOffsetY,
         color = defaultFoshanMetroBasicStationAttributes.color,
@@ -105,6 +112,18 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
             : (textWidth + secondaryTextWidth + (secondaryTextWidth !== 0 ? 12 * 2 : 0)) *
               (nameOffsetX === 'left' ? -1 : nameOffsetX === 'right' ? 1 : 0);
 
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.FoshanMetroBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g>
             <g transform={`scale(${0.57915 * (tram ? 0.729 : 1)})`}>
@@ -132,7 +151,14 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
                     className="removeMe"
                 />
             </g>
-            <g ref={textRef} transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                ref={textRef}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE.zh}
@@ -227,6 +253,30 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -249,17 +299,20 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -267,15 +320,12 @@ const foshanMetroBasicStationAttrsComponents = (props: AttrsProps<FoshanMetroBas
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

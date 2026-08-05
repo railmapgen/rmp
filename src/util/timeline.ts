@@ -1,8 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { AttributesWithColor, dynamicColorInjection } from '../components/panels/details/color-field';
-import { DualColorAttributes } from '../components/svgs/lines/styles/dual-color';
-import { GenericAttributes } from '../components/svgs/lines/styles/generic';
+import { nanoid } from 'nanoid';
 import {
+    CityCode,
     EdgeAttributes,
     GraphAttributes,
     Id,
@@ -10,212 +9,280 @@ import {
     NodeAttributes,
     NodeId,
     Theme,
-    TimelineEntry,
 } from '../constants/constants';
-import { LineStyleType } from '../constants/lines';
+import {
+    createEmptyTimelineDocument,
+    isNodeTimelineEntry,
+    TimelineDocument,
+    TimelineEntry,
+} from '../constants/timeline';
 
-/**
- * Get the current timeline from graph attributes, or empty array if none.
- */
-export const normalizeTimeline = (timeline: Array<Id | TimelineEntry> | undefined): TimelineEntry[] => {
-    return (timeline ?? []).map(item =>
-        typeof item === 'string' ? { id: item } : { id: item.id, ...(item.reverse ? { reverse: true } : {}) }
-    );
-};
+type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 
-export const getTimeline = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
-): TimelineEntry[] => {
-    return normalizeTimeline(graph.getAttribute('timeline'));
-};
+export interface TimelineCoverage {
+    missingNodeIds: NodeId[];
+    missingEdgeIds: LineId[];
+    missingIds: Id[];
+    missingNodeCount: number;
+    missingEdgeCount: number;
+    isComplete: boolean;
+}
 
-/**
- * Set the timeline in graph attributes.
- */
-export const setTimeline = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    timeline: TimelineEntry[]
-): void => {
-    graph.setAttribute(
-        'timeline',
-        timeline.map(item => ({ id: item.id, ...(item.reverse ? { reverse: true } : {}) }))
-    );
-};
+const getNodePrimaryName = (graph: TimelineGraph, nodeId: NodeId): string => {
+    if (!graph.hasNode(nodeId)) return nodeId;
 
-/**
- * Extract all color themes from a single edge's style attributes.
- * Handles dynamicColorInjection styles (.color), DualColor (.colorA/.colorB),
- * and Generic (.layers[].color).
- */
-export const getEdgeThemes = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    edge: string
-): Theme[] => {
-    const attr = graph.getEdgeAttributes(edge);
-    const style = attr.style;
+    const type = graph.getNodeAttribute(nodeId, 'type');
+    const attrs = graph.getNodeAttribute(nodeId, type) as Record<string, unknown> | undefined;
 
-    if (dynamicColorInjection.has(style)) {
-        const color = (attr[style] as AttributesWithColor).color;
-        return color ? [color] : [];
+    if (Array.isArray(attrs?.names) && typeof attrs.names[0] === 'string' && attrs.names[0].trim()) {
+        return attrs.names[0];
     }
-    if (style === LineStyleType.DualColor) {
-        const dc = attr[LineStyleType.DualColor] as DualColorAttributes | undefined;
-        if (!dc) return [];
-        const result: Theme[] = [];
-        if (dc.colorA) result.push(dc.colorA);
-        if (dc.colorB) result.push(dc.colorB);
-        return result;
+    if (typeof attrs?.content === 'string' && attrs.content.trim()) {
+        return attrs.content;
     }
-    if (style === LineStyleType.Generic) {
-        const ga = attr[LineStyleType.Generic] as GenericAttributes | undefined;
-        if (!ga?.layers) return [];
-        return ga.layers.map(l => l.color).filter(Boolean);
-    }
-    return [];
+
+    return type;
 };
 
-/**
- * Find all unique themes on edges connected to a given node.
- * Supports dynamicColorInjection, DualColor, and Generic styles.
- */
-export const findThemesAtNode = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    node: NodeId
-): Theme[] => {
-    const themes: Theme[] = [];
-    const seen = new Set<string>();
-    for (const { edge } of graph.edgeEntries(node)) {
-        for (const color of getEdgeThemes(graph, edge)) {
-            const key = color.toString();
-            if (!seen.has(key)) {
-                seen.add(key);
-                themes.push(color);
-            }
+export const createTimelineEntry = (refId: Id): TimelineEntry => {
+    return isNodeTimelineEntry(refId)
+        ? { id: `timeline_${nanoid(10)}`, kind: 'node', refId }
+        : { id: `timeline_${nanoid(10)}`, kind: 'edge', refId };
+};
+
+export const appendTimelineEntry = (doc: TimelineDocument, refId: Id): TimelineDocument => {
+    if (doc.track.some(entry => entry.refId === refId)) return doc;
+
+    return {
+        ...doc,
+        track: [...doc.track, createTimelineEntry(refId)],
+    };
+};
+
+export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): TimelineDocument => ({
+    ...doc,
+    track: doc.track.filter(entry => entry.id !== entryId),
+});
+
+export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIndex: number): TimelineDocument => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return doc;
+    if (fromIndex >= doc.track.length || toIndex >= doc.track.length) return doc;
+
+    const track = [...doc.track];
+    const [entry] = track.splice(fromIndex, 1);
+    track.splice(toIndex, 0, entry);
+
+    return {
+        ...doc,
+        track,
+    };
+};
+
+export const normalizeTimelineDocument = (doc?: TimelineDocument | null): TimelineDocument => {
+    if (!doc || !Array.isArray(doc.track)) return createEmptyTimelineDocument();
+
+    return {
+        version: 1,
+        track: doc.track.filter(
+            (entry): entry is TimelineEntry =>
+                !!entry &&
+                typeof entry.id === 'string' &&
+                (entry.kind === 'node' || entry.kind === 'edge') &&
+                typeof entry.refId === 'string'
+        ),
+    };
+};
+
+export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument): TimelineCoverage => {
+    const addedRefs = new Set<Id>(doc.track.map(entry => entry.refId));
+    const missingNodeIds = graph.nodes().filter(node => !addedRefs.has(node as NodeId)) as NodeId[];
+    const missingEdgeIds = graph.edges().filter(edge => !addedRefs.has(edge as LineId)) as LineId[];
+    const missingIds = [...missingNodeIds, ...missingEdgeIds];
+
+    return {
+        missingNodeIds,
+        missingEdgeIds,
+        missingIds,
+        missingNodeCount: missingNodeIds.length,
+        missingEdgeCount: missingEdgeIds.length,
+        isComplete: missingIds.length === 0,
+    };
+};
+
+export const getTimelineEntryTitle = (graph: TimelineGraph, entry: TimelineEntry): string => {
+    if (entry.kind === 'node') {
+        return getNodePrimaryName(graph, entry.refId);
+    }
+
+    if (!graph.hasEdge(entry.refId)) return entry.refId;
+
+    const [source, target] = graph.extremities(entry.refId) as [NodeId, NodeId];
+    return `${getNodePrimaryName(graph, source)} -> ${getNodePrimaryName(graph, target)}`;
+};
+
+export const getTimelineEntrySubtitle = (graph: TimelineGraph, entry: TimelineEntry): string => {
+    if (entry.kind === 'node') {
+        if (!graph.hasNode(entry.refId)) return 'Missing node';
+        return graph.getNodeAttribute(entry.refId, 'type');
+    }
+
+    if (!graph.hasEdge(entry.refId)) return 'Missing edge';
+    const attrs = graph.getEdgeAttributes(entry.refId);
+    return `${attrs.style} / ${attrs.type}`;
+};
+
+export const getTimelineEntryAccent = (graph: TimelineGraph, entry: TimelineEntry): string[] => {
+    if (entry.kind === 'node') return ['#2B6CB0'];
+    if (!graph.hasEdge(entry.refId)) return ['#718096'];
+
+    const attrs = graph.getEdgeAttributes(entry.refId) as Record<string, any>;
+    const styleAttrs = attrs[attrs.style] || {};
+
+    if (attrs.style === 'dual-color' || attrs.style === 'mrt-tape-out') {
+        const colorA = styleAttrs?.colorA?.[2] ?? '#000000';
+        const colorB = styleAttrs?.colorB?.[2] ?? '#000000';
+        return [colorA, colorB];
+    }
+
+    if (attrs.style === 'london-rail') {
+        const colorBackground = styleAttrs?.colorBackground?.[2] ?? '#000000';
+        const colorForeground = styleAttrs?.colorForeground?.[2] ?? '#000000';
+        return [colorBackground, colorForeground];
+    }
+
+    if (attrs.style === 'generic') {
+        const layers = styleAttrs?.layers;
+        if (Array.isArray(layers) && layers.length > 0) {
+            return layers.map((layer: any) => layer?.color?.[2] ?? '#000000');
         }
+        return ['#000000'];
     }
-    return themes;
+
+    return [styleAttrs?.color?.[2] ?? styleAttrs?.colorA?.[2] ?? styleAttrs?.layers?.[0]?.color?.[2] ?? '#4A5568'];
 };
 
-/**
- * Check whether an edge's theme matches the target theme by hex color.
- * Supports dynamicColorInjection, DualColor, and Generic styles.
- */
-const edgeMatchesTheme = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    edge: string,
-    targetTheme: Theme
-): boolean => {
-    return getEdgeThemes(graph, edge).some(color => color[2] === targetTheme[2]);
+export const getTimelineElementCenter = (graph: TimelineGraph, id: Id): { x: number; y: number } | undefined => {
+    if (isNodeTimelineEntry(id)) {
+        if (!graph.hasNode(id)) return undefined;
+        return {
+            x: graph.getNodeAttribute(id, 'x'),
+            y: graph.getNodeAttribute(id, 'y'),
+        };
+    }
+
+    if (!graph.hasEdge(id)) return undefined;
+
+    const [source, target] = graph.extremities(id) as [NodeId, NodeId];
+    return {
+        x: (graph.getNodeAttribute(source, 'x') + graph.getNodeAttribute(target, 'x')) / 2,
+        y: (graph.getNodeAttribute(source, 'y') + graph.getNodeAttribute(target, 'y')) / 2,
+    };
 };
 
-/**
- * BFS from startNode to endNode following only edges matching targetTheme.
- * Returns an interleaved array: [NodeId, LineId, NodeId, LineId, ..., NodeId]
- * or undefined if no path found.
- */
-export const findPathByTheme = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+export const getEdgeTheme = (graph: TimelineGraph, edgeId: LineId): Theme | undefined => {
+    if (!graph.hasEdge(edgeId)) return undefined;
+    const attrs = graph.getEdgeAttributes(edgeId) as Record<string, any>;
+    const styleAttrs = attrs[attrs.style];
+    return styleAttrs?.color ?? styleAttrs?.colorA ?? styleAttrs?.layers?.[0]?.color;
+};
+
+export const getEdgeColorString = (theme: Theme | undefined): string => {
+    return theme ? theme[2] : '#000000';
+};
+
+const themeToStr = (t: Theme | undefined) => {
+    const tDef = t ?? [CityCode.Other, 'other', '#000000', 'black'];
+    return tDef[0] === CityCode.Other && tDef[1] === 'other'
+        ? `${tDef[0]}-${tDef[1]}-${tDef[2]}-${tDef[3]}`
+        : `${tDef[0]}-${tDef[1]}`;
+};
+
+export const getEdgeThemeString = (graph: TimelineGraph, edgeId: LineId): string => {
+    if (!graph.hasEdge(edgeId)) return 'unknown';
+
+    const attrs = graph.getEdgeAttributes(edgeId) as Record<string, any>;
+    const styleAttrs = attrs[attrs.style] || {};
+
+    if (attrs.style === 'dual-color' || attrs.style === 'mrt-tape-out') {
+        const strA = themeToStr(styleAttrs?.colorA);
+        const strB = themeToStr(styleAttrs?.colorB);
+        return [strA, strB].sort().join('::');
+    }
+
+    if (attrs.style === 'london-rail') {
+        const strBg = themeToStr(styleAttrs?.colorBackground);
+        const strFg = themeToStr(styleAttrs?.colorForeground);
+        return [strBg, strFg].join('::');
+    }
+
+    if (attrs.style === 'generic') {
+        const layers = styleAttrs?.layers;
+        if (Array.isArray(layers) && layers.length > 0) {
+            return layers.map((layer: any) => themeToStr(layer?.color)).join('::');
+        }
+        return themeToStr(undefined);
+    }
+
+    const theme = getEdgeTheme(graph, edgeId);
+    return themeToStr(theme);
+};
+
+export const getAdjacentLineColors = (graph: TimelineGraph, nodeId: NodeId) => {
+    if (!graph.hasNode(nodeId)) return [];
+    const lines = new Map<string, { themeStr: string; color: string[]; label: string }>(); // themeStr -> info
+    graph.forEachEdge(nodeId, edge => {
+        const edgeId = edge as LineId;
+        const theme = getEdgeTheme(graph, edgeId);
+        const themeStr = getEdgeThemeString(graph, edgeId);
+        if (!lines.has(themeStr)) {
+            const label = theme && theme[1] !== 'other' ? theme[1] : '';
+            lines.set(themeStr, {
+                themeStr,
+                color: getTimelineEntryAccent(graph, { kind: 'edge', refId: edgeId, id: '' }),
+                label,
+            });
+        }
+    });
+    return Array.from(lines.values());
+};
+
+export const findShortestPathByLine = (
+    graph: TimelineGraph,
     startNode: NodeId,
     endNode: NodeId,
-    targetTheme: Theme,
-    maxNodes: number = 200
-): Id[] | undefined => {
-    if (!graph.hasNode(startNode) || !graph.hasNode(endNode)) return undefined;
-    if (startNode === endNode) return [startNode];
+    themeStr: string
+): Id[] | null => {
+    const queue: { current: NodeId; path: Id[] }[] = [{ current: startNode, path: [startNode] }];
+    const visited = new Set<NodeId>([startNode]);
 
-    const visited = new Map<NodeId, { parent: NodeId | null; edge: LineId | null }>();
-    visited.set(startNode, { parent: null, edge: null });
+    while (queue.length > 0) {
+        const { current, path } = queue.shift()!;
+        if (current === endNode) {
+            return path;
+        }
 
-    const queue: NodeId[] = [startNode];
-    let found = false;
-
-    while (queue.length > 0 && !found) {
-        const current = queue.shift()!;
-        if (visited.size > maxNodes) break;
-
-        for (const { edge, source, target } of graph.edgeEntries(current)) {
-            if (!edgeMatchesTheme(graph, edge, targetTheme)) continue;
+        graph.forEachEdge(current, (edge, attr, source, target) => {
+            const edgeThemeStr = getEdgeThemeString(graph, edge as LineId);
+            if (edgeThemeStr !== themeStr) return;
 
             const neighbor = (source === current ? target : source) as NodeId;
-            if (visited.has(neighbor)) continue;
-
-            visited.set(neighbor, { parent: current, edge: edge as LineId });
-            queue.push(neighbor);
-
-            if (neighbor === endNode) {
-                found = true;
-                break;
+            if (!visited.has(neighbor)) {
+                visited.add(neighbor);
+                queue.push({
+                    current: neighbor,
+                    path: [...path, edge as LineId, neighbor],
+                });
             }
-        }
+        });
     }
 
-    if (!found) return undefined;
-
-    // Reconstruct path: interleaved [NodeId, LineId, NodeId, ...]
-    const path: Id[] = [];
-    let current: NodeId = endNode;
-    while (current !== startNode) {
-        const entry = visited.get(current)!;
-        path.unshift(current);
-        path.unshift(entry.edge!);
-        current = entry.parent!;
-    }
-    path.unshift(startNode);
-
-    return path;
+    return null;
 };
 
-/**
- * Merge newPath into existing timeline with deduplication.
- * Skips nodes and edges that already exist in the timeline.
- * When a node is skipped, its adjacent edge in newPath is also skipped.
- */
-export const deduplicateTimeline = (existing: Id[], newPath: Id[]): Id[] => {
-    const existingEdges = new Set<string>(existing.filter(id => id.startsWith('line_')));
-
-    const result = [...existing];
-
-    for (const id of newPath) {
-        const isEdge = id.startsWith('line_');
-
-        if (isEdge) {
-            if (existingEdges.has(id)) continue;
-
-            existingEdges.add(id);
-            result.push(id);
-        } else {
-            result.push(id);
-        }
+export const appendTimelineEntries = (doc: TimelineDocument, refIds: Id[]): TimelineDocument => {
+    let currentDoc = doc;
+    for (const refId of refIds) {
+        currentDoc = appendTimelineEntry(currentDoc, refId);
     }
-
-    return result;
-};
-
-/**
- * Get a display name for a node in the timeline.
- */
-export const getNodeDisplayName = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodeId: NodeId
-): string => {
-    if (!graph.hasNode(nodeId)) return nodeId;
-    const type = graph.getNodeAttribute(nodeId, 'type');
-    const attr = graph.getNodeAttribute(nodeId, type) as Record<string, any> | undefined;
-    if (attr && 'names' in attr && Array.isArray(attr.names) && attr.names.length > 0) {
-        return attr.names[0];
-    }
-    return nodeId;
-};
-
-/**
- * Get all nodes (stn_* and misc_node_*) that are NOT in the current timeline.
- */
-export const getUnaddedNodes = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    timeline: TimelineEntry[]
-): NodeId[] => {
-    const timelineNodes = new Set<string>(timeline.map(item => item.id));
-    return graph.filterNodes(
-        node => (node.startsWith('stn_') || node.startsWith('misc_node_')) && !timelineNodes.has(node)
-    ) as NodeId[];
+    return currentDoc;
 };

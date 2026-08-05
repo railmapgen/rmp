@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, Id, NodeAttributes, TimelineEntry } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { StationType } from '../constants/stations';
+import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../constants/timeline';
 import { generateAnimationSequence } from './video-export';
 
 const makeGraph = () => new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
@@ -44,7 +45,19 @@ const addEdge = (
     });
 };
 
-const toTimeline = (...entries: Array<Id | TimelineEntry>) => entries;
+const toTimeline = (...entries: TimelineEntry[]): TimelineDocument => ({ version: 1, track: entries });
+
+const nodeEntry = (refId: `stn_${string}`, index: number): TimelineEntry => ({
+    id: `timeline_node_${index}`,
+    kind: 'node',
+    refId,
+});
+
+const edgeEntry = (refId: `line_${string}`, index: number): TimelineEntry => ({
+    id: `timeline_edge_${index}`,
+    kind: 'edge',
+    refId,
+});
 
 describe('generateAnimationSequence', () => {
     it('renders strictly in timeline order when timeline exists', () => {
@@ -55,9 +68,14 @@ describe('generateAnimationSequence', () => {
         addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
         addEdge(graph, 'line_bc', 'stn_b', 'stn_c');
 
-        graph.setAttribute('timeline', toTimeline('stn_b', 'line_bc', 'stn_c', 'stn_a', 'line_ab'));
-
-        const sequence = generateAnimationSequence(graph);
+        const timeline = toTimeline(
+            nodeEntry('stn_b', 1),
+            edgeEntry('line_bc', 2),
+            nodeEntry('stn_c', 3),
+            nodeEntry('stn_a', 4),
+            edgeEntry('line_ab', 5)
+        );
+        const sequence = generateAnimationSequence(graph, timeline);
 
         expect(sequence.steps).toEqual([
             { id: 'stn_b', kind: 'node', reverse: false },
@@ -70,19 +88,27 @@ describe('generateAnimationSequence', () => {
         expect(sequence.edges).toEqual(['line_bc', 'line_ab']);
     });
 
-    it('combines original line direction with timeline reverse flag', () => {
+    it('combines original line direction with v2 timeline traversal order', () => {
         const graph = makeGraph();
         addNode(graph, 'stn_a', 0, 0);
         addNode(graph, 'stn_b', 100, 0);
         addEdge(graph, 'line_ab', 'stn_a', 'stn_b', 'to');
 
-        graph.setAttribute('timeline', toTimeline({ id: 'line_ab' }, { id: 'line_ab', reverse: true }));
+        const forwardTimeline = toTimeline(nodeEntry('stn_a', 1), edgeEntry('line_ab', 2), nodeEntry('stn_b', 3));
+        const reverseTimeline = toTimeline(nodeEntry('stn_b', 1), edgeEntry('line_ab', 2), nodeEntry('stn_a', 3));
 
-        const sequence = generateAnimationSequence(graph);
+        const forwardSequence = generateAnimationSequence(graph, forwardTimeline);
+        const reverseSequence = generateAnimationSequence(graph, reverseTimeline);
 
-        expect(sequence.steps).toEqual([
+        expect(forwardSequence.steps).toEqual([
+            { id: 'stn_a', kind: 'node', reverse: false },
             { id: 'line_ab', kind: 'edge', reverse: true },
+            { id: 'stn_b', kind: 'node', reverse: false },
+        ]);
+        expect(reverseSequence.steps).toEqual([
+            { id: 'stn_b', kind: 'node', reverse: false },
             { id: 'line_ab', kind: 'edge', reverse: false },
+            { id: 'stn_a', kind: 'node', reverse: false },
         ]);
     });
 
@@ -94,7 +120,7 @@ describe('generateAnimationSequence', () => {
         addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
         addEdge(graph, 'line_bc', 'stn_b', 'stn_c');
 
-        const sequence = generateAnimationSequence(graph);
+        const sequence = generateAnimationSequence(graph, createEmptyTimelineDocument());
 
         expect(sequence.nodes).toEqual(['stn_a', 'stn_b', 'stn_c']);
         expect(sequence.edges).toEqual(['line_ab', 'line_bc']);

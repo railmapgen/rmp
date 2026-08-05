@@ -1,19 +1,20 @@
+import { Alert, AlertDescription, AlertIcon } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { RmgCircularSlider, RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
+import { LineId } from '../../../../constants/constants';
 import { LinePath, LinePathAttributes, LinePathAttrsProps, PathGenerator } from '../../../../constants/lines';
+import { degToRad, getRayIntersection, sanitizeCoordinate } from '../../../../util/geometry';
+import { PathPoint, makeLinearPath, makePoint, makeSharpTurnPath } from '../../../../constants/path';
+import { parseRoundedTurnPath } from '../../../../util/path';
 import { roundPathCorners } from '../../../../util/pathRounding';
-
-type Point = { x: number; y: number };
+import { isInReconcileChain } from '../../../../util/reconcile';
 
 const EPSILON = 1e-6;
 const MAX_RAY_GUIDED_ANGLE = 179;
 const DEFAULT_START_ANGLE = 0;
 const DEFAULT_END_ANGLE = 90;
 const MIN_RAY_GUIDED_ANGLE_GAP = 5;
-
-const degToRad = (angle: number) => (angle * Math.PI) / 180;
-const sanitizeCoordinate = (value: number): number => (Math.abs(value) < EPSILON ? 0 : value);
 
 export const normalizeRayGuidedAngle = (angle: number, fallback = DEFAULT_START_ANGLE): number => {
     if (!Number.isFinite(angle)) return fallback;
@@ -33,37 +34,22 @@ export const makeDisabledRayGuidedSliderValues = (blockedAngle: number, gap = MI
         value => getRayGuidedAngleDistance(value, blockedAngle) <= gap
     );
 
-const makeDirectionVector = (angle: number): Point => {
+const makeDirectionVector = (angle: number): PathPoint => {
     const rad = degToRad(normalizeRayGuidedAngle(angle));
     return { x: Math.sin(rad), y: -Math.cos(rad) };
 };
 
-const makeClockwiseNormalVector = (angle: number): Point => {
+const makeClockwiseNormalVector = (angle: number): PathPoint => {
     const direction = makeDirectionVector(angle);
     return { x: -direction.y, y: direction.x };
 };
 
-const makeNormalOffsetPoint = (x: number, y: number, angle: number, offset: number): Point => {
+const makeNormalOffsetPoint = (x: number, y: number, angle: number, offset: number): PathPoint => {
     // Positive offsets follow the guide ray's clockwise normal in SVG coordinates.
     const normal = makeClockwiseNormalVector(angle);
     return {
         x: sanitizeCoordinate(x + normal.x * offset),
         y: sanitizeCoordinate(y + normal.y * offset),
-    };
-};
-
-const cross = (a: Point, b: Point) => a.x * b.y - a.y * b.x;
-
-const getIntersection = (p1: Point, d1: Point, p2: Point, d2: Point): Point | undefined => {
-    const determinant = cross(d1, d2);
-    if (Math.abs(determinant) < EPSILON) return;
-
-    const delta = { x: p2.x - p1.x, y: p2.y - p1.y };
-    const t = cross(delta, d2) / determinant;
-
-    return {
-        x: sanitizeCoordinate(p1.x + d1.x * t),
-        y: sanitizeCoordinate(p1.y + d1.y * t),
     };
 };
 
@@ -82,24 +68,22 @@ export const generateRayGuidedPath: PathGenerator<RayGuidedPathAttributes> = (
 
     const start = makeNormalOffsetPoint(x1, y1, startAngle, offsetFrom);
     const end = makeNormalOffsetPoint(x2, y2, endAngle, offsetTo);
-    const middle = getIntersection(start, makeDirectionVector(startAngle), end, makeDirectionVector(endAngle));
+    const middle = getRayIntersection(start, makeDirectionVector(startAngle), end, makeDirectionVector(endAngle));
 
     if (!middle) {
-        return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
+        return makeLinearPath(makePoint(start.x, start.y), makePoint(end.x, end.y));
     }
 
     const isDegenerateCorner =
         Math.hypot(start.x - middle.x, start.y - middle.y) < EPSILON ||
         Math.hypot(end.x - middle.x, end.y - middle.y) < EPSILON;
     if (isDegenerateCorner) {
-        return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
+        return makeLinearPath(makePoint(start.x, start.y), makePoint(end.x, end.y));
     }
 
-    return roundPathCorners(
-        `M ${start.x} ${start.y} L ${middle.x} ${middle.y} L ${end.x} ${end.y}`,
-        roundCornerFactor,
-        false
-    ) as `M ${string}`;
+    const path = makeSharpTurnPath(makePoint(start.x, start.y), makePoint(middle.x, middle.y), makePoint(end.x, end.y));
+
+    return roundCornerFactor === 0 ? path : parseRoundedTurnPath(roundPathCorners(path.d, roundCornerFactor, false));
 };
 
 export interface RayGuidedPathAttributes extends LinePathAttributes {
@@ -144,6 +128,10 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
             setEndSliderValue(endAngle);
         }
     }, [endAngle, endSliderValue]);
+
+    const inReconcileChain = isInReconcileChain(window.graph, id as LineId);
+    const isOffsetFromDisabled = inReconcileChain;
+    const isOffsetToDisabled = inReconcileChain;
 
     const fields: RmgFieldsField[] = [
         {
@@ -201,6 +189,7 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
                 if (Number.isNaN(val)) val = '0';
                 handleAttrsUpdate(id, { ...attrs, offsetFrom: Number(val) });
             },
+            isDisabled: isOffsetFromDisabled,
             minW: 'full',
         },
         {
@@ -212,6 +201,7 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
                 if (Number.isNaN(val)) val = '0';
                 handleAttrsUpdate(id, { ...attrs, offsetTo: Number(val) });
             },
+            isDisabled: isOffsetToDisabled,
             minW: 'full',
         },
         {
@@ -226,6 +216,22 @@ const attrsComponent = (props: LinePathAttrsProps<RayGuidedPathAttributes>) => {
             minW: 'full',
         },
     ];
+
+    if (inReconcileChain) {
+        fields.unshift({
+            type: 'custom',
+            label: '',
+            component: (
+                <Alert status="info" fontSize="xs" borderRadius="md" py={1.5} px={2}>
+                    <AlertIcon boxSize={4} />
+                    <AlertDescription whiteSpace="normal" lineHeight="short">
+                        {t('panel.details.lines.common.reconcileDisabled')}
+                    </AlertDescription>
+                </Alert>
+            ),
+            minW: 'full',
+        });
+    }
 
     return <RmgFields fields={fields} />;
 };

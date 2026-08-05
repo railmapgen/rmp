@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -13,6 +14,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
@@ -50,6 +56,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         color = defaultSuzhouRTBasicStationAttributes.color,
         nameOffsetX = defaultSuzhouRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultSuzhouRTBasicStationAttributes.nameOffsetY,
@@ -80,6 +87,20 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
     const textVerticalAnchor = nameOffsetY === 'top' ? 'end' : 'start';
     const textVerticalEnX = (names[0].split('\n').length * NAME_SZ_BASIC.zh.size) / 2 + NAME_SZ_BASIC.en.baseOffset;
 
+    const defaultNameLayout: NameLayout = textVertical
+        ? { x: 0, y: 0, anchor: 'middle' }
+        : {
+              x: textX,
+              y: textY,
+              anchor: textAnchor,
+          };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.SuzhouRTBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
+
     return (
         <g>
             <circle
@@ -94,7 +115,13 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             />
             {!textVertical ? (
-                <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
                     <MultilineText
                         text={names[0].split('\n')}
                         fontSize={NAME_SZ_BASIC.zh.size}
@@ -114,7 +141,13 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                     />
                 </g>
             ) : (
-                <>
+                <g
+                    id={`stn_name_${id}`}
+                    transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                    textAnchor={nameLayout.anchor}
+                    style={{ cursor: canDrag ? 'grab' : undefined }}
+                    {...dragHandlers}
+                >
                     <g transform={`translate(-1, ${textVerticalY})`} textAnchor={textVerticalAnchor}>
                         <MultilineTextVertical
                             text={names[0].split('\n')}
@@ -141,7 +174,7 @@ const SuzhouRTBasicStation = (props: StationComponentProps) => {
                             fill="gray"
                         />
                     </g>
-                </>
+                </g>
             )}
         </g>
     );
@@ -168,6 +201,30 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -190,18 +247,21 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
             minW: 'full',
         },
         {
+            type: 'custom',
+            label: '',
+            component: <StationNameTranslateButton id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />,
+            minW: 'full',
+        },
+        {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX ?? defaultSuzhouRTBasicStationAttributes.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
-                if (attrs.nameOffsetX !== 'middle') attrs.textVertical = false;
+                if (val !== 'middle') attrs.textVertical = false;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -209,16 +269,12 @@ const SuzhouRTBasicAttrsComponent = (props: AttrsProps<SuzhouRTBasicStationAttri
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY ?? defaultSuzhouRTBasicStationAttributes.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
-                if (attrs.nameOffsetY === 'middle') attrs.textVertical = false;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',

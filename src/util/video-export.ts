@@ -11,10 +11,10 @@ import {
     NodeAttributes,
     NodeId,
     StnId,
-    TimelineEntry,
 } from '../constants/constants';
 import stations from '../components/svgs/stations/stations';
 import { StationType } from '../constants/stations';
+import { TimelineDocument, TimelineEntry } from '../constants/timeline';
 import i18n from '../i18n/config';
 import { TextLanguage } from './fonts';
 import { changeStationType, checkAndChangeStationIntType } from './change-types';
@@ -73,15 +73,7 @@ type CameraFocus =
     | { kind: 'node'; id: NodeId }
     | { kind: 'edge'; id: LineId; progress: number; reverse: boolean };
 
-const isNodeId = (id: Id): id is NodeId => id.startsWith('stn_') || id.startsWith('misc_node_');
 const isStationNodeId = (id: Id): id is StnId => id.startsWith('stn_');
-const isLineId = (id: Id): id is LineId => id.startsWith('line_');
-
-const normalizeTimeline = (timeline: Array<Id | TimelineEntry> | undefined): TimelineEntry[] => {
-    return (timeline ?? []).map(item =>
-        typeof item === 'string' ? { id: item } : { id: item.id, ...(item.reverse ? { reverse: true } : {}) }
-    );
-};
 
 const getBaseEdgeReverse = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -142,22 +134,29 @@ const buildTimelineSequence = (
     const seenNodes = new Set<NodeId>();
     const seenEdges = new Set<LineId>();
 
-    for (const entry of timeline) {
-        if (isNodeId(entry.id) && graph.hasNode(entry.id)) {
-            steps.push({ id: entry.id, kind: 'node', reverse: false });
-            if (!seenNodes.has(entry.id)) {
-                seenNodes.add(entry.id);
-                nodes.push(entry.id);
+    for (const [index, entry] of timeline.entries()) {
+        if (entry.kind === 'node' && graph.hasNode(entry.refId)) {
+            steps.push({ id: entry.refId, kind: 'node', reverse: false });
+            if (!seenNodes.has(entry.refId)) {
+                seenNodes.add(entry.refId);
+                nodes.push(entry.refId);
             }
             continue;
         }
 
-        if (isLineId(entry.id) && graph.hasEdge(entry.id)) {
-            const reverse = getBaseEdgeReverse(graph, entry.id) !== !!entry.reverse;
-            steps.push({ id: entry.id, kind: 'edge', reverse });
-            if (!seenEdges.has(entry.id)) {
-                seenEdges.add(entry.id);
-                edges.push(entry.id);
+        if (entry.kind === 'edge' && graph.hasEdge(entry.refId)) {
+            const [source, target] = graph.extremities(entry.refId) as [NodeId, NodeId];
+            const previousEntry = timeline[index - 1];
+            const nextEntry = timeline[index + 1];
+            const isTraversalReversed =
+                (previousEntry?.kind === 'node' && previousEntry.refId === target) ||
+                (nextEntry?.kind === 'node' && nextEntry.refId === source);
+            const reverse = getBaseEdgeReverse(graph, entry.refId) !== isTraversalReversed;
+
+            steps.push({ id: entry.refId, kind: 'edge', reverse });
+            if (!seenEdges.has(entry.refId)) {
+                seenEdges.add(entry.refId);
+                edges.push(entry.refId);
             }
         }
     }
@@ -488,11 +487,11 @@ const applyCameraViewBox = (
 };
 
 export const generateAnimationSequence = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    timeline: TimelineDocument
 ): AnimationSequence => {
-    const timeline = normalizeTimeline(graph.getAttribute('timeline'));
-    if (timeline.length > 0) {
-        const sequence = buildTimelineSequence(graph, timeline);
+    if (timeline.track.length > 0) {
+        const sequence = buildTimelineSequence(graph, timeline.track);
         if (sequence.steps.length > 0) {
             return sequence;
         }
@@ -575,19 +574,10 @@ const createFrameSVG = async (
     zoom: number,
     hideWatermark: boolean,
     isSystemFontsOnly: boolean,
-    languages: TextLanguage[],
-    existsNodeTypes: Set<any>
+    languages: TextLanguage[]
 ): Promise<{ elem: SVGSVGElement; width: number; height: number; cameraCenter: { x: number; y: number } }> => {
     const basicStations = getBasicStationsForFrame(graph, visibleEdges);
-    const { elem } = await makeRenderReadySVGElement(
-        graph,
-        false,
-        isSystemFontsOnly,
-        languages,
-        existsNodeTypes,
-        2,
-        true
-    );
+    const { elem } = await makeRenderReadySVGElement(graph, true, isSystemFontsOnly, languages, false, 2);
 
     graph.forEachNode(node => {
         if (!visibleNodes.has(node as NodeId)) {
@@ -709,14 +699,14 @@ const renderSVGToCanvas = async (
 
 export const exportVideo = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    timeline: TimelineDocument,
     languages: TextLanguage[],
-    existsNodeTypes: Set<any>,
     options: VideoExportOptions,
     bgColor: string,
     onProgress?: (progress: number) => void
 ): Promise<Blob> => {
     const { fps, duration, isTransparent, scale, isSystemFontsOnly, quality, hideWatermark } = options;
-    const sequence = generateAnimationSequence(graph);
+    const sequence = generateAnimationSequence(graph, timeline);
 
     if (sequence.steps.length === 0) {
         throw new Error('No timeline steps to animate');
@@ -901,8 +891,7 @@ export const exportVideo = async (
             nextZoom,
             hideWatermark,
             isSystemFontsOnly,
-            languages,
-            existsNodeTypes
+            languages
         );
         cameraCenter = nextCameraCenter;
         const canvas = await renderSVGToCanvas(elem, width, height, isTransparent, bgColor);

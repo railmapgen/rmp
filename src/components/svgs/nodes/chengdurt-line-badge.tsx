@@ -179,7 +179,7 @@ const ChengduRTLineBadgeAttrsComponent = (props: AttrsProps<ChengduRTLineBadgeAt
 const chengduRTLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="2" rx="10" ry="10" width="20" height="20" />
-        <text x="9" y="17" fill="white" fontSize="14">
+        <text x="9" y="17" fill="var(--chakra-colors-chakra-body-bg)" fontSize="14">
             1
         </text>
     </svg>

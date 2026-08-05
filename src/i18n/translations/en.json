@@ -39,8 +39,13 @@
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type",
                 "type": "Type",
+                "visible": "Visible in export",
                 "parallel": "Parallel line",
-                "parallelIndex": "Parallel index"
+                "parallelIndex": "Parallel index",
+                "reconcile": "Reconcile",
+                "reconcileId": "Reconcile unique identifier",
+                "reconcileAssign": "Assign",
+                "reconcileMembers": "Reconcile members"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -156,6 +161,15 @@
                     "sandwich": "Sandwich",
                     "tube": "Tube"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "London Tube line badge",
+                    "lineName": "Line name",
+                    "walking": "Walking",
+                    "walkingTarget": "Walking target",
+                    "distance": "Distance",
+                    "addItem": "Add badge",
+                    "noItems": "No badges"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "Chengdu Rail Transit Line Badge",
                     "badgeType": {
@@ -169,6 +183,9 @@
                     "displayName": "Taipei Metro line badge",
                     "tram": "Tram"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "Wuhan Rail Transit line badge"
+                },
                 "image": {
                     "displayName": "Image",
                     "label": "Label",
@@ -180,7 +197,8 @@
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
-                    "undefined": "Undefined"
+                    "undefined": "Undefined",
+                    "attrBindingError": "Master attribute binding error"
                 },
                 "facilities": {
                     "displayName": "Facilities",
@@ -228,7 +246,12 @@
                     "airport_chengdu": "Airport Chengdu",
                     "railway_chengdu": "Railway Chengdu",
                     "railway_taiwan": "Railway Taiwan",
-                    "hsr_taiwan": "High Speed Railway Taiwan"
+                    "hsr_taiwan": "High Speed Railway Taiwan",
+                    "railway_shenzhen": "Railway Shenzhen",
+                    "intercity_shenzhen": "Intercity Shenzhen",
+                    "ferry_shenzhen": "Ferry Shenzhen",
+                    "tram_shenzhen": "Tram Shenzhen",
+                    "airport_shenzhen": "Airport Shenzhen"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
@@ -287,7 +310,12 @@
                     "middle": "Middle",
                     "right": "Right",
                     "top": "Top",
-                    "bottom": "Bottom"
+                    "bottom": "Bottom",
+                    "custom": "Custom",
+                    "translateName": "Translate station name to English",
+                    "translateNameEmpty": "Enter a Chinese name first.",
+                    "translateNameNotSubscribed": "Semantic translation requires RMP Cloud.",
+                    "translateNameFailed": "Failed to translate station name."
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -454,7 +482,9 @@
                     "displayName": "London river services interchange station"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway station"
+                    "displayName": "Guangdong Intercity Railway station",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English"
                 },
                 "chongqingRTBasic": {
                     "displayName": "Chongqing Rail Transit basic station",
@@ -524,7 +554,8 @@
                     "displayName": "Changsha Metro basic station"
                 },
                 "csmetroInt": {
-                    "displayName": "Changsha Metro interchange station"
+                    "displayName": "Changsha Metro interchange station",
+                    "flipColor": "Flip color"
                 },
                 "hzmetroBasic": {
                     "displayName": "Hangzhou Metro basic station",
@@ -548,7 +579,9 @@
                     "to": "To",
                     "roundCornerFactor": "Round Corner Factor",
                     "parallelDisabled": "Some attributes are disabled as this line is parallel.",
-                    "changeInBaseLine": "Change them in the base line:"
+                    "changeInBaseLine": "Change them in the base line:",
+                    "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path.",
+                    "reconcileStyleDisabled": "Style attributes are disabled because this line is part of a reconcile chain. The rendered style is controlled by the base line."
                 },
                 "simple": {
                     "displayName": "Simple path",
@@ -626,7 +659,18 @@
                     "displayName": "Singapore MRT Tap Out to Transfer style"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR East single color style"
+                    "displayName": "JR East single color style",
+                    "decoration": {
+                        "displayName": "Terminal display",
+                        "none": "None",
+                        "thinTail": "Other line section",
+                        "blackBlock": "Terminal"
+                    },
+                    "decorationAt": {
+                        "displayName": "Display position",
+                        "from": "From",
+                        "to": "To"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR East single color filled with crosshatch pattern style"
@@ -659,7 +703,10 @@
                     "displayName": "London IFS Cloud Cable Car style"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway style"
+                    "displayName": "Guangdong Intercity Railway style",
+                    "color": "Color",
+                    "blue": "Blue",
+                    "gray": "Gray"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "Chongqing Rail Transit line badge style"
@@ -669,6 +716,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
+                },
+                "shinkansen": {
+                    "displayName": "Shinkansen style"
                 },
                 "generic": {
                     "displayName": "Generic style",
@@ -682,6 +732,7 @@
                     "linecapSquare": "Square",
                     "dash": "Dash",
                     "gap": "Gap",
+                    "layerLimitWarning": "Subscribe to unlock additional line layers.",
                     "addLayer": "Add layer",
                     "copyLayer": "Copy layer",
                     "moveLayerUp": "Move layer up",
@@ -709,6 +760,26 @@
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "search": "Search stations",
+        "timelinePage": {
+            "open": "Open timeline",
+            "backToEditor": "Back to editor",
+            "trackTitle": "Timeline track",
+            "selectHint": "Select one node or edge above, then add it to the track.",
+            "alreadyAdded": "Already added",
+            "addSelected": "Add selected",
+            "addPathFromHere": "Add path from here",
+            "addPathByColor": "Add path by color:",
+            "selectLineColor": "Select a line color",
+            "selectDestNode": "Select destination station on canvas",
+            "noPathFound": "No path found between selected stations along this line.",
+            "pathAdded": "Successfully added {{count}} elements to the track.",
+            "pathAlreadyAdded": "All elements in this path are already added.",
+            "empty": "The track is empty. Select an element above to start building the timeline.",
+            "missingCoverage": "Nodes not added: {{nodeCount}}; line segments not added: {{edgeCount}}.",
+            "highlightMissing": "Highlight missing",
+            "clearMissingHighlight": "Clear highlight",
+            "coverageComplete": "All nodes and edges are added to the timeline."
+        },
         "open": {
             "new": "New project",
             "config": "Import project",
@@ -754,6 +825,20 @@
             "config": "Export project",
             "image": "Export image",
             "video": "Export video",
+            "videoExport": {
+                "title": "Export Video",
+                "fps": "Frames per second (FPS)",
+                "duration": "Duration (seconds)",
+                "quality": "Video quality",
+                "generating": "Generating video...",
+                "progress": "Progress: {{progress}}%",
+                "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
+                "shareInfo1": "I will attach ",
+                "shareInfo2": " and its link when I share this video.",
+                "format": "WebM format",
+                "error": "Video export failed. Please try again.",
+                "noNodes": "Cannot export video: No nodes in the graph."
+            },
             "2rmg": {
                 "title": "Export to RMG project",
                 "type": {
@@ -790,33 +875,7 @@
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
             "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
-            "confirm": "Download",
-            "videoExport": {
-                "title": "Export Video",
-                "fps": "Frames per second (FPS)",
-                "duration": "Duration (seconds)",
-                "quality": "Video quality",
-                "generating": "Generating video...",
-                "progress": "Progress: {{progress}}%",
-                "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
-                "shareInfo1": "I will attach ",
-                "shareInfo2": " and its link when I share this video.",
-                "format": "WebM format",
-                "error": "Video export failed. Please try again.",
-                "noNodes": "Cannot export video: No nodes in the graph."
-            }
-        },
-        "timeline": {
-            "title": "Animation Timeline",
-            "empty": "No timeline entries. Click \"Add Node\" to start.",
-            "addSegment": "Add Node",
-            "clearAll": "Clear All",
-            "pickStart": "Click a node on the canvas as start...",
-            "pickEnd": "Click a node on the canvas as end...",
-            "selectTheme": "Select a line color:",
-            "noPath": "No path found between the selected nodes.",
-            "unadded": "{{count}} node(s) not in timeline",
-            "addStationOnly": "Add this node only"
+            "confirm": "Download"
         },
         "donation": {
             "title": "Donation",
@@ -861,6 +920,13 @@
                     "empty": "Empty",
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
+                },
+                "stationNameTranslationMode": {
+                    "title": "Station name translation",
+                    "pinyinSpaced": "Pinyin - Spaced Title Case",
+                    "pinyinCompact": "Pinyin - Compact Title Case",
+                    "pinyinUppercase": "Pinyin - Uppercase",
+                    "semantic": "Semantic"
                 },
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
@@ -1001,7 +1067,8 @@
         "flipVertical": "Flip vertically",
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
-        "flipDiagonal135": "Flip across 135° line"
+        "flipDiagonal135": "Flip across 135° line",
+        "reconcile": "Reconcile"
     },
 
     "clipboard": {

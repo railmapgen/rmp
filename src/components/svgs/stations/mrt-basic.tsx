@@ -13,6 +13,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 
@@ -84,6 +89,7 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultMRTBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultMRTBasicStationAttributes.nameOffsetY,
         color = defaultMRTBasicStationAttributes.color,
@@ -112,6 +118,18 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
     const textX = (width / 2 + 5) * textPolarity;
     const textY = NAME_DY_SG_BASIC[nameOffsetY].offset * NAME_DY_SG_BASIC[nameOffsetY].polarity;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.MRTBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g transform={`${isTram ? 'scale(0.81)' : ''}`}>
@@ -156,7 +174,13 @@ const MRTBasicStationPost = (props: StationComponentProps) => {
                     opacity="0"
                 />
             </g>
-            <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
+            >
                 <MultilineText
                     text={names[0].split('\n')}
                     fontSize={STATION_NAME_FONT_SIZE}
@@ -195,6 +219,30 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -209,15 +257,12 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -225,15 +270,12 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -282,10 +324,24 @@ const MRTBasicAttrsComponent = (props: AttrsProps<MRTBasicStationAttributes>) =>
 const mrtBasicStationIcon = (
     <svg viewBox="0 0 24 24" height="40" width="40" focusable={false}>
         <rect x="6" y="8.6035" rx="1.575" ry="3.151" width="12" height="6.793" fill="currentColor" />
-        <text fontSize="3.5" dx="10" dy="13" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3.5"
+            dx="10"
+            dy="13"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             NS
         </text>
-        <text fontSize="3.5" dx="15" dy="13" {...getLangStyle(TextLanguage.mrt)} fill="white" textAnchor="middle">
+        <text
+            fontSize="3.5"
+            dx="15"
+            dy="13"
+            {...getLangStyle(TextLanguage.mrt)}
+            fill="var(--chakra-colors-chakra-body-bg)"
+            textAnchor="middle"
+        >
             28
         </text>
     </svg>

@@ -9,9 +9,9 @@
     "pasteAttrs": "貼上獨特屬性",
     "remove": "移除",
     "close": "關閉",
-    "confirm": "確認",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
+
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -39,8 +39,13 @@
                 "linePathType": "線段路徑類型",
                 "lineStyleType": "線段樣式類型",
                 "type": "類型",
+                "visible": "匯出時可見",
                 "parallel": "平行線段",
-                "parallelIndex": "平行線段索引"
+                "parallelIndex": "平行線段索引",
+                "reconcile": "合併線段",
+                "reconcileId": "合併線段唯一識別符",
+                "reconcileAssign": "指派",
+                "reconcileMembers": "合併線段成員"
             },
             "multipleSelection": {
                 "title": "多重選取",
@@ -156,6 +161,15 @@
                     "sandwich": "三明治",
                     "tube": "地鐵"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "倫敦地鐵線路標牌",
+                    "lineName": "線路名",
+                    "walking": "步行",
+                    "walkingTarget": "步行目標",
+                    "distance": "距離",
+                    "addItem": "新增標牌",
+                    "noItems": "暫無標牌"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都軌道交通線路標識",
                     "badgeType": {
@@ -169,6 +183,9 @@
                     "displayName": "台北捷運線路標識",
                     "tram": "輕軌"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通線路標識"
+                },
                 "image": {
                     "displayName": "影像",
                     "label": "標籤",
@@ -180,7 +197,8 @@
                 "master": {
                     "displayName": "大師節點",
                     "type": "大師節點類型",
-                    "undefined": "未定義"
+                    "undefined": "未定義",
+                    "attrBindingError": "大師屬性綁定錯誤"
                 },
                 "facilities": {
                     "displayName": "設施",
@@ -228,7 +246,12 @@
                     "airport_chengdu": "成都機場",
                     "railway_chengdu": "成都火車站",
                     "railway_taiwan": "臺灣鐵路",
-                    "hsr_taiwan": "台灣高鐵"
+                    "hsr_taiwan": "台灣高鐵",
+                    "railway_shenzhen": "深圳火車站",
+                    "intercity_shenzhen": "深圳城際鐵路",
+                    "ferry_shenzhen": "深圳渡輪",
+                    "tram_shenzhen": "深圳有軌電車",
+                    "airport_shenzhen": "深圳機場"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -287,7 +310,12 @@
                     "middle": "中間",
                     "right": "右",
                     "top": "頂部",
-                    "bottom": "底部"
+                    "bottom": "底部",
+                    "custom": "自訂",
+                    "translateName": "翻譯站名到英文",
+                    "translateNameEmpty": "請先填寫中文名稱。",
+                    "translateNameNotSubscribed": "意譯需要 RMP Cloud 訂閱。",
+                    "translateNameFailed": "車站名稱翻譯失敗。"
                 },
                 "interchange": {
                     "title": "換乘",
@@ -453,7 +481,9 @@
                     "displayName": "倫敦河流服務換乘站"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路車站"
+                    "displayName": "廣東城際鐵路車站",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重慶軌道交通基本車站",
@@ -523,7 +553,8 @@
                     "displayName": "長沙軌道交通基本車站"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙軌道交通換乘車站"
+                    "displayName": "長沙軌道交通換乘車站",
+                    "flipColor": "翻轉顏色"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州地鐵基本車站",
@@ -547,7 +578,9 @@
                     "from": "從",
                     "to": "到",
                     "parallelDisabled": "由於此線段是平行的，因此某些屬性已被禁用。",
-                    "changeInBaseLine": "在基準線段中更改它們："
+                    "changeInBaseLine": "在基準線段中更改它們：",
+                    "reconcileDisabled": "此線段屬於合併線段鏈，偏移已停用。整條鏈作為一條合併路徑渲染。",
+                    "reconcileStyleDisabled": "此線段屬於合併線段鏈，樣式屬性已停用。最終渲染樣式由基準線段控制。"
                 },
                 "simple": {
                     "displayName": "基本線段",
@@ -625,7 +658,18 @@
                     "displayName": "新加坡MRT出站換乘樣式"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR東日本單色樣式"
+                    "displayName": "JR東日本單色樣式",
+                    "decoration": {
+                        "displayName": "終端顯示",
+                        "none": "無",
+                        "thinTail": "其他線區",
+                        "blackBlock": "終點"
+                    },
+                    "decorationAt": {
+                        "displayName": "顯示位置",
+                        "from": "起點",
+                        "to": "終點"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本單色網狀圖案樣式"
@@ -658,7 +702,10 @@
                     "displayName": "倫敦IFS雲纜車樣式"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "廣東城際鐵路樣式"
+                    "displayName": "廣東城際鐵路樣式",
+                    "color": "顏色",
+                    "blue": "藍色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶軌道交通線路標識連接線樣式"
@@ -668,6 +715,9 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都軌道交通出閘換乘樣式"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線樣式"
                 },
                 "generic": {
                     "displayName": "通用樣式",
@@ -681,6 +731,7 @@
                     "linecapSquare": "方頭",
                     "dash": "虛線長度",
                     "gap": "間隔長度",
+                    "layerLimitWarning": "訂閱可解鎖額外線層。",
                     "addLayer": "添加線層",
                     "copyLayer": "複製線層",
                     "moveLayerUp": "上移線層",
@@ -703,10 +754,31 @@
             }
         }
     },
+
     "header": {
         "popoverHeader": "你正在瀏覽<1>{{environment}}</1>環境！",
         "popoverBody": "我們正在測試最新的RMP。如果妳有任何建議，歡迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜尋車站",
+        "timelinePage": {
+            "open": "開啟時間線",
+            "backToEditor": "返回編輯器",
+            "trackTitle": "時間線軌道",
+            "selectHint": "先在上方選擇一個節點或線段，再將其加入軌道。",
+            "alreadyAdded": "已加入",
+            "addSelected": "加入已選項",
+            "addPathFromHere": "從此站開始添加",
+            "addPathByColor": "按線路顏色添加：",
+            "selectLineColor": "選擇線路顏色",
+            "selectDestNode": "在畫布中選擇終點車站",
+            "noPathFound": "所選顏色在這兩站之間沒有找到路徑。",
+            "pathAdded": "成功將 {{count}} 個元素添加進軌道。",
+            "pathAlreadyAdded": "此路徑中的所有元素都已存在於軌道中。",
+            "empty": "軌道仍是空的。先在上方選擇元素，再開始建立時間線。",
+            "missingCoverage": "還有 {{nodeCount}} 個節點、{{edgeCount}} 條線段未加入時間線。",
+            "highlightMissing": "高亮遺漏",
+            "clearMissingHighlight": "取消高亮",
+            "coverageComplete": "所有節點和線段都已加入時間線。"
+        },
         "open": {
             "new": "新項目",
             "config": "讀入項目",
@@ -751,6 +823,21 @@
         "download": {
             "config": "導出項目",
             "image": "導出圖片",
+            "video": "匯出影片",
+            "videoExport": {
+                "title": "匯出影片",
+                "fps": "每秒影格數 (FPS)",
+                "duration": "時長（秒）",
+                "quality": "影片品質",
+                "generating": "正在產生影片...",
+                "progress": "進度：{{progress}}%",
+                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
+                "shareInfo1": "當我分享此影片時我會附上",
+                "shareInfo2": "和它的連結。",
+                "format": "WebM 格式",
+                "error": "影片匯出失敗，請重試。",
+                "noNodes": "無法匯出影片：圖中沒有節點。"
+            },
             "2rmg": {
                 "title": "導出RMG項目",
                 "type": {
@@ -787,36 +874,7 @@
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
-            "confirm": "下載",
-            "videoExport": {
-                "title": "匯出影片",
-                "fps": "每秒影格數 (FPS)",
-                "duration": "時長（秒）",
-                "quality": "影片品質",
-                "generating": "正在產生影片...",
-                "progress": "進度：{{progress}}%",
-                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
-                "shareInfo1": "當我分享此影片時我會附上",
-                "shareInfo2": "和它的連結。",
-                "format": "WebM 格式",
-                "error": "影片匯出失敗，請重試。",
-                "noNodes": "無法匯出影片：圖中沒有節點。"
-            }
-        },
-        "timeline": {
-            "title": "動畫時間線",
-            "empty": "暫無時間線，點擊「添加節點」開始構建。",
-            "addSegment": "添加節點",
-            "clearAll": "清空",
-            "pickStart": "在畫布上點擊一個節點作為起點……",
-            "pickEnd": "在畫布上點擊一個節點作為終點……",
-            "selectTheme": "選擇線路顏色：",
-            "noPath": "未找到所選節點之間的路徑。",
-            "unadded": "有 {{count}} 個節點未加入時間線",
-            "addStationOnly": "僅添加此節點",
-            "reverse": "反向",
-            "reverseSelected": "反向選中線路",
-            "reversed": "已反向"
+            "confirm": "下載"
         },
         "donation": {
             "title": "捐款",
@@ -861,6 +919,13 @@
                     "empty": "空白",
                     "shmetro": "上海",
                     "bjsubway": "北京"
+                },
+                "stationNameTranslationMode": {
+                    "title": "站名翻譯方式",
+                    "pinyinSpaced": "音譯-單字大寫有空格",
+                    "pinyinCompact": "音譯-首字大寫無空格",
+                    "pinyinUppercase": "音譯-全大寫",
+                    "semantic": "意譯"
                 },
                 "gridline": "顯示網格參考線",
                 "snapline": "磁性吸附到參考線",
@@ -985,6 +1050,7 @@
             "slackContent": "在這些Slack頻道中討論!"
         }
     },
+
     "contextMenu": {
         "refresh": "重新整理",
         "cut": "剪下",
@@ -1000,8 +1066,10 @@
         "flipVertical": "垂直翻轉",
         "flipHorizontal": "水平翻轉",
         "flipDiagonal45": "沿45°線翻轉",
-        "flipDiagonal135": "沿135°線翻轉"
+        "flipDiagonal135": "沿135°線翻轉",
+        "reconcile": "合併線段"
     },
+
     "clipboard": {
         "errors": {
             "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
@@ -1009,5 +1077,6 @@
             "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
         }
     },
+
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
 }
