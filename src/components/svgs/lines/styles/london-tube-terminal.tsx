@@ -70,6 +70,7 @@ const londonTubeTerminal: LineStyle<LondonTubeTerminalAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonTubeTerminal.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

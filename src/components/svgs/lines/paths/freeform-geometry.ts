@@ -3,6 +3,8 @@ import {
     ClosedAreaCommands,
     ClosedAreaPath,
     EmptyOpenPath,
+    OpenPath,
+    OpenPathCommands,
     PathPoint,
     arcTo,
     closePath,
@@ -11,6 +13,7 @@ import {
     makeEmptyOpenPath,
     moveTo,
 } from '../../../../constants/path';
+import { makeOpenPathFromCommands } from '../../../../util/path';
 import {
     addPoints as add,
     distanceBetweenPoints as distance,
@@ -21,7 +24,7 @@ import {
     scalePoint as scale,
     subtractPoints as subtract,
 } from '../../../../util/geometry';
-import { clamp, formatNumber, isFiniteNumber } from '../../../../util/number';
+import { clamp, isFiniteNumber } from '../../../../util/number';
 import {
     DEFAULT_FREEFORM_SMOOTHING,
     DEFAULT_FREEFORM_WIDTH,
@@ -39,13 +42,11 @@ import {
  * Preview and commit use different values: previews favour immediate visual fidelity, while committed paths favour a
  * smaller representation that stays responsive during later editing.
  */
-export interface FreeformCreateOptions {
+interface FreeformCreateOptions {
     /** Minimum distance between retained pointer samples, in SVG user units. */
     minPointDistance?: number;
     /** Ramer-Douglas-Peucker tolerance applied after distance filtering, in SVG user units. */
     simplifyTolerance?: number;
-    /** Constant width assigned when the newly drawn path has no explicit width stops. */
-    defaultWidth?: number;
 }
 
 /** Measure a sampled polyline without building a reusable metrics object. */
@@ -141,10 +142,6 @@ export const createFreeformPathAttributes = (
     normalized[normalized.length - 1] = target;
     const targetRelative = subtract(target, source);
     if (distance(source, target) < FREEFORM_EPSILON) return undefined;
-    const requestedWidth = options.defaultWidth ?? DEFAULT_FREEFORM_WIDTH;
-    const defaultWidth = Number.isFinite(requestedWidth)
-        ? Math.max(MIN_FREEFORM_WIDTH, requestedWidth)
-        : DEFAULT_FREEFORM_WIDTH;
     // Persist each source-local sample in the normalized chord basis so later endpoint moves rotate and scale the shape.
     const points = normalized.map((point, index) => {
         const persisted =
@@ -157,13 +154,12 @@ export const createFreeformPathAttributes = (
     });
 
     return {
-        version: 1,
         points,
-        widthStops: [{ id: createId() || 'width_default', t: 0.5, width: defaultWidth }],
+        widthStops: [{ id: createId() || 'width_default', t: 0.5, width: DEFAULT_FREEFORM_WIDTH }],
         smoothing: DEFAULT_FREEFORM_SMOOTHING,
         startCap: 'round',
         endCap: 'round',
-        arrow: { length: defaultWidth * 2.4, width: defaultWidth * 2 },
+        arrow: { length: DEFAULT_FREEFORM_WIDTH * 2.4, width: DEFAULT_FREEFORM_WIDTH * 2 },
     };
 };
 
@@ -196,7 +192,7 @@ const catmullRomPoint = (p0: PathPoint, p1: PathPoint, p2: PathPoint, p3: PathPo
  * Geometry functions receive canonical attributes from the generator or editor boundary.
  * Keeping normalisation out of this layer prevents nested geometry calls from repeatedly repairing the same value.
  */
-export const getFreeformCenterline = (attrs: ResolvedFreeformPathAttributes): PathPoint[] => {
+const getFreeformCenterline = (attrs: ResolvedFreeformPathAttributes): PathPoint[] => {
     const { points, smoothing } = attrs;
     const output: PathPoint[] = [];
 
@@ -279,31 +275,6 @@ const trimPolylineAtDistance = (points: PathPoint[], targetDistance: number): Pa
     return output.length >= 2 ? output : [points[0], pointAtDistance(points, safeDistance)];
 };
 
-/**
- * Convert a local canvas point to normalized distance along the visible freeform centerline.
- *
- * Width stops use this value so dragging a stop follows the rendered curve rather than the raw control polygon.
- */
-export const getNearestFreeformCenterlineT = (attrs: ResolvedFreeformPathAttributes, point: PathPoint): number => {
-    const centerline = getFreeformCenterline(attrs);
-    const metrics = getPolylineMetrics(centerline);
-    if (metrics.total === 0) return 0;
-
-    let bestDistance = Number.POSITIVE_INFINITY;
-    let bestPathDistance = 0;
-
-    for (let i = 0; i < centerline.length - 1; i += 1) {
-        const projection = distanceToSegment(point, centerline[i], centerline[i + 1]);
-        if (projection.distance < bestDistance) {
-            bestDistance = projection.distance;
-            // Convert segment-local `t` back into total path distance for stable width-stop storage.
-            bestPathDistance = metrics.cumulative[i] + distance(centerline[i], centerline[i + 1]) * projection.t;
-        }
-    }
-
-    return clamp(bestPathDistance / metrics.total, 0, 1);
-};
-
 /** Pick the control-polygon segment that should receive an inserted editable point. */
 export const getNearestFreeformControlSegmentIndex = (
     attrs: ResolvedFreeformPathAttributes,
@@ -324,17 +295,27 @@ export const getNearestFreeformControlSegmentIndex = (
     return insertIndex;
 };
 
-/** Build an SVG `d` string for the editable centerline overlay. */
-export const getFreeformCenterlineD = (attrs: ResolvedFreeformPathAttributes): string => {
+/** Build the open-path representation consumed by stroke-based line styles. */
+export const makeFreeformOpenPath = (
+    attrs: ResolvedFreeformPathAttributes,
+    origin: PathPoint = { x: 0, y: 0 }
+): OpenPath | EmptyOpenPath => {
     const centerline = getFreeformCenterline(attrs);
-    if (centerline.length < 2) return '';
-    return centerline
-        .map((point, index) => `${index === 0 ? 'M' : 'L'} ${formatNumber(point.x)} ${formatNumber(point.y)}`)
-        .join(' ');
+    if (centerline.length < 2 || getPolylineMetrics(centerline).total < MIN_FREEFORM_PATH_LENGTH) {
+        return makeEmptyOpenPath();
+    }
+
+    const absolutePoints = centerline.map(point => add(origin, point));
+    const commands = [
+        moveTo(absolutePoints[0]),
+        lineTo(absolutePoints[1]),
+        ...absolutePoints.slice(2).map(lineTo),
+    ] as OpenPathCommands;
+    return makeOpenPathFromCommands(commands);
 };
 
-/** Interpolate the rendered outline width at a normalized centerline position. */
-export const getWidthAtT = (attrs: ResolvedFreeformPathAttributes, t: number): number => {
+/** Interpolate the dormant outline width at a normalized centerline position. */
+const getWidthAtT = (attrs: ResolvedFreeformPathAttributes, t: number): number => {
     const stops = attrs.widthStops;
     const safeT = clamp(t, 0, 1);
     if (safeT <= stops[0].t) return stops[0].width;
@@ -353,35 +334,12 @@ export const getWidthAtT = (attrs: ResolvedFreeformPathAttributes, t: number): n
     return stops[stops.length - 1].width;
 };
 
-/** Compute the center and side handles used by the width-stop overlay controls. */
-export const getFreeformWidthStopGeometry = (attrs: ResolvedFreeformPathAttributes, stopId: string) => {
-    const stop = attrs.widthStops.find(item => item.id === stopId);
-    if (!stop) return undefined;
-
-    const centerline = getFreeformCenterline(attrs);
-    const metrics = getPolylineMetrics(centerline);
-    const pathDistance = metrics.total * clamp(stop.t, 0, 1);
-    const center = pointAtDistance(centerline, pathDistance);
-    // Width handles sit on the normal so dragging either side changes total outline width symmetrically.
-    const normal = normalForTangent(tangentAtDistance(centerline, pathDistance));
-    const width = Math.max(MIN_FREEFORM_WIDTH, stop.width);
-
-    return {
-        center,
-        normal,
-        width,
-        start: add(center, scale(normal, width / 2)),
-        end: add(center, scale(normal, -width / 2)),
-    };
-};
-
 /**
- * Convert canonical freeform attributes into a closed filled area path.
+ * Convert canonical Freeform attributes into a closed filled area path.
  *
- * Freeform currently renders as a variable-width outline area, not as a stroke along an open centerline. The style
- * layer can then fill that area exactly like other closed path outputs.
+ * This remains available for future outline rendering but is not registered as the active Freeform generator.
  */
-export const makeFreeformAreaPath = (
+export const makeFreeformClosedAreaPath = (
     attrs: ResolvedFreeformPathAttributes,
     origin: PathPoint = { x: 0, y: 0 }
 ): ClosedAreaPath | EmptyOpenPath => {

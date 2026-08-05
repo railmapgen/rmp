@@ -131,6 +131,7 @@ const londonRail: LineStyle<LondonRailAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonRail.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

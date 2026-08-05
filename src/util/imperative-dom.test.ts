@@ -88,45 +88,34 @@ describe('imperative DOM helpers', () => {
         expect(document.getElementById('stn_test.post')?.getAttribute('transform')).toBe('translate(15,17)');
     });
 
-    it('updates freeform lines with their filled area path during node dragging', () => {
+    it('updates ordinary styles with the open Freeform path during node dragging', () => {
         const graph = createGraph();
-        graph.addNode('misc_node_a', {
-            visible: true,
-            zIndex: 0,
-            x: 10,
-            y: 0,
-            type: MiscNodeType.Virtual,
-            [MiscNodeType.Virtual]: {} as any,
-        } as any);
-        graph.addNode('misc_node_b', {
-            visible: true,
-            zIndex: 0,
-            x: 100,
-            y: 0,
-            type: MiscNodeType.Virtual,
-            [MiscNodeType.Virtual]: {} as any,
-        } as any);
+        addVirtualNode(graph, 'misc_node_a', 10, 0);
+        addVirtualNode(graph, 'misc_node_b', 100, 0);
         graph.addDirectedEdgeWithKey('line_freeform', 'misc_node_a', 'misc_node_b', {
             visible: true,
             zIndex: 0,
             type: LinePathType.Freeform,
             [LinePathType.Freeform]: {
-                version: 1,
                 points: [
                     { id: 'start', x: 0, y: 0 },
                     { id: 'mid', x: 0.4, y: 0.2 },
                     { id: 'end', x: 1, y: 0 },
                 ],
-                widthStops: [{ id: 'w', t: 0.5, width: 6 }],
+                widthStops: [{ id: 'w', t: 0.5, width: 5 }],
                 smoothing: 0.5,
                 startCap: 'round',
                 endCap: 'round',
+                arrow: { length: 12, width: 10 },
             },
-            style: LineStyleType.SingleColor,
-            [LineStyleType.SingleColor]: {} as any,
+            style: LineStyleType.River,
+            [LineStyleType.River]: {
+                color: [CityCode.Shanghai, 'river', '#B9E3F9', MonoColour.white],
+                width: 20,
+            },
             reconcileId: '',
             parallelIndex: -1,
-        } as any);
+        });
 
         document.body.innerHTML = `
             <svg>
@@ -137,9 +126,9 @@ describe('imperative DOM helpers', () => {
 
         moveNodesAndRedrawLines(graph, ['misc_node_a'], 10, 0);
 
-        const expectedPathD = getLines(graph).find(line => line.id === 'line_freeform')?.line?.path.d;
-        expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toBe(expectedPathD);
-        expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toMatch(/ Z$/);
+        const generatedPath = getLines(graph).find(line => line.id === 'line_freeform')?.line?.path;
+        expect(document.querySelector('#line_freeform path')?.getAttribute('d')).toBe(generatedPath?.d);
+        expect(document.querySelector('#line_freeform path')?.getAttribute('d')).not.toMatch(/ Z$/);
     });
 
     it('updates the rendered reconcile base edge when dragging a non-base member endpoint', () => {

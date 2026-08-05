@@ -605,6 +605,8 @@
                 },
                 "freeform": {
                     "displayName": "자유형 선분",
+                    "outlineSettingsUnavailable": "가변 너비 및 양쪽 끝 모양 설정은 아직 사용할 수 없습니다.",
+                    "controlPointHint": "파란색 제어점을 드래그하여 선의 진행 방향을 조정할 수 있습니다. 선을 두 번 클릭하면 해당 위치에 제어점을 추가하고, 파란색 제어점을 마우스 오른쪽 버튼으로 클릭하면 삭제할 수 있습니다.",
                     "widthStops": "너비 점",
                     "widthStopIndex": "#",
                     "widthStopPosition": "위치 (%)",

@@ -157,6 +157,7 @@ const dualColor: LineStyle<DualColorAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,

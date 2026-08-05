@@ -2,8 +2,8 @@ import { PathPoint } from '../../../../constants/path';
 import { distanceBetweenPoints as distance, fromChordCoordinates, toChordCoordinates } from '../../../../util/geometry';
 import { clamp, isFiniteNumber } from '../../../../util/number';
 
-export type FreeformStartCap = 'round' | 'flat';
-export type FreeformEndCap = 'round' | 'flat' | 'arrow';
+type FreeformStartCap = 'round' | 'flat';
+type FreeformEndCap = 'round' | 'flat' | 'arrow';
 
 /**
  * A persisted control point in the source-to-target chord coordinate system.
@@ -11,7 +11,7 @@ export type FreeformEndCap = 'round' | 'flat' | 'arrow';
  * `x` follows the chord and `y` follows its perpendicular. Both are normalized by the chord length, so `(0, 0)` is
  * the source and `(1, 0)` is the target regardless of SVG user units.
  */
-export interface FreeformPoint {
+interface FreeformPoint {
     /** Stable identity used to preserve handle selection when points are inserted or removed. */
     id: string;
     /** Offset along the source-to-target chord, as a proportion of chord length. */
@@ -26,7 +26,7 @@ export interface FreeformPoint {
  * Using arc length instead of a control-point index keeps width transitions attached to the visible curve even when
  * control points are unevenly spaced.
  */
-export interface FreeformWidthStop {
+interface FreeformWidthStop {
     /** Stable identity used by the overlay while stops are reordered by position. */
     id: string;
     /** Position from source (`0`) to target (`1`); values are clamped and sorted during normalisation. */
@@ -42,8 +42,6 @@ export interface FreeformWidthStop {
  * endpoints before generating geometry.
  */
 export interface FreeformPathAttributes {
-    /** Schema version for future changes to the persisted freeform representation. */
-    version: 1;
     /** Chord-relative control points, including the two node-owned endpoints. */
     points: FreeformPoint[];
     /** Width samples interpolated by arc length along the generated centerline. */
@@ -77,7 +75,6 @@ export const FREEFORM_EPSILON = 1e-6;
 const FREEFORM_SOURCE = { x: 0, y: 0 };
 
 export const defaultFreeformPathAttributes: FreeformPathAttributes = {
-    version: 1,
     points: [
         { id: 'point_start', x: 0, y: 0 },
         { id: 'point_end', x: 1, y: 0 },
@@ -98,7 +95,7 @@ export const defaultFreeformPathAttributes: FreeformPathAttributes = {
  * Width interpolation assumes stops are finite and sorted by `t`; doing that once at the boundary lets rendering code
  * stay focused on geometry instead of repeatedly defending against imported or older saves.
  */
-export const normalizeFreeformWidthStops = (
+const normalizeFreeformWidthStops = (
     widthStops: FreeformWidthStop[] | undefined,
     fallbackWidth = DEFAULT_FREEFORM_WIDTH
 ) => {
@@ -145,19 +142,18 @@ export const normalizeFreeformPathAttributes = (value: unknown): FreeformPathAtt
     const startId = inputPoints[0]?.id || 'point_start';
     const endId = inputPoints.at(-1)?.id || 'point_end';
 
+    const smoothing = isFiniteNumber(candidate.smoothing)
+        ? clamp(candidate.smoothing, 0, 1)
+        : DEFAULT_FREEFORM_SMOOTHING;
     const startCap = candidate.startCap === 'flat' || candidate.startCap === 'round' ? candidate.startCap : 'round';
     const endCap =
         candidate.endCap === 'flat' || candidate.endCap === 'arrow' || candidate.endCap === 'round'
             ? candidate.endCap
             : 'round';
-    const smoothing = isFiniteNumber(candidate.smoothing)
-        ? clamp(candidate.smoothing, 0, 1)
-        : DEFAULT_FREEFORM_SMOOTHING;
     const widthStops = normalizeFreeformWidthStops(candidate.widthStops);
     const endWidth = widthStops[widthStops.length - 1]?.width ?? DEFAULT_FREEFORM_WIDTH;
 
     return {
-        version: 1,
         // Preserve endpoint ids when possible so active overlay selections do not flicker after normalisation.
         points: [{ id: startId, x: 0, y: 0 }, ...middlePoints, { id: endId, x: 1, y: 0 }],
         widthStops,
