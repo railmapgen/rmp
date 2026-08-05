@@ -281,7 +281,16 @@ export default function TimelineTrackPanel({
                 </Flex>
             )}
 
-            <Box flex="1" borderWidth="1px" borderRadius="xl" px={4} py={4} overflow="hidden" bg="blackAlpha.50">
+            <Box
+                flex="1"
+                minH={0}
+                borderWidth="1px"
+                borderRadius="xl"
+                px={4}
+                py={4}
+                overflow="hidden"
+                bg="blackAlpha.50"
+            >
                 {draftDocument.track.length > 0 ? (
                     <TimelineTrack
                         key={`${refreshNodes}-${refreshEdges}`}

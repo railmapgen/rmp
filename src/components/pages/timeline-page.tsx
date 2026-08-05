@@ -7,7 +7,7 @@ import { getTimelineCoverage, normalizeTimelineDocument } from '../../util/timel
 import TimelineTrackPanel from '../timeline/timeline-track-panel';
 import TimelineSvgWrapper, { TimelineSvgHandle } from '../timeline/timeline-svg-wrapper';
 
-const TRACK_PANEL_HEIGHT = 260;
+const TRACK_PANEL_HEIGHT = 300;
 
 export default function TimelinePage() {
     const dispatch = useRootDispatch();
