@@ -2,6 +2,7 @@ import { MultiDirectedGraph } from 'graphology';
 import WebMWriter from 'webm-writer';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Provider } from 'react-redux';
 import {
     EdgeAttributes,
     ExternalStationAttributes,
@@ -16,10 +17,17 @@ import stations from '../components/svgs/stations/stations';
 import { StationType } from '../constants/stations';
 import { TimelineDocument, TimelineEntry } from '../constants/timeline';
 import i18n from '../i18n/config';
+import store from '../redux';
 import { TextLanguage } from './fonts';
 import { changeStationType, checkAndChangeStationIntType } from './change-types';
 import { makeRenderReadySVGElement } from './download';
 import { calculateCanvasSize } from './helpers';
+
+const StaticMarkupProvider = Provider as React.ComponentType<
+    React.PropsWithChildren<{
+        store: typeof store;
+    }>
+>;
 
 export interface VideoExportOptions {
     fps: number;
@@ -199,7 +207,7 @@ const getBasicStationType = (stationType: StationType): StationType | undefined 
     return undefined;
 };
 
-const renderBasicStationMarkup = (
+export const renderBasicStationMarkup = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     stationId: StnId
 ): string | undefined => {
@@ -220,15 +228,19 @@ const renderBasicStationMarkup = (
         : ({} as ExternalStationAttributes);
 
     return renderToStaticMarkup(
-        React.createElement(basicStation.component, {
-            id: stationId,
-            attrs,
-            x: 0,
-            y: 0,
-            handlePointerDown: () => {},
-            handlePointerMove: () => {},
-            handlePointerUp: () => {},
-        })
+        React.createElement(
+            StaticMarkupProvider,
+            { store },
+            React.createElement(basicStation.component, {
+                id: stationId,
+                attrs,
+                x: 0,
+                y: 0,
+                handlePointerDown: () => {},
+                handlePointerMove: () => {},
+                handlePointerUp: () => {},
+            })
+        )
     );
 };
 

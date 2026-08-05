@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { MultiDirectedGraph } from 'graphology';
+import stations from '../components/svgs/stations/stations';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../constants/timeline';
-import { generateAnimationSequence } from './video-export';
+import { generateAnimationSequence, renderBasicStationMarkup } from './video-export';
 
 const makeGraph = () => new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 
@@ -131,5 +132,23 @@ describe('generateAnimationSequence', () => {
             { id: 'line_ab', kind: 'edge', reverse: false },
             { id: 'line_bc', kind: 'edge', reverse: false },
         ]);
+    });
+});
+
+describe('renderBasicStationMarkup', () => {
+    it('provides Redux context to v2 station components during video frame rendering', () => {
+        const graph = makeGraph();
+        const stationType = StationType.SuzhouRTInt;
+        graph.addNode('stn_suzhou', {
+            visible: true,
+            zIndex: 0,
+            x: 0,
+            y: 0,
+            type: stationType,
+            [stationType]: structuredClone(stations[stationType].defaultAttrs),
+        });
+
+        const markup = renderBasicStationMarkup(graph, 'stn_suzhou');
+        expect(markup).toContain('stn_core_stn_suzhou');
     });
 });
