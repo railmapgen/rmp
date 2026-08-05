@@ -601,6 +601,8 @@
                 },
                 "freeform": {
                     "displayName": "Freeform path",
+                    "outlineSettingsUnavailable": "Variable width and start/end cap settings are not available yet.",
+                    "controlPointHint": "Drag a blue control point to adjust the path. Double-click the path to add a control point there, or right-click a blue control point to remove it.",
                     "widthStops": "Width stops",
                     "widthStopIndex": "#",
                     "widthStopPosition": "Position (%)",

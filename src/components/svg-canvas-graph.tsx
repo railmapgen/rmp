@@ -491,8 +491,8 @@ const SvgCanvas = () => {
 
         if (mode.startsWith('station') || mode.startsWith('misc-node-virtual') || mode.startsWith('misc-node-master')) {
             if (graph.current.getEdgeAttribute(edge, 'type') === LinePathType.Freeform) {
-                // The generic splitter only derives a new path from endpoints. Freeform also needs its points and
-                // width stops partitioned, otherwise inserting a node would silently discard the authored shape.
+                // The generic splitter only derives a new path from endpoints. Freeform needs its authored points
+                // partitioned, otherwise inserting a node would silently discard the drawn shape.
                 dispatch(setMode('free'));
                 return;
             }
@@ -586,6 +586,10 @@ const SvgCanvas = () => {
               y: drawingSourcePoint.y - pointerOffset.dy,
           }
         : undefined;
+    const drawingPreviewPath =
+        drawingGesture.current?.session && drawingPointer
+            ? drawingGesture.current.session.getPreviewPath(drawingGesture.current.pointer)
+            : undefined;
 
     return (
         <>
@@ -603,7 +607,19 @@ const SvgCanvas = () => {
                 drawingPointer &&
                 (!drawingGesture.current || drawingGesture.current.type === linePath) &&
                 (drawingGesture.current?.session ? (
-                    <g color={theme[2]}>{drawingGesture.current.session.getPreview(drawingGesture.current.pointer)}</g>
+                    drawingPreviewPath ? (
+                        <g opacity={0.65}>
+                            <LineStyleComponent
+                                id="line_create_in_progress___no_use"
+                                type={linePath}
+                                path={drawingPreviewPath}
+                                // @ts-expect-error line style attributes are selected from the same registry key.
+                                styleAttrs={lineStyleAttrs}
+                                newLine
+                                handlePointerDown={() => {}}
+                            />
+                        </g>
+                    ) : null
                 ) : linePaths[linePath].drawingBehavior ? null : (
                     <LineStyleComponent
                         id="line_create_in_progress___no_use"

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
     createFreeformPathAttributes,
-    getFreeformCenterline,
-    getFreeformWidthStopGeometry,
     getNearestFreeformControlSegmentIndex,
-    getWidthAtT,
-    makeFreeformAreaPath,
+    makeFreeformClosedAreaPath,
+    makeFreeformOpenPath,
 } from './freeform-geometry';
 import { resolveFreeformPathAttributes } from './freeform-model';
 
@@ -17,7 +15,6 @@ const makeId = () => {
 const makeAttrs = () =>
     resolveFreeformPathAttributes(
         {
-            version: 1,
             points: [
                 { id: 'start', x: 0, y: 0 },
                 { id: 'mid', x: 0.5, y: 0.3 },
@@ -35,7 +32,7 @@ const makeAttrs = () =>
     )!;
 
 describe('freeform path geometry', () => {
-    it('creates chord-relative percentage attributes from sampled absolute points', () => {
+    it('creates complete chord-relative attributes from sampled points', () => {
         const attrs = createFreeformPathAttributes(
             [
                 { x: 10, y: 10 },
@@ -48,43 +45,52 @@ describe('freeform path geometry', () => {
             makeId()
         );
 
-        expect(attrs).toBeDefined();
-        expect(attrs!.points[0]).toMatchObject({ x: 0, y: 0 });
-        expect(attrs!.points.at(-1)).toMatchObject({ x: 1, y: 0 });
-        expect(attrs!.points.some(point => point.x > 0 && point.x < 1 && point.y !== 0)).toBe(true);
+        expect(attrs?.points[0]).toMatchObject({ x: 0, y: 0 });
+        expect(attrs?.points.at(-1)).toMatchObject({ x: 1, y: 0 });
+        expect(attrs?.widthStops).toHaveLength(1);
+        expect(attrs).toMatchObject({ startCap: 'round', endCap: 'round' });
     });
 
     it('rejects sampled paths that are too short', () => {
-        const attrs = createFreeformPathAttributes(
-            [
+        expect(
+            createFreeformPathAttributes(
+                [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 1 },
+                ],
                 { x: 0, y: 0 },
                 { x: 1, y: 1 },
-            ],
-            { x: 0, y: 0 },
-            { x: 1, y: 1 },
-            makeId()
-        );
-
-        expect(attrs).toBeUndefined();
+                makeId()
+            )
+        ).toBeUndefined();
     });
 
-    it('interpolates width stops along the centerline', () => {
-        expect(getWidthAtT(makeAttrs(), 0.5)).toBe(7);
+    it('selects the nearest authored segment for point insertion', () => {
+        expect(getNearestFreeformControlSegmentIndex(makeAttrs(), { x: 75, y: 10 })).toBe(2);
     });
 
-    it('generates editor geometry from the same sampled centerline', () => {
-        const attrs = makeAttrs();
+    it('builds an OpenPath for active rendering', () => {
+        const path = makeFreeformOpenPath(makeAttrs());
 
-        expect(getFreeformCenterline(attrs).length).toBeGreaterThan(3);
-        expect(getFreeformWidthStopGeometry(attrs, 'a')).toBeDefined();
-        expect(getNearestFreeformControlSegmentIndex(attrs, { x: 75, y: 10 })).toBe(2);
+        expect(path.kind).toBe('complex-open');
+        expect(path.d).toMatch(/^M /);
+        expect(path.d).not.toMatch(/ Z$/);
     });
 
-    it('generates a structured closed area with arc commands for round caps', () => {
-        const area = makeFreeformAreaPath(makeAttrs());
+    it('retains the dormant ClosedAreaPath generator with interpolated widths and round caps', () => {
+        const area = makeFreeformClosedAreaPath(makeAttrs());
 
         expect(area.kind).toBe('closed-area');
         expect(area.d).toMatch(/^M .* Z$/);
         expect(area.commands.some(command => command.cmd === 'A')).toBe(true);
+        expect(area.commands.some(command => 'to' in command && Math.abs(command.to.y) >= 5)).toBe(true);
+    });
+
+    it('retains arrow generation in the dormant ClosedAreaPath helper', () => {
+        const attrs = { ...makeAttrs(), startCap: 'flat' as const, endCap: 'arrow' as const };
+        const area = makeFreeformClosedAreaPath(attrs);
+
+        expect(area.kind).toBe('closed-area');
+        expect(area.commands.some(command => 'to' in command && command.to.x === 100 && command.to.y === 0)).toBe(true);
     });
 });

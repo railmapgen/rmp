@@ -76,7 +76,7 @@ describe('LinePathOverlayLayer', () => {
         addLine('line_freeform', LinePathType.Freeform);
 
         const { container } = renderOverlay(new Set<Id>(['line_freeform']));
-        await waitFor(() => expect(container.querySelectorAll('circle')).toHaveLength(6));
+        await waitFor(() => expect(container.querySelectorAll('circle')).toHaveLength(2));
     });
 
     it('passes viewport state from Redux to the selected path overlay', () => {

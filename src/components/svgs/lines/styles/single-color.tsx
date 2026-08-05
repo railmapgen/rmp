@@ -11,7 +11,6 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { isAreaPath } from '../../../../util/path';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
@@ -23,16 +22,7 @@ const SingleColor = (props: LineStyleComponentProps<SingleColorAttributes>) => {
         [id, handlePointerDown]
     );
 
-    return isAreaPath(path) ? (
-        <path
-            d={path.d}
-            fill={color[2]}
-            stroke="none"
-            cursor="pointer"
-            onPointerDown={newLine ? undefined : onPointerDown}
-            pointerEvents={newLine ? 'none' : undefined}
-        />
-    ) : (
+    return (
         <path
             d={path.d}
             fill="none"

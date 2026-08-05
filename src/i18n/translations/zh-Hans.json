@@ -600,6 +600,8 @@
                 },
                 "freeform": {
                     "displayName": "自由绘制线段",
+                    "outlineSettingsUnavailable": "可变宽度和两端端头设置暂未开放。",
+                    "controlPointHint": "拖动蓝色控制点可调整线路走向；双击线路可在对应位置添加控制点，右击蓝色控制点可将其删除。",
                     "widthStops": "宽度点",
                     "widthStopIndex": "#",
                     "widthStopPosition": "位置 (%)",

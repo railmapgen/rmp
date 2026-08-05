@@ -6,10 +6,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { CityCode, EdgeAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { closePath, lineTo, makeClosedAreaPath, makeLinearPath, makePoint, moveTo } from '../constants/path';
+import { lineTo, makeComplexOpenPath, makeLinearPath, makePoint, moveTo } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
 import SvgLayer from './svg-layer';
+import { lineStyles } from './svgs/lines/lines';
 
 const makeLineAttrs = (): EdgeAttributes => ({
     visible: true,
@@ -39,27 +40,31 @@ const makeStationAttrs = (): NodeAttributes => ({
 });
 
 describe('SvgLayer', () => {
-    it('lets single-color fill a closed line path instead of stroking it as a centerline', () => {
-        const area = makeClosedAreaPath([
-            moveTo(makePoint(0, -3)),
-            lineTo(makePoint(100, -3)),
-            lineTo(makePoint(100, 3)),
-            lineTo(makePoint(0, 3)),
-            closePath(),
+    it('renders second-batch generated styles from a complex freeform centerline', () => {
+        const centerline = makeComplexOpenPath([
+            moveTo(makePoint(0, 0)),
+            lineTo(makePoint(50, 20)),
+            lineTo(makePoint(100, 0)),
         ]);
-        const elements: Element[] = [
-            {
-                id: 'line_area',
-                type: 'line',
-                line: {
-                    attr: {
-                        ...makeLineAttrs(),
-                        type: LinePathType.Freeform,
-                    },
-                    path: area,
-                },
-            },
+        const styles = [
+            LineStyleType.DualColor,
+            LineStyleType.JREastSingleColor,
+            LineStyleType.JREastSingleColorPattern,
+            LineStyleType.Shinkansen,
         ];
+        const elements: Element[] = styles.map((style, index) => ({
+            id: `line_generated_${index}`,
+            type: 'line',
+            line: {
+                attr: {
+                    ...makeLineAttrs(),
+                    type: LinePathType.Freeform,
+                    style,
+                    [style]: structuredClone(lineStyles[style].defaultAttrs),
+                } as EdgeAttributes,
+                path: centerline,
+            },
+        }));
 
         const { container } = render(
             <svg>
@@ -75,10 +80,14 @@ describe('SvgLayer', () => {
             </svg>
         );
 
-        const path = container.querySelector('#line_area path');
-        expect(path).toHaveAttribute('d', area.d);
-        expect(path).toHaveAttribute('fill', '#E4002B');
-        expect(path).toHaveAttribute('stroke', 'none');
+        styles.forEach((_, index) => {
+            const renderedPaths = [
+                ...container.querySelectorAll(
+                    `#line_generated_${index} path[d], [id="line_generated_${index}.pre"] path[d]`
+                ),
+            ];
+            expect(renderedPaths.some(path => path.getAttribute('d'))).toBe(true);
+        });
     });
 
     it('renders unknown line style with UnknownLineStyle', () => {

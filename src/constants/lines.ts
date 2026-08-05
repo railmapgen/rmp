@@ -247,8 +247,13 @@ export interface LinePathDrawingSession<T extends LinePathAttributes> {
      * Returning `undefined` cancels creation, for example when the sampled path is too short to be meaningful.
      */
     createAttrs: (target: PathPoint, pointer: PathPoint) => T | undefined;
-    /** Produces transient feedback from the latest absolute SVG pointer without mutating the graph. */
-    getPreview: (pointer: PathPoint) => React.JSX.Element | null;
+    /**
+     * Produces transient path geometry from the latest absolute SVG pointer without mutating the graph.
+     *
+     * Returning geometry instead of rendered JSX lets the selected line style paint previews with the same
+     * centerline-vs-area policy used by committed lines.
+     */
+    getPreviewPath: (pointer: PathPoint) => Path | undefined;
 }
 
 /**

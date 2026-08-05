@@ -64,6 +64,7 @@ const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.chinaRailway.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
