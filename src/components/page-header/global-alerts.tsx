@@ -22,10 +22,19 @@ export default function GlobalAlerts() {
             {Object.entries(globalAlerts).map(([id, { status, message, url, linkedApp }]) => (
                 <Alert key={id} status={status} variant="solid" size="xs" pl={3} pr={1} py={0} zIndex="1">
                     <AlertIcon />
+                    const isValidUrl = (url: string) => {
+                        try {
+                            const parsed = new URL(url);
+                            return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+                        } catch {
+                            return false;
+                        }
+                    };
+
                     {linkedApp ? (
                         <Link onClick={() => handleAppOpen(linkedApp)}>{message}</Link>
-                    ) : url ? (
-                        <Link href={url} target="_blank">
+                    ) : url && isValidUrl(url) ? (
+                        <Link href={url} target="_blank" rel="noopener noreferrer">
                             {message}
                         </Link>
                     ) : (
