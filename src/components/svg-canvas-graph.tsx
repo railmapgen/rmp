@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
-import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
+import { EdgeAttributes, Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
@@ -49,6 +49,7 @@ import { Overlay } from './overlay';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lines';
+import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -88,6 +89,7 @@ interface LineDrawingGesture {
     source: NodeId;
     sourcePoint: PathPoint;
     pointer: PathPoint;
+    target?: NodeId;
     session?: LinePathDrawingSession<LinePathAttributes>;
 }
 
@@ -388,6 +390,8 @@ const SvgCanvas = () => {
             if (gesture && gesture.type === getLinePathAndStyle(mode).path) {
                 const pointer = getSvgPointerPosition(e);
                 gesture.pointer = pointer;
+                const target = getConnectableNodeFromPointer(e);
+                gesture.target = target === gesture.source ? undefined : target;
                 gesture.session?.pointerMove(pointer);
             }
         }
@@ -572,14 +576,9 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    // Prepare line style component and attributes for the line being created.
     const { path, style } = getLinePathAndStyle(mode);
     const linePath = path || LinePathType.Diagonal;
     const lineStyle = style || LineStyleType.SingleColor;
-    const LineStyleComponent = lineStyles[lineStyle].component;
-    const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
-    // TODO: there should be some way for a style to disable auto theme injection
-    if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
 
     const drawingSourcePoint =
         active && active !== 'background' && graph.current.hasNode(active) ? getNodePoint(active) : undefined;
@@ -589,10 +588,81 @@ const SvgCanvas = () => {
               y: drawingSourcePoint.y - pointerOffset.dy,
           }
         : undefined;
-    const drawingPreviewPath =
-        drawingGesture.current?.session && drawingPointer
-            ? drawingGesture.current.session.getPreviewPath(drawingGesture.current.pointer)
-            : undefined;
+    const drawingTargetPoint =
+        drawingGesture.current?.target && graph.current.hasNode(drawingGesture.current.target)
+            ? getNodePoint(drawingGesture.current.target)
+            : drawingPointer;
+    const currentDrawingGesture = drawingGesture.current;
+    let linePreview: React.ReactNode;
+    if (
+        mode.startsWith('line') &&
+        drawingSourcePoint &&
+        drawingPointer &&
+        drawingTargetPoint &&
+        (!currentDrawingGesture || currentDrawingGesture.type === linePath)
+    ) {
+        const LineStyleComponent = lineStyles[lineStyle].component;
+        const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
+        // TODO: there should be some way for a style to disable auto theme injection
+        if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
+
+        if (currentDrawingGesture?.session) {
+            const drawingPreviewPath = currentDrawingGesture.session.getPreviewPath(currentDrawingGesture.pointer);
+            if (drawingPreviewPath) {
+                linePreview = (
+                    <g opacity={0.65}>
+                        <LineStyleComponent
+                            id="line_create_in_progress___no_use"
+                            type={linePath}
+                            path={drawingPreviewPath}
+                            // @ts-expect-error line style attributes are selected from the same registry key.
+                            styleAttrs={lineStyleAttrs}
+                            newLine
+                            handlePointerDown={() => {}}
+                        />
+                    </g>
+                );
+            }
+        } else if (!linePaths[linePath].drawingBehavior) {
+            const previewEdgeAttrs = {
+                visible: true,
+                zIndex: 0,
+                type: linePath,
+                [linePath]: structuredClone(linePaths[linePath].defaultAttrs),
+                style: lineStyle,
+                [lineStyle]: lineStyleAttrs,
+                reconcileId: '',
+                parallelIndex: -1,
+            } as EdgeAttributes;
+            if (linePath === LinePathType.Bezier && currentDrawingGesture?.type === LinePathType.Bezier) {
+                previewEdgeAttrs[LinePathType.Bezier] = initializeBezierEndpointOffsets(
+                    graph.current,
+                    currentDrawingGesture.source,
+                    currentDrawingGesture.target,
+                    previewEdgeAttrs
+                );
+            }
+
+            linePreview = (
+                <LineStyleComponent
+                    id="line_create_in_progress___no_use"
+                    type={linePath}
+                    path={linePaths[linePath].generatePath(
+                        drawingSourcePoint.x,
+                        drawingTargetPoint.x,
+                        drawingSourcePoint.y,
+                        drawingTargetPoint.y,
+                        // @ts-expect-error path and attrs share the same registry key
+                        previewEdgeAttrs[linePath]
+                    )}
+                    // @ts-expect-error
+                    styleAttrs={lineStyleAttrs}
+                    newLine
+                    handlePointerDown={() => {}} // no use
+                />
+            );
+        }
+    }
 
     return (
         <>
@@ -605,42 +675,7 @@ const SvgCanvas = () => {
                 handleEdgePointerDown={handleEdgePointerDown}
                 handleEdgeDoubleClick={handleEdgeDoubleClick}
             />
-            {mode.startsWith('line') &&
-                drawingSourcePoint &&
-                drawingPointer &&
-                (!drawingGesture.current || drawingGesture.current.type === linePath) &&
-                (drawingGesture.current?.session ? (
-                    drawingPreviewPath ? (
-                        <g opacity={0.65}>
-                            <LineStyleComponent
-                                id="line_create_in_progress___no_use"
-                                type={linePath}
-                                path={drawingPreviewPath}
-                                // @ts-expect-error line style attributes are selected from the same registry key.
-                                styleAttrs={lineStyleAttrs}
-                                newLine
-                                handlePointerDown={() => {}}
-                            />
-                        </g>
-                    ) : null
-                ) : linePaths[linePath].drawingBehavior ? null : (
-                    <LineStyleComponent
-                        id="line_create_in_progress___no_use"
-                        type={linePath}
-                        path={linePaths[linePath].generatePath(
-                            drawingSourcePoint.x,
-                            drawingPointer.x,
-                            drawingSourcePoint.y,
-                            drawingPointer.y,
-                            // @ts-expect-error
-                            linePaths[linePath].defaultAttrs
-                        )}
-                        // @ts-expect-error
-                        styleAttrs={lineStyleAttrs}
-                        newLine
-                        handlePointerDown={() => {}} // no use
-                    />
-                ))}
+            {linePreview}
             <Overlay />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (

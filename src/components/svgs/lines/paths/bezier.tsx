@@ -2,7 +2,7 @@ import { HStack, IconButton, Input, InputGroup, InputLeftAddon } from '@chakra-u
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
 import { MdLink } from 'react-icons/md';
-import { LineId, NodeId } from '../../../../constants/constants';
+import { NodeId } from '../../../../constants/constants';
 import {
     LinePath,
     LinePathAttrsProps,
@@ -11,8 +11,7 @@ import {
     PathGenerator,
 } from '../../../../constants/lines';
 import { makePoint, PathPoint } from '../../../../constants/path';
-import { areSameLineStyles } from '../../../../util/same-style';
-import { getBezierEndpointOffset } from './bezier-endpoint';
+import { getSameStyleBezierEndpointOffset } from './bezier-endpoint';
 import { makeBezierPath } from './bezier-geometry';
 import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
@@ -36,32 +35,21 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
  * Hidden peers participate because visibility does not change group identity. A created endpoint with no established
  * peer starts at the path default, while an updated endpoint retains its current offset. Pending edges from the same
  * transaction are ignored so only stable or already-normalized peers can define the shared position.
+ *
+ * Dependency note: `lines.ts -> bezier.tsx -> bezier-endpoint.ts -> same-style.ts -> lines.ts` is an intentional ESM
+ * cycle. `lineStyles` must only be read when this normalizer runs after module initialization, never at module scope.
  */
 const normalizeBezierEdgeAttrs: LinePathEdgeAttrsNormalizer = (graph, edgeId, mode, ignoredEdgeIds) => {
     const edgeAttrs = graph.getEdgeAttributes(edgeId);
-
-    const getExistingOffset = (node: NodeId): PathPoint | undefined => {
-        for (const peerId of graph.edges(node) as LineId[]) {
-            if (ignoredEdgeIds.has(peerId)) continue;
-            const existingEdgeAttrs = graph.getEdgeAttributes(peerId);
-            if (existingEdgeAttrs.type !== LinePathType.Bezier || !areSameLineStyles(edgeAttrs, existingEdgeAttrs)) {
-                continue;
-            }
-
-            return getBezierEndpointOffset(graph, node, peerId);
-        }
-        return undefined;
-    };
-
     const current = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
     const [source, target] = graph.extremities(edgeId) as [NodeId, NodeId];
     const fallback = mode === 'created' ? defaultBezierPathAttributes : current;
     graph.setEdgeAttribute(edgeId, LinePathType.Bezier, {
         ...current,
-        sourceOffset: getExistingOffset(source) ?? {
+        sourceOffset: getSameStyleBezierEndpointOffset(graph, source, edgeAttrs, ignoredEdgeIds) ?? {
             ...(fallback.sourceOffset ?? defaultBezierPathAttributes.sourceOffset),
         },
-        targetOffset: getExistingOffset(target) ?? {
+        targetOffset: getSameStyleBezierEndpointOffset(graph, target, edgeAttrs, ignoredEdgeIds) ?? {
             ...(fallback.targetOffset ?? defaultBezierPathAttributes.targetOffset),
         },
     });

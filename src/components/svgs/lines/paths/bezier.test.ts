@@ -14,6 +14,7 @@ import { StationType } from '../../../../constants/stations';
 import { supportsParallelLinePath } from '../../../../util/parallel';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from '../lines';
 import { generateBezierPath } from './bezier';
+import { initializeBezierEndpointOffsets } from './bezier-endpoint';
 import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
 import { defaultBezierPathAttributes } from './bezier-model';
 
@@ -157,6 +158,54 @@ describe('bezier line path', () => {
 
         expect(attrs?.sourceOffset).toEqual({ x: 12, y: 13 });
         expect(attrs?.targetOffset).toEqual({ x: 0, y: 0 });
+    });
+
+    it('initializes the visible source endpoint while a preview target is still unknown', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'stn_center', 0);
+        addNode(graph, 'misc_node_peer', -100);
+
+        graph.addDirectedEdgeWithKey(
+            'line_peer',
+            'misc_node_peer',
+            'stn_center',
+            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 12, y: 13 })
+        );
+
+        expect(initializeBezierEndpointOffsets(graph, 'stn_center', undefined, makeBezierEdgeAttrs(RED))).toMatchObject(
+            {
+                sourceOffset: { x: 12, y: 13 },
+                targetOffset: { x: 0, y: 0 },
+            }
+        );
+    });
+
+    it('uses the same endpoint initialization for preview and final creation', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'stn_source', 0);
+        addNode(graph, 'stn_target', 100);
+        addNode(graph, 'misc_node_source_peer', -100);
+        addNode(graph, 'misc_node_target_peer', 200);
+
+        graph.addDirectedEdgeWithKey(
+            'line_source_peer',
+            'misc_node_source_peer',
+            'stn_source',
+            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 11, y: 12 })
+        );
+        graph.addDirectedEdgeWithKey(
+            'line_target_peer',
+            'stn_target',
+            'misc_node_target_peer',
+            makeBezierEdgeAttrs(RED, { x: 21, y: 22 })
+        );
+        const candidateAttrs = makeBezierEdgeAttrs(RED, { x: 1, y: 2 }, { x: 3, y: 4 });
+        const previewAttrs = initializeBezierEndpointOffsets(graph, 'stn_source', 'stn_target', candidateAttrs);
+
+        graph.addDirectedEdgeWithKey('line_new', 'stn_source', 'stn_target', candidateAttrs);
+        normalizeEdgeAttributes(graph, ['line_new'], 'created');
+
+        expect(graph.getEdgeAttribute('line_new', LinePathType.Bezier)).toEqual(previewAttrs);
     });
 
     it('normalizes split edges with preserved outer endpoints and a zero inserted endpoint', () => {
