@@ -9,7 +9,6 @@ import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { commitEdgesThunk } from '../redux/param/commit-edges-thunk';
 import { saveGraph } from '../redux/param/param-slice';
 import {
     addSelected,
@@ -447,7 +446,9 @@ const SvgCanvas = () => {
 
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
-                    dispatch(commitEdgesThunk({ edgeIds: [newLineId], mode: 'created' }));
+                    normalizeEdgeAttributes(graph.current, [newLineId], 'created');
+                    dispatch(saveGraph(graph.current.export()));
+                    dispatch(refreshEdgesThunk());
                     if (nodesChanged) dispatch(refreshNodesThunk());
                 }
             }

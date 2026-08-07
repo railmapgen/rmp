@@ -2,12 +2,11 @@ import { Alert, AlertDescription, AlertIcon, Box, Button, Text } from '@chakra-u
 import { useTranslation } from 'react-i18next';
 import { AttrsProps, LineId, NodeId } from '../../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
 import { saveGraph } from '../../../redux/param/param-slice';
-import { refreshNodesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { makeParallelIndex } from '../../../util/parallel';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import { ColorFieldContext } from './color-field';
@@ -75,12 +74,16 @@ export const LineSpecificAttributes = () => {
     };
     const handlePathAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
-        dispatch(commitEdgesThunk({ edgeIds: [id as LineId] }));
+        normalizeEdgeAttributes(window.graph, [id as LineId]);
+        dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     const handleStyleAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [style]: attrs });
-        dispatch(commitEdgesThunk({ edgeIds: [id as LineId] }));
+        normalizeEdgeAttributes(window.graph, [id as LineId]);
+        dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     return (

@@ -7,7 +7,6 @@ import { Id, LineId, NodeId, StnId } from '../../../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
 import { MiscNodeType } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
 import { saveGraph } from '../../../redux/param/param-slice';
 import {
     clearSelected,
@@ -30,6 +29,7 @@ import {
 } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
 import { sendErrorNotification } from '../../../util/notifications';
+import { normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -164,7 +164,9 @@ const DetailsPanel = () => {
             return;
         }
 
-        dispatch(commitEdgesThunk({ edgeIds: [...selected] as LineId[] }));
+        normalizeEdgeAttributes(graph.current, [...selected] as LineId[]);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     const handleReconcile = () => {

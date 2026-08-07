@@ -20,11 +20,11 @@ import { LineId } from '../../../constants/constants';
 import { LinePathType, LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
-import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
-import { setSelected } from '../../../redux/runtime/runtime-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
+import { refreshEdgesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
 
 const legacySimplePathAvailableStyles = new Set([
@@ -113,14 +113,22 @@ export default function LineTypeSection() {
         if (newLinePathType) {
             const changed = changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
             setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
-            if (changed) dispatch(commitEdgesThunk({ edgeIds: [selectedFirst as LineId] }));
+            if (changed) {
+                normalizeEdgeAttributes(graph.current, [selectedFirst as LineId]);
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
+            }
         }
     };
     const handleChangeLineStyleType = (newLineStyleType: LineStyleType) => {
         if (newLineStyleType) {
             const changed = changeLineStyleType(graph.current, selectedFirst!, newLineStyleType, theme);
             setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
-            if (changed) dispatch(commitEdgesThunk({ edgeIds: [selectedFirst as LineId] }));
+            if (changed) {
+                normalizeEdgeAttributes(graph.current, [selectedFirst as LineId]);
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
+            }
         }
     };
     const handleClose = (proceed: boolean) => {

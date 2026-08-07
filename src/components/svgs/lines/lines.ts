@@ -66,9 +66,9 @@ export const linePaths = {
  * Once an edge is normalized it becomes eligible to anchor later edges, making a batch converge without depending on
  * partially updated values. The function mutates `graph` in place and does not save or refresh it.
  */
-// TODO: Move this coordinator out of the React `linePaths` registry when implementing the unified graph-operation
-// pipeline in `docs/graph-mutation-pipeline-design.md`. LinePaths should register their optional normalizers in a
-// dependency-light registry, and the graph thunk should call that registry without importing component definitions.
+// TODO: Replace the temporary manual normalize → save → refresh sequences as soon as the unified graph-operation
+// pipeline in `docs/graph-mutation-pipeline-design.md` is implemented. Move this coordinator into a dependency-light
+// registry first so the graph-operation thunk can call registered normalizers without importing component definitions.
 export const normalizeEdgeAttributes = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeIds: Iterable<LineId>,
