@@ -11,6 +11,9 @@
         "@chakra-ui/react": "^2.10.9",
         "@emotion/react": "^11.14.0",
         "@emotion/styled": "^11.14.1",
+        "@ffmpeg/core": "^0.12.10",
+        "@ffmpeg/ffmpeg": "^0.12.15",
+        "@ffmpeg/util": "^0.12.2",
         "@railmapgen/rmg-components": "^10.1.13",
         "@railmapgen/rmg-palette-resources": "^3.0.0",
         "@railmapgen/rmg-runtime": "^12.0.3",
@@ -33,7 +36,8 @@
         "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
         "rollup": "^4.62.3",
-        "vite-plugin-svgr": "^4.5.0"
+        "vite-plugin-svgr": "^4.5.0",
+        "webm-writer": "^1.0.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",

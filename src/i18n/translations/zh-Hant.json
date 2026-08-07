@@ -825,6 +825,47 @@
         "download": {
             "config": "導出項目",
             "image": "導出圖片",
+            "video": "匯出影片",
+            "videoExport": {
+                "title": "匯出影片",
+                "groups": {
+                    "output": "輸出設定",
+                    "viewport": "視角設定",
+                    "rendering": "渲染設定",
+                    "sharing": "分享與授權"
+                },
+                "fps": "每秒影格數 (FPS)",
+                "duration": "時長（秒）",
+                "resolution": "影片解析度",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
+                "quality": "影片品質",
+                "currentScale": "目前視角放大倍率（全圖 = 100%）",
+                "fullscreenScale": "全螢幕視角放大倍率（全圖 = 100%）",
+                "autoChangeStationType": "自動切換基本車站與轉乘車站",
+                "autoChangeStationTypeHint": "開啟後，將根據影片中目前已顯示的線路自動調整以下支援的轉乘車站：{{stations}}。",
+                "autoChangeStationTypeWarning": "如果影片中的車站名稱位置或轉乘資訊與目前地圖不一致，請關閉「自動切換基本車站與轉乘車站」，以完全按照地圖目前狀態渲染車站。",
+                "generating": "正在產生影片...",
+                "transcoding": "正在轉換為 MP4...",
+                "progress": "進度：{{progress}}%",
+                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
+                "timelineGuide": "影片會按照時間線中設定的順序依次渲染車站和線路；如果尚未設定時間線，則使用預設順序。",
+                "editTimeline": "修改時間線",
+                "shareInfo1": "當我分享此影片時我會附上",
+                "shareInfo2": "和它的連結。",
+                "format": "影片格式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4 不支援透明背景，將使用目前介面背景色。",
+                "error": "影片匯出失敗，請重試。",
+                "noNodes": "無法匯出影片：圖中沒有節點。"
+            },
             "2rmg": {
                 "title": "導出RMG項目",
                 "type": {

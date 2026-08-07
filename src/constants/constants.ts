@@ -34,10 +34,6 @@ export type EdgeAttributes = BaseAttributes & {
 } & Partial<ExternalLinePathAttributes> &
     Partial<ExternalLineStyleAttributes>;
 
-export type GraphAttributes = {
-    name?: string;
-};
-
 /**
  * A props interface for all specific attributes components
  * that give users an input (UI) to change attributes.
@@ -70,6 +66,10 @@ export type MiscNodeId = `misc_node_${string}`;
 export type NodeId = StnId | MiscNodeId;
 
 export type Id = NodeId | LineId;
+
+export type GraphAttributes = {
+    name?: string;
+};
 
 /**
  * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)
@@ -176,3 +176,5 @@ export enum StationCity {
     Shmetro = 'shmetro',
     Bjsubway = 'bjsubway',
 }
+
+export type { ExternalStationAttributes };
